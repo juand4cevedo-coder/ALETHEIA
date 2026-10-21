@@ -1,0 +1,12 @@
+# Todo archivo de texto se guarda con LF, sin importar el sistema operativo.
+* text=auto eol=lf
+
+# Binarios: Git no convierte ni compara su contenido como texto.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.woff2 binary
