@@ -1,0 +1,30 @@
+name: Tarea técnica
+description: Trabajo de plataforma que sostiene las historias de usuario.
+title: "TT-000 "
+body:
+  - type: input
+    id: epica
+    attributes:
+      label: Épica
+      value: EP-011
+    validations:
+      required: true
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: Qué problema resuelve y para qué historias lo deja listo.
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de terminado
+      description: Condiciones verificables, una por línea.
+    validations:
+      required: true
+  - type: input
+    id: dependencias
+    attributes:
+      label: Dependencias
+      placeholder: Ninguna
