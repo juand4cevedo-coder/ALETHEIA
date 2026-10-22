@@ -69,6 +69,27 @@ Después de clonar el repositorio, en PowerShell:
 uv tool install pre-commit
 pre-commit install
 ```
+## Revisiones antes de abrir un pull request
+
+Cada pull request pasa por la integración continua, que ejecuta las mismas revisiones de esta sección. Correrlas antes en el equipo evita esperar a que GitHub encuentre el error.
+
+Backend, desde `backend/` y con los servicios de Compose encendidos. La URL usa el usuario, la clave y la base definidos en `infra/.env`:
+
+```powershell
+uv run ruff check
+uv run ruff format --check
+uv run mypy
+$env:ALETHEIA_TEST_DATABASE_URL = "postgresql://USUARIO:CLAVE@127.0.0.1:5432/BASE"
+uv run pytest
+```
+
+Frontend, desde `frontend/`:
+
+```powershell
+pnpm lint
+pnpm format:check
+pnpm build
+```
 
 ## Derechos de autor
 
