@@ -6,6 +6,7 @@
     "oxc.oxc-vscode",
     "esbenp.prettier-vscode",
     "ms-ossdata.vscode-pgsql",
-    "eamodio.gitlens"
+    "eamodio.gitlens",
+    "ms-python.mypy-type-checker"
   ]
 }
