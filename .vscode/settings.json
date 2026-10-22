@@ -8,5 +8,9 @@
   "python.analysis.typeCheckingMode": "off",
   "mypy-type-checker.importStrategy": "fromEnvironment",
   "mypy-type-checker.cwd": "${workspaceFolder}/backend",
-  "[python]": { "editor.defaultFormatter": "charliermarsh.ruff" }
+  "[python]": { "editor.defaultFormatter": "charliermarsh.ruff" },
+  "prettier.requireConfig": true,
+  "[javascript][typescript][typescriptreact][json][jsonc][css][html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }
