@@ -15,6 +15,19 @@ En construcción. Las instrucciones de instalación, desarrollo y despliegue se 
 - Base de datos: PostgreSQL.
 - Contenedores: Docker y Docker Compose.
 
+## Desarrollo
+
+### Revisiones antes de cada commit
+
+El repositorio usa pre-commit para revisar cada commit antes de crearlo. Bloquea secretos con Gitleaks, llaves privadas, archivos de más de 500 KB y marcas de conflicto sin resolver, y normaliza los saltos de línea a LF.
+
+Después de clonar el repositorio, en PowerShell:
+
+```powershell
+uv tool install pre-commit
+pre-commit install
+```
+
 ## Derechos de autor
 
 Este repositorio es público para consulta y evaluación, pero no incluye licencia de uso. El código conserva todos los derechos de autor y no puede copiarse, modificarse ni distribuirse sin autorización escrita del autor.
