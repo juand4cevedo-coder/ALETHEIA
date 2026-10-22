@@ -17,6 +17,48 @@ En construcción. Las instrucciones de instalación, desarrollo y despliegue se 
 
 ## Desarrollo
 
+### Requisitos
+
+- Python 3.14 con uv 0.13 o posterior. La versión exacta está fijada en `backend/.python-version`.
+- Node.js 26 con pnpm 12.
+- Docker Engine 29 con Docker Compose 5. En Windows se ejecuta dentro de WSL 2.
+- Visual Studio Code con las extensiones que recomienda el repositorio.
+
+### Servicios locales
+
+PostgreSQL, Azurite (emulador de Azure Blob Storage) y Mailpit (captura de correos) corren en contenedores. Sus puertos solo escuchan en 127.0.0.1 y sus datos se guardan en volúmenes de Docker.
+
+1. Copia `infra/.env.example` como `infra/.env` y define una clave propia. Ese archivo nunca entra al repositorio.
+2. Desde la raíz del repositorio:
+
+```powershell
+docker compose -f infra/compose.dev.yaml up -d   # levantar los servicios
+docker compose -f infra/compose.dev.yaml ps      # revisar su estado
+docker compose -f infra/compose.dev.yaml down    # apagarlos sin borrar los datos
+```
+
+| Servicio | Dirección |
+| --- | --- |
+| PostgreSQL | 127.0.0.1:5432 |
+| Azurite, Blob Storage | http://127.0.0.1:10000 |
+| Mailpit, SMTP | 127.0.0.1:1025 |
+| Mailpit, bandeja web | http://127.0.0.1:8025 |
+
+### Backend
+
+```powershell
+cd backend
+uv sync
+```
+
+### Frontend
+
+```powershell
+cd frontend
+pnpm install
+pnpm dev
+```
+
 ### Revisiones antes de cada commit
 
 El repositorio usa pre-commit para revisar cada commit antes de crearlo. Bloquea secretos con Gitleaks, llaves privadas, archivos de más de 500 KB y marcas de conflicto sin resolver, y normaliza los saltos de línea a LF.
