@@ -6,13 +6,14 @@ import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 
+from app.core.config import Settings
 from app.core.errors import PROBLEM_JSON
 from app.main import create_app
 
 
 @pytest.fixture
-def client() -> Iterator[TestClient]:
-    app: FastAPI = create_app()
+def client(settings: Settings) -> Iterator[TestClient]:
+    app: FastAPI = create_app(settings)
 
     @app.get("/prueba/conflicto")
     def conflicto() -> None:
