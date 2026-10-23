@@ -49,7 +49,29 @@ docker compose -f infra/compose.dev.yaml down    # apagarlos sin borrar los dato
 ```powershell
 cd backend
 uv sync
+Copy-Item .env.example .env
 ```
+
+Abre `backend/.env` y reemplaza `CLAVE` por la clave definida en `infra/.env`. Ese archivo nunca entra al repositorio.
+
+| Variable | Obligatoria | Valor en desarrollo |
+| --- | --- | --- |
+| `ALETHEIA_DATABASE_URL` | Sí | `postgresql+psycopg://aletheia:CLAVE@127.0.0.1:5432/aletheia` |
+| `ALETHEIA_ENVIRONMENT` | No | `development`; los otros valores son `test` y `production` |
+| `ALETHEIA_LOG_LEVEL` | No | `DEBUG`; fuera de `development` solo se aceptan `INFO`, `WARNING` y `ERROR` |
+
+Con los servicios de Compose encendidos:
+
+```powershell
+uv run uvicorn app.main:create_app --factory
+```
+
+| Dirección | Contenido |
+| --- | --- |
+| http://127.0.0.1:8000/api/v1/health | Estado de la API y de la base de datos: 200 o 503 |
+| http://127.0.0.1:8000/api/v1/docs | Documentación interactiva de la API |
+
+Si falta una variable obligatoria o tiene un valor inválido, la API no arranca e indica el campo sin mostrar su valor. Los registros salen en JSON por la salida estándar; cada petición lleva un `request_id`, que también viaja en la cabecera `X-Request-ID` y en cada respuesta de error.
 
 ### Frontend
 
@@ -69,19 +91,22 @@ Después de clonar el repositorio, en PowerShell:
 uv tool install pre-commit
 pre-commit install
 ```
-## Revisiones antes de abrir un pull request
+
+### Revisiones antes de abrir un pull request
 
 Cada pull request pasa por la integración continua, que ejecuta las mismas revisiones de esta sección. Correrlas antes en el equipo evita esperar a que GitHub encuentre el error.
 
-Backend, desde `backend/` y con los servicios de Compose encendidos. La URL usa el usuario, la clave y la base definidos en `infra/.env`:
+Backend, desde `backend/` y con los servicios de Compose encendidos:
 
 ```powershell
 uv run ruff check
 uv run ruff format --check
 uv run mypy
-$env:ALETHEIA_TEST_DATABASE_URL = "postgresql://USUARIO:CLAVE@127.0.0.1:5432/BASE"
-uv run pytest
+$env:ALETHEIA_TEST_DATABASE_URL = Read-Host -MaskInput "URL de la base de pruebas"
+uv run pytest --tb=short
 ```
+
+La URL de pruebas es `postgresql://USUARIO:CLAVE@127.0.0.1:5432/BASE`, con los valores de `infra/.env`. `Read-Host -MaskInput` evita que la clave quede en el historial de PowerShell. Antes de compartir una salida de pytest, revisa que no incluya la URL.
 
 Frontend, desde `frontend/`:
 
