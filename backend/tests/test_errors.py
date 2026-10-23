@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 
 from app.core.config import Settings
 from app.core.errors import PROBLEM_JSON
+from app.core.middleware import REQUEST_ID_HEADER
 from app.main import create_app
 
 
@@ -43,6 +44,7 @@ def test_ruta_inexistente_responde_problem_details(client: TestClient) -> None:
         "title": "Not Found",
         "status": 404,
         "instance": "/no-existe",
+        "request_id": response.headers[REQUEST_ID_HEADER],
     }
 
 
@@ -77,5 +79,6 @@ def test_error_inesperado_no_expone_la_traza(client: TestClient) -> None:
     assert response.status_code == 500
     assert response.headers["content-type"] == PROBLEM_JSON
     assert response.json()["detail"] == "Ocurrió un error inesperado."
+    assert response.json()["request_id"] == response.headers[REQUEST_ID_HEADER]
     assert "detalle interno" not in response.text
     assert "Traceback" not in response.text

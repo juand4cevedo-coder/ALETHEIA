@@ -31,8 +31,15 @@ def client(settings: Settings) -> Iterator[TestClient]:
         yield test_client
 
 
+_LOGGER = "app.core.middleware"
+
+
+def _registros(caplog: pytest.LogCaptureFixture, mensaje: str) -> list[logging.LogRecord]:
+    return [r for r in caplog.records if r.name == _LOGGER and r.getMessage() == mensaje]
+
+
 def _registro_de_peticion(caplog: pytest.LogCaptureFixture) -> logging.LogRecord:
-    registros = [r for r in caplog.records if r.name == "aletheia.request"]
+    registros = _registros(caplog, "Petición atendida")
     assert len(registros) == 1
     return registros[0]
 
@@ -58,7 +65,7 @@ def test_reemplaza_un_identificador_invalido(client: TestClient) -> None:
 def test_registra_la_peticion_sin_la_consulta(
     client: TestClient, caplog: pytest.LogCaptureFixture
 ) -> None:
-    with caplog.at_level(logging.INFO, logger="aletheia.request"):
+    with caplog.at_level(logging.INFO, logger=_LOGGER):
         response = client.get("/prueba/eco", params={"correo": "abogada@ejemplo.co"})
 
     registro = _registro_de_peticion(caplog)
@@ -74,11 +81,14 @@ def test_registra_la_peticion_sin_la_consulta(
 def test_registra_el_error_inesperado_como_500(
     client: TestClient, caplog: pytest.LogCaptureFixture
 ) -> None:
-    with caplog.at_level(logging.INFO, logger="aletheia.request"):
+    with caplog.at_level(logging.INFO, logger=_LOGGER):
         response = client.get("/prueba/falla")
 
     assert response.status_code == 500
     assert _registro_de_peticion(caplog).__dict__["status"] == 500
+    (error,) = _registros(caplog, "Error inesperado")
+    linea = json.loads(JsonFormatter().format(error))
+    assert "RuntimeError: falla de prueba" in linea["exception"]
 
 
 def test_formatter_produce_json_con_el_identificador() -> None:

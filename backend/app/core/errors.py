@@ -9,6 +9,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.core.logs import request_id_var
+
 PROBLEM_JSON = "application/problem+json"
 
 
@@ -30,6 +32,10 @@ def problem_response(
     }
     if detail is not None:
         body["detail"] = detail
+    # Con el request_id, soporte encuentra en los registros la petición que falló.
+    request_id = request_id_var.get()
+    if request_id is not None:
+        body["request_id"] = request_id
     if extensions:
         body.update(extensions)
     return JSONResponse(body, status_code=status, headers=headers, media_type=PROBLEM_JSON)
@@ -60,8 +66,8 @@ async def _validation_exception_handler(request: Request, exc: Exception) -> JSO
     )
 
 
-async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    # El servidor registra la traza completa; el cliente nunca la recibe.
+def unexpected_error_response(request: Request) -> JSONResponse:
+    """Respuesta 500 genérica: la traza queda en los registros, nunca en la respuesta."""
     return problem_response(
         request,
         HTTPStatus.INTERNAL_SERVER_ERROR,
@@ -70,7 +76,7 @@ async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSON
 
 
 def register_exception_handlers(app: FastAPI) -> None:
-    """Hace que todo error de la API responda en formato Problem Details."""
+    """Errores HTTP y de validación en Problem Details; los inesperados los atiende
+    RequestContextMiddleware, que conoce el request_id de la petición."""
     app.add_exception_handler(StarletteHTTPException, _http_exception_handler)
     app.add_exception_handler(RequestValidationError, _validation_exception_handler)
-    app.add_exception_handler(Exception, _unhandled_exception_handler)
