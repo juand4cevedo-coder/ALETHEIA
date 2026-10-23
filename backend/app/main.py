@@ -1,13 +1,25 @@
 """Punto de entrada de la API: uvicorn la construye con app.main:create_app --factory."""
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
+from app.api import health
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logs import configure_logging
 from app.core.middleware import RequestContextMiddleware
+from app.db.session import create_db_engine
 
 API_PREFIX = "/api/v1"
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    yield
+    # Al apagar, cierra las conexiones abiertas del pool.
+    app.state.engine.dispose()
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -22,7 +34,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         openapi_url=f"{API_PREFIX}/openapi.json",
         docs_url=f"{API_PREFIX}/docs",
         redoc_url=None,
+        lifespan=_lifespan,
     )
+    app.state.engine = create_db_engine(settings)
     register_exception_handlers(app)
     app.add_middleware(RequestContextMiddleware)
+    app.include_router(health.router, prefix=API_PREFIX)
     return app
