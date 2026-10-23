@@ -51,7 +51,15 @@ def test_valor_invalido_no_aparece_en_el_error(monkeypatch: pytest.MonkeyPatch) 
 
 def test_la_url_no_se_expone_en_repr(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ALETHEIA_DATABASE_URL", _URL)
-
     settings = _cargar()
-
     assert "clave-de-prueba" not in repr(settings)
+
+
+@pytest.mark.parametrize("entorno", ["test", "production"])
+def test_debug_solo_en_desarrollo(monkeypatch: pytest.MonkeyPatch, entorno: str) -> None:
+    monkeypatch.setenv("ALETHEIA_DATABASE_URL", _URL)
+    monkeypatch.setenv("ALETHEIA_ENVIRONMENT", entorno)
+    monkeypatch.setenv("ALETHEIA_LOG_LEVEL", "DEBUG")
+
+    with pytest.raises(ValidationError, match="DEBUG solo se permite"):
+        _cargar()

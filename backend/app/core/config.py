@@ -1,9 +1,9 @@
 """Configuración de la API, leída de variables de entorno con prefijo ALETHEIA_."""
 
 from functools import lru_cache
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import Field, PostgresDsn, Secret, field_validator
+from pydantic import Field, PostgresDsn, Secret, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Environment = Literal["development", "test", "production"]
@@ -40,6 +40,14 @@ class Settings(BaseSettings):
             msg = f"debe usar el esquema {_DRIVER_SCHEME}://"
             raise ValueError(msg)
         return value
+
+    @model_validator(mode="after")
+    def _debug_only_in_development(self) -> Self:
+        # El nivel DEBUG puede volcar datos internos: solo se permite en desarrollo.
+        if self.log_level == "DEBUG" and self.environment != "development":
+            msg = "log_level DEBUG solo se permite con environment development"
+            raise ValueError(msg)
+        return self
 
 
 @lru_cache(maxsize=1)
