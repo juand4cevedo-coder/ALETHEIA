@@ -59,6 +59,7 @@ Abre `backend/.env` y reemplaza `CLAVE` por la clave definida en `infra/.env`. E
 | `ALETHEIA_DATABASE_URL` | Sí | `postgresql+psycopg://aletheia:CLAVE@127.0.0.1:5432/aletheia` |
 | `ALETHEIA_ENVIRONMENT` | No | `development`; los otros valores son `test` y `production` |
 | `ALETHEIA_LOG_LEVEL` | No | `DEBUG`; fuera de `development` solo se aceptan `INFO`, `WARNING` y `ERROR` |
+| `ALETHEIA_MIGRATION_DATABASE_URL` | Solo para migraciones | La misma URL de `ALETHEIA_DATABASE_URL` mientras la base no tenga roles propios |
 
 Con los servicios de Compose encendidos:
 
@@ -72,6 +73,19 @@ uv run uvicorn app.main:create_app --factory
 | http://127.0.0.1:8000/api/v1/docs | Documentación interactiva de la API |
 
 Si falta una variable obligatoria o tiene un valor inválido, la API no arranca e indica el campo sin mostrar su valor. Los registros salen en JSON por la salida estándar; cada petición lleva un `request_id`, que también viaja en la cabecera `X-Request-ID` y en cada respuesta de error.
+
+### Migraciones de la base de datos
+
+El esquema se construye con migraciones de Alembic guardadas en `backend/migrations`. Desde `backend/` y con los servicios de Compose encendidos:
+
+```powershell
+uv run alembic upgrade head
+uv run alembic current
+```
+
+El primer comando aplica las migraciones pendientes y el segundo muestra en qué versión está la base. Para revisar el SQL de una migración sin tocar la base, agrega `--sql` al primero.
+
+Alembic se conecta con `ALETHEIA_MIGRATION_DATABASE_URL` y nunca con la URL de la API: solo el dueño del esquema puede cambiarlo. Las migraciones nuevas se crean con `uv run alembic revision -m "descripción"`, y Ruff las corrige y formatea al generarlas.
 
 ### Frontend
 
