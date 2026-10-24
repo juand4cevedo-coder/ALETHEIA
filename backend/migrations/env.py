@@ -9,14 +9,15 @@ from sqlalchemy import Connection, create_engine, pool, text
 
 from app.core.config import MigrationSettings
 from app.core.logs import JsonFormatter
-from app.db.base import Base
+from app.models import Base
 
 # Segundos para abrir la conexión: si la base no responde, la migración falla rápido.
 _CONNECT_TIMEOUT_SECONDS: Final = 5
 # Tiempo máximo esperando un bloqueo de tabla: una migración no deja la API detenida.
 _LOCK_TIMEOUT: Final = "10s"
 
-# Catálogo de tablas que Alembic compara con la base; los modelos se registran en Base.
+# Catálogo de tablas que Alembic compara con la base. Importar app.models registra todos
+# los modelos en él.
 target_metadata = Base.metadata
 
 
