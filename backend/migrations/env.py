@@ -5,7 +5,7 @@ import sys
 from typing import Final
 
 from alembic import context
-from sqlalchemy import create_engine, pool
+from sqlalchemy import Connection, create_engine, pool, text
 
 from app.core.config import MigrationSettings
 from app.core.logs import JsonFormatter
@@ -26,6 +26,17 @@ def _configure_logging() -> None:
     handler = logging.StreamHandler(sys.stderr)
     handler.setFormatter(JsonFormatter())
     logging.basicConfig(level=logging.INFO, handlers=[handler], force=True)
+
+
+def _reject_privileged_user(connection: Connection) -> None:
+    # Un superusuario quedaría como dueño de las tablas y se saltaría Row-Level Security:
+    # las migraciones solo corren con el dueño del esquema, que no tiene esos privilegios.
+    privileged = connection.execute(
+        text("SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE rolname = current_user")
+    ).scalar_one()
+    if privileged:
+        msg = "Las migraciones no se ejecutan como superusuario: usa el dueño del esquema."
+        raise RuntimeError(msg)
 
 
 def run_migrations_offline() -> None:
@@ -56,6 +67,9 @@ def run_migrations_online() -> None:
     with engine.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
+            # Dentro de la transacción de Alembic: una consulta previa abriría otra transacción
+            # y Alembic no confirmaría las migraciones.
+            _reject_privileged_user(connection)
             context.run_migrations()
 
 

@@ -9,11 +9,18 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?Falta POSTGRES_USER en infra/.env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD en infra/.env}
       POSTGRES_DB: ${POSTGRES_DB:?Falta POSTGRES_DB en infra/.env}
+      # Claves de los usuarios de ALETHEIA; las usa infra/postgres/bootstrap.sql.
+      ALETHEIA_OWNER_PASSWORD: ${ALETHEIA_OWNER_PASSWORD:?Falta ALETHEIA_OWNER_PASSWORD en infra/.env}
+      ALETHEIA_APP_PASSWORD: ${ALETHEIA_APP_PASSWORD:?Falta ALETHEIA_APP_PASSWORD en infra/.env}
+      ALETHEIA_SUPPORT_PASSWORD: ${ALETHEIA_SUPPORT_PASSWORD:?Falta ALETHEIA_SUPPORT_PASSWORD en infra/.env}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
       # Desde PostgreSQL 18 el volumen va en /var/lib/postgresql.
       - postgres-data:/var/lib/postgresql
+      # Primer arranque con el volumen vacío: crea los usuarios de ALETHEIA.
+      - ./postgres/initdb:/docker-entrypoint-initdb.d:ro
+      - ./postgres/bootstrap.sql:/aletheia/bootstrap.sql:ro
     healthcheck:
       test:
         ["CMD-SHELL", 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']

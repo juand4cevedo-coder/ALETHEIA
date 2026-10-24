@@ -28,7 +28,7 @@ En construcción. Las instrucciones de instalación, desarrollo y despliegue se 
 
 PostgreSQL, Azurite (emulador de Azure Blob Storage) y Mailpit (captura de correos) corren en contenedores. Sus puertos solo escuchan en 127.0.0.1 y sus datos se guardan en volúmenes de Docker.
 
-1. Copia `infra/.env.example` como `infra/.env` y define una clave propia. Ese archivo nunca entra al repositorio.
+1. Copia `infra/.env.example` como `infra/.env` y define las cuatro claves, cada una distinta. Ese archivo nunca entra al repositorio.
 2. Desde la raíz del repositorio:
 
 ```powershell
@@ -44,6 +44,16 @@ docker compose -f infra/compose.dev.yaml down    # apagarlos sin borrar los dato
 | Mailpit, SMTP | 127.0.0.1:1025 |
 | Mailpit, bandeja web | http://127.0.0.1:8025 |
 
+
+En su primer arranque, con el volumen vacío, PostgreSQL ejecuta `infra/postgres/bootstrap.sql` y crea los tres usuarios de ALETHEIA. Si cambias alguna clave de `infra/.env`, recrea el volumen con `docker compose -f infra/compose.dev.yaml down -v`; ese comando borra los datos locales.
+
+| Usuario | Quién lo usa | Puede |
+| --- | --- | --- |
+| `aletheia` | Administración manual | Todo; la aplicación nunca se conecta con él |
+| `aletheia_owner` | Migraciones de Alembic | Crear y modificar el esquema |
+| `aletheia_app` | API y trabajador | Leer y escribir datos, sin cambiar el esquema |
+| `aletheia_support` | Consultas de soporte | Solo leer |
+
 ### Backend
 
 ```powershell
@@ -52,14 +62,14 @@ uv sync
 Copy-Item .env.example .env
 ```
 
-Abre `backend/.env` y reemplaza `CLAVE` por la clave definida en `infra/.env`. Ese archivo nunca entra al repositorio.
+Abre `backend/.env` y reemplaza cada `CLAVE` por la del usuario correspondiente en `infra/.env`. Ese archivo nunca entra al repositorio.
 
 | Variable | Obligatoria | Valor en desarrollo |
 | --- | --- | --- |
-| `ALETHEIA_DATABASE_URL` | Sí | `postgresql+psycopg://aletheia:CLAVE@127.0.0.1:5432/aletheia` |
+| `ALETHEIA_DATABASE_URL` | Sí | `postgresql+psycopg://aletheia_app:CLAVE@127.0.0.1:5432/aletheia` |
 | `ALETHEIA_ENVIRONMENT` | No | `development`; los otros valores son `test` y `production` |
 | `ALETHEIA_LOG_LEVEL` | No | `DEBUG`; fuera de `development` solo se aceptan `INFO`, `WARNING` y `ERROR` |
-| `ALETHEIA_MIGRATION_DATABASE_URL` | Solo para migraciones | La misma URL de `ALETHEIA_DATABASE_URL` mientras la base no tenga roles propios |
+| `ALETHEIA_MIGRATION_DATABASE_URL` | Solo para migraciones | `postgresql+psycopg://aletheia_owner:CLAVE@127.0.0.1:5432/aletheia` |
 
 Con los servicios de Compose encendidos:
 
@@ -85,7 +95,7 @@ uv run alembic current
 
 El primer comando aplica las migraciones pendientes y el segundo muestra en qué versión está la base. Para revisar el SQL de una migración sin tocar la base, agrega `--sql` al primero.
 
-Alembic se conecta con `ALETHEIA_MIGRATION_DATABASE_URL` y nunca con la URL de la API: solo el dueño del esquema puede cambiarlo. Las migraciones nuevas se crean con `uv run alembic revision -m "descripción"`, y Ruff las corrige y formatea al generarlas.
+Alembic se conecta con `ALETHEIA_MIGRATION_DATABASE_URL`, es decir, con `aletheia_owner`, y se niega a correr como superusuario: si lo hiciera, las tablas quedarían a nombre del administrador y los permisos de la aplicación no se aplicarían. Las migraciones nuevas se crean con `uv run alembic revision -m "descripción"`, y Ruff las corrige y formatea al generarlas.
 
 ### Frontend
 
@@ -120,7 +130,7 @@ $env:ALETHEIA_TEST_DATABASE_URL = Read-Host -MaskInput "URL de la base de prueba
 uv run pytest --tb=short
 ```
 
-La URL de pruebas es `postgresql://USUARIO:CLAVE@127.0.0.1:5432/BASE`, con los valores de `infra/.env`. `Read-Host -MaskInput` evita que la clave quede en el historial de PowerShell. Antes de compartir una salida de pytest, revisa que no incluya la URL.
+La URL de pruebas es la de `ALETHEIA_DATABASE_URL`, con el usuario `aletheia_app`. `Read-Host -MaskInput` evita que la clave quede en el historial de PowerShell. Antes de compartir una salida de pytest, revisa que no incluya la URL.
 
 Frontend, desde `frontend/`:
 
