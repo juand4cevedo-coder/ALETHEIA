@@ -1,4 +1,4 @@
-"""Configuración de la API, leída de variables de entorno con prefijo ALETHEIA_."""
+"""Configuración del backend, leída de variables de entorno con prefijo ALETHEIA_."""
 
 from functools import lru_cache
 from typing import Literal, Self
@@ -12,11 +12,10 @@ LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR"]
 _DRIVER_SCHEME = "postgresql+psycopg"
 
 
-class Settings(BaseSettings):
-    """Valores que la API necesita para arrancar; los obligatorios no tienen valor por defecto."""
+class _DatabaseSettings(BaseSettings):
+    """Reglas comunes a toda configuración que lleva una URL de PostgreSQL."""
 
     model_config = SettingsConfigDict(
-        env_prefix="ALETHEIA_",
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
@@ -25,8 +24,6 @@ class Settings(BaseSettings):
         hide_input_in_errors=True,
     )
 
-    environment: Environment = "development"
-    log_level: LogLevel = "INFO"
     # Secret evita que la URL, que incluye la contraseña, aparezca en repr o en registros.
     database_url: Secret[PostgresDsn] = Field(
         description="URL de PostgreSQL con el controlador psycopg 3.",
@@ -41,6 +38,15 @@ class Settings(BaseSettings):
             raise ValueError(msg)
         return value
 
+
+class Settings(_DatabaseSettings):
+    """Valores que la API necesita para arrancar; los obligatorios no tienen valor por defecto."""
+
+    model_config = SettingsConfigDict(env_prefix="ALETHEIA_")
+
+    environment: Environment = "development"
+    log_level: LogLevel = "INFO"
+
     @model_validator(mode="after")
     def _debug_only_in_development(self) -> Self:
         # El nivel DEBUG puede volcar datos internos: solo se permite en desarrollo.
@@ -48,6 +54,12 @@ class Settings(BaseSettings):
             msg = "log_level DEBUG solo se permite con environment development"
             raise ValueError(msg)
         return self
+
+
+class MigrationSettings(_DatabaseSettings):
+    """Conexión de las migraciones: el usuario dueño del esquema, nunca el de la API."""
+
+    model_config = SettingsConfigDict(env_prefix="ALETHEIA_MIGRATION_")
 
 
 @lru_cache(maxsize=1)
