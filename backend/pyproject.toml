@@ -71,8 +71,16 @@ type = "module"
 module = "ruff"
 options = "check --fix REVISION_SCRIPT_FILENAME"
 
+# Cada migración nueva sale formateada y corregida con Ruff, igual que el resto del código.
+# Primero el formato: así la revisión ya no ve las líneas largas que el formato parte.
 [[tool.alembic.post_write_hooks]]
 name = "ruff_format"
 type = "module"
 module = "ruff"
 options = "format REVISION_SCRIPT_FILENAME"
+
+[[tool.alembic.post_write_hooks]]
+name = "ruff_check"
+type = "module"
+module = "ruff"
+options = "check --fix REVISION_SCRIPT_FILENAME"
