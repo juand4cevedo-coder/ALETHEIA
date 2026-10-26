@@ -31,7 +31,14 @@ jobs:
         working-directory: backend
     env:
       UV_LOCKED: "1"
-      ALETHEIA_TEST_DATABASE_URL: postgresql://aletheia:aletheia-ci@localhost:5432/aletheia_test
+      # Claves de un contenedor temporal que solo existe durante este trabajo.
+      ALETHEIA_OWNER_PASSWORD: owner-ci
+      ALETHEIA_APP_PASSWORD: app-ci
+      ALETHEIA_SUPPORT_PASSWORD: support-ci
+      # Las pruebas se conectan con los mismos usuarios que en producción, nunca como
+      # superusuario: así la prueba de acceso cruzado demuestra algo.
+      ALETHEIA_TEST_DATABASE_URL: postgresql://aletheia_app:app-ci@localhost:5432/aletheia_test
+      ALETHEIA_TEST_MIGRATION_DATABASE_URL: postgresql://aletheia_owner:owner-ci@localhost:5432/aletheia_test
     services:
       postgres:
         # Misma imagen que infra/compose.dev.yaml; la clave solo existe en este contenedor temporal.
@@ -73,6 +80,24 @@ jobs:
 
       - name: Tipos con mypy
         run: uv run mypy
+
+      - name: Crear los usuarios de la base
+        # El mismo script que usa el contenedor de desarrollo; psql viene en la imagen.
+        env:
+          PGPASSWORD: aletheia-ci
+        run: >-
+          psql --host localhost --username aletheia --dbname aletheia_test
+          --set ON_ERROR_STOP=1 --file ../infra/postgres/bootstrap.sql
+
+      - name: Migraciones de ida y vuelta
+        # La misma ruta que el despliegue: Alembic con su propia conexión como dueño.
+        env:
+          ALETHEIA_MIGRATION_DATABASE_URL: postgresql+psycopg://aletheia_owner:owner-ci@localhost:5432/aletheia_test
+        run: |
+          uv run alembic upgrade head
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+          uv run alembic check
 
       - name: Pruebas con pytest
         run: uv run pytest
