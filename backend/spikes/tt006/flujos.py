@@ -2,7 +2,10 @@
 
 import io
 import os
+import threading
 from collections.abc import Buffer
+
+import psutil
 
 
 class Generado(io.RawIOBase):
@@ -39,3 +42,30 @@ class Descarte(io.RawIOBase):
         n = memoryview(datos).nbytes
         self.recibidos += n
         return n
+
+
+class VigiaDeMemoria:
+    """Mide en segundo plano la memoria residente del proceso y guarda el máximo."""
+
+    def __init__(self) -> None:
+        self._proceso = psutil.Process()
+        self._parar = threading.Event()
+        self.inicial = self._proceso.memory_info().rss
+        self.maxima = self.inicial
+        self._hilo = threading.Thread(target=self._medir, daemon=True)
+
+    @property
+    def extra_mib(self) -> float:
+        return (self.maxima - self.inicial) / (1024 * 1024)
+
+    def _medir(self) -> None:
+        while not self._parar.wait(0.02):
+            self.maxima = max(self.maxima, self._proceso.memory_info().rss)
+
+    def __enter__(self) -> VigiaDeMemoria:
+        self._hilo.start()
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self._parar.set()
+        self._hilo.join()
