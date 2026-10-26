@@ -51,8 +51,23 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def _run_with(connection: Connection) -> None:
+    context.configure(connection=connection, target_metadata=target_metadata)
+    with context.begin_transaction():
+        # Dentro de la transacción de Alembic: una consulta previa abriría otra transacción
+        # y Alembic no confirmaría las migraciones.
+        _reject_privileged_user(connection)
+        context.run_migrations()
+
+
 def run_migrations_online() -> None:
     """Aplica las migraciones en una sola transacción: o se aplican todas o ninguna."""
+    # Las pruebas entregan su propia conexión, a la base de pruebas.
+    shared: Connection | None = context.config.attributes.get("connection")
+    if shared is not None:
+        _run_with(shared)
+        return
+
     settings = MigrationSettings()
     # La URL se entrega directo al motor y no a la configuración de Alembic, que trata el
     # símbolo % como interpolación y la mostraría en sus mensajes.
@@ -66,15 +81,12 @@ def run_migrations_online() -> None:
         },
     )
     with engine.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
-        with context.begin_transaction():
-            # Dentro de la transacción de Alembic: una consulta previa abriría otra transacción
-            # y Alembic no confirmaría las migraciones.
-            _reject_privileged_user(connection)
-            context.run_migrations()
+        _run_with(connection)
 
 
-_configure_logging()
+# Las pruebas conservan su propia configuración de registros.
+if context.config.attributes.get("configure_logging", True):
+    _configure_logging()
 if context.is_offline_mode():
     run_migrations_offline()
 else:

@@ -45,7 +45,7 @@ docker compose -f infra/compose.dev.yaml down    # apagarlos sin borrar los dato
 | Mailpit, bandeja web | http://127.0.0.1:8025 |
 
 
-En su primer arranque, con el volumen vacío, PostgreSQL ejecuta `infra/postgres/bootstrap.sql` y crea los tres usuarios de ALETHEIA. Si cambias alguna clave de `infra/.env`, recrea el volumen con `docker compose -f infra/compose.dev.yaml down -v`; ese comando borra los datos locales.
+En su primer arranque, con el volumen vacío, PostgreSQL ejecuta `infra/postgres/bootstrap.sql`: crea los tres usuarios de ALETHEIA y una segunda base, `aletheia_test`, para las pruebas del backend. Si cambias alguna clave de `infra/.env`, recrea el volumen con `docker compose -f infra/compose.dev.yaml down -v`; ese comando borra los datos locales.
 
 | Usuario | Quién lo usa | Puede |
 | --- | --- | --- |
@@ -126,11 +126,12 @@ Backend, desde `backend/` y con los servicios de Compose encendidos:
 uv run ruff check
 uv run ruff format --check
 uv run mypy
-$env:ALETHEIA_TEST_DATABASE_URL = Read-Host -MaskInput "URL de la base de pruebas"
-uv run pytest --tb=short
+$env:ALETHEIA_TEST_DATABASE_URL = ((Get-Content .env | Where-Object { $_ -like 'ALETHEIA_DATABASE_URL=*' }) -split '=', 2)[1].Trim() -replace '/aletheia$', '/aletheia_test'
+$env:ALETHEIA_TEST_MIGRATION_DATABASE_URL = ((Get-Content .env | Where-Object { $_ -like 'ALETHEIA_MIGRATION_DATABASE_URL=*' }) -split '=', 2)[1].Trim() -replace '/aletheia$', '/aletheia_test'
+uv run pytest
 ```
 
-La URL de pruebas es la de `ALETHEIA_DATABASE_URL`, con el usuario `aletheia_app`. `Read-Host -MaskInput` evita que la clave quede en el historial de PowerShell. Antes de compartir una salida de pytest, revisa que no incluya la URL.
+Las pruebas usan la base `aletheia_test`, nunca la de desarrollo. Al empezar reconstruyen su esquema con las migraciones, y cada prueba corre dentro de una transacción que se deshace al terminar, así que no dejan datos. Las dos variables toman las URL de `backend/.env` y solo cambian el nombre de la base, de modo que la clave no aparece en pantalla ni en el historial de PowerShell. pytest muestra los fallos en formato corto, sin los argumentos de las pruebas, para que la URL tampoco aparezca en su salida.
 
 Frontend, desde `frontend/`:
 

@@ -54,7 +54,9 @@ warn_required_dynamic_aliases = true
 testpaths = ["tests"]
 # Permite que las pruebas importen el paquete app desde backend/.
 pythonpath = ["."]
-addopts = ["-ra", "--strict-config", "--strict-markers"]
+# --tb=short: un fallo muestra las líneas del error, no los argumentos, que pueden traer
+# la URL de la base con su clave.
+addopts = ["-ra", "--strict-config", "--strict-markers", "--tb=short"]
 xfail_strict = true
 
 
