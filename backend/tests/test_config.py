@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import Settings
+from app.core.config import MigrationSettings, Settings
 
 _URL = "postgresql+psycopg://aletheia:clave-de-prueba@localhost:5432/aletheia"
 
@@ -11,7 +11,7 @@ _URL = "postgresql+psycopg://aletheia:clave-de-prueba@localhost:5432/aletheia"
 @pytest.fixture(autouse=True)
 def _entorno_limpio(monkeypatch: pytest.MonkeyPatch) -> None:
     """Aísla cada prueba de las variables ALETHEIA_ del equipo o de la CI."""
-    for nombre in ("ENVIRONMENT", "LOG_LEVEL", "DATABASE_URL"):
+    for nombre in ("ENVIRONMENT", "LOG_LEVEL", "DATABASE_URL", "MIGRATION_DATABASE_URL"):
         monkeypatch.delenv(f"ALETHEIA_{nombre}", raising=False)
 
 
@@ -63,3 +63,24 @@ def test_debug_solo_en_desarrollo(monkeypatch: pytest.MonkeyPatch, entorno: str)
 
     with pytest.raises(ValidationError, match="DEBUG solo se permite"):
         _cargar()
+
+
+def test_migraciones_no_usan_la_url_de_la_api(monkeypatch: pytest.MonkeyPatch) -> None:
+    # La API y las migraciones se conectan con usuarios distintos: una no hereda la otra.
+    monkeypatch.setenv("ALETHEIA_DATABASE_URL", _URL)
+
+    with pytest.raises(ValidationError) as error:
+        MigrationSettings(_env_file=None)
+
+    assert error.value.errors()[0]["loc"] == ("database_url",)
+
+
+def test_migraciones_cargan_su_url_y_exigen_psycopg(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ALETHEIA_MIGRATION_DATABASE_URL", _URL)
+    assert str(MigrationSettings(_env_file=None).database_url.get_secret_value()) == _URL
+
+    monkeypatch.setenv("ALETHEIA_MIGRATION_DATABASE_URL", "postgresql://dueno:clave-secreta@db/x")
+    with pytest.raises(ValidationError) as error:
+        MigrationSettings(_env_file=None)
+
+    assert "clave-secreta" not in str(error.value)
