@@ -13,6 +13,11 @@ from app.models._columns import CreatedAt, UUIDv7Pk, text_values
 
 USER_STATUSES: Final = ("active", "blocked")
 
+
+def _utc_now() -> datetime.datetime:
+    return datetime.datetime.now(datetime.UTC)
+
+
 # Lista cerrada de eventos de seguridad (RF-017). Agregar uno exige una migración.
 AUDIT_ACTIONS: Final = (
     "user_registered",
@@ -130,4 +135,8 @@ class AuditLog(Base):
     # IP y navegador se anonimizan a los 90 días (RN-027).
     ip: Mapped[str | None] = mapped_column(INET)
     user_agent: Mapped[str | None]
-    created_at: Mapped[CreatedAt]
+    # La fecha la pone la aplicación, no la base: así el INSERT no necesita leer la fila de
+    # vuelta, algo que Row-Level Security impide con los eventos sin organización.
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        default=_utc_now, server_default=func.now()
+    )
