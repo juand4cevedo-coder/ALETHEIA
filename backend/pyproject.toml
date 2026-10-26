@@ -56,8 +56,7 @@ files = ["app", "migrations", "tests"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-# Tink no publica anotaciones de tipos (no trae py.typed).
-module = ["tink", "tink.*"]
+module = ["tink", "tink.*", "asn1crypto", "asn1crypto.*"]
 ignore_missing_imports = true
 
 [tool.pydantic-mypy]
