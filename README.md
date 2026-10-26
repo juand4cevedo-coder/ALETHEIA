@@ -44,7 +44,6 @@ docker compose -f infra/compose.dev.yaml down    # apagarlos sin borrar los dato
 | Mailpit, SMTP | 127.0.0.1:1025 |
 | Mailpit, bandeja web | http://127.0.0.1:8025 |
 
-
 En su primer arranque, con el volumen vacío, PostgreSQL ejecuta `infra/postgres/bootstrap.sql`: crea los tres usuarios de ALETHEIA y una segunda base, `aletheia_test`, para las pruebas del backend. Si cambias alguna clave de `infra/.env`, recrea el volumen con `docker compose -f infra/compose.dev.yaml down -v`; ese comando borra los datos locales.
 
 | Usuario | Quién lo usa | Puede |
@@ -96,6 +95,18 @@ uv run alembic current
 El primer comando aplica las migraciones pendientes y el segundo muestra en qué versión está la base. Para revisar el SQL de una migración sin tocar la base, agrega `--sql` al primero.
 
 Alembic se conecta con `ALETHEIA_MIGRATION_DATABASE_URL`, es decir, con `aletheia_owner`, y se niega a correr como superusuario: si lo hiciera, las tablas quedarían a nombre del administrador y los permisos de la aplicación no se aplicarían. Las migraciones nuevas se crean con `uv run alembic revision -m "descripción"`, y Ruff las corrige y formatea al generarlas.
+
+### Aislamiento por organización
+
+Las tablas que pertenecen a una organización tienen Row-Level Security: PostgreSQL solo entrega y acepta filas de la organización fijada en la transacción. Todo código que use una sesión de SQLAlchemy sobre esas tablas fija antes el contexto:
+
+```python
+from app.db.tenancy import TenantContext, set_tenant
+
+set_tenant(session, TenantContext(organization_id=organizacion, user_id=persona))
+```
+
+Sin contexto, las consultas no devuelven filas y las escrituras se rechazan. La cadena de custodia solo admite inserciones, y un caso se elimina únicamente con la función `purge_case`, que primero deja la constancia de eliminación.
 
 ### Frontend
 
