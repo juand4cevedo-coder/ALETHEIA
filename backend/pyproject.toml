@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "API de ALETHEIA: preservación de evidencia digital con integridad y trazabilidad."
 requires-python = ">=3.14,<3.15"
 dependencies = [
+    "alembic==1.20.0",
     "fastapi==0.156.2",
     "psycopg[binary]==3.3.6",
     "pydantic==2.14.1",
@@ -41,7 +42,7 @@ select = ["E", "W", "F", "I", "UP", "B", "S", "SIM", "PT", "RUF"]
 [tool.mypy]
 strict = true
 warn_unreachable = true
-files = ["app", "tests"]
+files = ["app", "migrations", "tests"]
 plugins = ["pydantic.mypy"]
 
 [tool.pydantic-mypy]
@@ -53,5 +54,28 @@ warn_required_dynamic_aliases = true
 testpaths = ["tests"]
 # Permite que las pruebas importen el paquete app desde backend/.
 pythonpath = ["."]
-addopts = ["-ra", "--strict-config", "--strict-markers"]
+# --tb=short: un fallo muestra las líneas del error, no los argumentos, que pueden traer
+# la URL de la base con su clave.
+addopts = ["-ra", "--strict-config", "--strict-markers", "--tb=short"]
 xfail_strict = true
+
+
+[tool.alembic]
+script_location = "%(here)s/migrations"
+# Fecha y hora al inicio del nombre: las migraciones se listan en el orden en que se crearon.
+file_template = "%%(year)d_%%(month).2d_%%(day).2d_%%(hour).2d%%(minute).2d-%%(rev)s_%%(slug)s"
+prepend_sys_path = ["."]
+
+# Cada migración nueva sale formateada y corregida con Ruff, igual que el resto del código.
+# Primero el formato: así la revisión ya no ve las líneas largas que el formato parte.
+[[tool.alembic.post_write_hooks]]
+name = "ruff_format"
+type = "module"
+module = "ruff"
+options = "format REVISION_SCRIPT_FILENAME"
+
+[[tool.alembic.post_write_hooks]]
+name = "ruff_check"
+type = "module"
+module = "ruff"
+options = "check --fix REVISION_SCRIPT_FILENAME"
