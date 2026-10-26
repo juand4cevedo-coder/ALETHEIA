@@ -64,13 +64,6 @@ script_location = "%(here)s/migrations"
 file_template = "%%(year)d_%%(month).2d_%%(day).2d_%%(hour).2d%%(minute).2d-%%(rev)s_%%(slug)s"
 prepend_sys_path = ["."]
 
-# Cada migración nueva sale corregida y formateada con Ruff, igual que el resto del código.
-[[tool.alembic.post_write_hooks]]
-name = "ruff_check"
-type = "module"
-module = "ruff"
-options = "check --fix REVISION_SCRIPT_FILENAME"
-
 # Cada migración nueva sale formateada y corregida con Ruff, igual que el resto del código.
 # Primero el formato: así la revisión ya no ve las líneas largas que el formato parte.
 [[tool.alembic.post_write_hooks]]
