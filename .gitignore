@@ -30,3 +30,6 @@ dist/
 .idea/
 Thumbs.db
 desktop.ini
+
+# Raíces públicas de las autoridades de sellado de TT-006: son certificados, no llaves.
+!backend/spikes/tt006/sellos/*-raiz.pem
