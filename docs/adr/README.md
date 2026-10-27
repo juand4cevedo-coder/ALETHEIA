@@ -17,4 +17,5 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-011](adr-011.md) | Producción en Azure con VM B1ms y servicios administrados | Aceptado | 20/10/2026 |
 | [ADR-012](adr-012.md) | Verificación pública en el navegador | Aceptado | 15/10/2026 |
 | [ADR-013](adr-013.md) | Herramientas de calidad y verificación continua | Aceptado | 22/10/2026 |
-| [ADR-014](adr-014.md) | Biblioteca de cifrado por flujos | Propuesto | 23/10/2026 |
+| [ADR-014](adr-014.md) | Biblioteca de cifrado por flujos | Aceptado | 26/10/2026 |
+| [ADR-015](adr-015.md) | Sellado de tiempo RFC 3161 | Aceptado | 26/10/2026 |
