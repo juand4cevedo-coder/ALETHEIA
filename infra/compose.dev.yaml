@@ -29,15 +29,6 @@ services:
       retries: 10
       start_period: 10s
 
-  azurite:
-    image: mcr.microsoft.com/azure-storage/azurite:3.37.0
-    # Solo el servicio Blob, que es el que usa la aplicación.
-    command: azurite-blob --blobHost 0.0.0.0 --location /data --skipApiVersionCheck --disableTelemetry
-    ports:
-      - "127.0.0.1:10000:10000"
-    volumes:
-      - azurite-data:/data
-
   mailpit:
     image: axllent/mailpit:v1.31.6
     ports:
@@ -46,4 +37,3 @@ services:
 
 volumes:
   postgres-data:
-  azurite-data:

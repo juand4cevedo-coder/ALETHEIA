@@ -26,7 +26,7 @@ En construcción. Las instrucciones de instalación, desarrollo y despliegue se 
 
 ### Servicios locales
 
-PostgreSQL, Azurite (emulador de Azure Blob Storage) y Mailpit (captura de correos) corren en contenedores. Sus puertos solo escuchan en 127.0.0.1 y sus datos se guardan en volúmenes de Docker.
+PostgreSQL y Mailpit (captura de correos) corren en contenedores. Sus puertos solo escuchan en 127.0.0.1 y sus datos se guardan en volúmenes de Docker. En desarrollo los archivos cifrados de las evidencias se guardan en una carpeta local, así que no hace falta emular el almacenamiento de producción.
 
 1. Copia `infra/.env.example` como `infra/.env` y define las cuatro claves, cada una distinta. Ese archivo nunca entra al repositorio.
 2. Desde la raíz del repositorio:
@@ -40,7 +40,6 @@ docker compose -f infra/compose.dev.yaml down    # apagarlos sin borrar los dato
 | Servicio | Dirección |
 | --- | --- |
 | PostgreSQL | 127.0.0.1:5432 |
-| Azurite, Blob Storage | http://127.0.0.1:10000 |
 | Mailpit, SMTP | 127.0.0.1:1025 |
 | Mailpit, bandeja web | http://127.0.0.1:8025 |
 
