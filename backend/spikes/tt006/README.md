@@ -70,7 +70,7 @@ En `sellos/` quedan la muestra, las solicitudes, los sellos y la raíz que ancla
 
 ## Lo que queda para producción
 
-- Envolver la llave de caso con Key Vault real (TT-007).
+- Envolver la llave de caso con la llave RSA de AWS KMS (TT-007).
 - Tratar como fallo un error de descifrado a mitad de una descarga (Sprint 4).
 - Fijar las raíces de las autoridades y comprobar si DigiCert Trusted Root G4 ancla sola su cadena (Sprint 4).
 - Pasar Tink, asn1crypto, rfc3161-client y python-multipart a las dependencias de la aplicación cuando se construya el núcleo de evidencia (Sprint 4).
