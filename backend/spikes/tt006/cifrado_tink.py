@@ -4,8 +4,9 @@ Cada caso tiene su propia llave: un keyset de Tink con AES-256-GCM-HKDF en fragm
 1 MiB. El archivo se cifra mientras se lee, un bloque a la vez, y en la misma pasada se
 calcula su huella SHA-256, así que nunca está completo en memoria.
 
-La llave de caso se guarda envuelta con RSA-OAEP-256, el mismo algoritmo que usará Key
-Vault. En esta prueba la llave maestra es local; en TT-007 vive en Key Vault y nunca sale.
+La llave de caso se guarda envuelta con RSA-OAEP-256, el mismo algoritmo que usa la llave
+RSA de AWS KMS. En esta prueba la llave maestra es local; en producción vive en KMS y nunca
+sale de ahí (TT-007).
 """
 
 import hashlib
