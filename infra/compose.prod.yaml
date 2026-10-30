@@ -1,0 +1,36 @@
+# Producción en aletheia-prod (AWS, Ohio). Por ahora solo PostgreSQL; TT-008 agrega Caddy,
+# la API y el trabajador a este mismo archivo.
+# Aquí no hay claves. El primer arranque lo hace infra/prod/iniciar-postgres.sh, que las trae
+# de Parameter Store; en los arranques siguientes PostgreSQL ya tiene sus usuarios y no las usa.
+name: aletheia-prod
+
+services:
+  postgres:
+    # Misma versión que infra/compose.dev.yaml y que la CI.
+    image: postgres:18.6-trixie
+    restart: unless-stopped
+    # La imagen se apaga con SIGINT, que cierra las conexiones y guarda todo antes de salir.
+    # Le doy un minuto antes de que Docker la detenga a la fuerza.
+    stop_grace_period: 1m
+    environment:
+      POSTGRES_USER: aletheia
+      POSTGRES_DB: aletheia
+    volumes:
+      # Volumen de Docker en el disco EBS de la máquina. Desde PostgreSQL 18 va en /var/lib/postgresql.
+      - postgres-data:/var/lib/postgresql
+      # Solo se usan en el primer arranque, con el volumen vacío.
+      - ./postgres/initdb.prod:/docker-entrypoint-initdb.d:ro
+      - ./postgres/bootstrap.sql:/aletheia/bootstrap.sql:ro
+    # Sin "ports": PostgreSQL solo se alcanza desde la red interna de Compose.
+    healthcheck:
+      # Por TCP y no por socket: en el primer arranque la imagen levanta un servidor temporal
+      # que solo escucha por socket, y no debe darse por listo antes de crear los usuarios.
+      test:
+        ["CMD-SHELL", 'pg_isready -h 127.0.0.1 -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 30s
+
+volumes:
+  postgres-data:
