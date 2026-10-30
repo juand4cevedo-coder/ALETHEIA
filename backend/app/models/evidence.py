@@ -73,7 +73,7 @@ class Case(Base):
     title: Mapped[str]
     internal_reference: Mapped[str | None]
     status: Mapped[str] = mapped_column(server_default="open")
-    # Llave de datos del caso, envuelta por la llave maestra de Key Vault. Nunca en claro.
+    # Llave de datos del caso, envuelta por la llave maestra de AWS KMS. Nunca en claro.
     wrapped_key: Mapped[bytes | None]
     key_version: Mapped[str]
     # Número del último evento de custodia; lo avanza el trigger de la cadena.
@@ -98,7 +98,7 @@ class CaseMember(Base):
 
 
 class Evidence(Base):
-    """Metadatos de un archivo preservado; el contenido cifrado vive en Blob Storage (DAT-13)."""
+    """Metadatos de un archivo preservado; el contenido cifrado vive en Amazon S3 (DAT-13)."""
 
     __tablename__ = "evidences"
     __table_args__ = (
