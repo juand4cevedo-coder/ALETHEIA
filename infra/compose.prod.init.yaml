@@ -1,0 +1,11 @@
+# Solo para el primer arranque de PostgreSQL en producción, con el volumen vacío. Lo usa
+# infra/prod/iniciar-postgres.sh junto con compose.prod.yaml; los despliegues nunca lo usan.
+# Las claves llegan como variables del script, leídas de Parameter Store. Si falta alguna,
+# Compose se detiene antes de crear nada.
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD}
+      ALETHEIA_OWNER_PASSWORD: ${ALETHEIA_OWNER_PASSWORD:?Falta ALETHEIA_OWNER_PASSWORD}
+      ALETHEIA_APP_PASSWORD: ${ALETHEIA_APP_PASSWORD:?Falta ALETHEIA_APP_PASSWORD}
+      ALETHEIA_SUPPORT_PASSWORD: ${ALETHEIA_SUPPORT_PASSWORD:?Falta ALETHEIA_SUPPORT_PASSWORD}
