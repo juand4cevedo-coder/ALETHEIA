@@ -27,8 +27,8 @@ dev = [
     "boto3-stubs[ssm]==1.43.120",
     "httpx2==2.16.0",
     "mypy==2.4.0",
-    "pytest==9.1.1",
-    "ruff==0.17.2",
+    "pytest==9.2.0",
+    "ruff==0.17.3",
 ]
 spike = [
     "asn1crypto==1.5.1",
