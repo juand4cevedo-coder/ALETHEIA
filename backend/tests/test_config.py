@@ -11,7 +11,14 @@ _URL = "postgresql+psycopg://aletheia:clave-de-prueba@localhost:5432/aletheia"
 @pytest.fixture(autouse=True)
 def _entorno_limpio(monkeypatch: pytest.MonkeyPatch) -> None:
     """Aísla cada prueba de las variables ALETHEIA_ del equipo o de la CI."""
-    for nombre in ("ENVIRONMENT", "LOG_LEVEL", "DATABASE_URL", "MIGRATION_DATABASE_URL"):
+    for nombre in (
+        "ENVIRONMENT",
+        "LOG_LEVEL",
+        "DATABASE_URL",
+        "DATABASE_PASSWORD_PARAMETER",
+        "MIGRATION_DATABASE_URL",
+        "MIGRATION_DATABASE_PASSWORD_PARAMETER",
+    ):
         monkeypatch.delenv(f"ALETHEIA_{nombre}", raising=False)
 
 

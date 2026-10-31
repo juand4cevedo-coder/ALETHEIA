@@ -5,6 +5,7 @@ description = "API de ALETHEIA: preservación de evidencia digital con integrida
 requires-python = ">=3.14,<3.15"
 dependencies = [
     "alembic==1.20.1",
+    "boto3==1.43.120",
     "fastapi==0.162.0",
     "psycopg[binary]==3.3.6",
     "pydantic==2.14.1",
@@ -23,6 +24,7 @@ add-bounds = "exact"
 
 [dependency-groups]
 dev = [
+    "boto3-stubs[ssm]==1.43.120",
     "httpx2==2.16.0",
     "mypy==2.4.0",
     "pytest==9.1.1",
