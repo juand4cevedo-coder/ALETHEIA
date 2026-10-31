@@ -65,6 +65,68 @@ export type Problem = {
 };
 
 /**
+ * PublicPlan
+ *
+ * Plan que se muestra en la página de precios, con sus precios y límites del catálogo.
+ */
+export type PublicPlan = {
+  /**
+   * Code
+   *
+   * Código estable del plan, por ejemplo essential.
+   */
+  code: string;
+  /**
+   * Name
+   *
+   * Nombre comercial del plan.
+   */
+  name: string;
+  /**
+   * Monthly Price Cop
+   *
+   * Precio mensual en pesos colombianos; 0 si es gratis.
+   */
+  monthly_price_cop: number;
+  /**
+   * Annual Price Cop
+   *
+   * Precio del pago anual en pesos; nulo si el plan no se vende por año.
+   */
+  annual_price_cop: number | null;
+  /**
+   * Included Users
+   *
+   * Usuarios incluidos en el precio.
+   */
+  included_users: number;
+  /**
+   * Extra User Price Cop
+   *
+   * Precio mensual de cada usuario adicional; nulo si el plan no los admite.
+   */
+  extra_user_price_cop: number | null;
+  /**
+   * Storage Limit Bytes
+   *
+   * Almacenamiento total del plan, en bytes.
+   */
+  storage_limit_bytes: number;
+  /**
+   * Max File Bytes
+   *
+   * Tamaño máximo de un archivo, en bytes.
+   */
+  max_file_bytes: number;
+  /**
+   * Trial Days
+   *
+   * Días de duración si el plan es la prueba gratuita; nulo en los demás.
+   */
+  trial_days: number | null;
+};
+
+/**
  * ValidationErrorItem
  *
  * Un dato inválido de la solicitud: dónde está, qué falló y el tipo de error.
@@ -164,3 +226,30 @@ export type HealthResponses = {
 };
 
 export type HealthResponse = HealthResponses[keyof HealthResponses];
+
+export type ListPlansData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/plans";
+};
+
+export type ListPlansErrors = {
+  /**
+   * El catálogo no está disponible.
+   */
+  503: Problem;
+};
+
+export type ListPlansError = ListPlansErrors[keyof ListPlansErrors];
+
+export type ListPlansResponses = {
+  /**
+   * Response List Plans
+   *
+   * Successful Response
+   */
+  200: Array<PublicPlan>;
+};
+
+export type ListPlansResponse = ListPlansResponses[keyof ListPlansResponses];

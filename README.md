@@ -73,7 +73,7 @@ Abre `backend/.env` y reemplaza cada `CLAVE` por la del usuario correspondiente 
 Con los servicios de Compose encendidos:
 
 ```powershell
-uv run uvicorn app.main:create_app --factory
+uv run python -m uvicorn app.main:create_app --factory
 ```
 
 | Dirección | Contenido |
@@ -130,6 +130,20 @@ pnpm dev
 ```
 
 En desarrollo, Vite reenvía `/api` a la API local en el puerto 8000, así que la interfaz llama al mismo origen, igual que en producción detrás de Caddy.
+
+El código del frontend se organiza así (ADR-021):
+
+| Carpeta | Contenido |
+| --- | --- |
+| `src/routes` | Las rutas del sitio con React Router |
+| `src/layouts` | Los marcos que comparten varias páginas, como el encabezado y el pie del sitio público |
+| `src/pages` | Una página por ruta |
+| `src/features/<dominio>` | Componentes y funciones de un dominio, por ejemplo `billing` para planes y precios |
+| `src/styles` | Los tokens del sistema de diseño y los estilos globales |
+| `src/config` | Datos del sitio que se repiten, como el correo de contacto |
+| `src/api/generated` | El cliente generado desde el contrato; no se edita a mano |
+
+Los datos de la API se piden con TanStack Query y las opciones que genera Hey API, por ejemplo `useQuery(listPlansOptions())`. Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css`.
 
 ### Revisiones antes de cada commit
 

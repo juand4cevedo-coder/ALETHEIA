@@ -1,5 +1,6 @@
 """Respuestas de error en formato Problem Details (RFC 9457) para toda la API."""
 
+import logging
 from collections.abc import Mapping
 from http import HTTPStatus
 from typing import Any
@@ -7,11 +8,16 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import OperationalError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.logs import request_id_var
 
 PROBLEM_JSON = "application/problem+json"
+# Segundos que el cliente debería esperar antes de reintentar cuando la base no responde.
+_RETRY_AFTER_SECONDS = "30"
+
+logger = logging.getLogger(__name__)
 
 
 def problem_response(
@@ -66,6 +72,19 @@ async def _validation_exception_handler(request: Request, exc: Exception) -> JSO
     )
 
 
+async def _database_unavailable_handler(request: Request, exc: Exception) -> JSONResponse:
+    if not isinstance(exc, OperationalError):  # Lo garantiza el registro de abajo.
+        raise TypeError(type(exc).__name__)
+    # Solo el tipo: el mensaje del controlador puede traer el servidor o el usuario.
+    logger.error("La base de datos no responde: %s", type(exc.orig).__name__)
+    return problem_response(
+        request,
+        HTTPStatus.SERVICE_UNAVAILABLE,
+        detail="El servicio no está disponible en este momento.",
+        headers={"Retry-After": _RETRY_AFTER_SECONDS, "Cache-Control": "no-store"},
+    )
+
+
 def unexpected_error_response(request: Request) -> JSONResponse:
     """Respuesta 500 genérica: la traza queda en los registros, nunca en la respuesta."""
     return problem_response(
@@ -76,7 +95,9 @@ def unexpected_error_response(request: Request) -> JSONResponse:
 
 
 def register_exception_handlers(app: FastAPI) -> None:
-    """Errores HTTP y de validación en Problem Details; los inesperados los atiende
+    """Errores HTTP, de validación y de base caída en Problem Details; los inesperados los atiende
     RequestContextMiddleware, que conoce el request_id de la petición."""
     app.add_exception_handler(StarletteHTTPException, _http_exception_handler)
     app.add_exception_handler(RequestValidationError, _validation_exception_handler)
+    # Sin conexión con PostgreSQL la respuesta es 503, que el cliente puede reintentar, no 500.
+    app.add_exception_handler(OperationalError, _database_unavailable_handler)

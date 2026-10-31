@@ -1,0 +1,229 @@
+.band {
+  padding: var(--space-16) 0 var(--space-24);
+  background: var(--color-ink-950);
+  color: var(--color-text-inverse);
+}
+
+.inner {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.title {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 48px;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  max-width: 640px;
+  margin-top: var(--space-4);
+  color: var(--color-text-inverse-muted);
+  font-size: 17px;
+}
+
+/* Alternador mensual / anual: radios nativos con apariencia de control segmentado. */
+.cycle {
+  display: inline-flex;
+  gap: var(--space-1);
+  margin: var(--space-8) 0 var(--space-8);
+  padding: var(--space-1);
+  border: 1px solid var(--color-ink-800);
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-900);
+}
+
+.cycleOption {
+  position: relative;
+  cursor: pointer;
+}
+
+.cycleOption input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cycleOption > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-inverse-muted);
+  font-size: 15px;
+  font-weight: 500;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.cycleOption input:checked + span {
+  background: var(--color-ink-800);
+  color: var(--color-text-inverse);
+}
+
+.cycleOption input:focus-visible + span {
+  outline: 2px solid var(--color-primary-400);
+  outline-offset: 2px;
+}
+
+.saving {
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-400);
+  color: var(--color-ink-950);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.skeleton {
+  height: 420px;
+  border-radius: var(--radius-lg);
+  background: var(--color-ink-900);
+  animation: pulse 1.4s var(--ease-standard) infinite alternate;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.55;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: 1px solid var(--color-ink-600);
+  border-radius: var(--radius-md);
+  background: var(--color-ink-900);
+}
+
+.error p {
+  flex: 1 1 320px;
+}
+
+.error a {
+  color: var(--color-primary-400);
+}
+
+.retry {
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-400);
+  color: var(--color-ink-950);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.retry:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.section {
+  padding: var(--space-16) 0 0;
+}
+
+.section:last-child {
+  padding-bottom: var(--space-16);
+}
+
+.sectionTitle {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+}
+
+.tableWrap {
+  margin-top: var(--space-6);
+  overflow-x: auto;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+  text-align: center;
+}
+
+.table thead th {
+  font-weight: 600;
+}
+
+.table tbody th {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  text-align: left;
+}
+
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.quote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+.quoteText {
+  max-width: 620px;
+  margin-top: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.quoteLink {
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-600);
+  color: var(--color-surface);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.quoteLink:hover {
+  background: var(--color-primary-700);
+}
+
+@media (max-width: 640px) {
+  .band {
+    padding: var(--space-12) 0 var(--space-16);
+  }
+
+  .title {
+    font-size: 28px;
+    line-height: 36px;
+  }
+}

@@ -7,7 +7,7 @@ from typing import Final
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
-from app.api import health
+from app.api import health, plans
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logs import configure_logging
@@ -53,6 +53,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     )
     register_exception_handlers(app)
     app.include_router(health.router, prefix=API_PREFIX)
+    app.include_router(plans.router, prefix=API_PREFIX)
     install_problem_details(app)
     return app
 
