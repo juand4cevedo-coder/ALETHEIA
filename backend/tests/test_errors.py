@@ -5,11 +5,17 @@ from collections.abc import Iterator
 import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
+from pydantic import TypeAdapter
 
 from app.core.config import Settings
 from app.core.errors import PROBLEM_JSON
 from app.core.middleware import REQUEST_ID_HEADER
 from app.main import create_app
+from app.schemas.errors import Problem, ValidationProblem
+
+# Validan cada cuerpo contra el esquema que publica el contrato, que no admite campos extra.
+_PROBLEM = TypeAdapter(Problem)
+_VALIDATION_PROBLEM = TypeAdapter(ValidationProblem)
 
 
 @pytest.fixture
@@ -53,6 +59,7 @@ def test_http_exception_conserva_el_detalle(client: TestClient) -> None:
 
     assert response.status_code == 409
     assert response.json()["detail"] == "El caso ya existe."
+    _PROBLEM.validate_python(response.json())
 
 
 def test_metodo_no_permitido_conserva_allow(client: TestClient) -> None:
@@ -71,6 +78,7 @@ def test_validacion_no_devuelve_el_valor_recibido(client: TestClient) -> None:
     body = response.json()
     assert body["errors"][0]["loc"] == ["query", "valor"]
     assert "dato-sensible" not in response.text
+    _VALIDATION_PROBLEM.validate_python(body)
 
 
 def test_error_inesperado_no_expone_la_traza(client: TestClient) -> None:
@@ -82,3 +90,4 @@ def test_error_inesperado_no_expone_la_traza(client: TestClient) -> None:
     assert response.json()["request_id"] == response.headers[REQUEST_ID_HEADER]
     assert "detalle interno" not in response.text
     assert "Traceback" not in response.text
+    _PROBLEM.validate_python(response.json())
