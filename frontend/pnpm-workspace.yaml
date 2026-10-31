@@ -1,0 +1,3 @@
+# Espera mínima antes de instalar una versión nueva (ADR-019): 7 días, expresados en minutos.
+# Al fijarla aquí, pnpm la aplica en modo estricto y falla en lugar de instalar algo más reciente.
+minimumReleaseAge: 10080

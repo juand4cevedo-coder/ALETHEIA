@@ -21,4 +21,5 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-015](adr-015.md) | Sellado de tiempo RFC 3161 | Aceptado | 26/10/2026 |
 | [ADR-016](adr-016.md) | Producción en Oracle Cloud con recursos Always Free | Reemplazado por ADR-017 | 27/10/2026 |
 | [ADR-017](adr-017.md) | Producción en AWS con el plan gratuito | Aceptado | 29/10/2026 |
-| [ADR-018](adr-018.md) | Publicación y despliegue a producción por SSM con etiquetas firmadas | Aceptado | 30/10/2026 |
+| [ADR-018](adr-018.md) | Publicación y despliegue a producción por SSM con etiquetas firmadas | Aceptado, en parte reemplazado por ADR-019 | 30/10/2026 |
+| [ADR-019](adr-019.md) | Espera mínima antes de adoptar versiones nuevas | Aceptado | 31/10/2026 |
