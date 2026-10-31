@@ -1,0 +1,12 @@
+# Lista de permitidos: a la construcción solo llega lo que la imagen necesita. Todo lo demás
+# queda fuera, empezando por .env, .venv, las pruebas y los experimentos.
+*
+!app
+!migrations
+!pyproject.toml
+!uv.lock
+!.python-version
+
+# Archivos compilados que Python deja en el equipo de desarrollo.
+**/__pycache__
+**/*.pyc
