@@ -1,8 +1,28 @@
-# Producción en aletheia-prod (AWS, Ohio). Por ahora solo PostgreSQL; TT-008 agrega Caddy,
-# la API y el trabajador a este mismo archivo.
-# Aquí no hay claves. El primer arranque lo hace infra/prod/iniciar-postgres.sh, que las trae
-# de Parameter Store; en los arranques siguientes PostgreSQL ya tiene sus usuarios y no las usa.
+# Producción en aletheia-prod (AWS, Ohio): Caddy, la API, las migraciones y PostgreSQL.
+# Aquí no hay claves. La API y las migraciones reciben solo el nombre de su parámetro y leen la
+# clave de Parameter Store al arrancar, con el rol de la máquina. El primer arranque de
+# PostgreSQL lo hizo infra/prod/iniciar-postgres.sh.
+#
+# Las imágenes llegan fijadas por digest en ALETHEIA_API_IMAGEN y ALETHEIA_WEB_IMAGEN, que
+# escribe infra/prod/desplegar.sh en /var/lib/aletheia/despliegue.env. Sin ellas, las etiquetas
+# sin-desplegar no existen en GHCR y Compose se detiene antes de reemplazar algo.
 name: aletheia-prod
+
+# Ajustes comunes a la API y a las migraciones: misma imagen, misma región y mismo endurecimiento.
+x-api: &api
+  image: ${ALETHEIA_API_IMAGEN:-ghcr.io/juand4cevedo-coder/aletheia-api:sin-desplegar}
+  # Sistema de archivos de solo lectura, sin capacidades de Linux y sin forma de ganar
+  # privilegios. El código solo necesita escribir en /tmp.
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  depends_on:
+    postgres:
+      condition: service_healthy
 
 services:
   postgres:
@@ -21,7 +41,9 @@ services:
       # Solo se usan en el primer arranque, con el volumen vacío.
       - ./postgres/initdb.prod:/docker-entrypoint-initdb.d:ro
       - ./postgres/bootstrap.sql:/aletheia/bootstrap.sql:ro
-    # Sin "ports": PostgreSQL solo se alcanza desde la red interna de Compose.
+    # Sin "ports" y solo en la red de datos: Caddy no puede llegar a PostgreSQL.
+    networks:
+      - datos
     healthcheck:
       # Por TCP y no por socket: en el primer arranque la imagen levanta un servidor temporal
       # que solo escucha por socket, y no debe darse por listo antes de crear los usuarios.
@@ -32,5 +54,87 @@ services:
       retries: 6
       start_period: 30s
 
+  # Se ejecuta una vez por despliegue, antes de actualizar la API:
+  #   docker compose run --rm migrate
+  # El perfil evita que "docker compose up" lo arranque solo.
+  migrate:
+    <<: *api
+    profiles:
+      - migraciones
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+    environment:
+      AWS_DEFAULT_REGION: us-east-2
+      # Usuario dueño del esquema, sin clave en la URL.
+      ALETHEIA_MIGRATION_DATABASE_URL: postgresql+psycopg://aletheia_owner@postgres:5432/aletheia
+      ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER: /aletheia/prod/postgres/owner-password
+    networks:
+      - datos
+
+  api:
+    <<: *api
+    restart: unless-stopped
+    # uvicorn espera hasta 20 segundos a que terminen las peticiones en curso.
+    stop_grace_period: 30s
+    environment:
+      AWS_DEFAULT_REGION: us-east-2
+      ALETHEIA_ENVIRONMENT: production
+      ALETHEIA_LOG_LEVEL: INFO
+      # Usuario de la aplicación, sin permisos sobre el esquema y sin clave en la URL.
+      ALETHEIA_DATABASE_URL: postgresql+psycopg://aletheia_app@postgres:5432/aletheia
+      ALETHEIA_DATABASE_PASSWORD_PARAMETER: /aletheia/prod/postgres/app-password
+    # Sin "ports": solo Caddy llega a la API, por la red frontal.
+    networks:
+      - frontal
+      - datos
+    healthcheck:
+      # La imagen no trae curl: Python consulta el endpoint de salud, que también prueba la base.
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    # Tope de memoria: la máquina tiene 2 GB para los tres servicios (RT-007).
+    mem_limit: 512m
+
+  caddy:
+    image: ${ALETHEIA_WEB_IMAGEN:-ghcr.io/juand4cevedo-coder/aletheia-web:sin-desplegar}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Certificados de Let's Encrypt y la cuenta ACME: sobreviven a cada despliegue, así que
+      # Caddy no los vuelve a pedir y no choca con los límites de Let's Encrypt.
+      - caddy-data:/data
+      - caddy-config:/config
+    read_only: true
+    tmpfs:
+      - /tmp
+    # Solo conserva la capacidad de abrir los puertos 80 y 443.
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - frontal
+    depends_on:
+      - api
+    mem_limit: 256m
+
+networks:
+  # Internet llega a Caddy, y Caddy a la API.
+  frontal:
+  # La API y las migraciones llegan a PostgreSQL. Ningún contenedor de esta red publica puertos.
+  datos:
+
 volumes:
   postgres-data:
+  caddy-data:
+  caddy-config:
