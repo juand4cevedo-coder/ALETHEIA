@@ -8,7 +8,14 @@ import type {
   TDataShape,
 } from "./client";
 import { client } from "./client.gen";
-import type { HealthData, HealthErrors, HealthResponses } from "./types.gen";
+import type {
+  HealthData,
+  HealthErrors,
+  HealthResponses,
+  ListPlansData,
+  ListPlansErrors,
+  ListPlansResponses,
+} from "./types.gen";
 
 export type Options<
   TData extends TDataShape = TDataShape,
@@ -38,3 +45,15 @@ export const health = <ThrowOnError extends boolean = false>(
     url: "/api/v1/health",
     ...options,
   });
+
+/**
+ * Catálogo público de planes
+ */
+export const listPlans = <ThrowOnError extends boolean = false>(
+  options?: Options<ListPlansData, ThrowOnError>,
+): RequestResult<ListPlansResponses, ListPlansErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    ListPlansResponses,
+    ListPlansErrors,
+    ThrowOnError
+  >({ url: "/api/v1/plans", ...options });

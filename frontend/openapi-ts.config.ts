@@ -6,5 +6,11 @@ import { defineConfig } from "@hey-api/openapi-ts";
 export default defineConfig({
   input: "../backend/openapi.json",
   output: "src/api/generated",
-  plugins: ["@hey-api/client-fetch", "@hey-api/typescript", "@hey-api/sdk"],
+  plugins: [
+    "@hey-api/client-fetch",
+    "@hey-api/typescript",
+    "@hey-api/sdk",
+    // Opciones de consulta listas para TanStack Query: listPlansOptions(), y así por operación.
+    "@tanstack/react-query",
+  ],
 });
