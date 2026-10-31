@@ -3,7 +3,7 @@
 # Solo entra a la construcción lo que permite infra/caddy.Dockerfile.dockerignore.
 
 # --- Etapa 1: interfaz ------------------------------------------------------------------
-FROM node:26.8.1-trixie-slim@sha256:c0753125a3789977aefe869cbebccf70e3cfd7ea84ca48547458f02e4f1d7146 AS interfaz
+FROM node:26.11.1-trixie-slim@sha256:193fe51b64e77981119c98c2002c9e32a70e2f006fb4d25068ce0558998917f0 AS interfaz
 
 # pnpm 12.14.0, la misma versión de la CI, como binario oficial verificado con la suma SHA-256
 # que publica GitHub para ese archivo. Así la imagen no necesita npm.
