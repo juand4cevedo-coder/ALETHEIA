@@ -1,3 +1,9 @@
 # Espera mínima antes de instalar una versión nueva (ADR-019): 7 días, expresados en minutos.
 # Al fijarla aquí, pnpm la aplica en modo estricto y falla en lugar de instalar algo más reciente.
 minimumReleaseAge: 10080
+
+# @hey-api/openapi-ts 0.99.0 fija js-yaml 4.2.0, que tiene tres avisos de seguridad altos
+# (consumo de CPU al leer YAML malicioso). 4.3.2 los corrige sin cambios incompatibles y
+# cumple la espera de ADR-019. Se retira cuando hey-api publique una versión que ya la traiga.
+overrides:
+  js-yaml@4: 4.3.2
