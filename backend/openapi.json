@@ -1,0 +1,200 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ALETHEIA API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "salud"
+        ],
+        "summary": "Estado del servicio y de la base de datos",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "La base de datos no responde.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthStatus": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "database": {
+            "type": "string",
+            "const": "ok",
+            "title": "Database"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "database"
+        ],
+        "title": "HealthStatus",
+        "description": "Estado del servicio y de la base de datos cuando ambos responden."
+      },
+      "Problem": {
+        "additionalProperties": false,
+        "description": "Error en formato Problem Details (RFC 9457).",
+        "properties": {
+          "type": {
+            "description": "Identificador del tipo de problema.",
+            "title": "Type",
+            "type": "string"
+          },
+          "title": {
+            "description": "Nombre del código HTTP.",
+            "title": "Title",
+            "type": "string"
+          },
+          "status": {
+            "description": "Código HTTP de la respuesta.",
+            "title": "Status",
+            "type": "integer"
+          },
+          "instance": {
+            "description": "Ruta de la petición que falló.",
+            "title": "Instance",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Explicación para quien usa la API.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "Identificador para encontrar la petición en registros.",
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "instance"
+        ],
+        "title": "Problem",
+        "type": "object"
+      },
+      "ValidationErrorItem": {
+        "additionalProperties": false,
+        "description": "Un dato inválido de la solicitud: dónde está, qué falló y el tipo de error.",
+        "properties": {
+          "loc": {
+            "description": "Parte de la solicitud y nombre del campo inválido.",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Loc",
+            "type": "array"
+          },
+          "msg": {
+            "description": "Mensaje del validador.",
+            "title": "Msg",
+            "type": "string"
+          },
+          "type": {
+            "description": "Tipo de error del validador.",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationErrorItem",
+        "type": "object"
+      },
+      "ValidationProblem": {
+        "additionalProperties": false,
+        "description": "Problem Details de un 422: agrega la lista de datos inválidos, sin los valores recibidos.",
+        "properties": {
+          "type": {
+            "description": "Identificador del tipo de problema.",
+            "title": "Type",
+            "type": "string"
+          },
+          "title": {
+            "description": "Nombre del código HTTP.",
+            "title": "Title",
+            "type": "string"
+          },
+          "status": {
+            "description": "Código HTTP de la respuesta.",
+            "title": "Status",
+            "type": "integer"
+          },
+          "instance": {
+            "description": "Ruta de la petición que falló.",
+            "title": "Instance",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Explicación para quien usa la API.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "Identificador para encontrar la petición en registros.",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "errors": {
+            "description": "Datos inválidos.",
+            "items": {
+              "$ref": "#/components/schemas/ValidationErrorItem"
+            },
+            "title": "Errors",
+            "type": "array"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "instance",
+          "errors"
+        ],
+        "title": "ValidationProblem",
+        "type": "object"
+      }
+    }
+  }
+}
