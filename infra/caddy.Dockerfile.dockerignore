@@ -1,0 +1,9 @@
+# Lista de permitidos para infra/caddy.Dockerfile: solo la interfaz y el Caddyfile.
+*
+!frontend
+!infra/Caddyfile
+
+# Lo que se genera en el equipo de desarrollo se rehace dentro de la imagen.
+frontend/node_modules
+frontend/dist
+frontend/*.tsbuildinfo

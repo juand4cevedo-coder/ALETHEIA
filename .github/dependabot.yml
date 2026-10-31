@@ -34,7 +34,7 @@ updates:
   # Imágenes base de los Dockerfile. Van fijadas por digest y Dependabot propone el cambio de
   # etiqueta y digest juntos. Espera 14 días desde la publicación, como exige ADR-018.
   - package-ecosystem: docker
-    directory: /backend
+    directories: ["/backend", "/infra"]
     schedule:
       interval: weekly
       day: monday
