@@ -1,0 +1,136 @@
+name: Publicar
+
+# Se ejecuta al subir una etiqueta vX.Y.Z, que se crea firmada sobre main al cerrar una rama
+# release/ (GitFlow). Construye las dos imágenes, las publica en GHCR y, con la aprobación
+# manual del entorno production, las despliega en aletheia-prod por SSM.
+on:
+  push:
+    tags: ["v*"]
+
+permissions: {}
+
+# Un despliegue a la vez, y uno en curso nunca se cancela a mitad de camino.
+concurrency:
+  group: produccion
+  cancel-in-progress: false
+
+env:
+  REGISTRO: ghcr.io/juand4cevedo-coder
+  VERSION: ${{ github.ref_name }}
+
+jobs:
+  verificar:
+    name: Verificar la etiqueta
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # Toda la historia, para comprobar que la etiqueta está sobre main.
+          fetch-depth: 0
+
+      - name: Comprobar el formato, la rama y las versiones
+        run: |
+          if ! [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::La etiqueta $VERSION no tiene la forma vX.Y.Z."
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::La etiqueta $VERSION no apunta a un commit de main."
+            exit 1
+          fi
+          # La versión del código debe coincidir con la etiqueta: se sube en la rama release/.
+          backend="v$(python3 -c 'import tomllib; print(tomllib.load(open("backend/pyproject.toml", "rb"))["project"]["version"])')"
+          frontend="v$(jq --raw-output .version frontend/package.json)"
+          if [[ $backend != "$VERSION" || $frontend != "$VERSION" ]]; then
+            echo "::error::La etiqueta es $VERSION, pero el backend dice $backend y el frontend $frontend."
+            exit 1
+          fi
+          echo "La etiqueta $VERSION está sobre main y coincide con el código."
+
+  imagenes:
+    name: Construir y publicar las imágenes
+    needs: verificar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      api: ${{ steps.publicar.outputs.api }}
+      web: ${{ steps.publicar.outputs.web }}
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Iniciar sesión en GHCR
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Construir y publicar para linux/amd64
+        id: publicar
+        run: |
+          # Construye, publica y devuelve el digest que quedó en el registro. Ese digest, y no la
+          # etiqueta, es lo que se despliega: una etiqueta se puede mover, un digest no.
+          publicar() {
+            local nombre=$1 referencia digest
+            shift
+            referencia="$REGISTRO/$nombre:$VERSION"
+            docker buildx build --platform linux/amd64 \
+              --label "org.opencontainers.image.version=$VERSION" \
+              --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+              --tag "$referencia" --push "$@" >&2
+            digest="$(docker buildx imagetools inspect "$referencia" --format '{{json .Manifest}}' \
+              | jq --raw-output .digest)"
+            [[ $digest =~ ^sha256:[a-f0-9]{64}$ ]] || { echo "::error::Digest inválido para $nombre." >&2; return 1; }
+            echo "$nombre: $referencia@$digest" >&2
+            echo "$digest"
+          }
+          echo "api=$(publicar aletheia-api --file backend/Dockerfile backend)" >> "$GITHUB_OUTPUT"
+          echo "web=$(publicar aletheia-web --file infra/caddy.Dockerfile .)" >> "$GITHUB_OUTPUT"
+
+  desplegar:
+    name: Desplegar en producción
+    needs: imagenes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # La aprobación manual y las llaves de AWS viven en este entorno, que solo admite etiquetas v*.
+    environment:
+      name: production
+      url: https://aletheia.sbs
+    permissions:
+      contents: read
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: us-east-2
+      AWS_PAGER: ""
+      INSTANCIA: ${{ vars.AWS_PROD_INSTANCE_ID }}
+      API_DIGEST: ${{ needs.imagenes.outputs.api }}
+      WEB_DIGEST: ${{ needs.imagenes.outputs.web }}
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Migraciones, contenedores y salud desde la propia máquina. Si algo falla ahí, el
+      # script del servidor ya volvió a la versión anterior y este paso termina en error.
+      - name: Desplegar en aletheia-prod
+        run: bash infra/prod/ssm/enviar.sh desplegar
+
+      - name: Prueba de humo desde fuera
+        id: humo
+        run: bash infra/prod/prueba-de-humo.sh aletheia.sbs
+
+      # Solo si el servidor quedó sano pero el sitio no responde bien desde internet.
+      - name: Volver a la versión anterior
+        if: ${{ failure() && steps.humo.outcome == 'failure' }}
+        run: bash infra/prod/ssm/enviar.sh revertir
