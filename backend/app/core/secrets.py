@@ -66,7 +66,15 @@ def with_database_password[S: DatabaseSettings](settings: S, client: SSMClient |
     if name is None:
         return settings
 
-    password = read_secure_parameter(name, client or ssm_client())
+    if client is None:
+        try:
+            client = ssm_client()
+        except BotoCoreError as exc:
+            # Sin AWS_DEFAULT_REGION boto3 falla al crear el cliente, antes de cualquier llamada.
+            msg = f"No se pudo preparar el cliente de Parameter Store ({type(exc).__name__})."
+            raise SecretUnavailableError(msg) from None
+
+    password = read_secure_parameter(name, client)
     url = settings.database_url.get_secret_value()
     # La configuración ya validó que hay un solo servidor y que la URL no trae clave.
     host = url.hosts()[0]

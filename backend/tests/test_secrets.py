@@ -5,6 +5,7 @@ petición sea exactamente la esperada.
 """
 
 from collections.abc import Iterator
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import boto3
@@ -121,6 +122,18 @@ def test_un_error_de_aws_nombra_el_parametro_y_el_codigo(cliente: SSMClient, cod
             with_database_password(_produccion(), cliente)
 
     assert str(error.value) == f"No se pudo leer {_PARAMETRO} de Parameter Store ({codigo})."
+
+
+def test_sin_region_el_error_es_claro(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # Sin región en el entorno ni en un archivo de configuración de AWS.
+    for variable in ("AWS_DEFAULT_REGION", "AWS_REGION"):
+        monkeypatch.delenv(variable, raising=False)
+    monkeypatch.setenv("AWS_CONFIG_FILE", str(tmp_path / "no-existe"))
+
+    with pytest.raises(
+        SecretUnavailableError, match=r"cliente de Parameter Store \(NoRegionError\)"
+    ):
+        with_database_password(_produccion())
 
 
 def test_un_parametro_vacio_se_rechaza(cliente: SSMClient) -> None:
