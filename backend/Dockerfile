@@ -3,7 +3,7 @@
 #   docker build --platform linux/amd64 -t aletheia-api backend
 #
 # Python 3.14.9 fijado por digest: la misma versión de backend/.python-version, de desarrollo y
-# de la CI. La excepción a la regla de los 14 días está registrada en ADR-018.
+# de la CI. La excepción a la regla de los 14 días está registrada en ADR-019.
 
 # --- Etapa 1: dependencias --------------------------------------------------------------
 FROM python:3.14.9-slim-trixie@sha256:35caba83af2fe6da9a5d922f9b0156f21d1246a48278c58a08bd253303ba42e8 AS dependencias
