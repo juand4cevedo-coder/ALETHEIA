@@ -31,6 +31,20 @@ updates:
     commit-message:
       prefix: build
 
+  # Imágenes base de los Dockerfile. Van fijadas por digest y Dependabot propone el cambio de
+  # etiqueta y digest juntos. Espera 14 días desde la publicación, como exige ADR-018.
+  - package-ecosystem: docker
+    directories: ["/backend", "/infra"]
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Bogota
+    cooldown:
+      default-days: 14
+    commit-message:
+      prefix: build
+
   - package-ecosystem: npm
     directory: /frontend
     schedule:

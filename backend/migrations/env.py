@@ -9,6 +9,7 @@ from sqlalchemy import Connection, create_engine, pool, text
 
 from app.core.config import MigrationSettings
 from app.core.logs import JsonFormatter
+from app.core.secrets import with_database_password
 from app.models import Base
 
 # Segundos para abrir la conexión: si la base no responde, la migración falla rápido.
@@ -68,7 +69,8 @@ def run_migrations_online() -> None:
         _run_with(shared)
         return
 
-    settings = MigrationSettings()
+    # En producción la URL llega sin clave y la de aletheia_owner se lee de Parameter Store.
+    settings = with_database_password(MigrationSettings())
     # La URL se entrega directo al motor y no a la configuración de Alembic, que trata el
     # símbolo % como interpolación y la mostraría en sus mensajes.
     engine = create_engine(

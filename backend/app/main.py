@@ -27,12 +27,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     configure_logging(settings.log_level)
 
+    # En producción no se publican el contrato ni la documentación interactiva: muestran toda
+    # la superficie de la API a cualquiera, y Swagger UI carga scripts de terceros que la CSP
+    # de Caddy bloquea. En desarrollo siguen disponibles.
+    public_docs = settings.environment != "production"
     app = FastAPI(
         title="ALETHEIA API",
         version="0.1.0",
         # Bajo el prefijo de la API: Caddy envía /api a FastAPI y el resto a la interfaz.
-        openapi_url=f"{API_PREFIX}/openapi.json",
-        docs_url=f"{API_PREFIX}/docs",
+        openapi_url=f"{API_PREFIX}/openapi.json" if public_docs else None,
+        docs_url=f"{API_PREFIX}/docs" if public_docs else None,
         redoc_url=None,
         lifespan=_lifespan,
     )

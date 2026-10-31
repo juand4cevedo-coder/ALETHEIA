@@ -1,0 +1,51 @@
+# Documento de SSM aletheia-desplegar. Es lo único que la CI puede pedirle a aletheia-prod: no
+# hay SSH desde GitHub ni un comando libre. La copia que vale es la registrada en AWS; esta es
+# su fuente y se actualiza junto con ella (docs/operacion/produccion.md).
+#
+# SSM pega los parámetros como texto dentro de los comandos, así que cada uno se valida con
+# allowedPattern antes de llegar al servidor, va entre comillas simples y el script lo vuelve a
+# validar. Ningún patrón admite comillas, espacios ni otros caracteres especiales.
+schemaVersion: "2.2"
+description: Despliega una versión etiquetada de ALETHEIA en aletheia-prod o revierte la última.
+parameters:
+  Accion:
+    type: String
+    description: desplegar instala la versión indicada; revertir vuelve a la anterior.
+    allowedValues:
+      - desplegar
+      - revertir
+    default: desplegar
+  Version:
+    type: String
+    description: Etiqueta firmada del repositorio, por ejemplo v0.1.0.
+    allowedPattern: '^v\d+\.\d+\.\d+$'
+  ApiDigest:
+    type: String
+    description: Digest de ghcr.io/juand4cevedo-coder/aletheia-api.
+    allowedPattern: '^sha256:[a-f0-9]{64}$'
+  WebDigest:
+    type: String
+    description: Digest de ghcr.io/juand4cevedo-coder/aletheia-web.
+    allowedPattern: '^sha256:[a-f0-9]{64}$'
+mainSteps:
+  - action: aws:runShellScript
+    name: ejecutar
+    precondition:
+      StringEquals:
+        - platformType
+        - Linux
+    inputs:
+      timeoutSeconds: "900"
+      runCommand:
+        - set -eu
+        - export HOME="${HOME:-/root}"
+        - repo() { git -C /opt/aletheia -c safe.directory=/opt/aletheia "$@"; }
+        # Solo al desplegar: trae la etiqueta, comprueba que la firmó el administrador y deja
+        # el código en ella antes de ejecutar el script, para que corra el de la nueva versión
+        # y no cambie mientras corre. Sin --force: si alguien movió la etiqueta, falla.
+        - if [ '{{ Accion }}' = desplegar ]; then
+        - "  repo fetch --quiet --no-tags origin 'refs/tags/{{ Version }}:refs/tags/{{ Version }}'"
+        - "  repo -c gpg.ssh.allowedSignersFile=/etc/aletheia/firmantes-permitidos verify-tag '{{ Version }}'"
+        - "  repo checkout --quiet --detach '{{ Version }}'"
+        - fi
+        - exec bash /opt/aletheia/infra/prod/desplegar.sh '{{ Accion }}' '{{ Version }}' '{{ ApiDigest }}' '{{ WebDigest }}'
