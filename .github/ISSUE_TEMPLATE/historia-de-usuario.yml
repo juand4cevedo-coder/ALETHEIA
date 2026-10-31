@@ -1,0 +1,43 @@
+name: Historia de usuario
+description: Funcionalidad del backlog vista desde el usuario, con sus criterios de aceptación.
+title: "HU-000 "
+body:
+  - type: input
+    id: epica
+    attributes:
+      label: Épica y funcionalidad
+      description: Códigos del backlog.
+      placeholder: EP-005 / FEAT-008
+    validations:
+      required: true
+  - type: textarea
+    id: historia
+    attributes:
+      label: Historia
+      description: Rol, necesidad y beneficio.
+      placeholder: Como abogado litigante, quiero..., para...
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      description: Uno por línea, con su código del backlog.
+      placeholder: CA-HU-018-01. ...
+    validations:
+      required: true
+  - type: input
+    id: dependencias
+    attributes:
+      label: Dependencias
+      placeholder: Ninguna
+  - type: checkboxes
+    id: terminado
+    attributes:
+      label: Definición de terminado
+      options:
+        - label: Pruebas en verde en la integración continua.
+        - label: Tipos y lint sin errores.
+        - label: Contrato OpenAPI y cliente del frontend regenerados si cambió la API.
+        - label: Documentación afectada actualizada.
+        - label: Criterios de aceptación demostrados.

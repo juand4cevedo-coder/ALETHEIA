@@ -1,0 +1,2 @@
+# Sellos y muestra se guardan byte a byte: un cambio de fin de línea rompería la huella.
+* binary

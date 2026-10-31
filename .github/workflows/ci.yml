@@ -1,0 +1,194 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  UV_VERSION: "0.13.5"
+  UV_CHECKSUM: f68d291c75783122dad58ab77def0e13f3233f358731db5d6d7e8715603b928f
+  UV_ARCHIVE: uv-x86_64-unknown-linux-gnu.tar.gz
+  PNPM_VERSION: "12.14.0"
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      UV_LOCKED: "1"
+      # Claves de un contenedor temporal que solo existe durante este trabajo.
+      ALETHEIA_OWNER_PASSWORD: owner-ci
+      ALETHEIA_APP_PASSWORD: app-ci
+      ALETHEIA_SUPPORT_PASSWORD: support-ci
+      # Las pruebas se conectan con los mismos usuarios que en producción, nunca como
+      # superusuario: así la prueba de acceso cruzado demuestra algo.
+      ALETHEIA_TEST_DATABASE_URL: postgresql://aletheia_app:app-ci@localhost:5432/aletheia_test
+      ALETHEIA_TEST_MIGRATION_DATABASE_URL: postgresql://aletheia_owner:owner-ci@localhost:5432/aletheia_test
+    services:
+      postgres:
+        # Misma imagen que infra/compose.dev.yaml; la clave solo existe en este contenedor temporal.
+        image: postgres:18.6-trixie
+        env:
+          POSTGRES_USER: aletheia
+          POSTGRES_PASSWORD: aletheia-ci
+          POSTGRES_DB: aletheia_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aletheia -d aletheia_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Instalar uv
+        # Descarga directa del release oficial: el manifiesto que usa setup-uv aún no lista 0.13.5.
+        run: |
+          curl --fail --silent --show-error --location --output "$RUNNER_TEMP/$UV_ARCHIVE" \
+            "https://github.com/astral-sh/uv/releases/download/$UV_VERSION/$UV_ARCHIVE"
+          echo "$UV_CHECKSUM  $RUNNER_TEMP/$UV_ARCHIVE" | sha256sum --check --strict
+          tar --extract --gzip --file "$RUNNER_TEMP/$UV_ARCHIVE" --directory "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/uv-x86_64-unknown-linux-gnu" >> "$GITHUB_PATH"
+
+      - name: Instalar Python y las dependencias
+        run: uv sync
+
+      - name: Lint con Ruff
+        run: uv run ruff check --output-format=github
+
+      - name: Formato con Ruff
+        run: uv run ruff format --check
+
+      - name: Tipos con mypy
+        run: uv run mypy
+
+      - name: Crear los usuarios de la base
+        # El mismo script que usa el contenedor de desarrollo; psql viene en la imagen.
+        env:
+          PGPASSWORD: aletheia-ci
+        run: >-
+          psql --host localhost --username aletheia --dbname aletheia_test
+          --set ON_ERROR_STOP=1 --file ../infra/postgres/bootstrap.sql
+
+      - name: Migraciones de ida y vuelta
+        # La misma ruta que el despliegue: Alembic con su propia conexión como dueño.
+        env:
+          ALETHEIA_MIGRATION_DATABASE_URL: postgresql+psycopg://aletheia_owner:owner-ci@localhost:5432/aletheia_test
+        run: |
+          uv run alembic upgrade head
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+          uv run alembic check
+
+      - name: Pruebas con pytest
+        run: uv run pytest
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Instalar Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: frontend/.node-version
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          cache: true
+          cache_dependency_path: frontend/pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Verificar firmas del registro
+        run: pnpm audit signatures
+
+      - name: Lint con Oxlint
+        run: pnpm lint
+
+      - name: Formato con Prettier
+        run: pnpm format:check
+
+      - name: Tipos y construcción
+        run: pnpm build
+
+  dependencies:
+    name: Dependencias
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Instalar uv
+        # Descarga directa del release oficial: el manifiesto que usa setup-uv aún no lista 0.13.5.
+        run: |
+          curl --fail --silent --show-error --location --output "$RUNNER_TEMP/$UV_ARCHIVE" \
+            "https://github.com/astral-sh/uv/releases/download/$UV_VERSION/$UV_ARCHIVE"
+          echo "$UV_CHECKSUM  $RUNNER_TEMP/$UV_ARCHIVE" | sha256sum --check --strict
+          tar --extract --gzip --file "$RUNNER_TEMP/$UV_ARCHIVE" --directory "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/uv-x86_64-unknown-linux-gnu" >> "$GITHUB_PATH"
+
+      - name: Auditar paquetes de Python
+        working-directory: backend
+        run: uv audit --locked --preview-features audit-command
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Auditar paquetes de Node
+        working-directory: frontend
+        run: pnpm audit
+
+  ci-ok:
+    name: CI aprobada
+    if: ${{ always() }}
+    needs: [backend, frontend, dependencies]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Rechazar si algún trabajo no pasó
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
+        run: exit 1
+
+      - name: Confirmar el resultado
+        run: echo "Backend, frontend y dependencias pasaron."

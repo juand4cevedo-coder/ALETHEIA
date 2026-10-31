@@ -1,0 +1,79 @@
+# Caddy en producción (ADR-002): sirve la interfaz y envía /api a FastAPI, todo bajo el mismo
+# origen. Obtiene y renueva solo el certificado de Let's Encrypt para los dos nombres.
+# ALETHEIA_DOMINIO existe para probar la imagen en el equipo con localhost; en producción no se
+# define y vale aletheia.sbs.
+{
+	# Sin API de administración: la configuración solo cambia publicando una imagen nueva.
+	admin off
+	# El grupo de seguridad abre el 443 por TCP; HTTP/3 usa UDP y no se anuncia.
+	servers {
+		protocols h1 h2
+	}
+	# Solo aplica a localhost: Caddy no intenta instalar su autoridad en el sistema.
+	skip_install_trust
+}
+
+# Equivalente a Helmet (especificación, sección 9). Una prueba de humo las verifica.
+(cabeceras) {
+	header {
+		# Solo HTTPS durante un año, también en www. Sin preload: es difícil de revertir.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# Solo recursos del mismo origen: ni scripts en línea, ni terceros, ni marcos.
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		Cross-Origin-Resource-Policy "same-origin"
+	}
+	# No anuncia el servidor. Va aparte porque Caddy aplica las eliminaciones al final, y así
+	# las cabeceras de arriba se fijan de inmediato y también llegan en las respuestas de error.
+	header -Server
+}
+
+{$ALETHEIA_DOMINIO:aletheia.sbs} {
+	import cabeceras
+	encode zstd gzip
+	# Registro de accesos en JSON. Caddy oculta por defecto las cookies y Authorization.
+	log
+
+	# La API conserva su prefijo /api/v1. Caddy reemplaza los X-Forwarded-* que mande el
+	# visitante, así que la API recibe la IP real y el esquema https.
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+
+	# Archivos de Vite: llevan una huella en el nombre, así que nunca cambian y se guardan un año.
+	# Uno que no existe responde 404, no la página de inicio.
+	handle /assets/* {
+		root * /srv
+		# Diferida: solo se aplica si el archivo existe; un 404 nunca se guarda en el navegador.
+		header {
+			Cache-Control "public, max-age=31536000, immutable"
+			defer
+		}
+		file_server
+	}
+
+	# Todo lo demás es la aplicación de una sola página: las rutas de React reciben index.html,
+	# que se revalida en cada visita para que un despliegue se vea de inmediato.
+	handle {
+		root * /srv
+		header Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+
+	# Errores (404 de un archivo, 502 si la API no responde): mensaje mínimo, sin detalles
+	# internos y con las mismas cabeceras de seguridad.
+	handle_errors {
+		header -Server
+		respond "{err.status_code} {err.status_text}"
+	}
+}
+
+# www es solo una redirección permanente al dominio principal (ADR-018).
+www.{$ALETHEIA_DOMINIO:aletheia.sbs} {
+	import cabeceras
+	redir https://{$ALETHEIA_DOMINIO:aletheia.sbs}{uri} permanent
+}
