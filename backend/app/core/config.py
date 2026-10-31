@@ -10,9 +10,11 @@ Environment = Literal["development", "test", "production"]
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR"]
 
 _DRIVER_SCHEME = "postgresql+psycopg"
+# Ruta de un parámetro de Parameter Store, por ejemplo /aletheia/prod/postgres/app-password.
+_PARAMETER_PATTERN = r"^(/[A-Za-z0-9_.-]+)+$"
 
 
-class _DatabaseSettings(BaseSettings):
+class DatabaseSettings(BaseSettings):
     """Reglas comunes a toda configuración que lleva una URL de PostgreSQL."""
 
     model_config = SettingsConfigDict(
@@ -28,6 +30,13 @@ class _DatabaseSettings(BaseSettings):
     database_url: Secret[PostgresDsn] = Field(
         description="URL de PostgreSQL con el controlador psycopg 3.",
     )
+    # Solo en producción. La URL llega sin clave y la clave se lee de Parameter Store al
+    # arrancar (app.core.secrets), con el rol de la máquina: no queda en ningún archivo.
+    database_password_parameter: str | None = Field(
+        default=None,
+        pattern=_PARAMETER_PATTERN,
+        description="Parámetro SecureString con la clave del usuario de la URL.",
+    )
 
     @field_validator("database_url")
     @classmethod
@@ -38,8 +47,22 @@ class _DatabaseSettings(BaseSettings):
             raise ValueError(msg)
         return value
 
+    @model_validator(mode="after")
+    def _password_from_one_place(self) -> Self:
+        # Con el parámetro, la clave solo puede venir de Parameter Store: una clave en la URL
+        # significaría que alguien la dejó en la configuración del contenedor.
+        url = self.database_url.get_secret_value()
+        if self.database_password_parameter is not None:
+            if len(url.hosts()) != 1:
+                msg = "la URL debe tener un solo servidor cuando la clave viene de Parameter Store"
+                raise ValueError(msg)
+            if url.hosts()[0]["password"] is not None:
+                msg = "la URL no debe incluir la clave cuando se lee de Parameter Store"
+                raise ValueError(msg)
+        return self
 
-class Settings(_DatabaseSettings):
+
+class Settings(DatabaseSettings):
     """Valores que la API necesita para arrancar; los obligatorios no tienen valor por defecto."""
 
     model_config = SettingsConfigDict(env_prefix="ALETHEIA_")
@@ -55,8 +78,20 @@ class Settings(_DatabaseSettings):
             raise ValueError(msg)
         return self
 
+    @model_validator(mode="after")
+    def _production_reads_parameter_store(self) -> Self:
+        # Producción nunca recibe la clave en una variable; el resto de entornos nunca va a AWS.
+        from_store = self.database_password_parameter is not None
+        if self.environment == "production" and not from_store:
+            msg = "en production la clave se lee de Parameter Store: falta el parámetro"
+            raise ValueError(msg)
+        if self.environment != "production" and from_store:
+            msg = "la clave solo se lee de Parameter Store con environment production"
+            raise ValueError(msg)
+        return self
 
-class MigrationSettings(_DatabaseSettings):
+
+class MigrationSettings(DatabaseSettings):
     """Conexión de las migraciones: el usuario dueño del esquema, nunca el de la API."""
 
     model_config = SettingsConfigDict(env_prefix="ALETHEIA_MIGRATION_")
@@ -65,4 +100,10 @@ class MigrationSettings(_DatabaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     """Devuelve la configuración validada; se construye una sola vez por proceso."""
-    return Settings()
+    settings = Settings()
+    if settings.database_password_parameter is None:
+        return settings
+    # Import local: boto3 solo se carga cuando de verdad se va a AWS, es decir, en producción.
+    from app.core.secrets import with_database_password
+
+    return with_database_password(settings)
