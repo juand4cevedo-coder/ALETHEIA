@@ -35,6 +35,41 @@
           }
         }
       }
+    },
+    "/api/v1/plans": {
+      "get": {
+        "tags": [
+          "planes"
+        ],
+        "summary": "Catálogo público de planes",
+        "operationId": "list_plans",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PublicPlan"
+                  },
+                  "type": "array",
+                  "title": "Response List Plans"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "El catálogo no está disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -103,6 +138,90 @@
         ],
         "title": "Problem",
         "type": "object"
+      },
+      "PublicPlan": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "description": "Código estable del plan, por ejemplo essential."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nombre comercial del plan."
+          },
+          "monthly_price_cop": {
+            "type": "integer",
+            "title": "Monthly Price Cop",
+            "description": "Precio mensual en pesos colombianos; 0 si es gratis."
+          },
+          "annual_price_cop": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annual Price Cop",
+            "description": "Precio del pago anual en pesos; nulo si el plan no se vende por año."
+          },
+          "included_users": {
+            "type": "integer",
+            "title": "Included Users",
+            "description": "Usuarios incluidos en el precio."
+          },
+          "extra_user_price_cop": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extra User Price Cop",
+            "description": "Precio mensual de cada usuario adicional; nulo si el plan no los admite."
+          },
+          "storage_limit_bytes": {
+            "type": "integer",
+            "title": "Storage Limit Bytes",
+            "description": "Almacenamiento total del plan, en bytes."
+          },
+          "max_file_bytes": {
+            "type": "integer",
+            "title": "Max File Bytes",
+            "description": "Tamaño máximo de un archivo, en bytes."
+          },
+          "trial_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trial Days",
+            "description": "Días de duración si el plan es la prueba gratuita; nulo en los demás."
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "monthly_price_cop",
+          "annual_price_cop",
+          "included_users",
+          "extra_user_price_cop",
+          "storage_limit_bytes",
+          "max_file_bytes",
+          "trial_days"
+        ],
+        "title": "PublicPlan",
+        "description": "Plan que se muestra en la página de precios, con sus precios y límites del catálogo."
       },
       "ValidationErrorItem": {
         "additionalProperties": false,
