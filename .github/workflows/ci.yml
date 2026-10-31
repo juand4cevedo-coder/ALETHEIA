@@ -135,6 +135,18 @@ jobs:
       - name: Verificar firmas del registro
         run: pnpm audit signatures
 
+      - name: Cliente de la API al día
+        # Regenera tipos y cliente desde backend/openapi.json. Si algo cambia, el contrato se
+        # modificó sin regenerar el cliente o alguien editó a mano el código generado.
+        run: |
+          pnpm api:generate
+          cambios="$(git status --porcelain -- src/api/generated)"
+          if [ -n "$cambios" ]; then
+            echo "::error::El cliente generado no coincide con backend/openapi.json. Ejecuta pnpm api:generate en frontend/ y guarda el resultado."
+            echo "$cambios"
+            exit 1
+          fi
+
       - name: Lint con Oxlint
         run: pnpm lint
 
