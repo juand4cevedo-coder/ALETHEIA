@@ -68,6 +68,7 @@ Abre `backend/.env` y reemplaza cada `CLAVE` por la del usuario correspondiente 
 | `ALETHEIA_ENVIRONMENT` | No | `development`; los otros valores son `test` y `production` |
 | `ALETHEIA_LOG_LEVEL` | No | `DEBUG`; fuera de `development` solo se aceptan `INFO`, `WARNING` y `ERROR` |
 | `ALETHEIA_MIGRATION_DATABASE_URL` | Solo para migraciones | `postgresql+psycopg://aletheia_owner:CLAVE@127.0.0.1:5432/aletheia` |
+| `ALETHEIA_DATABASE_PASSWORD_PARAMETER` y `ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER` | Solo en producción | No se definen: fuera de producción la API las rechaza |
 
 Con los servicios de Compose encendidos:
 
@@ -150,6 +151,36 @@ pnpm lint
 pnpm format:check
 pnpm build
 ```
+
+## Producción
+
+Producción corre en AWS (ADR-017) y se despliega desde GitHub Actions, con aprobación manual, al subir una etiqueta firmada (ADR-018). La infraestructura, el despliegue y cómo operarlos están en `docs/operacion/produccion.md`.
+
+En producción la API no recibe claves. Su URL llega sin clave y la API la lee de Parameter Store al arrancar, con el rol de la máquina. Si se define el parámetro, la URL no puede traer clave; y en producción el parámetro es obligatorio.
+
+| Variable | Valor en producción |
+| --- | --- |
+| `ALETHEIA_ENVIRONMENT` | `production` |
+| `ALETHEIA_LOG_LEVEL` | `INFO` |
+| `ALETHEIA_DATABASE_URL` | `postgresql+psycopg://aletheia_app@postgres:5432/aletheia` |
+| `ALETHEIA_DATABASE_PASSWORD_PARAMETER` | `/aletheia/prod/postgres/app-password` |
+| `ALETHEIA_MIGRATION_DATABASE_URL` | `postgresql+psycopg://aletheia_owner@postgres:5432/aletheia` |
+| `ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER` | `/aletheia/prod/postgres/owner-password` |
+| `AWS_DEFAULT_REGION` | `us-east-2` |
+
+Para publicar una versión:
+
+1. En la rama `release/X.Y.Z`, sube la versión en `backend/pyproject.toml`, `backend/app/main.py` y `frontend/package.json`, y abre el pull request hacia main.
+2. Con el pull request integrado, crea la etiqueta firmada sobre main y súbela:
+
+```powershell
+git switch main
+git pull
+git tag -s vX.Y.Z -m "ALETHEIA X.Y.Z"
+git push origin vX.Y.Z
+```
+
+3. En la pestaña Actions de GitHub, abre la ejecución de Publicar y aprueba el despliegue cuando lo pida.
 
 ## Derechos de autor
 
