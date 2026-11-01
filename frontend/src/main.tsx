@@ -1,4 +1,5 @@
 import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
 import "./styles/global.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
