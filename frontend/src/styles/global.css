@@ -38,6 +38,17 @@ p {
   margin: 0;
 }
 
+/* Los títulos reparten sus palabras en líneas parejas y los párrafos evitan viudas. */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
 a {
   color: var(--color-primary-600);
 }

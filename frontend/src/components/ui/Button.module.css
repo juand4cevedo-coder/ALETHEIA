@@ -1,11 +1,12 @@
 /* Botón (CMP-UI-001). Los enlaces que llevan a otra página usan estas mismas clases: se ven
    como botón pero siguen siendo enlaces, que es lo que anuncia un lector de pantalla. */
 .button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  min-height: 44px;
+  min-height: 48px;
   padding: var(--space-3) var(--space-6);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -13,14 +14,26 @@
   font-size: 15px;
   font-weight: 600;
   line-height: 20px;
+  letter-spacing: -0.005em;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
   transition:
-    background-color var(--motion-fast) var(--ease-standard),
-    border-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard),
-    transform var(--motion-fast) var(--ease-standard);
+    background-color var(--motion-base) var(--ease-standard),
+    border-color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    color var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
+}
+
+.button svg {
+  flex: none;
+  transition: transform var(--motion-base) var(--ease-standard);
+}
+
+/* La flecha final se adelanta un poco al pasar el puntero: indica que lleva a otro lugar. */
+.button:hover svg:last-child:not(:first-child) {
+  transform: translateX(3px);
 }
 
 .button:active {
@@ -28,7 +41,7 @@
 }
 
 .sm {
-  min-height: 36px;
+  min-height: 38px;
   padding: var(--space-2) var(--space-4);
   font-size: 14px;
 }
@@ -54,27 +67,53 @@
   color: var(--color-primary-700);
 }
 
-/* Sobre la banda oscura: la acción principal usa primary.400 con texto ink.950 (7,90:1). */
+/* Sobre el fondo oscuro del sitio público. La acción principal es un degradado del azul de
+   acción al celeste, con texto ink.950 (7,90:1 en el tono más oscuro). */
 .dark.primary {
-  background: var(--color-primary-400);
+  background: linear-gradient(
+    180deg,
+    var(--color-primary-300),
+    var(--color-primary-400)
+  );
   color: var(--color-ink-950);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-inverse) 45%, transparent),
+    0 8px 24px -8px
+      color-mix(in srgb, var(--color-primary-400) 70%, transparent);
 }
 
 .dark.primary:hover {
-  background: var(--color-primary-50);
+  background: linear-gradient(
+    180deg,
+    var(--color-primary-50),
+    var(--color-primary-300)
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-inverse) 60%, transparent),
+    0 12px 32px -8px
+      color-mix(in srgb, var(--color-primary-400) 85%, transparent);
+  transform: translateY(-1px);
 }
 
 .dark.secondary {
-  border-color: var(--color-ink-600);
-  background: transparent;
+  border-color: color-mix(in srgb, var(--color-text-inverse) 16%, transparent);
+  background: color-mix(in srgb, var(--color-ink-800) 55%, transparent);
   color: var(--color-text-inverse);
 }
 
 .dark.secondary:hover {
-  border-color: var(--color-text-inverse-muted);
-  background: var(--color-ink-900);
+  border-color: color-mix(in srgb, var(--color-text-inverse) 32%, transparent);
+  background: color-mix(in srgb, var(--color-ink-700) 70%, transparent);
+  transform: translateY(-1px);
 }
 
 .dark:focus-visible {
-  outline-color: var(--color-primary-400);
+  outline-color: var(--color-primary-300);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button:hover,
+  .button:hover svg:last-child:not(:first-child) {
+    transform: none;
+  }
 }
