@@ -1,0 +1,84 @@
+/* Panel con borde de luz y un resplandor de marca en la esquina: es la única sección que
+   habla a otro público, y se distingue sin romper el fondo continuo. */
+.panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-12);
+  overflow: hidden;
+  padding: var(--space-12);
+  border: 1px solid transparent;
+  border-radius: 24px;
+  background:
+    radial-gradient(
+        circle at 0% 0%,
+        color-mix(in srgb, var(--color-brand-blue) 40%, transparent),
+        transparent 55%
+      )
+      padding-box,
+    linear-gradient(160deg, var(--color-ink-800), var(--color-ink-950))
+      padding-box,
+    linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--color-primary-300) 45%, transparent),
+        color-mix(in srgb, var(--color-text-inverse) 6%, transparent) 50%,
+        color-mix(in srgb, var(--color-primary-400) 30%, transparent)
+      )
+      border-box;
+}
+
+.copy {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 44px;
+  letter-spacing: -0.025em;
+}
+
+.text {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-inverse-muted);
+  font-size: 17px;
+  line-height: 27px;
+}
+
+.steps {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 7%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-ink-950) 50%, transparent);
+  color: var(--color-text-inverse-muted);
+  font-size: 15px;
+  line-height: 23px;
+}
+
+@media (max-width: 900px) {
+  .panel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+    padding: var(--space-8) var(--space-6);
+  }
+
+  .title {
+    font-size: 28px;
+    line-height: 36px;
+  }
+}

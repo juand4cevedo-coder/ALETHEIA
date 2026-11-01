@@ -4,15 +4,22 @@
   --color-primary-700: #0d5c88;
   --color-primary-600: #116fa3;
   --color-primary-400: #4aaee6;
+  --color-primary-300: #8acbf0;
   --color-primary-50: #e8f2fa;
   --color-brand-navy: #1c2c4e;
+  /* Azul del logotipo: solo para el logo y los degradados decorativos (ACC-001). */
+  --color-brand-blue: #197eb4;
   --color-success-600: #1a7448;
+  /* Estados sobre la banda oscura del sitio público. */
+  --color-success-400: #5ccf96;
+  --color-error-400: #f28b82;
 
   --color-canvas: #f5f7fa;
   --color-surface: #ffffff;
   --color-ink-950: #070c18;
   --color-ink-900: #0c1426;
   --color-ink-800: #15213a;
+  --color-ink-700: #1f2e4d;
   --color-ink-600: #64789e;
 
   --color-text-primary: #0e1726;
@@ -26,6 +33,9 @@
 
   --font-sans:
     "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", Consolas,
+    monospace;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -43,10 +53,15 @@
   --radius-pill: 999px;
 
   --shadow-overlay: 0 8px 24px rgb(7 12 24 / 16%);
+  --shadow-raised: 0 24px 64px rgb(2 6 16 / 55%);
 
   --motion-fast: 120ms;
   --motion-base: 200ms;
+  --motion-slow: 700ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  /* Para entradas: arranca rápido y frena suave, sin rebote. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-  --content-width: 1160px;
+  --content-width: 1200px;
+  --header-height: 64px;
 }

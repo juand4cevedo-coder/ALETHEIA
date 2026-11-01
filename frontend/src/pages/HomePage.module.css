@@ -1,23 +1,35 @@
-.hero {
-  display: grid;
-  justify-items: start;
-  gap: var(--space-4);
-  max-width: var(--content-width);
-  margin: 0 auto;
-  padding: var(--space-24) var(--space-6);
-}
-
-.title {
-  font-size: 40px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.lead {
-  color: var(--color-text-secondary);
-  font-size: 18px;
-}
-
-.link {
-  font-weight: 600;
+/* Fondo continuo del inicio: el mismo azul profundo de principio a fin, con focos de luz de
+   marca repartidos a lo largo de la página. Cada sección se apoya en uno de ellos, así que el
+   paso de una a otra se siente como un recorrido y no como un cambio de fondo. */
+.page {
+  position: relative;
+  /* Sube por detrás del encabezado transparente, así la luz de la portada empieza en el borde
+     superior de la pantalla. clip recorta lo que sale por los lados sin crear otra zona de
+     desplazamiento. */
+  margin-top: calc(-1 * var(--header-height));
+  overflow: clip;
+  background:
+    radial-gradient(
+      60rem 40rem at 10% 34%,
+      color-mix(in srgb, var(--color-brand-blue) 16%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      55rem 36rem at 92% 52%,
+      color-mix(in srgb, var(--color-primary-400) 10%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      60rem 40rem at 12% 74%,
+      color-mix(in srgb, var(--color-brand-blue) 14%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-ink-950) 0%,
+      var(--color-ink-900) 30%,
+      var(--color-ink-950) 55%,
+      var(--color-ink-900) 80%,
+      var(--color-ink-950) 100%
+    );
 }
