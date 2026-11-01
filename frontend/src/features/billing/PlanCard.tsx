@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 
 import type { PublicPlan } from "../../api/generated";
+import { ROUTES } from "../../config/routes.ts";
 import {
   annualMonthsCharged,
   type BillingCycle,
@@ -29,8 +30,8 @@ export function PlanCard({
   const headingId = `plan-${plan.code}`;
 
   const signupUrl = isFree
-    ? `/registro?plan=${plan.code}`
-    : `/registro?plan=${plan.code}&ciclo=${cycle === "annual" ? "anual" : "mensual"}`;
+    ? `${ROUTES.signUp}?plan=${plan.code}`
+    : `${ROUTES.signUp}?plan=${plan.code}&ciclo=${cycle === "annual" ? "anual" : "mensual"}`;
 
   return (
     <article
