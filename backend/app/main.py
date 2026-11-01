@@ -16,7 +16,7 @@ from app.core.openapi import install_problem_details
 from app.db.session import create_db_engine
 
 API_PREFIX: Final = "/api/v1"
-API_VERSION: Final = "0.1.0"
+API_VERSION: Final = "0.2.0"
 
 
 def _operation_id(route: APIRoute) -> str:
