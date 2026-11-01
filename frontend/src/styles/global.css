@@ -9,6 +9,15 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Los enlaces a una sección (#como-funciona) se desplazan suave y no quedan bajo el
+     encabezado fijo. */
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-height) + var(--space-4));
+}
+
+/* Mientras un diálogo modal está abierto, la página de fondo no se desplaza. */
+html:has(dialog[open]) {
+  overflow: hidden;
 }
 
 body {
