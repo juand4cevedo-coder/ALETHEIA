@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { ArrowRight, Menu, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, ScrollRestoration } from "react-router";
 
 import markUrl from "../assets/aletheia-mark.png";
@@ -10,10 +11,31 @@ import styles from "./PublicLayout.module.css";
 // Año del aviso de derechos, calculado una vez al cargar el sitio.
 const CURRENT_YEAR = new Date().getFullYear();
 
+// Desde cuántos píxeles de desplazamiento el encabezado toma fondo.
+const SCROLLED_AT = 8;
+
 const PRIMARY_LINKS = [
   { to: ROUTES.howItWorks, label: "Cómo funciona" },
   { to: ROUTES.pricing, label: "Precios" },
   { to: ROUTES.verifier, label: "Verificador" },
+] as const;
+
+const FOOTER_GROUPS = [
+  { title: "Producto", links: PRIMARY_LINKS },
+  {
+    title: "Cuenta",
+    links: [
+      { to: ROUTES.signIn, label: "Ingresar" },
+      { to: ROUTES.signUp, label: "Crear cuenta" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: LEGAL_PAGES.map((page) => ({
+      to: legalRoute(page.slug),
+      label: page.label,
+    })),
+  },
 ] as const;
 
 function navLinkClass({ isActive }: { isActive: boolean }) {
@@ -22,12 +44,22 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
     : styles.navLink;
 }
 
-// Marco del sitio público (CMP-UI-011, barra pública): encabezado fijo, contenido de cada
-// página y pie con las páginas legales. En pantallas angostas la navegación se abre en una
-// hoja inferior, que es un <dialog> nativo: atrapa el foco y se cierra con Escape.
+// Marco del sitio público (CMP-UI-011, barra pública). El encabezado es transparente sobre la
+// portada y toma un fondo translúcido al desplazarse. En pantallas angostas la navegación se
+// abre en una hoja inferior: un <dialog> nativo que atrapa el foco y se cierra con Escape.
 export function PublicLayout() {
   const menuRef = useRef<HTMLDialogElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    // React descarta el cambio de estado si el valor no cambió, así que el listener solo
+    // provoca un render al cruzar el umbral.
+    const update = () => setScrolled(window.scrollY > SCROLLED_AT);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
 
   function openMenu() {
     menuRef.current?.showModal();
@@ -44,10 +76,13 @@ export function PublicLayout() {
         Saltar al contenido
       </a>
 
-      <header className={styles.header}>
+      <header
+        className={styles.header}
+        data-scrolled={scrolled ? "true" : "false"}
+      >
         <div className={styles.bar}>
           <Link to={ROUTES.home} className={styles.brand}>
-            <img src={markUrl} alt="" width={29} height={28} />
+            <img src={markUrl} alt="" width={25} height={24} />
             <span>{SITE_NAME}</span>
           </Link>
 
@@ -77,9 +112,12 @@ export function PublicLayout() {
             >
               Ingresar
             </NavLink>
-            <ButtonLink to={ROUTES.signUp} surface="dark" size="sm">
-              Probar gratis
-            </ButtonLink>
+            <span className={styles.headerCta}>
+              <ButtonLink to={ROUTES.signUp} surface="dark" size="sm">
+                Probar gratis
+                <ArrowRight size={16} />
+              </ButtonLink>
+            </span>
             <button
               type="button"
               className={styles.menuButton}
@@ -88,6 +126,7 @@ export function PublicLayout() {
               aria-controls="menu-movil"
               onClick={openMenu}
             >
+              <Menu size={18} />
               Menú
             </button>
           </div>
@@ -114,33 +153,33 @@ export function PublicLayout() {
             className={styles.sheetClose}
             onClick={closeMenu}
           >
+            <X size={18} />
             Cerrar
           </button>
         </div>
         <nav aria-label="Menú">
           <ul className={styles.sheetList}>
-            {PRIMARY_LINKS.map((link) => (
-              <li key={link.to}>
-                <Link
-                  to={link.to}
-                  className={styles.sheetLink}
-                  onClick={closeMenu}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-            <li>
-              <Link
-                to={ROUTES.signIn}
-                className={styles.sheetLink}
-                onClick={closeMenu}
-              >
-                Ingresar
-              </Link>
-            </li>
+            {[...PRIMARY_LINKS, { to: ROUTES.signIn, label: "Ingresar" }].map(
+              (link) => (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    className={styles.sheetLink}
+                    onClick={closeMenu}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ),
+            )}
           </ul>
         </nav>
+        <div className={styles.sheetCta}>
+          <ButtonLink to={ROUTES.signUp} surface="dark" onClick={closeMenu}>
+            Crear cuenta gratis
+            <ArrowRight size={18} />
+          </ButtonLink>
+        </div>
       </dialog>
 
       <main id="contenido" className={styles.main} tabIndex={-1}>
@@ -150,24 +189,46 @@ export function PublicLayout() {
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
-            <p className={styles.footerName}>{SITE_NAME}</p>
-            <p>Preservación de evidencia digital para abogados en Colombia.</p>
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            <Link to={ROUTES.home} className={styles.brand}>
+              <img src={markUrl} alt="" width={25} height={24} />
+              <span>{SITE_NAME}</span>
+            </Link>
+            <p className={styles.footerText}>
+              Preservación de evidencia digital para abogados y firmas en
+              Colombia.
+            </p>
+            <a className={styles.footerMail} href={`mailto:${CONTACT_EMAIL}`}>
+              {CONTACT_EMAIL}
+            </a>
           </div>
-          <nav aria-label="Legal">
-            <ul className={styles.legalList}>
-              {LEGAL_PAGES.map((page) => (
-                <li key={page.slug}>
-                  <Link to={legalRoute(page.slug)}>{page.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          {FOOTER_GROUPS.map((group) => (
+            <nav
+              key={group.title}
+              aria-label={group.title}
+              className={styles.footerGroup}
+            >
+              <p className={styles.footerTitle}>{group.title}</p>
+              <ul className={styles.footerList}>
+                {group.links.map((link) => (
+                  <li key={link.to}>
+                    <Link to={link.to} className={styles.footerLink}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
         </div>
-        <p className={styles.footerNote}>
-          © {CURRENT_YEAR} {SITE_NAME}. ALETHEIA preserva y documenta evidencia
-          digital; no certifica pruebas ni determina su validez.
-        </p>
+        <div className={styles.footerBottom}>
+          <p>
+            © {CURRENT_YEAR} {SITE_NAME}. Todos los derechos reservados.
+          </p>
+          <p>
+            ALETHEIA preserva y documenta evidencia digital; no certifica
+            pruebas ni determina su validez.
+          </p>
+        </div>
       </footer>
       <ScrollRestoration />
     </div>
