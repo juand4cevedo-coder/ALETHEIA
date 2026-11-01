@@ -1,0 +1,46 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-8);
+}
+
+.source {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-8);
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.source svg {
+  flex: none;
+  color: var(--color-primary-300);
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card {
+    padding: var(--space-6);
+  }
+}
