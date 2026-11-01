@@ -1,0 +1,80 @@
+/* Botón (CMP-UI-001). Los enlaces que llevan a otra página usan estas mismas clases: se ven
+   como botón pero siguen siendo enlaces, que es lo que anuncia un lector de pantalla. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-3) var(--space-6);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.sm {
+  min-height: 36px;
+  padding: var(--space-2) var(--space-4);
+  font-size: 14px;
+}
+
+/* Sobre fondo claro. */
+.primary {
+  background: var(--color-primary-600);
+  color: var(--color-surface);
+}
+
+.primary:hover {
+  background: var(--color-primary-700);
+}
+
+.secondary {
+  border-color: var(--color-border-control);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.secondary:hover {
+  border-color: var(--color-primary-600);
+  color: var(--color-primary-700);
+}
+
+/* Sobre la banda oscura: la acción principal usa primary.400 con texto ink.950 (7,90:1). */
+.dark.primary {
+  background: var(--color-primary-400);
+  color: var(--color-ink-950);
+}
+
+.dark.primary:hover {
+  background: var(--color-primary-50);
+}
+
+.dark.secondary {
+  border-color: var(--color-ink-600);
+  background: transparent;
+  color: var(--color-text-inverse);
+}
+
+.dark.secondary:hover {
+  border-color: var(--color-text-inverse-muted);
+  background: var(--color-ink-900);
+}
+
+.dark:focus-visible {
+  outline-color: var(--color-primary-400);
+}
