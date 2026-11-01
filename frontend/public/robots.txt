@@ -1,0 +1,11 @@
+# Sitio público de ALETHEIA (RF-005). El espacio de trabajo, la consola, la API y los enlaces
+# que llegan por correo no se indexan.
+User-agent: *
+Disallow: /app/
+Disallow: /consola
+Disallow: /api/
+Disallow: /verificar-correo
+Disallow: /restablecer
+Disallow: /invitacion
+
+Sitemap: https://aletheia.sbs/sitemap.xml

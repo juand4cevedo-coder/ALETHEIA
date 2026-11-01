@@ -1,0 +1,72 @@
+/* Panel final con un amanecer de marca desde abajo: cierra la página con la luz más intensa
+   del recorrido, justo donde está la acción principal. */
+.panel {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-6);
+  overflow: hidden;
+  padding: var(--space-16) var(--space-8);
+  border: 1px solid transparent;
+  border-radius: 28px;
+  background:
+    radial-gradient(
+        ellipse 70% 90% at 50% 120%,
+        color-mix(in srgb, var(--color-brand-blue) 75%, transparent),
+        transparent 70%
+      )
+      padding-box,
+    linear-gradient(180deg, var(--color-ink-900), var(--color-ink-800))
+      padding-box,
+    linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-text-inverse) 10%, transparent),
+        color-mix(in srgb, var(--color-primary-300) 50%, transparent)
+      )
+      border-box;
+  text-align: center;
+}
+
+.title {
+  max-width: 680px;
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 52px;
+  letter-spacing: -0.03em;
+}
+
+.text {
+  max-width: 600px;
+  color: var(--color-text-inverse-muted);
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 760px) {
+  .panel {
+    padding: var(--space-12) var(--space-6);
+  }
+
+  .title {
+    font-size: 30px;
+    line-height: 38px;
+  }
+
+  .text {
+    font-size: 17px;
+    line-height: 26px;
+  }
+
+  .actions {
+    flex-direction: column;
+    justify-self: stretch;
+  }
+}

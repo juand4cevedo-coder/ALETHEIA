@@ -73,7 +73,7 @@ Abre `backend/.env` y reemplaza cada `CLAVE` por la del usuario correspondiente 
 Con los servicios de Compose encendidos:
 
 ```powershell
-uv run uvicorn app.main:create_app --factory
+uv run python -m uvicorn app.main:create_app --factory
 ```
 
 | Dirección | Contenido |
@@ -108,6 +108,19 @@ set_tenant(session, TenantContext(organization_id=organizacion, user_id=persona)
 
 Sin contexto, las consultas no devuelven filas y las escrituras se rechazan. La cadena de custodia solo admite inserciones, y un caso se elimina únicamente con la función `purge_case`, que primero deja la constancia de eliminación.
 
+### Contrato de la API
+
+El backend guarda su contrato OpenAPI en `backend/openapi.json`, y el frontend genera desde ese archivo sus tipos y su cliente HTTP en `frontend/src/api/generated` (ADR-008 y ADR-020). Ninguno de los dos se edita a mano. Cada vez que cambie una ruta, un esquema o la versión de la API, se regeneran ambos y se guardan en el mismo commit que el cambio:
+
+```powershell
+cd backend
+uv run python -m app.contract
+cd ../frontend
+pnpm api:generate
+```
+
+La prueba `tests/test_contract.py` falla si el contrato guardado no coincide con la API o si su versión no es la de `pyproject.toml`, y la CI falla si el cliente generado no coincide con el contrato. Los errores se documentan como Problem Details: `Problem` para cualquier 4xx o 5xx y `ValidationProblem` para los 422.
+
 ### Frontend
 
 ```powershell
@@ -115,6 +128,34 @@ cd frontend
 pnpm install
 pnpm dev
 ```
+
+En desarrollo, Vite reenvía `/api` a la API local en el puerto 8000, así que la interfaz llama al mismo origen, igual que en producción detrás de Caddy.
+
+El código del frontend se organiza así (ADR-021):
+
+| Carpeta | Contenido |
+| --- | --- |
+| `src/routes` | Las rutas del sitio con React Router |
+| `src/layouts` | Los marcos que comparten varias páginas, como el encabezado y el pie del sitio público |
+| `src/pages` | Una página por ruta |
+| `src/features/<dominio>` | Componentes y funciones de un dominio, por ejemplo `billing` para planes y precios |
+| `src/components/ui` | Componentes del sistema de diseño que usan varias páginas: botón, huella, entrada al desplazarse (`Reveal`) y luz que sigue al puntero (`useSpotlight`) |
+| `src/features/landing` | Las secciones de la página de inicio, una por archivo |
+| `src/features/legal` | El texto de las cuatro políticas legales, uno por archivo, que muestra la página `/legal/<política>` |
+| `src/features/consent` | El panel de cookies y la elección del visitante, que se guarda en el almacenamiento local del navegador |
+| `src/styles` | Los tokens del sistema de diseño y los estilos globales |
+| `src/config` | Datos del sitio que se repiten: el correo de contacto, las rutas públicas y, en `legal.ts`, la versión vigente de las políticas y los datos del responsable |
+| `src/test` | Lo que comparten las pruebas: configuración, catálogo de ejemplo y revisión con axe |
+| `public` | Archivos que se publican tal cual: íconos, imagen para redes, `robots.txt` y `sitemap.xml` |
+| `src/api/generated` | El cliente generado desde el contrato; no se edita a mano |
+
+Los datos de la API se piden con TanStack Query y las opciones que genera Hey API, por ejemplo `useQuery(listPlansOptions())`. Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css`. Los íconos se importan de `lucide-react` uno por uno (ADR-023).
+
+Las políticas legales comparten una sola versión y fecha de vigencia, definidas en `src/config/legal.ts`. Si un cambio de texto altera derechos u obligaciones, se sube la versión ahí y en ningún otro lugar: el registro guarda qué versión aceptó cada persona.
+
+El sitio solo usa las cookies de sesión. Cualquier herramienta no esencial que se agregue, como una de analítica, se carga únicamente si `hasCookieConsent("analytics")` devuelve `true`, y su llegada sube `CONSENT_VERSION` en `src/features/consent/cookieConsent.ts` para que el panel vuelva a preguntar.
+
+Las pruebas de componentes usan Vitest, Testing Library y axe-core (ADR-022). Cada prueba vive junto al archivo que prueba, con el sufijo `.test.tsx`. `pnpm test` las ejecuta una vez y `pnpm test:watch` las repite cada vez que se guarda un archivo.
 
 ### Revisiones antes de cada commit
 
@@ -147,10 +188,15 @@ Las pruebas usan la base `aletheia_test`, nunca la de desarrollo. Al empezar rec
 Frontend, desde `frontend/`:
 
 ```powershell
+pnpm api:generate
+git status --short src/api/generated
 pnpm lint
 pnpm format:check
+pnpm test
 pnpm build
 ```
+
+El segundo comando no debe listar nada: si lista archivos, el cliente generado no estaba al día.
 
 ## Producción
 
@@ -170,7 +216,7 @@ En producción la API no recibe claves. Su URL llega sin clave y la API la lee d
 
 Para publicar una versión:
 
-1. En la rama `release/X.Y.Z`, sube la versión en `backend/pyproject.toml`, `backend/app/main.py` y `frontend/package.json`, y abre el pull request hacia main.
+1. En la rama `release/X.Y.Z`, sube la versión en `backend/pyproject.toml`, `backend/app/main.py` y `frontend/package.json`, regenera el contrato y el cliente (sección Contrato de la API) y abre el pull request hacia main.
 2. Con el pull request integrado, crea la etiqueta firmada sobre main y súbela:
 
 ```powershell

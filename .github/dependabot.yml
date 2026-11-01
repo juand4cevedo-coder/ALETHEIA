@@ -1,6 +1,8 @@
 version: 2
 
 updates:
+  # Acciones de GitHub: corren con las credenciales de publicación y despliegue, así que
+  # esperan 14 días desde la publicación (ADR-019).
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -9,13 +11,14 @@ updates:
       time: "06:00"
       timezone: America/Bogota
     cooldown:
-      default-days: 3
+      default-days: 14
     groups:
       acciones:
         patterns: ["*"]
     commit-message:
       prefix: ci
 
+  # Bibliotecas de Python: 7 días, la misma espera que aplica uv (ADR-019).
   - package-ecosystem: uv
     directory: /backend
     schedule:
@@ -24,7 +27,7 @@ updates:
       time: "06:00"
       timezone: America/Bogota
     cooldown:
-      default-days: 3
+      default-days: 7
     groups:
       python:
         patterns: ["*"]
@@ -32,7 +35,7 @@ updates:
       prefix: build
 
   # Imágenes base de los Dockerfile. Van fijadas por digest y Dependabot propone el cambio de
-  # etiqueta y digest juntos. Espera 14 días desde la publicación, como exige ADR-018.
+  # etiqueta y digest juntos. Esperan 14 días desde la publicación (ADR-019).
   - package-ecosystem: docker
     directories: ["/backend", "/infra"]
     schedule:
@@ -45,6 +48,7 @@ updates:
     commit-message:
       prefix: build
 
+  # Bibliotecas de JavaScript: 7 días, la misma espera que aplica pnpm (ADR-019).
   - package-ecosystem: npm
     directory: /frontend
     schedule:
@@ -53,7 +57,7 @@ updates:
       time: "06:00"
       timezone: America/Bogota
     cooldown:
-      default-days: 3
+      default-days: 7
     groups:
       node:
         patterns: ["*"]

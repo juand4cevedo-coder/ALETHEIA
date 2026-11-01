@@ -1,0 +1,108 @@
+/* Línea de pasos: un hilo de luz une los íconos, como el recorrido de la evidencia. */
+.steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps::before {
+  content: "";
+  position: absolute;
+  top: 32px;
+  right: 12.5%;
+  left: 12.5%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-primary-400) 10%, transparent),
+    color-mix(in srgb, var(--color-primary-300) 60%, transparent),
+    color-mix(in srgb, var(--color-primary-400) 10%, transparent)
+  );
+}
+
+.step {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: 20px;
+  background:
+    linear-gradient(145deg, var(--color-ink-800), var(--color-ink-950))
+      padding-box,
+    linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--color-primary-300) 60%, transparent),
+        color-mix(in srgb, var(--color-brand-blue) 20%, transparent)
+      )
+      border-box;
+  color: var(--color-primary-300);
+  box-shadow: 0 12px 32px -12px var(--color-brand-blue);
+}
+
+.number {
+  color: var(--color-primary-300);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 900px) {
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: var(--space-12);
+  }
+
+  .steps::before {
+    display: none;
+  }
+}
+
+/* En una columna los pasos se alinean a la izquierda y el hilo baja por los íconos. */
+@media (max-width: 560px) {
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+
+  .steps::before {
+    display: block;
+    top: 32px;
+    bottom: 32px;
+    left: 32px;
+    width: 1px;
+    height: auto;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-primary-300) 60%, transparent),
+      color-mix(in srgb, var(--color-primary-400) 10%, transparent)
+    );
+  }
+
+  .step {
+    grid-template-columns: 64px minmax(0, 1fr);
+    justify-items: start;
+    column-gap: var(--space-4);
+    row-gap: var(--space-1);
+    text-align: left;
+  }
+
+  .icon {
+    grid-row: span 3;
+    margin: 0;
+  }
+}

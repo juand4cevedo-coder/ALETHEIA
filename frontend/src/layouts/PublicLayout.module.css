@@ -1,0 +1,388 @@
+/* Todo el sitio público vive sobre la banda oscura de marca (color.ink.950): no hay saltos a
+   fondo claro entre secciones ni entre páginas. */
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-ink-950);
+  color: var(--color-text-inverse);
+}
+
+.shell :where(a:not([class])) {
+  color: var(--color-primary-300);
+}
+
+.shell :focus-visible {
+  outline-color: var(--color-primary-300);
+}
+
+.skipLink {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 30;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  transform: translateY(-200%);
+}
+
+.skipLink:focus {
+  transform: none;
+}
+
+/* Encabezado fijo: transparente sobre la portada y translúcido al desplazarse. */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color var(--motion-slow) var(--ease-standard),
+    border-color var(--motion-slow) var(--ease-standard),
+    backdrop-filter var(--motion-slow) var(--ease-standard);
+}
+
+.header[data-scrolled="true"] {
+  border-bottom-color: color-mix(
+    in srgb,
+    var(--color-text-inverse) 8%,
+    transparent
+  );
+  background: color-mix(in srgb, var(--color-ink-950) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-8);
+  max-width: var(--content-width);
+  min-height: var(--header-height);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  justify-self: start;
+  color: var(--color-text-inverse);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+}
+
+.navList {
+  display: flex;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  display: inline-flex;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-inverse-muted);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
+}
+
+.navLink:hover,
+.navLinkActive {
+  background: color-mix(in srgb, var(--color-text-inverse) 6%, transparent);
+  color: var(--color-text-inverse);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: var(--space-2);
+}
+
+.menuButton {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 38px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 16%, transparent);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-inverse);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Hoja inferior del menú en móvil. */
+.sheet {
+  width: 100%;
+  max-width: 100%;
+  margin: auto 0 0;
+  padding: var(--space-6) var(--space-6) var(--space-8);
+  border: 0;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 10%, transparent);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: linear-gradient(
+    180deg,
+    var(--color-ink-800),
+    var(--color-ink-900)
+  );
+  color: var(--color-text-inverse);
+}
+
+.sheet[open] {
+  animation: rise 320ms var(--ease-out);
+}
+
+.sheet::backdrop {
+  background: color-mix(in srgb, var(--color-ink-950) 72%, transparent);
+  backdrop-filter: blur(4px);
+}
+
+.sheet :focus-visible {
+  outline-color: var(--color-primary-300);
+}
+
+.sheetHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.sheetTitle {
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sheetClose {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--color-text-inverse);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sheetList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sheetLink {
+  display: block;
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+  color: var(--color-text-inverse);
+  font-size: 18px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.sheetCta {
+  display: grid;
+  margin-top: var(--space-6);
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(32px);
+    opacity: 0;
+  }
+}
+
+.main {
+  flex: 1;
+}
+
+.main:focus {
+  outline: none;
+}
+
+/* Pie: continúa el mismo fondo y se separa con una línea de luz, no con un cambio de color. */
+.footer {
+  position: relative;
+  padding: var(--space-16) var(--space-6) var(--space-8);
+  color: var(--color-text-inverse-muted);
+  font-size: 14px;
+}
+
+.footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: min(var(--content-width), 100%);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-primary-400) 45%, transparent),
+    transparent
+  );
+  transform: translateX(-50%);
+}
+
+.footerInner {
+  display: grid;
+  grid-template-columns: 2fr repeat(3, 1fr);
+  gap: var(--space-8);
+  /* Mismo ancho de contenido que las secciones, que restan su margen lateral. */
+  max-width: calc(var(--content-width) - 2 * var(--space-6));
+  margin: 0 auto;
+}
+
+.footerBrand {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--space-3);
+}
+
+.footerText {
+  max-width: 300px;
+}
+
+.footerMail {
+  color: var(--color-text-inverse);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.footerMail:hover {
+  color: var(--color-primary-300);
+}
+
+.footerTitle {
+  margin-bottom: var(--space-4);
+  color: var(--color-text-inverse);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.footerList {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footerLink {
+  color: var(--color-text-inverse-muted);
+  text-decoration: none;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.footerLink:hover {
+  color: var(--color-text-inverse);
+}
+
+/* "Configurar cookies" abre un panel, así que es un botón, pero se ve como los enlaces. */
+.footerButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.footerBottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  max-width: calc(var(--content-width) - 2 * var(--space-6));
+  margin: var(--space-12) auto 0;
+  padding-top: var(--space-6);
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 var(--space-4);
+  }
+
+  .desktopNav,
+  .signIn {
+    display: none;
+  }
+
+  .menuButton {
+    display: inline-flex;
+  }
+
+  .footerInner {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .footerBrand {
+    grid-column: 1 / -1;
+  }
+}
+
+/* En pantallas muy angostas la invitación a probar vive dentro del menú. */
+@media (max-width: 420px) {
+  .headerCta {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .footerInner {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Al imprimir una página (por ejemplo, una política legal) solo queda el contenido. */
+@media print {
+  .shell {
+    background: none;
+    color: var(--color-text-primary);
+  }
+
+  .skipLink,
+  .header,
+  .sheet,
+  .footer {
+    display: none;
+  }
+
+  .shell :where(a:not([class])) {
+    color: var(--color-primary-700);
+  }
+}

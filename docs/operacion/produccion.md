@@ -172,7 +172,7 @@ sudo docker compose --env-file /var/lib/aletheia/despliegue.env -f compose.prod.
 
 La API y las migraciones reciben la URL de la base sin clave y el nombre de su parámetro. Leen la clave de Parameter Store al arrancar, con el rol de la máquina, así que `docker inspect` no muestra ninguna. En producción la API no publica `/api/v1/docs` ni `/api/v1/openapi.json`.
 
-Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy.Dockerfile`, y Dependabot propone los cambios con 14 días de espera. Toda versión nueva debe tener más de 14 días de publicada (ADR-018). Python 3.14.9 y uv 0.13.5 tienen una excepción que vence el 04/11/2026.
+Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy.Dockerfile`. Según ADR-019, las imágenes base, los entornos de ejecución, uv, pnpm y las acciones de GitHub deben tener más de 14 días de publicados, y las bibliotecas de Python y de JavaScript más de 7; Dependabot, uv y pnpm aplican esas esperas. Python 3.14.9, uv 0.13.5 y boto3 1.43.120 con sus tipos tienen una excepción que vence el 04/11/2026.
 
 ## Caddy
 
