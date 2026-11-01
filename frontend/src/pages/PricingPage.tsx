@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { listPlansOptions } from "../api/generated/@tanstack/react-query.gen.ts";
-import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
+import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
 import {
   annualMonthsSaved,
   type BillingCycle,
@@ -10,21 +10,12 @@ import {
   formatCop,
 } from "../features/billing/format.ts";
 import { PlanCard } from "../features/billing/PlanCard.tsx";
+import {
+  CORPORATE_QUOTE_URL,
+  PLAN_TAGLINES,
+  RECOMMENDED_PLAN,
+} from "../features/billing/plans.ts";
 import styles from "./PricingPage.module.css";
-
-// Plan que se destaca en la página. Es una decisión comercial, no un precio ni un límite.
-const RECOMMENDED_PLAN = "professional";
-
-// Para quién es cada plan (sección 6 de la especificación). Un plan nuevo sin texto aquí
-// se muestra igual, solo que sin esta línea.
-const TAGLINES: Record<string, string> = {
-  trial: "Para conocer el ciclo completo con sus propios archivos.",
-  essential: "Para el abogado independiente que empieza.",
-  professional: "Para el independiente consolidado que trabaja con asistente.",
-  firm: "Para firmas pequeñas y medianas.",
-};
-
-const QUOTE_URL = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Cotización del plan Corporativo")}`;
 
 // Página de planes y precios (UI-002, HU-002).
 export function PricingPage() {
@@ -45,6 +36,7 @@ export function PricingPage() {
         name="description"
         content="Planes de ALETHEIA para abogados independientes y firmas: precio mensual o anual, usuarios, almacenamiento y tamaño de archivo."
       />
+      <link rel="canonical" href={`${SITE_URL}/precios`} />
 
       <section className={styles.band} aria-labelledby="titulo-precios">
         <div className={styles.inner}>
@@ -131,7 +123,7 @@ export function PricingPage() {
                   plan={plan}
                   cycle={cycle}
                   recommended={plan.code === RECOMMENDED_PLAN}
-                  tagline={TAGLINES[plan.code]}
+                  tagline={PLAN_TAGLINES[plan.code]}
                 />
               ))}
             </div>
@@ -231,7 +223,7 @@ export function PricingPage() {
               de su organización, y se contrata por cotización.
             </p>
           </div>
-          <a className={styles.quoteLink} href={QUOTE_URL}>
+          <a className={styles.quoteLink} href={CORPORATE_QUOTE_URL}>
             Solicitar cotización
           </a>
         </div>
