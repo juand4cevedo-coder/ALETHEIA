@@ -1,25 +1,48 @@
+/* Tarjeta de plan (CMP-UI-012) sobre el fondo oscuro del sitio público. */
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-6);
-  border: 1px solid var(--color-ink-800);
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
   border-radius: var(--radius-lg);
-  background: var(--color-ink-900);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-ink-800) 75%, transparent),
+    color-mix(in srgb, var(--color-ink-900) 60%, transparent)
+  );
   color: var(--color-text-inverse);
   transition:
     border-color var(--motion-base) var(--ease-standard),
-    transform var(--motion-base) var(--ease-standard);
+    transform var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard);
 }
 
-.card:hover {
-  border-color: var(--color-ink-600);
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .card:hover {
+    border-color: color-mix(in srgb, var(--color-primary-300) 28%, transparent);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-raised);
+  }
 }
 
+/* El plan recomendado lleva un borde de luz en degradado y un halo de marca. */
 .recommended,
 .recommended:hover {
-  border-color: var(--color-primary-400);
+  border-color: transparent;
+  background:
+    linear-gradient(180deg, var(--color-ink-800), var(--color-ink-900))
+      padding-box,
+    linear-gradient(
+        180deg,
+        var(--color-primary-300),
+        color-mix(in srgb, var(--color-brand-blue) 30%, transparent)
+      )
+      border-box;
+  box-shadow: 0 24px 64px -24px
+    color-mix(in srgb, var(--color-brand-blue) 80%, transparent);
 }
 
 .head {
@@ -36,9 +59,13 @@
 }
 
 .badge {
-  padding: 2px var(--space-2);
+  padding: 3px 10px;
   border-radius: var(--radius-pill);
-  background: var(--color-primary-400);
+  background: linear-gradient(
+    180deg,
+    var(--color-primary-300),
+    var(--color-primary-400)
+  );
   color: var(--color-ink-950);
   font-size: 12px;
   font-weight: 600;
@@ -59,10 +86,10 @@
 }
 
 .amount {
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 650;
   line-height: 40px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 
@@ -76,64 +103,32 @@
 
 .note {
   color: var(--color-text-inverse-muted);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .limits {
   display: grid;
   align-content: start;
-  gap: var(--space-2);
+  gap: var(--space-3);
   flex: 1;
-  margin: 0;
+  margin: 0 0 var(--space-2);
   padding: var(--space-4) 0 0;
-  border-top: 1px solid var(--color-ink-800);
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
   list-style: none;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .limits li {
   display: flex;
-  gap: var(--space-2);
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-inverse-muted);
 }
 
-.limits li::before {
-  content: "";
+.limits svg {
   flex: none;
-  width: 6px;
-  height: 6px;
-  margin-top: 9px;
-  border-radius: var(--radius-pill);
-  background: var(--color-primary-400);
-}
-
-.cta {
-  display: block;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-ink-600);
-  border-radius: var(--radius-sm);
-  color: var(--color-text-inverse);
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;
-  transition: background-color var(--motion-fast) var(--ease-standard);
-}
-
-.cta:hover {
-  background: var(--color-ink-800);
-}
-
-.ctaPrimary {
-  border-color: var(--color-primary-400);
-  background: var(--color-primary-400);
-  color: var(--color-ink-950);
-}
-
-.ctaPrimary:hover {
-  filter: brightness(1.08);
-}
-
-.cta:focus-visible {
-  outline-color: var(--color-primary-400);
+  color: var(--color-primary-300);
 }
 
 /* En móvil las tarjetas van apiladas: no hace falta reservar alto para alinearlas. */
@@ -141,5 +136,11 @@
   .tagline,
   .price {
     min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover {
+    transform: none;
   }
 }

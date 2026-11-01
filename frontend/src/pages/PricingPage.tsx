@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { Mail } from "lucide-react";
 import { useState } from "react";
 
 import { listPlansOptions } from "../api/generated/@tanstack/react-query.gen.ts";
+import { buttonClassName } from "../components/ui/buttonStyles.ts";
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
 import {
   annualMonthsSaved,
@@ -213,19 +215,25 @@ export function PricingPage() {
       )}
 
       <section className={styles.section} aria-labelledby="titulo-corporativo">
-        <div className={`${styles.inner} ${styles.quote}`}>
-          <div>
-            <h2 id="titulo-corporativo" className={styles.sectionTitle}>
-              ¿Una firma grande o un área jurídica?
-            </h2>
-            <p className={styles.quoteText}>
-              El plan Corporativo se ajusta al número de usuarios y al volumen
-              de su organización, y se contrata por cotización.
-            </p>
+        <div className={styles.inner}>
+          <div className={styles.quote}>
+            <div>
+              <h2 id="titulo-corporativo" className={styles.sectionTitle}>
+                ¿Una firma grande o un área jurídica?
+              </h2>
+              <p className={styles.quoteText}>
+                El plan Corporativo se ajusta al número de usuarios y al volumen
+                de su organización, y se contrata por cotización.
+              </p>
+            </div>
+            <a
+              className={buttonClassName({ surface: "dark" })}
+              href={CORPORATE_QUOTE_URL}
+            >
+              <Mail size={18} />
+              Solicitar cotización
+            </a>
           </div>
-          <a className={styles.quoteLink} href={CORPORATE_QUOTE_URL}>
-            Solicitar cotización
-          </a>
         </div>
       </section>
     </>
