@@ -21,10 +21,19 @@ describe("Página de inicio (HU-001)", () => {
     const main = screen.getByRole("main");
     expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(within(main).getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Conserve el original. Demuestre que no cambió.",
+      "Preserve la evidencia digital tal como la recibió.",
     );
     expect(
-      within(main).getByRole("heading", { name: "Cómo funciona" }),
+      within(main).getByRole("heading", {
+        level: 2,
+        name: "De la recepción del archivo al expediente, en cuatro pasos",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(main).getByRole("heading", {
+        level: 2,
+        name: "Preservamos y documentamos. La valoración es del juez.",
+      }),
     ).toBeInTheDocument();
     expect(
       within(main).getByText("No certifica pruebas ni determina su validez."),
@@ -40,10 +49,12 @@ describe("Página de inicio (HU-001)", () => {
 
     expect(await screen.findByText(/^\$59\.900/)).toBeInTheDocument();
     expect(screen.getByText("Recomendado")).toBeInTheDocument();
-    expect(screen.getByText("Por cotización")).toBeInTheDocument();
     expect(
-      screen.getAllByText("Prueba gratuita de 14 días, sin tarjeta."),
-    ).not.toHaveLength(0);
+      screen.getByRole("link", { name: /Solicitar cotización/ }),
+    ).toHaveAttribute("href", expect.stringContaining("mailto:"));
+    expect(
+      screen.getByText("14 días de prueba gratuita · Sin tarjeta de crédito"),
+    ).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -83,7 +94,7 @@ describe("Página de inicio (HU-001)", () => {
     const menu = container.querySelector("dialog");
     const interactive = Array.from(
       container.querySelectorAll<HTMLElement>(
-        "a[href], button:not([disabled])",
+        "a[href], button:not([disabled]), summary",
       ),
     ).filter((element) => !menu?.contains(element));
 
@@ -96,6 +107,18 @@ describe("Página de inicio (HU-001)", () => {
     expect(reached).toEqual(interactive);
 
     expect(await seriousAxeViolations(container)).toEqual([]);
+  });
+
+  it("abre y cierra las preguntas frecuentes", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    const user = userEvent.setup();
+    renderRoute("/");
+
+    const question = screen.getByText("¿Qué es una huella SHA-256?");
+    const details = question.closest("details")!;
+    expect(details).not.toHaveAttribute("open");
+    await user.click(question);
+    expect(details).toHaveAttribute("open");
   });
 
   it("abre el menú móvil como diálogo y lo cierra al elegir un enlace", async () => {
