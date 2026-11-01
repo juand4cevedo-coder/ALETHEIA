@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, type RouteObject } from "react-router";
 
 import { PublicLayout } from "../layouts/PublicLayout.tsx";
 import { HomePage } from "../pages/HomePage.tsx";
@@ -6,8 +6,8 @@ import { NotFoundPage } from "../pages/NotFoundPage.tsx";
 import { PricingPage } from "../pages/PricingPage.tsx";
 
 // Rutas del sitio. Caddy entrega index.html para cualquier ruta que no sea un archivo, y
-// React Router decide qué página mostrar.
-export const router = createBrowserRouter([
+// React Router decide qué página mostrar. Las pruebas montan estas mismas rutas en memoria.
+export const routes: RouteObject[] = [
   {
     element: <PublicLayout />,
     errorElement: <NotFoundPage />,
@@ -17,4 +17,6 @@ export const router = createBrowserRouter([
       { path: "*", element: <NotFoundPage /> },
     ],
   },
-]);
+];
+
+export const router = createBrowserRouter(routes);
