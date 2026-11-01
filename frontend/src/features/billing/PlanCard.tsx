@@ -1,4 +1,12 @@
-import { Link } from "react-router";
+import {
+  ArrowRight,
+  FileUp,
+  HardDrive,
+  UserPlus,
+  UsersRound,
+} from "lucide-react";
+
+import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 
 import type { PublicPlan } from "../../api/generated";
 import { ROUTES } from "../../config/routes.ts";
@@ -85,28 +93,36 @@ export function PlanCard({
 
       <ul className={styles.limits}>
         <li>
+          <UsersRound size={16} />
           {plan.included_users === 1
             ? "1 usuario"
             : `${plan.included_users} usuarios incluidos`}
         </li>
         {plan.extra_user_price_cop != null && (
           <li>
+            <UserPlus size={16} />
             Usuario adicional: {formatCop(plan.extra_user_price_cop)} al mes
           </li>
         )}
-        <li>{formatBytes(plan.storage_limit_bytes)} de almacenamiento</li>
-        <li>Archivos de hasta {formatBytes(plan.max_file_bytes)}</li>
+        <li>
+          <HardDrive size={16} />
+          {formatBytes(plan.storage_limit_bytes)} de almacenamiento
+        </li>
+        <li>
+          <FileUp size={16} />
+          Archivos de hasta {formatBytes(plan.max_file_bytes)}
+        </li>
       </ul>
 
-      <Link
+      <ButtonLink
         to={signupUrl}
-        className={
-          recommended ? `${styles.cta} ${styles.ctaPrimary}` : styles.cta
-        }
+        surface="dark"
+        variant={recommended ? "primary" : "secondary"}
         aria-describedby={headingId}
       >
         {isFree ? "Empezar la prueba" : `Elegir ${plan.name}`}
-      </Link>
+        <ArrowRight size={16} />
+      </ButtonLink>
     </article>
   );
 }
