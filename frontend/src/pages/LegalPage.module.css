@@ -1,0 +1,427 @@
+/* Plantilla de lectura de las políticas (UI-003), sobre el mismo fondo oscuro del sitio
+   público. El texto no pasa de 68 caracteres por línea para que se lea sin esfuerzo. */
+
+/* Bloque superior: sube por detrás del encabezado transparente para que el foco de luz no
+   se corte en el borde. */
+.head {
+  margin-top: calc(-1 * var(--header-height));
+  padding: calc(var(--header-height) + var(--space-16)) 0 var(--space-12);
+  background: radial-gradient(
+    56rem 28rem at 30% 0%,
+    color-mix(in srgb, var(--color-brand-blue) 24%, transparent),
+    transparent 70%
+  );
+}
+
+.inner {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+/* Cambio de política: cuatro pastillas; la actual queda marcada por NavLink (aria-current). */
+.switcherList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-8);
+  padding: 0;
+  list-style: none;
+}
+
+.switcherLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 12%, transparent);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-inverse-muted);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.switcherLink:hover {
+  border-color: color-mix(in srgb, var(--color-text-inverse) 28%, transparent);
+  color: var(--color-text-inverse);
+}
+
+.switcherLink[aria-current="page"] {
+  border-color: color-mix(in srgb, var(--color-primary-300) 40%, transparent);
+  background: var(--color-ink-700);
+  color: var(--color-text-inverse);
+}
+
+.title {
+  max-width: 820px;
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 52px;
+  letter-spacing: -0.028em;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  color: var(--color-text-inverse-muted);
+  font-size: 15px;
+}
+
+.version {
+  padding: 2px var(--space-3);
+  border: 1px solid
+    color-mix(in srgb, var(--color-primary-300) 30%, transparent);
+  border-radius: var(--radius-pill);
+  color: var(--color-primary-300);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.summary {
+  max-width: 68ch;
+  margin-top: var(--space-8);
+  padding: var(--space-6);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+  border-left: 3px solid var(--color-primary-400);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-ink-900) 70%, transparent);
+  font-size: 17px;
+  line-height: 28px;
+}
+
+.summaryLabel {
+  margin-bottom: var(--space-2);
+  color: var(--color-primary-300);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Índice lateral y texto. */
+.body {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 68ch);
+  gap: var(--space-16);
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) var(--space-24);
+}
+
+.aside {
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-6));
+  align-self: start;
+  display: grid;
+  gap: var(--space-6);
+  max-height: calc(100vh - var(--header-height) - var(--space-12));
+  overflow-y: auto;
+}
+
+.indexTitle {
+  margin-bottom: var(--space-3);
+  color: var(--color-text-inverse);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.indexToggle {
+  display: none;
+}
+
+.indexList {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: indice;
+}
+
+.indexList > li {
+  counter-increment: indice;
+}
+
+.indexLink {
+  display: flex;
+  gap: var(--space-2);
+  padding: 6px var(--space-3);
+  border-left: 2px solid
+    color-mix(in srgb, var(--color-text-inverse) 10%, transparent);
+  color: var(--color-text-inverse-muted);
+  font-size: 14px;
+  line-height: 20px;
+  text-decoration: none;
+  transition:
+    border-color var(--motion-base) var(--ease-standard),
+    color var(--motion-base) var(--ease-standard);
+}
+
+.indexLink::before {
+  content: counter(indice) ".";
+  min-width: 1.6em;
+  color: color-mix(in srgb, var(--color-text-inverse-muted) 70%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.indexContact .indexLink::before {
+  content: "";
+}
+
+.indexLink:hover {
+  color: var(--color-text-inverse);
+}
+
+.indexLink[aria-current="location"] {
+  border-left-color: var(--color-primary-400);
+  color: var(--color-text-inverse);
+}
+
+.print {
+  justify-self: start;
+}
+
+.article {
+  counter-reset: apartado;
+}
+
+.section {
+  counter-increment: apartado;
+  padding-bottom: var(--space-12);
+}
+
+.section + .section {
+  padding-top: var(--space-12);
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 7%, transparent);
+}
+
+.sectionTitle {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+  letter-spacing: -0.012em;
+}
+
+.sectionTitle::before {
+  content: counter(apartado);
+  flex: none;
+  color: var(--color-primary-300);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 30px;
+}
+
+/* Texto de cada apartado: lo escriben los archivos de features/legal sin clases propias. */
+.prose {
+  color: var(--color-text-inverse-muted);
+  font-size: 16px;
+  line-height: 28px;
+}
+
+.prose p + p,
+.prose p + ul,
+.prose ul + p,
+.prose h3 + p {
+  margin-top: var(--space-4);
+}
+
+.prose h3 {
+  margin-top: var(--space-6);
+  color: var(--color-text-inverse);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 26px;
+}
+
+.prose ul {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: var(--space-6);
+}
+
+.prose li::marker {
+  color: var(--color-primary-400);
+}
+
+.prose strong {
+  color: var(--color-text-inverse);
+  font-weight: 600;
+}
+
+/* Bloque final con los datos del responsable, igual en las cuatro políticas. */
+.contact {
+  padding: var(--space-8);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-ink-800) 70%, transparent),
+    color-mix(in srgb, var(--color-ink-900) 55%, transparent)
+  );
+}
+
+.contactTitle {
+  margin-bottom: var(--space-6);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.contactList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4) var(--space-8);
+  margin: 0;
+}
+
+.contactList dt {
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+}
+
+.contactList dd {
+  margin: 2px 0 0;
+  font-size: 15px;
+}
+
+@media (max-width: 960px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+
+  /* En una sola columna el índice va antes del texto, plegado tras su botón. */
+  .aside {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: var(--space-4);
+    border: 1px solid
+      color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-ink-900) 60%, transparent);
+  }
+
+  .indexToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 40px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-primary-300);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .index[data-open="false"] .indexList {
+    display: none;
+  }
+
+  .index[data-open="true"] .indexList {
+    margin-top: var(--space-3);
+  }
+}
+
+@media (max-width: 640px) {
+  .head {
+    padding: calc(var(--header-height) + var(--space-12)) 0 var(--space-8);
+  }
+
+  .inner,
+  .body {
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
+
+  .title {
+    font-size: 30px;
+    line-height: 38px;
+  }
+
+  .summary {
+    padding: var(--space-4);
+    font-size: 16px;
+    line-height: 26px;
+  }
+
+  .sectionTitle {
+    font-size: 19px;
+    line-height: 27px;
+  }
+
+  .contact {
+    padding: var(--space-6);
+  }
+}
+
+/* Al imprimir queda solo el texto: sin índice, sin pastillas y en tinta oscura sobre blanco. */
+@media print {
+  .head {
+    margin-top: 0;
+    padding: 0 0 var(--space-6);
+    background: none;
+  }
+
+  .switcher,
+  .aside {
+    display: none;
+  }
+
+  .body {
+    display: block;
+    padding: 0;
+  }
+
+  .summary,
+  .contact {
+    border-color: var(--color-border-subtle);
+    background: none;
+  }
+
+  .prose,
+  .prose strong,
+  .prose h3,
+  .meta,
+  .contactList dt {
+    color: var(--color-text-primary);
+  }
+
+  .section,
+  .section + .section {
+    padding: var(--space-4) 0;
+    border-color: var(--color-border-subtle);
+  }
+
+  .version,
+  .summaryLabel,
+  .sectionTitle::before {
+    color: var(--color-primary-700);
+  }
+
+  .sectionTitle {
+    break-after: avoid;
+  }
+}

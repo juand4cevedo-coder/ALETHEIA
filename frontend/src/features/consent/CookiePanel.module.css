@@ -1,0 +1,218 @@
+/* Panel de cookies (UI-004): esquina inferior en escritorio y hoja inferior en celular. No
+   cubre la página ni la oscurece, para que se pueda seguir leyendo. */
+.panel {
+  position: fixed;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  z-index: 25;
+  display: grid;
+  gap: var(--space-4);
+  width: min(400px, calc(100% - 2 * var(--space-6)));
+  padding: var(--space-6);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 12%, transparent);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    180deg,
+    var(--color-ink-800),
+    var(--color-ink-900)
+  );
+  box-shadow: var(--shadow-raised);
+  color: var(--color-text-inverse);
+  animation: enter var(--motion-slow) var(--ease-out);
+}
+
+.panel :focus-visible {
+  outline-color: var(--color-primary-300);
+}
+
+.panel a {
+  color: var(--color-primary-300);
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.title svg {
+  color: var(--color-primary-300);
+}
+
+.title:focus {
+  outline: none;
+}
+
+.title:focus-visible {
+  outline: 2px solid var(--color-primary-300);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: calc(-1 * var(--space-2));
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-inverse-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.close:hover {
+  background: color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+  color: var(--color-text-inverse);
+}
+
+.text {
+  color: var(--color-text-inverse-muted);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.configure {
+  justify-self: center;
+  min-height: 32px;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--color-primary-300);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.categories {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.category {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-ink-950) 40%, transparent);
+}
+
+.categoryName {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.categoryText {
+  margin-top: var(--space-1);
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.always {
+  flex: none;
+  color: var(--color-success-400);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Interruptor: una casilla nativa con role="switch", dibujada con su propio fondo. */
+.switch {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 24px;
+  margin: 0;
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 24%, transparent);
+  border-radius: var(--radius-pill);
+  background: var(--color-ink-700);
+  cursor: pointer;
+  appearance: none;
+  transition:
+    background-color var(--motion-base) var(--ease-standard),
+    border-color var(--motion-base) var(--ease-standard);
+}
+
+.switch::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-pill);
+  background: var(--color-text-inverse-muted);
+  transition:
+    transform var(--motion-base) var(--ease-standard),
+    background-color var(--motion-base) var(--ease-standard);
+}
+
+.switch:checked {
+  border-color: var(--color-primary-400);
+  background: var(--color-primary-400);
+}
+
+.switch:checked::before {
+  background: var(--color-ink-950);
+  transform: translateX(16px);
+}
+
+@media (max-width: 640px) {
+  /* Hoja inferior de borde a borde, por encima de la barra del sistema. */
+  .panel {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    padding: var(--space-6) var(--space-4)
+      calc(var(--space-6) + env(safe-area-inset-bottom));
+    border-width: 1px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+}
+
+@media print {
+  .panel {
+    display: none;
+  }
+}

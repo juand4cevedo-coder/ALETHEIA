@@ -1,0 +1,26 @@
+.more {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-8);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-primary-300);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link svg {
+  transition: transform var(--motion-base) var(--ease-standard);
+}
+
+.link:hover {
+  color: var(--color-text-inverse);
+}
+
+.link:hover svg {
+  transform: translateX(3px);
+}

@@ -1,0 +1,319 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ALETHEIA API",
+    "version": "0.2.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "salud"
+        ],
+        "summary": "Estado del servicio y de la base de datos",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "La base de datos no responde.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans": {
+      "get": {
+        "tags": [
+          "planes"
+        ],
+        "summary": "Catálogo público de planes",
+        "operationId": "list_plans",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PublicPlan"
+                  },
+                  "type": "array",
+                  "title": "Response List Plans"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "El catálogo no está disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthStatus": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "database": {
+            "type": "string",
+            "const": "ok",
+            "title": "Database"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "database"
+        ],
+        "title": "HealthStatus",
+        "description": "Estado del servicio y de la base de datos cuando ambos responden."
+      },
+      "Problem": {
+        "additionalProperties": false,
+        "description": "Error en formato Problem Details (RFC 9457).",
+        "properties": {
+          "type": {
+            "description": "Identificador del tipo de problema.",
+            "title": "Type",
+            "type": "string"
+          },
+          "title": {
+            "description": "Nombre del código HTTP.",
+            "title": "Title",
+            "type": "string"
+          },
+          "status": {
+            "description": "Código HTTP de la respuesta.",
+            "title": "Status",
+            "type": "integer"
+          },
+          "instance": {
+            "description": "Ruta de la petición que falló.",
+            "title": "Instance",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Explicación para quien usa la API.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "Identificador para encontrar la petición en registros.",
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "instance"
+        ],
+        "title": "Problem",
+        "type": "object"
+      },
+      "PublicPlan": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "description": "Código estable del plan, por ejemplo essential."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nombre comercial del plan."
+          },
+          "monthly_price_cop": {
+            "type": "integer",
+            "title": "Monthly Price Cop",
+            "description": "Precio mensual en pesos colombianos; 0 si es gratis."
+          },
+          "annual_price_cop": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annual Price Cop",
+            "description": "Precio del pago anual en pesos; nulo si el plan no se vende por año."
+          },
+          "included_users": {
+            "type": "integer",
+            "title": "Included Users",
+            "description": "Usuarios incluidos en el precio."
+          },
+          "extra_user_price_cop": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extra User Price Cop",
+            "description": "Precio mensual de cada usuario adicional; nulo si el plan no los admite."
+          },
+          "storage_limit_bytes": {
+            "type": "integer",
+            "title": "Storage Limit Bytes",
+            "description": "Almacenamiento total del plan, en bytes."
+          },
+          "max_file_bytes": {
+            "type": "integer",
+            "title": "Max File Bytes",
+            "description": "Tamaño máximo de un archivo, en bytes."
+          },
+          "trial_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trial Days",
+            "description": "Días de duración si el plan es la prueba gratuita; nulo en los demás."
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "monthly_price_cop",
+          "annual_price_cop",
+          "included_users",
+          "extra_user_price_cop",
+          "storage_limit_bytes",
+          "max_file_bytes",
+          "trial_days"
+        ],
+        "title": "PublicPlan",
+        "description": "Plan que se muestra en la página de precios, con sus precios y límites del catálogo."
+      },
+      "ValidationErrorItem": {
+        "additionalProperties": false,
+        "description": "Un dato inválido de la solicitud: dónde está, qué falló y el tipo de error.",
+        "properties": {
+          "loc": {
+            "description": "Parte de la solicitud y nombre del campo inválido.",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Loc",
+            "type": "array"
+          },
+          "msg": {
+            "description": "Mensaje del validador.",
+            "title": "Msg",
+            "type": "string"
+          },
+          "type": {
+            "description": "Tipo de error del validador.",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationErrorItem",
+        "type": "object"
+      },
+      "ValidationProblem": {
+        "additionalProperties": false,
+        "description": "Problem Details de un 422: agrega la lista de datos inválidos, sin los valores recibidos.",
+        "properties": {
+          "type": {
+            "description": "Identificador del tipo de problema.",
+            "title": "Type",
+            "type": "string"
+          },
+          "title": {
+            "description": "Nombre del código HTTP.",
+            "title": "Title",
+            "type": "string"
+          },
+          "status": {
+            "description": "Código HTTP de la respuesta.",
+            "title": "Status",
+            "type": "integer"
+          },
+          "instance": {
+            "description": "Ruta de la petición que falló.",
+            "title": "Instance",
+            "type": "string"
+          },
+          "detail": {
+            "description": "Explicación para quien usa la API.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "Identificador para encontrar la petición en registros.",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "errors": {
+            "description": "Datos inválidos.",
+            "items": {
+              "$ref": "#/components/schemas/ValidationErrorItem"
+            },
+            "title": "Errors",
+            "type": "array"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "instance",
+          "errors"
+        ],
+        "title": "ValidationProblem",
+        "type": "object"
+      }
+    }
+  }
+}
