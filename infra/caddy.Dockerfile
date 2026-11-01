@@ -18,7 +18,9 @@ RUN mkdir /opt/pnpm \
 ENV CI=true
 WORKDIR /web
 # Primero solo las dependencias: si el código cambia pero ellas no, Docker reutiliza esta capa.
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
+# pnpm-workspace.yaml lleva los overrides y la espera mínima de ADR-019; sin él, pnpm rechaza
+# el archivo de bloqueo.
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
 RUN pnpm build

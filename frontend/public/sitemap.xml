@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Solo páginas públicas que ya existen. Cada historia que publique una página la agrega. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://aletheia.sbs/</loc>
+  </url>
+  <url>
+    <loc>https://aletheia.sbs/precios</loc>
+  </url>
+</urlset>

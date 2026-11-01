@@ -153,6 +153,9 @@ jobs:
       - name: Formato con Prettier
         run: pnpm format:check
 
+      - name: Pruebas con Vitest
+        run: pnpm test
+
       - name: Tipos y construcción
         run: pnpm build
 
@@ -190,10 +193,30 @@ jobs:
         working-directory: frontend
         run: pnpm audit
 
+  images:
+    name: Imágenes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Las mismas construcciones que hace Publicar, sin subir nada. Así un Dockerfile roto se
+      # descubre en el pull request y no el día del release.
+      - name: Construir la imagen de la API
+        run: docker build --platform linux/amd64 --file backend/Dockerfile backend
+
+      - name: Construir la imagen web
+        run: docker build --platform linux/amd64 --file infra/caddy.Dockerfile .
+
   ci-ok:
     name: CI aprobada
     if: ${{ always() }}
-    needs: [backend, frontend, dependencies]
+    needs: [backend, frontend, dependencies, images]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: {}
@@ -203,4 +226,4 @@ jobs:
         run: exit 1
 
       - name: Confirmar el resultado
-        run: echo "Backend, frontend y dependencias pasaron."
+        run: echo "Backend, frontend, dependencias e imágenes pasaron."

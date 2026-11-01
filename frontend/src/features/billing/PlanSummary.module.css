@@ -1,0 +1,95 @@
+.wrap {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.skeleton {
+  height: 440px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    100deg,
+    var(--color-ink-900) 30%,
+    var(--color-ink-800) 50%,
+    var(--color-ink-900) 70%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.6s var(--ease-standard) infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: 0 0;
+  }
+}
+
+.error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: 1px solid color-mix(in srgb, var(--color-error-400) 35%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-error-400) 8%, transparent);
+}
+
+.error p {
+  flex: 1 1 280px;
+}
+
+.corporate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-8);
+  border: 1px dashed
+    color-mix(in srgb, var(--color-text-inverse) 18%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-ink-900) 50%, transparent);
+}
+
+.corporateIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(
+    145deg,
+    var(--color-brand-blue),
+    var(--color-brand-navy)
+  );
+  color: var(--color-text-inverse);
+}
+
+.corporateCopy {
+  flex: 1 1 320px;
+  color: var(--color-text-inverse-muted);
+  font-size: 15px;
+}
+
+.corporateTitle {
+  margin-bottom: var(--space-1);
+  color: var(--color-text-inverse);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 26px;
+}
+
+@media (max-width: 640px) {
+  .corporate {
+    padding: var(--space-6);
+  }
+}

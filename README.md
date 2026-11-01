@@ -139,11 +139,17 @@ El código del frontend se organiza así (ADR-021):
 | `src/layouts` | Los marcos que comparten varias páginas, como el encabezado y el pie del sitio público |
 | `src/pages` | Una página por ruta |
 | `src/features/<dominio>` | Componentes y funciones de un dominio, por ejemplo `billing` para planes y precios |
+| `src/components/ui` | Componentes del sistema de diseño que usan varias páginas: botón, huella, entrada al desplazarse (`Reveal`) y luz que sigue al puntero (`useSpotlight`) |
+| `src/features/landing` | Las secciones de la página de inicio, una por archivo |
 | `src/styles` | Los tokens del sistema de diseño y los estilos globales |
-| `src/config` | Datos del sitio que se repiten, como el correo de contacto |
+| `src/config` | Datos del sitio que se repiten, como el correo de contacto y las rutas públicas |
+| `src/test` | Lo que comparten las pruebas: configuración, catálogo de ejemplo y revisión con axe |
+| `public` | Archivos que se publican tal cual: íconos, imagen para redes, `robots.txt` y `sitemap.xml` |
 | `src/api/generated` | El cliente generado desde el contrato; no se edita a mano |
 
-Los datos de la API se piden con TanStack Query y las opciones que genera Hey API, por ejemplo `useQuery(listPlansOptions())`. Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css`.
+Los datos de la API se piden con TanStack Query y las opciones que genera Hey API, por ejemplo `useQuery(listPlansOptions())`. Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css`. Los íconos se importan de `lucide-react` uno por uno (ADR-023).
+
+Las pruebas de componentes usan Vitest, Testing Library y axe-core (ADR-022). Cada prueba vive junto al archivo que prueba, con el sufijo `.test.tsx`. `pnpm test` las ejecuta una vez y `pnpm test:watch` las repite cada vez que se guarda un archivo.
 
 ### Revisiones antes de cada commit
 
@@ -180,6 +186,7 @@ pnpm api:generate
 git status --short src/api/generated
 pnpm lint
 pnpm format:check
+pnpm test
 pnpm build
 ```
 
