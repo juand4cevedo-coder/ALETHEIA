@@ -357,3 +357,22 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* Al imprimir una página (por ejemplo, una política legal) solo queda el contenido. */
+@media print {
+  .shell {
+    background: none;
+    color: var(--color-text-primary);
+  }
+
+  .skipLink,
+  .header,
+  .sheet,
+  .footer {
+    display: none;
+  }
+
+  .shell :where(a:not([class])) {
+    color: var(--color-primary-700);
+  }
+}
