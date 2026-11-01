@@ -142,6 +142,7 @@ El código del frontend se organiza así (ADR-021):
 | `src/components/ui` | Componentes del sistema de diseño que usan varias páginas: botón, huella, entrada al desplazarse (`Reveal`) y luz que sigue al puntero (`useSpotlight`) |
 | `src/features/landing` | Las secciones de la página de inicio, una por archivo |
 | `src/features/legal` | El texto de las cuatro políticas legales, uno por archivo, que muestra la página `/legal/<política>` |
+| `src/features/consent` | El panel de cookies y la elección del visitante, que se guarda en el almacenamiento local del navegador |
 | `src/styles` | Los tokens del sistema de diseño y los estilos globales |
 | `src/config` | Datos del sitio que se repiten: el correo de contacto, las rutas públicas y, en `legal.ts`, la versión vigente de las políticas y los datos del responsable |
 | `src/test` | Lo que comparten las pruebas: configuración, catálogo de ejemplo y revisión con axe |
@@ -151,6 +152,8 @@ El código del frontend se organiza así (ADR-021):
 Los datos de la API se piden con TanStack Query y las opciones que genera Hey API, por ejemplo `useQuery(listPlansOptions())`. Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css`. Los íconos se importan de `lucide-react` uno por uno (ADR-023).
 
 Las políticas legales comparten una sola versión y fecha de vigencia, definidas en `src/config/legal.ts`. Si un cambio de texto altera derechos u obligaciones, se sube la versión ahí y en ningún otro lugar: el registro guarda qué versión aceptó cada persona.
+
+El sitio solo usa las cookies de sesión. Cualquier herramienta no esencial que se agregue, como una de analítica, se carga únicamente si `hasCookieConsent("analytics")` devuelve `true`, y su llegada sube `CONSENT_VERSION` en `src/features/consent/cookieConsent.ts` para que el panel vuelva a preguntar.
 
 Las pruebas de componentes usan Vitest, Testing Library y axe-core (ADR-022). Cada prueba vive junto al archivo que prueba, con el sufijo `.test.tsx`. `pnpm test` las ejecuta una vez y `pnpm test:watch` las repite cada vez que se guarda un archivo.
 

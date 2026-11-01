@@ -15,6 +15,8 @@ window.scrollTo = () => {};
 // Desmonta lo que cada prueba renderizó, para que la siguiente empiece con la página vacía.
 afterEach(() => {
   cleanup();
+  // Cada prueba empieza como una primera visita, sin elección de cookies guardada.
+  window.localStorage.clear();
 });
 
 // jsdom aún no implementa showModal ni close de <dialog>. Este reemplazo mínimo abre y cierra

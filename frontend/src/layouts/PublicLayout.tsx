@@ -6,6 +6,8 @@ import markUrl from "../assets/aletheia-mark.png";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
+import { CookiePanel } from "../features/consent/CookiePanel.tsx";
+import { useCookieChoice } from "../features/consent/useCookieChoice.ts";
 import styles from "./PublicLayout.module.css";
 
 // Año del aviso de derechos, calculado una vez al cargar el sitio.
@@ -51,6 +53,12 @@ export function PublicLayout() {
   const menuRef = useRef<HTMLDialogElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  // El panel de cookies aparece solo mientras no haya una elección guardada (primera visita o
+  // versión nueva del consentimiento) y cuando el visitante lo abre desde el pie.
+  const cookieChoice = useCookieChoice();
+  const [cookiesOpen, setCookiesOpen] = useState(false);
+  const [cookieNotice, setCookieNotice] = useState("");
+  const cookiesButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     // React descarta el cambio de estado si el valor no cambió, así que el listener solo
@@ -70,11 +78,38 @@ export function PublicLayout() {
     menuRef.current?.close();
   }
 
+  function openCookies() {
+    setCookieNotice("");
+    setCookiesOpen(true);
+  }
+
+  function closeCookies(saved: boolean) {
+    if (saved) setCookieNotice("Guardamos su elección sobre las cookies.");
+    if (cookiesOpen) {
+      setCookiesOpen(false);
+      // El foco vuelve al botón del pie desde el que se abrió el panel.
+      cookiesButtonRef.current?.focus();
+    }
+  }
+
   return (
     <div className={styles.shell}>
       <a className={styles.skipLink} href="#contenido">
         Saltar al contenido
       </a>
+
+      {(cookiesOpen || cookieChoice === null) && (
+        <CookiePanel
+          // Abrirlo desde el pie reinicia el panel en la vista de configuración.
+          key={cookiesOpen ? "pie" : "aviso"}
+          choice={cookieChoice}
+          openedByVisitor={cookiesOpen}
+          onClose={closeCookies}
+        />
+      )}
+      <p role="status" className="visually-hidden">
+        {cookieNotice}
+      </p>
 
       <header
         className={styles.header}
@@ -216,6 +251,18 @@ export function PublicLayout() {
                     </Link>
                   </li>
                 ))}
+                {group.title === "Legal" && (
+                  <li>
+                    <button
+                      ref={cookiesButtonRef}
+                      type="button"
+                      className={`${styles.footerLink} ${styles.footerButton}`}
+                      onClick={openCookies}
+                    >
+                      Configurar cookies
+                    </button>
+                  </li>
+                )}
               </ul>
             </nav>
           ))}
