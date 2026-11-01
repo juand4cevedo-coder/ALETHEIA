@@ -25,3 +25,4 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-019](adr-019.md) | Espera mínima antes de adoptar versiones nuevas | Aceptado | 31/10/2026 |
 | [ADR-020](adr-020.md) | Contrato guardado en el repositorio y cliente generado con Hey API | Aceptado | 31/10/2026 |
 | [ADR-021](adr-021.md) | Rutas con React Router, datos con TanStack Query y estilos con tokens propios | Aceptado | 31/10/2026 |
+| [ADR-022](adr-022.md) | Pruebas del frontend con Vitest, Testing Library, jsdom y axe-core | Aceptado | 01/11/2026 |
