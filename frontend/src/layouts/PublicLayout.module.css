@@ -307,6 +307,16 @@
   color: var(--color-text-inverse);
 }
 
+/* "Configurar cookies" abre un panel, así que es un botón, pero se ve como los enlaces. */
+.footerButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
 .footerBottom {
   display: flex;
   flex-wrap: wrap;

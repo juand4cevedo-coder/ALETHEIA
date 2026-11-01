@@ -93,7 +93,7 @@ export const cookiePolicy: LegalDocument = {
           no sería posible ingresar de forma segura. Si en el futuro agregamos
           cookies que no sean indispensables, permanecerán desactivadas hasta
           que usted las acepte, y podrá cambiar su decisión en cualquier momento
-          desde el panel de cookies.
+          con el botón Configurar cookies, al pie de cualquier página.
         </p>
       ),
     },
