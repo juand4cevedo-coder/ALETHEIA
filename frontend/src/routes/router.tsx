@@ -2,6 +2,7 @@ import { createBrowserRouter, type RouteObject } from "react-router";
 
 import { PublicLayout } from "../layouts/PublicLayout.tsx";
 import { HomePage } from "../pages/HomePage.tsx";
+import { LegalPage } from "../pages/LegalPage.tsx";
 import { NotFoundPage } from "../pages/NotFoundPage.tsx";
 import { PricingPage } from "../pages/PricingPage.tsx";
 
@@ -14,6 +15,7 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <HomePage /> },
       { path: "precios", element: <PricingPage /> },
+      { path: "legal/:pagina", element: <LegalPage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },
