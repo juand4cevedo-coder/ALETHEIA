@@ -32,7 +32,7 @@ botocore-stubs = "2026-10-28T00:00:00Z"
 
 [dependency-groups]
 dev = [
-    "boto3-stubs[ssm]==1.43.120",
+    "boto3-stubs[sesv2,ssm]==1.43.120",
     "httpx2==2.16.0",
     "mypy==2.4.0",
     "pytest==9.1.1",
