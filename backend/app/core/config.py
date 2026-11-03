@@ -69,6 +69,10 @@ class Settings(DatabaseSettings):
 
     environment: Environment = "development"
     log_level: LogLevel = "INFO"
+    # Mailpit de infra/compose.dev.yaml o de la CI. En production el correo sale por Amazon
+    # SES (app.adapters.email) y estos dos valores no se usan.
+    smtp_host: str = "127.0.0.1"
+    smtp_port: int = Field(default=1025, ge=1, le=65535)
 
     @model_validator(mode="after")
     def _debug_only_in_development(self) -> Self:
