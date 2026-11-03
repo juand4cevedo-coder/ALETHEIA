@@ -20,6 +20,9 @@ def create_db_engine(settings: Settings) -> Engine:
         settings.database_url.get_secret_value().encoded_string(),
         # Descarta conexiones caídas del pool antes de entregarlas.
         pool_pre_ping=True,
+        # Un error de SQL no repite los valores de la consulta: sin esto, la traza que queda en
+        # los registros traería correos, nombres o hashes de contraseña de esa petición.
+        hide_parameters=True,
         connect_args={"connect_timeout": _CONNECT_TIMEOUT_SECONDS},
     )
 
