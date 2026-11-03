@@ -70,6 +70,67 @@
           }
         }
       }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Crear una cuenta con su organización y la prueba gratis",
+        "operationId": "register_account",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationAccepted"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Los textos legales cambiaron; hay que recargar.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados registros desde esta IP.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -222,6 +283,77 @@
         ],
         "title": "PublicPlan",
         "description": "Plan que se muestra en la página de precios, con sus precios y límites del catálogo."
+      },
+      "RegisterRequest": {
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Full Name",
+            "description": "Nombre de la persona."
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo de la cuenta; también será el de acceso."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 12,
+            "title": "Password",
+            "description": "Contraseña de 12 a 128 caracteres."
+          },
+          "organization_name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Organization Name",
+            "description": "Nombre de la oficina o firma."
+          },
+          "legal_version": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Legal Version",
+            "description": "Versión de los términos y la privacidad que vio la persona."
+          },
+          "accepts_legal_terms": {
+            "type": "boolean",
+            "const": true,
+            "title": "Accepts Legal Terms",
+            "description": "Acepta los términos y autoriza el tratamiento de sus datos (CMP-UI-004)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "full_name",
+          "email",
+          "password",
+          "organization_name",
+          "legal_version",
+          "accepts_legal_terms"
+        ],
+        "title": "RegisterRequest",
+        "description": "Datos para crear una cuenta con su organización y la prueba gratis (API-003)."
+      },
+      "RegistrationAccepted": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Qué sigue para la persona."
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "RegistrationAccepted",
+        "description": "La misma respuesta para un correo nuevo y para uno ya registrado (CA-HU-005-03)."
       },
       "ValidationErrorItem": {
         "additionalProperties": false,

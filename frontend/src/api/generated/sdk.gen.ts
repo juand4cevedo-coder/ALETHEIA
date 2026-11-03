@@ -15,6 +15,9 @@ import type {
   ListPlansData,
   ListPlansErrors,
   ListPlansResponses,
+  RegisterAccountData,
+  RegisterAccountErrors,
+  RegisterAccountResponses,
 } from "./types.gen";
 
 export type Options<
@@ -57,3 +60,26 @@ export const listPlans = <ThrowOnError extends boolean = false>(
     ListPlansErrors,
     ThrowOnError
   >({ url: "/api/v1/plans", ...options });
+
+/**
+ * Crear una cuenta con su organización y la prueba gratis
+ */
+export const registerAccount = <ThrowOnError extends boolean = false>(
+  options: Options<RegisterAccountData, ThrowOnError>,
+): RequestResult<
+  RegisterAccountResponses,
+  RegisterAccountErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    RegisterAccountResponses,
+    RegisterAccountErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/register",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
