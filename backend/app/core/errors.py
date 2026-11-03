@@ -12,6 +12,7 @@ from sqlalchemy.exc import OperationalError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.logs import request_id_var
+from app.services.rate_limit import RateLimitExceededError
 
 PROBLEM_JSON = "application/problem+json"
 # Segundos que el cliente debería esperar antes de reintentar cuando la base no responde.
@@ -85,6 +86,18 @@ async def _database_unavailable_handler(request: Request, exc: Exception) -> JSO
     )
 
 
+async def _rate_limit_handler(request: Request, exc: Exception) -> JSONResponse:
+    if not isinstance(exc, RateLimitExceededError):  # Lo garantiza el registro de abajo.
+        raise TypeError(type(exc).__name__)
+    # El mismo mensaje para una cuenta real que para una inexistente (RN-026).
+    return problem_response(
+        request,
+        HTTPStatus.TOO_MANY_REQUESTS,
+        detail="Demasiados intentos. Espera un momento antes de volver a intentarlo.",
+        headers={"Retry-After": str(exc.retry_after), "Cache-Control": "no-store"},
+    )
+
+
 def unexpected_error_response(request: Request) -> JSONResponse:
     """Respuesta 500 genérica: la traza queda en los registros, nunca en la respuesta."""
     return problem_response(
@@ -95,9 +108,11 @@ def unexpected_error_response(request: Request) -> JSONResponse:
 
 
 def register_exception_handlers(app: FastAPI) -> None:
-    """Errores HTTP, de validación y de base caída en Problem Details; los inesperados los atiende
-    RequestContextMiddleware, que conoce el request_id de la petición."""
+    """Errores HTTP, de validación, de base caída y de límite de peticiones en Problem Details;
+    los inesperados los atiende RequestContextMiddleware, que conoce el request_id."""
     app.add_exception_handler(StarletteHTTPException, _http_exception_handler)
     app.add_exception_handler(RequestValidationError, _validation_exception_handler)
     # Sin conexión con PostgreSQL la respuesta es 503, que el cliente puede reintentar, no 500.
     app.add_exception_handler(OperationalError, _database_unavailable_handler)
+    # Límite de peticiones (RN-026): 429 con los segundos que faltan en Retry-After.
+    app.add_exception_handler(RateLimitExceededError, _rate_limit_handler)
