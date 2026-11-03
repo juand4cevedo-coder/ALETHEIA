@@ -117,7 +117,7 @@ def test_una_version_legal_vieja_pide_recargar(client: TestClient, db: Session) 
 
     assert response.status_code == 409
     assert response.headers["content-type"] == PROBLEM_JSON
-    assert "Recarga la página" in response.json()["detail"]
+    assert "Recargue la página" in response.json()["detail"]
     assert _users(db) == []
 
 

@@ -12,7 +12,7 @@ from app.services import accounts as accounts_service
 router = APIRouter(tags=["cuenta"])
 
 _REGISTRATION_ACCEPTED = (
-    "Si el correo puede usarse, te enviamos un enlace para verificarlo. Revisa tu bandeja de "
+    "Si el correo puede usarse, le enviamos un enlace para verificarlo. Revise su bandeja de "
     "entrada y la carpeta de spam."
 )
 
@@ -43,8 +43,8 @@ def register_account(
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail=(
-                "Los términos o la política de privacidad cambiaron. Recarga la página y "
-                "revísalos antes de crear la cuenta."
+                "Los términos o la política de privacidad cambiaron. Recargue la página y "
+                "revíselos antes de crear la cuenta."
             ),
         ) from None
     return RegistrationAccepted(detail=_REGISTRATION_ACCEPTED)
