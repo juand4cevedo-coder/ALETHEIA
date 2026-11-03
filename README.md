@@ -69,6 +69,7 @@ Abre `backend/.env` y reemplaza cada `CLAVE` por la del usuario correspondiente 
 | `ALETHEIA_LOG_LEVEL` | No | `DEBUG`; fuera de `development` solo se aceptan `INFO`, `WARNING` y `ERROR` |
 | `ALETHEIA_MIGRATION_DATABASE_URL` | Solo para migraciones | `postgresql+psycopg://aletheia_owner:CLAVE@127.0.0.1:5432/aletheia` |
 | `ALETHEIA_DATABASE_PASSWORD_PARAMETER` y `ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER` | Solo en producción | No se definen: fuera de producción la API las rechaza |
+| `ALETHEIA_SMTP_HOST` y `ALETHEIA_SMTP_PORT` | No | `127.0.0.1` y `1025`, el Mailpit de Compose |
 
 Con los servicios de Compose encendidos:
 
@@ -80,6 +81,14 @@ uv run python -m uvicorn app.main:create_app --factory
 | --- | --- |
 | http://127.0.0.1:8000/api/v1/health | Estado de la API y de la base de datos: 200 o 503 |
 | http://127.0.0.1:8000/api/v1/docs | Documentación interactiva de la API |
+
+Los correos y las demás tareas en segundo plano los ejecuta el trabajador, en otra terminal y desde `backend/`:
+
+```powershell
+uv run python -m app.worker
+```
+
+Toma las tareas de la tabla `jobs` y reintenta las que fallan con espera creciente. Fuera de producción todo correo va a Mailpit, así que se lee en http://127.0.0.1:8025 y nunca sale a internet. Con Ctrl+C termina la tarea en curso antes de salir.
 
 Si falta una variable obligatoria o tiene un valor inválido, la API no arranca e indica el campo sin mostrar su valor. Los registros salen en JSON por la salida estándar; cada petición lleva un `request_id`, que también viaja en la cabecera `X-Request-ID` y en cada respuesta de error.
 
@@ -183,7 +192,7 @@ $env:ALETHEIA_TEST_MIGRATION_DATABASE_URL = ((Get-Content .env | Where-Object { 
 uv run pytest
 ```
 
-Las pruebas usan la base `aletheia_test`, nunca la de desarrollo. Al empezar reconstruyen su esquema con las migraciones, y cada prueba corre dentro de una transacción que se deshace al terminar, así que no dejan datos. Las dos variables toman las URL de `backend/.env` y solo cambian el nombre de la base, de modo que la clave no aparece en pantalla ni en el historial de PowerShell. pytest muestra los fallos en formato corto, sin los argumentos de las pruebas, para que la URL tampoco aparezca en su salida.
+Las pruebas del correo envían a Mailpit y leen lo que llegó en http://127.0.0.1:8025; si Mailpit está en otra dirección, se indica en `ALETHEIA_TEST_MAILPIT_URL`. Las pruebas usan la base `aletheia_test`, nunca la de desarrollo. Al empezar reconstruyen su esquema con las migraciones, y cada prueba corre dentro de una transacción que se deshace al terminar, así que no dejan datos. Las dos variables toman las URL de `backend/.env` y solo cambian el nombre de la base, de modo que la clave no aparece en pantalla ni en el historial de PowerShell. pytest muestra los fallos en formato corto, sin los argumentos de las pruebas, para que la URL tampoco aparezca en su salida.
 
 Frontend, desde `frontend/`:
 
