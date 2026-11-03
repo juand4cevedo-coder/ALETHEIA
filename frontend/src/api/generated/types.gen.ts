@@ -127,6 +127,64 @@ export type PublicPlan = {
 };
 
 /**
+ * RegisterRequest
+ *
+ * Datos para crear una cuenta con su organización y la prueba gratis (API-003).
+ */
+export type RegisterRequest = {
+  /**
+   * Full Name
+   *
+   * Nombre de la persona.
+   */
+  full_name: string;
+  /**
+   * Email
+   *
+   * Correo de la cuenta; también será el de acceso.
+   */
+  email: string;
+  /**
+   * Password
+   *
+   * Contraseña de 12 a 128 caracteres.
+   */
+  password: string;
+  /**
+   * Organization Name
+   *
+   * Nombre de la oficina o firma.
+   */
+  organization_name: string;
+  /**
+   * Legal Version
+   *
+   * Versión de los términos y la privacidad que vio la persona.
+   */
+  legal_version: string;
+  /**
+   * Accepts Legal Terms
+   *
+   * Acepta los términos y autoriza el tratamiento de sus datos (CMP-UI-004).
+   */
+  accepts_legal_terms: true;
+};
+
+/**
+ * RegistrationAccepted
+ *
+ * La misma respuesta para un correo nuevo y para uno ya registrado (CA-HU-005-03).
+ */
+export type RegistrationAccepted = {
+  /**
+   * Detail
+   *
+   * Qué sigue para la persona.
+   */
+  detail: string;
+};
+
+/**
  * ValidationErrorItem
  *
  * Un dato inválido de la solicitud: dónde está, qué falló y el tipo de error.
@@ -253,3 +311,38 @@ export type ListPlansResponses = {
 };
 
 export type ListPlansResponse = ListPlansResponses[keyof ListPlansResponses];
+
+export type RegisterAccountData = {
+  body: RegisterRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/register";
+};
+
+export type RegisterAccountErrors = {
+  /**
+   * Los textos legales cambiaron; hay que recargar.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados registros desde esta IP.
+   */
+  429: Problem;
+};
+
+export type RegisterAccountError =
+  RegisterAccountErrors[keyof RegisterAccountErrors];
+
+export type RegisterAccountResponses = {
+  /**
+   * Successful Response
+   */
+  202: RegistrationAccepted;
+};
+
+export type RegisterAccountResponse =
+  RegisterAccountResponses[keyof RegisterAccountResponses];
