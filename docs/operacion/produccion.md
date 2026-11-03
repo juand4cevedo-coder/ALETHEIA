@@ -2,7 +2,7 @@
 
 Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su despliegue según ADR-018: qué existe, cómo quedó configurado y cómo se comprobó. Aquí no hay claves, contraseñas ni llaves privadas. Las claves viven en Parameter Store y la llave SSH solo en el equipo del administrador.
 
-Última actualización: 30/10/2026, con TT-008.
+Última actualización: 03/11/2026, con TT-010.
 
 ## Cuenta y costos
 
@@ -38,6 +38,7 @@ Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su
 ## Red y DNS
 
 - El dominio se compró en Hostinger y su DNS sigue ahí: `A @` hacia 3.22.173.241 y `CNAME www` hacia `aletheia.sbs`, los dos con TTL de 300 segundos. El certificado lo saca Caddy; la sección SSL de Hostinger no aplica.
+- El correo también depende de este DNS. Hostinger publica el MX, el SPF de la raíz y las tres firmas `hostingermail-*` del buzón `contacto@aletheia.sbs`. Amazon SES usa tres CNAME `*._domainkey` hacia `dkim.amazonses.com`, y `bounce` lleva su propio MX y su SPF, así que el SPF de la raíz no se toca. El único DMARC es `_dmarc`, con `p=none` y los informes dirigidos a `contacto@aletheia.sbs`.
 - No hay registros AAAA ni CAA. Un AAAA que apunte a otra parte hace fallar la validación de Let's Encrypt, y la máquina no tiene IPv6.
 - LLMNR y mDNS quedaron apagados en `/etc/systemd/resolved.conf.d/10-aletheia.conf`. Venían activos en la imagen de Debian y no tienen función en un servidor en la nube.
 
@@ -81,9 +82,23 @@ El objeto `prueba/tt-007.bin` quedó a propósito en el bucket de respaldos: lo 
 | Política de la llave | La predeterminada: los permisos se conceden por IAM |
 | Uso | Envolver con `RSAES_OAEP_SHA_256` la llave de cada caso (ADR-014) |
 
+## Amazon SES
+
+| Elemento | Valor |
+| --- | --- |
+| Identidad | El dominio `aletheia.sbs`, verificado el 01/11/2026 en us-east-2 |
+| Autenticación | Easy DKIM con llaves de 2048 bits, MAIL FROM `bounce.aletheia.sbs` y DMARC. Gmail confirmó SPF, DKIM y DMARC en `PASS` |
+| Remitente | `ALETHEIA <notificaciones@aletheia.sbs>`, con las respuestas a `contacto@aletheia.sbs` |
+| Envío | Solo el trabajador, con la API v2 y el rol de la máquina. No hay credenciales SMTP |
+| Lista de supresión | La de la cuenta, activa para rebotes y quejas |
+| Plan | Essentials, que cobra 0,16 USD por cada 1.000 correos y se paga con los créditos |
+| Producción | Solicitada el 01/11/2026 como correo transaccional. Mientras siga en sandbox, solo llega a direcciones verificadas y hasta 200 correos al día |
+
+En desarrollo y en la CI el correo va a Mailpit y nunca sale a internet; la regla vive en `app/adapters/email.py` y depende solo de `ALETHEIA_ENVIRONMENT`.
+
 ## IAM
 
-El rol `aletheia-prod-instancia` tiene dos políticas, `aletheia-prod-acceso` para los datos y `aletheia-ssm-agente` para Systems Manager, y llega a la máquina por el perfil de instancia del mismo nombre. Nada que no esté en esta tabla está permitido.
+El rol `aletheia-prod-instancia` tiene tres políticas: `aletheia-prod-acceso` para los datos, `aletheia-prod-correo` para enviar correo y `aletheia-ssm-agente` para Systems Manager. Llega a la máquina por el perfil de instancia del mismo nombre. Nada que no esté en esta tabla está permitido.
 
 | Servicio | Recurso | Permitido |
 | --- | --- | --- |
@@ -91,7 +106,10 @@ El rol `aletheia-prod-instancia` tiene dos políticas, `aletheia-prod-acceso` pa
 | S3 | Bucket de respaldos | `GetObject`, `PutObject`, `AbortMultipartUpload` y `ListBucket`. No puede borrar |
 | KMS | `alias/aletheia-prod-maestra` | `Encrypt` y `Decrypt`, solo con `RSAES_OAEP_SHA_256` |
 | Parameter Store | Parámetros bajo `/aletheia/prod/` | `GetParameter`, `GetParameters` y `GetParametersByPath`. No puede escribir |
+| SES | Identidades de la cuenta en us-east-2 | `SendEmail` con la API v2, solo desde `notificaciones@aletheia.sbs` y con el nombre `ALETHEIA` |
 | Systems Manager | El agente de la máquina | Registrarse, recibir órdenes de Run Command y abrir sesiones de Session Manager (`ec2messages` y `ssmmessages`) |
+
+La política de correo nombra todas las identidades de la cuenta y no solo `aletheia.sbs` porque, en sandbox, SES también exige permiso sobre la identidad del destinatario. Las condiciones `ses:FromAddress`, `ses:FromDisplayName` y `ses:ApiVersion` impiden enviar con cualquier otro remitente.
 
 Para leer un `SecureString` cifrado con la llave `aws/ssm`, el rol no necesita permisos adicionales de KMS.
 
@@ -161,16 +179,17 @@ sudo docker compose --env-file /var/lib/aletheia/despliegue.env -f compose.prod.
 
 ## Contenedores
 
-`infra/compose.prod.yaml` define cuatro servicios en dos redes. En `frontal` están Caddy y la API; en `datos`, la API, las migraciones y PostgreSQL. Caddy no puede llegar a la base, y solo Caddy publica puertos.
+`infra/compose.prod.yaml` define cinco servicios en dos redes. En `frontal` están Caddy y la API; en `datos`, la API, el trabajador, las migraciones y PostgreSQL. Caddy no puede llegar a la base, y solo Caddy publica puertos.
 
 | Servicio | Imagen | Endurecimiento |
 | --- | --- | --- |
 | `caddy` | `aletheia-web`, por digest | Usuario 10002, solo lectura, sin capacidades salvo abrir puertos, `no-new-privileges`, 256 MB |
 | `api` | `aletheia-api`, por digest | Usuario 10001, solo lectura con `/tmp` en memoria, sin capacidades, `no-new-privileges`, 512 MB y healthcheck a `/api/v1/health` |
+| `worker` | La misma de la API, con `python -m app.worker` | Igual que la API, 256 MB y 45 segundos para terminar la tarea en curso. Su healthcheck revisa el latido con `python -m app.worker --check` |
 | `migrate` | La misma de la API | Igual que la API. Va en el perfil `migraciones` y solo corre con `docker compose run --rm migrate` |
 | `postgres` | `postgres:18.6-trixie` | Sin puertos publicados y solo en la red `datos` |
 
-La API y las migraciones reciben la URL de la base sin clave y el nombre de su parámetro. Leen la clave de Parameter Store al arrancar, con el rol de la máquina, así que `docker inspect` no muestra ninguna. En producción la API no publica `/api/v1/docs` ni `/api/v1/openapi.json`.
+La API, el trabajador y las migraciones reciben la URL de la base sin clave y el nombre de su parámetro. Leen la clave de Parameter Store al arrancar, con el rol de la máquina, así que `docker inspect` no muestra ninguna. En producción la API no publica `/api/v1/docs` ni `/api/v1/openapi.json`.
 
 Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy.Dockerfile`. Según ADR-019, las imágenes base, los entornos de ejecución, uv, pnpm y las acciones de GitHub deben tener más de 14 días de publicados, y las bibliotecas de Python y de JavaScript más de 7; Dependabot, uv y pnpm aplican esas esperas. Python 3.14.9, uv 0.13.5 y boto3 1.43.120 con sus tipos tienen una excepción que vence el 04/11/2026.
 
@@ -259,4 +278,5 @@ Las pruebas de AWS corrieron desde la instancia, dentro de un contenedor con AWS
 
 - En CloudShell, al pegar bloques largos hay que confirmar que se ejecutaron completos, porque la salida a veces se corta. Antes de repetir una creación, se verifica con un comando de consulta.
 - En el simulador de IAM hay que pasar la región como contexto (`aws:RequestedRegion`). Sin ella, la política del plan gratuito aparece como `explicitDeny` aunque los permisos estén bien.
+- En la consola de AWS, la traducción automática del navegador cambia los valores de los registros DNS: `bounce` aparece como `rebote` y `include` como `incluye`. Los registros se copian con la página en su idioma original o desde el archivo .csv que ofrece SES.
 - Los comandos de Docker en el servidor necesitan `--env-file /var/lib/aletheia/despliegue.env`. Sin él, Compose usa las etiquetas `sin-desplegar`, que no existen, y no reemplaza nada.

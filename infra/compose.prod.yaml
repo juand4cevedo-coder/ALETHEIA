@@ -1,6 +1,6 @@
-# Producción en aletheia-prod (AWS, Ohio): Caddy, la API, las migraciones y PostgreSQL.
-# Aquí no hay claves. La API y las migraciones reciben solo el nombre de su parámetro y leen la
-# clave de Parameter Store al arrancar, con el rol de la máquina. El primer arranque de
+# Producción en aletheia-prod (AWS, Ohio): Caddy, la API, el trabajador, las migraciones y
+# PostgreSQL. Aquí no hay claves. La API, el trabajador y las migraciones reciben solo el nombre
+# de su parámetro y leen la clave de Parameter Store al arrancar, con el rol de la máquina. El primer arranque de
 # PostgreSQL lo hizo infra/prod/iniciar-postgres.sh.
 #
 # Las imágenes llegan fijadas por digest en ALETHEIA_API_IMAGEN y ALETHEIA_WEB_IMAGEN, que
@@ -76,7 +76,8 @@ services:
     restart: unless-stopped
     # uvicorn espera hasta 20 segundos a que terminen las peticiones en curso.
     stop_grace_period: 30s
-    environment:
+    # El trabajador usa exactamente esta misma configuración.
+    environment: &entorno-aplicacion
       AWS_DEFAULT_REGION: us-east-2
       ALETHEIA_ENVIRONMENT: production
       ALETHEIA_LOG_LEVEL: INFO
@@ -98,8 +99,29 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
-    # Tope de memoria: la máquina tiene 2 GB para los tres servicios (RT-007).
+    # Tope de memoria: la máquina tiene 2 GB para todos los servicios (RT-007).
     mem_limit: 512m
+
+  # Misma imagen que la API con otro comando. No recibe tráfico ni publica puertos: solo llega
+  # a PostgreSQL por la red de datos y a Amazon SES por internet, con el rol de la máquina.
+  worker:
+    <<: *api
+    command: ["python", "-m", "app.worker"]
+    restart: unless-stopped
+    # Con SIGTERM termina la tarea en curso antes de salir. Un envío a SES con sus reintentos
+    # cabe en este plazo; si no, la reserva vence y otro intento retoma la tarea.
+    stop_grace_period: 45s
+    environment: *entorno-aplicacion
+    networks:
+      - datos
+    healthcheck:
+      # Sin puerto que consultar: revisa que el ciclo haya latido hace menos de dos minutos.
+      test: ["CMD", "python", "-m", "app.worker", "--check"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    mem_limit: 256m
 
   caddy:
     image: ${ALETHEIA_WEB_IMAGEN:-ghcr.io/juand4cevedo-coder/aletheia-web:sin-desplegar}
@@ -131,7 +153,8 @@ services:
 networks:
   # Internet llega a Caddy, y Caddy a la API.
   frontal:
-  # La API y las migraciones llegan a PostgreSQL. Ningún contenedor de esta red publica puertos.
+  # La API, el trabajador y las migraciones llegan a PostgreSQL. Ningún contenedor de esta red
+  # publica puertos.
   datos:
 
 volumes:

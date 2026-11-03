@@ -151,12 +151,3 @@ class Worker:
 def _log(job: ClaimedJob) -> dict[str, object]:
     # Identificadores, nunca el payload.
     return {"job_id": str(job.id), "job_kind": job.kind, "attempt": job.attempts}
-
-
-def heartbeat_is_fresh(path: Path, max_age_seconds: float) -> bool:
-    """Indica si el trabajador dio señales de vida hace menos de max_age_seconds."""
-    try:
-        age = time.time() - path.stat().st_mtime
-    except FileNotFoundError:
-        return False
-    return age < max_age_seconds
