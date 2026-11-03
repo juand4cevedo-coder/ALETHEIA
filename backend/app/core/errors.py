@@ -93,7 +93,7 @@ async def _rate_limit_handler(request: Request, exc: Exception) -> JSONResponse:
     return problem_response(
         request,
         HTTPStatus.TOO_MANY_REQUESTS,
-        detail="Demasiados intentos. Espera un momento antes de volver a intentarlo.",
+        detail="Hizo varios intentos seguidos. Espere unos minutos e inténtelo de nuevo.",
         headers={"Retry-After": str(exc.retry_after), "Cache-Control": "no-store"},
     )
 
