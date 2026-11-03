@@ -11,7 +11,7 @@ from typing import Any, Final, TextIO
 request_id_var: ContextVar[str | None] = ContextVar("request_id", default=None)
 
 # Solo estos campos adicionales pasan al registro: nada llega a él por accidente.
-_EXTRA_FIELDS: Final = ("method", "path", "status", "duration_ms")
+_EXTRA_FIELDS: Final = ("method", "path", "status", "duration_ms", "job_id", "job_kind", "attempt")
 
 
 class JsonFormatter(logging.Formatter):
