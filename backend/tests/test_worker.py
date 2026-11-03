@@ -22,8 +22,9 @@ from app.repositories import jobs as jobs_repository
 from app.services import jobs, notifications
 from app.services.jobs import uuid7_floor
 from app.worker import __main__ as worker_main
+from app.worker import heartbeat as worker_heartbeat
 from app.worker.handlers import WorkerContext
-from app.worker.runner import Worker, heartbeat_is_fresh
+from app.worker.runner import Worker
 from tests.test_email import _delivered, _recipient
 
 _PLANTILLA = "prueba_trabajador"
@@ -313,7 +314,7 @@ def test_el_ciclo_late_y_se_detiene_al_pedirlo(engine: Engine, tmp_path: Path) -
     thread.start()
     try:
         thread.join(timeout=0.5)
-        assert heartbeat_is_fresh(heartbeat, max_age_seconds=5)
+        assert worker_heartbeat.is_fresh(heartbeat, max_age_seconds=5)
     finally:
         stop.set()
         thread.join(timeout=5)
@@ -344,7 +345,7 @@ def test_la_revision_de_salud_mira_el_latido(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     heartbeat = tmp_path / "latido"
-    monkeypatch.setattr(worker_main, "HEARTBEAT", heartbeat)
+    monkeypatch.setattr(worker_heartbeat, "HEARTBEAT", heartbeat)
 
     assert worker_main.main(["--check"]) == 1
     heartbeat.touch()
