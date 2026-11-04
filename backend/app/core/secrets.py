@@ -1,8 +1,9 @@
-"""Clave de PostgreSQL leída de AWS Systems Manager Parameter Store.
+"""Secretos de producción leídos de AWS Systems Manager Parameter Store: la clave de
+PostgreSQL y la clave de firma de los tokens.
 
 Solo se usa en producción. La máquina tiene el rol de IAM aletheia-prod-instancia y boto3 toma
 sus credenciales temporales del servicio de metadatos (IMDSv2), así que aquí no hay llaves.
-En desarrollo y en la CI la clave sigue en backend/.env y este módulo ni se importa.
+En desarrollo y en la CI las claves siguen en backend/.env y este módulo ni se importa.
 """
 
 from typing import TYPE_CHECKING, Final
@@ -13,7 +14,7 @@ from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 from pydantic import PostgresDsn, Secret
 
-from app.core.config import DatabaseSettings
+from app.core.config import MIN_SIGNING_KEY_LENGTH, DatabaseSettings, Settings
 
 if TYPE_CHECKING:
     from mypy_boto3_ssm import SSMClient
@@ -57,6 +58,15 @@ def read_secure_parameter(name: str, client: SSMClient) -> str:
     return value
 
 
+def _default_client() -> SSMClient:
+    try:
+        return ssm_client()
+    except BotoCoreError as exc:
+        # Sin AWS_DEFAULT_REGION boto3 falla al crear el cliente, antes de cualquier llamada.
+        msg = f"No se pudo preparar el cliente de Parameter Store ({type(exc).__name__})."
+        raise SecretUnavailableError(msg) from None
+
+
 def with_database_password[S: DatabaseSettings](settings: S, client: SSMClient | None = None) -> S:
     """Devuelve una copia de la configuración con la clave de Parameter Store en la URL.
 
@@ -67,12 +77,7 @@ def with_database_password[S: DatabaseSettings](settings: S, client: SSMClient |
         return settings
 
     if client is None:
-        try:
-            client = ssm_client()
-        except BotoCoreError as exc:
-            # Sin AWS_DEFAULT_REGION boto3 falla al crear el cliente, antes de cualquier llamada.
-            msg = f"No se pudo preparar el cliente de Parameter Store ({type(exc).__name__})."
-            raise SecretUnavailableError(msg) from None
+        client = _default_client()
 
     password = read_secure_parameter(name, client)
     url = settings.database_url.get_secret_value()
@@ -94,3 +99,21 @@ def with_database_password[S: DatabaseSettings](settings: S, client: SSMClient |
     )
     # La copia conserva Secret: la URL completa tampoco aparece en repr ni en registros.
     return settings.model_copy(update={"database_url": Secret[PostgresDsn](full_url)})
+
+
+def with_token_signing_key(settings: Settings, client: SSMClient | None = None) -> Settings:
+    """Devuelve una copia de la configuración con la clave de firma de Parameter Store."""
+    name = settings.token_signing_key_parameter
+    if name is None:
+        return settings
+    key = read_secure_parameter(name, client or _default_client())
+    if len(key) < MIN_SIGNING_KEY_LENGTH:
+        msg = f"El parámetro {name} es demasiado corto para firmar tokens."
+        raise SecretUnavailableError(msg)
+    return settings.model_copy(update={"token_signing_key": Secret[str](key)})
+
+
+def with_production_secrets(settings: Settings, client: SSMClient | None = None) -> Settings:
+    """La configuración de producción completa, con las dos claves leídas de un mismo cliente."""
+    client = client or _default_client()
+    return with_token_signing_key(with_database_password(settings, client), client)
