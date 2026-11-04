@@ -10,6 +10,8 @@
   /* Azul del logotipo: solo para el logo y los degradados decorativos (ACC-001). */
   --color-brand-blue: #197eb4;
   --color-success-600: #1a7448;
+  --color-error-600: #c0362c;
+  --color-error-50: #fcebea;
   /* Estados sobre la banda oscura del sitio público. */
   --color-success-400: #5ccf96;
   --color-error-400: #f28b82;
@@ -33,6 +35,11 @@
 
   --font-sans:
     "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Solo para las actas de las pantallas de acceso: el texto que la persona declara se lee como
+     un documento, distinto de la interfaz que lo rodea. */
+  --font-serif:
+    "Source Serif 4 Variable", "Iowan Old Style", Georgia, "Times New Roman",
+    serif;
   --font-mono:
     "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", Consolas,
     monospace;
