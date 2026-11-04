@@ -8,8 +8,8 @@ import { Button } from "../components/ui/Button.tsx";
 import { Checkbox } from "../components/ui/Checkbox.tsx";
 import { legalRoute, ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
-import { Acta } from "../features/auth/Acta.tsx";
 import { Blank } from "../features/auth/Blank.tsx";
+import { HashMatrix } from "../features/auth/HashMatrix.tsx";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import {
   fieldErrorsFromApi,
@@ -55,16 +55,17 @@ function problemFrom(error: unknown): FormProblem | null {
   return { kind: "unexpected" };
 }
 
-// Crear cuenta (UI-006, HU-005), escrita como el acta con la que se abre la cuenta. Al
-// enviarse, el acta recibe el sello y aparece el aviso de revisar el correo (NAV-002); el aviso
-// es el mismo exista o no el correo.
+// Crear cuenta (UI-006, HU-005), escrita como el acta con la que se abre la cuenta. A su lado,
+// la huella SHA-256 del nombre y la oficina cambia con cada letra y muestra cuántos caracteres
+// se movieron. Al enviarse, el acta queda recibida y aparece el aviso de revisar el correo
+// (NAV-002); el aviso es el mismo exista o no el correo.
 export function SignUpPage() {
   const [values, setValues] = useState<SignUpValues>(EMPTY);
   const [errors, setErrors] = useState<SignUpErrors>({});
   // Antes del primer envío no se marcan errores mientras la persona escribe.
   const [submitted, setSubmitted] = useState(false);
   const [problem, setProblem] = useState<FormProblem | null>(null);
-  const [sealedAt, setSealedAt] = useState<Date | null>(null);
+  const [receivedAt, setReceivedAt] = useState<Date | null>(null);
   const fieldRefs = useRef<
     Partial<Record<SignUpField, HTMLInputElement | null>>
   >({});
@@ -73,7 +74,7 @@ export function SignUpPage() {
   const register = useMutation({
     ...registerAccountMutation(),
     onSuccess: () => {
-      setSealedAt(new Date());
+      setReceivedAt(new Date());
       // La contraseña no se queda en la memoria de la página una vez enviada.
       setValues((current) => ({ ...current, password: "" }));
     },
@@ -89,8 +90,8 @@ export function SignUpPage() {
 
   useEffect(() => {
     // Quien usa lector de pantalla escucha el aviso apenas aparece.
-    if (sealedAt) noticeRef.current?.focus();
-  }, [sealedAt]);
+    if (receivedAt) noticeRef.current?.focus();
+  }, [receivedAt]);
 
   function focusFirstError(found: SignUpErrors) {
     const first = SIGN_UP_FIELDS.find((field) => found[field]);
@@ -111,7 +112,7 @@ export function SignUpPage() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (register.isPending || sealedAt) return;
+    if (register.isPending || receivedAt) return;
     setSubmitted(true);
     setProblem(null);
     const found = validateSignUp(values);
@@ -123,7 +124,7 @@ export function SignUpPage() {
     register.mutate({ body: toRegisterRequest(values) });
   }
 
-  const sealed = sealedAt !== null;
+  const received = receivedAt !== null;
 
   return (
     <>
@@ -134,158 +135,165 @@ export function SignUpPage() {
       />
       <link rel="canonical" href={`${SITE_URL}${ROUTES.signUp}`} />
 
-      {sealed ? (
-        <section className={styles.notice} aria-labelledby="titulo-aviso">
-          <MailCheck size={22} aria-hidden="true" />
-          <div>
-            <h2
-              id="titulo-aviso"
-              className={styles.noticeTitle}
-              ref={noticeRef}
-              tabIndex={-1}
-            >
-              Revise su correo
-            </h2>
-            <p>
-              Si <strong>{values.email.trim()}</strong> puede usarse, le
-              enviamos un enlace para verificarlo. Ábralo para activar la cuenta
-              y empezar la prueba. Si no le llega en unos minutos, revise la
-              carpeta de spam.
-            </p>
-          </div>
-        </section>
-      ) : (
-        <p className={styles.intro}>
-          Prueba gratis, sin tarjeta de crédito. Complete el acta para abrir su
-          cuenta.
-        </p>
-      )}
+      <div className={styles.screen}>
+        <header className={styles.intro}>
+          <h1 id={TITLE_ID} className={styles.title}>
+            Acta de apertura de cuenta
+          </h1>
+          <p className={styles.lead}>
+            Prueba gratis, sin tarjeta de crédito. Complete el acta para abrir
+            su cuenta.
+          </p>
+        </header>
 
-      <Acta
-        titleId={TITLE_ID}
-        title="Acta de apertura de cuenta"
-        fingerprint={`${values.fullName.trim()}\n${values.organizationName.trim()}`}
-        seal={sealedAt && { label: "Recibida", at: sealedAt }}
-      >
-        {problem && (
-          <div className={styles.alert} role="alert">
-            <ProblemMessage problem={problem} />
-          </div>
-        )}
+        <HashMatrix
+          source={`${values.fullName.trim()}\n${values.organizationName.trim()}`}
+          receivedAt={receivedAt}
+        />
 
-        <form
-          className={styles.form}
-          noValidate
-          onSubmit={handleSubmit}
-          aria-labelledby={TITLE_ID}
-        >
-          <fieldset className={styles.clauses} disabled={sealed}>
-            <legend className="visually-hidden">Datos de la cuenta</legend>
-            <div className={styles.clause}>
-              <span>Yo,</span>
-              <Blank
-                ref={bind("fullName")}
-                label="Nombre completo"
-                name="nombre"
-                autoComplete="name"
-                required
-                maxLength={120}
-                value={values.fullName}
-                error={errors.fullName}
-                onChange={(event) => update("fullName", event.target.value)}
-              />
-            </div>
-            <div className={styles.clause}>
-              <span>en nombre de</span>
-              <Blank
-                ref={bind("organizationName")}
-                label="Oficina o firma"
-                name="organizacion"
-                autoComplete="organization"
-                required
-                maxLength={120}
-                value={values.organizationName}
-                error={errors.organizationName}
-                onChange={(event) =>
-                  update("organizationName", event.target.value)
-                }
-              />
-            </div>
-            <p>
-              abro una cuenta en ALETHEIA para preservar la evidencia digital de
-              mis casos.
-            </p>
-            <div className={styles.clause}>
-              <span>Recibiré los avisos en</span>
-              <Blank
-                ref={bind("email")}
-                label="Correo electrónico"
-                name="correo"
-                type="email"
-                autoComplete="email"
-                inputMode="email"
-                spellCheck={false}
-                required
-                maxLength={254}
-                value={values.email}
-                error={errors.email}
-                onChange={(event) => update("email", event.target.value)}
-              />
-            </div>
-            <div className={styles.clause}>
-              <span>y protegeré el acceso con</span>
-              <Blank
-                ref={bind("password")}
-                label="Contraseña"
-                name="contrasena"
-                type="password"
-                autoComplete="new-password"
-                required
-                maxLength={PASSWORD_MAX_LENGTH}
-                value={sealed ? SENT_PASSWORD : values.password}
-                error={errors.password}
-                describedBy={sealed ? undefined : METER_ID}
-                onChange={(event) => update("password", event.target.value)}
-              >
-                {!sealed && (
-                  <PasswordMeter id={METER_ID} password={values.password} />
-                )}
-              </Blank>
-            </div>
-          </fieldset>
-
-          <div className={styles.terms}>
-            <Checkbox
-              ref={bind("acceptsLegalTerms")}
-              name="acepta"
-              required
-              disabled={sealed}
-              checked={values.acceptsLegalTerms}
-              error={errors.acceptsLegalTerms}
-              onChange={(event) =>
-                update("acceptsLegalTerms", event.target.checked)
-              }
-            >
-              Acepto los{" "}
-              <NewTabLink to={legalRoute("terminos")}>
-                términos y condiciones
-              </NewTabLink>{" "}
-              y autorizo el tratamiento de mis datos según la{" "}
-              <NewTabLink to={legalRoute("privacidad")}>
-                política de privacidad
-              </NewTabLink>
-              . Mi contraseña se guarda como un resumen irreversible: nadie en
-              ALETHEIA puede leerla.
-            </Checkbox>
-          </div>
-
-          {!sealed && (
-            <Button type="submit" busy={register.isPending}>
-              {register.isPending ? "Abriendo la cuenta…" : "Abrir la cuenta"}
-            </Button>
+        <div className={styles.primary}>
+          {received && (
+            <section className={styles.notice} aria-labelledby="titulo-aviso">
+              <MailCheck size={22} aria-hidden="true" />
+              <div>
+                <h2
+                  id="titulo-aviso"
+                  className={styles.noticeTitle}
+                  ref={noticeRef}
+                  tabIndex={-1}
+                >
+                  Revise su correo
+                </h2>
+                <p>
+                  Si <strong>{values.email.trim()}</strong> puede usarse, le
+                  enviamos un enlace para verificarlo. Ábralo para activar la
+                  cuenta y empezar la prueba. Si no le llega en unos minutos,
+                  revise la carpeta de spam.
+                </p>
+              </div>
+            </section>
           )}
-        </form>
-      </Acta>
+
+          {problem && (
+            <div className={styles.alert} role="alert">
+              <ProblemMessage problem={problem} />
+            </div>
+          )}
+
+          <form
+            className={styles.form}
+            noValidate
+            onSubmit={handleSubmit}
+            aria-labelledby={TITLE_ID}
+          >
+            <fieldset className={styles.clauses} disabled={received}>
+              <legend className="visually-hidden">Datos de la cuenta</legend>
+              <div className={styles.clause}>
+                <span>Yo,</span>
+                <Blank
+                  ref={bind("fullName")}
+                  label="Nombre completo"
+                  name="nombre"
+                  autoComplete="name"
+                  required
+                  maxLength={120}
+                  value={values.fullName}
+                  error={errors.fullName}
+                  onChange={(event) => update("fullName", event.target.value)}
+                />
+              </div>
+              <div className={styles.clause}>
+                <span>en nombre de</span>
+                <Blank
+                  ref={bind("organizationName")}
+                  label="Oficina o firma"
+                  name="organizacion"
+                  autoComplete="organization"
+                  required
+                  maxLength={120}
+                  value={values.organizationName}
+                  error={errors.organizationName}
+                  onChange={(event) =>
+                    update("organizationName", event.target.value)
+                  }
+                />
+              </div>
+              <p>
+                abro una cuenta en ALETHEIA para preservar la evidencia digital
+                de mis casos.
+              </p>
+              <div className={styles.clause}>
+                <span>Recibiré los avisos en</span>
+                <Blank
+                  ref={bind("email")}
+                  label="Correo electrónico"
+                  name="correo"
+                  type="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  spellCheck={false}
+                  required
+                  maxLength={254}
+                  value={values.email}
+                  error={errors.email}
+                  onChange={(event) => update("email", event.target.value)}
+                />
+              </div>
+              <div className={styles.clause}>
+                <span>y protegeré el acceso con</span>
+                <Blank
+                  ref={bind("password")}
+                  label="Contraseña"
+                  name="contrasena"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  maxLength={PASSWORD_MAX_LENGTH}
+                  value={received ? SENT_PASSWORD : values.password}
+                  error={errors.password}
+                  describedBy={received ? undefined : METER_ID}
+                  onChange={(event) => update("password", event.target.value)}
+                >
+                  {!received && (
+                    <PasswordMeter id={METER_ID} password={values.password} />
+                  )}
+                </Blank>
+              </div>
+            </fieldset>
+
+            <div className={styles.terms}>
+              <Checkbox
+                ref={bind("acceptsLegalTerms")}
+                name="acepta"
+                required
+                disabled={received}
+                checked={values.acceptsLegalTerms}
+                error={errors.acceptsLegalTerms}
+                onChange={(event) =>
+                  update("acceptsLegalTerms", event.target.checked)
+                }
+              >
+                Acepto los{" "}
+                <NewTabLink to={legalRoute("terminos")}>
+                  términos y condiciones
+                </NewTabLink>{" "}
+                y autorizo el tratamiento de mis datos según la{" "}
+                <NewTabLink to={legalRoute("privacidad")}>
+                  política de privacidad
+                </NewTabLink>
+                . Mi contraseña se guarda como un resumen irreversible: nadie en
+                ALETHEIA puede leerla.
+              </Checkbox>
+            </div>
+
+            {!received && (
+              <Button type="submit" surface="dark" busy={register.isPending}>
+                {register.isPending ? "Abriendo la cuenta…" : "Abrir la cuenta"}
+              </Button>
+            )}
+          </form>
+        </div>
+      </div>
     </>
   );
 }
@@ -310,6 +318,7 @@ function ProblemMessage({ problem }: { problem: FormProblem }) {
             página para ver la versión vigente antes de abrir la cuenta.
           </p>
           <Button
+            surface="dark"
             variant="secondary"
             size="sm"
             onClick={() => window.location.reload()}

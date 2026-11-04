@@ -1,17 +1,54 @@
+/* Dos columnas en escritorio: el acta a la izquierda, alineada como se lee, y la huella a la
+   derecha como el elemento que da sentido a la pantalla. En celular la huella va entre el
+   título y el acta, a la vista mientras se escriben el nombre y la oficina. */
+.screen {
+  display: grid;
+  grid-template-areas:
+    "intro huella"
+    "acta huella";
+  grid-template-columns: minmax(0, 560px) minmax(0, 520px);
+  grid-template-rows: auto 1fr;
+  justify-content: space-between;
+  align-items: start;
+  gap: var(--space-8) var(--space-16);
+  width: 100%;
+  max-width: var(--content-width);
+  padding-top: var(--space-8);
+}
+
+.primary {
+  grid-area: acta;
+  display: grid;
+  gap: var(--space-8);
+}
+
+.screen > figure {
+  grid-area: huella;
+  position: sticky;
+  top: var(--space-8);
+}
+
 .intro {
+  grid-area: intro;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.title {
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 50px;
+  letter-spacing: -0.028em;
+}
+
+.lead {
   color: var(--color-text-inverse-muted);
-  font-size: 15px;
-  text-align: center;
+  font-size: 17px;
 }
 
 .form {
   display: grid;
   gap: var(--space-8);
-}
-
-/* La acción es interfaz, no parte del texto del acta. */
-.form > button {
-  font-family: var(--font-sans);
 }
 
 .clauses {
@@ -21,10 +58,13 @@
   margin: 0;
   padding: 0;
   border: 0;
+  color: color-mix(in srgb, var(--color-text-inverse) 72%, transparent);
+  font-size: 20px;
+  line-height: 30px;
 }
 
-/* Una cláusula del acta: el texto impreso y, a su lado, el espacio en blanco. El texto se
-   alinea con la línea donde se escribe, no con el rótulo de abajo. */
+/* Una cláusula del acta: el texto fijo y, a su lado, el espacio donde se escribe. El texto se
+   alinea con la línea, no con el rótulo de abajo. */
 .clause {
   display: flex;
   flex-wrap: wrap;
@@ -37,9 +77,9 @@
 }
 
 .terms {
-  padding: var(--space-4) var(--space-4);
-  border-left: 3px solid var(--color-brand-navy);
-  background: var(--color-canvas);
+  padding: var(--space-4);
+  border-left: 2px solid var(--color-primary-400);
+  background: color-mix(in srgb, var(--color-ink-800) 55%, transparent);
 }
 
 .alert {
@@ -47,30 +87,20 @@
   gap: var(--space-3);
   justify-items: start;
   padding: var(--space-4);
-  border-left: 3px solid var(--color-error-600);
-  background: var(--color-error-50);
-  color: var(--color-text-primary);
-  font-family: var(--font-sans);
+  border-left: 2px solid var(--color-error-400);
+  background: color-mix(in srgb, var(--color-error-400) 10%, transparent);
   font-size: 14px;
   line-height: 22px;
 }
 
-.alert a {
-  color: var(--color-primary-700);
-}
-
-/* Aviso de correo enviado, sobre la hoja ya sellada. */
 .notice {
   display: flex;
   gap: var(--space-4);
-  width: 100%;
-  max-width: 720px;
   padding: var(--space-4) var(--space-6);
   border: 1px solid
     color-mix(in srgb, var(--color-success-400) 40%, transparent);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--color-success-400) 10%, transparent);
-  color: var(--color-text-inverse);
 }
 
 .notice svg {
@@ -91,4 +121,35 @@
 .notice p {
   color: var(--color-text-inverse-muted);
   font-size: 15px;
+}
+
+@media (max-width: 1023px) {
+  .screen {
+    grid-template-areas:
+      "intro"
+      "huella"
+      "acta";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    max-width: 600px;
+  }
+
+  .screen > figure {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .screen {
+    padding-top: var(--space-2);
+  }
+
+  .title {
+    font-size: 32px;
+    line-height: 38px;
+  }
+
+  .clauses {
+    font-size: 18px;
+  }
 }

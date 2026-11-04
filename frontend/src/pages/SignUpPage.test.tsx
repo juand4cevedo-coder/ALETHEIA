@@ -76,18 +76,30 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
-  it("la huella del acta cambia con una sola letra", async () => {
+  it("demuestra cuántos caracteres de la huella cambia una sola letra", async () => {
     const user = userEvent.setup();
     renderRoute("/registro");
     const huella = () =>
-      screen.getByText(/^[0-9a-f]{64}$/, { selector: ".visually-hidden" })
-        .textContent;
+      screen
+        .getByText(/^Huella actual: /)
+        .textContent?.replace("Huella actual: ", "");
 
     await waitFor(() => expect(huella()).toMatch(/^[0-9a-f]{64}$/));
-    const inicial = huella();
+    const inicial = huella()!;
     await user.type(screen.getByLabelText("Nombre completo"), "A");
 
     await waitFor(() => expect(huella()).not.toBe(inicial));
+    const final = huella()!;
+    const cambiados = [...final].filter((c, i) => c !== inicial[i]).length;
+    // El contador dice exactamente lo que cambió: la afirmación queda demostrada.
+    expect(
+      screen.getByText(
+        (_, element) =>
+          element?.tagName === "P" &&
+          element.textContent ===
+            `Su último cambio movió ${cambiados} de los 64 caracteres.`,
+      ),
+    ).toBeInTheDocument();
   });
 
   it("guía la contraseña por su longitud, sin reglas de composición", async () => {
@@ -180,7 +192,9 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     expect(aviso).toHaveFocus();
     expect(screen.getByText("ana@example.com")).toBeInTheDocument();
     // El acta queda sellada y ya no se puede editar ni volver a enviar.
-    expect(screen.getByText("Recibida")).toBeInTheDocument();
+    expect(
+      screen.getByText(/^Acta recibida a las \d{2}:\d{2}\.$/),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText("Nombre completo")).toBeDisabled();
     expect(
       screen.queryByRole("button", { name: "Abrir la cuenta" }),

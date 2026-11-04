@@ -1,5 +1,3 @@
-import "@fontsource-variable/source-serif-4/opsz.css";
-
 import { Link, Outlet, ScrollRestoration, useMatches } from "react-router";
 
 import markUrl from "../assets/aletheia-mark.png";
