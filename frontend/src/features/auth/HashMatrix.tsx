@@ -5,6 +5,8 @@ import styles from "./HashMatrix.module.css";
 type HashMatrixProps = {
   /** Texto del que se calcula la huella. */
   source: string;
+  /** De qué datos sale la huella, tal como lo lee la persona: "su nombre", por ejemplo. */
+  sourceLabel: string;
   /** Cuando el acta ya se envió, la matriz queda fija con esa hora. */
   receivedAt?: Date | null;
 };
@@ -42,7 +44,11 @@ export function changedCharacters(before: string, after: string): number {
 // sube con su valor. Cada vez que el texto cambia, las casillas que cambiaron giran y el
 // contador dice cuántas fueron. La afirmación de la pantalla queda demostrada a la vista, con
 // los datos de la persona y sin enviar nada: se calcula en el navegador.
-export function HashMatrix({ source, receivedAt }: HashMatrixProps) {
+export function HashMatrix({
+  source,
+  sourceLabel,
+  receivedAt,
+}: HashMatrixProps) {
   const [{ hash, previous }, setDigest] = useState<Digest>({
     hash: "",
     previous: "",
@@ -91,7 +97,7 @@ export function HashMatrix({ source, receivedAt }: HashMatrixProps) {
           {receivedAt ? (
             <>Acta recibida a las {TIME.format(receivedAt)}.</>
           ) : changed === null ? (
-            <>Escriba su nombre o su oficina y mire la huella.</>
+            <>Escriba {sourceLabel} y mire la huella.</>
           ) : (
             <>
               Su último cambio movió <strong>{changed}</strong> de los 64
@@ -100,9 +106,9 @@ export function HashMatrix({ source, receivedAt }: HashMatrixProps) {
           )}
         </p>
         <p className={styles.note}>
-          Huella SHA-256 de su nombre y su oficina, calculada en su navegador.
-          Con una huella así se comprueba que un archivo no cambió: si cambia un
-          solo byte, la huella ya no coincide.
+          Huella SHA-256 de {sourceLabel}, calculada en su navegador. Con una
+          huella así se comprueba que un archivo no cambió: si cambia un solo
+          byte, la huella ya no coincide.
         </p>
         <p className="visually-hidden">Huella actual: {hash}</p>
       </figcaption>

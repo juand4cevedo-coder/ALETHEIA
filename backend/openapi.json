@@ -286,6 +286,15 @@
       },
       "RegisterRequest": {
         "properties": {
+          "account_type": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "firm"
+            ],
+            "title": "Account Type",
+            "description": "individual si trabaja por su cuenta; firm si abre la cuenta de una oficina."
+          },
           "full_name": {
             "type": "string",
             "maxLength": 120,
@@ -308,11 +317,18 @@
             "description": "Contraseña de 12 a 128 caracteres."
           },
           "organization_name": {
-            "type": "string",
-            "maxLength": 120,
-            "minLength": 1,
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Organization Name",
-            "description": "Nombre de la oficina o firma."
+            "description": "Nombre de la oficina o firma. Solo con account_type firm."
           },
           "legal_version": {
             "type": "string",
@@ -330,10 +346,10 @@
         "additionalProperties": false,
         "type": "object",
         "required": [
+          "account_type",
           "full_name",
           "email",
           "password",
-          "organization_name",
           "legal_version",
           "accepts_legal_terms"
         ],

@@ -62,7 +62,7 @@ def register(
                 privacy_version=LEGAL_VERSION,
                 consented_at=now,
             ),
-            organization=Organization(id=organization_id, name=request.organization_name),
+            organization=Organization(id=organization_id, name=_organization_name(request)),
             subscription=Subscription(
                 organization_id=organization_id,
                 plan_id=trial_plan_id,
@@ -87,6 +87,14 @@ def register(
         session.rollback()
         if _UNIQUE_EMAIL not in str(exc.orig):
             raise
+
+
+def _organization_name(request: RegisterRequest) -> str:
+    # Quien trabaja por su cuenta es una organización de una persona, con su propio nombre;
+    # podrá cambiarlo cuando exista la configuración de la organización.
+    if request.organization_name is None:
+        return request.full_name
+    return request.organization_name
 
 
 def _valid_ip(value: str) -> str | None:
