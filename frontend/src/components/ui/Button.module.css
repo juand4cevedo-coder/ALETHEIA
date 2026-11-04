@@ -111,6 +111,25 @@
   outline-color: var(--color-primary-300);
 }
 
+.block {
+  width: 100%;
+}
+
+.button:disabled {
+  cursor: progress;
+  opacity: 0.85;
+}
+
+.spinner {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .button:hover,
   .button:hover svg:last-child:not(:first-child) {
