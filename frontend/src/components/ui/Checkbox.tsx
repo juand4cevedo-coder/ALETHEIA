@@ -5,7 +5,7 @@ import {
   useId,
 } from "react";
 
-import styles from "./Field.module.css";
+import styles from "./Checkbox.module.css";
 
 type CheckboxProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -39,7 +39,7 @@ export function Checkbox({
       />
       <label htmlFor={id}>{children}</label>
       {error && (
-        <p id={errorId} className={`${styles.error} ${styles.checkError}`}>
+        <p id={errorId} className={styles.error}>
           {error}
         </p>
       )}

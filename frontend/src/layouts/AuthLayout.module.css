@@ -1,12 +1,12 @@
-/* Marco de acceso: el mismo fondo oscuro del sitio público (ADR-023), con un único foco de luz
-   de marca detrás del panel de la derecha. */
+/* Marco de acceso: el mismo fondo oscuro del sitio público (ADR-023), con un foco de luz de
+   marca desde arriba sobre el acta, como una lámpara sobre la mesa. */
 .shell {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   background:
     radial-gradient(
-      52rem 40rem at 78% 18%,
+      56rem 40rem at 50% 0%,
       color-mix(in srgb, var(--color-brand-blue) 22%, transparent),
       transparent 70%
     ),
@@ -71,7 +71,12 @@
 
 .main {
   flex: 1;
-  display: flex;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--space-8);
+  width: 100%;
+  padding: var(--space-6) var(--space-6) var(--space-16);
 }
 
 .main:focus {
@@ -124,6 +129,10 @@
   .header,
   .footer {
     padding: var(--space-4);
+  }
+
+  .main {
+    padding: var(--space-2) var(--space-3) var(--space-12);
   }
 
   /* En celular basta el enlace; la pregunta ocupa espacio que el logotipo necesita. */

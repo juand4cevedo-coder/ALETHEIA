@@ -7,88 +7,79 @@ import {
   useState,
 } from "react";
 
-import styles from "./Field.module.css";
+import styles from "./Blank.module.css";
 
-type TextFieldProps = Omit<
+type BlankProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
   "className" | "id" | "type"
 > & {
+  /** Rótulo impreso bajo la línea, como en un formulario de papel. */
   label: string;
   type?: "text" | "email" | "password";
-  hint?: string;
   error?: string;
   ref?: Ref<HTMLInputElement>;
-  /** Ayuda dinámica bajo el campo, como el medidor de la contraseña. */
+  /** Ayuda dinámica bajo el rótulo, como el medidor de la contraseña. */
   children?: ReactNode;
-  /** Identificador de esa ayuda, para que el lector de pantalla la lea con el campo. */
+  /** Identificador de esa ayuda, para leerla junto con el campo. */
   describedBy?: string;
 };
 
-// Campo de texto (CMP-UI-002). La etiqueta siempre está visible, la ayuda y el error quedan
-// asociados al campo con aria-describedby, y una contraseña se puede mostrar para revisarla.
-export function TextField({
+// Espacio en blanco de un acta (CMP-UI-002 en las pantallas de acceso): una línea donde se
+// escribe y, debajo, su rótulo visible. El error y la ayuda quedan asociados al campo.
+export function Blank({
   label,
   type = "text",
-  hint,
   error,
   ref,
   children,
   describedBy: extraDescription,
   ...inputProps
-}: TextFieldProps) {
+}: BlankProps) {
   const id = useId();
   const [revealed, setRevealed] = useState(false);
   const isPassword = type === "password";
-  const hintId = hint ? `${id}-ayuda` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy =
-    [hintId, extraDescription, errorId].filter(Boolean).join(" ") || undefined;
+    [extraDescription, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className={styles.field}>
-      <label className={styles.label} htmlFor={id}>
-        {label}
-      </label>
-      {hint && (
-        <p id={hintId} className={styles.hint}>
-          {hint}
-        </p>
-      )}
-      <div className={styles.control}>
+    <span className={styles.blank}>
+      <span className={styles.line}>
         <input
           {...inputProps}
           ref={ref}
           id={id}
           type={isPassword && revealed ? "text" : type}
-          className={
-            isPassword ? `${styles.input} ${styles.withToggle}` : styles.input
-          }
+          className={styles.input}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
         />
         {isPassword && (
           <button
             type="button"
-            className={styles.toggle}
+            className={styles.reveal}
             aria-controls={id}
             aria-pressed={revealed}
             aria-label="Mostrar la contraseña"
             onClick={() => setRevealed((value) => !value)}
           >
             {revealed ? (
-              <EyeOff size={20} aria-hidden="true" />
+              <EyeOff size={18} aria-hidden="true" />
             ) : (
-              <Eye size={20} aria-hidden="true" />
+              <Eye size={18} aria-hidden="true" />
             )}
           </button>
         )}
-      </div>
+      </span>
+      <label htmlFor={id} className={styles.caption}>
+        {label}
+      </label>
       {children}
       {error && (
-        <p id={errorId} className={styles.error}>
+        <span id={errorId} className={styles.error}>
           {error}
-        </p>
+        </span>
       )}
-    </div>
+    </span>
   );
 }

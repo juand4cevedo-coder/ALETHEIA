@@ -1,27 +1,45 @@
 .intro {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.title {
-  font-size: 44px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -0.028em;
-}
-
-.title:focus {
-  outline: none;
-}
-
-.lead {
   color: var(--color-text-inverse-muted);
-  font-size: 17px;
+  font-size: 15px;
+  text-align: center;
 }
 
 .form {
   display: grid;
+  gap: var(--space-8);
+}
+
+/* La acción es interfaz, no parte del texto del acta. */
+.form > button {
+  font-family: var(--font-sans);
+}
+
+.clauses {
+  display: grid;
   gap: var(--space-6);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* Una cláusula del acta: el texto impreso y, a su lado, el espacio en blanco. El texto se
+   alinea con la línea donde se escribe, no con el rótulo de abajo. */
+.clause {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: first baseline;
+  gap: var(--space-1) var(--space-3);
+}
+
+.clause > span:first-child {
+  white-space: nowrap;
+}
+
+.terms {
+  padding: var(--space-4) var(--space-4);
+  border-left: 3px solid var(--color-brand-navy);
+  background: var(--color-canvas);
 }
 
 .alert {
@@ -29,87 +47,48 @@
   gap: var(--space-3);
   justify-items: start;
   padding: var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--color-error-400) 45%, transparent);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-error-400) 10%, transparent);
+  border-left: 3px solid var(--color-error-600);
+  background: var(--color-error-50);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
   font-size: 14px;
+  line-height: 22px;
 }
 
-.assurance {
+.alert a {
+  color: var(--color-primary-700);
+}
+
+/* Aviso de correo enviado, sobre la hoja ya sellada. */
+.notice {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-  line-height: 18px;
-}
-
-.assurance svg {
-  flex: none;
-  margin-top: 1px;
-  color: var(--color-success-400);
-}
-
-/* Correo enviado: el sello entra una sola vez y su anillo se expande, como un timbre sobre el
-   documento. Es el único movimiento que no responde a una acción en la pantalla. */
-.sent {
-  display: grid;
   gap: var(--space-4);
-  justify-items: center;
-  max-width: 560px;
-}
-
-.seal {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 72px;
-  height: 72px;
-  margin-bottom: var(--space-2);
+  width: 100%;
+  max-width: 720px;
+  padding: var(--space-4) var(--space-6);
   border: 1px solid
-    color-mix(in srgb, var(--color-success-400) 45%, transparent);
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-success-400) 12%, transparent);
+    color-mix(in srgb, var(--color-success-400) 40%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-success-400) 10%, transparent);
+  color: var(--color-text-inverse);
+}
+
+.notice svg {
+  flex: none;
+  margin-top: 3px;
   color: var(--color-success-400);
-  animation: stamp 600ms var(--ease-out) both;
 }
 
-.seal::after {
-  position: absolute;
-  inset: -1px;
-  border: 1px solid var(--color-success-400);
-  border-radius: inherit;
-  content: "";
-  animation: ring 1200ms var(--ease-out) 300ms both;
+.noticeTitle {
+  font-size: 17px;
+  font-weight: 600;
 }
 
-@keyframes stamp {
-  from {
-    opacity: 0;
-    transform: scale(1.35);
-  }
+.noticeTitle:focus {
+  outline: none;
 }
 
-@keyframes ring {
-  from {
-    opacity: 0.8;
-  }
-
-  to {
-    opacity: 0;
-    transform: scale(1.8);
-  }
-}
-
-.note {
+.notice p {
   color: var(--color-text-inverse-muted);
-  font-size: 14px;
-}
-
-@media (max-width: 560px) {
-  .title {
-    font-size: 34px;
-    line-height: 40px;
-  }
+  font-size: 15px;
 }

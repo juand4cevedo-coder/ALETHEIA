@@ -37,7 +37,7 @@ export const SIGN_UP_MESSAGES = {
   passwordRange: `La contraseña debe tener entre ${PASSWORD_MIN_LENGTH} y ${PASSWORD_MAX_LENGTH} caracteres.`,
   organizationName: "Escriba el nombre de su oficina o firma.",
   acceptsLegalTerms:
-    "Para crear la cuenta debe aceptar los términos y autorizar el tratamiento de sus datos.",
+    "Para abrir la cuenta debe aceptar los términos y autorizar el tratamiento de sus datos.",
 } as const;
 
 /** Errores de cada campo, con los mismos criterios que aplica la API. */

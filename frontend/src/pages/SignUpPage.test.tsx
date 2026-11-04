@@ -49,7 +49,7 @@ async function fillForm(
 }
 
 async function submit(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole("button", { name: "Crear cuenta" }));
+  await user.click(screen.getByRole("button", { name: "Abrir la cuenta" }));
 }
 
 describe("Crear cuenta (HU-005, CP-005)", () => {
@@ -57,7 +57,10 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     const { container } = renderRoute("/registro");
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Cree su cuenta" }),
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Acta de apertura de cuenta",
+      }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Contraseña")).toHaveAttribute(
       "autocomplete",
@@ -73,7 +76,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
-  it("muestra cómo cambia la huella con lo que escribe", async () => {
+  it("la huella del acta cambia con una sola letra", async () => {
     const user = userEvent.setup();
     renderRoute("/registro");
     const huella = () =>
@@ -85,7 +88,6 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     await user.type(screen.getByLabelText("Nombre completo"), "A");
 
     await waitFor(() => expect(huella()).not.toBe(inicial));
-    expect(screen.getByText("A", { selector: "dd" })).toBeInTheDocument();
   });
 
   it("guía la contraseña por su longitud, sin reglas de composición", async () => {
@@ -116,7 +118,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     expect(nombre).toHaveAttribute("aria-invalid", "true");
     expect(nombre).toHaveAccessibleDescription("Escriba su nombre.");
     expect(screen.getByRole("checkbox")).toHaveAccessibleDescription(
-      "Para crear la cuenta debe aceptar los términos y autorizar el tratamiento de sus datos.",
+      "Para abrir la cuenta debe aceptar los términos y autorizar el tratamiento de sus datos.",
     );
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -171,12 +173,21 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     await fillForm(user);
     await submit(user);
 
-    const titulo = await screen.findByRole("heading", {
-      level: 1,
+    const aviso = await screen.findByRole("heading", {
+      level: 2,
       name: "Revise su correo",
     });
-    expect(titulo).toHaveFocus();
+    expect(aviso).toHaveFocus();
     expect(screen.getByText("ana@example.com")).toBeInTheDocument();
+    // El acta queda sellada y ya no se puede editar ni volver a enviar.
+    expect(screen.getByText("Recibida")).toBeInTheDocument();
+    expect(screen.getByLabelText("Nombre completo")).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "Abrir la cuenta" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Contraseña")).not.toHaveValue(
+      "una frase larga y fácil",
+    );
 
     const request = fetchMock.mock.calls[0]![0] as Request;
     expect(request.method).toBe("POST");

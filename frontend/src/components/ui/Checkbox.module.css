@@ -1,0 +1,35 @@
+/* Casilla sobre superficie clara, como la cláusula de un acta. */
+.check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: start;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.check input {
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  accent-color: var(--color-primary-600);
+  cursor: pointer;
+}
+
+.check input[aria-invalid="true"] {
+  outline: 2px solid var(--color-error-600);
+  outline-offset: 2px;
+}
+
+.check a {
+  color: var(--color-primary-700);
+}
+
+.error {
+  grid-column: 2;
+  color: var(--color-error-600);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+}
