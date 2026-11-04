@@ -133,6 +133,12 @@ export type PublicPlan = {
  */
 export type RegisterRequest = {
   /**
+   * Account Type
+   *
+   * individual si trabaja por su cuenta; firm si abre la cuenta de una oficina.
+   */
+  account_type: "individual" | "firm";
+  /**
    * Full Name
    *
    * Nombre de la persona.
@@ -153,9 +159,9 @@ export type RegisterRequest = {
   /**
    * Organization Name
    *
-   * Nombre de la oficina o firma.
+   * Nombre de la oficina o firma. Solo con account_type firm.
    */
-  organization_name: string;
+  organization_name?: string | null;
   /**
    * Legal Version
    *

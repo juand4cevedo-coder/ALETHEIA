@@ -35,6 +35,7 @@ def client(settings: Settings, db: Session) -> Iterator[TestClient]:
 
 def _datos(**cambios: Any) -> dict[str, Any]:
     datos: dict[str, Any] = {
+        "account_type": "firm",
         "full_name": "Ana Restrepo",
         "email": "ana@example.com",
         "password": _CLAVE,
@@ -87,6 +88,23 @@ def test_crea_la_cuenta_la_organizacion_y_la_prueba(client: TestClient, db: Sess
     assert audit.user_agent is not None
 
 
+def test_quien_trabaja_por_su_cuenta_tiene_una_organizacion_con_su_nombre(
+    client: TestClient, db: Session
+) -> None:
+    datos = _datos(account_type="individual")
+    del datos["organization_name"]
+
+    response = client.post(_PATH, json=datos)
+
+    assert response.status_code == 202
+    [user] = _users(db)
+    membership = db.scalars(select(Membership).where(Membership.user_id == user.id)).one()
+    set_tenant(db, TenantContext(organization_id=membership.organization_id, user_id=user.id))
+    assert membership.role == "owner"
+    assert db.get_one(Organization, membership.organization_id).name == "Ana Restrepo"
+    assert db.scalars(select(Subscription)).one().status == "trial"
+
+
 def test_un_correo_registrado_recibe_la_misma_respuesta(client: TestClient, db: Session) -> None:
     primera = client.post(_PATH, json=_datos())
     segunda = client.post(_PATH, json=_datos(email="ANA@example.com", password=_OTRA_CLAVE))
@@ -133,6 +151,9 @@ def test_una_version_legal_vieja_pide_recargar(client: TestClient, db: Session) 
         {"full_name": "   "},
         {"organization_name": "x" * 121},
         {"es_admin": True},
+        {"account_type": "socio"},
+        {"organization_name": None},
+        {"account_type": "individual"},
     ],
 )
 def test_rechaza_datos_invalidos(client: TestClient, db: Session, cambios: dict[str, Any]) -> None:
@@ -141,6 +162,21 @@ def test_rechaza_datos_invalidos(client: TestClient, db: Session, cambios: dict[
     assert response.status_code == 422
     assert response.headers["content-type"] == PROBLEM_JSON
     assert _users(db) == []
+
+
+@pytest.mark.parametrize(
+    ("cambios", "campo"),
+    [
+        ({"organization_name": None}, "organization_name"),
+        ({"account_type": "individual"}, "organization_name"),
+    ],
+)
+def test_el_error_del_tipo_de_cuenta_queda_en_el_campo_de_la_oficina(
+    client: TestClient, cambios: dict[str, Any], campo: str
+) -> None:
+    response = client.post(_PATH, json=_datos(**cambios))
+
+    assert [error["loc"][-1] for error in response.json()["errors"]] == [campo]
 
 
 def test_la_longitud_de_la_contrasena_se_mide_normalizada(client: TestClient, db: Session) -> None:

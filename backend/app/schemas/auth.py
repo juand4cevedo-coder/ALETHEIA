@@ -2,7 +2,14 @@
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    ValidationInfo,
+    field_validator,
+)
 
 from app.core.passwords import MAX_LENGTH, MIN_LENGTH, normalize
 
@@ -10,12 +17,19 @@ from app.core.passwords import MAX_LENGTH, MIN_LENGTH, normalize
 # que el contrato lo describa en cada campo y no como un esquema aparte.
 _Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
 
+# Una cuenta es de una persona que trabaja por su cuenta o de una oficina o firma. En los dos
+# casos nace una organización: la de quien trabaja solo lleva su nombre (Alcance, glosario).
+AccountType = Literal["individual", "firm"]
+
 
 class RegisterRequest(BaseModel):
     """Datos para crear una cuenta con su organización y la prueba gratis (API-003)."""
 
     model_config = ConfigDict(extra="forbid")
 
+    account_type: AccountType = Field(
+        description="individual si trabaja por su cuenta; firm si abre la cuenta de una oficina."
+    )
     full_name: _Name = Field(description="Nombre de la persona.")
     email: Annotated[
         str,
@@ -30,13 +44,32 @@ class RegisterRequest(BaseModel):
         description=f"Contraseña de {MIN_LENGTH} a {MAX_LENGTH} caracteres.",
         json_schema_extra={"minLength": MIN_LENGTH, "maxLength": MAX_LENGTH},
     )
-    organization_name: _Name = Field(description="Nombre de la oficina o firma.")
+    organization_name: _Name | None = Field(
+        default=None,
+        validate_default=True,
+        description="Nombre de la oficina o firma. Solo con account_type firm.",
+    )
     legal_version: str = Field(
         max_length=20, description="Versión de los términos y la privacidad que vio la persona."
     )
     accepts_legal_terms: Literal[True] = Field(
         description="Acepta los términos y autoriza el tratamiento de sus datos (CMP-UI-004)."
     )
+
+    @field_validator("organization_name")
+    @classmethod
+    def _organization_matches_account_type(
+        cls, organization_name: str | None, info: ValidationInfo
+    ) -> str | None:
+        # El error queda en organization_name, el campo que la persona tiene que corregir.
+        account_type = info.data.get("account_type")
+        if account_type == "firm" and organization_name is None:
+            msg = "Falta el nombre de la oficina o firma."
+            raise ValueError(msg)
+        if account_type == "individual" and organization_name is not None:
+            msg = "Una cuenta por cuenta propia no lleva nombre de oficina o firma."
+            raise ValueError(msg)
+        return organization_name
 
     @field_validator("password")
     @classmethod
