@@ -1,0 +1,133 @@
+/* Marco de acceso: el mismo fondo oscuro del sitio público (ADR-023), con un único foco de luz
+   de marca detrás del panel de la derecha. */
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      52rem 40rem at 78% 18%,
+      color-mix(in srgb, var(--color-brand-blue) 22%, transparent),
+      transparent 70%
+    ),
+    var(--color-ink-950);
+  color: var(--color-text-inverse);
+}
+
+.shell :where(a:not([class])) {
+  color: var(--color-primary-300);
+}
+
+.shell :focus-visible {
+  outline-color: var(--color-primary-300);
+}
+
+.skipLink {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 30;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  transform: translateY(-200%);
+}
+
+.skipLink:focus {
+  transform: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-inverse);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.switch {
+  color: var(--color-text-inverse-muted);
+  font-size: 14px;
+}
+
+.switch a {
+  font-weight: 600;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+}
+
+.main:focus {
+  outline: none;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-6);
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+}
+
+.footerList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer a,
+.footerButton {
+  color: var(--color-text-inverse-muted);
+  text-decoration: none;
+}
+
+.footer a:hover,
+.footerButton:hover {
+  color: var(--color-text-inverse);
+}
+
+.footerButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .header,
+  .footer {
+    padding: var(--space-4);
+  }
+
+  /* En celular basta el enlace; la pregunta ocupa espacio que el logotipo necesita. */
+  .switchQuestion {
+    display: none;
+  }
+}
