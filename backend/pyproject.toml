@@ -23,14 +23,6 @@ exclude-newer = "7 days"
 # Cada `uv add` fija la versión exacta resuelta.
 add-bounds = "exact"
 
-# Excepción hasta el 04/11/2026 (ADR-019): boto3 1.43.120 y sus tipos entraron con la espera
-# anterior de 3 días. Se retira cuando cumplan 7 días de publicados.
-[tool.uv.exclude-newer-package]
-boto3 = "2026-10-28T00:00:00Z"
-botocore = "2026-10-28T00:00:00Z"
-boto3-stubs = "2026-10-28T00:00:00Z"
-botocore-stubs = "2026-10-28T00:00:00Z"
-
 [dependency-groups]
 dev = [
     "boto3-stubs[sesv2,ssm]==1.43.120",
