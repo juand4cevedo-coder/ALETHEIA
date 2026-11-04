@@ -1,10 +1,10 @@
-/* Línea de escritura del acta: sin caja, solo el trazo inferior, en la misma letra del
-   documento para que lo escrito se lea como parte del texto. */
+/* Línea de escritura del acta sobre el fondo oscuro: sin caja, solo el trazo inferior, en un
+   tamaño cercano al del texto para que lo escrito se lea como parte de la frase. */
 .blank {
   display: inline-grid;
   flex: 1;
   gap: 2px;
-  min-width: min(16rem, 100%);
+  min-width: min(15rem, 100%);
 }
 
 .line {
@@ -17,11 +17,12 @@
   min-height: 44px;
   padding: var(--space-2) var(--space-1) 4px;
   border: 0;
-  border-bottom: 1px solid var(--color-border-control);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 28%, transparent);
   border-radius: 0;
   background: transparent;
-  color: var(--color-text-primary);
-  font-family: var(--font-serif);
+  color: var(--color-text-inverse);
+  font: inherit;
   font-size: 20px;
   font-weight: 500;
   line-height: 30px;
@@ -31,19 +32,22 @@
 }
 
 .input:hover {
-  border-bottom-color: var(--color-text-secondary);
+  border-bottom-color: color-mix(
+    in srgb,
+    var(--color-text-inverse) 50%,
+    transparent
+  );
 }
 
-/* Al escribir, la línea se vuelve tinta azul y el renglón se sombrea apenas, como al resaltar
-   un espacio del documento. */
+/* Al escribir, la línea se enciende en el azul de acción y el renglón se aclara apenas. */
 .input:focus-visible {
   outline: none;
-  border-bottom: 2px solid var(--color-primary-600);
-  background: var(--color-primary-50);
+  border-bottom: 2px solid var(--color-primary-300);
+  background: color-mix(in srgb, var(--color-primary-300) 8%, transparent);
 }
 
 .input[aria-invalid="true"] {
-  border-bottom: 2px solid var(--color-error-600);
+  border-bottom: 2px solid var(--color-error-400);
 }
 
 .input:has(+ .reveal) {
@@ -63,7 +67,7 @@
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--color-text-inverse-muted);
   cursor: pointer;
 }
 
@@ -73,24 +77,17 @@
 }
 
 .reveal:hover {
-  color: var(--color-text-primary);
-}
-
-.reveal:focus-visible {
-  outline: 2px solid var(--color-primary-600);
-  outline-offset: 0;
+  color: var(--color-text-inverse);
 }
 
 .caption {
-  color: var(--color-text-muted);
-  font-family: var(--font-sans);
+  color: var(--color-text-inverse-muted);
   font-size: 12px;
   line-height: 16px;
 }
 
 .error {
-  color: var(--color-error-600);
-  font-family: var(--font-sans);
+  color: var(--color-error-400);
   font-size: 13px;
   font-weight: 500;
   line-height: 18px;
