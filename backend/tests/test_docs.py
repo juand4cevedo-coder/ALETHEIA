@@ -13,8 +13,8 @@ _RUTAS = ("/api/v1/openapi.json", "/api/v1/docs")
 
 def _cliente(**valores: str) -> TestClient:
     # Cada campo va explícito: los valores directos tienen prioridad sobre el entorno y sobre
-    # backend/.env, que en desarrollo trae log_level DEBUG.
-    base = {"log_level": "INFO", "database_url": _URL}
+    # backend/.env, que en desarrollo trae log_level DEBUG y la clave de firma.
+    base: dict[str, object] = {"log_level": "INFO", "database_url": _URL, "token_signing_key": None}
     return TestClient(create_app(Settings.model_validate({**base, **valores})))
 
 
@@ -29,6 +29,7 @@ def test_en_produccion_la_documentacion_no_existe(ruta: str) -> None:
     produccion = _cliente(
         environment="production",
         database_password_parameter="/aletheia/prod/postgres/app-password",  # noqa: S106
+        token_signing_key_parameter="/aletheia/prod/app/token-signing-key",  # noqa: S106
     )
     with produccion as client:
         assert client.get(ruta).status_code == 404

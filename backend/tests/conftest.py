@@ -24,6 +24,8 @@ from app.models import Case, Evidence, Membership, Organization, User
 
 TEST_DATABASE_URL_VARIABLE = "ALETHEIA_TEST_DATABASE_URL"
 TEST_MIGRATION_DATABASE_URL_VARIABLE = "ALETHEIA_TEST_MIGRATION_DATABASE_URL"
+# Clave de firma fija de las pruebas: no depende de la que cada equipo tenga en backend/.env.
+TEST_SIGNING_KEY: Final = "clave-de-firma-de-las-pruebas-con-mas-de-32-caracteres"
 _BACKEND_DIR: Final = Path(__file__).resolve().parents[1]
 
 
@@ -31,7 +33,12 @@ def _build_settings(database_url: str) -> Settings:
     # Cada campo se da explícito: los valores directos tienen prioridad sobre el entorno y
     # sobre backend/.env, así que la prueba no depende de la configuración del equipo.
     return Settings.model_validate(
-        {"environment": "test", "log_level": "INFO", "database_url": database_url}
+        {
+            "environment": "test",
+            "log_level": "INFO",
+            "database_url": database_url,
+            "token_signing_key": TEST_SIGNING_KEY,
+        }
     )
 
 

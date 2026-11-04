@@ -16,7 +16,11 @@ from sqlalchemy import make_url
 
 from app.core import config, secrets
 from app.core.config import MigrationSettings, Settings, get_settings
-from app.core.secrets import SecretUnavailableError, with_database_password
+from app.core.secrets import (
+    SecretUnavailableError,
+    with_database_password,
+    with_token_signing_key,
+)
 
 if TYPE_CHECKING:
     from mypy_boto3_ssm import SSMClient
@@ -31,6 +35,8 @@ _VARIABLES = (
     "DATABASE_PASSWORD_PARAMETER",
     "MIGRATION_DATABASE_URL",
     "MIGRATION_DATABASE_PASSWORD_PARAMETER",
+    "TOKEN_SIGNING_KEY",
+    "TOKEN_SIGNING_KEY_PARAMETER",
 )
 
 
@@ -58,6 +64,10 @@ def cliente() -> SSMClient:
     )
 
 
+_PARAMETRO_FIRMA = "/aletheia/prod/app/token-signing-key"
+_CLAVE_FIRMA = "k" * 48
+
+
 def _respuesta(valor: str) -> dict[str, object]:
     return {"Parameter": {"Name": _PARAMETRO, "Type": "SecureString", "Value": valor}}
 
@@ -68,6 +78,7 @@ def _produccion(**extra: str) -> Settings:
             "environment": "production",
             "database_url": _URL_SIN_CLAVE,
             "database_password_parameter": _PARAMETRO,
+            "token_signing_key_parameter": _PARAMETRO_FIRMA,
             **extra,
         }
     )
@@ -168,13 +179,23 @@ def test_get_settings_lee_la_clave_al_arrancar_en_produccion(
     monkeypatch.setenv("ALETHEIA_ENVIRONMENT", "production")
     monkeypatch.setenv("ALETHEIA_DATABASE_URL", _URL_SIN_CLAVE)
     monkeypatch.setenv("ALETHEIA_DATABASE_PASSWORD_PARAMETER", _PARAMETRO)
+    monkeypatch.setenv("ALETHEIA_TOKEN_SIGNING_KEY_PARAMETER", _PARAMETRO_FIRMA)
     monkeypatch.setattr(secrets, "ssm_client", lambda: cliente)
 
     with Stubber(cliente) as stub:
-        stub.add_response("get_parameter", _respuesta(_CLAVE))
+        stub.add_response(
+            "get_parameter", _respuesta(_CLAVE), {"Name": _PARAMETRO, "WithDecryption": True}
+        )
+        stub.add_response(
+            "get_parameter",
+            _respuesta(_CLAVE_FIRMA),
+            {"Name": _PARAMETRO_FIRMA, "WithDecryption": True},
+        )
         settings = get_settings()
 
     assert make_url(settings.database_url.get_secret_value().encoded_string()).password == _CLAVE
+    assert settings.token_signing_key is not None
+    assert settings.token_signing_key.get_secret_value() == _CLAVE_FIRMA
 
 
 # --- Reglas de la configuración ---------------------------------------------------------
@@ -183,6 +204,39 @@ def test_get_settings_lee_la_clave_al_arrancar_en_produccion(
 def test_produccion_exige_el_parametro() -> None:
     with pytest.raises(ValidationError, match="falta el parámetro"):
         Settings.model_validate({"environment": "production", "database_url": _URL_SIN_CLAVE})
+
+
+def test_produccion_exige_la_clave_de_firma_en_parameter_store() -> None:
+    with pytest.raises(ValidationError, match="clave de firma se lee de Parameter Store"):
+        _produccion(token_signing_key_parameter=None)  # type: ignore[arg-type]
+    with pytest.raises(ValidationError, match="no puede venir en una variable"):
+        _produccion(token_signing_key=_CLAVE_FIRMA)
+
+
+def test_fuera_de_produccion_la_clave_de_firma_no_va_a_parameter_store() -> None:
+    with pytest.raises(ValidationError, match="clave de firma solo se lee"):
+        Settings.model_validate(
+            {
+                "environment": "test",
+                "database_url": _URL_SIN_CLAVE,
+                "token_signing_key_parameter": _PARAMETRO_FIRMA,
+            }
+        )
+
+
+def test_una_clave_de_firma_corta_se_rechaza_sin_mostrarla() -> None:
+    with pytest.raises(ValidationError, match="al menos 32 caracteres") as error:
+        Settings.model_validate(
+            {"environment": "test", "database_url": _URL_SIN_CLAVE, "token_signing_key": "corta123"}
+        )
+    assert "corta123" not in str(error.value)
+
+
+def test_un_parametro_de_firma_corto_se_rechaza(cliente: SSMClient) -> None:
+    with Stubber(cliente) as stub:
+        stub.add_response("get_parameter", _respuesta("corta"))
+        with pytest.raises(SecretUnavailableError, match="demasiado corto"):
+            with_token_signing_key(_produccion(), cliente)
 
 
 @pytest.mark.parametrize("entorno", ["development", "test"])
