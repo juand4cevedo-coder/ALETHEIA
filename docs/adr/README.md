@@ -29,3 +29,4 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-023](adr-023.md) | Sitio público oscuro y continuo, con íconos de Lucide | Aceptado | 01/11/2026 |
 | [ADR-024](adr-024.md) | Correo transaccional con Amazon SES | Aceptado | 03/11/2026 |
 | [ADR-025](adr-025.md) | Límite de peticiones con ventana deslizante en PostgreSQL | Aceptado | 03/11/2026 |
+| [ADR-026](adr-026.md) | Pantallas de acceso como acta, con la huella en vivo | Aceptado | 04/11/2026 |
