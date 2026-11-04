@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { changedCharacters } from "./hashDiff.ts";
 import styles from "./HashMatrix.module.css";
 
 type HashMatrixProps = {
@@ -29,15 +30,6 @@ async function sha256Hex(text: string): Promise<string> {
   return Array.from(new Uint8Array(digest), (byte) =>
     byte.toString(16).padStart(2, "0"),
   ).join("");
-}
-
-/** Cuántos caracteres cambiaron entre dos huellas, posición por posición. */
-export function changedCharacters(before: string, after: string): number {
-  let changed = 0;
-  for (let index = 0; index < after.length; index += 1) {
-    if (before[index] !== after[index]) changed += 1;
-  }
-  return changed;
 }
 
 // Huella SHA-256 en vivo, como una matriz de 8 × 8: un carácter por casilla, con un tono que
