@@ -1,0 +1,49 @@
+.screen {
+  display: grid;
+  align-items: center;
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) var(--space-16);
+}
+
+/* Sin panel de apoyo, el mensaje queda centrado en la pantalla. */
+.screen:not(.split) {
+  justify-items: center;
+  text-align: center;
+}
+
+.split {
+  grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+  gap: var(--space-24);
+}
+
+.primary {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.aside {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 1023px) {
+  /* Sin panel de apoyo, el mensaje queda centrado en la pantalla. */
+  .screen:not(.split) {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-16);
+    max-width: 560px;
+  }
+}
+
+@media (max-width: 560px) {
+  .screen {
+    padding: var(--space-4) var(--space-4) var(--space-12);
+  }
+}
