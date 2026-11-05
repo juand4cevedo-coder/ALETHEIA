@@ -21,6 +21,9 @@ import type {
   ResendVerificationData,
   ResendVerificationErrors,
   ResendVerificationResponses,
+  VerifyEmailData,
+  VerifyEmailErrors,
+  VerifyEmailResponses,
 } from "./types.gen";
 
 export type Options<
@@ -103,6 +106,25 @@ export const resendVerification = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     url: "/api/v1/auth/verify-email/resend",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Verificar el correo con el enlace recibido
+ */
+export const verifyEmail = <ThrowOnError extends boolean = false>(
+  options: Options<VerifyEmailData, ThrowOnError>,
+): RequestResult<VerifyEmailResponses, VerifyEmailErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    VerifyEmailResponses,
+    VerifyEmailErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/verify-email",
     ...options,
     headers: {
       "Content-Type": "application/json",

@@ -14,15 +14,18 @@ from sqlalchemy.orm import Session
 from app.adapters.email import SmtpEmailSender
 from app.api.deps import get_session
 from app.core.config import Settings
+from app.core.errors import PROBLEM_JSON
 from app.core.legal import LEGAL_VERSION
-from app.core.tokens import LinkPurpose, read_link, state_matches
+from app.core.tokens import LinkPurpose, issue_link, read_link, state_matches
+from app.db.tenancy import TenantContext, set_tenant
 from app.main import create_app
-from app.models import Job, User
+from app.models import AuditLog, Job, Membership, User
 from app.services import account_emails
 from app.services.jobs import PermanentJobError
 from app.services.verification import (
     SigningKeyMissingError,
     signing_key,
+    verification_link,
     verification_state,
 )
 from tests.conftest import TEST_SIGNING_KEY
@@ -221,3 +224,100 @@ def test_el_reenvio_tiene_tope_por_ip(client: TestClient) -> None:
 @pytest.mark.parametrize("cuerpo", [{"email": "no-es-un-correo"}, {"email": "a@b.co", "extra": 1}])
 def test_el_reenvio_rechaza_datos_invalidos(client: TestClient, cuerpo: dict[str, Any]) -> None:
     assert client.post(_REENVIO, json=cuerpo).status_code == 422
+
+
+# --- Verificación (API-004) ----------------------------------------------------------------
+
+_VERIFICAR = "/api/v1/auth/verify-email"
+
+
+def _cuenta_registrada(client: TestClient, db: Session, settings: Settings) -> tuple[User, str]:
+    """Registra una cuenta por la API y devuelve la persona y el token de su enlace."""
+    client.post(_REGISTRO, json=_registro())
+    user = db.scalars(select(User)).one()
+    enlace = verification_link(settings, user.id, user.email)
+    return user, enlace.split("#t=")[1]
+
+
+def test_el_enlace_verifica_el_correo_y_deja_constancia(
+    client: TestClient, db: Session, settings: Settings
+) -> None:
+    user, token = _cuenta_registrada(client, db, settings)
+
+    respuesta = client.post(_VERIFICAR, json={"token": token})
+
+    assert respuesta.status_code == 204
+    assert respuesta.headers["cache-control"] == "no-store"
+    db.refresh(user)
+    assert user.email_verified_at is not None
+    membership = db.scalars(select(Membership).where(Membership.user_id == user.id)).one()
+    set_tenant(db, TenantContext(organization_id=membership.organization_id, user_id=user.id))
+    acciones = db.scalars(select(AuditLog.action).order_by(AuditLog.created_at)).all()
+    assert acciones == ["user_registered", "email_verified"]
+
+
+def test_el_enlace_sirve_una_sola_vez(client: TestClient, db: Session, settings: Settings) -> None:
+    _, token = _cuenta_registrada(client, db, settings)
+    client.post(_VERIFICAR, json={"token": token})
+
+    respuesta = client.post(_VERIFICAR, json={"token": token})
+
+    assert respuesta.status_code == 400
+    assert respuesta.headers["content-type"] == PROBLEM_JSON
+
+
+def test_si_el_correo_cambio_el_enlace_ya_no_sirve(
+    client: TestClient, db: Session, settings: Settings
+) -> None:
+    user, token = _cuenta_registrada(client, db, settings)
+    user.email = "nuevo@example.com"
+    db.flush()
+
+    assert client.post(_VERIFICAR, json={"token": token}).status_code == 400
+    db.refresh(user)
+    assert user.email_verified_at is None
+
+
+def test_todo_enlace_invalido_recibe_el_mismo_mensaje(
+    client: TestClient, db: Session, settings: Settings
+) -> None:
+    user, token = _cuenta_registrada(client, db, settings)
+    vencido = issue_link(
+        TEST_SIGNING_KEY,
+        LinkPurpose.EMAIL_VERIFICATION,
+        user.id,
+        verification_state(user.email),
+        datetime.timedelta(hours=24),
+        now=datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=2),
+    )
+    otra_clave = issue_link(
+        "otra-clave-maestra-de-prueba-de-32-caracteres-o-mas",
+        LinkPurpose.EMAIL_VERIFICATION,
+        user.id,
+        verification_state(user.email),
+        datetime.timedelta(hours=24),
+    )
+
+    respuestas = [
+        client.post(_VERIFICAR, json={"token": malo})
+        for malo in (vencido, otra_clave, token[:-4] + "AAAA", "abc")
+    ]
+
+    assert {r.status_code for r in respuestas} == {400}
+    assert len({r.json()["detail"] for r in respuestas}) == 1
+    db.refresh(user)
+    assert user.email_verified_at is None
+
+
+@pytest.mark.parametrize("cuerpo", [{"token": ""}, {"token": "x" * 1025}, {}])
+def test_un_token_vacio_o_enorme_se_rechaza_antes_de_leerlo(
+    client: TestClient, cuerpo: dict[str, Any]
+) -> None:
+    assert client.post(_VERIFICAR, json=cuerpo).status_code == 422
+
+
+def test_la_verificacion_tiene_tope_por_ip(client: TestClient) -> None:
+    for _ in range(20):
+        assert client.post(_VERIFICAR, json={"token": "abc"}).status_code == 400
+
+    assert client.post(_VERIFICAR, json={"token": "abc"}).status_code == 429

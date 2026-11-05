@@ -9,6 +9,7 @@ import {
   type Options,
   registerAccount,
   resendVerification,
+  verifyEmail,
 } from "../sdk.gen";
 import type {
   HealthData,
@@ -23,6 +24,9 @@ import type {
   ResendVerificationData,
   ResendVerificationError,
   ResendVerificationResponse,
+  VerifyEmailData,
+  VerifyEmailError,
+  VerifyEmailResponse,
 } from "../types.gen";
 
 export type QueryKey<TOptions extends Options> = [
@@ -159,6 +163,33 @@ export const resendVerificationMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await resendVerification({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Verificar el correo con el enlace recibido
+ */
+export const verifyEmailMutation = (
+  options?: Partial<Options<VerifyEmailData>>,
+): UseMutationOptions<
+  VerifyEmailResponse,
+  VerifyEmailError,
+  Options<VerifyEmailData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    VerifyEmailResponse,
+    VerifyEmailError,
+    Options<VerifyEmailData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await verifyEmail({
         ...options,
         ...fnOptions,
         throwOnError: true,

@@ -10,7 +10,6 @@ de RNF-006 para que nadie use el registro como forma de llenarle la bandeja.
 """
 
 import datetime
-import ipaddress
 import uuid
 
 from sqlalchemy.exc import IntegrityError
@@ -23,10 +22,10 @@ from app.models import AuditLog, Organization, Subscription, User
 from app.repositories import accounts as accounts_repository
 from app.schemas.auth import RegisterRequest
 from app.services import rate_limit, verification
+from app.services.audit import audit_ip, audit_user_agent
 from app.services.plans import TRIAL_DAYS, TRIAL_PLAN_CODE
 
 _UNIQUE_EMAIL = "uq_users_email_lower"
-_USER_AGENT_MAX = 300
 
 
 class LegalVersionMismatchError(Exception):
@@ -78,8 +77,8 @@ def register(
                 actor_user_id=user_id,
                 action="user_registered",
                 target_id=user_id,
-                ip=_valid_ip(client_ip),
-                user_agent=user_agent[:_USER_AGENT_MAX] if user_agent else None,
+                ip=audit_ip(client_ip),
+                user_agent=audit_user_agent(user_agent),
                 created_at=now,
             ),
         )
@@ -125,11 +124,3 @@ def _organization_name(request: RegisterRequest) -> str:
     if request.organization_name is None:
         return request.full_name
     return request.organization_name
-
-
-def _valid_ip(value: str) -> str | None:
-    # La columna es INET: lo que no sea una IP, como el cliente de las pruebas, no se guarda.
-    try:
-        return str(ipaddress.ip_address(value))
-    except ValueError:
-        return None
