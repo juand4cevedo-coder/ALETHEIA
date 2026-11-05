@@ -169,7 +169,6 @@ openssl rand -base64 96 | tr -d '\n/+=' | head -c 64 |
     --query Version --output text
 ```
 
-
 ## PostgreSQL
 
 - `infra/compose.prod.yaml` define el proyecto `aletheia-prod` con PostgreSQL 18.6, la misma versión de desarrollo y de la CI. No publica puertos y guarda los datos en el volumen `aletheia-prod_postgres-data`, sobre el disco EBS. El healthcheck consulta por TCP y el contenedor se reinicia solo (`unless-stopped`).
