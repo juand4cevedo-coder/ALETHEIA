@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { CircleCheck, LinkIcon, LoaderCircle, ShieldCheck } from "lucide-react";
+import { CircleCheck, LinkIcon, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -8,6 +8,7 @@ import { verifyEmailMutation } from "../api/generated/@tanstack/react-query.gen.
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
+import { Emblem } from "../features/auth/Emblem.tsx";
 import { tokenFromHash } from "../features/auth/linkToken.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import styles from "./VerifyEmailPage.module.css";
@@ -78,13 +79,17 @@ export function VerifyEmailPage() {
     <section className={styles.screen} aria-labelledby="titulo-verificacion">
       <title>{`Verificar el correo · ${SITE_NAME}`}</title>
       <meta name="robots" content="noindex" />
+      <Emblem
+        state={
+          outcome.kind === "verifying"
+            ? "working"
+            : outcome.kind === "verified"
+              ? "done"
+              : "idle"
+        }
+      />
       {outcome.kind === "verifying" && (
         <div className={styles.status} role="status">
-          <LoaderCircle
-            className={styles.spinner}
-            size={28}
-            aria-hidden="true"
-          />
           <h1 id="titulo-verificacion" className={styles.title}>
             Verificando su correo…
           </h1>
@@ -134,7 +139,7 @@ export function VerifyEmailPage() {
           <p className={styles.lead}>
             Ya puede ingresar con su correo y su contraseña.
           </p>
-          <ButtonLink to={ROUTES.signIn} surface="dark">
+          <ButtonLink to={ROUTES.signIn} variant="bright" shape="pill">
             Ingresar
           </ButtonLink>
         </>

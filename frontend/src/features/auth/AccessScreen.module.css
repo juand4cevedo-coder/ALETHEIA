@@ -1,83 +1,52 @@
-/* Pantallas de acceso escritas como actas (ADR-026): crear cuenta e ingresar.
-   Dos columnas en escritorio: el acta a la izquierda, alineada como se lee, y la huella a la
-   derecha como el elemento que da sentido a la pantalla. En celular la huella va entre el
-   título y el acta, a la vista mientras se escribe. */
+/* Pantallas de acceso (ADR-029): emblema, título y formulario en una sola columna centrada
+   sobre la escena del alba. */
 .screen {
-  display: grid;
-  grid-template-areas:
-    "intro huella"
-    "acta huella";
-  grid-template-columns: minmax(0, 560px) minmax(0, 520px);
-  grid-template-rows: auto 1fr;
-  justify-content: space-between;
-  align-items: start;
-  gap: var(--space-8) var(--space-16);
-  width: 100%;
-  max-width: var(--content-width);
-  padding-top: var(--space-8);
-}
-
-.primary {
-  grid-area: acta;
   display: grid;
   gap: var(--space-8);
 }
 
-.screen > figure {
-  grid-area: huella;
-  position: sticky;
-  top: var(--space-8);
-}
-
 .intro {
-  grid-area: intro;
   display: grid;
-  gap: var(--space-3);
+  justify-items: center;
+  gap: var(--space-4);
+  text-align: center;
 }
 
 .title {
-  font-size: 44px;
-  font-weight: 600;
-  line-height: 50px;
-  letter-spacing: -0.028em;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 38px;
+  letter-spacing: -0.024em;
+  text-shadow: 0 2px 24px
+    color-mix(in srgb, var(--color-ink-950) 60%, transparent);
+}
+
+.title:focus {
+  outline: none;
 }
 
 .lead {
-  color: var(--color-text-inverse-muted);
-  font-size: 17px;
+  max-width: 42ch;
+  color: color-mix(in srgb, var(--color-text-inverse) 78%, transparent);
+  font-size: 16px;
+  line-height: 24px;
 }
 
 .form {
   display: grid;
-  gap: var(--space-8);
+  gap: var(--space-4);
 }
 
-.clauses {
+.fields {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-4);
   min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
-  color: color-mix(in srgb, var(--color-text-inverse) 72%, transparent);
-  font-size: 20px;
-  line-height: 30px;
 }
 
-/* Una cláusula del acta: el texto fijo y, a su lado, el espacio donde se escribe. El texto se
-   alinea con la línea, no con el rótulo de abajo. */
-.clause {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: first baseline;
-  gap: var(--space-1) var(--space-3);
-}
-
-.clause > span:first-child {
-  white-space: nowrap;
-}
-
-/* La cláusula de la oficina entra al elegir una firma, sin saltar de golpe. */
+/* El campo de la oficina entra al elegir una firma, sin saltar de golpe. */
 .appear {
   animation: appear var(--motion-base) var(--ease-out);
 }
@@ -90,40 +59,53 @@
 }
 
 .terms {
-  padding: var(--space-4);
-  border-left: 2px solid var(--color-primary-400);
-  background: color-mix(in srgb, var(--color-ink-800) 55%, transparent);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.submit {
+  margin-top: var(--space-2);
 }
 
 .alert {
   display: grid;
   gap: var(--space-3);
   justify-items: start;
-  padding: var(--space-4);
-  border-left: 2px solid var(--color-error-400);
-  background: color-mix(in srgb, var(--color-error-400) 10%, transparent);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-error-400) 45%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-error-400) 14%, transparent);
+  backdrop-filter: blur(14px);
   font-size: 14px;
-  line-height: 22px;
+  line-height: 21px;
 }
 
+.alert:focus {
+  outline: none;
+}
+
+/* Aviso de éxito: reemplaza al formulario cuando la cuenta queda creada. */
 .notice {
-  display: flex;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-6);
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
   border: 1px solid
     color-mix(in srgb, var(--color-success-400) 40%, transparent);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-success-400) 10%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-ink-950) 45%, transparent);
+  backdrop-filter: blur(14px);
+  text-align: center;
+  animation: appear var(--motion-slow) var(--ease-out);
 }
 
 .notice svg {
-  flex: none;
-  margin-top: 3px;
   color: var(--color-success-400);
 }
 
 .noticeTitle {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
 }
 
@@ -132,37 +114,22 @@
 }
 
 .notice p {
-  color: var(--color-text-inverse-muted);
+  color: color-mix(in srgb, var(--color-text-inverse) 78%, transparent);
   font-size: 15px;
-}
-
-@media (max-width: 1023px) {
-  .screen {
-    grid-template-areas:
-      "intro"
-      "huella"
-      "acta";
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto;
-    max-width: 600px;
-  }
-
-  .screen > figure {
-    position: static;
-  }
+  line-height: 23px;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 560px) {
-  .screen {
-    padding-top: var(--space-2);
-  }
-
   .title {
-    font-size: 32px;
-    line-height: 38px;
+    font-size: 28px;
+    line-height: 34px;
   }
+}
 
-  .clauses {
-    font-size: 18px;
+@media (prefers-reduced-motion: reduce) {
+  .appear,
+  .notice {
+    animation: none;
   }
 }
