@@ -294,6 +294,20 @@ export type VerificationRequested = {
   detail: string;
 };
 
+/**
+ * VerifyEmailRequest
+ *
+ * Token del enlace de verificación (API-004). La página lo toma del fragmento #t=.
+ */
+export type VerifyEmailRequest = {
+  /**
+   * Token
+   *
+   * Token del enlace.
+   */
+  token: string;
+};
+
 export type HealthData = {
   body?: never;
   path?: never;
@@ -411,3 +425,37 @@ export type ResendVerificationResponses = {
 
 export type ResendVerificationResponse =
   ResendVerificationResponses[keyof ResendVerificationResponses];
+
+export type VerifyEmailData = {
+  body: VerifyEmailRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/verify-email";
+};
+
+export type VerifyEmailErrors = {
+  /**
+   * El enlace no es válido o ya venció.
+   */
+  400: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+};
+
+export type VerifyEmailError = VerifyEmailErrors[keyof VerifyEmailErrors];
+
+export type VerifyEmailResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type VerifyEmailResponse =
+  VerifyEmailResponses[keyof VerifyEmailResponses];

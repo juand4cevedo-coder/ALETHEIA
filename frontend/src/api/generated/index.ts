@@ -6,6 +6,7 @@ export {
   type Options,
   registerAccount,
   resendVerification,
+  verifyEmail,
 } from "./sdk.gen";
 export type {
   ClientOptions,
@@ -38,4 +39,10 @@ export type {
   ValidationErrorItem,
   ValidationProblem,
   VerificationRequested,
+  VerifyEmailData,
+  VerifyEmailError,
+  VerifyEmailErrors,
+  VerifyEmailRequest,
+  VerifyEmailResponse,
+  VerifyEmailResponses,
 } from "./types.gen";

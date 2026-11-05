@@ -12,6 +12,7 @@ from pydantic import (
 )
 
 from app.core.passwords import MAX_LENGTH, MIN_LENGTH, normalize
+from app.core.tokens import MAX_TOKEN_LENGTH
 
 # Texto visible: sin espacios sobrantes y nunca vacío. Va como alias simple, no con type, para
 # que el contrato lo describa en cada campo y no como un esquema aparte.
@@ -102,3 +103,11 @@ class VerificationRequested(BaseModel):
     """La misma respuesta exista o no una cuenta por verificar con ese correo."""
 
     detail: str = Field(description="Qué sigue para la persona.")
+
+
+class VerifyEmailRequest(BaseModel):
+    """Token del enlace de verificación (API-004). La página lo toma del fragmento #t=."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    token: str = Field(min_length=1, max_length=MAX_TOKEN_LENGTH, description="Token del enlace.")
