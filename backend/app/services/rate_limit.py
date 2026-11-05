@@ -111,6 +111,13 @@ def hit(session: Session, limit: Limit, value: str) -> None:
     record(session, limit, value)
 
 
+def clear(session: Session, limit: Limit, value: str) -> None:
+    """Olvida los intentos de una clave: un ingreso correcto deja la cuenta con sus cinco
+    intentos completos. El límite por IP no se limpia, porque es el que frena a quien prueba
+    una contraseña contra muchas cuentas."""
+    rate_limits_repository.delete_events(session, limit.bucket, _key_hash(limit, value))
+
+
 def purge_expired(session: Session) -> int:
     """Borra los intentos que ya no cuentan para ningún límite. Lo ejecuta el trabajador."""
     return rate_limits_repository.delete_older_than(session, RETENTION)

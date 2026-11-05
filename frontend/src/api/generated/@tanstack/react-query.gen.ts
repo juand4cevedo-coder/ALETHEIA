@@ -7,8 +7,10 @@ import {
   health,
   listPlans,
   type Options,
+  readMe,
   registerAccount,
   resendVerification,
+  signIn,
   verifyEmail,
 } from "../sdk.gen";
 import type {
@@ -18,12 +20,18 @@ import type {
   ListPlansData,
   ListPlansError,
   ListPlansResponse,
+  ReadMeData,
+  ReadMeError,
+  ReadMeResponse,
   RegisterAccountData,
   RegisterAccountError,
   RegisterAccountResponse,
   ResendVerificationData,
   ResendVerificationError,
   ResendVerificationResponse,
+  SignInData,
+  SignInError,
+  SignInResponse,
   VerifyEmailData,
   VerifyEmailError,
   VerifyEmailResponse,
@@ -199,3 +207,51 @@ export const verifyEmailMutation = (
   };
   return mutationOptions;
 };
+
+/**
+ * Ingresar con correo y contraseña
+ */
+export const signInMutation = (
+  options?: Partial<Options<SignInData>>,
+): UseMutationOptions<SignInResponse, SignInError, Options<SignInData>> => {
+  const mutationOptions: UseMutationOptions<
+    SignInResponse,
+    SignInError,
+    Options<SignInData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await signIn({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const readMeQueryKey = (options?: Options<ReadMeData>) =>
+  createQueryKey("readMe", options);
+
+/**
+ * Perfil, organización y rol de quien tiene la sesión
+ */
+export const readMeOptions = (options?: Options<ReadMeData>) =>
+  queryOptions<
+    ReadMeResponse,
+    ReadMeError,
+    ReadMeResponse,
+    ReturnType<typeof readMeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await readMe({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: readMeQueryKey(options),
+  });

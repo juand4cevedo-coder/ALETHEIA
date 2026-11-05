@@ -53,6 +53,15 @@ def add_event(session: Session, bucket: str, key_hash: bytes) -> None:
     session.flush()
 
 
+def delete_events(session: Session, bucket: str, key_hash: bytes) -> None:
+    """Borra todos los intentos de una clave en un límite."""
+    session.execute(
+        delete(RateLimitEvent).where(
+            RateLimitEvent.bucket == bucket, RateLimitEvent.key_hash == key_hash
+        )
+    )
+
+
 def delete_older_than(session: Session, age: datetime.timedelta) -> int:
     """Borra los intentos más viejos que age y devuelve cuántos borró."""
     deleted = session.scalars(

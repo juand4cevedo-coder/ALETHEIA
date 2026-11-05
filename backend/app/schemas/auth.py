@@ -111,3 +111,16 @@ class VerifyEmailRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     token: str = Field(min_length=1, max_length=MAX_TOKEN_LENGTH, description="Token del enlace.")
+
+
+class LoginRequest(BaseModel):
+    """Correo y contraseña para ingresar (API-005)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: _Email = Field(description="Correo de la cuenta.")
+    # Sin mínimo de longitud: una contraseña corta no puede ser la de nadie, y decirlo aparte
+    # no ayuda a nadie. El tope evita gastar CPU en textos enormes.
+    password: str = Field(
+        min_length=1, max_length=4 * MAX_LENGTH, description="Contraseña de la cuenta."
+    )

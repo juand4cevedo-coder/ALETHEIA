@@ -236,6 +236,106 @@
           }
         }
       }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Ingresar con correo y contraseña",
+        "operationId": "sign_in",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Sesión abierta: llegan las cookies de acceso y de renovación."
+          },
+          "401": {
+            "description": "El correo o la contraseña no coinciden.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "La cuenta está bloqueada.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos fallidos para la cuenta o desde la IP.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "tags": [
+          "perfil"
+        ],
+        "summary": "Perfil, organización y rol de quien tiene la sesión",
+        "operationId": "read_me",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -260,6 +360,112 @@
         ],
         "title": "HealthStatus",
         "description": "Estado del servicio y de la base de datos cuando ambos responden."
+      },
+      "LoginRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo de la cuenta."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Password",
+            "description": "Contraseña de la cuenta."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginRequest",
+        "description": "Correo y contraseña para ingresar (API-005)."
+      },
+      "Me": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador de la persona."
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name",
+            "description": "Nombre de la persona."
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "description": "Correo de la cuenta."
+          },
+          "email_verified": {
+            "type": "boolean",
+            "title": "Email Verified",
+            "description": "Si ya verificó su correo (HU-006)."
+          },
+          "organization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationMembership"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Su organización, o null si ya no pertenece a ninguna."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "full_name",
+          "email",
+          "email_verified",
+          "organization"
+        ],
+        "title": "Me",
+        "description": "Perfil, organización y rol de quien tiene la sesión."
+      },
+      "OrganizationMembership": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador de la organización."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nombre de la oficina, la firma o la persona independiente."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Rol de la persona en la organización."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "role"
+        ],
+        "title": "OrganizationMembership",
+        "description": "La organización de la persona y su rol en ella."
       },
       "Problem": {
         "additionalProperties": false,
@@ -617,6 +823,14 @@
         ],
         "title": "VerifyEmailRequest",
         "description": "Token del enlace de verificación (API-004). La página lo toma del fragmento #t=."
+      }
+    },
+    "securitySchemes": {
+      "sesion": {
+        "type": "apiKey",
+        "description": "Cookie de acceso que la API entrega al ingresar.",
+        "in": "cookie",
+        "name": "__Host-aletheia_access"
       }
     }
   }
