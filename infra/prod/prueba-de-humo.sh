@@ -102,6 +102,15 @@ else
     ok "la API rechaza otros orígenes"
 fi
 
+# 6. Una petición que cambia algo sin el encabezado propio de la interfaz no pasa (CSRF).
+read -r codigo _ <<<"$(respuesta --request POST --header 'Content-Type: application/json' \
+    --data '{}' "https://$DOMINIO/api/v1/auth/login")"
+if [[ $codigo == 403 ]]; then
+    ok "la API rechaza peticiones sin el encabezado propio"
+else
+    falla "un POST sin el encabezado propio respondió $codigo"
+fi
+
 if ((fallas > 0)); then
     echo "La prueba de humo encontró $fallas fallas."
     exit 1

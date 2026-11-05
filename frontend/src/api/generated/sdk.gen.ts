@@ -15,12 +15,18 @@ import type {
   ListPlansData,
   ListPlansErrors,
   ListPlansResponses,
+  ReadMeData,
+  ReadMeErrors,
+  ReadMeResponses,
   RegisterAccountData,
   RegisterAccountErrors,
   RegisterAccountResponses,
   ResendVerificationData,
   ResendVerificationErrors,
   ResendVerificationResponses,
+  SignInData,
+  SignInErrors,
+  SignInResponses,
   VerifyEmailData,
   VerifyEmailErrors,
   VerifyEmailResponses,
@@ -130,4 +136,37 @@ export const verifyEmail = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+/**
+ * Ingresar con correo y contraseña
+ */
+export const signIn = <ThrowOnError extends boolean = false>(
+  options: Options<SignInData, ThrowOnError>,
+): RequestResult<SignInResponses, SignInErrors, ThrowOnError> =>
+  (options.client ?? client).post<SignInResponses, SignInErrors, ThrowOnError>({
+    url: "/api/v1/auth/login",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Perfil, organización y rol de quien tiene la sesión
+ */
+export const readMe = <ThrowOnError extends boolean = false>(
+  options?: Options<ReadMeData, ThrowOnError>,
+): RequestResult<ReadMeResponses, ReadMeErrors, ThrowOnError> =>
+  (options?.client ?? client).get<ReadMeResponses, ReadMeErrors, ThrowOnError>({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/me",
+    ...options,
   });

@@ -1,11 +1,6 @@
 .form {
   display: grid;
-  gap: var(--space-6);
-  justify-items: start;
-}
-
-.form > span {
-  width: 100%;
+  gap: var(--space-4);
 }
 
 .title {
@@ -16,14 +11,17 @@
 
 .alert {
   padding: var(--space-3) var(--space-4);
-  border-left: 2px solid var(--color-error-400);
+  border: 1px solid color-mix(in srgb, var(--color-error-400) 45%, transparent);
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--color-error-400) 10%, transparent);
   font-size: 14px;
 }
 
 .sent {
   padding: var(--space-4);
-  border-left: 2px solid var(--color-success-400);
+  border: 1px solid
+    color-mix(in srgb, var(--color-success-400) 40%, transparent);
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--color-success-400) 10%, transparent);
   color: var(--color-text-inverse-muted);
   font-size: 15px;

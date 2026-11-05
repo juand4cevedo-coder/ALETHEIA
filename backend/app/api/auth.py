@@ -1,14 +1,18 @@
-"""Cuenta y acceso: registro (API-003), verificación del correo (API-004) y su reenvío."""
+"""Cuenta y acceso: registro (API-003), verificación del correo (API-004) y su reenvío, e
+ingreso con correo y contraseña (API-005)."""
 
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_app_settings, get_client_ip, get_session
+from app.adapters.email import REPLY_TO
+from app.api.cookies import set_session_cookies
+from app.api.deps import SESSION_CHALLENGE, get_app_settings, get_client_ip, get_session
 from app.core.config import Settings
 from app.core.tokens import InvalidLinkError
 from app.schemas.auth import (
+    LoginRequest,
     RegisterRequest,
     RegistrationAccepted,
     ResendVerificationRequest,
@@ -16,6 +20,7 @@ from app.schemas.auth import (
     VerifyEmailRequest,
 )
 from app.services import accounts as accounts_service
+from app.services import sessions as sessions_service
 from app.services import verification as verification_service
 
 router = APIRouter(tags=["cuenta"])
@@ -113,3 +118,56 @@ def verify_email(
             status.HTTP_400_BAD_REQUEST,
             detail="El enlace no es válido o ya venció. Pida uno nuevo.",
         ) from None
+
+
+# MSG-002. El mismo texto exista o no el correo, tenga o no contraseña (RN-026).
+_INVALID_CREDENTIALS = "El correo o la contraseña no coinciden. Revise los datos."
+_ACCOUNT_BLOCKED = f"Esta cuenta está bloqueada. Escríbanos a {REPLY_TO} para revisar su caso."
+
+
+@router.post(
+    "/auth/login",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Ingresar con correo y contraseña",
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "Sesión abierta: llegan las cookies de acceso y de renovación."
+        },
+        status.HTTP_401_UNAUTHORIZED: {"description": "El correo o la contraseña no coinciden."},
+        status.HTTP_403_FORBIDDEN: {"description": "La cuenta está bloqueada."},
+        status.HTTP_429_TOO_MANY_REQUESTS: {
+            "description": "Demasiados intentos fallidos para la cuenta o desde la IP."
+        },
+    },
+)
+def sign_in(
+    request: LoginRequest,
+    response: Response,
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> None:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        issued = sessions_service.sign_in(
+            session,
+            settings,
+            request.email,
+            request.password,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except sessions_service.InvalidCredentialsError:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail=_INVALID_CREDENTIALS,
+            headers={"WWW-Authenticate": SESSION_CHALLENGE, "Cache-Control": "no-store"},
+        ) from None
+    except sessions_service.AccountBlockedError:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail=_ACCOUNT_BLOCKED,
+            headers={"Cache-Control": "no-store"},
+        ) from None
+    set_session_cookies(response, issued)

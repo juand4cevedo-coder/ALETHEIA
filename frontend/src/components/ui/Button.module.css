@@ -107,6 +107,40 @@
   transform: translateY(-1px);
 }
 
+/* Acción principal sobre la escena de acceso: cápsula clara con texto navy (12,4:1) y un halo
+   azul que crece al pasar el puntero. */
+.bright {
+  background: var(--color-text-inverse);
+  color: var(--color-brand-navy);
+  box-shadow: 0 10px 30px -12px
+    color-mix(in srgb, var(--color-primary-300) 80%, transparent);
+}
+
+.bright:hover {
+  background: var(--color-surface);
+  box-shadow: 0 14px 40px -10px
+    color-mix(in srgb, var(--color-primary-300) 95%, transparent);
+  transform: translateY(-1px);
+}
+
+.pill {
+  min-height: 54px;
+  border-radius: var(--radius-pill);
+  font-size: 16px;
+}
+
+.pill.secondary.dark {
+  border-color: color-mix(in srgb, var(--color-primary-300) 55%, transparent);
+  background: color-mix(in srgb, var(--color-ink-950) 35%, transparent);
+  color: var(--color-primary-300);
+}
+
+.pill.secondary.dark:hover {
+  border-color: var(--color-primary-300);
+  background: color-mix(in srgb, var(--color-primary-400) 12%, transparent);
+  color: var(--color-primary-50);
+}
+
 .dark:focus-visible {
   outline-color: var(--color-primary-300);
 }

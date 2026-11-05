@@ -4,11 +4,9 @@ import { type FormEvent, useId, useState } from "react";
 import type { ResendVerificationError } from "../../api/generated";
 import { resendVerificationMutation } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../../components/ui/Button.tsx";
-import { Blank } from "./Blank.tsx";
-import { SIGN_UP_MESSAGES } from "./signUp.ts";
+import { Field } from "./Field.tsx";
+import { EMAIL_MAX_LENGTH, EMAIL_PATTERN, SIGN_UP_MESSAGES } from "./signUp.ts";
 import styles from "./ResendVerification.module.css";
-
-const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 type ResendProblem = "tooManyAttempts" | "unexpected";
 
@@ -38,7 +36,7 @@ export function ResendVerification() {
     if (resend.isPending) return;
     setProblem(null);
     const trimmed = email.trim();
-    if (trimmed.length > 254 || !EMAIL_PATTERN.test(trimmed)) {
+    if (trimmed.length > EMAIL_MAX_LENGTH || !EMAIL_PATTERN.test(trimmed)) {
       setError(SIGN_UP_MESSAGES.email);
       return;
     }
@@ -73,7 +71,7 @@ export function ResendVerification() {
             : "No pudimos enviar el enlace. Inténtelo de nuevo en unos minutos."}
         </p>
       )}
-      <Blank
+      <Field
         label="Correo electrónico"
         name="correo"
         type="email"
@@ -86,7 +84,13 @@ export function ResendVerification() {
         error={error}
         onChange={(event) => setEmail(event.target.value)}
       />
-      <Button type="submit" surface="dark" busy={resend.isPending}>
+      <Button
+        type="submit"
+        variant="bright"
+        shape="pill"
+        block
+        busy={resend.isPending}
+      >
         {resend.isPending ? "Enviando…" : "Enviarme un enlace nuevo"}
       </Button>
     </form>

@@ -9,8 +9,8 @@ import { Checkbox } from "../components/ui/Checkbox.tsx";
 import { legalRoute, ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
 import { AccountTypeChoice } from "../features/auth/AccountTypeChoice.tsx";
-import { Blank } from "../features/auth/Blank.tsx";
-import { HashMatrix } from "../features/auth/HashMatrix.tsx";
+import { Emblem } from "../features/auth/Emblem.tsx";
+import { Field } from "../features/auth/Field.tsx";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import {
   fieldErrorsFromApi,
@@ -22,7 +22,7 @@ import {
   toRegisterRequest,
   validateSignUp,
 } from "../features/auth/signUp.ts";
-import styles from "./SignUpPage.module.css";
+import styles from "../features/auth/AccessScreen.module.css";
 
 // Por defecto, la cuenta personal: es el caso del perfil principal (PER-001).
 const EMPTY: SignUpValues = {
@@ -34,10 +34,7 @@ const EMPTY: SignUpValues = {
   acceptsLegalTerms: false,
 };
 
-const TITLE_ID = "titulo-acta";
-// Lo que muestra la línea de la contraseña en el acta ya enviada: la contraseña real ya no está
-// en la página.
-const SENT_PASSWORD = "············";
+const TITLE_ID = "titulo-registro";
 const METER_ID = "medidor-contrasena";
 
 type FormProblem =
@@ -58,17 +55,16 @@ function problemFrom(error: unknown): FormProblem | null {
   return { kind: "unexpected" };
 }
 
-// Crear cuenta (UI-006, HU-005), escrita como el acta con la que se abre la cuenta. A su lado,
-// la huella SHA-256 del nombre y la oficina cambia con cada letra y muestra cuántos caracteres
-// se movieron. Al enviarse, el acta queda recibida y aparece el aviso de revisar el correo
-// (NAV-002); el aviso es el mismo exista o no el correo.
+// Crear cuenta (UI-006, HU-005): una columna sobre la escena del alba (ADR-029). Mientras la
+// API responde, el anillo del emblema gira; al crearse la cuenta se cierra y el formulario da
+// paso al aviso de revisar el correo (NAV-002), que es el mismo exista o no el correo.
 export function SignUpPage() {
   const [values, setValues] = useState<SignUpValues>(EMPTY);
   const [errors, setErrors] = useState<SignUpErrors>({});
   // Antes del primer envío no se marcan errores mientras la persona escribe.
   const [submitted, setSubmitted] = useState(false);
   const [problem, setProblem] = useState<FormProblem | null>(null);
-  const [receivedAt, setReceivedAt] = useState<Date | null>(null);
+  const [sentTo, setSentTo] = useState<string | null>(null);
   const fieldRefs = useRef<
     Partial<Record<SignUpField, HTMLInputElement | null>>
   >({});
@@ -77,9 +73,9 @@ export function SignUpPage() {
   const register = useMutation({
     ...registerAccountMutation(),
     onSuccess: () => {
-      setReceivedAt(new Date());
+      setSentTo(values.email.trim());
       // La contraseña no se queda en la memoria de la página una vez enviada.
-      setValues((current) => ({ ...current, password: "" }));
+      setValues(EMPTY);
     },
     onError: (error) => {
       setProblem(problemFrom(error));
@@ -93,8 +89,8 @@ export function SignUpPage() {
 
   useEffect(() => {
     // Quien usa lector de pantalla escucha el aviso apenas aparece.
-    if (receivedAt) noticeRef.current?.focus();
-  }, [receivedAt]);
+    if (sentTo) noticeRef.current?.focus();
+  }, [sentTo]);
 
   function focusFirstError(found: SignUpErrors) {
     const first = SIGN_UP_FIELDS.find((field) => found[field]);
@@ -118,7 +114,7 @@ export function SignUpPage() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (register.isPending || receivedAt) return;
+    if (register.isPending) return;
     setSubmitted(true);
     setProblem(null);
     const found = validateSignUp(values);
@@ -130,8 +126,8 @@ export function SignUpPage() {
     register.mutate({ body: toRegisterRequest(values) });
   }
 
-  const received = receivedAt !== null;
   const firm = values.accountType === "firm";
+  const emblemState = sentTo ? "done" : register.isPending ? "working" : "idle";
 
   return (
     <>
@@ -144,88 +140,66 @@ export function SignUpPage() {
 
       <div className={styles.screen}>
         <header className={styles.intro}>
+          <Emblem state={emblemState} />
           <h1 id={TITLE_ID} className={styles.title}>
-            Acta de apertura de cuenta
+            Cree su cuenta
           </h1>
-          <p className={styles.lead}>
-            Prueba gratis, sin tarjeta de crédito. Complete el acta para abrir
-            su cuenta.
-          </p>
+          <p className={styles.lead}>Prueba gratis, sin tarjeta de crédito.</p>
         </header>
 
-        <HashMatrix
-          source={
-            firm
-              ? `${values.fullName.trim()}\n${values.organizationName.trim()}`
-              : values.fullName.trim()
-          }
-          sourceLabel={firm ? "su nombre y su oficina" : "su nombre"}
-          receivedAt={receivedAt}
-        />
-
-        <div className={styles.primary}>
-          {received && (
-            <section className={styles.notice} aria-labelledby="titulo-aviso">
-              <MailCheck size={22} aria-hidden="true" />
-              <div>
-                <h2
-                  id="titulo-aviso"
-                  className={styles.noticeTitle}
-                  ref={noticeRef}
-                  tabIndex={-1}
-                >
-                  Revise su correo
-                </h2>
-                <p>
-                  Si <strong>{values.email.trim()}</strong> puede usarse, le
-                  enviamos un enlace para verificarlo. Ábralo para activar la
-                  cuenta y empezar la prueba. Si no le llega en unos minutos,
-                  revise la carpeta de spam.
-                </p>
-              </div>
-            </section>
-          )}
-
-          {problem && (
-            <div className={styles.alert} role="alert">
-              <ProblemMessage problem={problem} />
-            </div>
-          )}
-
+        {sentTo ? (
+          <section className={styles.notice} aria-labelledby="titulo-aviso">
+            <MailCheck size={28} aria-hidden="true" />
+            <h2
+              id="titulo-aviso"
+              className={styles.noticeTitle}
+              ref={noticeRef}
+              tabIndex={-1}
+            >
+              Revise su correo
+            </h2>
+            <p>
+              Si <strong>{sentTo}</strong> puede usarse, le enviamos un enlace
+              para verificarlo. Ábralo para activar la cuenta y empezar la
+              prueba. Si no le llega en unos minutos, revise la carpeta de spam.
+            </p>
+          </section>
+        ) : (
           <form
             className={styles.form}
             noValidate
             onSubmit={handleSubmit}
             aria-labelledby={TITLE_ID}
           >
+            {problem && (
+              <div className={styles.alert} role="alert">
+                <ProblemMessage problem={problem} />
+              </div>
+            )}
+
             <AccountTypeChoice
               value={values.accountType}
-              disabled={received}
               onChange={(accountType) => update("accountType", accountType)}
             />
 
-            <fieldset className={styles.clauses} disabled={received}>
+            <fieldset className={styles.fields}>
               <legend className="visually-hidden">Datos de la cuenta</legend>
-              <div className={styles.clause}>
-                <span>Yo,</span>
-                <Blank
-                  ref={bind("fullName")}
-                  label="Nombre completo"
-                  name="nombre"
-                  autoComplete="name"
-                  required
-                  maxLength={120}
-                  value={values.fullName}
-                  error={errors.fullName}
-                  onChange={(event) => update("fullName", event.target.value)}
-                />
-              </div>
+              <Field
+                ref={bind("fullName")}
+                label="Nombre completo"
+                name="nombre"
+                autoComplete="name"
+                required
+                maxLength={120}
+                value={values.fullName}
+                error={errors.fullName}
+                onChange={(event) => update("fullName", event.target.value)}
+              />
               {firm && (
-                <div className={`${styles.clause} ${styles.appear}`}>
-                  <span>en nombre de</span>
-                  <Blank
+                <div className={styles.appear}>
+                  <Field
                     ref={bind("organizationName")}
-                    label="Oficina o firma"
+                    label="Nombre de la oficina o firma"
                     name="organizacion"
                     autoComplete="organization"
                     required
@@ -238,48 +212,35 @@ export function SignUpPage() {
                   />
                 </div>
               )}
-              <p>
-                {firm
-                  ? "abro una cuenta en ALETHEIA para preservar la evidencia digital de nuestros casos."
-                  : "abro a mi nombre una cuenta en ALETHEIA para preservar la evidencia digital de mis casos."}
-              </p>
-              <div className={styles.clause}>
-                <span>Recibiré los avisos en</span>
-                <Blank
-                  ref={bind("email")}
-                  label="Correo electrónico"
-                  name="correo"
-                  type="email"
-                  autoComplete="email"
-                  inputMode="email"
-                  spellCheck={false}
-                  required
-                  maxLength={254}
-                  value={values.email}
-                  error={errors.email}
-                  onChange={(event) => update("email", event.target.value)}
-                />
-              </div>
-              <div className={styles.clause}>
-                <span>y protegeré el acceso con</span>
-                <Blank
-                  ref={bind("password")}
-                  label="Contraseña"
-                  name="contrasena"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  maxLength={PASSWORD_MAX_LENGTH}
-                  value={received ? SENT_PASSWORD : values.password}
-                  error={errors.password}
-                  describedBy={received ? undefined : METER_ID}
-                  onChange={(event) => update("password", event.target.value)}
-                >
-                  {!received && (
-                    <PasswordMeter id={METER_ID} password={values.password} />
-                  )}
-                </Blank>
-              </div>
+              <Field
+                ref={bind("email")}
+                label="Correo electrónico"
+                name="correo"
+                type="email"
+                autoComplete="email"
+                inputMode="email"
+                spellCheck={false}
+                required
+                maxLength={254}
+                value={values.email}
+                error={errors.email}
+                onChange={(event) => update("email", event.target.value)}
+              />
+              <Field
+                ref={bind("password")}
+                label="Contraseña"
+                name="contrasena"
+                type="password"
+                autoComplete="new-password"
+                required
+                maxLength={PASSWORD_MAX_LENGTH}
+                value={values.password}
+                error={errors.password}
+                describedBy={METER_ID}
+                onChange={(event) => update("password", event.target.value)}
+              >
+                <PasswordMeter id={METER_ID} password={values.password} />
+              </Field>
             </fieldset>
 
             <div className={styles.terms}>
@@ -287,7 +248,6 @@ export function SignUpPage() {
                 ref={bind("acceptsLegalTerms")}
                 name="acepta"
                 required
-                disabled={received}
                 checked={values.acceptsLegalTerms}
                 error={errors.acceptsLegalTerms}
                 onChange={(event) =>
@@ -307,19 +267,25 @@ export function SignUpPage() {
               </Checkbox>
             </div>
 
-            {!received && (
-              <Button type="submit" surface="dark" busy={register.isPending}>
-                {register.isPending ? "Abriendo la cuenta…" : "Abrir la cuenta"}
+            <div className={styles.submit}>
+              <Button
+                type="submit"
+                variant="bright"
+                shape="pill"
+                block
+                busy={register.isPending}
+              >
+                {register.isPending ? "Creando la cuenta…" : "Crear cuenta"}
               </Button>
-            )}
+            </div>
           </form>
-        </div>
+        )}
       </div>
     </>
   );
 }
 
-// Las políticas se abren en otra pestaña para no perder lo escrito en el acta.
+// Las políticas se abren en otra pestaña para no perder lo escrito en el formulario.
 function NewTabLink({ to, children }: { to: string; children: string }) {
   return (
     <a href={to} target="_blank" rel="noopener">

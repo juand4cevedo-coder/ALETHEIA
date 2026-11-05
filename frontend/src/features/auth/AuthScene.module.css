@@ -1,0 +1,132 @@
+/* Escena de acceso: fija detrás del contenido, que se desplaza encima de ella. Solo usa los
+   azules del sistema de diseño: la noche en ink, la cordillera en navy y la luz del alba en el
+   azul de la marca. */
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    var(--color-ink-950) 0%,
+    #0d1a38 34%,
+    #1a3266 62%,
+    #2a5f9a 78%,
+    var(--color-ink-900) 100%
+  );
+}
+
+/* El alba: un resplandor que sube desde detrás de la cordillera y respira muy despacio. */
+.dawn {
+  position: absolute;
+  inset: auto -20% 18% -20%;
+  height: 60%;
+  background: radial-gradient(
+    50% 60% at 50% 100%,
+    color-mix(in srgb, var(--color-primary-400) 55%, transparent),
+    color-mix(in srgb, var(--color-brand-blue) 25%, transparent) 45%,
+    transparent 75%
+  );
+  animation: breathe 9s var(--ease-standard) infinite alternate;
+}
+
+@keyframes breathe {
+  from {
+    opacity: 0.75;
+    transform: translateY(2%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stars {
+  position: absolute;
+  inset: 0 0 45% 0;
+}
+
+.stars span {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--color-text-inverse);
+  box-shadow: 0 0 6px
+    color-mix(in srgb, var(--color-primary-300) 80%, transparent);
+  animation: twinkle 5s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* La cordillera ocupa el tercio bajo de la pantalla en cualquier tamaño. */
+.range {
+  position: absolute;
+  right: 0;
+  bottom: 14%;
+  left: 0;
+  width: 100%;
+  height: 46%;
+}
+
+/* Las capas lejanas se mueven menos: un desplazamiento lento que da profundidad. */
+.far {
+  opacity: 0.7;
+  animation: drift 26s var(--ease-standard) infinite alternate;
+}
+
+.mid {
+  opacity: 0.92;
+  animation: drift 26s var(--ease-standard) infinite alternate-reverse;
+}
+
+@keyframes drift {
+  to {
+    transform: translateX(-12px);
+  }
+}
+
+/* Cara iluminada de cada pico: la luz del alba llega desde la izquierda. */
+.lit {
+  fill: var(--color-primary-400);
+  fill-opacity: 0.16;
+}
+
+.litNear {
+  fill: var(--color-primary-400);
+  fill-opacity: 0.07;
+}
+
+.ground {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 14.5%;
+  background: linear-gradient(
+    180deg,
+    var(--color-ink-900),
+    var(--color-ink-950)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dawn,
+  .stars span,
+  .far,
+  .mid {
+    animation: none;
+  }
+}

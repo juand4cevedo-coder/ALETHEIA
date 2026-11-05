@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.adapters.email import SmtpEmailSender
 from app.api.deps import get_session
-from app.core.config import Settings
+from app.core.config import Settings, SigningKeyMissingError
 from app.core.errors import PROBLEM_JSON
 from app.core.legal import LEGAL_VERSION
 from app.core.tokens import LinkPurpose, issue_link, read_link, state_matches
@@ -22,13 +22,8 @@ from app.main import create_app
 from app.models import AuditLog, Job, Membership, User
 from app.services import account_emails
 from app.services.jobs import PermanentJobError
-from app.services.verification import (
-    SigningKeyMissingError,
-    signing_key,
-    verification_link,
-    verification_state,
-)
-from tests.conftest import TEST_SIGNING_KEY
+from app.services.verification import verification_link, verification_state
+from tests.conftest import SAME_ORIGIN_HEADERS, TEST_SIGNING_KEY
 from tests.test_email import _delivered, _recipient
 
 _REGISTRO = "/api/v1/auth/register"
@@ -39,7 +34,7 @@ _REENVIO = "/api/v1/auth/verify-email/resend"
 def client(settings: Settings, db: Session) -> Iterator[TestClient]:
     app = create_app(settings)
     app.dependency_overrides[get_session] = lambda: db
-    with TestClient(app) as test_client:
+    with TestClient(app, headers=SAME_ORIGIN_HEADERS) as test_client:
         yield test_client
 
 
@@ -180,7 +175,7 @@ def test_el_correo_de_verificacion_llega_a_mailpit(db: Session, settings: Settin
 
 def test_sin_clave_de_firma_el_error_lo_dice(settings: Settings) -> None:
     with pytest.raises(SigningKeyMissingError, match="ALETHEIA_TOKEN_SIGNING_KEY"):
-        signing_key(settings.model_copy(update={"token_signing_key": None}))
+        settings.model_copy(update={"token_signing_key": None}).signing_key()
 
 
 # --- Reenvío -------------------------------------------------------------------------------

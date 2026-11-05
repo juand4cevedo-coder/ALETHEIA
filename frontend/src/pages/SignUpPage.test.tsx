@@ -45,7 +45,7 @@ async function fillForm(
 }
 
 async function submit(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole("button", { name: "Abrir la cuenta" }));
+  await user.click(screen.getByRole("button", { name: "Crear cuenta" }));
 }
 
 describe("Crear cuenta (HU-005, CP-005)", () => {
@@ -55,47 +55,20 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Acta de apertura de cuenta",
+        name: "Cree su cuenta",
       }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Contraseña")).toHaveAttribute(
       "autocomplete",
       "new-password",
     );
-    expect(screen.getByRole("link", { name: "Ingresar" })).toHaveAttribute(
-      "href",
-      "/ingresar",
-    );
+    expect(
+      screen.getByRole("link", { name: "Volver a ingresar" }),
+    ).toHaveAttribute("href", "/ingresar");
     expect(
       screen.getByRole("button", { name: "Configurar cookies" }),
     ).toBeInTheDocument();
     expect(await seriousAxeViolations(container)).toEqual([]);
-  });
-
-  it("demuestra cuántos caracteres de la huella cambia una sola letra", async () => {
-    const user = userEvent.setup();
-    renderRoute("/registro");
-    const huella = () =>
-      screen
-        .getByText(/^Huella actual: /)
-        .textContent?.replace("Huella actual: ", "");
-
-    await waitFor(() => expect(huella()).toMatch(/^[0-9a-f]{64}$/));
-    const inicial = huella()!;
-    await user.type(screen.getByLabelText("Nombre completo"), "A");
-
-    await waitFor(() => expect(huella()).not.toBe(inicial));
-    const final = huella()!;
-    const cambiados = [...final].filter((c, i) => c !== inicial[i]).length;
-    // El contador dice exactamente lo que cambió: la afirmación queda demostrada.
-    expect(
-      screen.getByText(
-        (_, element) =>
-          element?.tagName === "P" &&
-          element.textContent ===
-            `Su último cambio movió ${cambiados} de los 64 caracteres.`,
-      ),
-    ).toBeInTheDocument();
   });
 
   it("guía la contraseña por su longitud, sin reglas de composición", async () => {
@@ -187,17 +160,13 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     });
     expect(aviso).toHaveFocus();
     expect(screen.getByText("ana@example.com")).toBeInTheDocument();
-    // El acta queda sellada y ya no se puede editar ni volver a enviar.
+    // El formulario da paso al aviso: ya no se puede volver a enviar, y la contraseña no
+    // queda en ningún campo de la página.
+    expect(screen.queryByLabelText("Nombre completo")).not.toBeInTheDocument();
     expect(
-      screen.getByText(/^Acta recibida a las \d{2}:\d{2}\.$/),
-    ).toBeInTheDocument();
-    expect(screen.getByLabelText("Nombre completo")).toBeDisabled();
-    expect(
-      screen.queryByRole("button", { name: "Abrir la cuenta" }),
+      screen.queryByRole("button", { name: "Crear cuenta" }),
     ).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Contraseña")).not.toHaveValue(
-      "una frase larga y fácil",
-    );
+    expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument();
 
     const request = fetchMock.mock.calls[0]![0] as Request;
     expect(request.method).toBe("POST");
@@ -215,11 +184,10 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
   it("por defecto la cuenta es personal y no pide oficina", () => {
     renderRoute("/registro");
 
-    expect(screen.getByRole("radio", { name: /Por mi cuenta/ })).toBeChecked();
-    expect(screen.queryByLabelText("Oficina o firma")).not.toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Independiente" })).toBeChecked();
     expect(
-      screen.getByText(/abro a mi nombre una cuenta en ALETHEIA/),
-    ).toBeInTheDocument();
+      screen.queryByLabelText("Nombre de la oficina o firma"),
+    ).not.toBeInTheDocument();
   });
 
   it("para una firma pide el nombre de la oficina y lo envía", async () => {
@@ -227,14 +195,12 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     const user = userEvent.setup();
     renderRoute("/registro");
 
-    await user.click(
-      screen.getByRole("radio", { name: /Para una oficina o firma/ }),
-    );
+    await user.click(screen.getByRole("radio", { name: "Oficina o firma" }));
     await fillForm(user);
     await submit(user);
 
-    // Sin el nombre de la oficina, el acta no se envía.
-    const oficina = screen.getByLabelText("Oficina o firma");
+    // Sin el nombre de la oficina, el formulario no se envía.
+    const oficina = screen.getByLabelText("Nombre de la oficina o firma");
     expect(oficina).toHaveFocus();
     expect(fetchMock).not.toHaveBeenCalled();
 
