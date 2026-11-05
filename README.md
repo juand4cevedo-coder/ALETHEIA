@@ -70,6 +70,8 @@ Abre `backend/.env` y reemplaza cada `CLAVE` por la del usuario correspondiente 
 | `ALETHEIA_MIGRATION_DATABASE_URL` | Solo para migraciones | `postgresql+psycopg://aletheia_owner:CLAVE@127.0.0.1:5432/aletheia` |
 | `ALETHEIA_DATABASE_PASSWORD_PARAMETER` y `ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER` | Solo en producción | No se definen: fuera de producción la API las rechaza |
 | `ALETHEIA_SMTP_HOST` y `ALETHEIA_SMTP_PORT` | No | `127.0.0.1` y `1025`, el Mailpit de Compose |
+| `ALETHEIA_TOKEN_SIGNING_KEY` | Sí, para los enlaces de los correos | Al menos 32 caracteres aleatorios: `uv run python -c "import secrets; print(secrets.token_urlsafe(48))"`. En producción se lee de Parameter Store |
+| `ALETHEIA_DEV_PUBLIC_URL` | No | `http://localhost:5173`, la dirección de los enlaces fuera de producción |
 
 Con los servicios de Compose encendidos:
 
@@ -219,6 +221,7 @@ En producción la API no recibe claves. Su URL llega sin clave y la API la lee d
 | `ALETHEIA_LOG_LEVEL` | `INFO` |
 | `ALETHEIA_DATABASE_URL` | `postgresql+psycopg://aletheia_app@postgres:5432/aletheia` |
 | `ALETHEIA_DATABASE_PASSWORD_PARAMETER` | `/aletheia/prod/postgres/app-password` |
+| `ALETHEIA_TOKEN_SIGNING_KEY_PARAMETER` | `/aletheia/prod/app/token-signing-key` |
 | `ALETHEIA_MIGRATION_DATABASE_URL` | `postgresql+psycopg://aletheia_owner@postgres:5432/aletheia` |
 | `ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER` | `/aletheia/prod/postgres/owner-password` |
 | `AWS_DEFAULT_REGION` | `us-east-2` |

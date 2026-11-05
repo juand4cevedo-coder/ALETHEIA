@@ -8,7 +8,12 @@ const NAME_MAX_LENGTH = 120;
 const EMAIL_MAX_LENGTH = 254;
 const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
+// Quien trabaja por su cuenta o quien abre la cuenta de una oficina o firma. En los dos casos
+// nace una organización; la de quien trabaja solo lleva su nombre.
+export type AccountType = RegisterRequest["account_type"];
+
 export type SignUpValues = {
+  accountType: AccountType;
   fullName: string;
   email: string;
   password: string;
@@ -16,7 +21,7 @@ export type SignUpValues = {
   acceptsLegalTerms: boolean;
 };
 
-export type SignUpField = keyof SignUpValues;
+export type SignUpField = Exclude<keyof SignUpValues, "accountType">;
 export type SignUpErrors = Partial<Record<SignUpField, string>>;
 
 // Orden de los campos en el formulario: el foco va al primero que tenga un error.
@@ -59,7 +64,11 @@ export function validateSignUp(values: SignUpValues): SignUpErrors {
   } else if (passwordLength > PASSWORD_MAX_LENGTH) {
     errors.password = SIGN_UP_MESSAGES.passwordLong;
   }
-  if (!organizationName || organizationName.length > NAME_MAX_LENGTH) {
+  // El nombre de la oficina solo se pide a quien abre la cuenta de una firma.
+  if (
+    values.accountType === "firm" &&
+    (!organizationName || organizationName.length > NAME_MAX_LENGTH)
+  ) {
     errors.organizationName = SIGN_UP_MESSAGES.organizationName;
   }
   if (!values.acceptsLegalTerms) {
@@ -71,10 +80,14 @@ export function validateSignUp(values: SignUpValues): SignUpErrors {
 /** Cuerpo de POST /api/v1/auth/register. Lleva la versión legal que la persona tuvo a la vista. */
 export function toRegisterRequest(values: SignUpValues): RegisterRequest {
   return {
+    account_type: values.accountType,
     full_name: values.fullName.trim(),
     email: values.email.trim(),
     password: values.password,
-    organization_name: values.organizationName.trim(),
+    // Lo escrito en el campo de la oficina no viaja si al final la cuenta es personal.
+    ...(values.accountType === "firm" && {
+      organization_name: values.organizationName.trim(),
+    }),
     legal_version: LEGAL_VERSION,
     accepts_legal_terms: true,
   };

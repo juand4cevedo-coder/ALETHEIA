@@ -208,6 +208,9 @@ def test_en_produccion_el_correo_sale_por_ses(monkeypatch: pytest.MonkeyPatch) -
             "log_level": "INFO",
             "database_url": "postgresql+psycopg://aletheia_app@postgres:5432/aletheia",
             "database_password_parameter": "/aletheia/prod/postgres/app-password",
+            "token_signing_key_parameter": "/aletheia/prod/app/token-signing-key",
+            # La clave de firma de backend/.env tampoco: en producción viene de Parameter Store.
+            "token_signing_key": None,
         }
     )
     client = boto3.client("sesv2", region_name="us-east-2")

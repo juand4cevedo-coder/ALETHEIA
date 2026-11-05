@@ -3,7 +3,14 @@
 import { queryOptions, type UseMutationOptions } from "@tanstack/react-query";
 
 import { client } from "../client.gen";
-import { health, listPlans, type Options, registerAccount } from "../sdk.gen";
+import {
+  health,
+  listPlans,
+  type Options,
+  registerAccount,
+  resendVerification,
+  verifyEmail,
+} from "../sdk.gen";
 import type {
   HealthData,
   HealthError,
@@ -14,6 +21,12 @@ import type {
   RegisterAccountData,
   RegisterAccountError,
   RegisterAccountResponse,
+  ResendVerificationData,
+  ResendVerificationError,
+  ResendVerificationResponse,
+  VerifyEmailData,
+  VerifyEmailError,
+  VerifyEmailResponse,
 } from "../types.gen";
 
 export type QueryKey<TOptions extends Options> = [
@@ -123,6 +136,60 @@ export const registerAccountMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await registerAccount({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Reenviar el enlace para verificar el correo
+ */
+export const resendVerificationMutation = (
+  options?: Partial<Options<ResendVerificationData>>,
+): UseMutationOptions<
+  ResendVerificationResponse,
+  ResendVerificationError,
+  Options<ResendVerificationData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ResendVerificationResponse,
+    ResendVerificationError,
+    Options<ResendVerificationData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await resendVerification({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Verificar el correo con el enlace recibido
+ */
+export const verifyEmailMutation = (
+  options?: Partial<Options<VerifyEmailData>>,
+): UseMutationOptions<
+  VerifyEmailResponse,
+  VerifyEmailError,
+  Options<VerifyEmailData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    VerifyEmailResponse,
+    VerifyEmailError,
+    Options<VerifyEmailData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await verifyEmail({
         ...options,
         ...fnOptions,
         throwOnError: true,

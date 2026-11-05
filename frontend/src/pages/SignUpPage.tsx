@@ -8,6 +8,7 @@ import { Button } from "../components/ui/Button.tsx";
 import { Checkbox } from "../components/ui/Checkbox.tsx";
 import { legalRoute, ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
+import { AccountTypeChoice } from "../features/auth/AccountTypeChoice.tsx";
 import { Blank } from "../features/auth/Blank.tsx";
 import { HashMatrix } from "../features/auth/HashMatrix.tsx";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
@@ -23,7 +24,9 @@ import {
 } from "../features/auth/signUp.ts";
 import styles from "./SignUpPage.module.css";
 
+// Por defecto, la cuenta personal: es el caso del perfil principal (PER-001).
 const EMPTY: SignUpValues = {
+  accountType: "individual",
   fullName: "",
   email: "",
   password: "",
@@ -104,7 +107,10 @@ export function SignUpPage() {
     };
   }
 
-  function update<K extends SignUpField>(field: K, value: SignUpValues[K]) {
+  function update<K extends keyof SignUpValues>(
+    field: K,
+    value: SignUpValues[K],
+  ) {
     const next = { ...values, [field]: value };
     setValues(next);
     if (submitted) setErrors(validateSignUp(next));
@@ -125,6 +131,7 @@ export function SignUpPage() {
   }
 
   const received = receivedAt !== null;
+  const firm = values.accountType === "firm";
 
   return (
     <>
@@ -147,7 +154,12 @@ export function SignUpPage() {
         </header>
 
         <HashMatrix
-          source={`${values.fullName.trim()}\n${values.organizationName.trim()}`}
+          source={
+            firm
+              ? `${values.fullName.trim()}\n${values.organizationName.trim()}`
+              : values.fullName.trim()
+          }
+          sourceLabel={firm ? "su nombre y su oficina" : "su nombre"}
           receivedAt={receivedAt}
         />
 
@@ -186,6 +198,12 @@ export function SignUpPage() {
             onSubmit={handleSubmit}
             aria-labelledby={TITLE_ID}
           >
+            <AccountTypeChoice
+              value={values.accountType}
+              disabled={received}
+              onChange={(accountType) => update("accountType", accountType)}
+            />
+
             <fieldset className={styles.clauses} disabled={received}>
               <legend className="visually-hidden">Datos de la cuenta</legend>
               <div className={styles.clause}>
@@ -202,25 +220,28 @@ export function SignUpPage() {
                   onChange={(event) => update("fullName", event.target.value)}
                 />
               </div>
-              <div className={styles.clause}>
-                <span>en nombre de</span>
-                <Blank
-                  ref={bind("organizationName")}
-                  label="Oficina o firma"
-                  name="organizacion"
-                  autoComplete="organization"
-                  required
-                  maxLength={120}
-                  value={values.organizationName}
-                  error={errors.organizationName}
-                  onChange={(event) =>
-                    update("organizationName", event.target.value)
-                  }
-                />
-              </div>
+              {firm && (
+                <div className={`${styles.clause} ${styles.appear}`}>
+                  <span>en nombre de</span>
+                  <Blank
+                    ref={bind("organizationName")}
+                    label="Oficina o firma"
+                    name="organizacion"
+                    autoComplete="organization"
+                    required
+                    maxLength={120}
+                    value={values.organizationName}
+                    error={errors.organizationName}
+                    onChange={(event) =>
+                      update("organizationName", event.target.value)
+                    }
+                  />
+                </div>
+              )}
               <p>
-                abro una cuenta en ALETHEIA para preservar la evidencia digital
-                de mis casos.
+                {firm
+                  ? "abro una cuenta en ALETHEIA para preservar la evidencia digital de nuestros casos."
+                  : "abro a mi nombre una cuenta en ALETHEIA para preservar la evidencia digital de mis casos."}
               </p>
               <div className={styles.clause}>
                 <span>Recibiré los avisos en</span>

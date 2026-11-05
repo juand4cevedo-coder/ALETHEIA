@@ -1,0 +1,98 @@
+.choice {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: var(--space-3);
+  padding: 0;
+  color: var(--color-text-inverse-muted);
+  font-size: 14px;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+/* Cada opción es una tarjeta: el botón de opción real queda invisible pero activo, y la
+   tarjeta muestra su estado con el borde y el fondo. */
+.option {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 14%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-ink-800) 40%, transparent);
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
+}
+
+.option:hover {
+  border-color: color-mix(in srgb, var(--color-text-inverse) 30%, transparent);
+}
+
+.option input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.option:has(input:checked) {
+  border-color: var(--color-primary-300);
+  background: color-mix(in srgb, var(--color-primary-300) 10%, transparent);
+}
+
+.option:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary-300);
+  outline-offset: 2px;
+}
+
+.option:has(input:disabled) {
+  cursor: default;
+}
+
+.icon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-text-inverse-muted);
+}
+
+.option:has(input:checked) .icon {
+  color: var(--color-primary-300);
+}
+
+.text {
+  display: grid;
+  gap: 2px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.detail {
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+@media (max-width: 480px) {
+  .options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

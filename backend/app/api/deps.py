@@ -7,6 +7,8 @@ from fastapi import Depends, Request
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
+from app.core.config import Settings
+
 
 def get_engine(request: Request) -> Engine:
     """Entrega el motor de base de datos creado al construir la aplicación."""
@@ -21,6 +23,12 @@ def get_session(engine: Annotated[Engine, Depends(get_engine)]) -> Iterator[Sess
     """Sesión de SQLAlchemy por petición; se cierra al terminar la respuesta."""
     with Session(engine) as session:
         yield session
+
+
+def get_app_settings(request: Request) -> Settings:
+    """La configuración de la aplicación que atiende la petición."""
+    settings: Settings = request.app.state.settings
+    return settings
 
 
 def get_client_ip(request: Request) -> str:

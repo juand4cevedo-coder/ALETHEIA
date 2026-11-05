@@ -76,6 +76,18 @@
   white-space: nowrap;
 }
 
+/* La cláusula de la oficina entra al elegir una firma, sin saltar de golpe. */
+.appear {
+  animation: appear var(--motion-base) var(--ease-out);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
 .terms {
   padding: var(--space-4);
   border-left: 2px solid var(--color-primary-400);

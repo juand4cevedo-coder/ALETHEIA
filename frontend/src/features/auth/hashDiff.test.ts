@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { changedCharacters } from "./HashMatrix.tsx";
+import { changedCharacters } from "./hashDiff.ts";
 
 describe("Conteo de caracteres de la huella que cambiaron", () => {
   it("compara posición por posición", () => {

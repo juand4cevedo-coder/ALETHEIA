@@ -37,10 +37,6 @@ async function fillForm(
 ) {
   await user.type(screen.getByLabelText("Nombre completo"), "Ana Restrepo");
   await user.type(
-    screen.getByLabelText("Oficina o firma"),
-    "Restrepo Abogados",
-  );
-  await user.type(
     screen.getByLabelText("Correo electrónico"),
     "ana@example.com",
   );
@@ -207,12 +203,49 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     expect(request.method).toBe("POST");
     expect(new URL(request.url).pathname).toBe("/api/v1/auth/register");
     expect(await request.json()).toEqual({
+      account_type: "individual",
       full_name: "Ana Restrepo",
       email: "ana@example.com",
       password: "una frase larga y fácil",
-      organization_name: "Restrepo Abogados",
       legal_version: LEGAL_VERSION,
       accepts_legal_terms: true,
+    });
+  });
+
+  it("por defecto la cuenta es personal y no pide oficina", () => {
+    renderRoute("/registro");
+
+    expect(screen.getByRole("radio", { name: /Por mi cuenta/ })).toBeChecked();
+    expect(screen.queryByLabelText("Oficina o firma")).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/abro a mi nombre una cuenta en ALETHEIA/),
+    ).toBeInTheDocument();
+  });
+
+  it("para una firma pide el nombre de la oficina y lo envía", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(ACCEPTED, 202));
+    const user = userEvent.setup();
+    renderRoute("/registro");
+
+    await user.click(
+      screen.getByRole("radio", { name: /Para una oficina o firma/ }),
+    );
+    await fillForm(user);
+    await submit(user);
+
+    // Sin el nombre de la oficina, el acta no se envía.
+    const oficina = screen.getByLabelText("Oficina o firma");
+    expect(oficina).toHaveFocus();
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await user.type(oficina, "Restrepo Abogados");
+    await submit(user);
+
+    await screen.findByRole("heading", { level: 2, name: "Revise su correo" });
+    const request = fetchMock.mock.calls[0]![0] as Request;
+    expect(await request.json()).toMatchObject({
+      account_type: "firm",
+      organization_name: "Restrepo Abogados",
     });
   });
 

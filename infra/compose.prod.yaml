@@ -84,6 +84,8 @@ services:
       # Usuario de la aplicación, sin permisos sobre el esquema y sin clave en la URL.
       ALETHEIA_DATABASE_URL: postgresql+psycopg://aletheia_app@postgres:5432/aletheia
       ALETHEIA_DATABASE_PASSWORD_PARAMETER: /aletheia/prod/postgres/app-password
+      # Clave de firma de los enlaces de los correos; el trabajador la recibe por el ancla.
+      ALETHEIA_TOKEN_SIGNING_KEY_PARAMETER: /aletheia/prod/app/token-signing-key
     # Sin "ports": solo Caddy llega a la API, por la red frontal.
     networks:
       - frontal

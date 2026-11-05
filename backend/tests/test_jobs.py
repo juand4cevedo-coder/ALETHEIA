@@ -9,6 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.adapters.email import OutgoingEmail
+from app.core.config import Settings
 from app.models import Job
 from app.services import jobs
 from app.services.jobs import enqueue, retry_delay, uuid7_floor
@@ -77,7 +78,7 @@ def test_una_plantilla_no_se_registra_dos_veces(monkeypatch: pytest.MonkeyPatch)
     monkeypatch.setattr("app.services.notifications.EMAIL_BUILDERS", dict(EMAIL_BUILDERS))
 
     @email_template("prueba_unica")
-    def primera(_session: Session, _payload: dict[str, Any]) -> OutgoingEmail:
+    def primera(_session: Session, _payload: dict[str, Any], _settings: Settings) -> OutgoingEmail:
         return OutgoingEmail(to="abogada@example.com", subject="Aviso", text="Texto")
 
     with pytest.raises(ValueError, match="ya está registrada"):

@@ -7,15 +7,21 @@ from typing import Any, Final
 from sqlalchemy.orm import Session
 
 from app.adapters.email import EmailDeliveryError, EmailSender
+from app.core.config import Settings
+
+# Registra las plantillas de la cuenta: sin este import, el trabajador no las conoce.
+from app.services import account_emails as _account_emails  # noqa: F401
 from app.services import notifications
 from app.services.jobs import PermanentJobError
 
 
 @dataclass(frozen=True, slots=True)
 class WorkerContext:
-    """Los servicios externos que usan los manejadores."""
+    """Lo que usan los manejadores: el envío de correo y la configuración, con la clave de firma y
+    la dirección pública para los enlaces."""
 
     email: EmailSender
+    settings: Settings
 
 
 type Handler = Callable[[Session, dict[str, Any], WorkerContext], None]
@@ -23,7 +29,9 @@ type Handler = Callable[[Session, dict[str, Any], WorkerContext], None]
 
 def send_email(session: Session, payload: dict[str, Any], context: WorkerContext) -> None:
     """email_send (EVT-003): arma el correo con los datos de hoy y lo entrega."""
-    email = notifications.build_email(session, payload)
+    email = notifications.build_email(session, payload, context.settings)
+    if email is None:
+        return
     try:
         context.email.send(email)
     except EmailDeliveryError as exc:
