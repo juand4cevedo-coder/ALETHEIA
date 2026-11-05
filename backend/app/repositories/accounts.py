@@ -8,10 +8,10 @@ from sqlalchemy.orm import Session
 from app.models import AuditLog, Membership, Organization, Plan, Subscription, User
 
 
-def email_taken(session: Session, email: str) -> bool:
-    """Indica si ya existe una cuenta con ese correo, sin distinguir mayúsculas (IDX-001)."""
-    statement = select(User.id).where(func.lower(User.email) == email.lower()).limit(1)
-    return session.scalar(statement) is not None
+def user_by_email(session: Session, email: str) -> User | None:
+    """La persona con ese correo, sin distinguir mayúsculas (IDX-001), o None."""
+    statement = select(User).where(func.lower(User.email) == email.lower()).limit(1)
+    return session.scalar(statement)
 
 
 def plan_id_by_code(session: Session, code: str) -> uuid.UUID:

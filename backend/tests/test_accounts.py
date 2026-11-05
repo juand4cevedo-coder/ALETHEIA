@@ -122,7 +122,7 @@ def test_dos_registros_simultaneos_del_mismo_correo_no_fallan(
     # Simula que otra petición registró el correo justo después de la comprobación: la base lo
     # rechaza por el índice único y la API responde igual que con un correo registrado.
     client.post(_PATH, json=_datos())
-    monkeypatch.setattr(accounts_repository, "email_taken", lambda *_: False)
+    monkeypatch.setattr(accounts_repository, "user_by_email", lambda *_: None)
 
     response = client.post(_PATH, json=_datos(organization_name="Otra firma"))
 

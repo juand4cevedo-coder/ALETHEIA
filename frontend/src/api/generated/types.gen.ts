@@ -191,6 +191,20 @@ export type RegistrationAccepted = {
 };
 
 /**
+ * ResendVerificationRequest
+ *
+ * Correo al que se reenvía el enlace de verificación (UI-007).
+ */
+export type ResendVerificationRequest = {
+  /**
+   * Email
+   *
+   * Correo de la cuenta por verificar.
+   */
+  email: string;
+};
+
+/**
  * ValidationErrorItem
  *
  * Un dato inválido de la solicitud: dónde está, qué falló y el tipo de error.
@@ -264,6 +278,20 @@ export type ValidationProblem = {
    * Datos inválidos.
    */
   errors: Array<ValidationErrorItem>;
+};
+
+/**
+ * VerificationRequested
+ *
+ * La misma respuesta exista o no una cuenta por verificar con ese correo.
+ */
+export type VerificationRequested = {
+  /**
+   * Detail
+   *
+   * Qué sigue para la persona.
+   */
+  detail: string;
 };
 
 export type HealthData = {
@@ -352,3 +380,34 @@ export type RegisterAccountResponses = {
 
 export type RegisterAccountResponse =
   RegisterAccountResponses[keyof RegisterAccountResponses];
+
+export type ResendVerificationData = {
+  body: ResendVerificationRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/verify-email/resend";
+};
+
+export type ResendVerificationErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiadas solicitudes.
+   */
+  429: Problem;
+};
+
+export type ResendVerificationError =
+  ResendVerificationErrors[keyof ResendVerificationErrors];
+
+export type ResendVerificationResponses = {
+  /**
+   * Successful Response
+   */
+  202: VerificationRequested;
+};
+
+export type ResendVerificationResponse =
+  ResendVerificationResponses[keyof ResendVerificationResponses];
