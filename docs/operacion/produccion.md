@@ -143,6 +143,7 @@ Cada llamada del usuario queda en el historial de eventos de CloudTrail, que es 
 | `/aletheia/prod/postgres/owner-password` | SecureString (`aws/ssm`) | `aletheia_owner`: migraciones |
 | `/aletheia/prod/postgres/app-password` | SecureString (`aws/ssm`) | `aletheia_app`: API y trabajador |
 | `/aletheia/prod/postgres/support-password` | SecureString (`aws/ssm`) | `aletheia_support`: consultas de solo lectura |
+| `/aletheia/prod/app/token-signing-key` | SecureString (`aws/ssm`) | Clave de firma de los enlaces de un solo uso: API y trabajador |
 
 Las claves se generaron en CloudShell con 40 letras y números. Pasaron por una tubería directo a AWS, así que nunca aparecieron en pantalla, en el historial ni como argumento de un comando:
 
@@ -156,6 +157,18 @@ for usuario in admin owner app support; do
       --query Version --output text
 done
 ```
+
+La clave de firma se creó de la misma forma, con 64 caracteres. La API y el trabajador derivan de ella una subclave por cada tipo de enlace (ADR-027):
+
+```bash
+openssl rand -base64 96 | tr -d '\n/+=' | head -c 64 |
+  aws ssm put-parameter --region us-east-2 \
+    --name "/aletheia/prod/app/token-signing-key" \
+    --description "Clave de firma de los enlaces de un solo uso" \
+    --type SecureString --value file:///dev/stdin \
+    --query Version --output text
+```
+
 
 ## PostgreSQL
 
