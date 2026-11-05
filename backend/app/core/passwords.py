@@ -10,7 +10,7 @@ import unicodedata
 from typing import Final
 
 from argon2 import PasswordHasher, Type
-from argon2.exceptions import VerificationError
+from argon2.exceptions import InvalidHashError, VerificationError
 
 MIN_LENGTH: Final = 12
 # El tope impide mandar textos enormes solo para gastar CPU en el hash.
@@ -42,4 +42,29 @@ def verify_password(password_hash: str, password: str) -> bool:
     # ValueError cubre InvalidHashError y también un hash con caracteres fuera de ASCII, que
     # argon2 rechaza con UnicodeEncodeError: ninguno de los dos debe terminar en un error 500.
     except VerificationError, ValueError:
+        return False
+
+
+# Hash de una contraseña que nadie conoce, con los mismos parámetros que los reales. Al ingresar
+# con un correo sin cuenta o sin contraseña se verifica contra él: la respuesta tarda lo mismo
+# que con una cuenta real y el tiempo no delata qué correos existen (RN-026).
+_DECOY_HASH: Final = _HASHER.hash("señuelo de ALETHEIA para igualar los tiempos")
+
+
+def check_password(password_hash: str | None, password: str) -> bool:
+    """Como verify_password, pero sin hash compara contra el señuelo y responde False.
+
+    Así cuesta lo mismo una cuenta inexistente, una que solo entra con Google y una real.
+    """
+    if password_hash is None:
+        verify_password(_DECOY_HASH, password)
+        return False
+    return verify_password(password_hash, password)
+
+
+def needs_rehash(password_hash: str) -> bool:
+    """Indica si el hash se hizo con parámetros distintos de los vigentes y debe rehacerse."""
+    try:
+        return _HASHER.check_needs_rehash(password_hash)
+    except InvalidHashError, ValueError:
         return False

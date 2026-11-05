@@ -3,10 +3,19 @@
 import datetime
 
 import pytest
+from argon2 import PasswordHasher, Type
 from psycopg.errors import CheckViolation
 from sqlalchemy.orm import Session
 
-from app.core.passwords import MAX_LENGTH, MIN_LENGTH, hash_password, normalize, verify_password
+from app.core.passwords import (
+    MAX_LENGTH,
+    MIN_LENGTH,
+    check_password,
+    hash_password,
+    needs_rehash,
+    normalize,
+    verify_password,
+)
 from app.models import User
 from tests.conftest import rejected
 
@@ -64,3 +73,24 @@ def test_la_base_guarda_el_hash_y_rechaza_una_contrasena_en_claro(db: Session) -
 
     with rejected(db, CheckViolation):
         db.add(_user("otra@example.com", _CLAVE))
+
+
+def test_sin_hash_la_comprobacion_falla_aunque_coincida_con_el_senuelo() -> None:
+    assert check_password(None, _CLAVE) is False
+    assert check_password(None, "señuelo de ALETHEIA para igualar los tiempos") is False
+
+
+def test_con_hash_la_comprobacion_es_la_de_siempre() -> None:
+    password_hash = hash_password(_CLAVE)
+
+    assert check_password(password_hash, _CLAVE) is True
+    assert check_password(password_hash, "otra frase larga y distinta") is False
+
+
+def test_solo_un_hash_con_otros_parametros_pide_rehacerse() -> None:
+    viejo = PasswordHasher(time_cost=1, memory_cost=8 * 1024, parallelism=1, type=Type.ID)
+
+    assert needs_rehash(hash_password(_CLAVE)) is False
+    assert needs_rehash(viejo.hash(_CLAVE)) is True
+    # Un hash dañado no se rehace aquí: simplemente no verifica.
+    assert needs_rehash("no es un hash") is False
