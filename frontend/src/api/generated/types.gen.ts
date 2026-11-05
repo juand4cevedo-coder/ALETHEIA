@@ -133,6 +133,12 @@ export type PublicPlan = {
  */
 export type RegisterRequest = {
   /**
+   * Account Type
+   *
+   * individual si trabaja por su cuenta; firm si abre la cuenta de una oficina.
+   */
+  account_type: "individual" | "firm";
+  /**
    * Full Name
    *
    * Nombre de la persona.
@@ -153,9 +159,9 @@ export type RegisterRequest = {
   /**
    * Organization Name
    *
-   * Nombre de la oficina o firma.
+   * Nombre de la oficina o firma. Solo con account_type firm.
    */
-  organization_name: string;
+  organization_name?: string | null;
   /**
    * Legal Version
    *
@@ -182,6 +188,20 @@ export type RegistrationAccepted = {
    * Qué sigue para la persona.
    */
   detail: string;
+};
+
+/**
+ * ResendVerificationRequest
+ *
+ * Correo al que se reenvía el enlace de verificación (UI-007).
+ */
+export type ResendVerificationRequest = {
+  /**
+   * Email
+   *
+   * Correo de la cuenta por verificar.
+   */
+  email: string;
 };
 
 /**
@@ -258,6 +278,34 @@ export type ValidationProblem = {
    * Datos inválidos.
    */
   errors: Array<ValidationErrorItem>;
+};
+
+/**
+ * VerificationRequested
+ *
+ * La misma respuesta exista o no una cuenta por verificar con ese correo.
+ */
+export type VerificationRequested = {
+  /**
+   * Detail
+   *
+   * Qué sigue para la persona.
+   */
+  detail: string;
+};
+
+/**
+ * VerifyEmailRequest
+ *
+ * Token del enlace de verificación (API-004). La página lo toma del fragmento #t=.
+ */
+export type VerifyEmailRequest = {
+  /**
+   * Token
+   *
+   * Token del enlace.
+   */
+  token: string;
 };
 
 export type HealthData = {
@@ -346,3 +394,68 @@ export type RegisterAccountResponses = {
 
 export type RegisterAccountResponse =
   RegisterAccountResponses[keyof RegisterAccountResponses];
+
+export type ResendVerificationData = {
+  body: ResendVerificationRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/verify-email/resend";
+};
+
+export type ResendVerificationErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiadas solicitudes.
+   */
+  429: Problem;
+};
+
+export type ResendVerificationError =
+  ResendVerificationErrors[keyof ResendVerificationErrors];
+
+export type ResendVerificationResponses = {
+  /**
+   * Successful Response
+   */
+  202: VerificationRequested;
+};
+
+export type ResendVerificationResponse =
+  ResendVerificationResponses[keyof ResendVerificationResponses];
+
+export type VerifyEmailData = {
+  body: VerifyEmailRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/verify-email";
+};
+
+export type VerifyEmailErrors = {
+  /**
+   * El enlace no es válido o ya venció.
+   */
+  400: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+};
+
+export type VerifyEmailError = VerifyEmailErrors[keyof VerifyEmailErrors];
+
+export type VerifyEmailResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type VerifyEmailResponse =
+  VerifyEmailResponses[keyof VerifyEmailResponses];

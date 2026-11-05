@@ -65,5 +65,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     configure_logging(settings.log_level)
     app = build_api(public_docs=settings.environment != "production")
     app.state.engine = create_db_engine(settings)
+    # La configuración con que se armó esta aplicación: las rutas la leen de aquí y no de
+    # get_settings(), así una prueba o un despliegue usan siempre la que pasaron.
+    app.state.settings = settings
     app.add_middleware(RequestContextMiddleware)
     return app

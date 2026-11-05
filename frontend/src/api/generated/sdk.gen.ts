@@ -18,6 +18,12 @@ import type {
   RegisterAccountData,
   RegisterAccountErrors,
   RegisterAccountResponses,
+  ResendVerificationData,
+  ResendVerificationErrors,
+  ResendVerificationResponses,
+  VerifyEmailData,
+  VerifyEmailErrors,
+  VerifyEmailResponses,
 } from "./types.gen";
 
 export type Options<
@@ -77,6 +83,48 @@ export const registerAccount = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     url: "/api/v1/auth/register",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Reenviar el enlace para verificar el correo
+ */
+export const resendVerification = <ThrowOnError extends boolean = false>(
+  options: Options<ResendVerificationData, ThrowOnError>,
+): RequestResult<
+  ResendVerificationResponses,
+  ResendVerificationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    ResendVerificationResponses,
+    ResendVerificationErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/verify-email/resend",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Verificar el correo con el enlace recibido
+ */
+export const verifyEmail = <ThrowOnError extends boolean = false>(
+  options: Options<VerifyEmailData, ThrowOnError>,
+): RequestResult<VerifyEmailResponses, VerifyEmailErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    VerifyEmailResponses,
+    VerifyEmailErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/verify-email",
     ...options,
     headers: {
       "Content-Type": "application/json",

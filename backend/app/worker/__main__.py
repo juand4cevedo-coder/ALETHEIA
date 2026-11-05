@@ -43,7 +43,7 @@ def _run() -> None:
     for signal_number in (signal.SIGTERM, signal.SIGINT):
         signal.signal(signal_number, lambda *_: stop.set())
     try:
-        context = WorkerContext(email=build_email_sender(settings))
+        context = WorkerContext(email=build_email_sender(settings), settings=settings)
         Worker(engine, context, heartbeat=heartbeat.HEARTBEAT).run(stop)
     finally:
         engine.dispose()

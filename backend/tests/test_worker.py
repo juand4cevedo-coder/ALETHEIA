@@ -25,9 +25,19 @@ from app.worker import __main__ as worker_main
 from app.worker import heartbeat as worker_heartbeat
 from app.worker.handlers import WorkerContext
 from app.worker.runner import Worker
+from tests.conftest import TEST_SIGNING_KEY
 from tests.test_email import _delivered, _recipient
 
 _PLANTILLA = "prueba_trabajador"
+# Configuración para las plantillas: la base no se usa aquí, el trabajador recibe su motor aparte.
+_SETTINGS = Settings.model_validate(
+    {
+        "environment": "test",
+        "log_level": "INFO",
+        "database_url": "postgresql+psycopg://aletheia_app@127.0.0.1:5432/aletheia_test",
+        "token_signing_key": TEST_SIGNING_KEY,
+    }
+)
 
 
 class FakeEmailSender:
@@ -54,7 +64,7 @@ def engine(app_engine: Engine, migrated_database: None) -> Iterator[Engine]:
 
 @pytest.fixture(autouse=True)
 def plantilla(monkeypatch: pytest.MonkeyPatch) -> None:
-    def build(_session: Session, payload: dict[str, Any]) -> OutgoingEmail:
+    def build(_session: Session, payload: dict[str, Any], _settings: Settings) -> OutgoingEmail:
         return OutgoingEmail(to=payload["to"], subject="Aviso de prueba", text="Texto")
 
     monkeypatch.setitem(notifications.EMAIL_BUILDERS, _PLANTILLA, build)
@@ -82,7 +92,7 @@ def _job(engine: Engine, job_id: uuid.UUID) -> Job:
 
 
 def _worker(engine: Engine, sender: FakeEmailSender | None = None) -> Worker:
-    return Worker(engine, WorkerContext(email=sender or FakeEmailSender()))
+    return Worker(engine, WorkerContext(email=sender or FakeEmailSender(), settings=_SETTINGS))
 
 
 # --- Ejecución --------------------------------------------------------------------------
@@ -117,7 +127,7 @@ def test_el_correo_llega_a_mailpit_de_punta_a_punta(engine: Engine, settings: Se
         )
 
     sender = SmtpEmailSender(settings.smtp_host, settings.smtp_port)
-    assert Worker(engine, WorkerContext(email=sender)).run_once() is True
+    assert Worker(engine, WorkerContext(email=sender, settings=_SETTINGS)).run_once() is True
     assert _delivered(recipient)["Subject"] == "Aviso de prueba"
 
 
@@ -288,7 +298,9 @@ def test_el_mantenimiento_borra_lo_viejo_y_conserva_lo_reciente(engine: Engine) 
         )
 
     now = [0.0]
-    worker = Worker(engine, WorkerContext(email=FakeEmailSender()), clock=lambda: now[0])
+    worker = Worker(
+        engine, WorkerContext(email=FakeEmailSender(), settings=_SETTINGS), clock=lambda: now[0]
+    )
     worker.maintain_if_due()
 
     with Session(engine) as session:
@@ -309,7 +321,9 @@ def test_el_mantenimiento_borra_lo_viejo_y_conserva_lo_reciente(engine: Engine) 
 def test_el_ciclo_late_y_se_detiene_al_pedirlo(engine: Engine, tmp_path: Path) -> None:
     heartbeat = tmp_path / "latido"
     stop = threading.Event()
-    worker = Worker(engine, WorkerContext(email=FakeEmailSender()), heartbeat=heartbeat)
+    worker = Worker(
+        engine, WorkerContext(email=FakeEmailSender(), settings=_SETTINGS), heartbeat=heartbeat
+    )
     thread = threading.Thread(target=worker.run, args=(stop,))
     thread.start()
     try:
@@ -328,7 +342,7 @@ def test_sin_base_el_ciclo_sigue_vivo(tmp_path: Path, caplog: pytest.LogCaptureF
         connect_args={"connect_timeout": 1},
     )
     stop = threading.Event()
-    worker = Worker(unreachable, WorkerContext(email=FakeEmailSender()))
+    worker = Worker(unreachable, WorkerContext(email=FakeEmailSender(), settings=_SETTINGS))
     thread = threading.Thread(target=worker.run, args=(stop,))
     thread.start()
     try:

@@ -131,6 +131,111 @@
           }
         }
       }
+    },
+    "/api/v1/auth/verify-email/resend": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Reenviar el enlace para verificar el correo",
+        "operationId": "resend_verification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationRequested"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiadas solicitudes.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Verificar el correo con el enlace recibido",
+        "operationId": "verify_email",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "El enlace no es válido o ya venció.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -286,6 +391,15 @@
       },
       "RegisterRequest": {
         "properties": {
+          "account_type": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "firm"
+            ],
+            "title": "Account Type",
+            "description": "individual si trabaja por su cuenta; firm si abre la cuenta de una oficina."
+          },
           "full_name": {
             "type": "string",
             "maxLength": 120,
@@ -308,11 +422,18 @@
             "description": "Contraseña de 12 a 128 caracteres."
           },
           "organization_name": {
-            "type": "string",
-            "maxLength": 120,
-            "minLength": 1,
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Organization Name",
-            "description": "Nombre de la oficina o firma."
+            "description": "Nombre de la oficina o firma. Solo con account_type firm."
           },
           "legal_version": {
             "type": "string",
@@ -330,10 +451,10 @@
         "additionalProperties": false,
         "type": "object",
         "required": [
+          "account_type",
           "full_name",
           "email",
           "password",
-          "organization_name",
           "legal_version",
           "accepts_legal_terms"
         ],
@@ -354,6 +475,24 @@
         ],
         "title": "RegistrationAccepted",
         "description": "La misma respuesta para un correo nuevo y para uno ya registrado (CA-HU-005-03)."
+      },
+      "ResendVerificationRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo de la cuenta por verificar."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "ResendVerificationRequest",
+        "description": "Correo al que se reenvía el enlace de verificación (UI-007)."
       },
       "ValidationErrorItem": {
         "additionalProperties": false,
@@ -445,6 +584,39 @@
         ],
         "title": "ValidationProblem",
         "type": "object"
+      },
+      "VerificationRequested": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Qué sigue para la persona."
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "VerificationRequested",
+        "description": "La misma respuesta exista o no una cuenta por verificar con ese correo."
+      },
+      "VerifyEmailRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Token",
+            "description": "Token del enlace."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "VerifyEmailRequest",
+        "description": "Token del enlace de verificación (API-004). La página lo toma del fragmento #t=."
       }
     }
   }

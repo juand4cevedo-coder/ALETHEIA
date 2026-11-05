@@ -8,6 +8,7 @@ import { LegalPage } from "../pages/LegalPage.tsx";
 import { NotFoundPage } from "../pages/NotFoundPage.tsx";
 import { PricingPage } from "../pages/PricingPage.tsx";
 import { SignUpPage } from "../pages/SignUpPage.tsx";
+import { VerifyEmailPage } from "../pages/VerifyEmailPage.tsx";
 
 // Rutas del sitio. Caddy entrega index.html para cualquier ruta que no sea un archivo, y
 // React Router decide qué página mostrar. Las pruebas montan estas mismas rutas en memoria.
@@ -33,6 +34,17 @@ export const routes: RouteObject[] = [
         handle: {
           authSwitch: {
             question: "¿Ya tiene cuenta?",
+            label: "Ingresar",
+            to: ROUTES.signIn,
+          } satisfies AuthSwitch,
+        },
+      },
+      {
+        path: ROUTES.verifyEmail.slice(1),
+        element: <VerifyEmailPage />,
+        handle: {
+          authSwitch: {
+            question: "¿Ya verificó su correo?",
             label: "Ingresar",
             to: ROUTES.signIn,
           } satisfies AuthSwitch,
