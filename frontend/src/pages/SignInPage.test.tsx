@@ -79,7 +79,10 @@ describe("Ingresar (HU-007, CP-007)", () => {
     const { container } = renderRoute("/ingresar");
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Acta de ingreso" }),
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Qué bueno verle de nuevo",
+      }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Correo electrónico")).toHaveAttribute(
       "autocomplete",
@@ -89,10 +92,9 @@ describe("Ingresar (HU-007, CP-007)", () => {
       "autocomplete",
       "current-password",
     );
-    expect(screen.getByRole("link", { name: "Crear cuenta" })).toHaveAttribute(
-      "href",
-      "/registro",
-    );
+    expect(
+      screen.getByRole("link", { name: "Crear cuenta gratis" }),
+    ).toHaveAttribute("href", "/registro");
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 

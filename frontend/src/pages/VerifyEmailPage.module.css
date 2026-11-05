@@ -1,34 +1,30 @@
+/* Misma columna centrada de las demás pantallas de acceso (ADR-029): emblema, título y
+   mensaje al centro; la constancia y el formulario de reenvío ocupan el ancho completo. */
 .screen {
   display: grid;
   gap: var(--space-6);
   align-content: start;
   width: 100%;
-  max-width: 560px;
-  padding-top: var(--space-12);
+}
+
+.screen > h1,
+.screen > .lead,
+.screen > .status {
+  justify-self: center;
+  text-align: center;
 }
 
 .status {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.spinner {
-  color: var(--color-primary-300);
-  animation: spin 900ms linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(1turn);
-  }
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
 }
 
 .title {
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 46px;
-  letter-spacing: -0.028em;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 38px;
+  letter-spacing: -0.024em;
 }
 
 .title:focus {
@@ -50,7 +46,8 @@
   border: 1px solid
     color-mix(in srgb, var(--color-success-400) 35%, transparent);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-ink-900) 80%, transparent);
+  background: color-mix(in srgb, var(--color-ink-950) 50%, transparent);
+  backdrop-filter: blur(14px);
 }
 
 .recordTitle {
@@ -103,13 +100,9 @@
 }
 
 @media (max-width: 560px) {
-  .screen {
-    padding-top: var(--space-4);
-  }
-
   .title {
-    font-size: 32px;
-    line-height: 38px;
+    font-size: 28px;
+    line-height: 34px;
   }
 
   .row {

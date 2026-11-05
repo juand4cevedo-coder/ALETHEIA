@@ -7,26 +7,27 @@ import {
   useState,
 } from "react";
 
-import styles from "./Blank.module.css";
+import styles from "./Field.module.css";
 
-type BlankProps = Omit<
+type FieldProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
-  "className" | "id" | "type"
+  "className" | "id" | "type" | "placeholder"
 > & {
-  /** Rótulo impreso bajo la línea, como en un formulario de papel. */
+  /** Rótulo del campo. Se ve siempre: dentro del campo vacío y arriba al escribir. */
   label: string;
   type?: "text" | "email" | "password";
   error?: string;
   ref?: Ref<HTMLInputElement>;
-  /** Ayuda dinámica bajo el rótulo, como el medidor de la contraseña. */
+  /** Ayuda dinámica bajo el campo, como el medidor de la contraseña. */
   children?: ReactNode;
   /** Identificador de esa ayuda, para leerla junto con el campo. */
   describedBy?: string;
 };
 
-// Espacio en blanco de un acta (CMP-UI-002 en las pantallas de acceso): una línea donde se
-// escribe y, debajo, su rótulo visible. El error y la ayuda quedan asociados al campo.
-export function Blank({
+// Campo de las pantallas de acceso (CMP-UI-002): una cápsula de vidrio sobre la escena. El
+// rótulo nunca desaparece, a diferencia de un texto de ejemplo: está dentro del campo vacío y
+// sube cuando la persona escribe. El error y la ayuda quedan asociados al campo.
+export function Field({
   label,
   type = "text",
   error,
@@ -34,7 +35,7 @@ export function Blank({
   children,
   describedBy: extraDescription,
   ...inputProps
-}: BlankProps) {
+}: FieldProps) {
   const id = useId();
   const [revealed, setRevealed] = useState(false);
   const isPassword = type === "password";
@@ -43,17 +44,23 @@ export function Blank({
     [extraDescription, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <span className={styles.blank}>
-      <span className={styles.line}>
+    <div className={styles.field}>
+      <div className={styles.capsule} data-invalid={error ? "true" : undefined}>
         <input
           {...inputProps}
           ref={ref}
           id={id}
           type={isPassword && revealed ? "text" : type}
+          // Un espacio como texto de ejemplo: así :placeholder-shown dice si el campo está
+          // vacío y el rótulo sabe cuándo subir, sin repetir el rótulo como ejemplo.
+          placeholder=" "
           className={styles.input}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
         />
+        <label htmlFor={id} className={styles.label}>
+          {label}
+        </label>
         {isPassword && (
           <button
             type="button"
@@ -70,16 +77,13 @@ export function Blank({
             )}
           </button>
         )}
-      </span>
-      <label htmlFor={id} className={styles.caption}>
-        {label}
-      </label>
+      </div>
       {children}
       {error && (
         <span id={errorId} className={styles.error}>
           {error}
         </span>
       )}
-    </span>
+    </div>
   );
 }

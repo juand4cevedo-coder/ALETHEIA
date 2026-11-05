@@ -12,8 +12,8 @@ import { Button } from "../components/ui/Button.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
 import styles from "../features/auth/AccessScreen.module.css";
-import { Blank } from "../features/auth/Blank.tsx";
-import { HashMatrix } from "../features/auth/HashMatrix.tsx";
+import { Emblem } from "../features/auth/Emblem.tsx";
+import { Field } from "../features/auth/Field.tsx";
 import {
   destinationAfterSignIn,
   SIGN_IN_FIELDS,
@@ -27,6 +27,14 @@ import {
 
 const EMPTY: SignInValues = { email: "", password: "" };
 const TITLE_ID = "titulo-ingreso";
+// Lo que tarda el anillo del emblema en cerrarse antes de pasar al espacio de trabajo.
+const SEAL_MS = 520;
+
+function prefersReducedMotion(): boolean {
+  return (
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? true
+  );
+}
 
 type FormProblem =
   | { kind: "invalidCredentials" }
@@ -51,10 +59,10 @@ function problemFrom(error: unknown): FormProblem | null {
   return { kind: "unexpected" };
 }
 
-// Ingresar (UI-008, HU-007), escrita como el acta con la que la persona se presenta. La huella
-// de la derecha es la de su correo, calculada en el navegador mientras lo escribe. El mensaje
-// de error es el mismo exista o no la cuenta (RN-026), y al entrar vuelve a la pantalla de /app
-// que intentaba abrir (NAV-003).
+// Ingresar (UI-008, HU-007): una columna sobre la escena del alba (ADR-029). Mientras la API
+// responde, el anillo del emblema gira; al entrar se cierra y lleva a la pantalla de /app que
+// la persona intentaba abrir (NAV-003). El mensaje de error es el mismo exista o no la cuenta
+// (RN-026).
 export function SignInPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -63,6 +71,7 @@ export function SignInPage() {
   const [errors, setErrors] = useState<SignInErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [problem, setProblem] = useState<FormProblem | null>(null);
+  const [signedIn, setSignedIn] = useState(false);
   const fieldRefs = useRef<
     Partial<Record<SignInField, HTMLInputElement | null>>
   >({});
@@ -80,7 +89,11 @@ export function SignInPage() {
     onSuccess: async () => {
       // La contraseña no se queda en la memoria de la página.
       setValues((current) => ({ ...current, password: "" }));
+      setSignedIn(true);
       await queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
+      if (!prefersReducedMotion()) {
+        await new Promise((resolve) => window.setTimeout(resolve, SEAL_MS));
+      }
       await navigate(destination, { replace: true });
     },
     onError: (error) => {
@@ -139,6 +152,8 @@ export function SignInPage() {
     signIn.mutate({ body: toLoginRequest(values) });
   }
 
+  const emblemState = signedIn ? "done" : signIn.isPending ? "working" : "idle";
+
   return (
     <>
       <title>{`Ingresar · ${SITE_NAME}`}</title>
@@ -150,21 +165,21 @@ export function SignInPage() {
 
       <div className={styles.screen}>
         <header className={styles.intro}>
+          <Emblem state={emblemState} />
           <h1 id={TITLE_ID} className={styles.title}>
-            Acta de ingreso
+            Qué bueno verle de nuevo
           </h1>
           <p className={styles.lead}>
-            Escriba el correo y la contraseña de su cuenta para volver a sus
-            casos.
+            Ingrese con el correo y la contraseña de su cuenta.
           </p>
         </header>
 
-        <HashMatrix
-          source={values.email.trim().toLowerCase()}
-          sourceLabel="su correo"
-        />
-
-        <div className={styles.primary}>
+        <form
+          className={styles.form}
+          noValidate
+          onSubmit={handleSubmit}
+          aria-labelledby={TITLE_ID}
+        >
           {problem && (
             <div
               ref={alertRef}
@@ -176,52 +191,47 @@ export function SignInPage() {
             </div>
           )}
 
-          <form
-            className={styles.form}
-            noValidate
-            onSubmit={handleSubmit}
-            aria-labelledby={TITLE_ID}
-          >
-            <fieldset className={styles.clauses}>
-              <legend className="visually-hidden">Datos de acceso</legend>
-              <div className={styles.clause}>
-                <span>Ingreso con el correo</span>
-                <Blank
-                  ref={bind("email")}
-                  label="Correo electrónico"
-                  name="correo"
-                  type="email"
-                  autoComplete="username"
-                  inputMode="email"
-                  spellCheck={false}
-                  required
-                  maxLength={254}
-                  value={values.email}
-                  error={errors.email}
-                  onChange={(event) => update("email", event.target.value)}
-                />
-              </div>
-              <div className={styles.clause}>
-                <span>y la contraseña</span>
-                <Blank
-                  ref={bind("password")}
-                  label="Contraseña"
-                  name="contrasena"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={values.password}
-                  error={errors.password}
-                  onChange={(event) => update("password", event.target.value)}
-                />
-              </div>
-            </fieldset>
+          <fieldset className={styles.fields}>
+            <legend className="visually-hidden">Datos de acceso</legend>
+            <Field
+              ref={bind("email")}
+              label="Correo electrónico"
+              name="correo"
+              type="email"
+              autoComplete="username"
+              inputMode="email"
+              spellCheck={false}
+              required
+              maxLength={254}
+              value={values.email}
+              error={errors.email}
+              onChange={(event) => update("email", event.target.value)}
+            />
+            <Field
+              ref={bind("password")}
+              label="Contraseña"
+              name="contrasena"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={values.password}
+              error={errors.password}
+              onChange={(event) => update("password", event.target.value)}
+            />
+          </fieldset>
 
-            <Button type="submit" surface="dark" busy={signIn.isPending}>
-              {signIn.isPending ? "Comprobando…" : "Ingresar"}
+          <div className={styles.submit}>
+            <Button
+              type="submit"
+              variant="bright"
+              shape="pill"
+              block
+              busy={signIn.isPending || signedIn}
+            >
+              {signIn.isPending || signedIn ? "Comprobando…" : "Ingresar"}
             </Button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </>
   );

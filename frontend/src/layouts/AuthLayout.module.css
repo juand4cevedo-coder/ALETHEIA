@@ -1,17 +1,20 @@
-/* Marco de acceso: el mismo fondo oscuro del sitio público (ADR-023), con un foco de luz de
-   marca desde arriba sobre el acta, como una lámpara sobre la mesa. */
+/* Marco de acceso: una columna centrada que se desplaza sobre la escena fija del alba
+   (AuthScene). Todo lo visible va por encima de la escena. */
 .shell {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background:
-    radial-gradient(
-      56rem 40rem at 50% 0%,
-      color-mix(in srgb, var(--color-brand-blue) 22%, transparent),
-      transparent 70%
-    ),
-    var(--color-ink-950);
+  background: var(--color-ink-950);
   color: var(--color-text-inverse);
+}
+
+/* El contenido va por encima de la escena, que está fija detrás. */
+.header,
+.main,
+.footer {
+  position: relative;
+  z-index: 1;
 }
 
 .shell :where(a:not([class])) {
@@ -29,8 +32,8 @@
   z-index: 30;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
+  background: var(--color-ink-800);
+  color: var(--color-text-inverse);
   transform: translateY(-200%);
 }
 
@@ -40,58 +43,56 @@
 
 .header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  width: 100%;
-  max-width: var(--content-width);
-  margin: 0 auto;
-  padding: var(--space-6);
+  justify-content: center;
+  padding: var(--space-6) var(--space-6) 0;
 }
 
+/* El nombre en mayúsculas espaciadas, como el wordmark del logotipo. */
 .brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--color-text-inverse);
-  font-size: 15px;
+  color: color-mix(in srgb, var(--color-text-inverse) 80%, transparent);
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.42em;
   text-decoration: none;
+  text-indent: 0.42em;
 }
 
-.switch {
-  color: var(--color-text-inverse-muted);
-  font-size: 14px;
-}
-
-.switch a {
-  font-weight: 600;
+.brand:hover {
+  color: var(--color-text-inverse);
 }
 
 .main {
   flex: 1;
   display: grid;
-  justify-items: center;
   align-content: start;
   gap: var(--space-8);
   width: 100%;
-  padding: var(--space-6) var(--space-6) var(--space-16);
+  max-width: 440px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) var(--space-12);
 }
 
 .main:focus {
   outline: none;
 }
 
+.switch {
+  display: grid;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.switch p {
+  color: var(--color-text-inverse-muted);
+  font-size: 14px;
+}
+
 .footer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: var(--space-3) var(--space-6);
-  width: 100%;
-  max-width: var(--content-width);
-  margin: 0 auto;
   padding: var(--space-6);
   color: var(--color-text-inverse-muted);
   font-size: 13px;
@@ -100,6 +101,7 @@
 .footerList {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--space-2) var(--space-6);
   margin: 0;
   padding: 0;
@@ -126,17 +128,7 @@
 }
 
 @media (max-width: 560px) {
-  .header,
-  .footer {
-    padding: var(--space-4);
-  }
-
   .main {
-    padding: var(--space-2) var(--space-3) var(--space-12);
-  }
-
-  /* En celular basta el enlace; la pregunta ocupa espacio que el logotipo necesita. */
-  .switchQuestion {
-    display: none;
+    padding: var(--space-6) var(--space-4) var(--space-8);
   }
 }
