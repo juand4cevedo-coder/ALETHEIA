@@ -1,4 +1,4 @@
-"""Cuenta y acceso: registro (API-003)."""
+"""Cuenta y acceso: registro (API-003) y reenvío de la verificación del correo."""
 
 from typing import Annotated
 
@@ -6,7 +6,12 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_client_ip, get_session
-from app.schemas.auth import RegisterRequest, RegistrationAccepted
+from app.schemas.auth import (
+    RegisterRequest,
+    RegistrationAccepted,
+    ResendVerificationRequest,
+    VerificationRequested,
+)
 from app.services import accounts as accounts_service
 
 router = APIRouter(tags=["cuenta"])
@@ -48,3 +53,29 @@ def register_account(
             ),
         ) from None
     return RegistrationAccepted(detail=_REGISTRATION_ACCEPTED)
+
+
+_VERIFICATION_REQUESTED = (
+    "Si hay una cuenta por verificar con ese correo, le enviamos un enlace nuevo. Revise su "
+    "bandeja de entrada y la carpeta de spam."
+)
+
+
+@router.post(
+    "/auth/verify-email/resend",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Reenviar el enlace para verificar el correo",
+    responses={
+        status.HTTP_429_TOO_MANY_REQUESTS: {"description": "Demasiadas solicitudes."},
+    },
+)
+def resend_verification(
+    request: ResendVerificationRequest,
+    response: Response,
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+) -> VerificationRequested:
+    # 202 y el mismo cuerpo exista o no la cuenta, igual que el registro.
+    response.headers["Cache-Control"] = "no-store"
+    accounts_service.resend_verification(session, request.email, client_ip=client_ip)
+    return VerificationRequested(detail=_VERIFICATION_REQUESTED)

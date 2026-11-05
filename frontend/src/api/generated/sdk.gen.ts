@@ -18,6 +18,9 @@ import type {
   RegisterAccountData,
   RegisterAccountErrors,
   RegisterAccountResponses,
+  ResendVerificationData,
+  ResendVerificationErrors,
+  ResendVerificationResponses,
 } from "./types.gen";
 
 export type Options<
@@ -77,6 +80,29 @@ export const registerAccount = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     url: "/api/v1/auth/register",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Reenviar el enlace para verificar el correo
+ */
+export const resendVerification = <ThrowOnError extends boolean = false>(
+  options: Options<ResendVerificationData, ThrowOnError>,
+): RequestResult<
+  ResendVerificationResponses,
+  ResendVerificationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    ResendVerificationResponses,
+    ResendVerificationErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/verify-email/resend",
     ...options,
     headers: {
       "Content-Type": "application/json",

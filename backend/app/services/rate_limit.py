@@ -42,7 +42,11 @@ _WINDOW: Final = datetime.timedelta(minutes=15)
 LOGIN_ACCOUNT: Final = Limit("login_account", 5, _WINDOW)
 LOGIN_IP: Final = Limit("login_ip", 20, _WINDOW)
 REGISTER_IP: Final = Limit("register_ip", 20, _WINDOW)
+# Todos los correos de la cuenta que alguien puede provocar desde fuera (reenviar la verificación
+# o el aviso de un registro repetido) comparten este tope por dirección: nadie puede usar
+# ALETHEIA para llenarle la bandeja a otra persona.
 EMAIL_VERIFICATION_ACCOUNT: Final = Limit("email_verification_account", 5, _WINDOW)
+EMAIL_VERIFICATION_IP: Final = Limit("email_verification_ip", 20, _WINDOW)
 PASSWORD_RESET_ACCOUNT: Final = Limit("password_reset_account", 5, _WINDOW)
 PASSWORD_RESET_IP: Final = Limit("password_reset_ip", 20, _WINDOW)
 INVITATION_ACCOUNT: Final = Limit("invitation_account", 20, _WINDOW)
@@ -52,6 +56,7 @@ LIMITS: Final = (
     LOGIN_IP,
     REGISTER_IP,
     EMAIL_VERIFICATION_ACCOUNT,
+    EMAIL_VERIFICATION_IP,
     PASSWORD_RESET_ACCOUNT,
     PASSWORD_RESET_IP,
     INVITATION_ACCOUNT,

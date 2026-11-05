@@ -17,6 +17,17 @@ from app.core.passwords import MAX_LENGTH, MIN_LENGTH, normalize
 # que el contrato lo describa en cada campo y no como un esquema aparte.
 _Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
 
+# Correo: sin espacios, en minúsculas y con la forma mínima de una dirección.
+_Email = Annotated[
+    str,
+    StringConstraints(
+        strip_whitespace=True,
+        to_lower=True,
+        max_length=254,
+        pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+    ),
+]
+
 # Una cuenta es de una persona que trabaja por su cuenta o de una oficina o firma. En los dos
 # casos nace una organización: la de quien trabaja solo lleva su nombre (Alcance, glosario).
 AccountType = Literal["individual", "firm"]
@@ -31,15 +42,7 @@ class RegisterRequest(BaseModel):
         description="individual si trabaja por su cuenta; firm si abre la cuenta de una oficina."
     )
     full_name: _Name = Field(description="Nombre de la persona.")
-    email: Annotated[
-        str,
-        StringConstraints(
-            strip_whitespace=True,
-            to_lower=True,
-            max_length=254,
-            pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-        ),
-    ] = Field(description="Correo de la cuenta; también será el de acceso.")
+    email: _Email = Field(description="Correo de la cuenta; también será el de acceso.")
     password: str = Field(
         description=f"Contraseña de {MIN_LENGTH} a {MAX_LENGTH} caracteres.",
         json_schema_extra={"minLength": MIN_LENGTH, "maxLength": MAX_LENGTH},
@@ -83,5 +86,19 @@ class RegisterRequest(BaseModel):
 
 class RegistrationAccepted(BaseModel):
     """La misma respuesta para un correo nuevo y para uno ya registrado (CA-HU-005-03)."""
+
+    detail: str = Field(description="Qué sigue para la persona.")
+
+
+class ResendVerificationRequest(BaseModel):
+    """Correo al que se reenvía el enlace de verificación (UI-007)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: _Email = Field(description="Correo de la cuenta por verificar.")
+
+
+class VerificationRequested(BaseModel):
+    """La misma respuesta exista o no una cuenta por verificar con ese correo."""
 
     detail: str = Field(description="Qué sigue para la persona.")
