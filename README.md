@@ -221,6 +221,7 @@ En producción la API no recibe claves. Su URL llega sin clave y la API la lee d
 | `ALETHEIA_LOG_LEVEL` | `INFO` |
 | `ALETHEIA_DATABASE_URL` | `postgresql+psycopg://aletheia_app@postgres:5432/aletheia` |
 | `ALETHEIA_DATABASE_PASSWORD_PARAMETER` | `/aletheia/prod/postgres/app-password` |
+| `ALETHEIA_TOKEN_SIGNING_KEY_PARAMETER` | `/aletheia/prod/app/token-signing-key` |
 | `ALETHEIA_MIGRATION_DATABASE_URL` | `postgresql+psycopg://aletheia_owner@postgres:5432/aletheia` |
 | `ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER` | `/aletheia/prod/postgres/owner-password` |
 | `AWS_DEFAULT_REGION` | `us-east-2` |
