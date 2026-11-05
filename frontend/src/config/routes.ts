@@ -7,6 +7,7 @@ export const ROUTES = {
   verifier: "/verificador",
   signIn: "/ingresar",
   signUp: "/registro",
+  verifyEmail: "/verificar-correo",
 } as const;
 
 export const LEGAL_PAGES = [
