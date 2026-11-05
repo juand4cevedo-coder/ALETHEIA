@@ -22,7 +22,7 @@ import {
   toRegisterRequest,
   validateSignUp,
 } from "../features/auth/signUp.ts";
-import styles from "./SignUpPage.module.css";
+import styles from "../features/auth/AccessScreen.module.css";
 
 // Por defecto, la cuenta personal: es el caso del perfil principal (PER-001).
 const EMPTY: SignUpValues = {

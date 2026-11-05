@@ -1,21 +1,29 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
-import { createMemoryRouter, RouterProvider } from "react-router";
+import {
+  createMemoryRouter,
+  type InitialEntry,
+  RouterProvider,
+} from "react-router";
 
 import { routes } from "../routes/router.tsx";
 
-/** Monta el sitio completo en la ruta indicada, con las mismas rutas que producción. */
-export function renderRoute(path: string) {
+/** Monta el sitio completo en la ruta indicada, con las mismas rutas que producción. La ruta
+ * puede traer estado de navegación, como la pantalla a la que volver después de ingresar. */
+export function renderRoute(path: InitialEntry) {
   // Sin reintentos: una prueba de error ve el fallo de inmediato.
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
   const router = createMemoryRouter(routes, { initialEntries: [path] });
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
-  );
+  return {
+    router,
+    ...render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    ),
+  };
 }
 
 /** Respuesta JSON como la que entrega la API. */

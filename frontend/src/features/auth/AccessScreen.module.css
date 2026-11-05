@@ -1,6 +1,7 @@
-/* Dos columnas en escritorio: el acta a la izquierda, alineada como se lee, y la huella a la
+/* Pantallas de acceso escritas como actas (ADR-026): crear cuenta e ingresar.
+   Dos columnas en escritorio: el acta a la izquierda, alineada como se lee, y la huella a la
    derecha como el elemento que da sentido a la pantalla. En celular la huella va entre el
-   título y el acta, a la vista mientras se escriben el nombre y la oficina. */
+   título y el acta, a la vista mientras se escribe. */
 .screen {
   display: grid;
   grid-template-areas:

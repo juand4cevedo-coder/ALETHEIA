@@ -1,14 +1,17 @@
 import { createBrowserRouter, type RouteObject } from "react-router";
 
 import { ROUTES } from "../config/routes.ts";
+import { AppLayout } from "../layouts/AppLayout.tsx";
 import { AuthLayout, type AuthSwitch } from "../layouts/AuthLayout.tsx";
 import { PublicLayout } from "../layouts/PublicLayout.tsx";
 import { HomePage } from "../pages/HomePage.tsx";
 import { LegalPage } from "../pages/LegalPage.tsx";
 import { NotFoundPage } from "../pages/NotFoundPage.tsx";
 import { PricingPage } from "../pages/PricingPage.tsx";
+import { SignInPage } from "../pages/SignInPage.tsx";
 import { SignUpPage } from "../pages/SignUpPage.tsx";
 import { VerifyEmailPage } from "../pages/VerifyEmailPage.tsx";
+import { WorkspacePage } from "../pages/WorkspacePage.tsx";
 
 // Rutas del sitio. Caddy entrega index.html para cualquier ruta que no sea un archivo, y
 // React Router decide qué página mostrar. Las pruebas montan estas mismas rutas en memoria.
@@ -28,6 +31,17 @@ export const routes: RouteObject[] = [
     element: <AuthLayout />,
     errorElement: <NotFoundPage />,
     children: [
+      {
+        path: ROUTES.signIn.slice(1),
+        element: <SignInPage />,
+        handle: {
+          authSwitch: {
+            question: "¿No tiene cuenta?",
+            label: "Crear cuenta",
+            to: ROUTES.signUp,
+          } satisfies AuthSwitch,
+        },
+      },
       {
         path: ROUTES.signUp.slice(1),
         element: <SignUpPage />,
@@ -51,6 +65,13 @@ export const routes: RouteObject[] = [
         },
       },
     ],
+  },
+  {
+    // Espacio de trabajo: exige sesión. El marco consulta /api/v1/me antes de mostrar nada.
+    path: ROUTES.app.slice(1),
+    element: <AppLayout />,
+    errorElement: <NotFoundPage />,
+    children: [{ index: true, element: <WorkspacePage /> }],
   },
 ];
 
