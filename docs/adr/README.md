@@ -31,3 +31,4 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-025](adr-025.md) | Límite de peticiones con ventana deslizante en PostgreSQL | Aceptado | 03/11/2026 |
 | [ADR-026](adr-026.md) | Pantallas de acceso como acta, con la huella en vivo | Aceptado | 04/11/2026 |
 | [ADR-027](adr-027.md) | Enlaces firmados de un solo uso | Aceptado | 05/11/2026 |
+| [ADR-028](adr-028.md) | Sesiones comprobadas en cada petición y protección contra CSRF | Aceptado | 05/11/2026 |

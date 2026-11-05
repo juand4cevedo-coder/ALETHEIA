@@ -70,7 +70,7 @@ Abre `backend/.env` y reemplaza cada `CLAVE` por la del usuario correspondiente 
 | `ALETHEIA_MIGRATION_DATABASE_URL` | Solo para migraciones | `postgresql+psycopg://aletheia_owner:CLAVE@127.0.0.1:5432/aletheia` |
 | `ALETHEIA_DATABASE_PASSWORD_PARAMETER` y `ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER` | Solo en producción | No se definen: fuera de producción la API las rechaza |
 | `ALETHEIA_SMTP_HOST` y `ALETHEIA_SMTP_PORT` | No | `127.0.0.1` y `1025`, el Mailpit de Compose |
-| `ALETHEIA_TOKEN_SIGNING_KEY` | Sí, para los enlaces de los correos | Al menos 32 caracteres aleatorios: `uv run python -c "import secrets; print(secrets.token_urlsafe(48))"`. En producción se lee de Parameter Store |
+| `ALETHEIA_TOKEN_SIGNING_KEY` | Sí, para los enlaces de los correos y las sesiones | Al menos 32 caracteres aleatorios: `uv run python -c "import secrets; print(secrets.token_urlsafe(48))"`. En producción se lee de Parameter Store |
 | `ALETHEIA_DEV_PUBLIC_URL` | No | `http://localhost:5173`, la dirección de los enlaces fuera de producción |
 
 Con los servicios de Compose encendidos:
@@ -119,6 +119,29 @@ set_tenant(session, TenantContext(organization_id=organizacion, user_id=persona)
 
 Sin contexto, las consultas no devuelven filas y las escrituras se rechazan. La cadena de custodia solo admite inserciones, y un caso se elimina únicamente con la función `purge_case`, que primero deja la constancia de eliminación.
 
+### Sesiones y protección contra CSRF
+
+Al ingresar, la API entrega dos cookies HttpOnly, Secure y SameSite=Strict: la de acceso, de 10 minutos, y la de renovación, que solo viaja a `/api/v1/auth` (ADR-007 y ADR-028). Una ruta que exige sesión declara la dependencia `get_principal`:
+
+```python
+from app.api.deps import get_principal
+from app.services.sessions import Principal
+
+def ruta(principal: Annotated[Principal, Depends(get_principal)]) -> ...:
+```
+
+La dependencia comprueba en cada petición que la sesión siga viva, responde 401 si no, y deja fijado el contexto de la organización de la persona. `Principal` trae la persona, su sesión, su organización y su rol.
+
+Toda petición que cambia algo (POST, PUT, PATCH o DELETE) debe llevar el encabezado `X-Aletheia-Request: 1`; sin él, o si viene de otro sitio, la API responde 403. La interfaz lo envía siempre. Para probar la API desde PowerShell 7 hay que agregarlo:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/auth/login `
+    -Headers @{ "X-Aletheia-Request" = "1" } -ContentType "application/json" `
+    -Body '{"email": "ana@example.com", "password": "su contraseña"}'
+```
+
+Las cookies son Secure, así que en desarrollo el navegador solo las guarda en `http://localhost:5173`, que trata como origen seguro; con `127.0.0.1` no las guarda.
+
 ### Contrato de la API
 
 El backend guarda su contrato OpenAPI en `backend/openapi.json`, y el frontend genera desde ese archivo sus tipos y su cliente HTTP en `frontend/src/api/generated` (ADR-008 y ADR-020). Ninguno de los dos se edita a mano. Cada vez que cambie una ruta, un esquema o la versión de la API, se regeneran ambos y se guardan en el mismo commit que el cambio:
@@ -159,12 +182,15 @@ El código del frontend se organiza así (ADR-021):
 | `src/test` | Lo que comparten las pruebas: configuración, catálogo de ejemplo y revisión con axe |
 | `public` | Archivos que se publican tal cual: íconos, imagen para redes, `robots.txt` y `sitemap.xml` |
 | `src/api/generated` | El cliente generado desde el contrato; no se edita a mano |
+| `src/api/runtimeConfig.ts` | La configuración con que nace el cliente generado: el encabezado propio que la API exige contra CSRF |
 
 Los datos de la API se piden con TanStack Query y las opciones que genera Hey API, por ejemplo `useQuery(listPlansOptions())`. Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css`. Los íconos se importan de `lucide-react` uno por uno (ADR-023).
 
 Las políticas legales comparten una sola versión y fecha de vigencia, definidas en `src/config/legal.ts`. Si un cambio de texto altera derechos u obligaciones, se sube la versión ahí y en ningún otro lugar: el registro guarda qué versión aceptó cada persona.
 
 El sitio solo usa las cookies de sesión. Cualquier herramienta no esencial que se agregue, como una de analítica, se carga únicamente si `hasCookieConsent("analytics")` devuelve `true`, y su llegada sube `CONSENT_VERSION` en `src/features/consent/cookieConsent.ts` para que el panel vuelva a preguntar.
+
+Las pantallas bajo `/app` exigen sesión. Su marco, `AppLayout`, consulta `GET /api/v1/me` antes de mostrar nada: sin sesión lleva a `/ingresar` y, al entrar, la persona vuelve a la pantalla que intentaba abrir.
 
 Las pruebas de componentes usan Vitest, Testing Library y axe-core (ADR-022). Cada prueba vive junto al archivo que prueba, con el sufijo `.test.tsx`. `pnpm test` las ejecuta una vez y `pnpm test:watch` las repite cada vez que se guarda un archivo.
 
