@@ -5,13 +5,19 @@ from contextlib import asynccontextmanager
 from typing import Final
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
 from app.api import auth, health, plans
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logs import configure_logging
-from app.core.middleware import RequestContextMiddleware
+from app.core.middleware import (
+    REQUEST_ID_HEADER,
+    SAME_ORIGIN_HEADER,
+    RequestContextMiddleware,
+    SameOriginMiddleware,
+)
 from app.core.openapi import install_problem_details
 from app.db.session import create_db_engine
 
@@ -68,5 +74,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # La configuración con que se armó esta aplicación: las rutas la leen de aquí y no de
     # get_settings(), así una prueba o un despliegue usan siempre la que pasaron.
     app.state.settings = settings
+    # Starlette ejecuta primero el último middleware agregado. El orden de afuera hacia
+    # adentro queda así: identificar la petición, CORS y después la protección contra CSRF.
+    # La interfaz y la API comparten origen, así que el único origen permitido es el del sitio.
+    allowed_origins = [settings.public_url]
+    app.add_middleware(
+        SameOriginMiddleware, allowed_origins=allowed_origins, path_prefix=API_PREFIX
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+        allow_headers=["Content-Type", SAME_ORIGIN_HEADER, REQUEST_ID_HEADER],
+        expose_headers=[REQUEST_ID_HEADER, "Retry-After"],
+        max_age=600,
+    )
     app.add_middleware(RequestContextMiddleware)
     return app

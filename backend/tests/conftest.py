@@ -19,6 +19,7 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
+from app.core.middleware import SAME_ORIGIN_HEADER
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import Case, Evidence, Membership, Organization, User
 
@@ -27,6 +28,9 @@ TEST_MIGRATION_DATABASE_URL_VARIABLE = "ALETHEIA_TEST_MIGRATION_DATABASE_URL"
 # Clave de firma fija de las pruebas: no depende de la que cada equipo tenga en backend/.env.
 TEST_SIGNING_KEY: Final = "clave-de-firma-de-las-pruebas-con-mas-de-32-caracteres"
 _BACKEND_DIR: Final = Path(__file__).resolve().parents[1]
+# El encabezado que la interfaz envía en toda petición que cambia algo. Los clientes de prueba
+# lo llevan siempre, como la interfaz; las pruebas de CSRF lo quitan a propósito.
+SAME_ORIGIN_HEADERS: Final = {SAME_ORIGIN_HEADER: "1"}
 
 
 def _build_settings(database_url: str) -> Settings:
