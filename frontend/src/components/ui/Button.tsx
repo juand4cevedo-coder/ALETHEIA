@@ -17,6 +17,7 @@ export function Button({
   variant,
   surface,
   size,
+  shape,
   block = false,
   busy = false,
   type = "button",
@@ -24,7 +25,7 @@ export function Button({
   disabled,
   ...buttonProps
 }: ButtonProps) {
-  const className = buttonClassName({ variant, surface, size });
+  const className = buttonClassName({ variant, surface, size, shape });
   return (
     <button
       {...buttonProps}

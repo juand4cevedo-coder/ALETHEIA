@@ -1,12 +1,16 @@
-"""Tokens firmados (JWT con HS256) para los enlaces de un solo uso de los correos.
+"""Tokens firmados (JWT con HS256): los enlaces de un solo uso de los correos y el acceso de
+las sesiones.
 
 Cada uso tiene su propia subclave, derivada de la clave maestra con HMAC-SHA256: un token de
-un uso nunca valida en otro, aunque los dos salgan del mismo secreto. Las sesiones de HU-007
-derivan la suya de la misma clave.
+un uso nunca valida en otro, aunque todos salgan del mismo secreto (ADR-027).
 
 Un enlace de un solo uso no se guarda en ninguna tabla. Lleva un sello del estado que su uso
 cambia, como el correo todavía sin verificar o el hash de la contraseña, y deja de valer en
 cuanto ese estado cambia.
+
+El token de acceso de una sesión dura 10 minutos y lleva la familia de la sesión (sid). La API
+comprueba en cada petición que esa familia siga viva, así que cerrar las sesiones corta el
+acceso de inmediato y no cuando el token vence (ADR-028).
 """
 
 import datetime
@@ -23,6 +27,10 @@ _ALGORITHM: Final = "HS256"
 _ISSUER: Final = "aletheia"
 # Ningún token legítimo se acerca a este tamaño: lo que pase de aquí se descarta sin leerlo.
 MAX_TOKEN_LENGTH: Final = 1024
+
+
+_ACCESS_USE: Final = "session:access"
+_ACCESS_AUDIENCE: Final = "session"
 
 
 class LinkPurpose(StrEnum):
@@ -44,6 +52,18 @@ class LinkClaims:
 
     subject: uuid.UUID
     state_seal: str
+
+
+class InvalidAccessTokenError(Exception):
+    """El token de acceso no sirve: falta, está mal formado, alterado o vencido."""
+
+
+@dataclass(frozen=True, slots=True)
+class AccessClaims:
+    """Lo que trae un token de acceso válido: de quién es y a qué sesión pertenece."""
+
+    subject: uuid.UUID
+    session_id: uuid.UUID
 
 
 def _subkey(master_key: str, use: str) -> bytes:
@@ -103,3 +123,42 @@ def state_matches(master_key: str, purpose: LinkPurpose, claims: LinkClaims, sta
     """Indica si el estado actual es el mismo con que se emitió el enlace."""
     expected = _seal(_subkey(master_key, f"link:{purpose}"), state)
     return hmac.compare_digest(expected, claims.state_seal)
+
+
+def issue_access_token(
+    master_key: str,
+    subject: uuid.UUID,
+    session_id: uuid.UUID,
+    lifetime: datetime.timedelta,
+    *,
+    now: datetime.datetime | None = None,
+) -> str:
+    """Firma el acceso de subject a la sesión session_id, válido por lifetime."""
+    issued_at = now or datetime.datetime.now(datetime.UTC)
+    claims = {
+        "iss": _ISSUER,
+        "aud": _ACCESS_AUDIENCE,
+        "sub": str(subject),
+        "sid": str(session_id),
+        "iat": issued_at,
+        "exp": issued_at + lifetime,
+    }
+    return jwt.encode(claims, _subkey(master_key, _ACCESS_USE), algorithm=_ALGORITHM)
+
+
+def read_access_token(master_key: str, token: str) -> AccessClaims:
+    """Comprueba firma, emisor, uso y vigencia, y devuelve de quién es y su sesión."""
+    if len(token) > MAX_TOKEN_LENGTH:
+        raise InvalidAccessTokenError
+    try:
+        claims = jwt.decode(
+            token,
+            _subkey(master_key, _ACCESS_USE),
+            algorithms=[_ALGORITHM],
+            audience=_ACCESS_AUDIENCE,
+            issuer=_ISSUER,
+            options={"require": ["iss", "aud", "sub", "sid", "iat", "exp"]},
+        )
+        return AccessClaims(subject=uuid.UUID(claims["sub"]), session_id=uuid.UUID(claims["sid"]))
+    except jwt.PyJWTError, ValueError, TypeError:
+        raise InvalidAccessTokenError from None

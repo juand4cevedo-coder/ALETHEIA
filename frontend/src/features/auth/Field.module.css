@@ -1,0 +1,116 @@
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* Cápsula de vidrio: deja ver la escena detrás, desenfocada, y se ilumina con el azul de la
+   marca al recibir el foco. */
+.capsule {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 20%, transparent);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-text-inverse) 9%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  transition:
+    border-color var(--motion-base) var(--ease-standard),
+    background-color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard);
+}
+
+.capsule:hover {
+  border-color: color-mix(in srgb, var(--color-text-inverse) 32%, transparent);
+}
+
+.capsule:focus-within {
+  border-color: var(--color-primary-300);
+  background: color-mix(in srgb, var(--color-text-inverse) 13%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--color-primary-400) 30%, transparent),
+    0 0 24px -4px color-mix(in srgb, var(--color-primary-400) 70%, transparent);
+}
+
+.capsule[data-invalid] {
+  border-color: var(--color-error-400);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 22px var(--space-6) 6px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: var(--color-text-inverse);
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+}
+
+/* El navegador pinta de blanco los campos que autocompleta; el sombreado interno los devuelve
+   al vidrio oscuro sin romper la escena. */
+.input:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-text-inverse);
+  box-shadow: inset 0 0 0 40px #1b2f57;
+  caret-color: var(--color-text-inverse);
+}
+
+.label {
+  position: absolute;
+  top: 50%;
+  left: var(--space-6);
+  color: color-mix(in srgb, var(--color-text-inverse) 72%, transparent);
+  font-size: 16px;
+  transform: translateY(-50%);
+  transform-origin: left center;
+  pointer-events: none;
+  transition:
+    transform var(--motion-base) var(--ease-out),
+    color var(--motion-base) var(--ease-standard);
+}
+
+/* Al escribir o con foco, el rótulo sube y se achica dentro de la cápsula. */
+.input:focus + .label,
+.input:not(:placeholder-shown) + .label,
+.input:-webkit-autofill + .label {
+  color: var(--color-primary-300);
+  transform: translateY(-115%) scale(0.76);
+}
+
+.input:not(:focus):not(:placeholder-shown) + .label {
+  color: color-mix(in srgb, var(--color-text-inverse) 62%, transparent);
+}
+
+.reveal {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-right: var(--space-2);
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: color-mix(in srgb, var(--color-text-inverse) 72%, transparent);
+  cursor: pointer;
+}
+
+.reveal:hover {
+  color: var(--color-text-inverse);
+}
+
+.error {
+  padding-left: var(--space-6);
+  color: var(--color-error-400);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .label {
+    transition: none;
+  }
+}

@@ -21,6 +21,88 @@ export type HealthStatus = {
 };
 
 /**
+ * LoginRequest
+ *
+ * Correo y contraseña para ingresar (API-005).
+ */
+export type LoginRequest = {
+  /**
+   * Email
+   *
+   * Correo de la cuenta.
+   */
+  email: string;
+  /**
+   * Password
+   *
+   * Contraseña de la cuenta.
+   */
+  password: string;
+};
+
+/**
+ * Me
+ *
+ * Perfil, organización y rol de quien tiene la sesión.
+ */
+export type Me = {
+  /**
+   * Id
+   *
+   * Identificador de la persona.
+   */
+  id: string;
+  /**
+   * Full Name
+   *
+   * Nombre de la persona.
+   */
+  full_name: string;
+  /**
+   * Email
+   *
+   * Correo de la cuenta.
+   */
+  email: string;
+  /**
+   * Email Verified
+   *
+   * Si ya verificó su correo (HU-006).
+   */
+  email_verified: boolean;
+  /**
+   * Su organización, o null si ya no pertenece a ninguna.
+   */
+  organization: OrganizationMembership | null;
+};
+
+/**
+ * OrganizationMembership
+ *
+ * La organización de la persona y su rol en ella.
+ */
+export type OrganizationMembership = {
+  /**
+   * Id
+   *
+   * Identificador de la organización.
+   */
+  id: string;
+  /**
+   * Name
+   *
+   * Nombre de la oficina, la firma o la persona independiente.
+   */
+  name: string;
+  /**
+   * Role
+   *
+   * Rol de la persona en la organización.
+   */
+  role: "owner" | "admin" | "lawyer" | "assistant";
+};
+
+/**
  * Problem
  *
  * Error en formato Problem Details (RFC 9457).
@@ -459,3 +541,65 @@ export type VerifyEmailResponses = {
 
 export type VerifyEmailResponse =
   VerifyEmailResponses[keyof VerifyEmailResponses];
+
+export type SignInData = {
+  body: LoginRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/login";
+};
+
+export type SignInErrors = {
+  /**
+   * El correo o la contraseña no coinciden.
+   */
+  401: Problem;
+  /**
+   * La cuenta está bloqueada.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos fallidos para la cuenta o desde la IP.
+   */
+  429: Problem;
+};
+
+export type SignInError = SignInErrors[keyof SignInErrors];
+
+export type SignInResponses = {
+  /**
+   * Sesión abierta: llegan las cookies de acceso y de renovación.
+   */
+  204: void;
+};
+
+export type SignInResponse = SignInResponses[keyof SignInResponses];
+
+export type ReadMeData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/me";
+};
+
+export type ReadMeErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+};
+
+export type ReadMeError = ReadMeErrors[keyof ReadMeErrors];
+
+export type ReadMeResponses = {
+  /**
+   * Successful Response
+   */
+  200: Me;
+};
+
+export type ReadMeResponse = ReadMeResponses[keyof ReadMeResponses];

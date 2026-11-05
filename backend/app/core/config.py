@@ -17,6 +17,10 @@ PRODUCTION_URL: Final = "https://aletheia.sbs"
 MIN_SIGNING_KEY_LENGTH: Final = 32
 
 
+class SigningKeyMissingError(RuntimeError):
+    """Falta ALETHEIA_TOKEN_SIGNING_KEY: sin ella no se firman enlaces ni sesiones."""
+
+
 class DatabaseSettings(BaseSettings):
     """Reglas comunes a toda configuración que lleva una URL de PostgreSQL."""
 
@@ -97,6 +101,16 @@ class Settings(DatabaseSettings):
         if self.environment == "production":
             return PRODUCTION_URL
         return self.dev_public_url.rstrip("/")
+
+    def signing_key(self) -> str:
+        """La clave maestra de los tokens firmados, o un error claro si el entorno no la tiene.
+
+        En producción ya llega leída de Parameter Store (app.core.secrets).
+        """
+        if self.token_signing_key is None:
+            msg = "Falta ALETHEIA_TOKEN_SIGNING_KEY para firmar los enlaces y las sesiones."
+            raise SigningKeyMissingError(msg)
+        return self.token_signing_key.get_secret_value()
 
     @field_validator("token_signing_key")
     @classmethod

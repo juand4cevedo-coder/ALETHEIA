@@ -25,18 +25,6 @@ ACCOUNT_EXISTS_TEMPLATE: Final = "account_exists"
 VERIFY_PATH: Final = "/verificar-correo"
 
 
-class SigningKeyMissingError(RuntimeError):
-    """Falta ALETHEIA_TOKEN_SIGNING_KEY: sin ella no se pueden firmar enlaces."""
-
-
-def signing_key(settings: Settings) -> str:
-    """La clave maestra de firma, o un error claro si el entorno no la tiene."""
-    if settings.token_signing_key is None:
-        msg = "Falta ALETHEIA_TOKEN_SIGNING_KEY para firmar los enlaces de los correos."
-        raise SigningKeyMissingError(msg)
-    return settings.token_signing_key.get_secret_value()
-
-
 def verification_state(email: str) -> str:
     """El estado que sella el enlace: el correo, sin distinguir mayúsculas."""
     return email.lower()
@@ -46,7 +34,7 @@ def verification_link(settings: Settings, user_id: uuid.UUID, email: str) -> str
     """Enlace de verificación. El token va en el fragmento (#t=…): el navegador nunca lo envía
     al servidor, así que no queda en los registros de Caddy ni en la cabecera Referer."""
     token = issue_link(
-        signing_key(settings),
+        settings.signing_key(),
         LinkPurpose.EMAIL_VERIFICATION,
         user_id,
         verification_state(email),
@@ -92,7 +80,7 @@ def verify_email(
     rate_limit.hit(session, rate_limit.EMAIL_VERIFICATION_IP, client_ip)
     session.commit()
 
-    key = signing_key(settings)
+    key = settings.signing_key()
     claims = read_link(key, LinkPurpose.EMAIL_VERIFICATION, token)
     user = session.get(User, claims.subject, with_for_update=True)
     if (

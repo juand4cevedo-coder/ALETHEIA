@@ -10,12 +10,13 @@ export function ButtonLink({
   variant,
   surface,
   size,
+  shape,
   ...linkProps
 }: ButtonLinkProps) {
   return (
     <Link
       {...linkProps}
-      className={buttonClassName({ variant, surface, size })}
+      className={buttonClassName({ variant, surface, size, shape })}
     />
   );
 }

@@ -5,8 +5,8 @@ import { LEGAL_VERSION } from "../../config/legal.ts";
 export const PASSWORD_MIN_LENGTH = 12;
 export const PASSWORD_MAX_LENGTH = 128;
 const NAME_MAX_LENGTH = 120;
-const EMAIL_MAX_LENGTH = 254;
-const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+export const EMAIL_MAX_LENGTH = 254;
+export const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 // Quien trabaja por su cuenta o quien abre la cuenta de una oficina o firma. En los dos casos
 // nace una organización; la de quien trabaja solo lleva su nombre.

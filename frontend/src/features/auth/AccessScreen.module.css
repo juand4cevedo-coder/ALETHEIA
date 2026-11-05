@@ -1,0 +1,135 @@
+/* Pantallas de acceso (ADR-029): emblema, título y formulario en una sola columna centrada
+   sobre la escena del alba. */
+.screen {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.intro {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  text-align: center;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 38px;
+  letter-spacing: -0.024em;
+  text-shadow: 0 2px 24px
+    color-mix(in srgb, var(--color-ink-950) 60%, transparent);
+}
+
+.title:focus {
+  outline: none;
+}
+
+.lead {
+  max-width: 42ch;
+  color: color-mix(in srgb, var(--color-text-inverse) 78%, transparent);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.fields {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* El campo de la oficina entra al elegir una firma, sin saltar de golpe. */
+.appear {
+  animation: appear var(--motion-base) var(--ease-out);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.terms {
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.submit {
+  margin-top: var(--space-2);
+}
+
+.alert {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-error-400) 45%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-error-400) 14%, transparent);
+  backdrop-filter: blur(14px);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.alert:focus {
+  outline: none;
+}
+
+/* Aviso de éxito: reemplaza al formulario cuando la cuenta queda creada. */
+.notice {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px solid
+    color-mix(in srgb, var(--color-success-400) 40%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-ink-950) 45%, transparent);
+  backdrop-filter: blur(14px);
+  text-align: center;
+  animation: appear var(--motion-slow) var(--ease-out);
+}
+
+.notice svg {
+  color: var(--color-success-400);
+}
+
+.noticeTitle {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.noticeTitle:focus {
+  outline: none;
+}
+
+.notice p {
+  color: color-mix(in srgb, var(--color-text-inverse) 78%, transparent);
+  font-size: 15px;
+  line-height: 23px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 560px) {
+  .title {
+    font-size: 28px;
+    line-height: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .appear,
+  .notice {
+    animation: none;
+  }
+}
