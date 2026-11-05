@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
-from app.api import auth, health, plans
+from app.api import API_PREFIX, auth, health, me, plans
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logs import configure_logging
@@ -21,7 +21,6 @@ from app.core.middleware import (
 from app.core.openapi import install_problem_details
 from app.db.session import create_db_engine
 
-API_PREFIX: Final = "/api/v1"
 API_VERSION: Final = "0.2.0"
 
 
@@ -61,6 +60,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(plans.router, prefix=API_PREFIX)
     app.include_router(auth.router, prefix=API_PREFIX)
+    app.include_router(me.router, prefix=API_PREFIX)
     install_problem_details(app)
     return app
 

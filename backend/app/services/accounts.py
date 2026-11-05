@@ -11,6 +11,7 @@ de RNF-006 para que nadie use el registro como forma de llenarle la bandeja.
 
 import datetime
 import uuid
+from dataclasses import dataclass
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -24,6 +25,7 @@ from app.schemas.auth import RegisterRequest
 from app.services import rate_limit, verification
 from app.services.audit import audit_ip, audit_user_agent
 from app.services.plans import TRIAL_DAYS, TRIAL_PLAN_CODE
+from app.services.sessions import Principal
 
 _UNIQUE_EMAIL = "uq_users_email_lower"
 
@@ -124,3 +126,26 @@ def _organization_name(request: RegisterRequest) -> str:
     if request.organization_name is None:
         return request.full_name
     return request.organization_name
+
+
+@dataclass(frozen=True, slots=True)
+class Profile:
+    """La persona de la sesión, su organización y su rol (API-014)."""
+
+    user: User
+    organization: Organization | None
+    role: str | None
+
+
+def profile(session: Session, principal: Principal) -> Profile:
+    """Perfil de quien hace la petición. La sesión ya tiene el contexto de su organización."""
+    user = session.get(User, principal.user_id)
+    if user is None:  # authenticate acaba de comprobar que existe y está activa.
+        msg = "La persona de la sesión no existe"
+        raise LookupError(msg)
+    organization = (
+        session.get(Organization, principal.organization_id)
+        if principal.organization_id is not None
+        else None
+    )
+    return Profile(user=user, organization=organization, role=principal.role)
