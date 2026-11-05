@@ -1,8 +1,11 @@
-"""Middleware que identifica cada petición y deja un registro de su resultado."""
+"""Middleware de la API: identifica cada petición y registra su resultado, y rechaza las
+peticiones que cambian algo si no salen de la propia interfaz de ALETHEIA."""
 
 import logging
 import re
 import time
+from collections.abc import Collection
+from http import HTTPStatus
 from typing import Final
 from uuid import uuid7
 
@@ -10,7 +13,7 @@ from starlette.datastructures import Headers, MutableHeaders
 from starlette.requests import Request
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from app.core.errors import unexpected_error_response
+from app.core.errors import problem_response, unexpected_error_response
 from app.core.logs import request_id_var
 
 REQUEST_ID_HEADER: Final = "X-Request-ID"
@@ -75,3 +78,58 @@ def _request_id_from(scope: Scope) -> str:
     if candidate is not None and _VALID_REQUEST_ID.fullmatch(candidate):
         return candidate
     return str(uuid7())
+
+
+# Encabezado propio que la interfaz envía en toda petición que cambia algo (sección 9 de la
+# especificación). Un formulario de otro sitio no puede ponerlo, y un script de otro sitio solo
+# podría con un permiso de CORS que la API nunca da.
+SAME_ORIGIN_HEADER: Final = "X-Aletheia-Request"
+_SAME_ORIGIN_VALUE: Final = "1"
+_UNSAFE_METHODS: Final = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+# Sec-Fetch-Site lo pone el navegador y ninguna página lo puede cambiar. none es una petición
+# que la persona escribió o abrió ella misma, no una que un sitio le hizo hacer.
+_ALLOWED_FETCH_SITES: Final = frozenset({"same-origin", "none"})
+_FOREIGN_REQUEST: Final = (
+    "La solicitud no salió de ALETHEIA. Recargue la página e inténtelo de nuevo."
+)
+
+
+class SameOriginMiddleware:
+    """Protección contra CSRF para las rutas de la API que cambian algo.
+
+    SameSite=Strict ya impide que la cookie viaje desde otro sitio. Esto agrega dos barreras
+    más: el encabezado propio y, cuando el navegador los envía, Origin y Sec-Fetch-Site deben
+    ser los del propio sitio. Un cliente que no es un navegador, como curl, no lleva cookies de
+    nadie: solo necesita el encabezado.
+    """
+
+    def __init__(self, app: ASGIApp, *, allowed_origins: Collection[str], path_prefix: str) -> None:
+        self.app = app
+        self.allowed_origins = frozenset(allowed_origins)
+        self.path_prefix = path_prefix
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if (
+            scope["type"] == "http"
+            and scope["method"] in _UNSAFE_METHODS
+            and scope["path"].startswith(self.path_prefix)
+            and not self._comes_from_the_site(Headers(scope=scope))
+        ):
+            response = problem_response(
+                Request(scope),
+                HTTPStatus.FORBIDDEN,
+                detail=_FOREIGN_REQUEST,
+                headers={"Cache-Control": "no-store"},
+            )
+            await response(scope, receive, send)
+            return
+        await self.app(scope, receive, send)
+
+    def _comes_from_the_site(self, headers: Headers) -> bool:
+        if headers.get(SAME_ORIGIN_HEADER) != _SAME_ORIGIN_VALUE:
+            return False
+        origin = headers.get("origin")
+        if origin is not None and origin not in self.allowed_origins:
+            return False
+        fetch_site = headers.get("sec-fetch-site")
+        return fetch_site is None or fetch_site in _ALLOWED_FETCH_SITES

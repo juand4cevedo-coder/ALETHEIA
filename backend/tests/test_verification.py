@@ -23,7 +23,7 @@ from app.models import AuditLog, Job, Membership, User
 from app.services import account_emails
 from app.services.jobs import PermanentJobError
 from app.services.verification import verification_link, verification_state
-from tests.conftest import TEST_SIGNING_KEY
+from tests.conftest import SAME_ORIGIN_HEADERS, TEST_SIGNING_KEY
 from tests.test_email import _delivered, _recipient
 
 _REGISTRO = "/api/v1/auth/register"
@@ -34,7 +34,7 @@ _REENVIO = "/api/v1/auth/verify-email/resend"
 def client(settings: Settings, db: Session) -> Iterator[TestClient]:
     app = create_app(settings)
     app.dependency_overrides[get_session] = lambda: db
-    with TestClient(app) as test_client:
+    with TestClient(app, headers=SAME_ORIGIN_HEADERS) as test_client:
         yield test_client
 
 

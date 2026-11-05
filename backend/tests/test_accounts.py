@@ -19,6 +19,7 @@ from app.main import create_app
 from app.models import AuditLog, Membership, Organization, Plan, Subscription, User
 from app.repositories import accounts as accounts_repository
 from app.services.plans import TRIAL_DAYS
+from tests.conftest import SAME_ORIGIN_HEADERS
 
 _PATH = "/api/v1/auth/register"
 _CLAVE = "una frase larga y fácil de recordar"
@@ -29,7 +30,7 @@ _OTRA_CLAVE = "otra frase larga y distinta"
 def client(settings: Settings, db: Session) -> Iterator[TestClient]:
     app = create_app(settings)
     app.dependency_overrides[get_session] = lambda: db
-    with TestClient(app) as test_client:
+    with TestClient(app, headers=SAME_ORIGIN_HEADERS) as test_client:
         yield test_client
 
 
