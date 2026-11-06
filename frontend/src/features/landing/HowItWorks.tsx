@@ -9,12 +9,12 @@ const STEPS = [
   {
     icon: Upload,
     title: "Suba el original",
-    text: "Cargue dentro de un caso el chat exportado, el correo, el audio, la fotografía o el PDF, tal como lo recibió. ALETHEIA lo guarda cifrado y sin modificarlo.",
+    text: "Cargue dentro de un caso el chat exportado, el correo, el audio, la fotografía o el PDF, tal como lo recibió. Lo guardamos cifrado y sin modificarlo.",
   },
   {
     icon: Fingerprint,
     title: "Huella y sello de tiempo",
-    text: "Al recibirlo se calcula su huella SHA‑256 y una autoridad externa la sella con fecha y hora. Desde ese momento, cualquier cambio en el archivo queda en evidencia.",
+    text: "Al recibirlo calculamos su huella SHA‑256 y una autoridad externa la sella con fecha y hora. Desde ese momento, cualquier cambio en el archivo queda en evidencia.",
   },
   {
     icon: History,
@@ -42,7 +42,7 @@ export function HowItWorks() {
           id="titulo-como-funciona"
           kicker="Cómo funciona"
           title="De la recepción del archivo al expediente, en cuatro pasos"
-          lead="No necesita instalar nada ni cambiar la forma en que su oficina recibe la información. ALETHEIA se encarga de preservarla desde el primer momento."
+          lead="No necesita instalar nada ni cambiar la forma en que su oficina recibe la información. Nosotros nos encargamos de preservarla desde el primer momento."
         />
 
         <ol className={styles.steps}>

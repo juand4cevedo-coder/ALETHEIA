@@ -6,16 +6,16 @@ import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
 
 const DOES = [
-  "Conserva el archivo original, cifrado y sin modificaciones.",
-  "Registra su huella y un sello de tiempo emitido por un tercero.",
-  "Documenta quién subió, consultó, descargó o exportó cada evidencia.",
-  "Entrega un paquete que cualquier persona puede verificar.",
+  "Conservamos el archivo original, cifrado y sin modificaciones.",
+  "Registramos su huella y un sello de tiempo emitido por un tercero.",
+  "Documentamos quién subió, consultó, descargó o exportó cada evidencia.",
+  "Le entregamos un paquete que cualquier persona puede verificar.",
 ] as const;
 
 const DOES_NOT = [
-  "No certifica pruebas ni determina su validez.",
-  "No califica un archivo como auténtico, veraz o admisible.",
-  "No extrae información de celulares ni accede a cuentas de terceros: solo recibe lo que usted sube.",
+  "No certificamos pruebas ni determinamos su validez.",
+  "No calificamos un archivo como auténtico, veraz o admisible.",
+  "No extraemos información de celulares ni entramos a cuentas de terceros: solo recibimos lo que usted sube.",
 ] as const;
 
 // Regla de oro (RN-001): qué hace ALETHEIA y qué no hace, dicho sin ambigüedad.
@@ -27,14 +27,14 @@ export function ScopeSection() {
           id="titulo-alcance"
           kicker="Alcance del servicio"
           title="Preservamos y documentamos. La valoración es del juez."
-          lead="ALETHEIA es una herramienta técnica de preservación. Le da al abogado elementos sólidos para sustentar la integridad de su evidencia, sin reemplazar el criterio de nadie."
+          lead="Somos una herramienta técnica de preservación. Le damos elementos sólidos para sustentar la integridad de su evidencia, sin reemplazar el criterio de nadie."
         />
 
         <Reveal className={styles.panel}>
           <div className={styles.column}>
             <h3 className={styles.columnTitle}>
               <ShieldCheck size={20} />
-              Lo que ALETHEIA hace
+              Lo que hacemos
             </h3>
             <ul className={styles.list}>
               {DOES.map((item) => (
@@ -51,7 +51,7 @@ export function ScopeSection() {
           <div className={styles.column}>
             <h3 className={styles.columnTitle}>
               <CircleSlash size={20} />
-              Lo que no hace
+              Lo que no hacemos
             </h3>
             <ul className={styles.list}>
               {DOES_NOT.map((item) => (
