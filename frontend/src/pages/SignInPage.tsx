@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CircleCheck } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
 
@@ -14,6 +15,7 @@ import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { Emblem } from "../features/auth/Emblem.tsx";
 import { Field } from "../features/auth/Field.tsx";
+import { signedOutScope } from "../features/session/useSignOut.ts";
 import {
   destinationAfterSignIn,
   SIGN_IN_FIELDS,
@@ -59,6 +61,12 @@ function problemFrom(error: unknown): FormProblem | null {
   return { kind: "unexpected" };
 }
 
+const SIGNED_OUT_MESSAGES = {
+  device: "Cerró la sesión en este dispositivo.",
+  everywhere:
+    "Cerró la sesión en todos sus dispositivos. Para seguir, ingrese de nuevo.",
+} as const;
+
 // Ingresar (UI-008, HU-007): una columna sobre la escena del alba (ADR-029). Mientras la API
 // responde, el anillo del emblema gira; al entrar se cierra y lleva a la pantalla de /app que
 // la persona intentaba abrir (NAV-003). El mensaje de error es el mismo exista o no la cuenta
@@ -79,6 +87,8 @@ export function SignInPage() {
 
   // Quien ya tiene sesión no necesita esta pantalla (flujo 1 del documento de Diseño).
   const session = useQuery({ ...readMeOptions(), retry: false });
+  // Quien acaba de cerrar la sesión recibe la confirmación aquí (HU-009).
+  const signedOut = signedOutScope(location.state);
   const destination = destinationAfterSignIn(
     (location.state as { from?: unknown } | null)?.from,
     ROUTES.app,
@@ -180,6 +190,13 @@ export function SignInPage() {
           onSubmit={handleSubmit}
           aria-labelledby={TITLE_ID}
         >
+          {signedOut && !problem && (
+            <p className={styles.signedOut} role="status">
+              <CircleCheck size={18} aria-hidden="true" />
+              {SIGNED_OUT_MESSAGES[signedOut]}
+            </p>
+          )}
+
           {problem && (
             <div
               ref={alertRef}

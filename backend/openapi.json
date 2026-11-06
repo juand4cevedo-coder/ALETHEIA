@@ -301,6 +301,123 @@
         }
       }
     },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Renovar la sesión y rotar el token de renovación",
+        "operationId": "refresh_session",
+        "responses": {
+          "204": {
+            "description": "Sesión renovada: llegan cookies nuevas y la anterior deja de servir."
+          },
+          "401": {
+            "description": "El token de renovación no sirve. Si ya se había usado, la sesión se cerró en todos los lugares donde estaba abierta.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "renovacion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Cerrar la sesión de este dispositivo",
+        "operationId": "sign_out",
+        "responses": {
+          "204": {
+            "description": "Sesión cerrada y cookies borradas."
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/logout-all": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Cerrar todas las sesiones, en todos los dispositivos",
+        "operationId": "sign_out_everywhere",
+        "responses": {
+          "204": {
+            "description": "Todas las sesiones cerradas, también esta; cookies borradas."
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
     "/api/v1/me": {
       "get": {
         "tags": [
@@ -940,6 +1057,12 @@
       }
     },
     "securitySchemes": {
+      "renovacion": {
+        "type": "apiKey",
+        "description": "Cookie de renovación que la API entrega al ingresar y en cada renovación.",
+        "in": "cookie",
+        "name": "__Secure-aletheia_refresh"
+      },
       "sesion": {
         "type": "apiKey",
         "description": "Cookie de acceso que la API entrega al ingresar.",

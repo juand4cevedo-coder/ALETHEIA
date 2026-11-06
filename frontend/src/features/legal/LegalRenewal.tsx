@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowUpRight,
   Cookie,
+  LogOut,
   ReceiptText,
   Scale,
   ShieldCheck,
@@ -25,6 +26,7 @@ import {
 import { CONTACT_EMAIL, SITE_NAME } from "../../config/site.ts";
 import { AuthScene } from "../auth/AuthScene.tsx";
 import { Emblem } from "../auth/Emblem.tsx";
+import { useSignOut } from "../session/useSignOut.ts";
 import { currentLegalChanges } from "./changes.ts";
 import { formatEffectiveDate } from "./format.ts";
 import styles from "./LegalRenewal.module.css";
@@ -274,7 +276,34 @@ export function LegalRenewal({ me }: { me: Me }) {
           su suscripción sin ningún costo; tendrá 30 días para exportar sus
           casos, como dicen los términos.
         </p>
+        <SignOutLater />
       </main>
+    </div>
+  );
+}
+
+// Nadie queda atrapado en esta pantalla: la API deja cerrar la sesión sin aceptar (ADR-032).
+function SignOutLater() {
+  const session = useSignOut();
+  return (
+    <div className={styles.leave}>
+      <button
+        type="button"
+        className={styles.leaveButton}
+        onClick={session.signOut}
+        disabled={session.pending !== null}
+        aria-busy={session.pending === "device" || undefined}
+      >
+        <LogOut size={16} aria-hidden="true" />
+        {session.pending === "device"
+          ? "Cerrando sesión…"
+          : "Revisarlos más tarde y cerrar sesión"}
+      </button>
+      {session.failed && (
+        <p className={styles.leaveFailure} role="alert">
+          No pudimos cerrar la sesión. Revise su conexión e inténtelo de nuevo.
+        </p>
+      )}
     </div>
   );
 }

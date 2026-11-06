@@ -9,9 +9,12 @@ import {
   listPlans,
   type Options,
   readMe,
+  refreshSession,
   registerAccount,
   resendVerification,
   signIn,
+  signOut,
+  signOutEverywhere,
   verifyEmail,
 } from "../sdk.gen";
 import type {
@@ -27,6 +30,9 @@ import type {
   ReadMeData,
   ReadMeError,
   ReadMeResponse,
+  RefreshSessionData,
+  RefreshSessionError,
+  RefreshSessionResponse,
   RegisterAccountData,
   RegisterAccountError,
   RegisterAccountResponse,
@@ -36,6 +42,12 @@ import type {
   SignInData,
   SignInError,
   SignInResponse,
+  SignOutData,
+  SignOutError,
+  SignOutEverywhereData,
+  SignOutEverywhereError,
+  SignOutEverywhereResponse,
+  SignOutResponse,
   VerifyEmailData,
   VerifyEmailError,
   VerifyEmailResponse,
@@ -225,6 +237,83 @@ export const signInMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await signIn({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Renovar la sesión y rotar el token de renovación
+ */
+export const refreshSessionMutation = (
+  options?: Partial<Options<RefreshSessionData>>,
+): UseMutationOptions<
+  RefreshSessionResponse,
+  RefreshSessionError,
+  Options<RefreshSessionData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RefreshSessionResponse,
+    RefreshSessionError,
+    Options<RefreshSessionData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await refreshSession({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Cerrar la sesión de este dispositivo
+ */
+export const signOutMutation = (
+  options?: Partial<Options<SignOutData>>,
+): UseMutationOptions<SignOutResponse, SignOutError, Options<SignOutData>> => {
+  const mutationOptions: UseMutationOptions<
+    SignOutResponse,
+    SignOutError,
+    Options<SignOutData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await signOut({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Cerrar todas las sesiones, en todos los dispositivos
+ */
+export const signOutEverywhereMutation = (
+  options?: Partial<Options<SignOutEverywhereData>>,
+): UseMutationOptions<
+  SignOutEverywhereResponse,
+  SignOutEverywhereError,
+  Options<SignOutEverywhereData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SignOutEverywhereResponse,
+    SignOutEverywhereError,
+    Options<SignOutEverywhereData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await signOutEverywhere({
         ...options,
         ...fnOptions,
         throwOnError: true,
