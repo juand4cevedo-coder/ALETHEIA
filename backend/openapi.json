@@ -306,7 +306,7 @@
         "tags": [
           "perfil"
         ],
-        "summary": "Perfil, organización y rol de quien tiene la sesión",
+        "summary": "Perfil, organización, rol y aceptación legal de quien tiene la sesión",
         "operationId": "read_me",
         "responses": {
           "200": {
@@ -325,6 +325,65 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/legal-acceptance": {
+      "post": {
+        "tags": [
+          "perfil"
+        ],
+        "summary": "Aceptar los textos legales vigentes",
+        "operationId": "accept_legal_terms",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegalAcceptanceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Aceptación registrada, o ya estaba registrada para estos textos."
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Los textos cambiaron mientras la persona los leía; hay que recargar.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
                 }
               }
             }
@@ -360,6 +419,56 @@
         ],
         "title": "HealthStatus",
         "description": "Estado del servicio y de la base de datos cuando ambos responden."
+      },
+      "LegalAcceptanceRequest": {
+        "properties": {
+          "legal_version": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Legal Version",
+            "description": "Fecha de los textos que la persona leyó y acepta; debe ser la vigente."
+          },
+          "accepts_legal_terms": {
+            "type": "boolean",
+            "const": true,
+            "title": "Accepts Legal Terms",
+            "description": "Acepta los términos y autoriza el tratamiento de sus datos. Nunca se presume: la interfaz lo envía solo si la persona marcó la casilla."
+          }
+        },
+        "type": "object",
+        "required": [
+          "legal_version",
+          "accepts_legal_terms"
+        ],
+        "title": "LegalAcceptanceRequest",
+        "description": "Aceptación expresa de los textos legales vigentes."
+      },
+      "LegalStatus": {
+        "properties": {
+          "accepted_version": {
+            "type": "string",
+            "title": "Accepted Version",
+            "description": "Fecha (AAAA-MM-DD) de los textos que la persona aceptó por última vez."
+          },
+          "current_version": {
+            "type": "string",
+            "title": "Current Version",
+            "description": "Fecha (AAAA-MM-DD) de los textos vigentes."
+          },
+          "acceptance_required": {
+            "type": "boolean",
+            "title": "Acceptance Required",
+            "description": "Si debe aceptar los textos vigentes antes de seguir usando el servicio."
+          }
+        },
+        "type": "object",
+        "required": [
+          "accepted_version",
+          "current_version",
+          "acceptance_required"
+        ],
+        "title": "LegalStatus",
+        "description": "Qué textos legales aceptó la persona y si debe aceptar unos nuevos (RN-029)."
       },
       "LoginRequest": {
         "properties": {
@@ -420,6 +529,10 @@
               }
             ],
             "description": "Su organización, o null si ya no pertenece a ninguna."
+          },
+          "legal": {
+            "$ref": "#/components/schemas/LegalStatus",
+            "description": "Su aceptación de los textos legales."
           }
         },
         "type": "object",
@@ -428,7 +541,8 @@
           "full_name",
           "email",
           "email_verified",
-          "organization"
+          "organization",
+          "legal"
         ],
         "title": "Me",
         "description": "Perfil, organización y rol de quien tiene la sesión."

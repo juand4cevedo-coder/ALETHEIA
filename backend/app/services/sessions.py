@@ -26,6 +26,7 @@ from typing import Final
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
+from app.core.legal import LEGAL_VERSION
 from app.core.passwords import check_password, hash_password, needs_rehash
 from app.core.tokens import InvalidAccessTokenError, issue_access_token, read_access_token
 from app.db.tenancy import TenantContext, set_tenant
@@ -74,6 +75,13 @@ class Principal:
     session_id: uuid.UUID
     organization_id: uuid.UUID | None
     role: str | None
+    # Fecha de los textos legales que la persona aceptó por última vez (RN-029).
+    legal_version: str
+
+    @property
+    def accepted_current_legal(self) -> bool:
+        """Si ya aceptó los textos legales vigentes."""
+        return self.legal_version == LEGAL_VERSION
 
 
 def refresh_token_hash(token: str) -> bytes:
@@ -158,7 +166,10 @@ def authenticate(session: Session, settings: Settings, access_token: str | None)
         claims = read_access_token(settings.signing_key(), access_token)
     except InvalidAccessTokenError:
         raise NotAuthenticatedError from None
-    if not sessions_repository.session_is_active(session, claims.subject, claims.session_id):
+    legal_version = sessions_repository.accepted_legal_version(
+        session, claims.subject, claims.session_id
+    )
+    if legal_version is None:
         raise NotAuthenticatedError
 
     membership = _enter_organization(session, claims.subject)
@@ -167,6 +178,7 @@ def authenticate(session: Session, settings: Settings, access_token: str | None)
         session_id=claims.session_id,
         organization_id=membership.organization_id if membership is not None else None,
         role=membership.role if membership is not None else None,
+        legal_version=legal_version,
     )
 
 

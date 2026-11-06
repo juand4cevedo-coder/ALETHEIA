@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.api.cookies import ACCESS_COOKIE
 from app.core.config import Settings
+from app.core.legal import LegalAcceptanceRequiredError
 from app.services import sessions as sessions_service
 from app.services.sessions import NotAuthenticatedError, Principal
 
@@ -59,12 +60,18 @@ SESSION_ENDED: Final = "Su sesión terminó. Ingrese de nuevo."
 SESSION_CHALLENGE: Final = 'Cookie realm="aletheia"'
 
 
-def get_principal(
+def get_principal_allowing_outdated_legal(
     access_token: Annotated[str | None, Depends(_access_cookie)],
     session: Annotated[Session, Depends(get_session)],
     settings: Annotated[Settings, Depends(get_app_settings)],
 ) -> Principal:
-    """Quién hace la petición. Sin una sesión viva, 401 sin más detalle (RN-026)."""
+    """Quién hace la petición, haya aceptado o no los textos legales vigentes.
+
+    Solo para lo que debe seguir funcionando antes de aceptarlos: ver el perfil, aceptar los
+    textos, cerrar la sesión y, cuando existan, descargar y exportar los casos, porque los
+    términos prometen que la evidencia nunca queda retenida. Sin una sesión viva, 401 sin más
+    detalle (RN-026).
+    """
     try:
         return sessions_service.authenticate(session, settings, access_token)
     except NotAuthenticatedError:
@@ -73,3 +80,16 @@ def get_principal(
             detail=SESSION_ENDED,
             headers={"WWW-Authenticate": SESSION_CHALLENGE, "Cache-Control": "no-store"},
         ) from None
+
+
+def get_principal(
+    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
+) -> Principal:
+    """Quién hace la petición, con los textos legales vigentes aceptados (RN-029).
+
+    Es la dependencia por defecto de toda ruta con sesión: quien no los ha aceptado recibe un
+    403 con el tipo LEGAL_ACCEPTANCE_REQUIRED y la interfaz le muestra los textos nuevos.
+    """
+    if not principal.accepted_current_legal:
+        raise LegalAcceptanceRequiredError
+    return principal
