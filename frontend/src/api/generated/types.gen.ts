@@ -21,6 +21,52 @@ export type HealthStatus = {
 };
 
 /**
+ * LegalAcceptanceRequest
+ *
+ * Aceptación expresa de los textos legales vigentes.
+ */
+export type LegalAcceptanceRequest = {
+  /**
+   * Legal Version
+   *
+   * Fecha de los textos que la persona leyó y acepta; debe ser la vigente.
+   */
+  legal_version: string;
+  /**
+   * Accepts Legal Terms
+   *
+   * Acepta los términos y autoriza el tratamiento de sus datos. Nunca se presume: la interfaz lo envía solo si la persona marcó la casilla.
+   */
+  accepts_legal_terms: true;
+};
+
+/**
+ * LegalStatus
+ *
+ * Qué textos legales aceptó la persona y si debe aceptar unos nuevos (RN-029).
+ */
+export type LegalStatus = {
+  /**
+   * Accepted Version
+   *
+   * Fecha (AAAA-MM-DD) de los textos que la persona aceptó por última vez.
+   */
+  accepted_version: string;
+  /**
+   * Current Version
+   *
+   * Fecha (AAAA-MM-DD) de los textos vigentes.
+   */
+  current_version: string;
+  /**
+   * Acceptance Required
+   *
+   * Si debe aceptar los textos vigentes antes de seguir usando el servicio.
+   */
+  acceptance_required: boolean;
+};
+
+/**
  * LoginRequest
  *
  * Correo y contraseña para ingresar (API-005).
@@ -74,6 +120,10 @@ export type Me = {
    * Su organización, o null si ya no pertenece a ninguna.
    */
   organization: OrganizationMembership | null;
+  /**
+   * Su aceptación de los textos legales.
+   */
+  legal: LegalStatus;
 };
 
 /**
@@ -603,3 +653,38 @@ export type ReadMeResponses = {
 };
 
 export type ReadMeResponse = ReadMeResponses[keyof ReadMeResponses];
+
+export type AcceptLegalTermsData = {
+  body: LegalAcceptanceRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/me/legal-acceptance";
+};
+
+export type AcceptLegalTermsErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * Los textos cambiaron mientras la persona los leía; hay que recargar.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type AcceptLegalTermsError =
+  AcceptLegalTermsErrors[keyof AcceptLegalTermsErrors];
+
+export type AcceptLegalTermsResponses = {
+  /**
+   * Aceptación registrada, o ya estaba registrada para estos textos.
+   */
+  204: void;
+};
+
+export type AcceptLegalTermsResponse =
+  AcceptLegalTermsResponses[keyof AcceptLegalTermsResponses];
