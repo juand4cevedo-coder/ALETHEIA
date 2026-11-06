@@ -85,6 +85,24 @@
   outline: none;
 }
 
+/* Enlace para recuperar la contraseña, alineado a la derecha bajo su campo. */
+.forgot {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  margin-top: calc(-1 * var(--space-1));
+  color: var(--color-primary-300);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.forgot:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* Confirmación de que la sesión se cerró (HU-009): una línea serena sobre el formulario. */
 .signedOut {
   display: flex;

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircleCheck } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
 
 import type { SignInError } from "../api/generated";
 import {
@@ -235,6 +235,9 @@ export function SignInPage() {
               error={errors.password}
               onChange={(event) => update("password", event.target.value)}
             />
+            <Link to={ROUTES.forgotPassword} className={styles.forgot}>
+              ¿Olvidó su contraseña?
+            </Link>
           </fieldset>
 
           <div className={styles.submit}>
