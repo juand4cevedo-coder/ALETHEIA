@@ -4,6 +4,7 @@ import { queryOptions, type UseMutationOptions } from "@tanstack/react-query";
 
 import { client } from "../client.gen";
 import {
+  acceptLegalTerms,
   health,
   listPlans,
   type Options,
@@ -14,6 +15,9 @@ import {
   verifyEmail,
 } from "../sdk.gen";
 import type {
+  AcceptLegalTermsData,
+  AcceptLegalTermsError,
+  AcceptLegalTermsResponse,
   HealthData,
   HealthError,
   HealthResponse,
@@ -235,7 +239,7 @@ export const readMeQueryKey = (options?: Options<ReadMeData>) =>
   createQueryKey("readMe", options);
 
 /**
- * Perfil, organización y rol de quien tiene la sesión
+ * Perfil, organización, rol y aceptación legal de quien tiene la sesión
  */
 export const readMeOptions = (options?: Options<ReadMeData>) =>
   queryOptions<
@@ -255,3 +259,30 @@ export const readMeOptions = (options?: Options<ReadMeData>) =>
     },
     queryKey: readMeQueryKey(options),
   });
+
+/**
+ * Aceptar los textos legales vigentes
+ */
+export const acceptLegalTermsMutation = (
+  options?: Partial<Options<AcceptLegalTermsData>>,
+): UseMutationOptions<
+  AcceptLegalTermsResponse,
+  AcceptLegalTermsError,
+  Options<AcceptLegalTermsData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AcceptLegalTermsResponse,
+    AcceptLegalTermsError,
+    Options<AcceptLegalTermsData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await acceptLegalTerms({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};

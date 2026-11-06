@@ -22,6 +22,7 @@ from app.schemas.auth import (
 from app.services import accounts as accounts_service
 from app.services import sessions as sessions_service
 from app.services import verification as verification_service
+from app.services.legal import LegalVersionMismatchError
 
 router = APIRouter(tags=["cuenta"])
 
@@ -53,7 +54,7 @@ def register_account(
     response.headers["Cache-Control"] = "no-store"
     try:
         accounts_service.register(session, request, client_ip=client_ip, user_agent=user_agent)
-    except accounts_service.LegalVersionMismatchError:
+    except LegalVersionMismatchError:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail=(

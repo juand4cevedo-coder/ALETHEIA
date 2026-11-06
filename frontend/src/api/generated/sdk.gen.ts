@@ -9,6 +9,9 @@ import type {
 } from "./client";
 import { client } from "./client.gen";
 import type {
+  AcceptLegalTermsData,
+  AcceptLegalTermsErrors,
+  AcceptLegalTermsResponses,
   HealthData,
   HealthErrors,
   HealthResponses,
@@ -154,7 +157,7 @@ export const signIn = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Perfil, organización y rol de quien tiene la sesión
+ * Perfil, organización, rol y aceptación legal de quien tiene la sesión
  */
 export const readMe = <ThrowOnError extends boolean = false>(
   options?: Options<ReadMeData, ThrowOnError>,
@@ -169,4 +172,34 @@ export const readMe = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/me",
     ...options,
+  });
+
+/**
+ * Aceptar los textos legales vigentes
+ */
+export const acceptLegalTerms = <ThrowOnError extends boolean = false>(
+  options: Options<AcceptLegalTermsData, ThrowOnError>,
+): RequestResult<
+  AcceptLegalTermsResponses,
+  AcceptLegalTermsErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    AcceptLegalTermsResponses,
+    AcceptLegalTermsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/me/legal-acceptance",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
