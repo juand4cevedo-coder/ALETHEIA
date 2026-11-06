@@ -14,6 +14,7 @@ import markUrl from "../assets/aletheia-mark.png";
 import { Button } from "../components/ui/Button.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
+import { LegalRenewal } from "../features/legal/LegalRenewal.tsx";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./AppLayout.module.css";
 
@@ -33,6 +34,12 @@ export function AppLayout() {
   const location = useLocation();
   // Sin reintentos ni copia vieja: la respuesta dice si la sesión sigue viva ahora.
   const me = useQuery({ ...readMeOptions(), retry: false, staleTime: 0 });
+
+  // Con textos legales nuevos sin aceptar, la pantalla para aceptarlos reemplaza al espacio de
+  // trabajo: la API tampoco responde el resto hasta entonces (TT-012, RN-029).
+  if (me.data?.legal.acceptance_required) {
+    return <LegalRenewal me={me.data} />;
+  }
 
   if (me.isError && isUnauthorized(me.error)) {
     return (

@@ -1,6 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { LEGAL_VERSION } from "../config/legal.ts";
 import { seriousAxeViolations } from "../test/axe.ts";
 import { jsonResponse, renderRoute } from "../test/render.tsx";
 
@@ -15,6 +16,11 @@ const ME = {
     id: "01890a5d-ac96-774b-bcce-b302099a8058",
     name: "Restrepo Abogados",
     role: "lawyer",
+  },
+  legal: {
+    accepted_version: LEGAL_VERSION,
+    current_version: LEGAL_VERSION,
+    acceptance_required: false,
   },
 };
 
