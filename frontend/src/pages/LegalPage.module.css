@@ -76,16 +76,6 @@
   font-size: 15px;
 }
 
-.version {
-  padding: 2px var(--space-3);
-  border: 1px solid
-    color-mix(in srgb, var(--color-primary-300) 30%, transparent);
-  border-radius: var(--radius-pill);
-  color: var(--color-primary-300);
-  font-family: var(--font-mono);
-  font-size: 13px;
-}
-
 .summary {
   max-width: 68ch;
   margin-top: var(--space-8);
@@ -415,7 +405,6 @@
     border-color: var(--color-border-subtle);
   }
 
-  .version,
   .summaryLabel,
   .sectionTitle::before {
     color: var(--color-primary-700);
