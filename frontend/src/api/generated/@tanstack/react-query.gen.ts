@@ -5,6 +5,8 @@ import { queryOptions, type UseMutationOptions } from "@tanstack/react-query";
 import { client } from "../client.gen";
 import {
   acceptLegalTerms,
+  changePassword,
+  forgotPassword,
   health,
   listPlans,
   type Options,
@@ -12,6 +14,7 @@ import {
   refreshSession,
   registerAccount,
   resendVerification,
+  resetPassword,
   signIn,
   signOut,
   signOutEverywhere,
@@ -21,6 +24,12 @@ import type {
   AcceptLegalTermsData,
   AcceptLegalTermsError,
   AcceptLegalTermsResponse,
+  ChangePasswordData,
+  ChangePasswordError,
+  ChangePasswordResponse,
+  ForgotPasswordData,
+  ForgotPasswordError,
+  ForgotPasswordResponse,
   HealthData,
   HealthError,
   HealthResponse,
@@ -39,6 +48,9 @@ import type {
   ResendVerificationData,
   ResendVerificationError,
   ResendVerificationResponse,
+  ResetPasswordData,
+  ResetPasswordError,
+  ResetPasswordResponse,
   SignInData,
   SignInError,
   SignInResponse,
@@ -324,6 +336,60 @@ export const signOutEverywhereMutation = (
   return mutationOptions;
 };
 
+/**
+ * Pedir el enlace para restablecer la contraseña
+ */
+export const forgotPasswordMutation = (
+  options?: Partial<Options<ForgotPasswordData>>,
+): UseMutationOptions<
+  ForgotPasswordResponse,
+  ForgotPasswordError,
+  Options<ForgotPasswordData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ForgotPasswordResponse,
+    ForgotPasswordError,
+    Options<ForgotPasswordData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await forgotPassword({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Elegir una contraseña nueva con el enlace recibido
+ */
+export const resetPasswordMutation = (
+  options?: Partial<Options<ResetPasswordData>>,
+): UseMutationOptions<
+  ResetPasswordResponse,
+  ResetPasswordError,
+  Options<ResetPasswordData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ResetPasswordResponse,
+    ResetPasswordError,
+    Options<ResetPasswordData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await resetPassword({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 export const readMeQueryKey = (options?: Options<ReadMeData>) =>
   createQueryKey("readMe", options);
 
@@ -366,6 +432,33 @@ export const acceptLegalTermsMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await acceptLegalTerms({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Cambiar la contraseña
+ */
+export const changePasswordMutation = (
+  options?: Partial<Options<ChangePasswordData>>,
+): UseMutationOptions<
+  ChangePasswordResponse,
+  ChangePasswordError,
+  Options<ChangePasswordData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ChangePasswordResponse,
+    ChangePasswordError,
+    Options<ChangePasswordData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await changePassword({
         ...options,
         ...fnOptions,
         throwOnError: true,

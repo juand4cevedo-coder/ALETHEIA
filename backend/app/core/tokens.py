@@ -37,6 +37,7 @@ class LinkPurpose(StrEnum):
     """Para qué sirve un enlace; va en el campo aud del token."""
 
     EMAIL_VERIFICATION = "email_verification"
+    PASSWORD_RESET = "password_reset"  # noqa: S105 (un uso del token, no una contraseña)
 
 
 class InvalidLinkError(Exception):
