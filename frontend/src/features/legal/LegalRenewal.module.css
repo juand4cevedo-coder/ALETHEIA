@@ -225,6 +225,43 @@
   text-align: center;
 }
 
+.leave {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+}
+
+.leaveButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-primary-300);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.leaveButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primary-400) 12%, transparent);
+}
+
+.leaveButton:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.leaveFailure {
+  color: var(--color-text-inverse);
+  font-size: 13px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .document:hover .documentArrow {
     transform: none;

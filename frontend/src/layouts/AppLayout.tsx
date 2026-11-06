@@ -8,14 +8,14 @@ import {
   useLocation,
 } from "react-router";
 
-import type { Me, ReadMeError } from "../api/generated";
+import type { ReadMeError } from "../api/generated";
 import { readMeOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 import markUrl from "../assets/aletheia-mark.png";
 import { Button } from "../components/ui/Button.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
 import { LegalRenewal } from "../features/legal/LegalRenewal.tsx";
-import { ROLE_LABELS } from "../features/workspace/roles.ts";
+import { AccountMenu } from "../features/session/AccountMenu.tsx";
 import styles from "./AppLayout.module.css";
 
 function isUnauthorized(error: unknown): boolean {
@@ -28,8 +28,10 @@ function isUnauthorized(error: unknown): boolean {
 }
 
 // Marco del espacio de trabajo: todo lo que vive bajo /app exige sesión. Pregunta a la API
-// quién la tiene (API-014); la API comprueba la sesión en cada petición, así que una sesión
-// cerrada o vencida responde 401 y lleva a ingresar, recordando la pantalla pedida (NAV-003).
+// quién la tiene (API-014); la API comprueba la sesión en cada petición. Un acceso vencido se
+// renueva solo (sessionFetch.ts, HU-009); una sesión cerrada responde 401 y lleva a ingresar,
+// recordando la pantalla pedida (NAV-003). El menú de la cuenta cierra la sesión de este
+// dispositivo o de todos.
 export function AppLayout() {
   const location = useLocation();
   // Sin reintentos ni copia vieja: la respuesta dice si la sesión sigue viva ahora.
@@ -61,7 +63,7 @@ export function AppLayout() {
           <img src={markUrl} alt="" width={25} height={24} />
           <span>{SITE_NAME}</span>
         </Link>
-        {me.data && <Identity me={me.data} />}
+        {me.data && <AccountMenu me={me.data} />}
       </header>
 
       <main
@@ -102,18 +104,5 @@ export function AppLayout() {
       </main>
       <ScrollRestoration />
     </div>
-  );
-}
-
-function Identity({ me }: { me: Me }) {
-  return (
-    <p className={styles.identity}>
-      <span className={styles.person}>{me.full_name}</span>
-      {me.organization && (
-        <span className={styles.organization}>
-          {me.organization.name} · {ROLE_LABELS[me.organization.role]}
-        </span>
-      )}
-    </p>
   );
 }

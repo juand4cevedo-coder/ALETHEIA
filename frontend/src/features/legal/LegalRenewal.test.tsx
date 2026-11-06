@@ -185,3 +185,34 @@ describe("Textos legales nuevos por aceptar (TT-012)", () => {
     expect(isLegalAcceptanceRequired(new Error("red"))).toBe(false);
   });
 });
+
+describe("Salir sin aceptar (HU-009, ADR-032)", () => {
+  it("deja cerrar la sesión sin aceptar los textos", async () => {
+    let alive = true;
+    fetchMock.mockImplementation(async (input) => {
+      const path = new URL((input as Request).url).pathname;
+      if (path === "/api/v1/auth/logout") {
+        alive = false;
+        return new Response(null, { status: 204 });
+      }
+      if (path === "/api/v1/me" && alive) return jsonResponse(me(true));
+      return jsonResponse({ type: "about:blank", status: 401 }, 401);
+    });
+    const user = userEvent.setup();
+    const { router } = await renderRoute("/app");
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Revisarlos más tarde y cerrar sesión",
+      }),
+    );
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/ingresar"),
+    );
+    expect(acceptanceRequests()).toHaveLength(0);
+    expect(
+      await screen.findByText("Cerró la sesión en este dispositivo."),
+    ).toBeInTheDocument();
+  });
+});
