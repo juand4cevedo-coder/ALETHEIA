@@ -12,6 +12,12 @@ import type {
   AcceptLegalTermsData,
   AcceptLegalTermsErrors,
   AcceptLegalTermsResponses,
+  ChangePasswordData,
+  ChangePasswordErrors,
+  ChangePasswordResponses,
+  ForgotPasswordData,
+  ForgotPasswordErrors,
+  ForgotPasswordResponses,
   HealthData,
   HealthErrors,
   HealthResponses,
@@ -30,6 +36,9 @@ import type {
   ResendVerificationData,
   ResendVerificationErrors,
   ResendVerificationResponses,
+  ResetPasswordData,
+  ResetPasswordErrors,
+  ResetPasswordResponses,
   SignInData,
   SignInErrors,
   SignInResponses,
@@ -236,6 +245,44 @@ export const signOutEverywhere = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Pedir el enlace para restablecer la contraseña
+ */
+export const forgotPassword = <ThrowOnError extends boolean = false>(
+  options: Options<ForgotPasswordData, ThrowOnError>,
+): RequestResult<ForgotPasswordResponses, ForgotPasswordErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    ForgotPasswordResponses,
+    ForgotPasswordErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/password/forgot",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Elegir una contraseña nueva con el enlace recibido
+ */
+export const resetPassword = <ThrowOnError extends boolean = false>(
+  options: Options<ResetPasswordData, ThrowOnError>,
+): RequestResult<ResetPasswordResponses, ResetPasswordErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    ResetPasswordResponses,
+    ResetPasswordErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/password/reset",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
  * Perfil, organización, rol y aceptación legal de quien tiene la sesión
  */
 export const readMe = <ThrowOnError extends boolean = false>(
@@ -276,6 +323,32 @@ export const acceptLegalTerms = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/me/legal-acceptance",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Cambiar la contraseña
+ */
+export const changePassword = <ThrowOnError extends boolean = false>(
+  options: Options<ChangePasswordData, ThrowOnError>,
+): RequestResult<ChangePasswordResponses, ChangePasswordErrors, ThrowOnError> =>
+  (options.client ?? client).put<
+    ChangePasswordResponses,
+    ChangePasswordErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/me/password",
     ...options,
     headers: {
       "Content-Type": "application/json",

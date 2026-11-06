@@ -1,5 +1,6 @@
-"""Plantillas de los correos de la cuenta: la verificación del correo y el aviso de un registro
-repetido. El trabajador las arma justo antes de enviar, con los datos vigentes.
+"""Plantillas de los correos de la cuenta: la verificación del correo, el aviso de un registro
+repetido, el enlace para restablecer la contraseña y el aviso de que cambió. El trabajador las
+arma justo antes de enviar, con los datos vigentes.
 
 Cada correo va en texto y en HTML. El HTML usa estilos en línea, porque los clientes de correo
 ignoran las hojas de estilo, y escapa todo lo que viene de la persona, como su nombre.
@@ -11,9 +12,15 @@ from typing import Any, Final
 
 from sqlalchemy.orm import Session
 
-from app.adapters.email import OutgoingEmail
+from app.adapters.email import REPLY_TO, OutgoingEmail
 from app.core.config import Settings
 from app.models import User
+from app.services.credentials import (
+    CHANGED_TEMPLATE,
+    RESET_LINK_LIFETIME,
+    RESET_TEMPLATE,
+    reset_link,
+)
 from app.services.jobs import PermanentJobError
 from app.services.notifications import email_template
 from app.services.verification import (
@@ -24,7 +31,9 @@ from app.services.verification import (
 )
 
 SIGN_IN_PATH: Final = "/ingresar"
+FORGOT_PATH: Final = "/recuperar-contrasena"
 _HOURS: Final = int(LINK_LIFETIME.total_seconds() // 3600)
+_RESET_MINUTES: Final = int(RESET_LINK_LIFETIME.total_seconds() // 60)
 
 # Colores del sitio: el correo se lee como parte del mismo producto.
 _PAGE: Final = "#070b14"
@@ -132,5 +141,77 @@ def account_exists_email(
             ],
             ("Ingresar a ALETHEIA", sign_in),
             "Si no fue usted, no tiene que hacer nada: su cuenta no cambió.",
+        ),
+    )
+
+
+@email_template(RESET_TEMPLATE)
+def password_reset_email(
+    session: Session, payload: dict[str, Any], settings: Settings
+) -> OutgoingEmail | None:
+    """Enlace para restablecer la contraseña. Si la cuenta ya no existe o está bloqueada, no
+    se envía. El enlace se firma ahora, con la contraseña vigente al enviar."""
+    user = _user(session, payload)
+    if user is None or user.status != "active":
+        return None
+    link = reset_link(settings, user)
+    name = user.full_name
+    return OutgoingEmail(
+        to=user.email,
+        subject="Restablezca su contraseña de ALETHEIA",
+        text=(
+            f"Hola, {name}:\n\n"
+            "Recibimos una solicitud para restablecer la contraseña de su cuenta. Para elegir "
+            f"una nueva, abra este enlace:\n{link}\n\n"
+            f"El enlace vence en {_RESET_MINUTES} minutos y sirve una sola vez. Al cambiar la "
+            "contraseña cerraremos las sesiones abiertas en todos sus dispositivos.\n\n"
+            "Si usted no lo pidió, ignore este mensaje: su contraseña no cambia.\n\n"
+            "ALETHEIA"
+        ),
+        html=_html(
+            f"Hola, {html.escape(name)}:",
+            [
+                "Recibimos una solicitud para restablecer la contraseña de su cuenta. Para "
+                "elegir una nueva, use este botón.",
+                "Al cambiarla cerraremos las sesiones abiertas en todos sus dispositivos.",
+            ],
+            ("Elegir una contraseña nueva", link),
+            f"El enlace vence en {_RESET_MINUTES} minutos y sirve una sola vez. Si usted no "
+            "lo pidió, ignore este mensaje: su contraseña no cambia.",
+        ),
+    )
+
+
+@email_template(CHANGED_TEMPLATE)
+def password_changed_email(
+    session: Session, payload: dict[str, Any], settings: Settings
+) -> OutgoingEmail | None:
+    """Aviso de que la contraseña cambió, para que la persona actúe si no fue ella."""
+    user = _user(session, payload)
+    if user is None:
+        return None
+    recover = f"{settings.public_url}{FORGOT_PATH}"
+    name = user.full_name
+    return OutgoingEmail(
+        to=user.email,
+        subject="La contraseña de su cuenta cambió",
+        text=(
+            f"Hola, {name}:\n\n"
+            "Le confirmamos que la contraseña de su cuenta en ALETHEIA acaba de cambiar y que "
+            "cerramos las sesiones abiertas en sus otros dispositivos.\n\n"
+            "Si no fue usted, restablézcala de inmediato en:\n"
+            f"{recover}\n"
+            f"y escríbanos a {REPLY_TO}.\n\n"
+            "ALETHEIA"
+        ),
+        html=_html(
+            f"Hola, {html.escape(name)}:",
+            [
+                "Le confirmamos que la contraseña de su cuenta en ALETHEIA acaba de cambiar y "
+                "que cerramos las sesiones abiertas en sus otros dispositivos."
+            ],
+            ("No fui yo: restablecer la contraseña", recover),
+            f"Si fue usted, no tiene que hacer nada. Si no, restablézcala de inmediato y "
+            f"escríbanos a {html.escape(REPLY_TO)}.",
         ),
     )
