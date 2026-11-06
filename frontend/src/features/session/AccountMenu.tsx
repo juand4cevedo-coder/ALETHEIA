@@ -1,8 +1,10 @@
-import { ChevronDown, LogOut, MonitorSmartphone } from "lucide-react";
+import { ChevronDown, KeyRound, LogOut, MonitorSmartphone } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import { Link } from "react-router";
 
 import type { Me } from "../../api/generated";
 import { Button } from "../../components/ui/Button.tsx";
+import { ROUTES } from "../../config/routes.ts";
 import { ROLE_LABELS } from "../workspace/roles.ts";
 import styles from "./AccountMenu.module.css";
 import { initialsOf } from "./initials.ts";
@@ -80,6 +82,19 @@ export function AccountMenu({ me }: { me: Me }) {
           </p>
         </div>
         <ul className={styles.actions}>
+          <li>
+            <Link
+              to={ROUTES.security}
+              className={styles.action}
+              onClick={() => setOpen(false)}
+            >
+              <KeyRound size={18} aria-hidden="true" />
+              <span className={styles.actionText}>
+                <span className={styles.actionLabel}>Seguridad</span>
+                <span className={styles.actionHint}>Cambiar la contraseña</span>
+              </span>
+            </Link>
+          </li>
           <li>
             <button
               type="button"

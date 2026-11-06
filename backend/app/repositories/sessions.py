@@ -35,17 +35,22 @@ def revoke_family(session: Session, family_id: uuid.UUID, now: datetime.datetime
     session.execute(statement)
 
 
-def revoke_user_sessions(session: Session, user_id: uuid.UUID, now: datetime.datetime) -> None:
+def revoke_user_sessions(
+    session: Session,
+    user_id: uuid.UUID,
+    now: datetime.datetime,
+    *,
+    keep_family: uuid.UUID | None = None,
+) -> None:
     """Revoca todos los tokens vivos de una persona, en todas sus familias (RF-011).
 
-    Usa el índice de refresh_tokens.user_id.
+    Con keep_family conserva esa sesión: al cambiar la contraseña se cierran las demás, no la
+    de quien la cambió. Usa el índice de refresh_tokens.user_id.
     """
-    statement = (
-        update(RefreshToken)
-        .where(RefreshToken.user_id == user_id, RefreshToken.revoked_at.is_(None))
-        .values(revoked_at=now)
-    )
-    session.execute(statement)
+    conditions = [RefreshToken.user_id == user_id, RefreshToken.revoked_at.is_(None)]
+    if keep_family is not None:
+        conditions.append(RefreshToken.family_id != keep_family)
+    session.execute(update(RefreshToken).where(*conditions).values(revoked_at=now))
 
 
 def accepted_legal_version(

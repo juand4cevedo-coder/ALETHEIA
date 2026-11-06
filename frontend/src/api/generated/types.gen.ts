@@ -5,6 +5,40 @@ export type ClientOptions = {
 };
 
 /**
+ * ChangePasswordRequest
+ *
+ * Contraseña actual y nueva de quien tiene la sesión (API-013).
+ */
+export type ChangePasswordRequest = {
+  /**
+   * Current Password
+   *
+   * Contraseña actual.
+   */
+  current_password: string;
+  /**
+   * New Password
+   *
+   * Contraseña nueva, de 12 a 128 caracteres.
+   */
+  new_password: string;
+};
+
+/**
+ * ForgotPasswordRequest
+ *
+ * Correo al que se envía el enlace para restablecer la contraseña (API-011).
+ */
+export type ForgotPasswordRequest = {
+  /**
+   * Email
+   *
+   * Correo de la cuenta.
+   */
+  email: string;
+};
+
+/**
  * HealthStatus
  *
  * Estado del servicio y de la base de datos cuando ambos responden.
@@ -150,6 +184,20 @@ export type OrganizationMembership = {
    * Rol de la persona en la organización.
    */
   role: "owner" | "admin" | "lawyer" | "assistant";
+};
+
+/**
+ * PasswordResetRequested
+ *
+ * La misma respuesta exista o no una cuenta con ese correo (CA-HU-010-02).
+ */
+export type PasswordResetRequested = {
+  /**
+   * Detail
+   *
+   * Qué sigue.
+   */
+  detail: string;
 };
 
 /**
@@ -334,6 +382,26 @@ export type ResendVerificationRequest = {
    * Correo de la cuenta por verificar.
    */
   email: string;
+};
+
+/**
+ * ResetPasswordRequest
+ *
+ * Token del enlace y contraseña nueva (API-012). La página toma el token del fragmento.
+ */
+export type ResetPasswordRequest = {
+  /**
+   * Token
+   *
+   * Token del enlace.
+   */
+  token: string;
+  /**
+   * Password
+   *
+   * Contraseña nueva, de 12 a 128 caracteres.
+   */
+  password: string;
 };
 
 /**
@@ -720,6 +788,71 @@ export type SignOutEverywhereResponses = {
 export type SignOutEverywhereResponse =
   SignOutEverywhereResponses[keyof SignOutEverywhereResponses];
 
+export type ForgotPasswordData = {
+  body: ForgotPasswordRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/password/forgot";
+};
+
+export type ForgotPasswordErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiadas solicitudes.
+   */
+  429: Problem;
+};
+
+export type ForgotPasswordError =
+  ForgotPasswordErrors[keyof ForgotPasswordErrors];
+
+export type ForgotPasswordResponses = {
+  /**
+   * Successful Response
+   */
+  202: PasswordResetRequested;
+};
+
+export type ForgotPasswordResponse =
+  ForgotPasswordResponses[keyof ForgotPasswordResponses];
+
+export type ResetPasswordData = {
+  body: ResetPasswordRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/password/reset";
+};
+
+export type ResetPasswordErrors = {
+  /**
+   * El enlace no es válido o ya venció.
+   */
+  400: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+};
+
+export type ResetPasswordError = ResetPasswordErrors[keyof ResetPasswordErrors];
+
+export type ResetPasswordResponses = {
+  /**
+   * Contraseña cambiada; todas las sesiones quedaron cerradas.
+   */
+  204: void;
+};
+
+export type ResetPasswordResponse =
+  ResetPasswordResponses[keyof ResetPasswordResponses];
+
 export type ReadMeData = {
   body?: never;
   path?: never;
@@ -779,3 +912,42 @@ export type AcceptLegalTermsResponses = {
 
 export type AcceptLegalTermsResponse =
   AcceptLegalTermsResponses[keyof AcceptLegalTermsResponses];
+
+export type ChangePasswordData = {
+  body: ChangePasswordRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/me/password";
+};
+
+export type ChangePasswordErrors = {
+  /**
+   * La contraseña actual no coincide o la nueva es igual.
+   */
+  400: Problem;
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos fallidos.
+   */
+  429: Problem;
+};
+
+export type ChangePasswordError =
+  ChangePasswordErrors[keyof ChangePasswordErrors];
+
+export type ChangePasswordResponses = {
+  /**
+   * Contraseña cambiada; las demás sesiones quedaron cerradas.
+   */
+  204: void;
+};
+
+export type ChangePasswordResponse =
+  ChangePasswordResponses[keyof ChangePasswordResponses];

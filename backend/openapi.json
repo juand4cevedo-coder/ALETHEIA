@@ -418,6 +418,111 @@
         ]
       }
     },
+    "/api/v1/auth/password/forgot": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Pedir el enlace para restablecer la contraseña",
+        "operationId": "forgot_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetRequested"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiadas solicitudes.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password/reset": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Elegir una contraseña nueva con el enlace recibido",
+        "operationId": "reset_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Contraseña cambiada; todas las sesiones quedaron cerradas."
+          },
+          "400": {
+            "description": "El enlace no es válido o ya venció.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/me": {
       "get": {
         "tags": [
@@ -512,10 +617,123 @@
           }
         ]
       }
+    },
+    "/api/v1/me/password": {
+      "put": {
+        "tags": [
+          "perfil"
+        ],
+        "summary": "Cambiar la contraseña",
+        "operationId": "change_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Contraseña cambiada; las demás sesiones quedaron cerradas."
+          },
+          "400": {
+            "description": "La contraseña actual no coincide o la nueva es igual.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos fallidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
     }
   },
   "components": {
     "schemas": {
+      "ChangePasswordRequest": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Current Password",
+            "description": "Contraseña actual."
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 12,
+            "title": "New Password",
+            "description": "Contraseña nueva, de 12 a 128 caracteres."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "ChangePasswordRequest",
+        "description": "Contraseña actual y nueva de quien tiene la sesión (API-013)."
+      },
+      "ForgotPasswordRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo de la cuenta."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "ForgotPasswordRequest",
+        "description": "Correo al que se envía el enlace para restablecer la contraseña (API-011)."
+      },
       "HealthStatus": {
         "properties": {
           "status": {
@@ -697,6 +915,21 @@
         ],
         "title": "OrganizationMembership",
         "description": "La organización de la persona y su rol en ella."
+      },
+      "PasswordResetRequested": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Qué sigue."
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "PasswordResetRequested",
+        "description": "La misma respuesta exista o no una cuenta con ese correo (CA-HU-010-02)."
       },
       "Problem": {
         "additionalProperties": false,
@@ -930,6 +1163,32 @@
         ],
         "title": "ResendVerificationRequest",
         "description": "Correo al que se reenvía el enlace de verificación (UI-007)."
+      },
+      "ResetPasswordRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Token",
+            "description": "Token del enlace."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 12,
+            "title": "Password",
+            "description": "Contraseña nueva, de 12 a 128 caracteres."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token",
+          "password"
+        ],
+        "title": "ResetPasswordRequest",
+        "description": "Token del enlace y contraseña nueva (API-012). La página toma el token del fragmento."
       },
       "ValidationErrorItem": {
         "additionalProperties": false,

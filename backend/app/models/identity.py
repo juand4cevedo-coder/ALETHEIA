@@ -68,6 +68,10 @@ class User(Base):
     email: Mapped[str]
     email_verified_at: Mapped[datetime.datetime | None]
     password_hash: Mapped[str | None]
+    # Valor aleatorio que cambia cada vez que cambian las credenciales: los enlaces de
+    # recuperación lo llevan sellado y dejan de valer en cuanto cambia. Así ningún token
+    # depende del hash de la contraseña.
+    security_stamp: Mapped[uuid.UUID] = mapped_column(server_default=text("gen_random_uuid()"))
     full_name: Mapped[str]
     status: Mapped[str] = mapped_column(server_default="active")
     is_platform_admin: Mapped[bool] = mapped_column(server_default="false")
