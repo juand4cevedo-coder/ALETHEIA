@@ -50,7 +50,7 @@ async function submit(user: ReturnType<typeof userEvent.setup>) {
 
 describe("Crear cuenta (HU-005, CP-005)", () => {
   it("tiene etiquetas visibles y no tiene errores graves de accesibilidad", async () => {
-    const { container } = renderRoute("/registro");
+    const { container } = await renderRoute("/registro");
 
     expect(
       screen.getByRole("heading", {
@@ -73,7 +73,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
 
   it("guía la contraseña por su longitud, sin reglas de composición", async () => {
     const user = userEvent.setup();
-    renderRoute("/registro");
+    await renderRoute("/registro");
     const contrasena = screen.getByLabelText("Contraseña");
 
     expect(contrasena).toHaveAccessibleDescription(
@@ -90,7 +90,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
 
   it("marca los campos vacíos, enfoca el primero y no llama a la API", async () => {
     const user = userEvent.setup();
-    renderRoute("/registro");
+    await renderRoute("/registro");
 
     await submit(user);
 
@@ -106,7 +106,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
 
   it("pide al menos 12 caracteres en la contraseña (MSG-005)", async () => {
     const user = userEvent.setup();
-    renderRoute("/registro");
+    await renderRoute("/registro");
 
     await fillForm(user, "corta");
     await submit(user);
@@ -123,7 +123,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
 
   it("permite ver la contraseña escrita", async () => {
     const user = userEvent.setup();
-    renderRoute("/registro");
+    await renderRoute("/registro");
     const contrasena = screen.getByLabelText("Contraseña");
     const mostrar = screen.getByRole("button", {
       name: "Mostrar la contraseña",
@@ -135,8 +135,8 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     expect(mostrar).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("abre las políticas en otra pestaña para no perder lo escrito", () => {
-    renderRoute("/registro");
+  it("abre las políticas en otra pestaña para no perder lo escrito", async () => {
+    await renderRoute("/registro");
 
     expect(
       screen.getByRole("link", { name: /términos y condiciones/ }),
@@ -149,7 +149,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
   it("envía la versión legal vigente y pide revisar el correo (CA-HU-005-01)", async () => {
     fetchMock.mockResolvedValue(jsonResponse(ACCEPTED, 202));
     const user = userEvent.setup();
-    renderRoute("/registro");
+    await renderRoute("/registro");
 
     await fillForm(user);
     await submit(user);
@@ -181,8 +181,8 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     });
   });
 
-  it("por defecto la cuenta es personal y no pide oficina", () => {
-    renderRoute("/registro");
+  it("por defecto la cuenta es personal y no pide oficina", async () => {
+    await renderRoute("/registro");
 
     expect(screen.getByRole("radio", { name: "Independiente" })).toBeChecked();
     expect(
@@ -193,7 +193,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
   it("para una firma pide el nombre de la oficina y lo envía", async () => {
     fetchMock.mockResolvedValue(jsonResponse(ACCEPTED, 202));
     const user = userEvent.setup();
-    renderRoute("/registro");
+    await renderRoute("/registro");
 
     await user.click(screen.getByRole("radio", { name: "Oficina o firma" }));
     await fillForm(user);
@@ -218,7 +218,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
   it("pide recargar si los textos legales cambiaron", async () => {
     fetchMock.mockResolvedValue(problem(409));
     const user = userEvent.setup();
-    renderRoute("/registro");
+    await renderRoute("/registro");
 
     await fillForm(user);
     await submit(user);
@@ -234,7 +234,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
   it("avisa cuando hay demasiados intentos (MSG-004)", async () => {
     fetchMock.mockResolvedValue(problem(429));
     const user = userEvent.setup();
-    renderRoute("/registro");
+    await renderRoute("/registro");
 
     await fillForm(user);
     await submit(user);
@@ -251,7 +251,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
       }),
     );
     const user = userEvent.setup();
-    renderRoute("/registro");
+    await renderRoute("/registro");
 
     await fillForm(user);
     await submit(user);
@@ -267,7 +267,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
   it("ante una falla da el código de la solicitud (MSG-019)", async () => {
     fetchMock.mockResolvedValue(problem(500, { request_id: "01a1-codigo" }));
     const user = userEvent.setup();
-    renderRoute("/registro");
+    await renderRoute("/registro");
 
     await fillForm(user);
     await submit(user);
@@ -280,7 +280,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
   it("ante una falla de red no inventa un código", async () => {
     fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
     const user = userEvent.setup();
-    renderRoute("/registro");
+    await renderRoute("/registro");
 
     await fillForm(user);
     await submit(user);

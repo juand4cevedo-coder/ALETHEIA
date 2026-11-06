@@ -3,11 +3,7 @@ import { useMemo, useState } from "react";
 import { NavLink, useParams } from "react-router";
 
 import { buttonClassName } from "../components/ui/buttonStyles.ts";
-import {
-  DATA_CONTROLLER,
-  LEGAL_EFFECTIVE_DATE,
-  LEGAL_VERSION,
-} from "../config/legal.ts";
+import { DATA_CONTROLLER, LEGAL_EFFECTIVE_DATE } from "../config/legal.ts";
 import { LEGAL_PAGES, legalRoute } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
 import { findLegalDocument } from "../features/legal/documents.ts";
@@ -63,7 +59,6 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
 
           <h1 className={styles.title}>{doc.title}</h1>
           <p className={styles.meta}>
-            <span className={styles.version}>Versión {LEGAL_VERSION}</span>
             <span>
               Vigente desde el{" "}
               <time dateTime={LEGAL_EFFECTIVE_DATE}>
