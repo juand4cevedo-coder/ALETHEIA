@@ -24,14 +24,11 @@ from app.repositories import accounts as accounts_repository
 from app.schemas.auth import RegisterRequest
 from app.services import rate_limit, verification
 from app.services.audit import audit_ip, audit_user_agent
+from app.services.legal import LegalVersionMismatchError, record_registration
 from app.services.plans import TRIAL_DAYS, TRIAL_PLAN_CODE
 from app.services.sessions import Principal
 
 _UNIQUE_EMAIL = "uq_users_email_lower"
-
-
-class LegalVersionMismatchError(Exception):
-    """La persona aceptó una versión de los textos legales que ya no es la vigente."""
 
 
 def register(
@@ -54,18 +51,19 @@ def register(
     user_id, organization_id = uuid.uuid7(), uuid.uuid7()
     trial_plan_id = accounts_repository.plan_id_by_code(session, TRIAL_PLAN_CODE)
     set_tenant(session, TenantContext(organization_id=organization_id, user_id=user_id))
+    user = User(
+        id=user_id,
+        email=request.email,
+        password_hash=password_hash,
+        full_name=request.full_name,
+        terms_version=LEGAL_VERSION,
+        privacy_version=LEGAL_VERSION,
+        consented_at=now,
+    )
     try:
         accounts_repository.add_account(
             session,
-            user=User(
-                id=user_id,
-                email=request.email,
-                password_hash=password_hash,
-                full_name=request.full_name,
-                terms_version=LEGAL_VERSION,
-                privacy_version=LEGAL_VERSION,
-                consented_at=now,
-            ),
+            user=user,
             organization=Organization(id=organization_id, name=_organization_name(request)),
             subscription=Subscription(
                 organization_id=organization_id,
@@ -84,6 +82,8 @@ def register(
                 created_at=now,
             ),
         )
+        # La prueba de la aceptación nace con la cuenta (Ley 1581 de 2012, art. 9).
+        record_registration(session, user)
         # El correo de verificación sale solo si la cuenta queda creada: va en la misma transacción.
         verification.enqueue_verification(session, user_id)
         session.commit()

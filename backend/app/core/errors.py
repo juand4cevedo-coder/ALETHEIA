@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.core.legal import LEGAL_ACCEPTANCE_REQUIRED, LegalAcceptanceRequiredError
 from app.core.logs import request_id_var
 from app.services.rate_limit import RateLimitExceededError
 
@@ -28,11 +29,13 @@ def problem_response(
     detail: str | None = None,
     headers: Mapping[str, str] | None = None,
     extensions: dict[str, Any] | None = None,
+    problem_type: str = "about:blank",
 ) -> JSONResponse:
     """Construye una respuesta application/problem+json con los miembros estándar."""
     body: dict[str, Any] = {
-        # about:blank indica que el código HTTP basta para entender el problema.
-        "type": "about:blank",
+        # about:blank indica que el código HTTP basta para entender el problema; un tipo propio,
+        # que la interfaz tiene que distinguir de otros errores con el mismo código.
+        "type": problem_type,
         "title": HTTPStatus(status).phrase,
         "status": status,
         "instance": request.url.path,
@@ -98,6 +101,23 @@ async def _rate_limit_handler(request: Request, exc: Exception) -> JSONResponse:
     )
 
 
+async def _legal_acceptance_handler(request: Request, exc: Exception) -> JSONResponse:
+    if not isinstance(exc, LegalAcceptanceRequiredError):  # Lo garantiza el registro de abajo.
+        raise TypeError(type(exc).__name__)
+    # Un 403 con su propio tipo: la interfaz lo distingue de un permiso que falta y muestra
+    # los textos nuevos en lugar de un error.
+    return problem_response(
+        request,
+        HTTPStatus.FORBIDDEN,
+        detail=(
+            "Los términos y la política de privacidad cambiaron. Revíselos y acéptelos para "
+            "seguir usando ALETHEIA."
+        ),
+        headers={"Cache-Control": "no-store"},
+        problem_type=LEGAL_ACCEPTANCE_REQUIRED,
+    )
+
+
 def unexpected_error_response(request: Request) -> JSONResponse:
     """Respuesta 500 genérica: la traza queda en los registros, nunca en la respuesta."""
     return problem_response(
@@ -116,3 +136,5 @@ def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(OperationalError, _database_unavailable_handler)
     # Límite de peticiones (RN-026): 429 con los segundos que faltan en Retry-After.
     app.add_exception_handler(RateLimitExceededError, _rate_limit_handler)
+    # Textos legales nuevos sin aceptar (RN-029): 403 con su propio tipo.
+    app.add_exception_handler(LegalAcceptanceRequiredError, _legal_acceptance_handler)

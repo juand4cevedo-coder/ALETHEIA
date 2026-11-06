@@ -10,7 +10,7 @@ from app.models.evidence import (
     Evidence,
     Export,
 )
-from app.models.identity import AuditLog, OAuthIdentity, RefreshToken, User
+from app.models.identity import AuditLog, LegalAcceptance, OAuthIdentity, RefreshToken, User
 from app.models.jobs import Job
 from app.models.limits import RateLimitEvent
 from app.models.organization import Invitation, Membership, Organization
@@ -26,6 +26,7 @@ __all__ = [
     "Export",
     "Invitation",
     "Job",
+    "LegalAcceptance",
     "Membership",
     "OAuthIdentity",
     "Organization",
