@@ -35,11 +35,11 @@ export function Hero() {
         </h1>
 
         <p className={`${styles.lead} ${styles.enter}`}>
-          ALETHEIA conserva el archivo original de cada evidencia, registra su
-          huella criptográfica y un sello de tiempo emitido por un tercero, y
-          documenta cada acceso en una cadena de custodia que nadie puede
-          editar. Cuando el caso lo requiera, usted exporta un paquete que
-          cualquier persona puede verificar de forma independiente.
+          Guardamos el archivo original de cada evidencia con su huella
+          criptográfica y un sello de tiempo emitido por un tercero, y dejamos
+          constancia de cada acceso en una cadena de custodia que nadie puede
+          editar. Cuando lo necesite, usted exporta un paquete que cualquier
+          persona puede verificar por su cuenta.
         </p>
 
         <div className={`${styles.actions} ${styles.enter}`}>

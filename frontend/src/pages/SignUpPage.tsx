@@ -262,8 +262,8 @@ export function SignUpPage() {
                 <NewTabLink to={legalRoute("privacidad")}>
                   política de privacidad
                 </NewTabLink>
-                . Mi contraseña se guarda como un resumen irreversible: nadie en
-                ALETHEIA puede leerla.
+                . Mi contraseña se guarda como un resumen irreversible que nadie
+                en ALETHEIA puede leer.
               </Checkbox>
             </div>
 

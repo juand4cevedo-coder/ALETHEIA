@@ -36,7 +36,9 @@ describe("Página de inicio (HU-001)", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      within(main).getByText("No certifica pruebas ni determina su validez."),
+      within(main).getByText(
+        "No certificamos pruebas ni determinamos su validez.",
+      ),
     ).toBeInTheDocument();
     expect(
       within(main).getAllByRole("link", { name: "Crear cuenta gratis" })[0],

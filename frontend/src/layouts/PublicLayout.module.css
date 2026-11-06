@@ -252,8 +252,8 @@
 
 .footerInner {
   display: grid;
-  grid-template-columns: 2fr repeat(3, 1fr);
-  gap: var(--space-8);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--space-12);
   /* Mismo ancho de contenido que las secciones, que restan su margen lateral. */
   max-width: calc(var(--content-width) - 2 * var(--space-6));
   margin: 0 auto;
@@ -263,41 +263,71 @@
   display: grid;
   align-content: start;
   justify-items: start;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .footerText {
-  max-width: 300px;
+  max-width: 36ch;
+  color: var(--color-text-inverse-muted);
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .footerMail {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 12%, transparent);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-ink-800) 60%, transparent);
   color: var(--color-text-inverse);
   font-weight: 500;
   text-decoration: none;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.footerMail svg {
+  color: var(--color-primary-300);
 }
 
 .footerMail:hover {
+  border-color: color-mix(in srgb, var(--color-primary-300) 45%, transparent);
   color: var(--color-primary-300);
+}
+
+.footerNav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-8);
 }
 
 .footerTitle {
   margin-bottom: var(--space-4);
   color: var(--color-text-inverse);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .footerList {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-1);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .footerLink {
+  display: inline-flex;
+  align-items: center;
+  /* Área táctil cómoda sin separar de más las filas en escritorio. */
+  min-height: 32px;
   color: var(--color-text-inverse-muted);
   text-decoration: none;
   transition: color var(--motion-fast) var(--ease-standard);
@@ -317,48 +347,69 @@
   cursor: pointer;
 }
 
+/* Quién opera el servicio y la autoridad del consumidor: una franja sobria, con los datos
+   separados por puntos que desaparecen cuando cada dato baja a su propia línea. */
+.footerLegal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-8);
+  max-width: calc(var(--content-width) - 2 * var(--space-6));
+  margin: var(--space-12) auto 0;
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 7%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-ink-900) 70%, transparent);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.operator {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.operator li + li::before {
+  content: "·";
+  margin: 0 var(--space-2);
+  color: var(--color-ink-600);
+}
+
+.footerAuthority {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 32px;
+  color: var(--color-text-inverse);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.footerAuthority svg:first-child {
+  color: var(--color-primary-300);
+}
+
+.footerAuthority:hover {
+  color: var(--color-primary-300);
+}
+
 .footerBottom {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--space-2) var(--space-6);
   max-width: calc(var(--content-width) - 2 * var(--space-6));
-  margin: var(--space-12) auto 0;
-  padding-top: var(--space-6);
-  border-top: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+  margin: var(--space-6) auto 0;
   font-size: 13px;
-}
-
-.footerLegal {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-6);
-  max-width: calc(var(--content-width) - 2 * var(--space-6));
-  margin: var(--space-4) auto 0;
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-}
-
-.footerAuthority {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 32px;
-  padding: 0 var(--space-3);
-  border: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 14%, transparent);
-  border-radius: var(--radius-pill);
-  color: var(--color-text-inverse);
-  font-weight: 500;
-  text-decoration: none;
-  transition: border-color var(--motion-fast) var(--ease-standard);
-}
-
-.footerAuthority:hover {
-  border-color: color-mix(in srgb, var(--color-primary-300) 50%, transparent);
 }
 
 @media (max-width: 900px) {
@@ -378,11 +429,8 @@
   }
 
   .footerInner {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .footerBrand {
-    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
   }
 }
 
@@ -394,8 +442,43 @@
 }
 
 @media (max-width: 560px) {
-  .footerInner {
+  .footer {
+    padding: var(--space-12) var(--space-4) var(--space-8);
+  }
+
+  .footerNav {
     grid-template-columns: 1fr 1fr;
+    gap: var(--space-6) var(--space-4);
+  }
+
+  /* Legal tiene cinco enlaces: ocupa todo el ancho y los reparte en dos columnas. */
+  .footerGroup[data-group="legal"] {
+    grid-column: 1 / -1;
+  }
+
+  .footerGroup[data-group="legal"] .footerList {
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--space-4);
+  }
+
+  .footerLink {
+    min-height: 40px;
+  }
+
+  .footerLegal {
+    padding: var(--space-4);
+  }
+
+  .operator {
+    flex-direction: column;
+  }
+
+  .operator li + li::before {
+    content: none;
+  }
+
+  .footerBottom {
+    flex-direction: column;
   }
 }
 

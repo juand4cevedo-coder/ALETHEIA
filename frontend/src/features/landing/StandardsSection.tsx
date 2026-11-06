@@ -25,7 +25,7 @@ const FEATURES: Feature[] = [
   {
     icon: Clock3,
     title: "Sello de tiempo RFC 3161",
-    text: "Una autoridad externa firma la huella con fecha y hora. El sello se comprueba con herramientas de uso común, como OpenSSL, sin depender de ALETHEIA.",
+    text: "Una autoridad externa firma la huella con fecha y hora. El sello se comprueba con herramientas de uso común, como OpenSSL, sin depender de nosotros.",
   },
   {
     icon: Link2,
@@ -40,7 +40,7 @@ const FEATURES: Feature[] = [
   {
     icon: FileX2,
     title: "Eliminación con constancia",
-    text: "Al cerrar un caso se destruye su llave y el contenido queda ilegible. Usted recibe una constancia con la fecha y el alcance de la eliminación.",
+    text: "Al cerrar un caso destruimos su llave y el contenido queda ilegible. Usted recibe una constancia con la fecha y el alcance de la eliminación.",
   },
 ];
 
@@ -57,7 +57,7 @@ export function StandardsSection() {
           id="titulo-estandares"
           kicker="Seguridad y estándares"
           title="Garantías que cualquier perito puede comprobar"
-          lead="ALETHEIA no usa criptografía propia ni cadenas de bloques. Cada garantía descansa en estándares abiertos, documentados y verificables con herramientas independientes."
+          lead="No usamos criptografía propia ni cadenas de bloques. Cada garantía descansa en estándares abiertos, documentados y verificables con herramientas independientes."
         />
 
         <div ref={gridRef} className={styles.bento}>
@@ -69,7 +69,7 @@ export function StandardsSection() {
                 </span>
                 <h3 className={section.cardTitle}>Huella SHA-256</h3>
                 <p className={section.cardText}>
-                  Se calcula en el momento en que el archivo llega. El mismo
+                  La calculamos en el momento en que el archivo llega. El mismo
                   archivo produce siempre la misma huella; si cambia un solo
                   carácter, la huella es otra por completo.
                 </p>
