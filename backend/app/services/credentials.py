@@ -1,8 +1,9 @@
 """Recuperar y cambiar la contraseña (RF-012, RF-013, HU-010).
 
 El enlace de recuperación es un token firmado de 1 hora que no se guarda en ninguna tabla.
-Lleva el sello del hash de la contraseña y del correo vigentes: en cuanto la contraseña
-cambia, el enlace deja de valer, así que sirve una sola vez (CA-HU-010-01). Una hora es
+Lleva el sello del security_stamp y del correo vigentes. El stamp es un valor aleatorio que
+cambia con cada cambio de contraseña, así que el enlace deja de valer en cuanto se usa
+(CA-HU-010-01), y ningún token depende del hash de la contraseña. Una hora es
 suficiente para abrir el correo y corta la vida de un enlace que alguien encuentre después.
 
 Pedir el enlace siempre recibe la misma respuesta, exista o no la cuenta, y cuenta igual para
@@ -41,9 +42,9 @@ class SamePasswordError(Exception):
     """La contraseña nueva es igual a la actual."""
 
 
-def reset_state(user: User) -> str:
-    """Lo que sella el enlace: el hash vigente (o su ausencia) y el correo, en minúsculas."""
-    return f"{user.password_hash or '-'}|{user.email.lower()}"
+def recovery_state(user: User) -> str:
+    """Lo que sella el enlace: el security_stamp vigente y el correo, en minúsculas."""
+    return f"{user.security_stamp}|{user.email.lower()}"
 
 
 def reset_link(settings: Settings, user: User) -> str:
@@ -51,9 +52,9 @@ def reset_link(settings: Settings, user: User) -> str:
     nunca lo envía al servidor, así que no queda en los registros ni en la cabecera Referer."""
     token = issue_link(
         settings.signing_key(),
-        LinkPurpose.PASSWORD_RESET,
+        LinkPurpose.ACCOUNT_RECOVERY,
         user.id,
-        reset_state(user),
+        recovery_state(user),
         RESET_LINK_LIFETIME,
     )
     return f"{settings.public_url}{RESET_PATH}#t={token}"
@@ -93,19 +94,20 @@ def reset_password(
     session.commit()
 
     key = settings.signing_key()
-    claims = read_link(key, LinkPurpose.PASSWORD_RESET, token)
-    # El candado pone en fila dos envíos del mismo enlace: el segundo ve el hash nuevo y falla.
+    claims = read_link(key, LinkPurpose.ACCOUNT_RECOVERY, token)
+    # El candado pone en fila dos envíos del mismo enlace: el segundo ve el stamp nuevo y falla.
     user = session.get(User, claims.subject, with_for_update=True)
     if (
         user is None
         or user.status != "active"
-        or not state_matches(key, LinkPurpose.PASSWORD_RESET, claims, reset_state(user))
+        or not state_matches(key, LinkPurpose.ACCOUNT_RECOVERY, claims, recovery_state(user))
     ):
         session.rollback()
         raise InvalidLinkError
 
     now = datetime.datetime.now(datetime.UTC)
     user.password_hash = hash_password(password)
+    user.security_stamp = uuid.uuid4()
     if user.email_verified_at is None:
         user.email_verified_at = now
     sessions_repository.revoke_user_sessions(session, user.id, now)
@@ -145,6 +147,7 @@ def change_password(
 
     now = datetime.datetime.now(datetime.UTC)
     user.password_hash = hash_password(new_password)
+    user.security_stamp = uuid.uuid4()
     sessions_repository.revoke_user_sessions(
         session, user.id, now, keep_family=principal.session_id
     )

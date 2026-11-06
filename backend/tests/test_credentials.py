@@ -22,7 +22,7 @@ from app.db.tenancy import TenantContext, set_tenant
 from app.main import create_app
 from app.models import AuditLog, Job, Membership, Organization, RefreshToken, User
 from app.services import account_emails
-from app.services.credentials import RESET_LINK_LIFETIME, reset_state
+from app.services.credentials import RESET_LINK_LIFETIME, recovery_state
 from tests.conftest import SAME_ORIGIN_HEADERS, TEST_SIGNING_KEY
 
 _OLVIDO = "/api/v1/auth/password/forgot"
@@ -102,7 +102,7 @@ def _correos(db: Session, template: str) -> list[dict[str, Any]]:
 
 def _enlace(user: User, *, lifetime: datetime.timedelta = RESET_LINK_LIFETIME) -> str:
     return issue_link(
-        TEST_SIGNING_KEY, LinkPurpose.PASSWORD_RESET, user.id, reset_state(user), lifetime
+        TEST_SIGNING_KEY, LinkPurpose.ACCOUNT_RECOVERY, user.id, recovery_state(user), lifetime
     )
 
 
@@ -267,14 +267,27 @@ def test_el_enlace_sirve_una_sola_vez(client: TestClient, db: Session) -> None:
 
 
 def test_un_enlace_de_antes_de_otro_cambio_ya_no_sirve(client: TestClient, db: Session) -> None:
+    # Dos correos pedidos seguidos: usar el segundo deja sin valor el primero.
     user = _cuenta(db)
-    viejo = _enlace(user)
-    db.execute(update(User).where(User.id == user.id).values(password_hash=hash_password("x" * 20)))
+    primero = _enlace(user)
+    segundo = _enlace(user)
+    assert client.post(_RESTABLECER, json={"token": segundo, "password": _NUEVA}).status_code == 204
     _recargar(db, user)
 
-    response = client.post(_RESTABLECER, json={"token": viejo, "password": _NUEVA})
+    response = client.post(_RESTABLECER, json={"token": primero, "password": "una tercera clave"})
 
     assert response.status_code == 400
+    assert verify_password(user.password_hash or "", _NUEVA)
+
+
+def test_el_enlace_no_lleva_nada_derivado_de_la_contrasena(db: Session) -> None:
+    # El sello depende del stamp y del correo: cambiar solo el hash no lo altera, y cada cambio
+    # de credenciales sí lo hace.
+    user = _cuenta(db)
+    antes = recovery_state(user)
+    user.password_hash = hash_password("x" * 20)
+    assert recovery_state(user) == antes
+    assert user.password_hash not in antes
 
 
 def test_todo_enlace_invalido_recibe_el_mismo_mensaje(client: TestClient, db: Session) -> None:
@@ -284,14 +297,14 @@ def test_todo_enlace_invalido_recibe_el_mismo_mensaje(client: TestClient, db: Se
         TEST_SIGNING_KEY,
         LinkPurpose.EMAIL_VERIFICATION,
         user.id,
-        reset_state(user),
+        recovery_state(user),
         RESET_LINK_LIFETIME,
     )
     de_otra_cuenta = issue_link(
         TEST_SIGNING_KEY,
-        LinkPurpose.PASSWORD_RESET,
+        LinkPurpose.ACCOUNT_RECOVERY,
         uuid.uuid7(),
-        reset_state(user),
+        recovery_state(user),
         RESET_LINK_LIFETIME,
     )
     alterado = _enlace(user)[:-2] + "xx"
