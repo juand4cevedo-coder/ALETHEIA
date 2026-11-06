@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Mail } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 
 import { listPlansOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 import { buttonClassName } from "../components/ui/buttonStyles.ts";
+import { legalRoute } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
 import {
   annualMonthsSaved,
@@ -210,6 +212,13 @@ export function PricingPage() {
                 </tbody>
               </table>
             </div>
+            {/* Precio total con impuestos (Ley 1480 de 2011, art. 50, literal c). */}
+            <p className={styles.taxNote}>
+              Precios finales en pesos colombianos. ALETHEIA lo opera una
+              persona natural no responsable de IVA, así que no se cobra IVA ni
+              ningún otro cargo. Los detalles están en los{" "}
+              <Link to={legalRoute("terminos")}>términos y condiciones</Link>.
+            </p>
           </div>
         </section>
       )}
