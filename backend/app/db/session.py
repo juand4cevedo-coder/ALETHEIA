@@ -11,6 +11,18 @@ from app.core.config import Settings
 # Segundos máximos para abrir una conexión: el health check no debe quedarse colgado.
 _CONNECT_TIMEOUT_SECONDS: Final = 5
 
+# Límites de cada sesión de la aplicación y del trabajador. Una consulta que se dispara, una
+# espera por un candado o una transacción olvidada abierta no pueden bloquear la base ni dejar
+# sin conexiones al resto: PostgreSQL la corta y la petición termina con error. Las migraciones
+# usan su propia conexión y no tienen estos límites.
+_SESSION_LIMITS: Final = " ".join(
+    (
+        "-c statement_timeout=30s",
+        "-c lock_timeout=10s",
+        "-c idle_in_transaction_session_timeout=60s",
+    )
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +35,10 @@ def create_db_engine(settings: Settings) -> Engine:
         # Un error de SQL no repite los valores de la consulta: sin esto, la traza que queda en
         # los registros traería correos, nombres o hashes de contraseña de esa petición.
         hide_parameters=True,
-        connect_args={"connect_timeout": _CONNECT_TIMEOUT_SECONDS},
+        connect_args={
+            "connect_timeout": _CONNECT_TIMEOUT_SECONDS,
+            "options": _SESSION_LIMITS,
+        },
     )
 
 
