@@ -8,4 +8,4 @@ obligaciones, la fecha cambia en los dos lugares a la vez.
 
 from typing import Final
 
-LEGAL_VERSION: Final = "2026-11-02"
+LEGAL_VERSION: Final = "2026-11-06"
