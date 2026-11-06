@@ -21,6 +21,9 @@ import type {
   ReadMeData,
   ReadMeErrors,
   ReadMeResponses,
+  RefreshSessionData,
+  RefreshSessionErrors,
+  RefreshSessionResponses,
   RegisterAccountData,
   RegisterAccountErrors,
   RegisterAccountResponses,
@@ -30,6 +33,12 @@ import type {
   SignInData,
   SignInErrors,
   SignInResponses,
+  SignOutData,
+  SignOutErrors,
+  SignOutEverywhereData,
+  SignOutEverywhereErrors,
+  SignOutEverywhereResponses,
+  SignOutResponses,
   VerifyEmailData,
   VerifyEmailErrors,
   VerifyEmailResponses,
@@ -154,6 +163,76 @@ export const signIn = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+/**
+ * Renovar la sesión y rotar el token de renovación
+ */
+export const refreshSession = <ThrowOnError extends boolean = false>(
+  options?: Options<RefreshSessionData, ThrowOnError>,
+): RequestResult<RefreshSessionResponses, RefreshSessionErrors, ThrowOnError> =>
+  (options?.client ?? client).post<
+    RefreshSessionResponses,
+    RefreshSessionErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Secure-aletheia_refresh",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/auth/refresh",
+    ...options,
+  });
+
+/**
+ * Cerrar la sesión de este dispositivo
+ */
+export const signOut = <ThrowOnError extends boolean = false>(
+  options?: Options<SignOutData, ThrowOnError>,
+): RequestResult<SignOutResponses, SignOutErrors, ThrowOnError> =>
+  (options?.client ?? client).post<
+    SignOutResponses,
+    SignOutErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/auth/logout",
+    ...options,
+  });
+
+/**
+ * Cerrar todas las sesiones, en todos los dispositivos
+ */
+export const signOutEverywhere = <ThrowOnError extends boolean = false>(
+  options?: Options<SignOutEverywhereData, ThrowOnError>,
+): RequestResult<
+  SignOutEverywhereResponses,
+  SignOutEverywhereErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).post<
+    SignOutEverywhereResponses,
+    SignOutEverywhereErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/auth/logout-all",
+    ...options,
   });
 
 /**

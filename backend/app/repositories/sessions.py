@@ -1,8 +1,9 @@
 """Consultas de las sesiones: tokens de renovación y sus familias (DAT-03)."""
 
+import datetime
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.models import RefreshToken, User
@@ -12,6 +13,39 @@ def add_refresh_token(session: Session, token: RefreshToken) -> None:
     """Guarda un token de renovación; de él solo se conoce su hash."""
     session.add(token)
     session.flush()
+
+
+def refresh_token_for_update(session: Session, token_hash: bytes) -> RefreshToken | None:
+    """El token de renovación con ese hash, bloqueado hasta el commit, o None.
+
+    El bloqueo pone en fila dos renovaciones simultáneas con el mismo token: la segunda espera
+    a que la primera lo marque como usado y, al verlo usado, lo trata como reutilización.
+    """
+    statement = select(RefreshToken).where(RefreshToken.token_hash == token_hash).with_for_update()
+    return session.scalar(statement)
+
+
+def revoke_family(session: Session, family_id: uuid.UUID, now: datetime.datetime) -> None:
+    """Revoca los tokens todavía vivos de una familia."""
+    statement = (
+        update(RefreshToken)
+        .where(RefreshToken.family_id == family_id, RefreshToken.revoked_at.is_(None))
+        .values(revoked_at=now)
+    )
+    session.execute(statement)
+
+
+def revoke_user_sessions(session: Session, user_id: uuid.UUID, now: datetime.datetime) -> None:
+    """Revoca todos los tokens vivos de una persona, en todas sus familias (RF-011).
+
+    Usa el índice de refresh_tokens.user_id.
+    """
+    statement = (
+        update(RefreshToken)
+        .where(RefreshToken.user_id == user_id, RefreshToken.revoked_at.is_(None))
+        .values(revoked_at=now)
+    )
+    session.execute(statement)
 
 
 def accepted_legal_version(

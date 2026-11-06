@@ -36,3 +36,4 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-030](adr-030.md) | Pantallas descargadas por ruta, con descarga anticipada | Aceptado | 05/11/2026 |
 | [ADR-031](adr-031.md) | Políticas legales con su fundamento, su huella y descarga verificable | Aceptado | 06/11/2026 |
 | [ADR-032](adr-032.md) | Aceptación obligatoria de los textos legales nuevos, con prueba de solo inserción | Aceptado | 06/11/2026 |
+| [ADR-033](adr-033.md) | Rotación del token de renovación sin periodo de gracia y cierre de sesiones | Aceptado | 06/11/2026 |

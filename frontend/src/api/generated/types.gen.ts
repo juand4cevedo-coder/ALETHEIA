@@ -629,6 +629,97 @@ export type SignInResponses = {
 
 export type SignInResponse = SignInResponses[keyof SignInResponses];
 
+export type RefreshSessionData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/refresh";
+};
+
+export type RefreshSessionErrors = {
+  /**
+   * El token de renovación no sirve. Si ya se había usado, la sesión se cerró en todos los lugares donde estaba abierta.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RefreshSessionError =
+  RefreshSessionErrors[keyof RefreshSessionErrors];
+
+export type RefreshSessionResponses = {
+  /**
+   * Sesión renovada: llegan cookies nuevas y la anterior deja de servir.
+   */
+  204: void;
+};
+
+export type RefreshSessionResponse =
+  RefreshSessionResponses[keyof RefreshSessionResponses];
+
+export type SignOutData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/logout";
+};
+
+export type SignOutErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type SignOutError = SignOutErrors[keyof SignOutErrors];
+
+export type SignOutResponses = {
+  /**
+   * Sesión cerrada y cookies borradas.
+   */
+  204: void;
+};
+
+export type SignOutResponse = SignOutResponses[keyof SignOutResponses];
+
+export type SignOutEverywhereData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/logout-all";
+};
+
+export type SignOutEverywhereErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type SignOutEverywhereError =
+  SignOutEverywhereErrors[keyof SignOutEverywhereErrors];
+
+export type SignOutEverywhereResponses = {
+  /**
+   * Todas las sesiones cerradas, también esta; cookies borradas.
+   */
+  204: void;
+};
+
+export type SignOutEverywhereResponse =
+  SignOutEverywhereResponses[keyof SignOutEverywhereResponses];
+
 export type ReadMeData = {
   body?: never;
   path?: never;

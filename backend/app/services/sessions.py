@@ -1,5 +1,6 @@
-"""Sesiones: ingreso con correo y contraseña (RF-008, HU-007) y la comprobación de cada
-petición autenticada (RN-023, ADR-007 y ADR-028).
+"""Sesiones: ingreso con correo y contraseña (RF-008, HU-007), renovación con rotación,
+cierre de la sesión y de todas las sesiones (RF-010, RF-011, HU-009) y la comprobación de
+cada petición autenticada (RN-023, ADR-007, ADR-028 y ADR-033).
 
 Al ingresar nacen dos credenciales, cada una en su cookie:
 
@@ -7,9 +8,11 @@ Al ingresar nacen dos credenciales, cada una en su cookie:
   familia de la sesión (app.core.tokens);
 - el token de renovación, 32 bytes aleatorios de los que la base solo guarda el SHA-256.
 
-Todas las renovaciones de un mismo ingreso comparten familia y vencimiento: la sesión dura
-como máximo 14 días, lo mismo que dice la política de cookies. La rotación y la detección de
-reutilización llegan con HU-009 sobre esta misma familia.
+Cada renovación gasta el token presentado y entrega uno nuevo de la misma familia, con el
+mismo vencimiento: la sesión dura como máximo 14 días desde el ingreso, lo mismo que dice la
+política de cookies. Un token ya gastado solo puede volver a llegar si alguien lo copió, así
+que su reutilización revoca la familia completa: el ladrón y la persona quedan fuera, y ella
+vuelve a entrar con su contraseña (CA-HU-009-02).
 
 Para no revelar qué correos existen (RN-026), un correo sin cuenta, una cuenta sin contraseña
 y una contraseña equivocada reciben el mismo error, pasan por el mismo hash Argon2id y cuentan
@@ -40,6 +43,9 @@ ACCESS_TOKEN_LIFETIME: Final = datetime.timedelta(minutes=10)
 SESSION_LIFETIME: Final = datetime.timedelta(days=14)
 # 32 bytes aleatorios: imposible de adivinar, y su SHA-256 cabe exacto en token_hash.
 _REFRESH_TOKEN_BYTES: Final = 32
+# Un token legítimo mide 43 caracteres. Lo que pase de este tope se rechaza sin consultar la
+# base ni calcular hashes de cuerpos enormes.
+_MAX_REFRESH_TOKEN_LENGTH: Final = 64
 
 
 class InvalidCredentialsError(Exception):
@@ -52,6 +58,13 @@ class AccountBlockedError(Exception):
 
 class NotAuthenticatedError(Exception):
     """No hay una sesión válida: sin token, token alterado o vencido, o sesión cerrada."""
+
+
+class RefreshRejectedError(Exception):
+    """El token de renovación no sirve: falta, no existe, venció, se revocó o se reutilizó.
+
+    Todas las causas dan el mismo 401: quien prueba tokens no aprende nada.
+    """
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,25 +145,108 @@ def sign_in(
     membership = _enter_organization(session, user.id)
     organization_id = membership.organization_id if membership is not None else None
 
-    refresh_token = secrets.token_urlsafe(_REFRESH_TOKEN_BYTES)
-    family_id = uuid.uuid7()
-    expires_at = now + SESSION_LIFETIME
-    sessions_repository.add_refresh_token(
-        session,
-        RefreshToken(
-            user_id=user.id,
-            family_id=family_id,
-            token_hash=refresh_token_hash(refresh_token),
-            expires_at=expires_at,
-        ),
-    )
+    issued = _issue(session, key, user.id, uuid.uuid7(), expires_at=now + SESSION_LIFETIME, now=now)
     _audit(session, "login", organization_id, user.id, client_ip, user_agent, now)
     session.commit()
+    return issued
 
-    access_token = issue_access_token(key, user.id, family_id, ACCESS_TOKEN_LIFETIME, now=now)
-    return IssuedSession(
-        access_token=access_token, refresh_token=refresh_token, expires_at=expires_at
+
+def rotate(
+    session: Session,
+    settings: Settings,
+    refresh_token: str | None,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> IssuedSession:
+    """Gasta el token de renovación y entrega un par nuevo de la misma familia (API-008).
+
+    Lanza RefreshRejectedError si el token falta, no existe, venció, se revocó, si la cuenta
+    ya no está activa o si el token ya se había usado. En este último caso revoca antes la
+    familia completa y lo deja en la auditoría como session_reuse_detected (CA-HU-009-02).
+    """
+    key = settings.signing_key()
+    if not refresh_token or len(refresh_token) > _MAX_REFRESH_TOKEN_LENGTH:
+        raise RefreshRejectedError
+    current = sessions_repository.refresh_token_for_update(
+        session, refresh_token_hash(refresh_token)
     )
+    now = datetime.datetime.now(datetime.UTC)
+    if current is None or current.revoked_at is not None or current.expires_at <= now:
+        session.rollback()
+        raise RefreshRejectedError
+    if current.used_at is not None:
+        # Este token ya se cambió por otro: quien lo presenta tiene una copia. No se sabe si
+        # es la persona o un ladrón, así que la familia entera deja de servir.
+        sessions_repository.revoke_family(session, current.family_id, now)
+        membership = _enter_organization(session, current.user_id)
+        organization_id = membership.organization_id if membership is not None else None
+        _audit(
+            session,
+            "session_reuse_detected",
+            organization_id,
+            current.user_id,
+            client_ip,
+            user_agent,
+            now,
+        )
+        session.commit()
+        raise RefreshRejectedError
+    user = session.get(User, current.user_id)
+    if user is None or user.status != "active":
+        session.rollback()
+        raise RefreshRejectedError
+
+    current.used_at = now
+    issued = _issue(
+        session, key, current.user_id, current.family_id, expires_at=current.expires_at, now=now
+    )
+    session.commit()
+    return issued
+
+
+def sign_out(
+    session: Session, principal: Principal, *, client_ip: str, user_agent: str | None
+) -> None:
+    """Cierra la sesión desde la que se hace la petición (API-009).
+
+    Revoca su familia: el token de acceso deja de servir en la petición siguiente, también si
+    alguien tenía una copia.
+    """
+    now = datetime.datetime.now(datetime.UTC)
+    sessions_repository.revoke_family(session, principal.session_id, now)
+    _audit(
+        session,
+        "logout",
+        principal.organization_id,
+        principal.user_id,
+        client_ip,
+        user_agent,
+        now,
+    )
+    session.commit()
+
+
+def sign_out_everywhere(
+    session: Session, principal: Principal, *, client_ip: str, user_agent: str | None
+) -> None:
+    """Cierra todas las sesiones de la persona, en todos sus dispositivos (API-010).
+
+    Cada petición comprueba que su familia siga viva, así que los demás dispositivos quedan
+    fuera en su siguiente petición, sin esperar a que venza su token de acceso (CA-HU-009-03).
+    """
+    now = datetime.datetime.now(datetime.UTC)
+    sessions_repository.revoke_user_sessions(session, principal.user_id, now)
+    _audit(
+        session,
+        "sessions_revoked",
+        principal.organization_id,
+        principal.user_id,
+        client_ip,
+        user_agent,
+        now,
+    )
+    session.commit()
 
 
 def authenticate(session: Session, settings: Settings, access_token: str | None) -> Principal:
@@ -179,6 +275,32 @@ def authenticate(session: Session, settings: Settings, access_token: str | None)
         organization_id=membership.organization_id if membership is not None else None,
         role=membership.role if membership is not None else None,
         legal_version=legal_version,
+    )
+
+
+def _issue(
+    session: Session,
+    key: str,
+    user_id: uuid.UUID,
+    family_id: uuid.UUID,
+    *,
+    expires_at: datetime.datetime,
+    now: datetime.datetime,
+) -> IssuedSession:
+    """Guarda el hash de un token de renovación nuevo y firma su acceso."""
+    refresh_token = secrets.token_urlsafe(_REFRESH_TOKEN_BYTES)
+    sessions_repository.add_refresh_token(
+        session,
+        RefreshToken(
+            user_id=user_id,
+            family_id=family_id,
+            token_hash=refresh_token_hash(refresh_token),
+            expires_at=expires_at,
+        ),
+    )
+    access_token = issue_access_token(key, user_id, family_id, ACCESS_TOKEN_LIFETIME, now=now)
+    return IssuedSession(
+        access_token=access_token, refresh_token=refresh_token, expires_at=expires_at
     )
 
 
