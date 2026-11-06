@@ -1,15 +1,25 @@
-"""Cuenta y acceso: registro (API-003), verificación del correo (API-004) y su reenvío, e
-ingreso con correo y contraseña (API-005)."""
+"""Cuenta y acceso: registro (API-003), verificación del correo (API-004) y su reenvío,
+ingreso con correo y contraseña (API-005), renovación de la sesión (API-008) y cierre de la
+sesión actual y de todas (API-009 y API-010)."""
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response, status
+from fastapi.security import APIKeyCookie
 from sqlalchemy.orm import Session
 
 from app.adapters.email import REPLY_TO
-from app.api.cookies import set_session_cookies
-from app.api.deps import SESSION_CHALLENGE, get_app_settings, get_client_ip, get_session
+from app.api.cookies import REFRESH_COOKIE, clear_session_cookies, set_session_cookies
+from app.api.deps import (
+    SESSION_CHALLENGE,
+    SESSION_ENDED,
+    get_app_settings,
+    get_client_ip,
+    get_principal_allowing_outdated_legal,
+    get_session,
+)
 from app.core.config import Settings
+from app.core.errors import problem_response
 from app.core.tokens import InvalidLinkError
 from app.schemas.auth import (
     LoginRequest,
@@ -23,6 +33,7 @@ from app.services import accounts as accounts_service
 from app.services import sessions as sessions_service
 from app.services import verification as verification_service
 from app.services.legal import LegalVersionMismatchError
+from app.services.sessions import Principal
 
 router = APIRouter(tags=["cuenta"])
 
@@ -172,3 +183,106 @@ def sign_in(
             headers={"Cache-Control": "no-store"},
         ) from None
     set_session_cookies(response, issued)
+
+
+# Declara en el contrato que la renovación lee la cookie de renovación. auto_error=False: sin
+# cookie se responde el mismo 401 que con una inválida.
+_refresh_cookie = APIKeyCookie(
+    name=REFRESH_COOKIE,
+    scheme_name="renovacion",
+    description="Cookie de renovación que la API entrega al ingresar y en cada renovación.",
+    auto_error=False,
+)
+
+
+@router.post(
+    "/auth/refresh",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Renovar la sesión y rotar el token de renovación",
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "Sesión renovada: llegan cookies nuevas y la anterior deja de servir."
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": (
+                "El token de renovación no sirve. Si ya se había usado, la sesión se cerró en "
+                "todos los lugares donde estaba abierta."
+            )
+        },
+    },
+)
+def refresh_session(
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    refresh_token: Annotated[str | None, Depends(_refresh_cookie)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> Response:
+    try:
+        issued = sessions_service.rotate(
+            session, settings, refresh_token, client_ip=client_ip, user_agent=user_agent
+        )
+    except sessions_service.RefreshRejectedError:
+        # Un solo 401 para todas las causas, y las cookies que ya no sirven se borran para que
+        # el navegador deje de enviarlas.
+        problem = problem_response(
+            request,
+            status.HTTP_401_UNAUTHORIZED,
+            detail=SESSION_ENDED,
+            headers={"WWW-Authenticate": SESSION_CHALLENGE, "Cache-Control": "no-store"},
+        )
+        clear_session_cookies(problem)
+        return problem
+    renewed = Response(
+        status_code=status.HTTP_204_NO_CONTENT, headers={"Cache-Control": "no-store"}
+    )
+    set_session_cookies(renewed, issued)
+    return renewed
+
+
+@router.post(
+    "/auth/logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Cerrar la sesión de este dispositivo",
+    responses={
+        status.HTTP_204_NO_CONTENT: {"description": "Sesión cerrada y cookies borradas."},
+        status.HTTP_401_UNAUTHORIZED: {"description": "No hay una sesión válida."},
+    },
+)
+def sign_out(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> None:
+    # Funciona sin haber aceptado los textos vigentes: nadie queda atrapado en una sesión.
+    response.headers["Cache-Control"] = "no-store"
+    sessions_service.sign_out(session, principal, client_ip=client_ip, user_agent=user_agent)
+    clear_session_cookies(response)
+
+
+@router.post(
+    "/auth/logout-all",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Cerrar todas las sesiones, en todos los dispositivos",
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "Todas las sesiones cerradas, también esta; cookies borradas."
+        },
+        status.HTTP_401_UNAUTHORIZED: {"description": "No hay una sesión válida."},
+    },
+)
+def sign_out_everywhere(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> None:
+    response.headers["Cache-Control"] = "no-store"
+    sessions_service.sign_out_everywhere(
+        session, principal, client_ip=client_ip, user_agent=user_agent
+    )
+    clear_session_cookies(response)
