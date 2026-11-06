@@ -45,3 +45,19 @@ def set_session_cookies(
         httponly=True,
         samesite="strict",
     )
+
+
+def clear_session_cookies(response: Response) -> None:
+    """Borra las dos cookies de la sesión: al cerrarla o cuando la renovación falla.
+
+    El navegador solo borra una cookie si recibe el mismo nombre, ruta y atributos con que la
+    guardó; por eso se repiten aquí.
+    """
+    response.delete_cookie(ACCESS_COOKIE, path="/", secure=True, httponly=True, samesite="strict")
+    response.delete_cookie(
+        REFRESH_COOKIE,
+        path=REFRESH_COOKIE_PATH,
+        secure=True,
+        httponly=True,
+        samesite="strict",
+    )
