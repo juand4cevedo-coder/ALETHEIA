@@ -26,3 +26,27 @@ def test_un_error_de_sql_no_repite_los_valores_de_la_consulta(
         engine.dispose()
 
     assert "hash-que-no-debe-salir" not in str(excinfo.value)
+
+
+def test_cada_sesion_tiene_limites_de_tiempo(
+    make_settings: Callable[[str], Settings], test_database_url: str, migrated_database: None
+) -> None:
+    engine = create_db_engine(make_settings(test_database_url))
+    try:
+        with engine.connect() as connection:
+            limits = {
+                name: connection.execute(text(f"SHOW {name}")).scalar_one()
+                for name in (
+                    "statement_timeout",
+                    "lock_timeout",
+                    "idle_in_transaction_session_timeout",
+                )
+            }
+    finally:
+        engine.dispose()
+
+    assert limits == {
+        "statement_timeout": "30s",
+        "lock_timeout": "10s",
+        "idle_in_transaction_session_timeout": "1min",
+    }
