@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { render, waitFor } from "@testing-library/react";
 import {
   createMemoryRouter,
@@ -7,6 +7,7 @@ import {
   RouterProvider,
 } from "react-router";
 
+import { createQueryClient } from "../api/queryClient.ts";
 import { routes } from "../routes/router.tsx";
 
 // React Router guarda en cada ruta lo que ya descargó. Cada prueba recibe su propia copia de
@@ -27,9 +28,7 @@ function freshRoutes(source: RouteObject[]): RouteObject[] {
  * como la pantalla a la que volver después de ingresar. */
 export async function renderRoute(path: InitialEntry) {
   // Sin reintentos: una prueba de error ve el fallo de inmediato.
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
+  const queryClient = createQueryClient({ queries: { retry: false } });
   const router = createMemoryRouter(freshRoutes(routes), {
     initialEntries: [path],
   });
