@@ -214,8 +214,8 @@ export function PricingPage() {
             </div>
             {/* Precio total con impuestos (Ley 1480 de 2011, art. 50, literal c). */}
             <p className={styles.taxNote}>
-              Precios finales en pesos colombianos. ALETHEIA lo opera una
-              persona natural no responsable de IVA, así que no se cobra IVA ni
+              Precios finales en pesos colombianos. Como el servicio lo opera
+              una persona natural no responsable de IVA, no cobramos IVA ni
               ningún otro cargo. Los detalles están en los{" "}
               <Link to={legalRoute("terminos")}>términos y condiciones</Link>.
             </p>

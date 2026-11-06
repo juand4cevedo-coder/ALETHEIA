@@ -1,4 +1,11 @@
-import { ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Landmark,
+  Mail,
+  Menu,
+  X,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, ScrollRestoration } from "react-router";
 
@@ -208,69 +215,77 @@ export function PublicLayout() {
               <span>{SITE_NAME}</span>
             </Link>
             <p className={styles.footerText}>
-              Preservación de evidencia digital para abogados y firmas en
-              Colombia.
+              Conservamos su evidencia digital tal como la recibió y dejamos
+              constancia de cada paso, para que usted pueda demostrarlo.
             </p>
             <a className={styles.footerMail} href={`mailto:${CONTACT_EMAIL}`}>
-              {CONTACT_EMAIL}
+              <Mail size={16} aria-hidden="true" />
+              <span translate="no">{CONTACT_EMAIL}</span>
             </a>
           </div>
-          {FOOTER_GROUPS.map((group) => (
-            <nav
-              key={group.title}
-              aria-label={group.title}
-              className={styles.footerGroup}
-            >
-              <p className={styles.footerTitle}>{group.title}</p>
-              <ul className={styles.footerList}>
-                {group.links.map((link) => (
-                  <li key={link.to}>
-                    <Link to={link.to} className={styles.footerLink}>
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-                {group.title === "Legal" && (
-                  <li>
-                    <button
-                      ref={cookiesButtonRef}
-                      type="button"
-                      className={`${styles.footerLink} ${styles.footerButton}`}
-                      onClick={openCookies}
-                    >
-                      Configurar cookies
-                    </button>
-                  </li>
-                )}
-              </ul>
-            </nav>
-          ))}
+          <div className={styles.footerNav}>
+            {FOOTER_GROUPS.map((group) => (
+              <nav
+                key={group.title}
+                aria-label={group.title}
+                className={styles.footerGroup}
+                data-group={group.title === "Legal" ? "legal" : undefined}
+              >
+                <p className={styles.footerTitle}>{group.title}</p>
+                <ul className={styles.footerList}>
+                  {group.links.map((link) => (
+                    <li key={link.to}>
+                      <Link to={link.to} className={styles.footerLink}>
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                  {group.title === "Legal" && (
+                    <li>
+                      <button
+                        ref={cookiesButtonRef}
+                        type="button"
+                        className={`${styles.footerLink} ${styles.footerButton}`}
+                        onClick={openCookies}
+                      >
+                        Configurar cookies
+                      </button>
+                    </li>
+                  )}
+                </ul>
+              </nav>
+            ))}
+          </div>
         </div>
-        <div className={styles.footerBottom}>
-          <p>
-            © {CURRENT_YEAR} {SITE_NAME}. Todos los derechos reservados.
-          </p>
-          <p>
-            ALETHEIA preserva y documenta evidencia digital; no certifica
-            pruebas ni determina su validez.
-          </p>
-        </div>
+
         {/* Identidad de quien vende y enlace visible a la autoridad de protección al
             consumidor (Ley 1480 de 2011, art. 50, literal a y parágrafo). */}
         <div className={styles.footerLegal}>
-          <p>
-            Operado por {DATA_CONTROLLER.name}, NIT {DATA_CONTROLLER.nit},{" "}
-            {DATA_CONTROLLER.taxStatus.toLowerCase()}. {DATA_CONTROLLER.address}
-            .
-          </p>
+          <ul className={styles.operator} aria-label="Quién opera el servicio">
+            <li>Operado por {DATA_CONTROLLER.name}</li>
+            <li>NIT {DATA_CONTROLLER.nit}</li>
+            <li>{DATA_CONTROLLER.taxStatus}</li>
+            <li>{DATA_CONTROLLER.address}</li>
+          </ul>
           <a
             className={styles.footerAuthority}
             href={CONSUMER_AUTHORITY.url}
             rel="noopener noreferrer"
           >
+            <Landmark size={16} aria-hidden="true" />
             {CONSUMER_AUTHORITY.name}
             <ArrowUpRight size={14} aria-hidden="true" />
           </a>
+        </div>
+
+        <div className={styles.footerBottom}>
+          <p>
+            © {CURRENT_YEAR} {SITE_NAME}. Todos los derechos reservados.
+          </p>
+          <p>
+            Preservamos y documentamos evidencia digital; no certificamos
+            pruebas ni determinamos su validez.
+          </p>
         </div>
       </footer>
       <ScrollRestoration />

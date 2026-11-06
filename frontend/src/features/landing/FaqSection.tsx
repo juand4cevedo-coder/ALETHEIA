@@ -7,9 +7,9 @@ import { SectionHeading } from "./SectionHeading.tsx";
 
 const QUESTIONS = [
   {
-    question: "¿ALETHEIA certifica que una prueba es auténtica o válida?",
+    question: "¿Ustedes certifican que una prueba es auténtica o válida?",
     answer:
-      "No. ALETHEIA preserva el archivo y documenta su integridad y su trazabilidad con criptografía estándar. Determinar si una prueba es auténtica, veraz o admisible, y qué valor tiene, corresponde a la autoridad judicial.",
+      "No. Preservamos el archivo y documentamos su integridad y su trazabilidad con criptografía estándar. Determinar si una prueba es auténtica, veraz o admisible, y qué valor tiene, corresponde a la autoridad judicial.",
   },
   {
     question: "¿Qué es una huella SHA-256?",
@@ -19,7 +19,7 @@ const QUESTIONS = [
   {
     question: "¿Quién emite el sello de tiempo?",
     answer:
-      "Una autoridad de sellado de tiempo externa, con el estándar RFC 3161. El sello demuestra que la huella del archivo existía en una fecha y hora determinadas, y se puede verificar con herramientas de uso común, como OpenSSL, sin depender de ALETHEIA.",
+      "Una autoridad de sellado de tiempo externa, con el estándar RFC 3161. El sello demuestra que la huella del archivo existía en una fecha y hora determinadas, y se puede verificar con herramientas de uso común, como OpenSSL, sin depender de nosotros.",
   },
   {
     question: "¿Cómo comprueba un tercero el paquete que le entrego?",
@@ -29,12 +29,12 @@ const QUESTIONS = [
   {
     question: "¿Quién puede ver mis archivos?",
     answer:
-      "Solo las personas de su organización con acceso al caso, según su rol: propietario, administrador, abogado o asistente. Cada caso se cifra con su propia llave, y ni siquiera el administrador de la plataforma puede abrir el contenido de las evidencias.",
+      "Solo las personas de su organización con acceso al caso, según su rol: propietario, administrador, abogado o asistente. Cada caso se cifra con su propia llave, y ni siquiera nuestro equipo puede abrir el contenido de sus evidencias.",
   },
   {
     question: "¿Qué pasa con mi evidencia si cancelo el plan?",
     answer:
-      "Nunca se retiene evidencia por falta de pago. Al cancelar, la cuenta queda 30 días en modo de solo lectura para que descargue y exporte lo que necesite. Después se destruyen las llaves de cifrado y usted recibe por correo una constancia de eliminación.",
+      "Nunca retenemos su evidencia por falta de pago. Al cancelar, su cuenta queda 30 días en modo de solo lectura para que descargue y exporte lo que necesite. Después destruimos las llaves de cifrado y le enviamos por correo una constancia de eliminación.",
   },
 ] as const;
 
@@ -46,7 +46,7 @@ export function FaqSection() {
         <SectionHeading
           id="titulo-preguntas"
           kicker="Preguntas frecuentes"
-          title="Lo que suelen preguntar los abogados"
+          title="Lo que más nos preguntan"
         />
         <Reveal className={styles.list}>
           {QUESTIONS.map((item) => (
