@@ -11,7 +11,7 @@ export const SIGN_IN_FIELDS: readonly SignInField[] = ["email", "password"];
 export const SIGN_IN_MESSAGES = {
   email: SIGN_UP_MESSAGES.email,
   password: "Escriba su contraseña.",
-  // MSG-002. La segunda frase llega con la recuperación de la contraseña (HU-010).
+  // MSG-002.
   invalidCredentials:
     "El correo o la contraseña no coinciden. Revise los datos.",
 } as const;

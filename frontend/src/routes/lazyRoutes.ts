@@ -15,10 +15,20 @@ export const loadVerifyEmailPage = () =>
   import("../pages/VerifyEmailPage.tsx").then(
     (module) => module.VerifyEmailPage,
   );
+export const loadForgotPasswordPage = () =>
+  import("../pages/ForgotPasswordPage.tsx").then(
+    (module) => module.ForgotPasswordPage,
+  );
+export const loadResetPasswordPage = () =>
+  import("../pages/ResetPasswordPage.tsx").then(
+    (module) => module.ResetPasswordPage,
+  );
 export const loadAppLayout = () =>
   import("../layouts/AppLayout.tsx").then((module) => module.AppLayout);
 export const loadWorkspacePage = () =>
   import("../pages/WorkspacePage.tsx").then((module) => module.WorkspacePage);
+export const loadSecurityPage = () =>
+  import("../pages/SecurityPage.tsx").then((module) => module.SecurityPage);
 
 // Lo que alguien abre casi siempre después del inicio: precios, ingresar y crear cuenta.
 const LIKELY_NEXT = [
