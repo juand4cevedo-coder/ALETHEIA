@@ -1,9 +1,10 @@
-import { ArrowRight, Menu, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, ScrollRestoration } from "react-router";
 
 import markUrl from "../assets/aletheia-mark.png";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
+import { CONSUMER_AUTHORITY, DATA_CONTROLLER } from "../config/legal.ts";
 import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
@@ -253,6 +254,23 @@ export function PublicLayout() {
             ALETHEIA preserva y documenta evidencia digital; no certifica
             pruebas ni determina su validez.
           </p>
+        </div>
+        {/* Identidad de quien vende y enlace visible a la autoridad de protección al
+            consumidor (Ley 1480 de 2011, art. 50, literal a y parágrafo). */}
+        <div className={styles.footerLegal}>
+          <p>
+            Operado por {DATA_CONTROLLER.name}, NIT {DATA_CONTROLLER.nit},{" "}
+            {DATA_CONTROLLER.taxStatus.toLowerCase()}. {DATA_CONTROLLER.address}
+            .
+          </p>
+          <a
+            className={styles.footerAuthority}
+            href={CONSUMER_AUTHORITY.url}
+            rel="noopener noreferrer"
+          >
+            {CONSUMER_AUTHORITY.name}
+            <ArrowUpRight size={14} aria-hidden="true" />
+          </a>
         </div>
       </footer>
       <ScrollRestoration />
