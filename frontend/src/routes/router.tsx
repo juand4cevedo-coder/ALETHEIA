@@ -1,39 +1,49 @@
 import { createBrowserRouter, type RouteObject } from "react-router";
 
 import { ROUTES } from "../config/routes.ts";
-import { AppLayout } from "../layouts/AppLayout.tsx";
-import { AuthLayout, type AuthSwitch } from "../layouts/AuthLayout.tsx";
+import type { AuthSwitch } from "../layouts/AuthLayout.tsx";
 import { PublicLayout } from "../layouts/PublicLayout.tsx";
 import { HomePage } from "../pages/HomePage.tsx";
-import { LegalPage } from "../pages/LegalPage.tsx";
 import { NotFoundPage } from "../pages/NotFoundPage.tsx";
-import { PricingPage } from "../pages/PricingPage.tsx";
-import { SignInPage } from "../pages/SignInPage.tsx";
-import { SignUpPage } from "../pages/SignUpPage.tsx";
-import { VerifyEmailPage } from "../pages/VerifyEmailPage.tsx";
-import { WorkspacePage } from "../pages/WorkspacePage.tsx";
+import {
+  loadAppLayout,
+  loadAuthLayout,
+  loadLegalPage,
+  loadPricingPage,
+  loadSignInPage,
+  loadSignUpPage,
+  loadVerifyEmailPage,
+  loadWorkspacePage,
+} from "./lazyRoutes.ts";
+
+// Mientras llega el archivo de una pantalla que se abre directamente, la página queda con su
+// fondo oscuro; no hay un indicador que parpadee en una espera tan corta.
+const loading = <div aria-busy="true" data-route-loading="" />;
 
 // Rutas del sitio. Caddy entrega index.html para cualquier ruta que no sea un archivo, y
 // React Router decide qué página mostrar. Las pruebas montan estas mismas rutas en memoria.
+// Salvo el inicio, cada pantalla se descarga al abrirla (lazyRoutes.ts).
 export const routes: RouteObject[] = [
   {
     element: <PublicLayout />,
+    hydrateFallbackElement: loading,
     errorElement: <NotFoundPage />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "precios", element: <PricingPage /> },
-      { path: "legal/:pagina", element: <LegalPage /> },
+      { path: "precios", lazy: { Component: loadPricingPage } },
+      { path: "legal/:pagina", lazy: { Component: loadLegalPage } },
       { path: "*", element: <NotFoundPage /> },
     ],
   },
   {
     // Pantallas de acceso, con su propio marco (UI-006 a UI-011).
-    element: <AuthLayout />,
+    lazy: { Component: loadAuthLayout },
+    hydrateFallbackElement: loading,
     errorElement: <NotFoundPage />,
     children: [
       {
         path: ROUTES.signIn.slice(1),
-        element: <SignInPage />,
+        lazy: { Component: loadSignInPage },
         handle: {
           authSwitch: {
             question: "¿Todavía no tiene cuenta?",
@@ -44,7 +54,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: ROUTES.signUp.slice(1),
-        element: <SignUpPage />,
+        lazy: { Component: loadSignUpPage },
         handle: {
           authSwitch: {
             question: "¿Ya tiene cuenta?",
@@ -55,7 +65,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: ROUTES.verifyEmail.slice(1),
-        element: <VerifyEmailPage />,
+        lazy: { Component: loadVerifyEmailPage },
         handle: {
           authSwitch: {
             question: "¿Ya verificó su correo?",
@@ -69,9 +79,10 @@ export const routes: RouteObject[] = [
   {
     // Espacio de trabajo: exige sesión. El marco consulta /api/v1/me antes de mostrar nada.
     path: ROUTES.app.slice(1),
-    element: <AppLayout />,
+    lazy: { Component: loadAppLayout },
+    hydrateFallbackElement: loading,
     errorElement: <NotFoundPage />,
-    children: [{ index: true, element: <WorkspacePage /> }],
+    children: [{ index: true, lazy: { Component: loadWorkspacePage } }],
   },
 ];
 

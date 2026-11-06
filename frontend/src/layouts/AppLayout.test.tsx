@@ -31,7 +31,7 @@ describe("Espacio de trabajo protegido (API-014)", () => {
         401,
       ),
     );
-    const { router } = renderRoute("/app");
+    const { router } = await renderRoute("/app");
 
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/ingresar"),
@@ -41,7 +41,7 @@ describe("Espacio de trabajo protegido (API-014)", () => {
 
   it("con sesión muestra a la persona, su organización, su rol y el estado del correo", async () => {
     fetchMock.mockResolvedValue(jsonResponse(ME));
-    const { container } = renderRoute("/app");
+    const { container } = await renderRoute("/app");
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" }),
@@ -61,7 +61,7 @@ describe("Espacio de trabajo protegido (API-014)", () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse({ ...ME, email_verified: true }),
     );
-    renderRoute("/app");
+    await renderRoute("/app");
 
     const reintentar = await screen.findByRole("button", {
       name: "Intentar de nuevo",

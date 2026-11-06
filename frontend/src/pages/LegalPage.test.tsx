@@ -21,7 +21,7 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     "publica $label con versión y fecha, sin cuenta ni llamadas a la API (CA-HU-003-01)",
     async ({ slug }) => {
       const legalDocument = LEGAL_DOCUMENTS[slug];
-      const { container } = renderRoute(legalRoute(slug));
+      const { container } = await renderRoute(legalRoute(slug));
 
       const main = screen.getByRole("main");
       expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(
@@ -50,7 +50,7 @@ describe("Páginas legales (HU-003, CP-003)", () => {
   it("se abren desde el pie de la página de inicio y de cada política (CA-HU-003-02)", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const user = userEvent.setup();
-    renderRoute("/");
+    await renderRoute("/");
 
     for (const page of LEGAL_PAGES) {
       const footerLegal = screen.getByRole("navigation", { name: "Legal" });
@@ -68,7 +68,7 @@ describe("Páginas legales (HU-003, CP-003)", () => {
 
   it("cambia de política y marca la actual", async () => {
     const user = userEvent.setup();
-    renderRoute(legalRoute("privacidad"));
+    await renderRoute(legalRoute("privacidad"));
 
     const switcher = screen.getByRole("navigation", { name: "Políticas" });
     expect(
@@ -94,8 +94,8 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     ).not.toHaveAttribute("aria-current");
   });
 
-  it("el índice lleva a cada apartado de la política", () => {
-    const { container } = renderRoute(legalRoute("terminos"));
+  it("el índice lleva a cada apartado de la política", async () => {
+    const { container } = await renderRoute(legalRoute("terminos"));
 
     const index = screen.getByRole("navigation", { name: "En esta página" });
     const links = within(index).getAllByRole("link");
@@ -113,7 +113,7 @@ describe("Páginas legales (HU-003, CP-003)", () => {
   it("pliega el índice en pantallas angostas e imprime la política", async () => {
     const print = vi.spyOn(window, "print").mockImplementation(() => {});
     const user = userEvent.setup();
-    renderRoute(legalRoute("cookies"));
+    await renderRoute(legalRoute("cookies"));
 
     const toggle = screen.getByRole("button", { name: "Ver el índice" });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
@@ -125,8 +125,8 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     expect(print).toHaveBeenCalledTimes(1);
   });
 
-  it("muestra la página no encontrada si la política no existe", () => {
-    renderRoute("/legal/garantias");
+  it("muestra la página no encontrada si la política no existe", async () => {
+    await renderRoute("/legal/garantias");
 
     expect(
       screen.getByRole("heading", {

@@ -16,7 +16,7 @@ beforeEach(() => {
 describe("Página de inicio (HU-001)", () => {
   it("explica qué hace ALETHEIA y aclara que no certifica pruebas (CA-HU-001-01)", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
-    renderRoute("/");
+    await renderRoute("/");
 
     const main = screen.getByRole("main");
     expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(1);
@@ -45,7 +45,7 @@ describe("Página de inicio (HU-001)", () => {
 
   it("muestra los planes y los días de prueba desde el catálogo", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
-    renderRoute("/");
+    await renderRoute("/");
 
     expect(await screen.findByText(/^\$59\.900/)).toBeInTheDocument();
     expect(screen.getByText("Recomendado")).toBeInTheDocument();
@@ -72,7 +72,7 @@ describe("Página de inicio (HU-001)", () => {
       )
       .mockResolvedValueOnce(jsonResponse(CATALOG));
     const user = userEvent.setup();
-    renderRoute("/");
+    await renderRoute("/");
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(
@@ -87,7 +87,7 @@ describe("Página de inicio (HU-001)", () => {
   it("se recorre con el teclado y no tiene errores graves de accesibilidad (CA-HU-001-02)", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const user = userEvent.setup();
-    const { container } = renderRoute("/");
+    const { container } = await renderRoute("/");
     await screen.findByText(/^\$59\.900/);
 
     // Todo lo que se puede activar fuera del menú móvil cerrado, en orden del documento.
@@ -112,7 +112,7 @@ describe("Página de inicio (HU-001)", () => {
   it("abre y cierra las preguntas frecuentes", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const user = userEvent.setup();
-    renderRoute("/");
+    await renderRoute("/");
 
     const question = screen.getByText("¿Qué es una huella SHA-256?");
     const details = question.closest("details")!;
@@ -124,7 +124,7 @@ describe("Página de inicio (HU-001)", () => {
   it("abre el menú móvil como diálogo y lo cierra al elegir un enlace", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const user = userEvent.setup();
-    renderRoute("/");
+    await renderRoute("/");
 
     const menuButton = screen.getByRole("button", { name: "Menú" });
     expect(menuButton).toHaveAttribute("aria-expanded", "false");

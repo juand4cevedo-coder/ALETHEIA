@@ -76,7 +76,7 @@ beforeEach(() => {
 describe("Ingresar (HU-007, CP-007)", () => {
   it("tiene etiquetas visibles, autocompletado correcto y no tiene errores graves de accesibilidad", async () => {
     serve();
-    const { container } = renderRoute("/ingresar");
+    const { container } = await renderRoute("/ingresar");
 
     expect(
       screen.getByRole("heading", {
@@ -101,7 +101,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
   it("valida antes de enviar y no llama a la API con datos incompletos", async () => {
     serve();
     const user = userEvent.setup();
-    renderRoute("/ingresar");
+    await renderRoute("/ingresar");
 
     await user.click(screen.getByRole("button", { name: "Ingresar" }));
 
@@ -114,7 +114,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
   it("envía el correo limpio con el encabezado propio y entra al espacio de trabajo", async () => {
     serve();
     const user = userEvent.setup();
-    renderRoute("/ingresar");
+    await renderRoute("/ingresar");
 
     await fillAndSubmit(user);
 
@@ -133,7 +133,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
   it("vuelve a la pantalla de /app que la persona intentaba abrir", async () => {
     serve();
     const user = userEvent.setup();
-    const { router } = renderRoute({
+    const { router } = await renderRoute({
       pathname: "/ingresar",
       state: { from: "/app" },
     });
@@ -146,7 +146,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
   it("no acepta un destino fuera del espacio de trabajo", async () => {
     serve();
     const user = userEvent.setup();
-    const { router } = renderRoute({
+    const { router } = await renderRoute({
       pathname: "/ingresar",
       state: { from: "//otro-sitio.example/app" },
     });
@@ -159,7 +159,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
   it("muestra el mensaje genérico, conserva el correo y pide de nuevo la contraseña", async () => {
     serve({ login: () => problem(401) });
     const user = userEvent.setup();
-    renderRoute("/ingresar");
+    await renderRoute("/ingresar");
 
     await fillAndSubmit(user, "una clave equivocada");
 
@@ -178,7 +178,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
   it("avisa que debe esperar cuando hay demasiados intentos", async () => {
     serve({ login: () => problem(429) });
     const user = userEvent.setup();
-    renderRoute("/ingresar");
+    await renderRoute("/ingresar");
 
     await fillAndSubmit(user);
 
@@ -192,7 +192,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
       "Esta cuenta está bloqueada. Escríbanos a contacto@aletheia.sbs para revisar su caso.";
     serve({ login: () => problem(403, { detail }) });
     const user = userEvent.setup();
-    renderRoute("/ingresar");
+    await renderRoute("/ingresar");
 
     await fillAndSubmit(user);
 
@@ -202,7 +202,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
   it("da el código de la solicitud cuando falla el servidor", async () => {
     serve({ login: () => problem(500, { request_id: "abc12345-0000" }) });
     const user = userEvent.setup();
-    renderRoute("/ingresar");
+    await renderRoute("/ingresar");
 
     await fillAndSubmit(user);
 
@@ -211,7 +211,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
 
   it("si ya hay sesión, lleva directo al espacio de trabajo", async () => {
     fetchMock.mockImplementation(async () => jsonResponse(ME));
-    const { router } = renderRoute("/ingresar");
+    const { router } = await renderRoute("/ingresar");
 
     await waitFor(() => expect(router.state.location.pathname).toBe("/app"));
   });

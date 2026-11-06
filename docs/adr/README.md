@@ -33,3 +33,4 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-027](adr-027.md) | Enlaces firmados de un solo uso | Aceptado | 05/11/2026 |
 | [ADR-028](adr-028.md) | Sesiones comprobadas en cada petición y protección contra CSRF | Aceptado | 05/11/2026 |
 | [ADR-029](adr-029.md) | Pantallas de acceso sobre la escena del alba | Aceptado | 05/11/2026 |
+| [ADR-030](adr-030.md) | Pantallas descargadas por ruta, con descarga anticipada | Aceptado | 05/11/2026 |
