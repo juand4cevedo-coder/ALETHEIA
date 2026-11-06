@@ -1,9 +1,11 @@
-"""Perfil de quien tiene la sesión (API-014) y aceptación de los textos legales vigentes.
+"""Perfil de quien tiene la sesión (API-014), aceptación de los textos legales vigentes y cambio
+de la contraseña (API-013).
 
 La interfaz consulta el perfil al abrir el espacio de trabajo para saber si hay sesión, a
 nombre de quién está y si debe aceptar textos legales nuevos. HU-031 lo amplía con lo que
 muestra el espacio de trabajo. Las dos rutas funcionan aunque la persona no haya aceptado los
-textos vigentes: son justamente las que necesita para hacerlo.
+textos vigentes: son justamente las que necesita para hacerlo. El cambio de contraseña sí los
+exige, como toda ruta con sesión.
 """
 
 from typing import Annotated
@@ -11,10 +13,17 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_client_ip, get_principal_allowing_outdated_legal, get_session
+from app.api.deps import (
+    get_client_ip,
+    get_principal,
+    get_principal_allowing_outdated_legal,
+    get_session,
+)
 from app.core.legal import LEGAL_VERSION
+from app.schemas.auth import ChangePasswordRequest
 from app.schemas.me import LegalAcceptanceRequest, LegalStatus, Me, OrganizationMembership
 from app.services import accounts as accounts_service
+from app.services import credentials as credentials_service
 from app.services import legal as legal_service
 from app.services.sessions import Principal
 
@@ -93,4 +102,49 @@ def accept_legal_terms(
                 "Los términos o la política de privacidad cambiaron mientras los leía. Recargue "
                 "la página y revise la versión vigente."
             ),
+        ) from None
+
+
+@router.put(
+    "/me/password",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Cambiar la contraseña",
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "Contraseña cambiada; las demás sesiones quedaron cerradas."
+        },
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "La contraseña actual no coincide o la nueva es igual."
+        },
+        status.HTTP_401_UNAUTHORIZED: {"description": "No hay una sesión válida."},
+        status.HTTP_429_TOO_MANY_REQUESTS: {"description": "Demasiados intentos fallidos."},
+    },
+)
+def change_password(
+    request: ChangePasswordRequest,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> None:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        credentials_service.change_password(
+            session,
+            principal,
+            request.current_password,
+            request.new_password,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except credentials_service.WrongCurrentPasswordError:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña actual no coincide. Revísela e inténtelo de nuevo.",
+        ) from None
+    except credentials_service.SamePasswordError:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña nueva debe ser distinta de la actual.",
         ) from None

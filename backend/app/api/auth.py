@@ -1,6 +1,7 @@
 """Cuenta y acceso: registro (API-003), verificación del correo (API-004) y su reenvío,
-ingreso con correo y contraseña (API-005), renovación de la sesión (API-008) y cierre de la
-sesión actual y de todas (API-009 y API-010)."""
+ingreso con correo y contraseña (API-005), renovación de la sesión (API-008), cierre de la
+sesión actual y de todas (API-009 y API-010) y recuperación de la contraseña (API-011 y
+API-012)."""
 
 from typing import Annotated
 
@@ -22,14 +23,18 @@ from app.core.config import Settings
 from app.core.errors import problem_response
 from app.core.tokens import InvalidLinkError
 from app.schemas.auth import (
+    ForgotPasswordRequest,
     LoginRequest,
+    PasswordResetRequested,
     RegisterRequest,
     RegistrationAccepted,
     ResendVerificationRequest,
+    ResetPasswordRequest,
     VerificationRequested,
     VerifyEmailRequest,
 )
 from app.services import accounts as accounts_service
+from app.services import credentials as credentials_service
 from app.services import sessions as sessions_service
 from app.services import verification as verification_service
 from app.services.legal import LegalVersionMismatchError
@@ -286,3 +291,68 @@ def sign_out_everywhere(
         session, principal, client_ip=client_ip, user_agent=user_agent
     )
     clear_session_cookies(response)
+
+
+_RESET_LINK_SENT = (
+    "Si hay una cuenta con ese correo, le enviamos un enlace para elegir una contraseña "
+    "nueva. "
+    "Revise su bandeja de entrada y la carpeta de spam; el enlace vence en una hora."
+)
+
+
+@router.post(
+    "/auth/password/forgot",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Pedir el enlace para restablecer la contraseña",
+    responses={
+        status.HTTP_429_TOO_MANY_REQUESTS: {"description": "Demasiadas solicitudes."},
+    },
+)
+def forgot_password(
+    request: ForgotPasswordRequest,
+    response: Response,
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+) -> PasswordResetRequested:
+    # 202 y el mismo cuerpo exista o no la cuenta (CA-HU-010-02).
+    response.headers["Cache-Control"] = "no-store"
+    credentials_service.request_reset(session, request.email, client_ip=client_ip)
+    return PasswordResetRequested(detail=_RESET_LINK_SENT)
+
+
+@router.post(
+    "/auth/password/reset",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Elegir una contraseña nueva con el enlace recibido",
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "Contraseña cambiada; todas las sesiones quedaron cerradas."
+        },
+        status.HTTP_400_BAD_REQUEST: {"description": "El enlace no es válido o ya venció."},
+        status.HTTP_429_TOO_MANY_REQUESTS: {"description": "Demasiados intentos."},
+    },
+)
+def reset_password(
+    request: ResetPasswordRequest,
+    response: Response,
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> None:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        credentials_service.reset_password(
+            session,
+            settings,
+            request.token,
+            request.password,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except InvalidLinkError:
+        # Un solo mensaje para todas las causas, como en la verificación del correo.
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail="El enlace no es válido o ya venció. Pida uno nuevo.",
+        ) from None

@@ -154,6 +154,7 @@
   color: var(--color-text-inverse);
   font: inherit;
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
   transition: background-color var(--motion-fast) var(--ease-standard);
 }

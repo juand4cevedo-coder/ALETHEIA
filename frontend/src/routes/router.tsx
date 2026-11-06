@@ -8,8 +8,11 @@ import { NotFoundPage } from "../pages/NotFoundPage.tsx";
 import {
   loadAppLayout,
   loadAuthLayout,
+  loadForgotPasswordPage,
   loadLegalPage,
   loadPricingPage,
+  loadResetPasswordPage,
+  loadSecurityPage,
   loadSignInPage,
   loadSignUpPage,
   loadVerifyEmailPage,
@@ -64,6 +67,28 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: ROUTES.forgotPassword.slice(1),
+        lazy: { Component: loadForgotPasswordPage },
+        handle: {
+          authSwitch: {
+            question: "¿Recordó su contraseña?",
+            label: "Volver a ingresar",
+            to: ROUTES.signIn,
+          } satisfies AuthSwitch,
+        },
+      },
+      {
+        path: ROUTES.resetPassword.slice(1),
+        lazy: { Component: loadResetPasswordPage },
+        handle: {
+          authSwitch: {
+            question: "¿Recordó su contraseña?",
+            label: "Volver a ingresar",
+            to: ROUTES.signIn,
+          } satisfies AuthSwitch,
+        },
+      },
+      {
         path: ROUTES.verifyEmail.slice(1),
         lazy: { Component: loadVerifyEmailPage },
         handle: {
@@ -82,7 +107,13 @@ export const routes: RouteObject[] = [
     lazy: { Component: loadAppLayout },
     hydrateFallbackElement: loading,
     errorElement: <NotFoundPage />,
-    children: [{ index: true, lazy: { Component: loadWorkspacePage } }],
+    children: [
+      { index: true, lazy: { Component: loadWorkspacePage } },
+      {
+        path: ROUTES.security.slice(ROUTES.app.length + 1),
+        lazy: { Component: loadSecurityPage },
+      },
+    ],
   },
 ];
 
