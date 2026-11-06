@@ -2,7 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { LEGAL_EFFECTIVE_DATE, LEGAL_VERSION } from "../config/legal.ts";
+import { LEGAL_EFFECTIVE_DATE } from "../config/legal.ts";
 import { LEGAL_PAGES, legalRoute } from "../config/routes.ts";
 import { LEGAL_DOCUMENTS } from "../features/legal/documents.ts";
 import { seriousAxeViolations } from "../test/axe.ts";
@@ -18,7 +18,7 @@ beforeEach(() => {
 
 describe("Páginas legales (HU-003, CP-003)", () => {
   it.each(LEGAL_PAGES)(
-    "publica $label con versión y fecha, sin cuenta ni llamadas a la API (CA-HU-003-01)",
+    "publica $label con su fecha de vigencia, sin cuenta ni llamadas a la API (CA-HU-003-01)",
     async ({ slug }) => {
       const legalDocument = LEGAL_DOCUMENTS[slug];
       const { container } = await renderRoute(legalRoute(slug));
@@ -30,7 +30,8 @@ describe("Páginas legales (HU-003, CP-003)", () => {
       expect(within(main).getByRole("heading", { level: 1 })).toHaveTextContent(
         legalDocument.title,
       );
-      expect(within(main).getByText(`Versión ${LEGAL_VERSION}`)).toBeVisible();
+      // Los textos se identifican por su vigencia: ninguna página muestra un número de versión.
+      expect(within(main).queryByText(/versión\s*\d/i)).not.toBeInTheDocument();
       expect(within(main).getByText("2 de noviembre de 2026")).toHaveAttribute(
         "datetime",
         LEGAL_EFFECTIVE_DATE,
