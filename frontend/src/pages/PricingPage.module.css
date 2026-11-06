@@ -171,6 +171,18 @@
   background: color-mix(in srgb, var(--color-ink-900) 70%, transparent);
 }
 
+.taxNote {
+  max-width: 72ch;
+  margin-top: var(--space-4);
+  color: var(--color-text-inverse-muted);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.taxNote a {
+  color: var(--color-primary-300);
+}
+
 .table {
   width: 100%;
   min-width: 640px;
