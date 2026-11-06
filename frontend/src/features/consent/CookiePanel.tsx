@@ -151,9 +151,9 @@ export function CookiePanel({
                   id="cookies-analitica-detalle"
                   className={styles.categoryText}
                 >
-                  Medirían de forma anónima cómo se usa el sitio. Hoy ALETHEIA
-                  no usa ninguna herramienta de este tipo, así que esta opción
-                  no activa nada; si algún día la agregamos, le volveremos a
+                  Medirían de forma anónima cómo se usa el sitio. Hoy no usamos
+                  ninguna herramienta de este tipo, así que esta opción no
+                  activa nada; si algún día la agregamos, le volveremos a
                   preguntar.
                 </p>
               </div>
