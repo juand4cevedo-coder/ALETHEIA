@@ -7,6 +7,7 @@ import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
+import { prefetchLikelyNext } from "../routes/lazyRoutes.ts";
 import styles from "./PublicLayout.module.css";
 
 // Año del aviso de derechos, calculado una vez al cargar el sitio.
@@ -57,6 +58,10 @@ export function PublicLayout() {
     openPanel: openCookies,
     openerRef: cookiesButtonRef,
   } = useCookiePanel();
+
+  // Con el sitio público ya en pantalla, las siguientes pantallas probables se descargan en
+  // segundo plano.
+  useEffect(() => prefetchLikelyNext(), []);
 
   useEffect(() => {
     // React descarta el cambio de estado si el valor no cambió, así que el listener solo

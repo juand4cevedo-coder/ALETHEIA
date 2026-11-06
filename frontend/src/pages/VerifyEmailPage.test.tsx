@@ -34,7 +34,9 @@ describe("Verificar el correo (HU-006, CP-006)", () => {
 
   it("envía el token una sola vez y muestra la constancia (CA-HU-006-01)", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
-    const { container } = renderRoute("/verificar-correo#t=token.de.prueba");
+    const { container } = await renderRoute(
+      "/verificar-correo#t=token.de.prueba",
+    );
 
     const titulo = await screen.findByRole("heading", {
       level: 1,
@@ -58,7 +60,7 @@ describe("Verificar el correo (HU-006, CP-006)", () => {
       .mockResolvedValueOnce(problem(400))
       .mockResolvedValueOnce(jsonResponse({ detail: "ok" }, 202));
     const user = userEvent.setup();
-    renderRoute("/verificar-correo#t=vencido");
+    await renderRoute("/verificar-correo#t=vencido");
 
     await screen.findByRole("heading", { name: "Este enlace ya no sirve" });
     await user.type(
@@ -81,7 +83,7 @@ describe("Verificar el correo (HU-006, CP-006)", () => {
   });
 
   it("sin token no llama a la API y ofrece pedir uno nuevo", async () => {
-    renderRoute("/verificar-correo");
+    await renderRoute("/verificar-correo");
 
     expect(
       await screen.findByText(/El enlace llegó incompleto/),
@@ -91,7 +93,7 @@ describe("Verificar el correo (HU-006, CP-006)", () => {
 
   it("valida el correo antes de pedir un enlace nuevo", async () => {
     const user = userEvent.setup();
-    renderRoute("/verificar-correo");
+    await renderRoute("/verificar-correo");
 
     await user.type(screen.getByLabelText("Correo electrónico"), "ana");
     await user.click(
@@ -108,7 +110,7 @@ describe("Verificar el correo (HU-006, CP-006)", () => {
 
   it("avisa cuando hay demasiados intentos (MSG-004)", async () => {
     fetchMock.mockResolvedValue(problem(429));
-    renderRoute("/verificar-correo#t=token");
+    await renderRoute("/verificar-correo#t=token");
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Hizo varios intentos seguidos.",
