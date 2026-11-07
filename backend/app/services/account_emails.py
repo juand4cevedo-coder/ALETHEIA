@@ -31,7 +31,7 @@ from app.services.verification import (
 )
 
 SIGN_IN_PATH: Final = "/ingresar"
-FORGOT_PATH: Final = "/recuperar-contrasena"
+FORGOT_PATH: Final = "/recuperar"
 _HOURS: Final = int(LINK_LIFETIME.total_seconds() // 3600)
 _RESET_MINUTES: Final = int(RESET_LINK_LIFETIME.total_seconds() // 60)
 
