@@ -15,7 +15,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in srgb, var(--color-primary-400) 40%, transparent),
+    color-mix(in srgb, var(--color-primary-400) 22%, transparent),
     transparent
   );
   transform: translateX(-50%);
@@ -114,7 +114,7 @@
   }
 }
 
-/* Recuadro del ícono: degradado del azul de marca con un borde de luz. */
+/* Recuadro del ícono: un velo del azul de marca con un borde de luz. */
 .iconTile {
   display: grid;
   place-items: center;
@@ -124,13 +124,12 @@
   border: 1px solid
     color-mix(in srgb, var(--color-primary-300) 22%, transparent);
   border-radius: 12px;
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--color-brand-blue) 45%, transparent),
-    color-mix(in srgb, var(--color-ink-800) 80%, transparent)
+  background: color-mix(
+    in srgb,
+    var(--color-brand-blue) 16%,
+    var(--color-ink-900)
   );
   color: var(--color-primary-300);
-  box-shadow: 0 8px 20px -10px var(--color-brand-blue);
 }
 
 .cardTitle {
