@@ -1,33 +1,134 @@
 import { useMutation } from "@tanstack/react-query";
-import { CircleCheck, KeyRound } from "lucide-react";
-import { type FormEvent, useRef, useState } from "react";
+import {
+  CircleAlert,
+  CircleCheck,
+  KeyRound,
+  MonitorSmartphone,
+  UserRound,
+} from "lucide-react";
+import { type FormEvent, type ReactNode, useId, useRef, useState } from "react";
+import { useOutletContext } from "react-router";
 
+import type { Me } from "../api/generated";
 import { changePasswordMutation } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
-import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
+import { Field } from "../components/ui/Field.tsx";
+import { Notice } from "../components/ui/Notice.tsx";
+import { SystemError } from "../components/ui/SystemError.tsx";
+import { SITE_NAME } from "../config/site.ts";
+import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
-import { Field } from "../features/auth/Field.tsx";
 import { newPasswordError } from "../features/auth/newPassword.ts";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import { PASSWORD_MAX_LENGTH } from "../features/auth/signUp.ts";
-import styles from "./SecurityPage.module.css";
+import { SignOutEverywhereDialog } from "../features/session/SignOutEverywhereDialog.tsx";
+import { useSignOut } from "../features/session/useSignOut.ts";
+import styles from "./AccountPage.module.css";
 
 const METER_ID = "medidor-cambio";
 const EMPTY = { current: "", next: "" };
 
-type Errors = { current?: string; next?: string };
-
-// Los mismos textos que responde la API.
+// Los mismos textos que responde la API (API-013).
 const WRONG_CURRENT =
   "La contraseña actual no coincide. Revísela e inténtelo de nuevo.";
 const SAME_PASSWORD = "La contraseña nueva debe ser distinta de la actual.";
 
-// Seguridad de la cuenta (HU-010, API-013): cambiar la contraseña con la actual. Al guardarla,
-// la API cierra las sesiones de los demás dispositivos y conserva esta.
-export function SecurityPage() {
+type Errors = { current?: string; next?: string };
+type Failure =
+  { kind: "tooManyAttempts" } | { kind: "system"; requestId?: string };
+
+// Mi cuenta (UI-020, HU-009 y HU-010): el perfil con el que se ingresa, el cambio de
+// contraseña con la actual y el cierre de esta sesión o de todas. Al cambiar la contraseña, la
+// API cierra las sesiones de los demás dispositivos y conserva esta.
+export function AccountPage() {
+  const me = useOutletContext<Me>();
+
+  return (
+    <section className={styles.screen} aria-labelledby="titulo-cuenta">
+      <title>{`Mi cuenta · ${SITE_NAME}`}</title>
+      <meta name="robots" content="noindex" />
+
+      <header className={styles.intro}>
+        <p className={styles.eyebrow}>Perfil y seguridad</p>
+        <h1 id="titulo-cuenta" className={styles.title}>
+          Mi cuenta
+        </h1>
+      </header>
+
+      <Card
+        icon={<UserRound size={20} />}
+        title="Perfil"
+        description="Los datos con los que ingresa a ALETHEIA."
+      >
+        <dl className={styles.record}>
+          <div className={styles.row}>
+            <dt>Nombre</dt>
+            <dd>{me.full_name}</dd>
+          </div>
+          <div className={styles.row}>
+            <dt>Correo</dt>
+            <dd className={styles.email}>
+              <span translate="no">{me.email}</span>
+              {me.email_verified ? (
+                <span className={styles.verified}>
+                  <CircleCheck size={16} aria-hidden="true" />
+                  Verificado
+                </span>
+              ) : (
+                <span className={styles.pending}>
+                  <CircleAlert size={16} aria-hidden="true" />
+                  Sin verificar
+                </span>
+              )}
+            </dd>
+          </div>
+          <div className={styles.row}>
+            <dt>Método de ingreso</dt>
+            <dd>Correo y contraseña</dd>
+          </div>
+        </dl>
+      </Card>
+
+      <PasswordCard />
+      <SessionsCard />
+    </section>
+  );
+}
+
+function Card({
+  icon,
+  title,
+  description,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  const titleId = useId();
+  return (
+    <section className={styles.card} aria-labelledby={titleId}>
+      <div className={styles.cardHead}>
+        <span className={styles.cardIcon} aria-hidden="true">
+          {icon}
+        </span>
+        <div>
+          <h2 id={titleId} className={styles.cardTitle}>
+            {title}
+          </h2>
+          <p className={styles.cardText}>{description}</p>
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function PasswordCard() {
   const [values, setValues] = useState(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
-  const [failure, setFailure] = useState<string | null>(null);
+  const [failure, setFailure] = useState<Failure | null>(null);
   const [changed, setChanged] = useState(false);
   const currentRef = useRef<HTMLInputElement>(null);
   const nextRef = useRef<HTMLInputElement>(null);
@@ -40,9 +141,9 @@ export function SecurityPage() {
       setChanged(true);
     },
     onError: (error) => {
-      const { status, detail } = apiProblem(error);
+      const { status, detail, requestId } = apiProblem(error);
       if (status === 400 && detail === SAME_PASSWORD) {
-        setErrors({ next: detail });
+        setErrors({ next: SAME_PASSWORD });
         nextRef.current?.focus();
         return;
       }
@@ -54,8 +155,8 @@ export function SecurityPage() {
       }
       setFailure(
         status === 429
-          ? "Hizo varios intentos fallidos seguidos. Espere 15 minutos e inténtelo de nuevo."
-          : `No pudimos cambiar la contraseña. Inténtelo de nuevo; si continúa, escríbanos a ${CONTACT_EMAIL}.`,
+          ? { kind: "tooManyAttempts" }
+          : { kind: "system", requestId },
       );
     },
   });
@@ -82,97 +183,120 @@ export function SecurityPage() {
   }
 
   return (
-    <section className={styles.screen} aria-labelledby="titulo-seguridad">
-      <title>{`Seguridad de la cuenta · ${SITE_NAME}`}</title>
-      <meta name="robots" content="noindex" />
+    <Card
+      icon={<KeyRound size={20} />}
+      title="Contraseña"
+      description="Al cambiarla cerraremos la sesión en sus otros dispositivos; en este seguirá trabajando."
+    >
+      {changed && (
+        <Notice tone="success">
+          Su contraseña cambió. Le enviamos un aviso por correo.
+        </Notice>
+      )}
+      {failure && (
+        <Notice tone="error">
+          {failure.kind === "tooManyAttempts" ? (
+            <p>{MESSAGES.tooManyAttempts}</p>
+          ) : (
+            <SystemError requestId={failure.requestId} />
+          )}
+        </Notice>
+      )}
 
-      <header className={styles.intro}>
-        <p className={styles.eyebrow}>Su cuenta</p>
-        <h1 id="titulo-seguridad" className={styles.title}>
-          Seguridad
-        </h1>
-      </header>
-
-      <section className={styles.card} aria-labelledby="titulo-contrasena">
-        <div className={styles.cardHead}>
-          <span className={styles.cardIcon} aria-hidden="true">
-            <KeyRound size={20} />
-          </span>
-          <div>
-            <h2 id="titulo-contrasena" className={styles.cardTitle}>
-              Cambiar la contraseña
-            </h2>
-            <p className={styles.cardText}>
-              Al guardarla cerraremos la sesión en sus otros dispositivos; en
-              este seguirá trabajando.
-            </p>
-          </div>
-        </div>
-
-        {changed && (
-          <p className={styles.success} role="status">
-            <CircleCheck size={18} aria-hidden="true" />
-            Su contraseña cambió. Le enviamos un aviso por correo.
-          </p>
-        )}
-        {failure && (
-          <p className={styles.failure} role="alert">
-            {failure}
-          </p>
-        )}
-
-        <form className={styles.form} noValidate onSubmit={handleSubmit}>
-          <Field
-            ref={currentRef}
-            label="Contraseña actual"
-            name="contrasena-actual"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={values.current}
-            error={errors.current}
-            onChange={(event) =>
-              setValues((current) => ({
-                ...current,
-                current: event.target.value,
-              }))
-            }
-          />
-          <Field
-            ref={nextRef}
-            label="Contraseña nueva"
-            name="contrasena-nueva"
-            type="password"
-            autoComplete="new-password"
-            required
-            maxLength={PASSWORD_MAX_LENGTH}
-            value={values.next}
-            error={errors.next}
-            describedBy={METER_ID}
-            onChange={(event) =>
-              setValues((current) => ({ ...current, next: event.target.value }))
-            }
+      <form className={styles.form} noValidate onSubmit={handleSubmit}>
+        <Field
+          ref={currentRef}
+          label="Contraseña actual"
+          name="contrasena-actual"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={values.current}
+          error={errors.current}
+          onChange={(event) =>
+            setValues((current) => ({
+              ...current,
+              current: event.target.value,
+            }))
+          }
+        />
+        <Field
+          ref={nextRef}
+          label="Contraseña nueva"
+          name="contrasena-nueva"
+          type="password"
+          autoComplete="new-password"
+          required
+          maxLength={PASSWORD_MAX_LENGTH}
+          value={values.next}
+          error={errors.next}
+          describedBy={METER_ID}
+          onChange={(event) =>
+            setValues((current) => ({ ...current, next: event.target.value }))
+          }
+        >
+          <PasswordMeter id={METER_ID} password={values.next} />
+        </Field>
+        <div className={styles.actions}>
+          <Button
+            type="submit"
+            variant="bright"
+            shape="pill"
+            busy={change.isPending}
           >
-            <PasswordMeter id={METER_ID} password={values.next} />
-          </Field>
-          <div className={styles.actions}>
-            <Button
-              type="submit"
-              variant="bright"
-              shape="pill"
-              busy={change.isPending}
-            >
-              {change.isPending ? "Guardando…" : "Cambiar la contraseña"}
-            </Button>
-          </div>
-        </form>
-      </section>
+            {change.isPending ? "Guardando…" : "Cambiar la contraseña"}
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+}
 
-      <p className={styles.note}>
-        ¿Perdió un equipo o cree que alguien más entró a su cuenta? Use{" "}
-        <strong>Cerrar todas las sesiones</strong> en el menú de su cuenta,
-        arriba a la derecha.
-      </p>
-    </section>
+function SessionsCard() {
+  const session = useSignOut();
+  const [confirming, setConfirming] = useState(false);
+
+  return (
+    <Card
+      icon={<MonitorSmartphone size={20} />}
+      title="Sesiones"
+      description="Si perdió un equipo o cree que alguien más entró a su cuenta, cierre todas las sesiones."
+    >
+      {session.failed && !confirming && (
+        <Notice tone="error">
+          No pudimos cerrar la sesión. Revise su conexión e inténtelo de nuevo.
+        </Notice>
+      )}
+      <div className={styles.sessionActions}>
+        <Button
+          surface="dark"
+          variant="secondary"
+          shape="pill"
+          busy={session.pending === "device"}
+          disabled={session.pending !== null}
+          onClick={session.signOut}
+        >
+          {session.pending === "device"
+            ? "Cerrando sesión…"
+            : "Cerrar esta sesión"}
+        </Button>
+        <Button
+          surface="dark"
+          variant="secondary"
+          shape="pill"
+          disabled={session.pending !== null}
+          onClick={() => setConfirming(true)}
+        >
+          Cerrar todas las sesiones
+        </Button>
+      </div>
+      <SignOutEverywhereDialog
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        onConfirm={session.signOutEverywhere}
+        busy={session.pending === "everywhere"}
+        failed={session.failed}
+      />
+    </Card>
   );
 }

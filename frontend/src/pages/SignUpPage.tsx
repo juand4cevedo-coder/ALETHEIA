@@ -5,12 +5,14 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import type { RegisterAccountError } from "../api/generated";
 import { registerAccountMutation } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
+import { SystemError } from "../components/ui/SystemError.tsx";
 import { Checkbox } from "../components/ui/Checkbox.tsx";
 import { legalRoute, ROUTES } from "../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
+import { SITE_NAME, SITE_URL } from "../config/site.ts";
+import { MESSAGES } from "../content/messages.ts";
 import { AccountTypeChoice } from "../features/auth/AccountTypeChoice.tsx";
-import { Emblem } from "../features/auth/Emblem.tsx";
-import { Field } from "../features/auth/Field.tsx";
+import { Emblem } from "../components/ui/Emblem.tsx";
+import { Field } from "../components/ui/Field.tsx";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import {
   fieldErrorsFromApi,
@@ -315,27 +317,8 @@ function ProblemMessage({ problem }: { problem: FormProblem }) {
         </>
       );
     case "tooManyAttempts":
-      // MSG-004.
-      return (
-        <p>
-          Hizo varios intentos seguidos. Espere 15 minutos e inténtelo de nuevo.
-        </p>
-      );
+      return <p>{MESSAGES.tooManyAttempts}</p>;
     case "unexpected":
-      // MSG-019.
-      return (
-        <p>
-          No pudimos completar la operación. Inténtelo de nuevo; si continúa,
-          escríbanos a <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-          {problem.requestId ? (
-            <>
-              {" "}
-              con el código <code>{problem.requestId}</code>.
-            </>
-          ) : (
-            "."
-          )}
-        </p>
-      );
+      return <SystemError requestId={problem.requestId} />;
   }
 }

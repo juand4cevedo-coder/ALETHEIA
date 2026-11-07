@@ -8,7 +8,7 @@ import { verifyEmailMutation } from "../api/generated/@tanstack/react-query.gen.
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
-import { Emblem } from "../features/auth/Emblem.tsx";
+import { Emblem } from "../components/ui/Emblem.tsx";
 import { tokenFromHash } from "../features/auth/linkToken.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import styles from "./VerifyEmailPage.module.css";

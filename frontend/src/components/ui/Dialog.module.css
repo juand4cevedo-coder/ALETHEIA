@@ -1,0 +1,103 @@
+/* Diálogo modal (CMP-UI-005): vidrio oscuro sobre un fondo velado. */
+.dialog {
+  width: min(440px, calc(100vw - 2 * var(--space-4)));
+  padding: 0;
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 10%, transparent);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    180deg,
+    var(--color-ink-800),
+    var(--color-ink-900)
+  );
+  box-shadow: var(--shadow-raised);
+  color: var(--color-text-inverse);
+}
+
+.dialog[open] {
+  animation: settle 280ms var(--ease-out);
+}
+
+.dialog::backdrop {
+  background: color-mix(in srgb, var(--color-ink-950) 72%, transparent);
+  backdrop-filter: blur(4px);
+}
+
+.dialog :focus-visible {
+  outline-color: var(--color-primary-300);
+}
+
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+.body {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  color: var(--color-text-inverse-muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--space-1);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary-400) 14%, transparent);
+  color: var(--color-primary-300);
+}
+
+.title {
+  color: var(--color-text-inverse);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+/* En el celular el diálogo ocupa la pantalla y los botones van a todo el ancho. */
+@media (max-width: 560px) {
+  .dialog {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .body {
+    align-content: center;
+    min-height: 100%;
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions > * {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open] {
+    animation: none;
+  }
+}

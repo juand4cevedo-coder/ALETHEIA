@@ -87,7 +87,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Qué bueno verle de nuevo",
+        name: "Hola de nuevo",
       }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Correo electrónico")).toHaveAttribute(
@@ -171,7 +171,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
 
     expect(
       await screen.findByText(
-        "El correo o la contraseña no coinciden. Revise los datos.",
+        "El correo o la contraseña no coinciden. Revise los datos o recupere su contraseña.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Correo electrónico")).toHaveValue(

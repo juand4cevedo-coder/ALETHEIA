@@ -7,11 +7,13 @@ import { resetPasswordMutation } from "../api/generated/@tanstack/react-query.ge
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
+import { SITE_NAME } from "../config/site.ts";
+import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { apiProblem } from "../features/auth/apiProblem.ts";
-import { Emblem } from "../features/auth/Emblem.tsx";
-import { Field } from "../features/auth/Field.tsx";
+import { Emblem } from "../components/ui/Emblem.tsx";
+import { Field } from "../components/ui/Field.tsx";
+import { SystemError } from "../components/ui/SystemError.tsx";
 import { tokenFromHash } from "../features/auth/linkToken.ts";
 import { newPasswordError } from "../features/auth/newPassword.ts";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
@@ -21,7 +23,8 @@ const TITLE_ID = "titulo-restablecer";
 const METER_ID = "medidor-restablecer";
 
 type Stage = "form" | "done" | "invalid";
-type Problem = "tooManyAttempts" | "unexpected";
+type Problem =
+  { kind: "tooManyAttempts" } | { kind: "system"; requestId?: string };
 
 // Elegir una contraseña nueva con el enlace del correo (HU-010, API-012). El token sale de la
 // dirección apenas se lee, para que no quede en el historial. Un enlace que ya no sirve lleva
@@ -55,12 +58,16 @@ export function ResetPasswordPage() {
       setStage("done");
     },
     onError: (failure) => {
-      const { status } = apiProblem(failure);
+      const { status, requestId } = apiProblem(failure);
       if (status === 400) {
         setStage("invalid");
         return;
       }
-      setProblem(status === 429 ? "tooManyAttempts" : "unexpected");
+      setProblem(
+        status === 429
+          ? { kind: "tooManyAttempts" }
+          : { kind: "system", requestId },
+      );
     },
   });
 
@@ -105,17 +112,10 @@ export function ResetPasswordPage() {
             >
               {problem && (
                 <div className={styles.alert} role="alert">
-                  {problem === "tooManyAttempts" ? (
-                    <p>
-                      Hizo varios intentos seguidos. Espere 15 minutos e
-                      inténtelo de nuevo.
-                    </p>
+                  {problem.kind === "tooManyAttempts" ? (
+                    <p>{MESSAGES.tooManyAttempts}</p>
                   ) : (
-                    <p>
-                      No pudimos guardar la contraseña. Inténtelo de nuevo; si
-                      continúa, escríbanos a{" "}
-                      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
-                    </p>
+                    <SystemError requestId={problem.requestId} />
                   )}
                 </div>
               )}

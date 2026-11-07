@@ -8,11 +8,11 @@ export const ROUTES = {
   signIn: "/ingresar",
   signUp: "/registro",
   verifyEmail: "/verificar-correo",
-  forgotPassword: "/recuperar-contrasena",
+  forgotPassword: "/recuperar",
   resetPassword: "/restablecer-contrasena",
   // Espacio de trabajo: todo lo que exige sesión vive bajo /app.
   app: "/app",
-  security: "/app/seguridad",
+  account: "/app/cuenta",
 } as const;
 
 export const LEGAL_PAGES = [

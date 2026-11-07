@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleCheck } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 
@@ -10,12 +9,16 @@ import {
   signInMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
+import { Notice } from "../components/ui/Notice.tsx";
+import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
+import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
-import { Emblem } from "../features/auth/Emblem.tsx";
-import { Field } from "../features/auth/Field.tsx";
-import { signedOutScope } from "../features/session/useSignOut.ts";
+import { Emblem } from "../components/ui/Emblem.tsx";
+import { Field } from "../components/ui/Field.tsx";
+import { rememberSession } from "../features/session/sessionHint.ts";
+import { sessionNotice } from "../features/session/useSignOut.ts";
 import {
   destinationAfterSignIn,
   SIGN_IN_FIELDS,
@@ -61,10 +64,11 @@ function problemFrom(error: unknown): FormProblem | null {
   return { kind: "unexpected" };
 }
 
-const SIGNED_OUT_MESSAGES = {
+const SESSION_NOTICES = {
   device: "Cerró la sesión en este dispositivo.",
   everywhere:
     "Cerró la sesión en todos sus dispositivos. Para seguir, ingrese de nuevo.",
+  expired: MESSAGES.sessionExpired,
 } as const;
 
 // Ingresar (UI-008, HU-007): una columna sobre la escena del alba (ADR-029). Mientras la API
@@ -87,8 +91,8 @@ export function SignInPage() {
 
   // Quien ya tiene sesión no necesita esta pantalla (flujo 1 del documento de Diseño).
   const session = useQuery({ ...readMeOptions(), retry: false });
-  // Quien acaba de cerrar la sesión recibe la confirmación aquí (HU-009).
-  const signedOut = signedOutScope(location.state);
+  // Quien acaba de cerrar la sesión o cuya sesión venció recibe el aviso aquí (HU-009).
+  const notice = sessionNotice(location.state);
   const destination = destinationAfterSignIn(
     (location.state as { from?: unknown } | null)?.from,
     ROUTES.app,
@@ -100,6 +104,7 @@ export function SignInPage() {
       // La contraseña no se queda en la memoria de la página.
       setValues((current) => ({ ...current, password: "" }));
       setSignedIn(true);
+      rememberSession();
       await queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
       if (!prefersReducedMotion()) {
         await new Promise((resolve) => window.setTimeout(resolve, SEAL_MS));
@@ -177,7 +182,7 @@ export function SignInPage() {
         <header className={styles.intro}>
           <Emblem state={emblemState} />
           <h1 id={TITLE_ID} className={styles.title}>
-            Qué bueno verle de nuevo
+            Hola de nuevo
           </h1>
           <p className={styles.lead}>
             Ingrese con el correo y la contraseña de su cuenta.
@@ -190,11 +195,10 @@ export function SignInPage() {
           onSubmit={handleSubmit}
           aria-labelledby={TITLE_ID}
         >
-          {signedOut && !problem && (
-            <p className={styles.signedOut} role="status">
-              <CircleCheck size={18} aria-hidden="true" />
-              {SIGNED_OUT_MESSAGES[signedOut]}
-            </p>
+          {notice && !problem && (
+            <Notice tone={notice === "expired" ? "info" : "success"}>
+              {SESSION_NOTICES[notice]}
+            </Notice>
           )}
 
           {problem && (
@@ -236,7 +240,7 @@ export function SignInPage() {
               onChange={(event) => update("password", event.target.value)}
             />
             <Link to={ROUTES.forgotPassword} className={styles.forgot}>
-              ¿Olvidó su contraseña?
+              ¿La olvidó?
             </Link>
           </fieldset>
 
@@ -283,27 +287,8 @@ function ProblemMessage({ problem }: { problem: FormProblem }) {
         </p>
       );
     case "tooManyAttempts":
-      // MSG-004.
-      return (
-        <p>
-          Hizo varios intentos seguidos. Espere 15 minutos e inténtelo de nuevo.
-        </p>
-      );
+      return <p>{MESSAGES.tooManyAttempts}</p>;
     case "unexpected":
-      // MSG-019.
-      return (
-        <p>
-          No pudimos completar la operación. Inténtelo de nuevo; si continúa,
-          escríbanos a <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-          {problem.requestId ? (
-            <>
-              {" "}
-              con el código <code>{problem.requestId}</code>.
-            </>
-          ) : (
-            "."
-          )}
-        </p>
-      );
+      return <SystemError requestId={problem.requestId} />;
   }
 }

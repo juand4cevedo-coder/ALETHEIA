@@ -64,12 +64,10 @@ describe("Pedir el enlace (HU-010, API-011)", () => {
     const user = userEvent.setup();
     const { router } = await renderRoute("/ingresar");
 
-    await user.click(
-      await screen.findByRole("link", { name: "¿Olvidó su contraseña?" }),
-    );
+    await user.click(await screen.findByRole("link", { name: "¿La olvidó?" }));
 
     await waitFor(() =>
-      expect(router.state.location.pathname).toBe("/recuperar-contrasena"),
+      expect(router.state.location.pathname).toBe("/recuperar"),
     );
   });
 
@@ -78,7 +76,7 @@ describe("Pedir el enlace (HU-010, API-011)", () => {
       "/api/v1/auth/password/forgot": () => jsonResponse({ detail: "ok" }, 202),
     });
     const user = userEvent.setup();
-    const { container } = await renderRoute("/recuperar-contrasena");
+    const { container } = await renderRoute("/recuperar");
     expect(await seriousAxeViolations(container)).toEqual([]);
 
     await user.type(
@@ -94,13 +92,17 @@ describe("Pedir el enlace (HU-010, API-011)", () => {
     ).toHaveFocus();
     const [request] = requests("/api/v1/auth/password/forgot");
     expect(await request!.json()).toEqual({ email: "ana@example.com" });
-    expect(screen.getByText(/Si/).textContent).toContain("tiene una cuenta");
+    expect(
+      screen.getByText(
+        "Si el correo está registrado, recibirá un enlace para crear una contraseña nueva.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("valida el correo antes de enviar", async () => {
     serve({});
     const user = userEvent.setup();
-    await renderRoute("/recuperar-contrasena");
+    await renderRoute("/recuperar");
 
     await user.type(await screen.findByLabelText("Correo electrónico"), "ana");
     await user.click(
@@ -117,7 +119,7 @@ describe("Pedir el enlace (HU-010, API-011)", () => {
   it("con demasiadas solicitudes pide esperar", async () => {
     serve({ "/api/v1/auth/password/forgot": () => problem(429) });
     const user = userEvent.setup();
-    await renderRoute("/recuperar-contrasena");
+    await renderRoute("/recuperar");
 
     await user.type(
       await screen.findByLabelText("Correo electrónico"),
@@ -191,7 +193,7 @@ describe("Elegir la contraseña nueva (HU-010, API-012)", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Pedir un enlace nuevo" }),
-    ).toHaveAttribute("href", "/recuperar-contrasena");
+    ).toHaveAttribute("href", "/recuperar");
   });
 
   it("sin token muestra de una vez que el enlace no sirve", async () => {
@@ -232,9 +234,9 @@ describe("Cambiar la contraseña con sesión (HU-010, API-013)", () => {
     await user.click(
       await screen.findByRole("button", { name: /Opciones de la cuenta/ }),
     );
-    await user.click(screen.getByRole("link", { name: /Seguridad/ }));
+    await user.click(screen.getByRole("link", { name: /Mi cuenta/ }));
     await waitFor(() =>
-      expect(router.state.location.pathname).toBe("/app/seguridad"),
+      expect(router.state.location.pathname).toBe("/app/cuenta"),
     );
     await fill(user, "la contraseña de antes", NUEVA);
 
@@ -259,7 +261,7 @@ describe("Cambiar la contraseña con sesión (HU-010, API-013)", () => {
       ),
     );
     const user = userEvent.setup();
-    await renderRoute("/app/seguridad");
+    await renderRoute("/app/cuenta");
 
     await fill(user, "equivocada", NUEVA);
 
@@ -272,7 +274,7 @@ describe("Cambiar la contraseña con sesión (HU-010, API-013)", () => {
   it("no envía una contraseña nueva igual a la actual", async () => {
     serveSession(() => new Response(null, { status: 204 }));
     const user = userEvent.setup();
-    await renderRoute("/app/seguridad");
+    await renderRoute("/app/cuenta");
 
     await fill(user, NUEVA, NUEVA);
 

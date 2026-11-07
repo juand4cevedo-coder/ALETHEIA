@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { LoaderCircle } from "lucide-react";
 import {
   Link,
@@ -16,7 +17,11 @@ import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
 import { LegalRenewal } from "../features/legal/LegalRenewal.tsx";
 import { AccountMenu } from "../features/session/AccountMenu.tsx";
-import styles from "./AppLayout.module.css";
+import {
+  forgetSession,
+  rememberSession,
+} from "../features/session/sessionHint.ts";
+import styles from "./AppShell.module.css";
 
 function isUnauthorized(error: unknown): boolean {
   return (
@@ -32,10 +37,18 @@ function isUnauthorized(error: unknown): boolean {
 // renueva solo (sessionFetch.ts, HU-009); una sesión cerrada responde 401 y lleva a ingresar,
 // recordando la pantalla pedida (NAV-003). El menú de la cuenta cierra la sesión de este
 // dispositivo o de todos.
-export function AppLayout() {
+export function AppShell() {
   const location = useLocation();
   // Sin reintentos ni copia vieja: la respuesta dice si la sesión sigue viva ahora.
   const me = useQuery({ ...readMeOptions(), retry: false, staleTime: 0 });
+  const signedIn = me.isSuccess;
+  const sessionEnded = me.isError && isUnauthorized(me.error);
+
+  // El sitio público muestra «Ir a mis casos» mientras haya sesión (sessionHint.ts).
+  useEffect(() => {
+    if (signedIn) rememberSession();
+    if (sessionEnded) forgetSession();
+  }, [signedIn, sessionEnded]);
 
   // Con textos legales nuevos sin aceptar, la pantalla para aceptarlos reemplaza al espacio de
   // trabajo: la API tampoco responde el resto hasta entonces (TT-012, RN-029).
@@ -44,11 +57,16 @@ export function AppLayout() {
   }
 
   if (me.isError && isUnauthorized(me.error)) {
+    // Si el perfil ya había cargado, había una sesión y venció: la pantalla de ingreso lo
+    // explica con MSG-012 (NAV-004). Una visita sin sesión llega a ingresar sin aviso.
     return (
       <Navigate
         to={ROUTES.signIn}
         replace
-        state={{ from: `${location.pathname}${location.search}` }}
+        state={{
+          from: `${location.pathname}${location.search}`,
+          expired: me.data !== undefined,
+        }}
       />
     );
   }
