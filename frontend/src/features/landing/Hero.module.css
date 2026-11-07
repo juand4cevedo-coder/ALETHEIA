@@ -30,7 +30,7 @@
   height: 80%;
   background: radial-gradient(
     closest-side,
-    color-mix(in srgb, var(--color-brand-blue) 55%, transparent),
+    color-mix(in srgb, var(--color-brand-blue) 30%, transparent),
     transparent
   );
   animation: drift 22s var(--ease-standard) infinite alternate;
@@ -43,7 +43,7 @@
   height: 64%;
   background: radial-gradient(
     closest-side,
-    color-mix(in srgb, var(--color-primary-300) 22%, transparent),
+    color-mix(in srgb, var(--color-primary-300) 9%, transparent),
     transparent
   );
   animation: drift 28s var(--ease-standard) -9s infinite alternate-reverse;
@@ -115,17 +115,11 @@
   letter-spacing: -0.035em;
 }
 
+/* La segunda línea del titular en el celeste de acción, sólido: resalta sin efectos. */
 .accent {
   display: block;
   padding-bottom: 0.08em;
-  background: linear-gradient(
-    100deg,
-    var(--color-primary-300) 10%,
-    var(--color-text-inverse) 55%,
-    var(--color-primary-400) 95%
-  );
-  background-clip: text;
-  color: transparent;
+  color: var(--color-primary-300);
 }
 
 .lead {
