@@ -1,10 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useRef, useState } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 
 import type { SignInError } from "../api/generated";
 import {
-  readMeOptions,
   readMeQueryKey,
   signInMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
@@ -89,8 +88,6 @@ export function SignInPage() {
   >({});
   const alertRef = useRef<HTMLDivElement>(null);
 
-  // Quien ya tiene sesión no necesita esta pantalla (flujo 1 del documento de Diseño).
-  const session = useQuery({ ...readMeOptions(), retry: false });
   // Quien acaba de cerrar la sesión o cuya sesión venció recibe el aviso aquí (HU-009).
   const notice = sessionNotice(location.state);
   const destination = destinationAfterSignIn(
@@ -131,10 +128,6 @@ export function SignInPage() {
       }
     },
   });
-
-  if (session.isSuccess) {
-    return <Navigate to={destination} replace />;
-  }
 
   function focusFirstError(found: SignInErrors) {
     const first = SIGN_IN_FIELDS.find((field) => found[field]);
