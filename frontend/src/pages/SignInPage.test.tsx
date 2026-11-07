@@ -214,11 +214,45 @@ describe("Ingresar (HU-007, CP-007)", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("abc12345-0000");
   });
+});
 
-  it("si ya hay sesión, lleva directo al espacio de trabajo", async () => {
-    fetchMock.mockImplementation(async () => jsonResponse(ME));
-    const { router } = await renderRoute("/ingresar");
+describe("Acceso con una sesión abierta (Diseño UX/UI, 4.2)", () => {
+  it("sin pista de sesión muestra el formulario y no consulta la API", async () => {
+    fetchMock.mockImplementation(async () => problem(401));
+    await renderRoute("/ingresar");
+
+    expect(
+      await screen.findByRole("heading", { name: "Hola de nuevo" }),
+    ).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("con una sesión válida lleva al espacio de trabajo", async () => {
+    window.localStorage.setItem("aletheia:sesion", "1");
+    fetchMock.mockImplementation(async (input) => {
+      const path = new URL((input as Request).url).pathname;
+      return path === "/api/v1/me" ? jsonResponse(ME) : problem(404);
+    });
+    const { router } = await renderRoute("/registro");
 
     await waitFor(() => expect(router.state.location.pathname).toBe("/app"));
+  });
+
+  it("si la sesión ya venció se queda en ingresar", async () => {
+    window.localStorage.setItem("aletheia:sesion", "1");
+    fetchMock.mockImplementation(async () => problem(401));
+    const { router } = await renderRoute("/ingresar");
+
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(([input]) =>
+          (input as Request).url.endsWith("/api/v1/me"),
+        ),
+      ).toBe(true),
+    );
+    expect(router.state.location.pathname).toBe("/ingresar");
+    expect(
+      screen.getByRole("heading", { name: "Hola de nuevo" }),
+    ).toBeInTheDocument();
   });
 });

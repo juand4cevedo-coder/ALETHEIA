@@ -48,6 +48,7 @@ export const routes: RouteObject[] = [
         path: ROUTES.signIn.slice(1),
         lazy: { Component: loadSignInPage },
         handle: {
+          redirectSignedIn: true,
           authSwitch: {
             question: "¿Todavía no tiene cuenta?",
             label: "Crear cuenta gratis",
@@ -59,6 +60,7 @@ export const routes: RouteObject[] = [
         path: ROUTES.signUp.slice(1),
         lazy: { Component: loadSignUpPage },
         handle: {
+          redirectSignedIn: true,
           authSwitch: {
             question: "¿Ya tiene cuenta?",
             label: "Volver a ingresar",
@@ -70,6 +72,7 @@ export const routes: RouteObject[] = [
         path: ROUTES.forgotPassword.slice(1),
         lazy: { Component: loadForgotPasswordPage },
         handle: {
+          redirectSignedIn: true,
           authSwitch: {
             question: "¿Recordó su contraseña?",
             label: "Volver a ingresar",
