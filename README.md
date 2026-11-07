@@ -190,7 +190,7 @@ Las políticas legales comparten una sola versión y fecha de vigencia, definida
 
 El sitio solo usa las cookies de sesión. Cualquier herramienta no esencial que se agregue, como una de analítica, se carga únicamente si `hasCookieConsent("analytics")` devuelve `true`, y su llegada sube `CONSENT_VERSION` en `src/features/consent/cookieConsent.ts` para que el panel vuelva a preguntar.
 
-Las pantallas bajo `/app` exigen sesión. Su marco, `AppLayout`, consulta `GET /api/v1/me` antes de mostrar nada: sin sesión lleva a `/ingresar` y, al entrar, la persona vuelve a la pantalla que intentaba abrir.
+Las pantallas bajo `/app` exigen sesión. Su marco, `AppShell`, consulta `GET /api/v1/me` antes de mostrar nada: sin sesión lleva a `/ingresar` (si la sesión venció, con el aviso MSG-012) y, al entrar, la persona vuelve a la pantalla que intentaba abrir.
 
 Las pruebas de componentes usan Vitest, Testing Library y axe-core (ADR-022). Cada prueba vive junto al archivo que prueba, con el sufijo `.test.tsx`. `pnpm test` las ejecuta una vez y `pnpm test:watch` las repite cada vez que se guarda un archivo.
 
