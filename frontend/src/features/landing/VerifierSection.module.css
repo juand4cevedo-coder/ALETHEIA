@@ -13,7 +13,7 @@
   background:
     radial-gradient(
         circle at 0% 0%,
-        color-mix(in srgb, var(--color-brand-blue) 40%, transparent),
+        color-mix(in srgb, var(--color-brand-blue) 18%, transparent),
         transparent 55%
       )
       padding-box,
@@ -21,9 +21,9 @@
       padding-box,
     linear-gradient(
         160deg,
-        color-mix(in srgb, var(--color-primary-300) 45%, transparent),
+        color-mix(in srgb, var(--color-primary-300) 22%, transparent),
         color-mix(in srgb, var(--color-text-inverse) 6%, transparent) 50%,
-        color-mix(in srgb, var(--color-primary-400) 30%, transparent)
+        color-mix(in srgb, var(--color-primary-400) 12%, transparent)
       )
       border-box;
 }

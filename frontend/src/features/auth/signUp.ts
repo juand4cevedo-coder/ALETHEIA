@@ -1,5 +1,6 @@
 import type { RegisterRequest } from "../../api/generated";
 import { LEGAL_VERSION } from "../../config/legal.ts";
+import { MESSAGES } from "../../content/messages.ts";
 
 // Mismos límites que la API (RN-025): la contraseña se mide ya normalizada, como se guarda.
 export const PASSWORD_MIN_LENGTH = 12;
@@ -36,8 +37,7 @@ export const SIGN_UP_FIELDS: readonly SignUpField[] = [
 export const SIGN_UP_MESSAGES = {
   fullName: "Escriba su nombre.",
   email: "Escriba un correo válido, por ejemplo nombre@dominio.com.",
-  // MSG-005.
-  passwordShort: `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres.`,
+  passwordShort: MESSAGES.passwordTooShort,
   passwordLong: `La contraseña puede tener hasta ${PASSWORD_MAX_LENGTH} caracteres.`,
   passwordRange: `La contraseña debe tener entre ${PASSWORD_MIN_LENGTH} y ${PASSWORD_MAX_LENGTH} caracteres.`,
   organizationName: "Escriba el nombre de su oficina o firma.",

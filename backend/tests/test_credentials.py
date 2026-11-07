@@ -35,8 +35,7 @@ _CLAVE = "una frase larga y fácil de recordar"
 _NUEVA = "otra frase distinta y también larga"
 _HASH = hash_password(_CLAVE)
 _RESPUESTA_OLVIDO = (
-    "Si hay una cuenta con ese correo, le enviamos un enlace para elegir una contraseña nueva. "
-    "Revise su bandeja de entrada y la carpeta de spam; el enlace vence en una hora."
+    "Si el correo está registrado, recibirá un enlace para crear una contraseña nueva."
 )
 
 type NuevoCliente = Callable[[], TestClient]
@@ -219,7 +218,7 @@ def test_el_aviso_de_cambio_escapa_el_nombre_y_lleva_a_recuperar(
     assert email is not None
     assert email.html is not None
     assert "<script>" not in email.html
-    assert "http://localhost:5173/recuperar-contrasena" in email.text
+    assert "http://localhost:5173/recuperar" in email.text
 
 
 # --- Restablecer con el enlace (API-012, CA-HU-010-01) --------------------------------------

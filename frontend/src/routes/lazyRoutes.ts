@@ -23,12 +23,12 @@ export const loadResetPasswordPage = () =>
   import("../pages/ResetPasswordPage.tsx").then(
     (module) => module.ResetPasswordPage,
   );
-export const loadAppLayout = () =>
-  import("../layouts/AppLayout.tsx").then((module) => module.AppLayout);
+export const loadAppShell = () =>
+  import("../layouts/AppShell.tsx").then((module) => module.AppShell);
 export const loadWorkspacePage = () =>
   import("../pages/WorkspacePage.tsx").then((module) => module.WorkspacePage);
-export const loadSecurityPage = () =>
-  import("../pages/SecurityPage.tsx").then((module) => module.SecurityPage);
+export const loadAccountPage = () =>
+  import("../pages/AccountPage.tsx").then((module) => module.AccountPage);
 
 // Lo que alguien abre casi siempre después del inicio: precios, ingresar y crear cuenta.
 const LIKELY_NEXT = [

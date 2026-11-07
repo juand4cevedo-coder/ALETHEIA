@@ -10,13 +10,13 @@
       padding-box,
     linear-gradient(
         180deg,
-        color-mix(in srgb, var(--color-primary-300) 40%, transparent),
+        color-mix(in srgb, var(--color-primary-300) 24%, transparent),
         color-mix(in srgb, var(--color-text-inverse) 6%, transparent) 60%
       )
       border-box;
   box-shadow:
     var(--shadow-raised),
-    0 0 120px -30px color-mix(in srgb, var(--color-brand-blue) 70%, transparent);
+    0 0 120px -40px color-mix(in srgb, var(--color-brand-blue) 35%, transparent);
   text-align: left;
 }
 

@@ -138,7 +138,10 @@ def verify_email(
 
 
 # MSG-002. El mismo texto exista o no el correo, tenga o no contraseña (RN-026).
-_INVALID_CREDENTIALS = "El correo o la contraseña no coinciden. Revise los datos."
+# MSG-002 del catálogo de mensajes (Diseño UX/UI, 14.2): el mismo exista o no la cuenta.
+_INVALID_CREDENTIALS = (
+    "El correo o la contraseña no coinciden. Revise los datos o recupere su contraseña."
+)
 _ACCOUNT_BLOCKED = f"Esta cuenta está bloqueada. Escríbanos a {REPLY_TO} para revisar su caso."
 
 
@@ -293,10 +296,9 @@ def sign_out_everywhere(
     clear_session_cookies(response)
 
 
+# MSG-003 del catálogo de mensajes: el mismo exista o no la cuenta (RN-026).
 _RESET_LINK_SENT = (
-    "Si hay una cuenta con ese correo, le enviamos un enlace para elegir una contraseña "
-    "nueva. "
-    "Revise su bandeja de entrada y la carpeta de spam; el enlace vence en una hora."
+    "Si el correo está registrado, recibirá un enlace para crear una contraseña nueva."
 )
 
 

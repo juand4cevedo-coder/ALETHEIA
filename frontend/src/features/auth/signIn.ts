@@ -1,4 +1,5 @@
 import type { LoginRequest } from "../../api/generated";
+import { MESSAGES } from "../../content/messages.ts";
 import { EMAIL_MAX_LENGTH, EMAIL_PATTERN, SIGN_UP_MESSAGES } from "./signUp.ts";
 
 export type SignInValues = { email: string; password: string };
@@ -11,9 +12,7 @@ export const SIGN_IN_FIELDS: readonly SignInField[] = ["email", "password"];
 export const SIGN_IN_MESSAGES = {
   email: SIGN_UP_MESSAGES.email,
   password: "Escriba su contraseña.",
-  // MSG-002.
-  invalidCredentials:
-    "El correo o la contraseña no coinciden. Revise los datos.",
+  invalidCredentials: MESSAGES.invalidCredentials,
 } as const;
 
 /** Errores de cada campo antes de enviar. La longitud de la contraseña no se juzga aquí: una

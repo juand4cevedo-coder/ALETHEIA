@@ -1,5 +1,4 @@
-/* Panel final con un amanecer de marca desde abajo: cierra la página con la luz más intensa
-   del recorrido, justo donde está la acción principal. */
+/* Panel final con una luz de marca tenue desde abajo, justo donde está la acción principal. */
 .panel {
   position: relative;
   display: grid;
@@ -12,7 +11,7 @@
   background:
     radial-gradient(
         ellipse 70% 90% at 50% 120%,
-        color-mix(in srgb, var(--color-brand-blue) 75%, transparent),
+        color-mix(in srgb, var(--color-brand-blue) 32%, transparent),
         transparent 70%
       )
       padding-box,
@@ -21,7 +20,7 @@
     linear-gradient(
         180deg,
         color-mix(in srgb, var(--color-text-inverse) 10%, transparent),
-        color-mix(in srgb, var(--color-primary-300) 50%, transparent)
+        color-mix(in srgb, var(--color-primary-300) 20%, transparent)
       )
       border-box;
   text-align: center;

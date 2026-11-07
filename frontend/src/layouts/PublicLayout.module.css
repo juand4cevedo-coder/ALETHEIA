@@ -347,14 +347,12 @@
   cursor: pointer;
 }
 
-/* Quién opera el servicio y la autoridad del consumidor: una franja sobria, con los datos
-   separados por puntos que desaparecen cuando cada dato baja a su propia línea. */
+/* Quién opera el servicio y la autoridad del consumidor: una franja sobria y centrada, con
+   los datos separados por puntos que desaparecen cuando cada dato baja a su propia línea. */
 .footerLegal {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4) var(--space-8);
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
   max-width: calc(var(--content-width) - 2 * var(--space-6));
   margin: var(--space-12) auto 0;
   padding: var(--space-4) var(--space-6);
@@ -364,11 +362,13 @@
   background: color-mix(in srgb, var(--color-ink-900) 70%, transparent);
   font-size: 13px;
   line-height: 1.5;
+  text-align: center;
 }
 
 .operator {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--space-1) 0;
   min-width: 0;
   margin: 0;
@@ -471,6 +471,7 @@
 
   .operator {
     flex-direction: column;
+    align-items: center;
   }
 
   .operator li + li::before {
@@ -479,6 +480,8 @@
 
   .footerBottom {
     flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 }
 
