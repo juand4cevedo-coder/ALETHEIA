@@ -15,6 +15,7 @@ import { CONSUMER_AUTHORITY, DATA_CONTROLLER } from "../config/legal.ts";
 import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
+import { hasSessionHint } from "../features/session/sessionHint.ts";
 import { prefetchLikelyNext } from "../routes/lazyRoutes.ts";
 import styles from "./PublicLayout.module.css";
 
@@ -58,6 +59,12 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
 // portada y toma un fondo translúcido al desplazarse. En pantallas angostas la navegación se
 // abre en una hoja inferior: un <dialog> nativo que atrapa el foco y se cierra con Escape.
 export function PublicLayout() {
+  // Con una sesión abierta, «Ingresar» lleva directo al espacio de trabajo (Diseño UX/UI, 4.2).
+  const [access] = useState(() =>
+    hasSessionHint()
+      ? { to: ROUTES.app, label: "Ir a mis casos" }
+      : { to: ROUTES.signIn, label: "Ingresar" },
+  );
   const menuRef = useRef<HTMLDialogElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -128,10 +135,10 @@ export function PublicLayout() {
 
           <div className={styles.actions}>
             <NavLink
-              to={ROUTES.signIn}
+              to={access.to}
               className={`${styles.navLink} ${styles.signIn}`}
             >
-              Ingresar
+              {access.label}
             </NavLink>
             <span className={styles.headerCta}>
               <ButtonLink to={ROUTES.signUp} surface="dark" size="sm">
@@ -180,19 +187,17 @@ export function PublicLayout() {
         </div>
         <nav aria-label="Menú">
           <ul className={styles.sheetList}>
-            {[...PRIMARY_LINKS, { to: ROUTES.signIn, label: "Ingresar" }].map(
-              (link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className={styles.sheetLink}
-                    onClick={closeMenu}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ),
-            )}
+            {[...PRIMARY_LINKS, access].map((link) => (
+              <li key={link.to}>
+                <Link
+                  to={link.to}
+                  className={styles.sheetLink}
+                  onClick={closeMenu}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
         <div className={styles.sheetCta}>

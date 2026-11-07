@@ -11,17 +11,17 @@
   background:
     radial-gradient(
       60rem 40rem at 10% 34%,
-      color-mix(in srgb, var(--color-brand-blue) 16%, transparent),
+      color-mix(in srgb, var(--color-brand-blue) 9%, transparent),
       transparent 70%
     ),
     radial-gradient(
       55rem 36rem at 92% 52%,
-      color-mix(in srgb, var(--color-primary-400) 10%, transparent),
+      color-mix(in srgb, var(--color-primary-400) 5%, transparent),
       transparent 70%
     ),
     radial-gradient(
       60rem 40rem at 12% 74%,
-      color-mix(in srgb, var(--color-brand-blue) 14%, transparent),
+      color-mix(in srgb, var(--color-brand-blue) 8%, transparent),
       transparent 70%
     ),
     linear-gradient(

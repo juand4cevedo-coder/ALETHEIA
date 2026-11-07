@@ -28,7 +28,7 @@
   }
 }
 
-/* El plan recomendado lleva un borde de luz en degradado y un halo de marca. */
+/* El plan recomendado lleva un borde de luz que se apaga hacia abajo y una sombra discreta. */
 .recommended,
 .recommended:hover {
   border-color: transparent;
@@ -37,12 +37,12 @@
       padding-box,
     linear-gradient(
         180deg,
-        var(--color-primary-300),
-        color-mix(in srgb, var(--color-brand-blue) 30%, transparent)
+        color-mix(in srgb, var(--color-primary-300) 70%, transparent),
+        color-mix(in srgb, var(--color-text-inverse) 8%, transparent)
       )
       border-box;
-  box-shadow: 0 24px 64px -24px
-    color-mix(in srgb, var(--color-brand-blue) 80%, transparent);
+  box-shadow: 0 24px 48px -28px
+    color-mix(in srgb, var(--color-brand-blue) 45%, transparent);
 }
 
 .head {
@@ -61,11 +61,7 @@
 .badge {
   padding: 3px 10px;
   border-radius: var(--radius-pill);
-  background: linear-gradient(
-    180deg,
-    var(--color-primary-300),
-    var(--color-primary-400)
-  );
+  background: var(--color-primary-300);
   color: var(--color-ink-950);
   font-size: 12px;
   font-weight: 600;

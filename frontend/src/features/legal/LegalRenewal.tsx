@@ -24,8 +24,8 @@ import {
   type LegalSlug,
 } from "../../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../../config/site.ts";
-import { AuthScene } from "../auth/AuthScene.tsx";
-import { Emblem } from "../auth/Emblem.tsx";
+import { AuthScene } from "../../components/ui/AuthScene.tsx";
+import { Emblem } from "../../components/ui/Emblem.tsx";
 import { useSignOut } from "../session/useSignOut.ts";
 import { currentLegalChanges } from "./changes.ts";
 import { formatEffectiveDate } from "./format.ts";

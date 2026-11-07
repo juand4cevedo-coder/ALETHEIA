@@ -36,7 +36,9 @@ _PERFIL = "/api/v1/me"
 _CLAVE = "una frase larga y fácil de recordar"
 # Un solo hash para todas las pruebas: Argon2id tarda a propósito.
 _HASH = hash_password(_CLAVE)
-_MENSAJE_GENERICO = "El correo o la contraseña no coinciden. Revise los datos."
+_MENSAJE_GENERICO = (
+    "El correo o la contraseña no coinciden. Revise los datos o recupere su contraseña."
+)
 
 
 @pytest.fixture

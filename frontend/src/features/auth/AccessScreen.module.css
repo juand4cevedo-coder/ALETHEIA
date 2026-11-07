@@ -103,28 +103,6 @@
   text-underline-offset: 3px;
 }
 
-/* Confirmación de que la sesión se cerró (HU-009): una línea serena sobre el formulario. */
-.signedOut {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid
-    color-mix(in srgb, var(--color-success-400) 40%, transparent);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-ink-950) 45%, transparent);
-  backdrop-filter: blur(14px);
-  font-size: 14px;
-  line-height: 21px;
-  animation: appear var(--motion-slow) var(--ease-out);
-}
-
-.signedOut svg {
-  flex: none;
-  margin-top: 1px;
-  color: var(--color-success-400);
-}
-
 /* Aviso de éxito: reemplaza al formulario cuando la cuenta queda creada. */
 .notice {
   display: grid;
@@ -169,8 +147,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .appear,
-  .notice,
-  .signedOut {
+  .notice {
     animation: none;
   }
 }

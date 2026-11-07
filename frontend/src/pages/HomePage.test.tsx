@@ -146,3 +146,29 @@ describe("Página de inicio (HU-001)", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("Encabezado con sesión abierta (Diseño UX/UI, 4.2)", () => {
+  it("sin sesión ofrece ingresar", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    await renderRoute("/");
+
+    const header = screen.getByRole("banner");
+    expect(
+      within(header).getByRole("link", { name: "Ingresar" }),
+    ).toHaveAttribute("href", "/ingresar");
+  });
+
+  it("con sesión cambia «Ingresar» por «Ir a mis casos»", async () => {
+    window.localStorage.setItem("aletheia:sesion", "1");
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    await renderRoute("/");
+
+    const header = screen.getByRole("banner");
+    expect(
+      within(header).getByRole("link", { name: "Ir a mis casos" }),
+    ).toHaveAttribute("href", "/app");
+    expect(
+      within(header).queryByRole("link", { name: "Ingresar" }),
+    ).not.toBeInTheDocument();
+  });
+});

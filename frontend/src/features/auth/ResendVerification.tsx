@@ -4,7 +4,8 @@ import { type FormEvent, useId, useState } from "react";
 import type { ResendVerificationError } from "../../api/generated";
 import { resendVerificationMutation } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../../components/ui/Button.tsx";
-import { Field } from "./Field.tsx";
+import { MESSAGES } from "../../content/messages.ts";
+import { Field } from "../../components/ui/Field.tsx";
 import { EMAIL_MAX_LENGTH, EMAIL_PATTERN, SIGN_UP_MESSAGES } from "./signUp.ts";
 import styles from "./ResendVerification.module.css";
 
@@ -67,7 +68,7 @@ export function ResendVerification() {
       {problem && (
         <p className={styles.alert} role="alert">
           {problem === "tooManyAttempts"
-            ? "Hizo varios intentos seguidos. Espere 15 minutos e inténtelo de nuevo."
+            ? MESSAGES.tooManyAttempts
             : "No pudimos enviar el enlace. Inténtelo de nuevo en unos minutos."}
         </p>
       )}

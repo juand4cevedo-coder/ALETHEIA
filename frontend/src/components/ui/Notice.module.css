@@ -1,0 +1,62 @@
+/* Aviso en línea (CMP-UI-010) sobre el fondo oscuro: borde y velo del color de su tono. */
+.notice {
+  --tone: var(--color-primary-300);
+
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--tone) 8%, var(--color-ink-950));
+  color: var(--color-text-inverse);
+  font-size: 14px;
+  line-height: 21px;
+  animation: appear var(--motion-base) var(--ease-out);
+}
+
+.notice:focus {
+  outline: none;
+}
+
+.notice[data-tone="success"] {
+  --tone: var(--color-success-400);
+}
+
+.notice[data-tone="error"] {
+  --tone: var(--color-error-400);
+}
+
+.notice[data-tone="warning"] {
+  --tone: var(--color-warning-400);
+}
+
+.notice > svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--tone);
+}
+
+.content {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.content :where(a) {
+  color: var(--color-primary-300);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notice {
+    animation: none;
+  }
+}

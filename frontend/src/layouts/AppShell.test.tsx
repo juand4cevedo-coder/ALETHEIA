@@ -1,4 +1,5 @@
-import { screen, waitFor } from "@testing-library/react";
+import { focusManager } from "@tanstack/react-query";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -43,7 +44,13 @@ describe("Espacio de trabajo protegido (API-014)", () => {
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/ingresar"),
     );
-    expect(router.state.location.state).toEqual({ from: "/app" });
+    expect(router.state.location.state).toEqual({
+      from: "/app",
+      expired: false,
+    });
+    expect(
+      screen.queryByText(/Su sesión terminó por seguridad/),
+    ).not.toBeInTheDocument();
   });
 
   it("con sesión muestra a la persona, su organización, su rol y el estado del correo", async () => {
@@ -53,7 +60,11 @@ describe("Espacio de trabajo protegido (API-014)", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Restrepo Abogados · Abogado")).toBeInTheDocument();
+    expect(
+      within(
+        screen.getByRole("button", { name: /Opciones de la cuenta/ }),
+      ).getByText("Restrepo Abogados · Abogado"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Sin verificar")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Verifique su correo" }),
@@ -76,6 +87,35 @@ describe("Espacio de trabajo protegido (API-014)", () => {
     reintentar.click();
 
     expect(await screen.findByText("Verificado")).toBeInTheDocument();
+  });
+});
+
+describe("Sesión vencida (NAV-004, MSG-012)", () => {
+  it("si la sesión vence con la pantalla abierta, lleva a ingresar con el aviso", async () => {
+    let alive = true;
+    fetchMock.mockImplementation(async (input) => {
+      const path = new URL((input as Request).url).pathname;
+      if (path === "/api/v1/me" && alive) return jsonResponse(ME);
+      return jsonResponse({ type: "about:blank", status: 401 }, 401);
+    });
+    const { router } = await renderRoute("/app");
+    await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" });
+
+    alive = false;
+    act(() => {
+      focusManager.setFocused(false);
+      focusManager.setFocused(true);
+    });
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/ingresar"),
+    );
+    expect(
+      await screen.findByText(
+        "Su sesión terminó por seguridad. Ingrese de nuevo para continuar donde iba.",
+      ),
+    ).toBeInTheDocument();
+    focusManager.setFocused(undefined);
   });
 });
 
