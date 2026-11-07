@@ -5,11 +5,13 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { forgotPasswordMutation } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
+import { SITE_NAME, SITE_URL } from "../config/site.ts";
+import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { apiProblem } from "../features/auth/apiProblem.ts";
-import { Emblem } from "../features/auth/Emblem.tsx";
-import { Field } from "../features/auth/Field.tsx";
+import { Emblem } from "../components/ui/Emblem.tsx";
+import { Field } from "../components/ui/Field.tsx";
+import { SystemError } from "../components/ui/SystemError.tsx";
 import {
   EMAIL_MAX_LENGTH,
   EMAIL_PATTERN,
@@ -18,7 +20,8 @@ import {
 
 const TITLE_ID = "titulo-recuperar";
 
-type Problem = "tooManyAttempts" | "unexpected";
+type Problem =
+  { kind: "tooManyAttempts" } | { kind: "system"; requestId?: string };
 
 // Recuperar la contraseña (HU-010, API-011). La respuesta es la misma exista o no la cuenta
 // (CA-HU-010-02), así que el aviso tampoco dice si el correo está registrado.
@@ -34,13 +37,17 @@ export function ForgotPasswordPage() {
     ...forgotPasswordMutation(),
     onSuccess: (_, variables) => setSentTo(variables.body.email),
     onError: (failure) => {
-      const { status } = apiProblem(failure);
+      const { status, requestId } = apiProblem(failure);
       if (status === 422) {
         setError(SIGN_UP_MESSAGES.email);
         emailRef.current?.focus();
         return;
       }
-      setProblem(status === 429 ? "tooManyAttempts" : "unexpected");
+      setProblem(
+        status === 429
+          ? { kind: "tooManyAttempts" }
+          : { kind: "system", requestId },
+      );
     },
   });
 
@@ -94,11 +101,12 @@ export function ForgotPasswordPage() {
             >
               Revise su correo
             </h2>
+            {/* MSG-003: el mismo aviso exista o no la cuenta. */}
+            <p>{MESSAGES.recoveryRequested}</p>
             <p>
-              Si <strong>{sentTo}</strong> tiene una cuenta, le enviamos un
-              enlace para elegir una contraseña nueva. Vence en una hora y sirve
-              una sola vez. Si no le llega en unos minutos, revise la carpeta de
-              spam.
+              Lo pidió para <strong translate="no">{sentTo}</strong>. El enlace
+              vence en una hora y sirve una sola vez; si no le llega en unos
+              minutos, revise la carpeta de spam.
             </p>
           </section>
         ) : (
@@ -110,19 +118,10 @@ export function ForgotPasswordPage() {
           >
             {problem && (
               <div className={styles.alert} role="alert">
-                {problem === "tooManyAttempts" ? (
-                  // MSG-004.
-                  <p>
-                    Hizo varias solicitudes seguidas. Espere 15 minutos e
-                    inténtelo de nuevo.
-                  </p>
+                {problem.kind === "tooManyAttempts" ? (
+                  <p>{MESSAGES.tooManyAttempts}</p>
                 ) : (
-                  // MSG-019.
-                  <p>
-                    No pudimos enviar el enlace. Inténtelo de nuevo; si
-                    continúa, escríbanos a{" "}
-                    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
-                  </p>
+                  <SystemError requestId={problem.requestId} />
                 )}
               </div>
             )}

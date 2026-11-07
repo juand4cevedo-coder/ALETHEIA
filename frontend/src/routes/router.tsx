@@ -6,13 +6,13 @@ import { PublicLayout } from "../layouts/PublicLayout.tsx";
 import { HomePage } from "../pages/HomePage.tsx";
 import { NotFoundPage } from "../pages/NotFoundPage.tsx";
 import {
-  loadAppLayout,
+  loadAccountPage,
+  loadAppShell,
   loadAuthLayout,
   loadForgotPasswordPage,
   loadLegalPage,
   loadPricingPage,
   loadResetPasswordPage,
-  loadSecurityPage,
   loadSignInPage,
   loadSignUpPage,
   loadVerifyEmailPage,
@@ -104,14 +104,14 @@ export const routes: RouteObject[] = [
   {
     // Espacio de trabajo: exige sesión. El marco consulta /api/v1/me antes de mostrar nada.
     path: ROUTES.app.slice(1),
-    lazy: { Component: loadAppLayout },
+    lazy: { Component: loadAppShell },
     hydrateFallbackElement: loading,
     errorElement: <NotFoundPage />,
     children: [
       { index: true, lazy: { Component: loadWorkspacePage } },
       {
-        path: ROUTES.security.slice(ROUTES.app.length + 1),
-        lazy: { Component: loadSecurityPage },
+        path: ROUTES.account.slice(ROUTES.app.length + 1),
+        lazy: { Component: loadAccountPage },
       },
     ],
   },

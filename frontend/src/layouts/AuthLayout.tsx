@@ -3,7 +3,7 @@ import { Link, Outlet, ScrollRestoration, useMatches } from "react-router";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
 import { SITE_NAME } from "../config/site.ts";
-import { AuthScene } from "../features/auth/AuthScene.tsx";
+import { AuthScene } from "../components/ui/AuthScene.tsx";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import styles from "./AuthLayout.module.css";
 

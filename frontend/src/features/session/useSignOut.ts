@@ -6,6 +6,7 @@ import {
   signOutMutation,
 } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { ROUTES } from "../../config/routes.ts";
+import { forgetSession } from "./sessionHint.ts";
 
 /** Qué sesiones se cerraron: la de este dispositivo o todas. */
 export type SignOutScope = "device" | "everywhere";
@@ -13,10 +14,16 @@ export type SignOutScope = "device" | "everywhere";
 /** Estado de navegación con el que la pantalla de ingreso confirma el cierre. */
 export type SignedOutState = { signedOut: SignOutScope };
 
-export function signedOutScope(state: unknown): SignOutScope | null {
+/** Qué aviso muestra la pantalla de ingreso según cómo se llegó a ella. */
+export type SessionNotice = SignOutScope | "expired";
+
+export function sessionNotice(state: unknown): SessionNotice | null {
   if (typeof state !== "object" || state === null) return null;
-  const scope = (state as Partial<SignedOutState>).signedOut;
-  return scope === "device" || scope === "everywhere" ? scope : null;
+  const { signedOut, expired } = state as Partial<SignedOutState> & {
+    expired?: unknown;
+  };
+  if (signedOut === "device" || signedOut === "everywhere") return signedOut;
+  return expired === true ? "expired" : null;
 }
 
 function isUnauthorized(error: unknown): boolean {
@@ -37,6 +44,7 @@ export function useSignOut() {
 
   const finish = (scope: SignOutScope) => {
     // Nada de la cuenta queda en la memoria de la página para quien use el equipo después.
+    forgetSession();
     void queryClient.cancelQueries();
     queryClient.removeQueries();
     void navigate(ROUTES.signIn, {
