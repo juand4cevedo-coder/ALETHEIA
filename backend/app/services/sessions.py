@@ -121,7 +121,7 @@ def sign_in(
     bloqueada. Solo los intentos fallidos cuentan para el límite.
     """
     # Sin clave no hay sesión posible: falla antes de tocar la base.
-    key = settings.signing_key()
+    settings.signing_key()
     # Los candados de los dos límites duran hasta el commit: dos intentos simultáneos contra
     # la misma cuenta se atienden de uno en uno y no se cuelan por el último intento libre.
     rate_limit.check(session, rate_limit.LOGIN_IP, client_ip)
@@ -148,9 +148,43 @@ def sign_in(
     membership = _enter_organization(session, user.id)
     organization_id = membership.organization_id if membership is not None else None
 
-    issued = _issue(session, key, user.id, uuid.uuid7(), expires_at=now + SESSION_LIFETIME, now=now)
-    _audit(session, "login", organization_id, user.id, client_ip, user_agent, now)
+    issued = start_session(
+        session,
+        settings,
+        user.id,
+        organization_id,
+        client_ip=client_ip,
+        user_agent=user_agent,
+        now=now,
+    )
     session.commit()
+    return issued
+
+
+def start_session(
+    session: Session,
+    settings: Settings,
+    user_id: uuid.UUID,
+    organization_id: uuid.UUID | None,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+    now: datetime.datetime,
+) -> IssuedSession:
+    """Abre una familia de sesión nueva y la audita como ingreso, sin hacer commit.
+
+    La usan el ingreso con contraseña y la aceptación de una invitación, que deja a la persona
+    adentro apenas crea su cuenta (HU-012). Quien llama ya comprobó quién es.
+    """
+    issued = _issue(
+        session,
+        settings.signing_key(),
+        user_id,
+        uuid.uuid7(),
+        expires_at=now + SESSION_LIFETIME,
+        now=now,
+    )
+    _audit(session, "login", organization_id, user_id, client_ip, user_agent, now)
     return issued
 
 

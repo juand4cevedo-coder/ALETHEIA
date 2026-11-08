@@ -14,13 +14,17 @@ import psycopg
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 from sqlalchemy import Connection, Engine, create_engine, make_url, pool
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
+from app.api.deps import get_session
 from app.core.config import Settings
 from app.core.middleware import SAME_ORIGIN_HEADER
 from app.db.tenancy import TenantContext, set_tenant
+from app.main import create_app
 from app.models import Case, Evidence, Membership, Organization, User
 
 TEST_DATABASE_URL_VARIABLE = "ALETHEIA_TEST_DATABASE_URL"
@@ -234,3 +238,30 @@ def add_evidence(session: Session, tenant: Tenant, content: bytes) -> uuid.UUID:
     )
     session.flush()
     return evidence_id
+
+
+# --- Clientes HTTP de la aplicación ---------------------------------------------------------
+
+type NuevoCliente = Callable[[], TestClient]
+
+
+@pytest.fixture
+def app(settings: Settings, db: Session) -> FastAPI:
+    application = create_app(settings)
+    application.dependency_overrides[get_session] = lambda: db
+    return application
+
+
+@pytest.fixture
+def dispositivo(app: FastAPI) -> Iterator[NuevoCliente]:
+    abiertos: list[TestClient] = []
+
+    def nuevo() -> TestClient:
+        cliente = TestClient(app, base_url="https://testserver", headers=SAME_ORIGIN_HEADERS)
+        cliente.__enter__()
+        abiertos.append(cliente)
+        return cliente
+
+    yield nuevo
+    for cliente in abiertos:
+        cliente.__exit__(None, None, None)
