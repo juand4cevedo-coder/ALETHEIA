@@ -20,7 +20,7 @@ export function shortDate(iso: string): string {
   return DATE.format(new Date(iso));
 }
 
-/** «10 de noviembre de 2026, 3:05 p. m.». */
+/** «10 de noviembre de 2026, 3:05 p. m.». Termina en punto: no se le agrega otro. */
 export function dateTime(iso: string): string {
   return DATE_TIME.format(new Date(iso));
 }

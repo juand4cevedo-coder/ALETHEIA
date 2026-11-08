@@ -6,6 +6,7 @@ import { PublicLayout } from "../layouts/PublicLayout.tsx";
 import { HomePage } from "../pages/HomePage.tsx";
 import { NotFoundPage } from "../pages/NotFoundPage.tsx";
 import {
+  loadAcceptInvitationPage,
   loadAccountPage,
   loadAppShell,
   loadAuthLayout,
@@ -91,6 +92,11 @@ export const routes: RouteObject[] = [
             to: ROUTES.signIn,
           } satisfies AuthSwitch,
         },
+      },
+      {
+        // Se abre desde el correo de invitación: nunca redirige, haya o no sesión.
+        path: ROUTES.acceptInvitation.slice(1),
+        lazy: { Component: loadAcceptInvitationPage },
       },
       {
         path: ROUTES.verifyEmail.slice(1),

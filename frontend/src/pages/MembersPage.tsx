@@ -124,7 +124,7 @@ function Team() {
       {sent && (
         <Notice tone="success">
           Enviamos la invitación a <strong translate="no">{sent.email}</strong>.
-          Vence el {dateTime(sent.expires_at)}.
+          Vence el {dateTime(sent.expires_at)}
         </Notice>
       )}
 
