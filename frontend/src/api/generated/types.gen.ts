@@ -5,6 +5,47 @@ export type ClientOptions = {
 };
 
 /**
+ * AcceptInvitationRequest
+ *
+ * Aceptar la invitación (API-019).
+ *
+ * Con full_name se crea una cuenta nueva: la contraseña es la nueva y debe aceptar los textos
+ * legales vigentes. Sin full_name, la persona ya tiene cuenta y la contraseña es la suya.
+ */
+export type AcceptInvitationRequest = {
+  /**
+   * Token
+   *
+   * Token del fragmento del enlace (#t=…).
+   */
+  token: string;
+  /**
+   * Password
+   *
+   * Contraseña nueva de 12 a 128 caracteres para una cuenta nueva, o la contraseña de la cuenta existente.
+   */
+  password: string;
+  /**
+   * Full Name
+   *
+   * Nombre de la persona. Solo para una cuenta nueva.
+   */
+  full_name?: string | null;
+  /**
+   * Legal Version
+   *
+   * Versión de los textos que vio la persona. Solo para una cuenta nueva.
+   */
+  legal_version?: string | null;
+  /**
+   * Accepts Legal Terms
+   *
+   * Acepta los términos y autoriza el tratamiento de sus datos. Obligatorio para una cuenta nueva; nunca se presume.
+   */
+  accepts_legal_terms?: true | null;
+};
+
+/**
  * ChangePasswordRequest
  *
  * Contraseña actual y nueva de quien tiene la sesión (API-013).
@@ -52,6 +93,26 @@ export type HealthStatus = {
    * Database
    */
   database: "ok";
+};
+
+/**
+ * InvitationAccepted
+ *
+ * A dónde entró la persona al aceptar.
+ */
+export type InvitationAccepted = {
+  /**
+   * Organization Name
+   *
+   * Organización a la que entró.
+   */
+  organization_name: string;
+  /**
+   * Role
+   *
+   * Su rol en la organización.
+   */
+  role: "admin" | "lawyer" | "assistant";
 };
 
 /**
@@ -119,6 +180,50 @@ export type InvitationPage = {
 };
 
 /**
+ * InvitationPreview
+ *
+ * Lo que la persona invitada ve antes de aceptar (UI-011).
+ */
+export type InvitationPreview = {
+  /**
+   * Organization Name
+   *
+   * Organización que invita.
+   */
+  organization_name: string;
+  /**
+   * Inviter Name
+   *
+   * Quién envió la invitación.
+   */
+  inviter_name: string;
+  /**
+   * Email
+   *
+   * Correo invitado; será el de acceso.
+   */
+  email: string;
+  /**
+   * Role
+   *
+   * Rol ofrecido.
+   */
+  role: "admin" | "lawyer" | "assistant";
+  /**
+   * Expires At
+   *
+   * Cuándo vence la invitación.
+   */
+  expires_at: string;
+  /**
+   * Account
+   *
+   * new si el correo no tiene cuenta; existing si la tiene y no pertenece a ninguna organización; member_elsewhere si ya pertenece a una (RN-011).
+   */
+  account: "new" | "existing" | "member_elsewhere";
+};
+
+/**
  * InvitationRequest
  *
  * Correo y rol de la persona invitada (API-016).
@@ -136,6 +241,20 @@ export type InvitationRequest = {
    * Rol con que entrará: admin, lawyer o assistant.
    */
   role: "admin" | "lawyer" | "assistant";
+};
+
+/**
+ * InvitationTokenRequest
+ *
+ * El token del enlace de la invitación (API-052).
+ */
+export type InvitationTokenRequest = {
+  /**
+   * Token
+   *
+   * Token del fragmento del enlace (#t=…).
+   */
+  token: string;
 };
 
 /**
@@ -1311,3 +1430,81 @@ export type RevokeInvitationResponses = {
 
 export type RevokeInvitationResponse =
   RevokeInvitationResponses[keyof RevokeInvitationResponses];
+
+export type PreviewInvitationData = {
+  body: InvitationTokenRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/invitations/preview";
+};
+
+export type PreviewInvitationErrors = {
+  /**
+   * La invitación ya no sirve.
+   */
+  400: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos seguidos.
+   */
+  429: Problem;
+};
+
+export type PreviewInvitationError =
+  PreviewInvitationErrors[keyof PreviewInvitationErrors];
+
+export type PreviewInvitationResponses = {
+  /**
+   * Successful Response
+   */
+  200: InvitationPreview;
+};
+
+export type PreviewInvitationResponse =
+  PreviewInvitationResponses[keyof PreviewInvitationResponses];
+
+export type AcceptInvitationData = {
+  body: AcceptInvitationRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/invitations/accept";
+};
+
+export type AcceptInvitationErrors = {
+  /**
+   * La invitación ya no sirve.
+   */
+  400: Problem;
+  /**
+   * La cuenta existe y la contraseña no coincide.
+   */
+  401: Problem;
+  /**
+   * El correo ya pertenece a una organización, la organización está en solo lectura o los textos legales cambiaron.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos seguidos.
+   */
+  429: Problem;
+};
+
+export type AcceptInvitationError =
+  AcceptInvitationErrors[keyof AcceptInvitationErrors];
+
+export type AcceptInvitationResponses = {
+  /**
+   * Miembro creado: llegan las cookies de acceso y de renovación.
+   */
+  201: InvitationAccepted;
+};
+
+export type AcceptInvitationResponse =
+  AcceptInvitationResponses[keyof AcceptInvitationResponses];
