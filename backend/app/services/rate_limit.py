@@ -50,6 +50,9 @@ EMAIL_VERIFICATION_IP: Final = Limit("email_verification_ip", 20, _WINDOW)
 PASSWORD_RESET_ACCOUNT: Final = Limit("password_reset_account", 5, _WINDOW)
 PASSWORD_RESET_IP: Final = Limit("password_reset_ip", 20, _WINDOW)
 INVITATION_ACCOUNT: Final = Limit("invitation_account", 20, _WINDOW)
+# Abrir y aceptar enlaces de invitación: el token no se puede adivinar, pero nadie debe poder
+# probar enlaces sin límite.
+INVITATION_LINK_IP: Final = Limit("invitation_link_ip", 20, _WINDOW)
 
 LIMITS: Final = (
     LOGIN_ACCOUNT,
@@ -60,6 +63,7 @@ LIMITS: Final = (
     PASSWORD_RESET_ACCOUNT,
     PASSWORD_RESET_IP,
     INVITATION_ACCOUNT,
+    INVITATION_LINK_IP,
 )
 # Un intento más viejo que la ventana más larga ya no cuenta para ningún límite.
 RETENTION: Final = max(limit.window for limit in LIMITS)
