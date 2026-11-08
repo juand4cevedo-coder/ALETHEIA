@@ -1,12 +1,16 @@
-"""Tokens firmados (JWT con HS256): los enlaces de un solo uso de los correos y el acceso de
-las sesiones.
+"""Tokens de la API: los firmados (JWT con HS256) de los enlaces de la cuenta y del acceso de
+las sesiones, y los opacos que se guardan como hash.
 
-Cada uso tiene su propia subclave, derivada de la clave maestra con HMAC-SHA256: un token de
-un uso nunca valida en otro, aunque todos salgan del mismo secreto (ADR-027).
+Cada uso firmado tiene su propia subclave, derivada de la clave maestra con HMAC-SHA256: un
+token de un uso nunca valida en otro, aunque todos salgan del mismo secreto (ADR-027).
 
-Un enlace de un solo uso no se guarda en ninguna tabla. Lleva un sello del estado que su uso
-cambia, como el correo todavía sin verificar o el hash de la contraseña, y deja de valer en
-cuanto ese estado cambia.
+Un enlace firmado no se guarda en ninguna tabla. Lleva un sello del estado que su uso cambia,
+como el correo todavía sin verificar o el security_stamp de la cuenta, y deja de valer en
+cuanto ese estado cambia (ADR-027, ADR-034).
+
+Un token opaco es un valor aleatorio sin contenido. La base guarda solo su SHA-256, así que
+una copia de la base no sirve para usarlo. Se usa cuando cada token debe poder listarse o
+revocarse uno por uno: los de renovación de las sesiones y las invitaciones (ADR-035).
 
 El token de acceso de una sesión dura 10 minutos y lleva la familia de la sesión (sid). La API
 comprueba en cada petición que esa familia siga viva, así que cerrar las sesiones corta el
@@ -16,6 +20,7 @@ acceso de inmediato y no cuando el token vence (ADR-028).
 import datetime
 import hashlib
 import hmac
+import secrets
 import uuid
 from dataclasses import dataclass
 from enum import StrEnum
@@ -27,6 +32,19 @@ _ALGORITHM: Final = "HS256"
 _ISSUER: Final = "aletheia"
 # Ningún token legítimo se acerca a este tamaño: lo que pase de aquí se descarta sin leerlo.
 MAX_TOKEN_LENGTH: Final = 1024
+# 32 bytes aleatorios: 256 bits, imposibles de adivinar aunque se prueben sin límite.
+_OPAQUE_TOKEN_BYTES: Final = 32
+
+
+def new_opaque_token() -> str:
+    """Un token opaco nuevo, en base64 apto para una URL."""
+    return secrets.token_urlsafe(_OPAQUE_TOKEN_BYTES)
+
+
+def opaque_token_hash(token: str) -> bytes:
+    """El SHA-256 con que se guarda y se busca un token opaco. No necesita sal ni un hash
+    lento: el token ya tiene 256 bits de azar, no es una contraseña que se pueda adivinar."""
+    return hashlib.sha256(token.encode()).digest()
 
 
 _ACCESS_USE: Final = "session:access"

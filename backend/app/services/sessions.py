@@ -20,8 +20,6 @@ igual para el límite de intentos.
 """
 
 import datetime
-import hashlib
-import secrets
 import uuid
 from dataclasses import dataclass
 from typing import Final
@@ -31,7 +29,13 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.core.legal import LEGAL_VERSION
 from app.core.passwords import check_password, hash_password, needs_rehash
-from app.core.tokens import InvalidAccessTokenError, issue_access_token, read_access_token
+from app.core.tokens import (
+    InvalidAccessTokenError,
+    issue_access_token,
+    new_opaque_token,
+    opaque_token_hash,
+    read_access_token,
+)
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, Membership, RefreshToken, User
 from app.repositories import accounts as accounts_repository
@@ -41,10 +45,9 @@ from app.services.audit import audit_ip, audit_user_agent
 
 ACCESS_TOKEN_LIFETIME: Final = datetime.timedelta(minutes=10)
 SESSION_LIFETIME: Final = datetime.timedelta(days=14)
-# 32 bytes aleatorios: imposible de adivinar, y su SHA-256 cabe exacto en token_hash.
-_REFRESH_TOKEN_BYTES: Final = 32
-# Un token legítimo mide 43 caracteres. Lo que pase de este tope se rechaza sin consultar la
-# base ni calcular hashes de cuerpos enormes.
+# El token de renovación es opaco (app.core.tokens) y un token legítimo mide 43 caracteres.
+# Lo que pase de este tope se rechaza sin consultar la base ni calcular hashes de cuerpos
+# enormes.
 _MAX_REFRESH_TOKEN_LENGTH: Final = 64
 
 
@@ -99,7 +102,7 @@ class Principal:
 
 def refresh_token_hash(token: str) -> bytes:
     """El SHA-256 con que se guarda y se busca un token de renovación."""
-    return hashlib.sha256(token.encode()).digest()
+    return opaque_token_hash(token)
 
 
 def sign_in(
@@ -288,7 +291,7 @@ def _issue(
     now: datetime.datetime,
 ) -> IssuedSession:
     """Guarda el hash de un token de renovación nuevo y firma su acceso."""
-    refresh_token = secrets.token_urlsafe(_REFRESH_TOKEN_BYTES)
+    refresh_token = new_opaque_token()
     sessions_repository.add_refresh_token(
         session,
         RefreshToken(
