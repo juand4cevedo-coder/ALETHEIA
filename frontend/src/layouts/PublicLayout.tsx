@@ -28,7 +28,7 @@ const SCROLLED_AT = 8;
 const PRIMARY_LINKS = [
   { to: ROUTES.howItWorks, label: "Cómo funciona" },
   { to: ROUTES.pricing, label: "Precios" },
-  { to: ROUTES.verifier, label: "Verificador" },
+  { to: ROUTES.verifierSection, label: "Verificador" },
 ] as const;
 
 const FOOTER_GROUPS = [
