@@ -1023,10 +1023,218 @@
           }
         }
       }
+    },
+    "/api/v1/invitations/preview": {
+      "post": {
+        "tags": [
+          "invitaciones"
+        ],
+        "summary": "Ver una invitación antes de aceptarla",
+        "operationId": "preview_invitation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationPreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "La invitación ya no sirve.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos seguidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/invitations/accept": {
+      "post": {
+        "tags": [
+          "invitaciones"
+        ],
+        "summary": "Aceptar una invitación",
+        "operationId": "accept_invitation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Miembro creado: llegan las cookies de acceso y de renovación.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "La invitación ya no sirve.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos seguidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "La cuenta existe y la contraseña no coincide.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El correo ya pertenece a una organización, la organización está en solo lectura o los textos legales cambiaron.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AcceptInvitationRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Token",
+            "description": "Token del fragmento del enlace (#t=…)."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "description": "Contraseña nueva de 12 a 128 caracteres para una cuenta nueva, o la contraseña de la cuenta existente."
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name",
+            "description": "Nombre de la persona. Solo para una cuenta nueva."
+          },
+          "legal_version": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Version",
+            "description": "Versión de los textos que vio la persona. Solo para una cuenta nueva."
+          },
+          "accepts_legal_terms": {
+            "anyOf": [
+              {
+                "type": "boolean",
+                "const": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepts Legal Terms",
+            "description": "Acepta los términos y autoriza el tratamiento de sus datos. Obligatorio para una cuenta nueva; nunca se presume."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token",
+          "password"
+        ],
+        "title": "AcceptInvitationRequest",
+        "description": "Aceptar la invitación (API-019).\n\nCon full_name se crea una cuenta nueva: la contraseña es la nueva y debe aceptar los textos\nlegales vigentes. Sin full_name, la persona ya tiene cuenta y la contraseña es la suya."
+      },
       "ChangePasswordRequest": {
         "properties": {
           "current_password": {
@@ -1091,6 +1299,32 @@
         ],
         "title": "HealthStatus",
         "description": "Estado del servicio y de la base de datos cuando ambos responden."
+      },
+      "InvitationAccepted": {
+        "properties": {
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name",
+            "description": "Organización a la que entró."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Su rol en la organización."
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_name",
+          "role"
+        ],
+        "title": "InvitationAccepted",
+        "description": "A dónde entró la persona al aceptar."
       },
       "InvitationOut": {
         "properties": {
@@ -1177,6 +1411,62 @@
         "title": "InvitationPage",
         "description": "Invitaciones pendientes, de la más reciente a la más antigua (API-017)."
       },
+      "InvitationPreview": {
+        "properties": {
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name",
+            "description": "Organización que invita."
+          },
+          "inviter_name": {
+            "type": "string",
+            "title": "Inviter Name",
+            "description": "Quién envió la invitación."
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "description": "Correo invitado; será el de acceso."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Rol ofrecido."
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At",
+            "description": "Cuándo vence la invitación."
+          },
+          "account": {
+            "type": "string",
+            "enum": [
+              "new",
+              "existing",
+              "member_elsewhere"
+            ],
+            "title": "Account",
+            "description": "new si el correo no tiene cuenta; existing si la tiene y no pertenece a ninguna organización; member_elsewhere si ya pertenece a una (RN-011)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_name",
+          "inviter_name",
+          "email",
+          "role",
+          "expires_at",
+          "account"
+        ],
+        "title": "InvitationPreview",
+        "description": "Lo que la persona invitada ve antes de aceptar (UI-011)."
+      },
       "InvitationRequest": {
         "properties": {
           "email": {
@@ -1205,6 +1495,24 @@
         ],
         "title": "InvitationRequest",
         "description": "Correo y rol de la persona invitada (API-016)."
+      },
+      "InvitationTokenRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Token",
+            "description": "Token del fragmento del enlace (#t=…)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "InvitationTokenRequest",
+        "description": "El token del enlace de la invitación (API-052)."
       },
       "LegalAcceptanceRequest": {
         "properties": {

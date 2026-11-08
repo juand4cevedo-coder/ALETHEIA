@@ -9,6 +9,7 @@ import {
 
 import { client } from "../client.gen";
 import {
+  acceptInvitation,
   acceptLegalTerms,
   changePassword,
   createInvitation,
@@ -18,6 +19,7 @@ import {
   listMembers,
   listPlans,
   type Options,
+  previewInvitation,
   readMe,
   refreshSession,
   registerAccount,
@@ -30,6 +32,9 @@ import {
   verifyEmail,
 } from "../sdk.gen";
 import type {
+  AcceptInvitationData,
+  AcceptInvitationError,
+  AcceptInvitationResponse,
   AcceptLegalTermsData,
   AcceptLegalTermsError,
   AcceptLegalTermsResponse,
@@ -54,6 +59,9 @@ import type {
   ListPlansData,
   ListPlansError,
   ListPlansResponse,
+  PreviewInvitationData,
+  PreviewInvitationError,
+  PreviewInvitationResponse,
   ReadMeData,
   ReadMeError,
   ReadMeResponse,
@@ -727,6 +735,60 @@ export const revokeInvitationMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await revokeInvitation({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Ver una invitación antes de aceptarla
+ */
+export const previewInvitationMutation = (
+  options?: Partial<Options<PreviewInvitationData>>,
+): UseMutationOptions<
+  PreviewInvitationResponse,
+  PreviewInvitationError,
+  Options<PreviewInvitationData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PreviewInvitationResponse,
+    PreviewInvitationError,
+    Options<PreviewInvitationData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await previewInvitation({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Aceptar una invitación
+ */
+export const acceptInvitationMutation = (
+  options?: Partial<Options<AcceptInvitationData>>,
+): UseMutationOptions<
+  AcceptInvitationResponse,
+  AcceptInvitationError,
+  Options<AcceptInvitationData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AcceptInvitationResponse,
+    AcceptInvitationError,
+    Options<AcceptInvitationData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await acceptInvitation({
         ...options,
         ...fnOptions,
         throwOnError: true,

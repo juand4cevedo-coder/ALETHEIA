@@ -13,6 +13,7 @@ export const ROUTES = {
   verifyEmail: "/verificar-correo",
   forgotPassword: "/recuperar",
   resetPassword: "/restablecer-contrasena",
+  acceptInvitation: "/invitacion",
   // Espacio de trabajo: todo lo que exige sesión vive bajo /app.
   app: "/app",
   account: "/app/cuenta",

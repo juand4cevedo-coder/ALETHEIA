@@ -6,8 +6,7 @@ import type { RegisterAccountError } from "../api/generated";
 import { registerAccountMutation } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
-import { Checkbox } from "../components/ui/Checkbox.tsx";
-import { legalRoute, ROUTES } from "../config/routes.ts";
+import { ROUTES } from "../config/routes.ts";
 import { SITE_NAME, SITE_URL } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { AccountTypeChoice } from "../features/auth/AccountTypeChoice.tsx";
@@ -25,6 +24,7 @@ import {
   validateSignUp,
 } from "../features/auth/signUp.ts";
 import styles from "../features/auth/AccessScreen.module.css";
+import { LegalConsent } from "../features/auth/LegalConsent.tsx";
 
 // Por defecto, la cuenta personal: es el caso del perfil principal (PER-001).
 const EMPTY: SignUpValues = {
@@ -246,27 +246,14 @@ export function SignUpPage() {
             </fieldset>
 
             <div className={styles.terms}>
-              <Checkbox
+              <LegalConsent
                 ref={bind("acceptsLegalTerms")}
-                name="acepta"
-                required
                 checked={values.acceptsLegalTerms}
                 error={errors.acceptsLegalTerms}
                 onChange={(event) =>
                   update("acceptsLegalTerms", event.target.checked)
                 }
-              >
-                Acepto los{" "}
-                <NewTabLink to={legalRoute("terminos")}>
-                  términos y condiciones
-                </NewTabLink>{" "}
-                y autorizo el tratamiento de mis datos según la{" "}
-                <NewTabLink to={legalRoute("privacidad")}>
-                  política de privacidad
-                </NewTabLink>
-                . Mi contraseña se guarda como un resumen irreversible que nadie
-                en ALETHEIA puede leer.
-              </Checkbox>
+              />
             </div>
 
             <div className={styles.submit}>
@@ -284,16 +271,6 @@ export function SignUpPage() {
         )}
       </div>
     </>
-  );
-}
-
-// Las políticas se abren en otra pestaña para no perder lo escrito en el formulario.
-function NewTabLink({ to, children }: { to: string; children: string }) {
-  return (
-    <a href={to} target="_blank" rel="noopener">
-      {children}
-      <span className="visually-hidden"> (se abre en otra pestaña)</span>
-    </a>
   );
 }
 

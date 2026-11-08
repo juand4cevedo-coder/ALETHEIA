@@ -2,119 +2,32 @@
 
 import datetime
 import uuid
-from collections.abc import Callable, Iterator
-from dataclasses import dataclass
 from typing import Any
 
 import pytest
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_session
 from app.core.config import Settings
-from app.core.legal import LEGAL_VERSION
-from app.core.passwords import hash_password
 from app.core.tokens import opaque_token_hash
 from app.db.tenancy import TenantContext, set_tenant
-from app.main import create_app
-from app.models import AuditLog, Invitation, Job, Membership, Organization, Plan, Subscription, User
+from app.models import AuditLog, Invitation, Job, Organization, Plan, User
 from app.services import notifications
 from app.services import organization_emails as _organization_emails  # noqa: F401
 from app.services.members import INVITATION_LIFETIME, INVITATION_TEMPLATE
 from app.services.organization_emails import colombian_datetime
-from tests.conftest import SAME_ORIGIN_HEADERS
+from tests.conftest import NuevoCliente
+from tests.organizations import CLAVE, Oficina, crear_miembro, crear_oficina
 
 _INGRESO = "/api/v1/auth/login"
 _INVITACIONES = "/api/v1/organization/invitations"
 _MIEMBROS = "/api/v1/organization/members"
-_CLAVE = "una frase larga y fácil de recordar"
-_HASH = hash_password(_CLAVE)
-
-type NuevoCliente = Callable[[], TestClient]
-
-
-@pytest.fixture
-def app(settings: Settings, db: Session) -> FastAPI:
-    application = create_app(settings)
-    application.dependency_overrides[get_session] = lambda: db
-    return application
-
-
-@pytest.fixture
-def dispositivo(app: FastAPI) -> Iterator[NuevoCliente]:
-    abiertos: list[TestClient] = []
-
-    def nuevo() -> TestClient:
-        cliente = TestClient(app, base_url="https://testserver", headers=SAME_ORIGIN_HEADERS)
-        cliente.__enter__()
-        abiertos.append(cliente)
-        return cliente
-
-    yield nuevo
-    for cliente in abiertos:
-        cliente.__exit__(None, None, None)
-
-
-@dataclass(frozen=True, slots=True)
-class Oficina:
-    """Una organización de prueba con su propietario."""
-
-    organization_id: uuid.UUID
-    owner: User
-
-
-def _oficina(db: Session, plan: str = "professional", *, nombre: str = "Restrepo") -> Oficina:
-    owner = _persona(db, f"propietario-{uuid.uuid4().hex[:8]}@example.com", f"Ana {nombre}")
-    organization_id = uuid.uuid7()
-    set_tenant(db, TenantContext(organization_id=organization_id, user_id=owner.id))
-    db.add(Organization(id=organization_id, name=f"{nombre} Abogados"))
-    db.flush()
-    plan_id = db.scalar(select(Plan.id).where(Plan.code == plan))
-    assert plan_id is not None
-    db.add_all(
-        [
-            Membership(organization_id=organization_id, user_id=owner.id, role="owner"),
-            Subscription(
-                organization_id=organization_id,
-                plan_id=plan_id,
-                status="active",
-                billing_cycle="monthly",
-            ),
-        ]
-    )
-    db.flush()
-    set_tenant(db, TenantContext())
-    return Oficina(organization_id=organization_id, owner=owner)
-
-
-def _persona(db: Session, email: str, nombre: str = "Carlos Gómez") -> User:
-    user = User(
-        email=email,
-        password_hash=_HASH,
-        full_name=nombre,
-        terms_version=LEGAL_VERSION,
-        privacy_version=LEGAL_VERSION,
-        consented_at=datetime.datetime.now(datetime.UTC),
-    )
-    db.add(user)
-    db.flush()
-    return user
-
-
-def _miembro(db: Session, oficina: Oficina, email: str, role: str) -> User:
-    user = _persona(db, email)
-    set_tenant(db, TenantContext(organization_id=oficina.organization_id, user_id=user.id))
-    db.add(Membership(organization_id=oficina.organization_id, user_id=user.id, role=role))
-    db.flush()
-    set_tenant(db, TenantContext())
-    return user
 
 
 def _sesion(dispositivo: NuevoCliente, user: User) -> TestClient:
     cliente = dispositivo()
-    respuesta = cliente.post(_INGRESO, json={"email": user.email, "password": _CLAVE})
+    respuesta = cliente.post(_INGRESO, json={"email": user.email, "password": CLAVE})
     assert respuesta.status_code == 204, respuesta.text
     return cliente
 
@@ -159,7 +72,7 @@ def _vencer(db: Session, oficina: Oficina, invitation_id: uuid.UUID) -> None:
 def test_el_propietario_invita_con_un_rol_y_sale_el_correo(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    oficina = _oficina(db)
+    oficina = crear_oficina(db)
     cliente = _sesion(dispositivo, oficina.owner)
 
     respuesta = _invitar(cliente, "  Carlos@Example.com ", "assistant")
@@ -190,8 +103,8 @@ def test_el_propietario_invita_con_un_rol_y_sale_el_correo(
 
 
 def test_el_administrador_tambien_invita(dispositivo: NuevoCliente, db: Session) -> None:
-    oficina = _oficina(db, "firm")
-    admin = _miembro(db, oficina, "admin@example.com", "admin")
+    oficina = crear_oficina(db, "firm")
+    admin = crear_miembro(db, oficina, "admin@example.com", "admin")
 
     respuesta = _invitar(_sesion(dispositivo, admin), "nuevo@example.com", "admin")
 
@@ -203,8 +116,8 @@ def test_un_abogado_o_un_asistente_no_puede_invitar(
     dispositivo: NuevoCliente, db: Session, role: str
 ) -> None:
     # CA-HU-011-03.
-    oficina = _oficina(db, "firm")
-    persona = _miembro(db, oficina, f"{role}@example.com", role)
+    oficina = crear_oficina(db, "firm")
+    persona = crear_miembro(db, oficina, f"{role}@example.com", role)
     cliente = _sesion(dispositivo, persona)
 
     invitar = _invitar(cliente, "otro@example.com")
@@ -224,7 +137,7 @@ def test_sin_sesion_no_se_invita(dispositivo: NuevoCliente) -> None:
 
 
 def test_el_propietario_no_se_invita(dispositivo: NuevoCliente, db: Session) -> None:
-    oficina = _oficina(db)
+    oficina = crear_oficina(db)
 
     respuesta = _invitar(_sesion(dispositivo, oficina.owner), "otro@example.com", "owner")
 
@@ -232,16 +145,16 @@ def test_el_propietario_no_se_invita(dispositivo: NuevoCliente, db: Session) -> 
 
 
 def test_un_correo_mal_escrito_no_se_invita(dispositivo: NuevoCliente, db: Session) -> None:
-    oficina = _oficina(db)
+    oficina = crear_oficina(db)
 
     respuesta = _invitar(_sesion(dispositivo, oficina.owner), "sin-arroba")
 
     assert respuesta.status_code == 422
 
 
-def test_no_se_invita_a_quien_ya_es_miembro(dispositivo: NuevoCliente, db: Session) -> None:
-    oficina = _oficina(db, "firm")
-    _miembro(db, oficina, "carlos@example.com", "lawyer")
+def test_no_se_invita_a_quien_ya_esmiembro(dispositivo: NuevoCliente, db: Session) -> None:
+    oficina = crear_oficina(db, "firm")
+    crear_miembro(db, oficina, "carlos@example.com", "lawyer")
 
     respuesta = _invitar(_sesion(dispositivo, oficina.owner), "CARLOS@example.com")
 
@@ -250,7 +163,7 @@ def test_no_se_invita_a_quien_ya_es_miembro(dispositivo: NuevoCliente, db: Sessi
 
 
 def test_no_se_duplica_una_invitacion_vigente(dispositivo: NuevoCliente, db: Session) -> None:
-    oficina = _oficina(db, "firm")
+    oficina = crear_oficina(db, "firm")
     cliente = _sesion(dispositivo, oficina.owner)
     assert _invitar(cliente, "carlos@example.com").status_code == 201
 
@@ -263,7 +176,7 @@ def test_no_se_duplica_una_invitacion_vigente(dispositivo: NuevoCliente, db: Ses
 def test_una_invitacion_vencida_no_impide_invitar_de_nuevo(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    oficina = _oficina(db, "firm")
+    oficina = crear_oficina(db, "firm")
     cliente = _sesion(dispositivo, oficina.owner)
     primera = _invitar(cliente, "carlos@example.com").json()
     _vencer(db, oficina, uuid.UUID(primera["id"]))
@@ -272,7 +185,7 @@ def test_una_invitacion_vencida_no_impide_invitar_de_nuevo(
 
 
 def test_una_organizacion_en_solo_lectura_no_invita(dispositivo: NuevoCliente, db: Session) -> None:
-    oficina = _oficina(db)
+    oficina = crear_oficina(db)
     cliente = _sesion(dispositivo, oficina.owner)
     _contexto(db, oficina)
     db.execute(
@@ -294,7 +207,7 @@ def test_una_organizacion_en_solo_lectura_no_invita(dispositivo: NuevoCliente, d
 def test_la_prueba_gratis_no_tiene_cupo_para_invitar(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    oficina = _oficina(db, "trial")
+    oficina = crear_oficina(db, "trial")
 
     respuesta = _invitar(_sesion(dispositivo, oficina.owner), "carlos@example.com")
 
@@ -310,7 +223,7 @@ def test_las_invitaciones_abiertas_ocupan_cupo_hasta_revocarlas_o_vencer(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
     # Profesional incluye 2 usuarios: el propietario y una persona más.
-    oficina = _oficina(db, "professional")
+    oficina = crear_oficina(db, "professional")
     cliente = _sesion(dispositivo, oficina.owner)
     primera = _invitar(cliente, "carlos@example.com").json()
 
@@ -327,12 +240,12 @@ def test_las_invitaciones_abiertas_ocupan_cupo_hasta_revocarlas_o_vencer(
 
 
 def test_el_plan_firma_admite_usuarios_adicionales(dispositivo: NuevoCliente, db: Session) -> None:
-    oficina = _oficina(db, "firm")
+    oficina = crear_oficina(db, "firm")
     _contexto(db, oficina)
     incluidos = db.scalar(select(Plan.included_users).where(Plan.code == "firm"))
     assert incluidos is not None
     for numero in range(incluidos - 1):
-        _miembro(db, oficina, f"persona{numero}@example.com", "lawyer")
+        crear_miembro(db, oficina, f"persona{numero}@example.com", "lawyer")
     cliente = _sesion(dispositivo, oficina.owner)
 
     respuesta = _invitar(cliente, "adicional@example.com")
@@ -347,7 +260,7 @@ def test_el_plan_firma_admite_usuarios_adicionales(dispositivo: NuevoCliente, db
 def test_el_tope_de_invitaciones_frena_los_envios_en_masa(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    oficina = _oficina(db, "firm")
+    oficina = crear_oficina(db, "firm")
     cliente = _sesion(dispositivo, oficina.owner)
     for numero in range(20):
         assert _invitar(cliente, f"persona{numero}@example.com").status_code == 201
@@ -364,7 +277,7 @@ def test_el_tope_de_invitaciones_frena_los_envios_en_masa(
 def test_lista_las_pendientes_de_la_mas_reciente_y_marca_las_vencidas(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    oficina = _oficina(db, "firm")
+    oficina = crear_oficina(db, "firm")
     cliente = _sesion(dispositivo, oficina.owner)
     vieja = _invitar(cliente, "vieja@example.com").json()
     nueva = _invitar(cliente, "nueva@example.com").json()
@@ -383,7 +296,7 @@ def test_lista_las_pendientes_de_la_mas_reciente_y_marca_las_vencidas(
 
 
 def test_las_invitaciones_se_paginan_por_cursor(dispositivo: NuevoCliente, db: Session) -> None:
-    oficina = _oficina(db, "firm")
+    oficina = crear_oficina(db, "firm")
     cliente = _sesion(dispositivo, oficina.owner)
     ids = [_invitar(cliente, f"persona{n}@example.com").json()["id"] for n in range(3)]
 
@@ -398,7 +311,7 @@ def test_las_invitaciones_se_paginan_por_cursor(dispositivo: NuevoCliente, db: S
 
 
 def test_revocar_audita_y_no_se_puede_repetir(dispositivo: NuevoCliente, db: Session) -> None:
-    oficina = _oficina(db, "firm")
+    oficina = crear_oficina(db, "firm")
     cliente = _sesion(dispositivo, oficina.owner)
     invitacion = _invitar(cliente, "carlos@example.com").json()
 
@@ -416,8 +329,8 @@ def test_revocar_audita_y_no_se_puede_repetir(dispositivo: NuevoCliente, db: Ses
 def test_otra_organizacion_no_ve_ni_revoca_las_invitaciones(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    propia = _oficina(db, "firm", nombre="Restrepo")
-    ajena = _oficina(db, "firm", nombre="Gómez")
+    propia = crear_oficina(db, "firm", nombre="Restrepo")
+    ajena = crear_oficina(db, "firm", nombre="Gómez")
     invitacion = _invitar(_sesion(dispositivo, propia.owner), "carlos@example.com").json()
     intrusa = _sesion(dispositivo, ajena.owner)
 
@@ -438,8 +351,8 @@ def test_otra_organizacion_no_ve_ni_revoca_las_invitaciones(
 def test_lista_los_miembros_con_el_propietario_primero_y_el_cupo(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    oficina = _oficina(db, "firm")
-    abogado = _miembro(db, oficina, "carlos@example.com", "lawyer")
+    oficina = crear_oficina(db, "firm")
+    abogado = crear_miembro(db, oficina, "carlos@example.com", "lawyer")
     cliente = _sesion(dispositivo, oficina.owner)
     _invitar(cliente, "laura@example.com")
 
@@ -457,8 +370,8 @@ def test_lista_los_miembros_con_el_propietario_primero_y_el_cupo(
 def test_la_lista_de_miembros_no_incluye_otras_organizaciones(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    propia = _oficina(db, "firm", nombre="Restrepo")
-    _oficina(db, "firm", nombre="Gómez")
+    propia = crear_oficina(db, "firm", nombre="Restrepo")
+    crear_oficina(db, "firm", nombre="Gómez")
 
     cuerpo = _sesion(dispositivo, propia.owner).get(_MIEMBROS).json()
 
@@ -475,7 +388,7 @@ def _correo(db: Session, settings: Settings, payload: dict[str, Any]) -> Any:
 def test_el_correo_lleva_un_enlace_cuyo_hash_queda_guardado(
     dispositivo: NuevoCliente, db: Session, settings: Settings
 ) -> None:
-    oficina = _oficina(db, "firm")
+    oficina = crear_oficina(db, "firm")
     _invitar(_sesion(dispositivo, oficina.owner), "carlos@example.com", "assistant")
     [payload] = _tareas(db)
 
@@ -498,7 +411,7 @@ def test_el_correo_lleva_un_enlace_cuyo_hash_queda_guardado(
 def test_si_el_correo_se_reintenta_solo_sirve_el_ultimo_enlace(
     dispositivo: NuevoCliente, db: Session, settings: Settings
 ) -> None:
-    oficina = _oficina(db, "firm")
+    oficina = crear_oficina(db, "firm")
     _invitar(_sesion(dispositivo, oficina.owner), "carlos@example.com")
     [payload] = _tareas(db)
 
@@ -514,7 +427,7 @@ def test_si_el_correo_se_reintenta_solo_sirve_el_ultimo_enlace(
 def test_no_sale_correo_de_una_invitacion_revocada_o_vencida(
     dispositivo: NuevoCliente, db: Session, settings: Settings
 ) -> None:
-    oficina = _oficina(db, "firm")
+    oficina = crear_oficina(db, "firm")
     cliente = _sesion(dispositivo, oficina.owner)
     revocada = _invitar(cliente, "revocada@example.com").json()
     vencida = _invitar(cliente, "vencida@example.com").json()
