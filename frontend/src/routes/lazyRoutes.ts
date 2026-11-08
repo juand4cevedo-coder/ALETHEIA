@@ -29,6 +29,10 @@ export const loadWorkspacePage = () =>
   import("../pages/WorkspacePage.tsx").then((module) => module.WorkspacePage);
 export const loadAccountPage = () =>
   import("../pages/AccountPage.tsx").then((module) => module.AccountPage);
+export const loadAcceptInvitationPage = () =>
+  import("../pages/AcceptInvitationPage.tsx").then(
+    (module) => module.AcceptInvitationPage,
+  );
 export const loadMembersPage = () =>
   import("../pages/MembersPage.tsx").then((module) => module.MembersPage);
 

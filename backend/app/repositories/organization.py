@@ -9,7 +9,7 @@ import datetime
 import uuid
 from dataclasses import dataclass
 
-from sqlalchemy import ColumnElement, func, select
+from sqlalchemy import ColumnElement, func, select, text
 from sqlalchemy.orm import Session
 
 from app.models import Invitation, Membership, Organization, Plan, Subscription, User
@@ -171,3 +171,29 @@ def members(
         statement = statement.where(Membership.id > after)
     statement = statement.order_by(Membership.id).limit(limit)
     return [MemberRow(*row) for row in session.execute(statement)]
+
+
+_INVITATION_FOR_TOKEN = text(
+    "SELECT invitation_id, organization_id FROM invitation_for_token(:token_hash)"
+)
+
+
+def invitation_for_token(session: Session, token_hash: bytes) -> tuple[uuid.UUID, uuid.UUID] | None:
+    """La invitación y su organización a partir del hash del token, sin contexto previo.
+
+    Pasa por la función invitation_for_token (migración 0012): quien abre el enlace todavía no
+    pertenece a la organización, así que Row-Level Security no le deja ver la fila.
+    """
+    row = session.execute(_INVITATION_FOR_TOKEN, {"token_hash": token_hash}).first()
+    return (row.invitation_id, row.organization_id) if row is not None else None
+
+
+def invitation_for_update(session: Session, invitation_id: uuid.UUID) -> Invitation | None:
+    """La invitación bloqueada hasta el commit: dos aceptaciones del mismo enlace van en fila."""
+    return session.get(Invitation, invitation_id, with_for_update=True)
+
+
+def add_membership(session: Session, membership: Membership) -> None:
+    """Guarda la membresía. La base rechaza una segunda membresía de la misma persona (RN-011)."""
+    session.add(membership)
+    session.flush()

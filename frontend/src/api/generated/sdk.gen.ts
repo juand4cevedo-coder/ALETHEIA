@@ -9,6 +9,9 @@ import type {
 } from "./client";
 import { client } from "./client.gen";
 import type {
+  AcceptInvitationData,
+  AcceptInvitationErrors,
+  AcceptInvitationResponses,
   AcceptLegalTermsData,
   AcceptLegalTermsErrors,
   AcceptLegalTermsResponses,
@@ -33,6 +36,9 @@ import type {
   ListPlansData,
   ListPlansErrors,
   ListPlansResponses,
+  PreviewInvitationData,
+  PreviewInvitationErrors,
+  PreviewInvitationResponses,
   ReadMeData,
   ReadMeErrors,
   ReadMeResponses,
@@ -470,4 +476,50 @@ export const revokeInvitation = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/organization/invitations/{invitation_id}",
     ...options,
+  });
+
+/**
+ * Ver una invitación antes de aceptarla
+ */
+export const previewInvitation = <ThrowOnError extends boolean = false>(
+  options: Options<PreviewInvitationData, ThrowOnError>,
+): RequestResult<
+  PreviewInvitationResponses,
+  PreviewInvitationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PreviewInvitationResponses,
+    PreviewInvitationErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/invitations/preview",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Aceptar una invitación
+ */
+export const acceptInvitation = <ThrowOnError extends boolean = false>(
+  options: Options<AcceptInvitationData, ThrowOnError>,
+): RequestResult<
+  AcceptInvitationResponses,
+  AcceptInvitationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    AcceptInvitationResponses,
+    AcceptInvitationErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/invitations/accept",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
