@@ -1,8 +1,6 @@
-import { ArrowRight, BadgeCheck, FileSearch, Laptop } from "lucide-react";
+import { BadgeCheck, FileSearch, Laptop } from "lucide-react";
 
-import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 import { Reveal } from "../../components/ui/Reveal.tsx";
-import { ROUTES } from "../../config/routes.ts";
 import section from "./Section.module.css";
 import styles from "./VerifierSection.module.css";
 
@@ -24,7 +22,11 @@ const STEPS = [
 // Para quien recibe un paquete: juez, perito o contraparte (UI-005).
 export function VerifierSection() {
   return (
-    <section className={section.section} aria-labelledby="titulo-verificador">
+    <section
+      id="verificador"
+      className={section.section}
+      aria-labelledby="titulo-verificador"
+    >
       <div className={section.inner}>
         <Reveal className={styles.panel}>
           <div className={styles.copy}>
@@ -39,10 +41,11 @@ export function VerifierSection() {
               preservó. La verificación es pública, gratuita e independiente de
               quien aportó el paquete.
             </p>
-            <ButtonLink to={ROUTES.verifier} surface="dark">
-              Verificar un archivo
-              <ArrowRight size={18} />
-            </ButtonLink>
+            {/* El verificador llega con HU-026: hasta entonces no hay botón a una página vacía. */}
+            <p className={styles.availability}>
+              Abrimos el verificador público con la versión 1.0.0, el 27 de
+              noviembre de 2026.
+            </p>
           </div>
 
           <ol className={styles.steps}>
