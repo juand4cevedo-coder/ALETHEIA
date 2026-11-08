@@ -5,6 +5,9 @@ export const ROUTES = {
   howItWorks: "/#como-funciona",
   pricing: "/precios",
   verifier: "/verificador",
+  // Mientras el verificador público no existe (HU-026), la navegación lleva a la sección de la
+  // portada que lo explica, nunca a una página vacía.
+  verifierSection: "/#verificador",
   signIn: "/ingresar",
   signUp: "/registro",
   verifyEmail: "/verificar-correo",
