@@ -9,9 +9,10 @@ from sqlalchemy.orm import Session
 from app.adapters.email import EmailDeliveryError, EmailSender
 from app.core.config import Settings
 
-# Registra las plantillas de la cuenta: sin este import, el trabajador no las conoce.
+# Registran las plantillas de correo: sin estos imports, el trabajador no las conoce.
 from app.services import account_emails as _account_emails  # noqa: F401
 from app.services import notifications
+from app.services import organization_emails as _organization_emails  # noqa: F401
 from app.services.jobs import PermanentJobError
 
 

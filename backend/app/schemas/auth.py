@@ -15,21 +15,11 @@ from pydantic.config import JsonDict
 
 from app.core.passwords import MAX_LENGTH, MIN_LENGTH, normalize
 from app.core.tokens import MAX_TOKEN_LENGTH
+from app.schemas.common import Email
 
 # Texto visible: sin espacios sobrantes y nunca vacío. Va como alias simple, no con type, para
 # que el contrato lo describa en cada campo y no como un esquema aparte.
 _Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
-
-# Correo: sin espacios, en minúsculas y con la forma mínima de una dirección.
-_Email = Annotated[
-    str,
-    StringConstraints(
-        strip_whitespace=True,
-        to_lower=True,
-        max_length=254,
-        pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-    ),
-]
 
 
 def _password_length(password: str) -> str:
@@ -59,7 +49,7 @@ class RegisterRequest(BaseModel):
         description="individual si trabaja por su cuenta; firm si abre la cuenta de una oficina."
     )
     full_name: _Name = Field(description="Nombre de la persona.")
-    email: _Email = Field(description="Correo de la cuenta; también será el de acceso.")
+    email: Email = Field(description="Correo de la cuenta; también será el de acceso.")
     password: _NewPassword = Field(
         description=f"Contraseña de {MIN_LENGTH} a {MAX_LENGTH} caracteres.",
         json_schema_extra=_NEW_PASSWORD_SCHEMA,
@@ -103,7 +93,7 @@ class ResendVerificationRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    email: _Email = Field(description="Correo de la cuenta por verificar.")
+    email: Email = Field(description="Correo de la cuenta por verificar.")
 
 
 class VerificationRequested(BaseModel):
@@ -125,7 +115,7 @@ class LoginRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    email: _Email = Field(description="Correo de la cuenta.")
+    email: Email = Field(description="Correo de la cuenta.")
     # Sin mínimo de longitud: una contraseña corta no puede ser la de nadie, y decirlo aparte
     # no ayuda a nadie. El tope evita gastar CPU en textos enormes.
     password: str = Field(
@@ -138,7 +128,7 @@ class ForgotPasswordRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    email: _Email = Field(description="Correo de la cuenta.")
+    email: Email = Field(description="Correo de la cuenta.")
 
 
 class PasswordResetRequested(BaseModel):

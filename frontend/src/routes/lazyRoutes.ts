@@ -29,6 +29,8 @@ export const loadWorkspacePage = () =>
   import("../pages/WorkspacePage.tsx").then((module) => module.WorkspacePage);
 export const loadAccountPage = () =>
   import("../pages/AccountPage.tsx").then((module) => module.AccountPage);
+export const loadMembersPage = () =>
+  import("../pages/MembersPage.tsx").then((module) => module.MembersPage);
 
 // Lo que alguien abre casi siempre después del inicio: precios, ingresar y crear cuenta.
 const LIKELY_NEXT = [

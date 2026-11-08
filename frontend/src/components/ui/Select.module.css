@@ -1,0 +1,88 @@
+/* Selector (CMP-UI-003) con la misma cápsula de vidrio de Field.module.css: los dos conviven en
+   un formulario y deben verse de la misma familia. */
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.capsule {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 20%, transparent);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-text-inverse) 9%, transparent);
+  transition:
+    border-color var(--motion-base) var(--ease-standard),
+    background-color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard);
+}
+
+.capsule:hover {
+  border-color: color-mix(in srgb, var(--color-text-inverse) 32%, transparent);
+}
+
+.capsule:focus-within {
+  border-color: var(--color-primary-300);
+  background: color-mix(in srgb, var(--color-text-inverse) 13%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--color-primary-400) 30%, transparent);
+}
+
+.capsule[data-invalid] {
+  border-color: var(--color-error-400);
+}
+
+.select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 22px calc(var(--space-6) + 28px) 6px var(--space-6);
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: var(--color-text-inverse);
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+/* La lista que abre el sistema usa estos colores en Windows y Linux; en el celular es la del
+   propio sistema. */
+.select option {
+  background: var(--color-ink-900);
+  color: var(--color-text-inverse);
+}
+
+.label {
+  position: absolute;
+  top: 50%;
+  left: var(--space-6);
+  color: color-mix(in srgb, var(--color-text-inverse) 62%, transparent);
+  font-size: 16px;
+  transform: translateY(-115%) scale(0.76);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.select:focus + .label {
+  color: var(--color-primary-300);
+}
+
+.chevron {
+  position: absolute;
+  right: 20px;
+  color: color-mix(in srgb, var(--color-text-inverse) 72%, transparent);
+  pointer-events: none;
+}
+
+.error {
+  padding-left: var(--space-6);
+  color: var(--color-error-400);
+  font-size: 13px;
+  line-height: 18px;
+}
