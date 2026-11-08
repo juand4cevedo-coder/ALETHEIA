@@ -65,6 +65,45 @@
   outline: none;
 }
 
+/* Menú lateral y contenido. En pantallas anchas el menú es una columna; en las angostas pasa
+   arriba, como una franja (WorkspaceNav.module.css). */
+.workspace {
+  display: grid;
+  grid-template-columns: 208px minmax(0, 1fr);
+  gap: var(--space-12);
+  align-items: start;
+}
+
+.content {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .main {
+    padding-top: 0;
+  }
+
+  .status,
+  .failure {
+    margin-top: var(--space-8);
+  }
+
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+}
+
+@media (max-width: 560px) {
+  .main {
+    padding: 0 var(--space-4) var(--space-12);
+  }
+
+  .header {
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
 .status {
   display: inline-flex;
   align-items: center;

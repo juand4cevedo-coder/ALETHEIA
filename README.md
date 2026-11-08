@@ -132,6 +132,8 @@ def ruta(principal: Annotated[Principal, Depends(get_principal)]) -> ...:
 
 La dependencia comprueba en cada petición que la sesión siga viva, responde 401 si no, y deja fijado el contexto de la organización de la persona. `Principal` trae la persona, su sesión, su organización y su rol.
 
+Las rutas que gestionan el equipo, como las de `/api/v1/organization`, declaran `get_manager` en su lugar: además de la sesión exige que la persona sea propietaria o administradora (RN-008) y responde 403 con MSG-010 a los demás roles. Los servicios vuelven a comprobar el rol, así que la autorización no depende de que una ruta recuerde pedir la dependencia.
+
 Toda petición que cambia algo (POST, PUT, PATCH o DELETE) debe llevar el encabezado `X-Aletheia-Request: 1`; sin él, o si viene de otro sitio, la API responde 403. La interfaz lo envía siempre. Para probar la API desde PowerShell 7 hay que agregarlo:
 
 ```powershell
@@ -190,7 +192,7 @@ Las políticas legales comparten una sola versión y fecha de vigencia, definida
 
 El sitio solo usa las cookies de sesión. Cualquier herramienta no esencial que se agregue, como una de analítica, se carga únicamente si `hasCookieConsent("analytics")` devuelve `true`, y su llegada sube `CONSENT_VERSION` en `src/features/consent/cookieConsent.ts` para que el panel vuelva a preguntar.
 
-Las pantallas bajo `/app` exigen sesión. Su marco, `AppShell`, consulta `GET /api/v1/me` antes de mostrar nada: sin sesión lleva a `/ingresar` (si la sesión venció, con el aviso MSG-012) y, al entrar, la persona vuelve a la pantalla que intentaba abrir.
+Las pantallas bajo `/app` exigen sesión. Su marco, `AppShell`, consulta `GET /api/v1/me` antes de mostrar nada: sin sesión lleva a `/ingresar` (si la sesión venció, con el aviso MSG-012) y, al entrar, la persona vuelve a la pantalla que intentaba abrir. El menú lateral (`WorkspaceNav`) lista las secciones que ya existen y cada persona ve solo las de su rol: Miembros aparece solo al propietario y al administrador. Una sección nueva se agrega en `ITEMS`, con su regla de visibilidad si la tiene.
 
 Las pruebas de componentes usan Vitest, Testing Library y axe-core (ADR-022). Cada prueba vive junto al archivo que prueba, con el sufijo `.test.tsx`. `pnpm test` las ejecuta una vez y `pnpm test:watch` las repite cada vez que se guarda un archivo.
 

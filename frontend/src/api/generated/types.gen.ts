@@ -55,6 +55,90 @@ export type HealthStatus = {
 };
 
 /**
+ * InvitationOut
+ *
+ * Una invitación sin aceptar ni revocar.
+ */
+export type InvitationOut = {
+  /**
+   * Id
+   *
+   * Identificador de la invitación.
+   */
+  id: string;
+  /**
+   * Email
+   *
+   * Correo invitado.
+   */
+  email: string;
+  /**
+   * Role
+   *
+   * Rol ofrecido.
+   */
+  role: "admin" | "lawyer" | "assistant";
+  /**
+   * Invited At
+   *
+   * Cuándo se envió.
+   */
+  invited_at: string;
+  /**
+   * Expires At
+   *
+   * Cuándo vence: 72 horas después.
+   */
+  expires_at: string;
+  /**
+   * Expired
+   *
+   * Si ya venció sin que la aceptaran.
+   */
+  expired: boolean;
+};
+
+/**
+ * InvitationPage
+ *
+ * Invitaciones pendientes, de la más reciente a la más antigua (API-017).
+ */
+export type InvitationPage = {
+  /**
+   * Items
+   *
+   * Invitaciones de esta página.
+   */
+  items: Array<InvitationOut>;
+  /**
+   * Next Cursor
+   *
+   * Cursor para la página siguiente, o null si no hay más.
+   */
+  next_cursor: string | null;
+};
+
+/**
+ * InvitationRequest
+ *
+ * Correo y rol de la persona invitada (API-016).
+ */
+export type InvitationRequest = {
+  /**
+   * Email
+   *
+   * Correo al que llega la invitación.
+   */
+  email: string;
+  /**
+   * Role
+   *
+   * Rol con que entrará: admin, lawyer o assistant.
+   */
+  role: "admin" | "lawyer" | "assistant";
+};
+
+/**
  * LegalAcceptanceRequest
  *
  * Aceptación expresa de los textos legales vigentes.
@@ -158,6 +242,68 @@ export type Me = {
    * Su aceptación de los textos legales.
    */
   legal: LegalStatus;
+};
+
+/**
+ * MemberOut
+ *
+ * Una persona de la organización y su rol.
+ */
+export type MemberOut = {
+  /**
+   * User Id
+   *
+   * Identificador de la persona.
+   */
+  user_id: string;
+  /**
+   * Full Name
+   *
+   * Nombre de la persona.
+   */
+  full_name: string;
+  /**
+   * Email
+   *
+   * Correo de la persona.
+   */
+  email: string;
+  /**
+   * Role
+   *
+   * Rol en la organización.
+   */
+  role: "owner" | "admin" | "lawyer" | "assistant";
+  /**
+   * Joined At
+   *
+   * Cuándo entró a la organización.
+   */
+  joined_at: string;
+};
+
+/**
+ * MemberPage
+ *
+ * Miembros en el orden en que llegaron, con el cupo del plan (API-015).
+ */
+export type MemberPage = {
+  /**
+   * Items
+   *
+   * Miembros de esta página.
+   */
+  items: Array<MemberOut>;
+  /**
+   * Next Cursor
+   *
+   * Cursor para la página siguiente, o null si no hay más.
+   */
+  next_cursor: string | null;
+  /**
+   * Cupo de usuarios del plan.
+   */
+  seats: SeatsOut;
 };
 
 /**
@@ -402,6 +548,38 @@ export type ResetPasswordRequest = {
    * Contraseña nueva, de 12 a 128 caracteres.
    */
   password: string;
+};
+
+/**
+ * SeatsOut
+ *
+ * Cupo de usuarios del plan (RN-012).
+ */
+export type SeatsOut = {
+  /**
+   * Used
+   *
+   * Miembros más invitaciones abiertas.
+   */
+  used: number;
+  /**
+   * Included
+   *
+   * Usuarios que incluye el plan.
+   */
+  included: number;
+  /**
+   * Extra User Price Cop
+   *
+   * Precio mensual de cada usuario adicional, o null si el plan no los admite.
+   */
+  extra_user_price_cop: number | null;
+  /**
+   * Full
+   *
+   * Si ya no cabe nadie más sin cambiar de plan.
+   */
+  full: boolean;
 };
 
 /**
@@ -951,3 +1129,185 @@ export type ChangePasswordResponses = {
 
 export type ChangePasswordResponse =
   ChangePasswordResponses[keyof ChangePasswordResponses];
+
+export type ListMembersData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Cursor
+     *
+     * next_cursor de la página anterior.
+     */
+    cursor?: string | null;
+    /**
+     * Limit
+     *
+     * Miembros por página.
+     */
+    limit?: number;
+  };
+  url: "/api/v1/organization/members";
+};
+
+export type ListMembersErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListMembersError = ListMembersErrors[keyof ListMembersErrors];
+
+export type ListMembersResponses = {
+  /**
+   * Successful Response
+   */
+  200: MemberPage;
+};
+
+export type ListMembersResponse =
+  ListMembersResponses[keyof ListMembersResponses];
+
+export type ListInvitationsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Cursor
+     *
+     * next_cursor de la página anterior.
+     */
+    cursor?: string | null;
+    /**
+     * Limit
+     *
+     * Invitaciones por página.
+     */
+    limit?: number;
+  };
+  url: "/api/v1/organization/invitations";
+};
+
+export type ListInvitationsErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListInvitationsError =
+  ListInvitationsErrors[keyof ListInvitationsErrors];
+
+export type ListInvitationsResponses = {
+  /**
+   * Successful Response
+   */
+  200: InvitationPage;
+};
+
+export type ListInvitationsResponse =
+  ListInvitationsResponses[keyof ListInvitationsResponses];
+
+export type CreateInvitationData = {
+  body: InvitationRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/organization/invitations";
+};
+
+export type CreateInvitationErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * Ya es miembro, ya tiene una invitación vigente, el plan no tiene cupo o la organización está en solo lectura.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiadas invitaciones seguidas.
+   */
+  429: Problem;
+};
+
+export type CreateInvitationError =
+  CreateInvitationErrors[keyof CreateInvitationErrors];
+
+export type CreateInvitationResponses = {
+  /**
+   * Successful Response
+   */
+  201: InvitationOut;
+};
+
+export type CreateInvitationResponse =
+  CreateInvitationResponses[keyof CreateInvitationResponses];
+
+export type RevokeInvitationData = {
+  body?: never;
+  path: {
+    /**
+     * Invitation Id
+     */
+    invitation_id: string;
+  };
+  query?: never;
+  url: "/api/v1/organization/invitations/{invitation_id}";
+};
+
+export type RevokeInvitationErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * No hay una invitación pendiente con ese id.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RevokeInvitationError =
+  RevokeInvitationErrors[keyof RevokeInvitationErrors];
+
+export type RevokeInvitationResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type RevokeInvitationResponse =
+  RevokeInvitationResponses[keyof RevokeInvitationResponses];

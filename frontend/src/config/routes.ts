@@ -13,6 +13,7 @@ export const ROUTES = {
   // Espacio de trabajo: todo lo que exige sesión vive bajo /app.
   app: "/app",
   account: "/app/cuenta",
+  members: "/app/miembros",
 } as const;
 
 export const LEGAL_PAGES = [
