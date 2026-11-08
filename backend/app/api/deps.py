@@ -12,6 +12,7 @@ from app.api.cookies import ACCESS_COOKIE
 from app.core.config import Settings
 from app.core.legal import LegalAcceptanceRequiredError
 from app.services import sessions as sessions_service
+from app.services.members import MANAGER_ROLES
 from app.services.sessions import NotAuthenticatedError, Principal
 
 
@@ -92,4 +93,27 @@ def get_principal(
     """
     if not principal.accepted_current_legal:
         raise LegalAcceptanceRequiredError
+    return principal
+
+
+# MSG-010 del catálogo de mensajes (Diseño UX/UI, 14.2).
+NOT_ALLOWED: Final = (
+    "No tiene permiso para esta acción. Si lo necesita, pídalo al propietario o al "
+    "administrador de su organización."
+)
+
+
+def get_manager(principal: Annotated[Principal, Depends(get_principal)]) -> Principal:
+    """Quien hace la petición, si es propietario o administrador de su organización.
+
+    Gestionar el equipo es solo de esos dos roles (RN-008, CA-HU-011-03). Los servicios lo
+    vuelven a comprobar: la autorización no depende de que la ruta recuerde pedir esta
+    dependencia.
+    """
+    if principal.organization_id is None or principal.role not in MANAGER_ROLES:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail=NOT_ALLOWED,
+            headers={"Cache-Control": "no-store"},
+        )
     return principal
