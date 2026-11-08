@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
-from app.api import API_PREFIX, auth, health, me, organization, plans
+from app.api import API_PREFIX, auth, health, invitations, me, organization, plans
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logs import configure_logging
@@ -62,6 +62,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(auth.router, prefix=API_PREFIX)
     app.include_router(me.router, prefix=API_PREFIX)
     app.include_router(organization.router, prefix=API_PREFIX)
+    app.include_router(invitations.router, prefix=API_PREFIX)
     install_problem_details(app)
     return app
 
