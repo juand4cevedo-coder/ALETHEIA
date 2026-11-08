@@ -17,6 +17,7 @@ import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
 import { LegalRenewal } from "../features/legal/LegalRenewal.tsx";
 import { AccountMenu } from "../features/session/AccountMenu.tsx";
+import { WorkspaceNav } from "../features/workspace/WorkspaceNav.tsx";
 import {
   forgetSession,
   rememberSession,
@@ -118,7 +119,14 @@ export function AppShell() {
             </Button>
           </div>
         )}
-        {me.data && <Outlet context={me.data} />}
+        {me.data && (
+          <div className={styles.workspace}>
+            <WorkspaceNav me={me.data} />
+            <div className={styles.content}>
+              <Outlet context={me.data} />
+            </div>
+          </div>
+        )}
       </main>
       <ScrollRestoration />
     </div>

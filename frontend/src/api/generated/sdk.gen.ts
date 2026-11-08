@@ -15,12 +15,21 @@ import type {
   ChangePasswordData,
   ChangePasswordErrors,
   ChangePasswordResponses,
+  CreateInvitationData,
+  CreateInvitationErrors,
+  CreateInvitationResponses,
   ForgotPasswordData,
   ForgotPasswordErrors,
   ForgotPasswordResponses,
   HealthData,
   HealthErrors,
   HealthResponses,
+  ListInvitationsData,
+  ListInvitationsErrors,
+  ListInvitationsResponses,
+  ListMembersData,
+  ListMembersErrors,
+  ListMembersResponses,
   ListPlansData,
   ListPlansErrors,
   ListPlansResponses,
@@ -39,6 +48,9 @@ import type {
   ResetPasswordData,
   ResetPasswordErrors,
   ResetPasswordResponses,
+  RevokeInvitationData,
+  RevokeInvitationErrors,
+  RevokeInvitationResponses,
   SignInData,
   SignInErrors,
   SignInResponses,
@@ -354,4 +366,108 @@ export const changePassword = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+/**
+ * Miembros de la organización y cupo del plan
+ */
+export const listMembers = <ThrowOnError extends boolean = false>(
+  options?: Options<ListMembersData, ThrowOnError>,
+): RequestResult<ListMembersResponses, ListMembersErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    ListMembersResponses,
+    ListMembersErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/members",
+    ...options,
+  });
+
+/**
+ * Invitaciones pendientes
+ */
+export const listInvitations = <ThrowOnError extends boolean = false>(
+  options?: Options<ListInvitationsData, ThrowOnError>,
+): RequestResult<
+  ListInvitationsResponses,
+  ListInvitationsErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    ListInvitationsResponses,
+    ListInvitationsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/invitations",
+    ...options,
+  });
+
+/**
+ * Invitar a una persona con un rol
+ */
+export const createInvitation = <ThrowOnError extends boolean = false>(
+  options: Options<CreateInvitationData, ThrowOnError>,
+): RequestResult<
+  CreateInvitationResponses,
+  CreateInvitationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    CreateInvitationResponses,
+    CreateInvitationErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/invitations",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Revocar una invitación pendiente
+ */
+export const revokeInvitation = <ThrowOnError extends boolean = false>(
+  options: Options<RevokeInvitationData, ThrowOnError>,
+): RequestResult<
+  RevokeInvitationResponses,
+  RevokeInvitationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).delete<
+    RevokeInvitationResponses,
+    RevokeInvitationErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/invitations/{invitation_id}",
+    ...options,
   });
