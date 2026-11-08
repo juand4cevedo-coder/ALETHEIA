@@ -234,7 +234,9 @@ describe("Cambiar la contraseña con sesión (HU-010, API-013)", () => {
     await user.click(
       await screen.findByRole("button", { name: /Opciones de la cuenta/ }),
     );
-    await user.click(screen.getByRole("link", { name: /Mi cuenta/ }));
+    await user.click(
+      screen.getByRole("link", { name: /Perfil, contraseña y sesiones/ }),
+    );
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/app/cuenta"),
     );
