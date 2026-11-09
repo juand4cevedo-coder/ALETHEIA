@@ -7,11 +7,11 @@ dependencies = [
     "alembic==1.20.1",
     "argon2-cffi==25.1.0",
     "pyjwt==2.15.1",
-    "boto3==1.43.120",
+    "boto3==1.43.123",
     "fastapi==0.162.0",
     "psycopg[binary]==3.3.6",
-    "pydantic==2.14.1",
-    "pydantic-settings==2.16.1",
+    "pydantic==2.14.2",
+    "pydantic-settings==2.16.2",
     "sqlalchemy==2.1.6",
     "uvicorn==0.54.0",
 ]
@@ -26,9 +26,9 @@ add-bounds = "exact"
 
 [dependency-groups]
 dev = [
-    "boto3-stubs[sesv2,ssm]==1.43.120",
+    "boto3-stubs[sesv2,ssm]==1.43.123",
     "httpx2==2.16.0",
-    "mypy==2.4.0",
+    "mypy==2.4.1",
     "pytest==9.2.0",
     "ruff==0.17.3",
 ]
@@ -36,7 +36,7 @@ spike = [
     "asn1crypto==1.5.1",
     "cryptography==50.0.2",
     "psutil==7.2.2",
-    "python-multipart==0.0.32",
+    "python-multipart==0.0.33",
     "rfc3161-client==1.0.9",
     "tink==1.16.1",
     "types-psutil==7.2.2.20260906",
