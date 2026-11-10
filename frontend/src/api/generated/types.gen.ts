@@ -1917,7 +1917,7 @@ export type CreateCaseErrors = {
    */
   403: Problem;
   /**
-   * La organización está en solo lectura o ya hay un caso con ese radicado.
+   * La organización está en solo lectura o ya hay un caso con ese radicado (tipo https://aletheia.sbs/problemas/radicado-repetido).
    */
   409: Problem;
   /**
