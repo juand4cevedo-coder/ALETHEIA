@@ -11,13 +11,16 @@ export async function sha256Hex(text: string): Promise<string> {
 
 /**
  * Huella del texto, recalculada en el navegador. Mientras no llega el primer resultado (o si
- * el navegador no ofrece crypto.subtle) devuelve `fallback`.
+ * el navegador no ofrece crypto.subtle) devuelve `fallback`. Si crypto.subtle existe pero el
+ * cálculo falla, informa `supported: false`: dar por buena la huella registrada haría ver como
+ * «Coincide» un texto que alguien ya editó.
  */
 export function useSha256(
   text: string,
   fallback: string,
 ): { hash: string; supported: boolean } {
-  const supported = Boolean(globalThis.crypto?.subtle);
+  const [failed, setFailed] = useState(false);
+  const supported = Boolean(globalThis.crypto?.subtle) && !failed;
   const [hash, setHash] = useState(fallback);
   const requestId = useRef(0);
 
@@ -31,9 +34,9 @@ export function useSha256(
         if (id === requestId.current) setHash(value);
       })
       .catch(() => {
-        if (id === requestId.current) setHash(fallback);
+        if (id === requestId.current) setFailed(true);
       });
-  }, [text, supported, fallback]);
+  }, [text, supported]);
 
   return { hash, supported };
 }

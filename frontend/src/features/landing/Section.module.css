@@ -163,24 +163,6 @@
   }
 }
 
-/* Recuadro del ícono: un velo del azul de marca con un borde de luz. */
-.iconTile {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 44px;
-  height: 44px;
-  border: 1px solid
-    color-mix(in srgb, var(--color-primary-300) 22%, transparent);
-  border-radius: 12px;
-  background: color-mix(
-    in srgb,
-    var(--color-brand-blue) 16%,
-    var(--color-ink-900)
-  );
-  color: var(--color-primary-300);
-}
-
 .cardTitle {
   font-size: 18px;
   font-weight: 600;
@@ -207,6 +189,11 @@
     grid-template-columns: 1fr;
     gap: var(--space-4);
     margin-bottom: var(--space-12);
+  }
+
+  /* El encabezado apilado ya deja su propio espacio: sin esto se sumaría el del .heading. */
+  .headingStacked {
+    margin-bottom: 0;
   }
 
   .title,

@@ -6,6 +6,7 @@ import { HashDemo, SAMPLE_HASH, SAMPLE_TEXT } from "./HashDemo.tsx";
 import { sha256Hex } from "./useSha256.ts";
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
@@ -60,15 +61,59 @@ describe("Demostración de la huella", () => {
     expect(screen.getByText(/e3b0c442/)).toBeInTheDocument();
   });
 
-  it("sin crypto.subtle conserva la huella registrada y lo avisa", () => {
+  it("sin crypto.subtle conserva la huella registrada y lo avisa", async () => {
+    const user = userEvent.setup();
     vi.stubGlobal("crypto", {});
     render(<HashDemo />);
+    const notice =
+      "Su navegador no permite recalcular la huella en esta página.";
+
+    expect(screen.getByText(notice)).toBeInTheDocument();
+    expect(screen.getAllByText(/2423c674/).length).toBeGreaterThan(0);
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Texto de ejemplo" }),
+      "!",
+    );
+    expect(screen.getByText(notice)).toBeInTheDocument();
+    expect(screen.queryByText("Coincide")).not.toBeInTheDocument();
+  });
+
+  it("si crypto.subtle.digest falla, avisa y no da por coincidente el texto editado", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(crypto.subtle, "digest").mockRejectedValue(new Error("x"));
+    render(<HashDemo />);
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Texto de ejemplo" }),
+      "!",
+    );
 
     expect(
-      screen.getByText(
+      await screen.findByText(
         "Su navegador no permite recalcular la huella en esta página.",
       ),
     ).toBeInTheDocument();
-    expect(screen.getAllByText(/2423c674/).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Coincide")).not.toBeInTheDocument();
+  });
+
+  it("al editar el texto marca los caracteres distintos solo en la huella actual", async () => {
+    const user = userEvent.setup();
+    render(<HashDemo />);
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Texto de ejemplo" }),
+      "!",
+    );
+    await screen.findByText("No coincide");
+
+    const rowOf = (name: string) =>
+      screen.getByText(name).closest("div") as HTMLElement;
+    expect(
+      rowOf("Huella actual").querySelectorAll('[class*="changed"]').length,
+    ).toBeGreaterThanOrEqual(1);
+    expect(
+      rowOf("Huella registrada").querySelectorAll('[class*="changed"]').length,
+    ).toBe(0);
   });
 });
