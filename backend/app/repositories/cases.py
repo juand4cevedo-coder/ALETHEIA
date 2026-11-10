@@ -80,6 +80,11 @@ def case_for_member(session: Session, case_id: uuid.UUID, user_id: uuid.UUID) ->
     return session.scalar(statement)
 
 
+def user_name(session: Session, user_id: uuid.UUID) -> str:
+    """El nombre completo de una persona."""
+    return session.scalars(select(User.full_name).where(User.id == user_id)).one()
+
+
 def case_members(
     session: Session, organization_id: uuid.UUID, case_id: uuid.UUID
 ) -> list[CaseMemberView]:

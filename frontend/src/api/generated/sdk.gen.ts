@@ -21,6 +21,9 @@ import type {
   ChangePasswordData,
   ChangePasswordErrors,
   ChangePasswordResponses,
+  CreateCaseData,
+  CreateCaseErrors,
+  CreateCaseResponses,
   CreateInvitationData,
   CreateInvitationErrors,
   CreateInvitationResponses,
@@ -42,6 +45,9 @@ import type {
   PreviewInvitationData,
   PreviewInvitationErrors,
   PreviewInvitationResponses,
+  ReadCaseData,
+  ReadCaseErrors,
+  ReadCaseResponses,
   ReadMeData,
   ReadMeErrors,
   ReadMeResponses,
@@ -580,4 +586,52 @@ export const acceptInvitation = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+/**
+ * Abrir un caso
+ */
+export const createCase = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCaseData, ThrowOnError>,
+): RequestResult<CreateCaseResponses, CreateCaseErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CreateCaseResponses,
+    CreateCaseErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Ver un caso con su equipo y su cadena de custodia
+ */
+export const readCase = <ThrowOnError extends boolean = false>(
+  options: Options<ReadCaseData, ThrowOnError>,
+): RequestResult<ReadCaseResponses, ReadCaseErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    ReadCaseResponses,
+    ReadCaseErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}",
+    ...options,
   });

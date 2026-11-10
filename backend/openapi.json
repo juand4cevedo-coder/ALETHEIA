@@ -1322,6 +1322,160 @@
           }
         }
       }
+    },
+    "/api/v1/cases": {
+      "post": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Abrir un caso",
+        "operationId": "create_case",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no abre casos o la persona no ha verificado su correo.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La organización está en solo lectura o ya hay un caso con ese radicado.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "KMS no respondió y no se pudo preparar la llave del caso.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}": {
+      "get": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Ver un caso con su equipo y su cadena de custodia",
+        "operationId": "read_case",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El caso no existe o la persona no es miembro de él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1392,6 +1546,378 @@
         "title": "AcceptInvitationRequest",
         "description": "Aceptar la invitación (API-019).\n\nCon full_name se crea una cuenta nueva: la contraseña es la nueva y debe aceptar los textos\nlegales vigentes. Sin full_name, la persona ya tiene cuenta y la contraseña es la suya."
       },
+      "CaseCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Título del caso."
+          },
+          "filing_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Number",
+            "description": "Número de radicación. Se aceptan espacios, puntos y guiones; se guardan solo sus 23 dígitos."
+          },
+          "court": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Court",
+            "description": "Despacho que lleva el proceso."
+          },
+          "practice_area": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "civil",
+                  "commercial",
+                  "family",
+                  "labor",
+                  "criminal",
+                  "administrative",
+                  "constitutional",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Practice Area",
+            "description": "Especialidad."
+          },
+          "internal_reference": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internal Reference",
+            "description": "Referencia con que la oficina identifica el caso."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "CaseCreate",
+        "description": "Datos con que se abre un caso (API-022)."
+      },
+      "CaseDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador del caso."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Título del caso."
+          },
+          "filing_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Number",
+            "description": "Los 23 dígitos del radicado, si lo tiene."
+          },
+          "court": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Court",
+            "description": "Despacho que lleva el proceso."
+          },
+          "practice_area": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "civil",
+                  "commercial",
+                  "family",
+                  "labor",
+                  "criminal",
+                  "administrative",
+                  "constitutional",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Practice Area",
+            "description": "Especialidad."
+          },
+          "internal_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internal Reference",
+            "description": "Referencia interna de la oficina."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed"
+            ],
+            "title": "Status",
+            "description": "Si el caso sigue abierto."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Cuándo se abrió."
+          },
+          "created_by_name": {
+            "type": "string",
+            "title": "Created By Name",
+            "description": "Nombre de quien lo abrió."
+          },
+          "member_count": {
+            "type": "integer",
+            "title": "Member Count",
+            "description": "Personas asignadas al caso."
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/CaseMemberOut"
+            },
+            "type": "array",
+            "title": "Members",
+            "description": "Equipo del caso."
+          },
+          "recent_events": {
+            "items": {
+              "$ref": "#/components/schemas/CustodyEventOut"
+            },
+            "type": "array",
+            "title": "Recent Events",
+            "description": "Últimos eventos de la cadena, del más reciente al más antiguo."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "filing_number",
+          "court",
+          "practice_area",
+          "internal_reference",
+          "status",
+          "created_at",
+          "created_by_name",
+          "member_count",
+          "members",
+          "recent_events"
+        ],
+        "title": "CaseDetail",
+        "description": "El caso con su equipo y sus últimos eventos (API-024)."
+      },
+      "CaseMemberOut": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id",
+            "description": "Identificador de la persona."
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name",
+            "description": "Nombre de la persona."
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "description": "Correo de la persona."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Rol en la organización."
+          },
+          "added_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Added At",
+            "description": "Cuándo se asignó al caso."
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "full_name",
+          "email",
+          "role",
+          "added_at"
+        ],
+        "title": "CaseMemberOut",
+        "description": "Una persona asignada al caso."
+      },
+      "CaseOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador del caso."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Título del caso."
+          },
+          "filing_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Number",
+            "description": "Los 23 dígitos del radicado, si lo tiene."
+          },
+          "court": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Court",
+            "description": "Despacho que lleva el proceso."
+          },
+          "practice_area": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "civil",
+                  "commercial",
+                  "family",
+                  "labor",
+                  "criminal",
+                  "administrative",
+                  "constitutional",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Practice Area",
+            "description": "Especialidad."
+          },
+          "internal_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internal Reference",
+            "description": "Referencia interna de la oficina."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed"
+            ],
+            "title": "Status",
+            "description": "Si el caso sigue abierto."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Cuándo se abrió."
+          },
+          "created_by_name": {
+            "type": "string",
+            "title": "Created By Name",
+            "description": "Nombre de quien lo abrió."
+          },
+          "member_count": {
+            "type": "integer",
+            "title": "Member Count",
+            "description": "Personas asignadas al caso."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "filing_number",
+          "court",
+          "practice_area",
+          "internal_reference",
+          "status",
+          "created_at",
+          "created_by_name",
+          "member_count"
+        ],
+        "title": "CaseOut",
+        "description": "Un caso abierto."
+      },
       "ChangePasswordRequest": {
         "properties": {
           "current_password": {
@@ -1417,6 +1943,53 @@
         ],
         "title": "ChangePasswordRequest",
         "description": "Contraseña actual y nueva de quien tiene la sesión (API-013)."
+      },
+      "CustodyEventOut": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq",
+            "description": "Posición del evento en la cadena, desde 1."
+          },
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "Qué ocurrió, por ejemplo case_created."
+          },
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name",
+            "description": "Quién lo hizo, o null si fue el sistema."
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At",
+            "description": "Cuándo ocurrió."
+          },
+          "event_hash": {
+            "type": "string",
+            "title": "Event Hash",
+            "description": "Huella SHA-256 del evento, en hexadecimal."
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "action",
+          "actor_name",
+          "occurred_at",
+          "event_hash"
+        ],
+        "title": "CustodyEventOut",
+        "description": "Un evento de la cadena de custodia del caso."
       },
       "ForgotPasswordRequest": {
         "properties": {
