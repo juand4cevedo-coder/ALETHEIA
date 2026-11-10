@@ -43,3 +43,4 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-037](adr-037.md) | Hash de custodia calculado por la base, verificador independiente y anclaje externo | Aceptado | 10/11/2026 |
 | [ADR-038](adr-038.md) | Tareas sin transacciones abiertas durante la red, idempotencia por tipo y reservas extendibles | Aceptado | 10/11/2026 |
 | [ADR-039](adr-039.md) | Alcance de Row-Level Security y autorización dentro de las funciones privilegiadas | Aceptado | 10/11/2026 |
+| [ADR-040](adr-040.md) | Cambiar el rol y retirar miembros: reglas y efecto inmediato | Aceptado | 10/11/2026 |
