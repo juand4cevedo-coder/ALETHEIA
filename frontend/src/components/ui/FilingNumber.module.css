@@ -34,7 +34,7 @@
 
 .label {
   margin-top: var(--space-1);
-  color: var(--color-ink-600);
+  color: var(--color-text-inverse-muted);
   font-size: 11px;
   letter-spacing: 0.02em;
 }

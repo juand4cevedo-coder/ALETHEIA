@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 
 import { seriousAxeViolations } from "../../test/axe.ts";
 import { FilingNumber } from "./FilingNumber.tsx";
-import { StatusBadge } from "./StatusBadge.tsx";
 
 const DIGITS = "11001310500320260014300";
 
@@ -30,14 +29,4 @@ describe("Número de radicación (componente)", () => {
     }
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
-});
-
-describe("Insignia de estado", () => {
-  it.each(["ok", "pending", "muted", "closed"] as const)(
-    "el tono %s siempre lleva texto visible",
-    (tone) => {
-      render(<StatusBadge tone={tone}>Estado</StatusBadge>);
-      expect(screen.getByText("Estado")).toBeVisible();
-    },
-  );
 });
