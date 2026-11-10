@@ -1,0 +1,107 @@
+/* Panel de la demostración de la huella; se parece a la tarjeta de las secciones. */
+.panel {
+  composes: card from "./Section.module.css";
+}
+
+.demo {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6);
+}
+
+.label {
+  font-weight: 600;
+}
+
+.helper {
+  color: var(--color-text-inverse-muted);
+  font-size: 15px;
+}
+
+.textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 16%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--color-ink-950);
+  color: var(--color-text-inverse);
+  font: inherit;
+  resize: vertical;
+}
+
+.rows {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.row dt {
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.row dd {
+  margin: var(--space-1) 0 0;
+}
+
+.blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+
+/* Los caracteres distintos quedan en rojo aunque no haya animación: el significado no depende
+   del destello. */
+.changed {
+  color: var(--color-error-400);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .changed {
+    animation: hash-flash var(--motion-flash) var(--ease-out);
+  }
+
+  @keyframes hash-flash {
+    from {
+      opacity: 0.2;
+    }
+  }
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.match {
+  color: var(--color-success-400);
+  font-weight: 600;
+}
+
+.mismatch {
+  color: var(--color-error-400);
+  font-weight: 600;
+}
+
+.notice {
+  color: var(--color-text-inverse-muted);
+}
+
+.restore {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid
+    color-mix(in srgb, var(--color-primary-300) 40%, transparent);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-primary-300);
+  font: inherit;
+  cursor: pointer;
+}
