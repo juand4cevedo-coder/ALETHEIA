@@ -35,6 +35,7 @@ export function ProblemSection() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-problema"
+          index={1}
           kicker="Por qué importa"
           title="Una captura de pantalla no es el archivo original"
           lead="En un proceso, la evidencia digital se valora a partir de su formato original o de uno que lo reproduzca con exactitud. Conservarla bien desde el primer día evita discusiones que no deberían existir."
