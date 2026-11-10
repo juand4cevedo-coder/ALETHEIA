@@ -92,11 +92,12 @@ describe("Página de inicio (HU-001)", () => {
     const { container } = await renderRoute("/");
     await screen.findByText(/^\$59\.900/);
 
-    // Todo lo que se puede activar fuera del menú móvil cerrado, en orden del documento.
+    // Todo lo que se puede activar o editar fuera del menú móvil cerrado (incluido el texto de la
+    // demostración de la huella), en orden del documento.
     const menu = container.querySelector("dialog");
     const interactive = Array.from(
       container.querySelectorAll<HTMLElement>(
-        "a[href], button:not([disabled]), summary",
+        "a[href], button:not([disabled]), summary, textarea",
       ),
     ).filter((element) => !menu?.contains(element));
 
