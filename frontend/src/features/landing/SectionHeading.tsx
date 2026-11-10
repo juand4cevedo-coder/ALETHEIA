@@ -9,6 +9,8 @@ type SectionHeadingProps = {
   kicker: string;
   title: ReactNode;
   lead?: ReactNode;
+  // Variante de composición, por ejemplo el encabezado apilado de una columna lateral.
+  className?: string;
 };
 
 // Encabezado de cada sección del inicio, foliado como un expediente: a la izquierda el folio
@@ -20,9 +22,12 @@ export function SectionHeading({
   kicker,
   title,
   lead,
+  className,
 }: SectionHeadingProps) {
   return (
-    <Reveal className={styles.heading}>
+    <Reveal
+      className={className ? `${styles.heading} ${className}` : styles.heading}
+    >
       <div className={styles.folioBlock}>
         <p className={styles.folio} aria-hidden="true">
           § 0{index}

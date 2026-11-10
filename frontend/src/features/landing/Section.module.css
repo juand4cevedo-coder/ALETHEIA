@@ -19,6 +19,19 @@
   margin: 0 0 var(--space-16);
 }
 
+/* Encabezado apilado: cuando ocupa una columna lateral (Problema, Preguntas), el folio va
+   encima del título y no a su lado. */
+.headingStacked {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  margin: 0;
+}
+
+.headingStacked .title {
+  font-size: 44px;
+  line-height: 50px;
+}
+
 .folioBlock {
   display: grid;
   gap: var(--space-3);
@@ -196,7 +209,8 @@
     margin-bottom: var(--space-12);
   }
 
-  .title {
+  .title,
+  .headingStacked .title {
     font-size: 34px;
     line-height: 40px;
   }
