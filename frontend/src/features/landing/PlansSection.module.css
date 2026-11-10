@@ -1,6 +1,7 @@
+/* Alineado a la izquierda, como el encabezado foliado y el resto del expediente. */
 .more {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   margin-top: var(--space-8);
 }
 

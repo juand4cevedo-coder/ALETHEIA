@@ -1,18 +1,19 @@
-/* Panel final con una luz de marca tenue desde abajo, justo donde está la acción principal. */
+/* Panel final, amplio, con la luz de marca más intensa del panel desde abajo, justo donde está
+   la acción principal: el recorrido termina en un punto claro. */
 .panel {
   position: relative;
   display: grid;
   justify-items: center;
   gap: var(--space-6);
   overflow: hidden;
-  padding: var(--space-16) var(--space-8);
+  padding: var(--space-24) var(--space-8);
   border: 1px solid transparent;
   border-radius: 28px;
   background:
     radial-gradient(
-        ellipse 70% 90% at 50% 120%,
-        color-mix(in srgb, var(--color-brand-blue) 32%, transparent),
-        transparent 70%
+        ellipse 80% 100% at 50% 115%,
+        color-mix(in srgb, var(--color-brand-blue) 44%, transparent),
+        transparent 72%
       )
       padding-box,
     linear-gradient(180deg, var(--color-ink-900), var(--color-ink-800))
@@ -26,12 +27,15 @@
   text-align: center;
 }
 
+/* Misma voz serif de los H2 (font.display); sin folio: el cierre no es una sección del
+   expediente sino la invitación final. */
 .title {
   max-width: 680px;
-  font-size: 44px;
-  font-weight: 600;
-  line-height: 52px;
-  letter-spacing: -0.03em;
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 560;
+  line-height: 58px;
+  letter-spacing: -0.02em;
 }
 
 .text {
@@ -55,8 +59,8 @@
   }
 
   .title {
-    font-size: 30px;
-    line-height: 38px;
+    font-size: 34px;
+    line-height: 40px;
   }
 
   .text {

@@ -38,16 +38,19 @@ const QUESTIONS = [
   },
 ] as const;
 
-// Preguntas frecuentes con <details>: se abren con teclado y lector de pantalla sin código.
+// Preguntas frecuentes con <details>: se abren con teclado y lector de pantalla sin código. El
+// encabezado es el elemento fijo (sticky) y ninguno de sus ancestros lleva Reveal: una
+// transformación en un ancestro cambiaría la referencia del sticky.
 export function FaqSection() {
   return (
     <section className={section.section} aria-labelledby="titulo-preguntas">
-      <div className={`${section.inner} ${styles.inner}`}>
+      <div className={`${section.inner} ${styles.layout}`}>
         <SectionHeading
           id="titulo-preguntas"
           index={7}
           kicker="Preguntas frecuentes"
           title="Lo que más nos preguntan"
+          className={`${section.headingStacked} ${styles.heading}`}
         />
         <Reveal className={styles.list}>
           {QUESTIONS.map((item) => (
