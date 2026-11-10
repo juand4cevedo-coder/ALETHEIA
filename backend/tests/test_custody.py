@@ -1,8 +1,10 @@
 """Pruebas de la cadena de custodia de solo inserción y de purge_case (ADR-004)."""
 
+import dataclasses
 import datetime
 import hashlib
 import uuid
+from typing import Any
 
 from psycopg.errors import (
     CheckViolation,
@@ -13,14 +15,23 @@ from psycopg.errors import (
 from sqlalchemy import func, select, text, update
 from sqlalchemy.orm import Session
 
-from app.models import Case, CustodyEvent, DeletionRecord, Evidence, Organization
+from app.db.tenancy import TenantContext, set_tenant
+from app.models import (
+    Case,
+    CustodyEvent,
+    DeletionRecord,
+    Evidence,
+    Membership,
+    Organization,
+    User,
+)
+from app.services import custody_chain
 from tests.conftest import ZERO_HASH, Tenant, add_evidence, create_tenant, rejected
 
 
-def _event(tenant: Tenant, seq: int, prev_hash: bytes) -> CustodyEvent:
-    # El hash real lo calcula la aplicación sobre una serialización canónica (Sprint 4);
-    # aquí basta un valor distinto por evento.
-    return CustodyEvent(
+def _event(tenant: Tenant, seq: int, prev_hash: bytes, **cambios: Any) -> CustodyEvent:
+    # event_hash no se manda: lo calcula la base sobre la serialización canónica (ADR-037).
+    datos: dict[str, Any] = dict(
         organization_id=tenant.organization_id,
         case_id=tenant.case_id,
         seq=seq,
@@ -29,8 +40,8 @@ def _event(tenant: Tenant, seq: int, prev_hash: bytes) -> CustodyEvent:
         details={},
         occurred_at=datetime.datetime.now(datetime.UTC),
         prev_hash=prev_hash,
-        event_hash=hashlib.sha256(f"{tenant.case_id}:{seq}".encode()).digest(),
     )
+    return CustodyEvent(**(datos | cambios))
 
 
 def _chain(db: Session, tenant: Tenant, length: int) -> bytes:
@@ -169,3 +180,150 @@ def test_la_constancia_de_eliminacion_no_se_modifica(db: Session, owner_db: Sess
     _purge(owner_db, owner_tenant, uuid.uuid7())
     with rejected(owner_db, RestrictViolation):
         owner_db.execute(text("DELETE FROM deletion_records"))
+
+
+# --- Hash calculado por la base y verificador independiente (ADR-037) ------------------------
+
+
+def test_la_base_calcula_el_hash_y_descarta_el_que_manda_la_aplicacion(db: Session) -> None:
+    tenant = create_tenant(db, "Firma")
+    falso = hashlib.sha256(b"lo que quiera la aplicacion").digest()
+    event = _event(tenant, 1, ZERO_HASH, event_hash=falso)
+    db.add(event)
+    db.flush()
+    db.refresh(event)
+
+    [guardado] = custody_chain.load(db, tenant.case_id)
+    assert event.event_hash != falso
+    assert event.event_hash == custody_chain.event_digest(guardado)
+
+
+def test_la_serializacion_canonica_es_igual_en_la_base_y_en_python(db: Session) -> None:
+    tenant = create_tenant(db, "Firma")
+    evidence_id = add_evidence(db, tenant, b"conversacion")
+    _chain(db, tenant, 1)
+    # Nulos, evidencia, tildes, comillas, saltos de línea y números en details.
+    db.add(
+        _event(
+            tenant,
+            2,
+            db.scalar(select(CustodyEvent.event_hash).where(CustodyEvent.seq == 1)) or ZERO_HASH,
+            evidence_id=evidence_id,
+            actor_user_id=None,
+            action="evidence_uploaded",
+            details={"origen": 'Exportó "Ana"\nen línea', "bytes": 12, "b": [1, 2.5, None]},
+            occurred_at=datetime.datetime(2026, 11, 10, 15, 4, 5, 123456, tzinfo=datetime.UTC),
+        )
+    )
+    db.flush()
+
+    for evento in custody_chain.load(db, tenant.case_id):
+        en_la_base = db.scalar(
+            text(
+                "SELECT custody_event_canonical(prev_hash, case_id, seq, evidence_id, "
+                "actor_user_id, action, details, occurred_at) FROM custody_events "
+                "WHERE case_id = :case_id AND seq = :seq"
+            ),
+            {"case_id": tenant.case_id, "seq": evento.seq},
+        )
+        assert custody_chain.canonical(evento).decode() == en_la_base
+
+
+def test_el_verificador_confirma_una_cadena_integra(db: Session) -> None:
+    tenant = create_tenant(db, "Firma")
+    ultimo = _chain(db, tenant, 4)
+
+    informe = custody_chain.verify(custody_chain.load(db, tenant.case_id))
+
+    assert informe.intact
+    assert informe.events_checked == 4
+    assert informe.head_hash == ultimo
+
+
+def test_el_verificador_detecta_un_evento_alterado_fuera_de_la_aplicacion(
+    owner_db: Session,
+) -> None:
+    # Quien tiene la cuenta del dueño de la base puede saltarse los triggers; el verificador no
+    # depende de ellos y encuentra el evento alterado.
+    tenant = create_tenant(owner_db, "Firma")
+    _chain(owner_db, tenant, 3)
+    owner_db.execute(text("ALTER TABLE custody_events DISABLE TRIGGER custody_events_append_only"))
+    owner_db.execute(
+        text("UPDATE custody_events SET details = '{\"editado\": true}' WHERE seq = 2")
+    )
+
+    informe = custody_chain.verify(custody_chain.load(owner_db, tenant.case_id))
+
+    assert not informe.intact
+    assert informe.broken_at == 2
+    assert informe.reason == "event_hash"
+    assert informe.events_checked == 1
+
+
+def test_el_verificador_detecta_huecos_y_eslabones_cambiados() -> None:
+    caso = uuid.uuid7()
+
+    def evento(seq: int, prev: bytes) -> custody_chain.ChainEvent:
+        borrador = custody_chain.ChainEvent(
+            caso,
+            seq,
+            None,
+            None,
+            "chain_verified",
+            "{}",
+            datetime.datetime.now(datetime.UTC),
+            prev,
+            ZERO_HASH,
+        )
+        return dataclasses.replace(borrador, event_hash=custody_chain.event_digest(borrador))
+
+    primero = evento(1, ZERO_HASH)
+    segundo = evento(2, primero.event_hash)
+    tercero = evento(3, segundo.event_hash)
+
+    hueco = custody_chain.verify([primero, tercero])
+    cambiado = custody_chain.verify([primero, evento(2, hashlib.sha256(b"x").digest())])
+
+    assert (hueco.broken_at, hueco.reason) == (3, "sequence")
+    assert (cambiado.broken_at, cambiado.reason) == (2, "previous_hash")
+    assert custody_chain.verify([]).intact
+
+
+# --- purge_case autoriza a quien la pide (RN-020) -------------------------------------------
+
+
+def test_purge_case_rechaza_un_solicitante_que_no_es_la_persona_de_la_sesion(
+    db: Session,
+) -> None:
+    tenant = create_tenant(db, "Firma")
+    _mark_for_deletion(db, tenant)
+
+    with rejected(db, InsufficientPrivilege):
+        db.scalar(
+            text("SELECT purge_case(:case_id, :record_id, :user_id, '7 days')"),
+            {"case_id": tenant.case_id, "record_id": uuid.uuid7(), "user_id": uuid.uuid7()},
+        )
+    assert db.get(Case, tenant.case_id) is not None
+
+
+def test_purge_case_rechaza_a_un_abogado_de_la_organizacion(db: Session) -> None:
+    tenant = create_tenant(db, "Firma")
+    abogado = User(
+        email=f"{uuid.uuid4().hex}@example.com",
+        full_name="Carlos Gómez",
+        terms_version="1.0",
+        privacy_version="1.0",
+        consented_at=datetime.datetime.now(datetime.UTC),
+    )
+    db.add(abogado)
+    db.flush()
+    db.add(Membership(organization_id=tenant.organization_id, user_id=abogado.id, role="lawyer"))
+    _mark_for_deletion(db, tenant)
+    db.flush()
+    set_tenant(db, TenantContext(organization_id=tenant.organization_id, user_id=abogado.id))
+
+    with rejected(db, InsufficientPrivilege):
+        db.scalar(
+            text("SELECT purge_case(:case_id, :record_id, :user_id, '7 days')"),
+            {"case_id": tenant.case_id, "record_id": uuid.uuid7(), "user_id": abogado.id},
+        )

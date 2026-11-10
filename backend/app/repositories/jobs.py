@@ -107,6 +107,14 @@ def mark_done(session: Session, job: ClaimedJob) -> bool:
     return len(result) == 1
 
 
+def renew_lease(session: Session, job: ClaimedJob, lease: datetime.timedelta) -> bool:
+    """Extiende la reserva de la tarea en curso; False si este intento ya no era su dueño."""
+    result = session.scalars(
+        update(Job).where(_owned(job)).values(run_after=func.now() + lease).returning(Job.id)
+    ).all()
+    return len(result) == 1
+
+
 def mark_failed(
     session: Session, job: ClaimedJob, error: str, retry_in: datetime.timedelta | None
 ) -> bool:
