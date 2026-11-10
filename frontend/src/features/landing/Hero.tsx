@@ -7,6 +7,7 @@ import { ROUTES } from "../../config/routes.ts";
 import { trialDays } from "../billing/plans.ts";
 import { EvidencePreview } from "./EvidencePreview.tsx";
 import styles from "./Hero.module.css";
+import { StampCard } from "./StampCard.tsx";
 
 // Estándares en los que descansa cada garantía; se nombran tal cual porque un perito los
 // reconoce de inmediato.
@@ -65,8 +66,15 @@ export function Hero() {
         </ul>
       </div>
 
+      {/* La ventana va en un marco con el borde de luz; el sello RFC 3161 se le superpone
+          porque lo emite un tercero sobre esa misma huella. */}
       <div className={`${styles.preview} ${styles.enter}`}>
-        <EvidencePreview />
+        <div className={styles.frame}>
+          <EvidencePreview />
+        </div>
+        <div className={styles.stamp}>
+          <StampCard size="compact" />
+        </div>
       </div>
     </section>
   );
