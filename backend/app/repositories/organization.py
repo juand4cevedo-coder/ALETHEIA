@@ -9,10 +9,18 @@ import datetime
 import uuid
 from dataclasses import dataclass
 
-from sqlalchemy import ColumnElement, func, select, text
+from sqlalchemy import ColumnElement, delete, func, select, text
 from sqlalchemy.orm import Session
 
-from app.models import Invitation, Membership, Organization, Plan, Subscription, User
+from app.models import (
+    CaseMember,
+    Invitation,
+    Membership,
+    Organization,
+    Plan,
+    Subscription,
+    User,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -196,4 +204,52 @@ def invitation_for_update(session: Session, invitation_id: uuid.UUID) -> Invitat
 def add_membership(session: Session, membership: Membership) -> None:
     """Guarda la membresía. La base rechaza una segunda membresía de la misma persona (RN-011)."""
     session.add(membership)
+    session.flush()
+
+
+def membership_for_update(
+    session: Session, organization_id: uuid.UUID, user_id: uuid.UUID
+) -> Membership | None:
+    """La membresía de la persona en la organización, bloqueada hasta el commit, o None."""
+    statement = (
+        select(Membership)
+        .where(Membership.organization_id == organization_id, Membership.user_id == user_id)
+        .with_for_update()
+    )
+    return session.scalar(statement)
+
+
+def member_row(
+    session: Session, organization_id: uuid.UUID, user_id: uuid.UUID
+) -> MemberRow | None:
+    """Un miembro con los datos que muestra la lista, o None."""
+    statement = (
+        select(
+            User.id,
+            User.full_name,
+            User.email,
+            Membership.role,
+            Membership.created_at,
+            Membership.id,
+        )
+        .join(User, User.id == Membership.user_id)
+        .where(Membership.organization_id == organization_id, Membership.user_id == user_id)
+    )
+    row = session.execute(statement).first()
+    return MemberRow(*row) if row is not None else None
+
+
+def remove_membership(session: Session, membership: Membership) -> None:
+    """Quita a la persona de la organización y de todos sus casos (HU-013).
+
+    Sin la asignación a los casos, la persona no vuelve a verlos aunque más adelante la
+    inviten de nuevo; la cadena de custodia conserva lo que hizo.
+    """
+    session.execute(
+        delete(CaseMember).where(
+            CaseMember.organization_id == membership.organization_id,
+            CaseMember.user_id == membership.user_id,
+        )
+    )
+    session.delete(membership)
     session.flush()

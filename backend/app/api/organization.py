@@ -1,4 +1,4 @@
-"""Miembros e invitaciones de la organización (API-015 a API-018, HU-011).
+"""Miembros e invitaciones de la organización (API-015 a API-021, HU-011 y HU-013).
 
 Solo el propietario y el administrador entran aquí (RN-008): get_manager responde 403 a los
 demás roles antes de tocar la base. Las respuestas llevan datos personales, así que ningún
@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_client_ip, get_manager, get_session
 from app.models import Invitation
+from app.repositories.organization import MemberRow
 from app.schemas.organization import (
     PAGE_SIZE_DEFAULT,
     PAGE_SIZE_MAX,
@@ -21,6 +22,7 @@ from app.schemas.organization import (
     InvitationRequest,
     MemberOut,
     MemberPage,
+    RoleChangeRequest,
     SeatsOut,
 )
 from app.services import members as members_service
@@ -35,6 +37,13 @@ INVITATION_OPEN: Final = (
 ORGANIZATION_NOT_ACTIVE: Final = (
     "Su organización está en solo lectura: puede consultar y exportar, pero no invitar "
     "personas hasta reactivar el plan."
+)
+OWNER_PROTECTED: Final = (
+    "Nadie puede cambiar el rol del propietario ni retirarlo de la organización."
+)
+SELF_CHANGE: Final = (
+    "No puede cambiar su propio rol ni retirarse a sí mismo. Pídaselo al propietario o a otro "
+    "administrador."
 )
 # MSG-011: no revela si la invitación existe en otra organización.
 NOT_FOUND: Final = "No encontramos lo que busca o no tiene acceso a ello."
@@ -88,21 +97,80 @@ def list_members(
     rows, seats = members_service.members(session, principal, after=cursor, limit=limit + 1)
     page = rows[:limit]
     return MemberPage(
-        items=[
-            MemberOut.model_validate(
-                {
-                    "user_id": row.user_id,
-                    "full_name": row.full_name,
-                    "email": row.email,
-                    "role": row.role,
-                    "joined_at": row.joined_at,
-                }
-            )
-            for row in page
-        ],
+        items=[_member_out(row) for row in page],
         next_cursor=page[-1].membership_id if len(rows) > limit else None,
         seats=_seats_out(seats),
     )
+
+
+_MEMBER_ERRORS: Final[_Responses] = {
+    status.HTTP_403_FORBIDDEN: {
+        "description": (
+            "No es propietario ni administrador, el miembro es el propietario o es uno mismo."
+        )
+    },
+    status.HTTP_404_NOT_FOUND: {"description": "La persona no es miembro de la organización."},
+}
+
+
+def _member_errors(exc: Exception) -> HTTPException:
+    if isinstance(exc, members_service.OwnerProtectedError):
+        return HTTPException(status.HTTP_403_FORBIDDEN, detail=OWNER_PROTECTED)
+    if isinstance(exc, members_service.SelfChangeError):
+        return HTTPException(status.HTTP_403_FORBIDDEN, detail=SELF_CHANGE)
+    return HTTPException(status.HTTP_404_NOT_FOUND, detail=NOT_FOUND)
+
+
+_MEMBER_EXCEPTIONS = (
+    members_service.MemberNotFoundError,
+    members_service.OwnerProtectedError,
+    members_service.SelfChangeError,
+)
+
+
+@router.patch(
+    "/members/{user_id}",
+    summary="Cambiar el rol de un miembro",
+    responses=_UNAUTHORIZED | _MEMBER_ERRORS,
+)
+def change_member_role(
+    user_id: uuid.UUID,
+    request: RoleChangeRequest,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_manager)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> MemberOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        row = members_service.change_role(
+            session, principal, user_id, request.role, client_ip=client_ip, user_agent=user_agent
+        )
+    except _MEMBER_EXCEPTIONS as exc:
+        raise _member_errors(exc) from None
+    return _member_out(row)
+
+
+@router.delete(
+    "/members/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Retirar a un miembro",
+    responses=_UNAUTHORIZED | _MEMBER_ERRORS,
+)
+def remove_member(
+    user_id: uuid.UUID,
+    principal: Annotated[Principal, Depends(get_manager)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> None:
+    try:
+        members_service.remove_member(
+            session, principal, user_id, client_ip=client_ip, user_agent=user_agent
+        )
+    except _MEMBER_EXCEPTIONS as exc:
+        raise _member_errors(exc) from None
 
 
 @router.post(
@@ -200,6 +268,18 @@ def revoke_invitation(
         )
     except members_service.InvitationNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=NOT_FOUND) from None
+
+
+def _member_out(row: MemberRow) -> MemberOut:
+    return MemberOut.model_validate(
+        {
+            "user_id": row.user_id,
+            "full_name": row.full_name,
+            "email": row.email,
+            "role": row.role,
+            "joined_at": row.joined_at,
+        }
+    )
 
 
 def _invitation_out(invitation: Invitation) -> InvitationOut:

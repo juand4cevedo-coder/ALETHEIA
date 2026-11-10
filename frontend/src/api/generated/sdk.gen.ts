@@ -15,6 +15,9 @@ import type {
   AcceptLegalTermsData,
   AcceptLegalTermsErrors,
   AcceptLegalTermsResponses,
+  ChangeMemberRoleData,
+  ChangeMemberRoleErrors,
+  ChangeMemberRoleResponses,
   ChangePasswordData,
   ChangePasswordErrors,
   ChangePasswordResponses,
@@ -48,6 +51,9 @@ import type {
   RegisterAccountData,
   RegisterAccountErrors,
   RegisterAccountResponses,
+  RemoveMemberData,
+  RemoveMemberErrors,
+  RemoveMemberResponses,
   ResendVerificationData,
   ResendVerificationErrors,
   ResendVerificationResponses,
@@ -394,6 +400,58 @@ export const listMembers = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/organization/members",
     ...options,
+  });
+
+/**
+ * Retirar a un miembro
+ */
+export const removeMember = <ThrowOnError extends boolean = false>(
+  options: Options<RemoveMemberData, ThrowOnError>,
+): RequestResult<RemoveMemberResponses, RemoveMemberErrors, ThrowOnError> =>
+  (options.client ?? client).delete<
+    RemoveMemberResponses,
+    RemoveMemberErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/members/{user_id}",
+    ...options,
+  });
+
+/**
+ * Cambiar el rol de un miembro
+ */
+export const changeMemberRole = <ThrowOnError extends boolean = false>(
+  options: Options<ChangeMemberRoleData, ThrowOnError>,
+): RequestResult<
+  ChangeMemberRoleResponses,
+  ChangeMemberRoleErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).patch<
+    ChangeMemberRoleResponses,
+    ChangeMemberRoleErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/members/{user_id}",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**

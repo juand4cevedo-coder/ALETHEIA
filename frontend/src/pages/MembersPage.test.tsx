@@ -295,3 +295,182 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     expect(requests("GET", "/api/v1/organization/members")).toHaveLength(0);
   });
 });
+
+describe("Cambiar el rol y retirar (UI-021, HU-013)", () => {
+  const CARLOS = MEMBERS.items[1]!;
+  const CARLOS_PATH = `/api/v1/organization/members/${CARLOS.user_id}`;
+
+  it("solo ofrece gestionar a quien se puede: no al propietario ni a uno mismo", async () => {
+    serve("admin", {
+      "GET /api/v1/organization/members": () =>
+        jsonResponse({
+          ...MEMBERS,
+          items: [
+            ...MEMBERS.items,
+            {
+              user_id: "01890a5d-ac96-774b-bcce-b302099a8099",
+              full_name: "Ana Restrepo",
+              email: "ana@example.com",
+              role: "admin",
+              joined_at: "2026-11-04T15:00:00Z",
+            },
+          ],
+        }),
+    });
+    const { container } = await renderRoute("/app/miembros");
+
+    await screen.findByText("Carlos Gómez");
+    // Quien tiene la sesión (la primera Ana, propietaria) no se gestiona: quedan Carlos y la
+    // otra Ana.
+    expect(
+      screen.getAllByRole("button", { name: /^Cambiar el rol de / }),
+    ).toHaveLength(2);
+    expect(
+      screen.getByRole("button", { name: "Retirar a Ana Restrepo" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Cambiar el rol de Carlos Gómez" }),
+    ).toBeInTheDocument();
+    expect(await seriousAxeViolations(container)).toEqual([]);
+  });
+
+  it("cambia el rol con lo que permite cada uno y refresca la lista", async () => {
+    let role = "lawyer";
+    serve("owner", {
+      [`PATCH ${CARLOS_PATH}`]: async (request) => {
+        role = ((await request.clone().json()) as { role: string }).role;
+        return jsonResponse({ ...CARLOS, role });
+      },
+      "GET /api/v1/organization/members": () =>
+        jsonResponse({
+          ...MEMBERS,
+          items: [MEMBERS.items[0], { ...CARLOS, role }],
+        }),
+    });
+    const user = userEvent.setup();
+    await renderRoute("/app/miembros");
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Cambiar el rol de Carlos Gómez",
+      }),
+    );
+    const dialog = screen.getByRole("dialog", { name: "Cambiar el rol" });
+    const select = within(dialog).getByLabelText("Rol");
+    expect(select).toHaveValue("lawyer");
+    await user.selectOptions(select, "assistant");
+    expect(
+      within(dialog).getByText(/Sube evidencias en los casos que le asignan/),
+    ).toBeInTheDocument();
+    await user.click(
+      within(dialog).getByRole("button", { name: "Guardar el rol" }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", { name: "Cambiar el rol" }),
+      ).toBeNull(),
+    );
+    const people = screen.getByRole("region", { name: "Personas" });
+    expect(await within(people).findByText("Asistente")).toBeInTheDocument();
+    expect(within(people).queryByText("Abogado")).not.toBeInTheDocument();
+    const [request] = requests("PATCH", CARLOS_PATH);
+    expect(await request!.json()).toEqual({ role: "assistant" });
+  });
+
+  it("si no cambia el rol, cierra sin llamar a la API", async () => {
+    serve("owner");
+    const user = userEvent.setup();
+    await renderRoute("/app/miembros");
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Cambiar el rol de Carlos Gómez",
+      }),
+    );
+    await user.click(screen.getByRole("button", { name: "Guardar el rol" }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", { name: "Cambiar el rol" }),
+      ).toBeNull(),
+    );
+    expect(requests("PATCH", CARLOS_PATH)).toHaveLength(0);
+  });
+
+  it("muestra el texto de la API si el cambio se rechaza", async () => {
+    serve("owner", {
+      [`PATCH ${CARLOS_PATH}`]: () =>
+        problem(403, "Nadie puede cambiar el rol del propietario."),
+    });
+    const user = userEvent.setup();
+    await renderRoute("/app/miembros");
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Cambiar el rol de Carlos Gómez",
+      }),
+    );
+    const dialog = screen.getByRole("dialog", { name: "Cambiar el rol" });
+    await user.selectOptions(within(dialog).getByLabelText("Rol"), "admin");
+    await user.click(
+      within(dialog).getByRole("button", { name: "Guardar el rol" }),
+    );
+
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "Nadie puede cambiar el rol del propietario.",
+    );
+  });
+
+  it("retira a una persona después de confirmarlo", async () => {
+    let removed = false;
+    serve("owner", {
+      [`DELETE ${CARLOS_PATH}`]: () => {
+        removed = true;
+        return new Response(null, { status: 204 });
+      },
+      "GET /api/v1/organization/members": () =>
+        jsonResponse({
+          ...MEMBERS,
+          items: removed ? [MEMBERS.items[0]] : MEMBERS.items,
+        }),
+    });
+    const user = userEvent.setup();
+    await renderRoute("/app/miembros");
+
+    await user.click(
+      await screen.findByRole("button", { name: "Retirar a Carlos Gómez" }),
+    );
+    const dialog = screen.getByRole("dialog", {
+      name: "¿Retirar a esta persona?",
+    });
+    expect(
+      within(dialog).getByText(/se cerrarán sus sesiones/),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "Cancelar" }),
+    ).toHaveFocus();
+    await user.click(within(dialog).getByRole("button", { name: "Retirar" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Carlos Gómez ya no pertenece a la organización",
+    );
+    await waitFor(() =>
+      expect(screen.queryByText("carlos@example.com")).not.toBeInTheDocument(),
+    );
+    expect(removed).toBe(true);
+  });
+
+  it("cancelar el retiro no llama a la API", async () => {
+    serve("owner");
+    const user = userEvent.setup();
+    await renderRoute("/app/miembros");
+
+    await user.click(
+      await screen.findByRole("button", { name: "Retirar a Carlos Gómez" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+
+    expect(requests("DELETE", CARLOS_PATH)).toHaveLength(0);
+  });
+});
