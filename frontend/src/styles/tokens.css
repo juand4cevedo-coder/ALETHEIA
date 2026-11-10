@@ -37,6 +37,14 @@
   --font-mono:
     "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", Consolas,
     monospace;
+  /* Serif para titulares de la landing; sin carga de fuente, cae a Georgia. */
+  --font-display: "Source Serif 4 Variable", "Iowan Old Style", Georgia, serif;
+
+  /* Papel de la "hoja de expediente" de la sección Alcance: única superficie clara del sitio público. */
+  --color-paper: #f3efe6;
+  --color-paper-ink: #1b2333;
+  --color-paper-muted: #4a4f5c;
+  --color-paper-rule: #cfc6b4;
 
   --space-1: 4px;
   --space-2: 8px;
