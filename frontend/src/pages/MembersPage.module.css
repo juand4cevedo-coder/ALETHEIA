@@ -149,6 +149,16 @@
   border-bottom: 1px solid var(--color-ink-700);
 }
 
+.row[data-actions] {
+  grid-template-columns: minmax(0, 1fr) 130px 150px auto;
+}
+
+.rowActions {
+  display: flex;
+  gap: var(--space-2);
+  justify-self: end;
+}
+
 .who {
   display: grid;
   gap: 2px;
@@ -231,6 +241,19 @@
   .meta {
     grid-column: 1 / -1;
     text-align: left;
+  }
+
+  .row[data-actions] {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .rowActions {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
+
+  .rowActions :where(button) {
+    flex: 1;
   }
 
   .rowAction {
