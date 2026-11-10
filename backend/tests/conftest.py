@@ -14,6 +14,8 @@ import psycopg
 import pytest
 from alembic import command
 from alembic.config import Config
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import Connection, Engine, create_engine, make_url, pool
@@ -37,7 +39,7 @@ _BACKEND_DIR: Final = Path(__file__).resolve().parents[1]
 SAME_ORIGIN_HEADERS: Final = {SAME_ORIGIN_HEADER: "1"}
 
 
-def _build_settings(database_url: str) -> Settings:
+def _build_settings(database_url: str, local_key_path: Path) -> Settings:
     # Cada campo se da explícito: los valores directos tienen prioridad sobre el entorno y
     # sobre backend/.env, así que la prueba no depende de la configuración del equipo.
     return Settings.model_validate(
@@ -46,6 +48,7 @@ def _build_settings(database_url: str) -> Settings:
             "log_level": "INFO",
             "database_url": database_url,
             "token_signing_key": TEST_SIGNING_KEY,
+            "local_key_path": local_key_path,
         }
     )
 
@@ -58,16 +61,33 @@ def _required_url(variable: str) -> str:
     return make_url(url).set(drivername="postgresql+psycopg").render_as_string(hide_password=False)
 
 
+@pytest.fixture(scope="session")
+def local_key_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Llave maestra RSA-3072 en PEM, generada una vez por ejecución de las pruebas."""
+    key = rsa.generate_private_key(public_exponent=65537, key_size=3072)
+    path = tmp_path_factory.mktemp("llaves") / "llave-local.pem"
+    path.write_bytes(
+        key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        )
+    )
+    return path
+
+
 @pytest.fixture
-def make_settings() -> Callable[[str], Settings]:
+def make_settings(local_key_path: Path) -> Callable[[str], Settings]:
     """Construye una configuración de prueba con la URL de base de datos indicada."""
-    return _build_settings
+    return lambda database_url: _build_settings(database_url, local_key_path)
 
 
 @pytest.fixture
-def settings() -> Settings:
+def settings(local_key_path: Path) -> Settings:
     """Configuración con una URL que nunca se usa para conectar."""
-    return _build_settings("postgresql+psycopg://aletheia:clave-de-prueba@localhost:5432/aletheia")
+    return _build_settings(
+        "postgresql+psycopg://aletheia:clave-de-prueba@localhost:5432/aletheia", local_key_path
+    )
 
 
 @pytest.fixture
