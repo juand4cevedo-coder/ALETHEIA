@@ -13,6 +13,7 @@ import {
   loadForgotPasswordPage,
   loadLegalPage,
   loadMembersPage,
+  loadNewCasePage,
   loadPricingPage,
   loadResetPasswordPage,
   loadSignInPage,
@@ -126,6 +127,10 @@ export const routes: RouteObject[] = [
       {
         path: ROUTES.members.slice(ROUTES.app.length + 1),
         lazy: { Component: loadMembersPage },
+      },
+      {
+        path: ROUTES.newCase.slice(ROUTES.app.length + 1),
+        lazy: { Component: loadNewCasePage },
       },
     ],
   },
