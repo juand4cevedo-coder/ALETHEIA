@@ -16,6 +16,7 @@ from app.adapters.keys import KeyWrapperError, LocalKeyWrapper, WrappedKey
 from app.api.cases import (
     EMAIL_NOT_VERIFIED,
     FILING_NUMBER_TAKEN,
+    FILING_NUMBER_TAKEN_PROBLEM,
     KEYS_UNAVAILABLE,
 )
 from app.api.deps import NOT_ALLOWED, get_key_wrapper
@@ -197,6 +198,7 @@ def test_solo_lectura_recibe_409(dispositivo: NuevoCliente, db: Session) -> None
 
     assert respuesta.status_code == 409
     assert "solo lectura" in respuesta.json()["detail"]
+    assert respuesta.json()["type"] == "about:blank"
 
 
 def test_radicado_repetido_recibe_409(dispositivo: NuevoCliente, db: Session) -> None:
@@ -207,6 +209,9 @@ def test_radicado_repetido_recibe_409(dispositivo: NuevoCliente, db: Session) ->
 
     assert respuesta.status_code == 409
     assert respuesta.json()["detail"] == FILING_NUMBER_TAKEN
+    # Su propio tipo: la interfaz lo distingue del 409 de solo lectura sin comparar textos.
+    assert respuesta.json()["type"] == FILING_NUMBER_TAKEN_PROBLEM
+    assert respuesta.headers["Cache-Control"] == "no-store"
     assert _contar_casos(db, oficina) == 1
 
 

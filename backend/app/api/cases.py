@@ -8,13 +8,15 @@ expediente, así que ningún intermediario guarda una copia, tampoco las de erro
 import uuid
 from typing import Annotated, Any, Final
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.adapters.keys import KeyWrapper, KeyWrapperError
 from app.api import API_PREFIX
 from app.api.deps import NOT_ALLOWED, get_client_ip, get_key_wrapper, get_principal, get_session
 from app.api.organization import NOT_FOUND
+from app.core.errors import problem_response
 from app.schemas.cases import (
     INVALID_FILING_NUMBER,
     CaseCreate,
@@ -34,6 +36,9 @@ EMAIL_NOT_VERIFIED: Final = (
     "venció, pida uno nuevo"
 )
 FILING_NUMBER_TAKEN: Final = "Ya hay un caso con este número de radicación en su organización"
+# Tipo de Problem Details del 409 por radicado repetido. Es un identificador, no una página: la
+# interfaz lo compara tal cual para distinguirlo del 409 de solo lectura y señalar el campo.
+FILING_NUMBER_TAKEN_PROBLEM: Final = "https://aletheia.sbs/problemas/radicado-repetido"
 KEYS_UNAVAILABLE: Final = (
     "No pudimos preparar la llave de cifrado del caso. Inténtelo de nuevo en unos minutos"
 )
@@ -58,6 +63,7 @@ _UNAUTHORIZED: Final[_Responses] = {
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED,
+    response_model=CaseOut,
     summary="Abrir un caso",
     responses=_UNAUTHORIZED
     | {
@@ -66,7 +72,8 @@ _UNAUTHORIZED: Final[_Responses] = {
         },
         status.HTTP_409_CONFLICT: {
             "description": (
-                "La organización está en solo lectura o ya hay un caso con ese radicado."
+                "La organización está en solo lectura o ya hay un caso con ese radicado "
+                f"(tipo {FILING_NUMBER_TAKEN_PROBLEM})."
             )
         },
         status.HTTP_422_UNPROCESSABLE_CONTENT: {
@@ -79,13 +86,14 @@ _UNAUTHORIZED: Final[_Responses] = {
 )
 def create_case(
     data: CaseCreate,
+    request: Request,
     response: Response,
     principal: Annotated[Principal, Depends(get_principal)],
     session: Annotated[Session, Depends(get_session)],
     wrapper: Annotated[KeyWrapper, Depends(get_key_wrapper)],
     client_ip: Annotated[str, Depends(get_client_ip)],
     user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
-) -> CaseOut:
+) -> CaseOut | JSONResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
         case = cases_service.create_case(
@@ -118,9 +126,14 @@ def create_case(
             status.HTTP_409_CONFLICT, detail=ORGANIZATION_NOT_ACTIVE, headers=_NO_STORE
         ) from None
     except cases_service.FilingNumberTakenError:
-        raise HTTPException(
-            status.HTTP_409_CONFLICT, detail=FILING_NUMBER_TAKEN, headers=_NO_STORE
-        ) from None
+        # Un 409 con su propio tipo: comparte código con el de solo lectura.
+        return problem_response(
+            request,
+            status.HTTP_409_CONFLICT,
+            detail=FILING_NUMBER_TAKEN,
+            headers=_NO_STORE,
+            problem_type=FILING_NUMBER_TAKEN_PROBLEM,
+        )
     except KeyWrapperError:
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,

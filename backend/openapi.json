@@ -1372,7 +1372,7 @@
             }
           },
           "409": {
-            "description": "La organización está en solo lectura o ya hay un caso con ese radicado.",
+            "description": "La organización está en solo lectura o ya hay un caso con ese radicado (tipo https://aletheia.sbs/problemas/radicado-repetido).",
             "content": {
               "application/problem+json": {
                 "schema": {
