@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from sqlalchemy import Engine, create_engine, delete, select
+from sqlalchemy import Engine, create_engine, delete, select, text
 from sqlalchemy.orm import Session
 
 from app.adapters.email import EmailDeliveryError, OutgoingEmail, SmtpEmailSender
@@ -23,7 +23,7 @@ from app.services import jobs, notifications
 from app.services.jobs import uuid7_floor
 from app.worker import __main__ as worker_main
 from app.worker import heartbeat as worker_heartbeat
-from app.worker.handlers import WorkerContext
+from app.worker.handlers import JobRun, WorkerContext
 from app.worker.runner import Worker
 from tests.conftest import TEST_SIGNING_KEY
 from tests.test_email import _delivered, _recipient
@@ -64,7 +64,9 @@ def engine(app_engine: Engine, migrated_database: None) -> Iterator[Engine]:
 
 @pytest.fixture(autouse=True)
 def plantilla(monkeypatch: pytest.MonkeyPatch) -> None:
-    def build(_session: Session, payload: dict[str, Any], _settings: Settings) -> OutgoingEmail:
+    def build(session: Session, payload: dict[str, Any], _settings: Settings) -> OutgoingEmail:
+        # Como las plantillas reales, consulta la base antes de armar el correo.
+        session.execute(text("SELECT 1"))
         return OutgoingEmail(to=payload["to"], subject="Aviso de prueba", text="Texto")
 
     monkeypatch.setitem(notifications.EMAIL_BUILDERS, _PLANTILLA, build)
@@ -364,3 +366,71 @@ def test_la_revision_de_salud_mira_el_latido(
     assert worker_main.main(["--check"]) == 1
     heartbeat.touch()
     assert worker_main.main(["--check"]) == 0
+
+
+# --- Transacciones y reservas (ADR-038) --------------------------------------------------
+
+_TRANSACCIONES_ABIERTAS = text(
+    "SELECT count(*) FROM pg_stat_activity "
+    "WHERE usename = current_user AND pid <> pg_backend_pid() AND xact_start IS NOT NULL"
+)
+
+
+def test_el_correo_se_envia_sin_ninguna_transaccion_abierta(engine: Engine) -> None:
+    _add(engine)
+    abiertas: list[int | None] = []
+
+    class Espia(FakeEmailSender):
+        def send(self, email: OutgoingEmail) -> None:
+            # Mientras el correo sale, ninguna otra conexión de la aplicación tiene una
+            # transacción abierta: el trabajador ya confirmó lo que armó la plantilla.
+            with engine.connect() as conexion:
+                abiertas.append(conexion.scalar(_TRANSACCIONES_ABIERTAS))
+            super().send(email)
+
+    assert _worker(engine, Espia()).run_once() is True
+
+    assert abiertas == [0]
+
+
+def test_una_tarea_larga_extiende_su_reserva(engine: Engine) -> None:
+    job_id = _add(engine, kind="tsa_stamp", payload={})
+    vencimientos: list[datetime.datetime] = []
+
+    def larga(run: JobRun) -> None:
+        vencimientos.append(_job(engine, job_id).run_after)
+        run.renew_lease()
+        vencimientos.append(_job(engine, job_id).run_after)
+
+    worker = Worker(
+        engine,
+        WorkerContext(email=FakeEmailSender(), settings=_SETTINGS),
+        handlers={"tsa_stamp": larga},
+    )
+    assert worker.run_once() is True
+
+    assert vencimientos[1] >= vencimientos[0]
+    assert _job(engine, job_id).status == "done"
+
+
+def test_quien_perdio_la_reserva_se_detiene_al_intentar_extenderla(engine: Engine) -> None:
+    job_id = _add(engine, kind="tsa_stamp", payload={})
+    pasos: list[str] = []
+
+    def larga(run: JobRun) -> None:
+        # Otro trabajador retomó la tarea mientras esta corría.
+        with Session(engine) as session, session.begin():
+            session.get_one(Job, job_id).attempts = 2
+        run.renew_lease()
+        pasos.append("siguió")
+
+    worker = Worker(
+        engine,
+        WorkerContext(email=FakeEmailSender(), settings=_SETTINGS),
+        handlers={"tsa_stamp": larga},
+    )
+    worker.run_once()
+
+    assert pasos == []
+    # No la cerró ni la devolvió a la cola: es del otro intento.
+    assert _job(engine, job_id).status == "running"

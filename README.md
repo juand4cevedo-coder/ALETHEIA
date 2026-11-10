@@ -117,7 +117,7 @@ from app.db.tenancy import TenantContext, set_tenant
 set_tenant(session, TenantContext(organization_id=organizacion, user_id=persona))
 ```
 
-Sin contexto, las consultas no devuelven filas y las escrituras se rechazan. La cadena de custodia solo admite inserciones, y un caso se elimina únicamente con la función `purge_case`, que primero deja la constancia de eliminación.
+Sin contexto, las consultas no devuelven filas y las escrituras se rechazan. Es aislamiento lógico contra consultas mal escritas o filtros olvidados, no una barrera frente a quien tenga las credenciales de `aletheia_app`, que puede fijar cualquier contexto (ADR-039). La cadena de custodia solo admite inserciones y la base calcula el hash de cada evento; `app.services.custody_chain` lo verifica por su cuenta, sin funciones de la base (ADR-037). Un caso se elimina únicamente con la función `purge_case`, que comprueba que lo pida la persona de la sesión con rol de propietario o administrador y primero deja la constancia de eliminación.
 
 ### Sesiones y protección contra CSRF
 
