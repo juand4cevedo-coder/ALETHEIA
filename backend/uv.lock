@@ -37,18 +37,20 @@ dependencies = [
     { name = "alembic" },
     { name = "argon2-cffi" },
     { name = "boto3" },
+    { name = "cryptography" },
     { name = "fastapi" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyjwt" },
     { name = "sqlalchemy" },
+    { name = "tink" },
     { name = "uvicorn" },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "boto3-stubs", extra = ["sesv2", "ssm"] },
+    { name = "boto3-stubs", extra = ["kms", "sesv2", "ssm"] },
     { name = "httpx2" },
     { name = "mypy" },
     { name = "pytest" },
@@ -56,11 +58,9 @@ dev = [
 ]
 spike = [
     { name = "asn1crypto" },
-    { name = "cryptography" },
     { name = "psutil" },
     { name = "python-multipart" },
     { name = "rfc3161-client" },
-    { name = "tink" },
     { name = "types-psutil" },
 ]
 
@@ -69,18 +69,20 @@ requires-dist = [
     { name = "alembic", specifier = "==1.20.1" },
     { name = "argon2-cffi", specifier = "==25.1.0" },
     { name = "boto3", specifier = "==1.43.120" },
+    { name = "cryptography", specifier = "==50.0.2" },
     { name = "fastapi", specifier = "==0.162.0" },
     { name = "psycopg", extras = ["binary"], specifier = "==3.3.6" },
     { name = "pydantic", specifier = "==2.14.1" },
     { name = "pydantic-settings", specifier = "==2.16.1" },
     { name = "pyjwt", specifier = "==2.15.1" },
     { name = "sqlalchemy", specifier = "==2.1.6" },
+    { name = "tink", specifier = "==1.16.1" },
     { name = "uvicorn", specifier = "==0.54.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "boto3-stubs", extras = ["sesv2", "ssm"], specifier = "==1.43.120" },
+    { name = "boto3-stubs", extras = ["kms", "sesv2", "ssm"], specifier = "==1.43.120" },
     { name = "httpx2", specifier = "==2.16.0" },
     { name = "mypy", specifier = "==2.4.0" },
     { name = "pytest", specifier = "==9.2.0" },
@@ -88,11 +90,9 @@ dev = [
 ]
 spike = [
     { name = "asn1crypto", specifier = "==1.5.1" },
-    { name = "cryptography", specifier = "==50.0.2" },
     { name = "psutil", specifier = "==7.2.2" },
     { name = "python-multipart", specifier = "==0.0.32" },
     { name = "rfc3161-client", specifier = "==1.0.9" },
-    { name = "tink", specifier = "==1.16.1" },
     { name = "types-psutil", specifier = "==7.2.2.20260906" },
 ]
 
@@ -279,6 +279,9 @@ wheels = [
 ]
 
 [package.optional-dependencies]
+kms = [
+    { name = "mypy-boto3-kms" },
+]
 sesv2 = [
     { name = "mypy-boto3-sesv2" },
 ]
@@ -637,6 +640,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/df/de/eeff209b65c3e267818d79333bb9f058da6e4e73761461bd94748a2eb628/mypy-2.4.0-cp314-cp314t-win_amd64.whl", hash = "sha256:a6e851b82c0661f69f1630fc16172c68787a6a9cf0991e7c6437d60976cdcd76", size = 12369342, upload-time = "2026-10-01T20:40:10.516Z" },
     { url = "https://files.pythonhosted.org/packages/2b/43/e62d8d5c1dd737aa248968302ff7d6eabf997c3301773ed8bcb64932ca77/mypy-2.4.0-cp314-cp314t-win_arm64.whl", hash = "sha256:3bd0e340f0ebe65c548210f53be3fd8192e83964760caf0c28bef368e68b0d37", size = 11849099, upload-time = "2026-10-01T20:39:51.834Z" },
     { url = "https://files.pythonhosted.org/packages/81/12/46ae8670c98a3cd0286ca5645c2f918f8f6be65edfed81b916010619f668/mypy-2.4.0-py3-none-any.whl", hash = "sha256:d01c5d26a352acc6d5cf3128225477e1e8465e8d3029d4c345807fbf7f3cf093", size = 2800734, upload-time = "2026-10-01T20:39:26.837Z" },
+]
+
+[[package]]
+name = "mypy-boto3-kms"
+version = "1.43.119"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/82/ba/cc48df9eede29ed98e3cc1cffefa00cad04be527960d166ee065208ec5cd/mypy_boto3_kms-1.43.119.tar.gz", hash = "sha256:97b5eb15dfb9acba25478aa4545a5ce836ccd1d79b561e27796c5138242acb75", size = 31374, upload-time = "2026-10-26T21:49:59.343Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/af/f9/a9dda5f96744068113c29edee3abb1438f113a87f808cf608f054032a733/mypy_boto3_kms-1.43.119-py3-none-any.whl", hash = "sha256:e37f770110e493097a233ab94c692bbbac26359433939509182b29fb138e59e0", size = 39775, upload-time = "2026-10-26T21:49:57.934Z" },
 ]
 
 [[package]]
