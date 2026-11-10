@@ -670,6 +670,21 @@ export type ResetPasswordRequest = {
 };
 
 /**
+ * RoleChangeRequest
+ *
+ * El rol nuevo de un miembro (API-020). El propietario no se asigna: nace con la
+ * organización (RN-010).
+ */
+export type RoleChangeRequest = {
+  /**
+   * Role
+   *
+   * Rol nuevo: admin, lawyer o assistant.
+   */
+  role: "admin" | "lawyer" | "assistant";
+};
+
+/**
  * SeatsOut
  *
  * Cupo de usuarios del plan (RN-012).
@@ -1295,6 +1310,93 @@ export type ListMembersResponses = {
 
 export type ListMembersResponse =
   ListMembersResponses[keyof ListMembersResponses];
+
+export type RemoveMemberData = {
+  body?: never;
+  path: {
+    /**
+     * User Id
+     */
+    user_id: string;
+  };
+  query?: never;
+  url: "/api/v1/organization/members/{user_id}";
+};
+
+export type RemoveMemberErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador, el miembro es el propietario o es uno mismo.
+   */
+  403: Problem;
+  /**
+   * La persona no es miembro de la organización.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RemoveMemberError = RemoveMemberErrors[keyof RemoveMemberErrors];
+
+export type RemoveMemberResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type RemoveMemberResponse =
+  RemoveMemberResponses[keyof RemoveMemberResponses];
+
+export type ChangeMemberRoleData = {
+  body: RoleChangeRequest;
+  path: {
+    /**
+     * User Id
+     */
+    user_id: string;
+  };
+  query?: never;
+  url: "/api/v1/organization/members/{user_id}";
+};
+
+export type ChangeMemberRoleErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador, el miembro es el propietario o es uno mismo.
+   */
+  403: Problem;
+  /**
+   * La persona no es miembro de la organización.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ChangeMemberRoleError =
+  ChangeMemberRoleErrors[keyof ChangeMemberRoleErrors];
+
+export type ChangeMemberRoleResponses = {
+  /**
+   * Successful Response
+   */
+  200: MemberOut;
+};
+
+export type ChangeMemberRoleResponse =
+  ChangeMemberRoleResponses[keyof ChangeMemberRoleResponses];
 
 export type ListInvitationsData = {
   body?: never;

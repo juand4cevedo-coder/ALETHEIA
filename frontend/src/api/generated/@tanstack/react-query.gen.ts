@@ -11,6 +11,7 @@ import { client } from "../client.gen";
 import {
   acceptInvitation,
   acceptLegalTerms,
+  changeMemberRole,
   changePassword,
   createInvitation,
   forgotPassword,
@@ -23,6 +24,7 @@ import {
   readMe,
   refreshSession,
   registerAccount,
+  removeMember,
   resendVerification,
   resetPassword,
   revokeInvitation,
@@ -38,6 +40,9 @@ import type {
   AcceptLegalTermsData,
   AcceptLegalTermsError,
   AcceptLegalTermsResponse,
+  ChangeMemberRoleData,
+  ChangeMemberRoleError,
+  ChangeMemberRoleResponse,
   ChangePasswordData,
   ChangePasswordError,
   ChangePasswordResponse,
@@ -71,6 +76,9 @@ import type {
   RegisterAccountData,
   RegisterAccountError,
   RegisterAccountResponse,
+  RemoveMemberData,
+  RemoveMemberError,
+  RemoveMemberResponse,
   ResendVerificationData,
   ResendVerificationError,
   ResendVerificationResponse,
@@ -608,6 +616,60 @@ export const listMembersInfiniteOptions = (
     },
   );
   return opts as Omit<typeof opts, "initialData">;
+};
+
+/**
+ * Retirar a un miembro
+ */
+export const removeMemberMutation = (
+  options?: Partial<Options<RemoveMemberData>>,
+): UseMutationOptions<
+  RemoveMemberResponse,
+  RemoveMemberError,
+  Options<RemoveMemberData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RemoveMemberResponse,
+    RemoveMemberError,
+    Options<RemoveMemberData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await removeMember({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Cambiar el rol de un miembro
+ */
+export const changeMemberRoleMutation = (
+  options?: Partial<Options<ChangeMemberRoleData>>,
+): UseMutationOptions<
+  ChangeMemberRoleResponse,
+  ChangeMemberRoleError,
+  Options<ChangeMemberRoleData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ChangeMemberRoleResponse,
+    ChangeMemberRoleError,
+    Options<ChangeMemberRoleData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await changeMemberRole({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
 };
 
 export const listInvitationsQueryKey = (
