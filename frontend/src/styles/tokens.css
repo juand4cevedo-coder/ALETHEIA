@@ -69,6 +69,12 @@
   --motion-slow: 700ms;
   /* Destello de los caracteres que cambian en la demostración de la huella. */
   --motion-flash: 600ms;
+  /* Una vuelta del borde de luz del hero: la única animación continua, lenta a propósito. */
+  --motion-orbit: 14s;
+  /* Entrada «estampada» de la ficha del sello en el hero, una sola vez al cargar. */
+  --motion-stamp: 500ms;
+  /* Espera a que la ventana ya esté a la vista antes de estampar el sello. */
+  --motion-stamp-delay: 900ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   /* Para entradas: arranca rápido y frena suave, sin rebote. */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);

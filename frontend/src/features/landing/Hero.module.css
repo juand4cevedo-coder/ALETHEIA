@@ -106,13 +106,13 @@
   font-weight: 500;
 }
 
-/* font.display ampliado para la portada: 68/72 en escritorio, 40/44 en móvil. */
+/* font.display ampliado para la portada: 76/80 en escritorio, 44/48 en móvil. */
 .title {
   margin-top: var(--space-6);
   font-family: var(--font-display);
-  font-size: 68px;
+  font-size: 76px;
   font-weight: 560;
-  line-height: 72px;
+  line-height: 80px;
   letter-spacing: -0.035em;
 }
 
@@ -165,10 +165,73 @@
   font-size: 12px;
 }
 
+/* La ventana crece respecto del texto: es la prueba de lo que promete el titular. El margen
+   inferior deja sitio a la ficha del sello, que sobresale por debajo. */
 .preview {
-  max-width: 1040px;
-  margin: var(--space-16) auto 0;
+  position: relative;
+  max-width: 1120px;
+  margin: var(--space-16) auto var(--space-12);
   padding: 0 var(--space-6);
+}
+
+/* Marco de la ventana. Su ::before es un anillo de 1 px con un degradado cónico que gira
+   despacio: dice «protegida y en vivo» sin ningún otro brillo. */
+.frame {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Ángulo registrado para poder animarlo. Es la única excepción a «solo transform y opacity»
+   que admite la spec: se anima un ángulo personalizado del degradado, que no mueve el diseño
+   ni repinta el contenido de la ventana. Sin soporte, el anillo queda quieto y visible. */
+@property --angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  /* El mismo radio que .window en EvidencePreview.module.css. */
+  border-radius: 20px;
+  /* Casi todo el círculo es transparente: solo un arco tenue recorre el borde. */
+  background: conic-gradient(
+    from var(--angle),
+    transparent 0deg,
+    color-mix(in srgb, var(--color-primary-400) 55%, transparent) 40deg,
+    color-mix(in srgb, var(--color-brand-blue) 35%, transparent) 80deg,
+    transparent 130deg
+  );
+  /* Dos capas de máscara, una limitada al relleno: al excluirlas queda solo el anillo. */
+  mask:
+    linear-gradient(var(--color-ink-950) 0 0) content-box,
+    linear-gradient(var(--color-ink-950) 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: orbit var(--motion-orbit) linear infinite;
+}
+
+@keyframes orbit {
+  to {
+    --angle: 360deg;
+  }
+}
+
+/* Ficha del sello sobre la esquina inferior derecha de la ventana. El fondo sólido evita que
+   la ventana se vea a través de la ficha translúcida. */
+.stamp {
+  position: absolute;
+  right: 0;
+  bottom: calc(-1 * var(--space-12));
+  z-index: 2;
+  width: 320px;
+  border-radius: var(--radius-lg);
+  background: var(--color-ink-900);
+  box-shadow: var(--shadow-raised);
 }
 
 /* Entrada escalonada al cargar: cada bloque sube y aparece un poco después del anterior. */
@@ -227,8 +290,8 @@
   }
 
   .title {
-    font-size: 40px;
-    line-height: 44px;
+    font-size: 44px;
+    line-height: 48px;
   }
 
   .lead {
@@ -242,14 +305,38 @@
   }
 
   .preview {
-    margin-top: var(--space-12);
+    margin: var(--space-12) auto 0;
+  }
+
+  /* En pantallas angostas la ficha va debajo de la ventana, sin taparla. */
+  .stamp {
+    position: static;
+    width: auto;
+    margin-top: var(--space-4);
+  }
+}
+
+/* La ficha se «estampa» una sola vez: llega apenas más grande y se asienta. Sin esta
+   preferencia simplemente está a la vista. */
+@media (prefers-reduced-motion: no-preference) {
+  .stamp {
+    animation: stamp var(--motion-stamp) var(--ease-out)
+      var(--motion-stamp-delay) both;
+  }
+}
+
+@keyframes stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .aurora::before,
   .aurora::after,
-  .enter {
+  .enter,
+  .frame::before {
     animation: none;
   }
 }
