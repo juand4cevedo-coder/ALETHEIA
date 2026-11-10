@@ -1,8 +1,9 @@
 """Ciclo del trabajador: toma una tarea de jobs, la ejecuta y decide si reintentar.
 
-Cada paso va en su propia transacción corta: tomar la tarea, ejecutarla y cerrarla. Así una
-tarea lenta nunca deja una transacción abierta sobre la cola, y si el proceso se cae a la mitad,
-la reserva vence y otro intento la retoma.
+Cada paso va en su propia transacción corta: tomar la tarea, ejecutarla y cerrarla. El manejador
+abre las suyas y nunca llama a un servicio externo con una abierta (ADR-038). Así una tarea
+lenta no deja transacciones abiertas, y si el proceso se cae a la mitad, la reserva vence y
+otro intento la retoma. Una tarea larga extiende su reserva con run.renew_lease.
 """
 
 import datetime
@@ -28,13 +29,22 @@ from app.services.jobs import (
     purge_finished,
     retry_delay,
 )
-from app.worker.handlers import HANDLERS, Handler, WorkerContext
+from app.worker.handlers import HANDLERS, Handler, JobRun, WorkerContext
 
 POLL_INTERVAL: Final = 2.0
 MAINTENANCE_INTERVAL: Final = 600.0
 _EXPIRED_ERROR: Final = "La reserva venció en el último intento."
+
+
+class LeaseLostError(Exception):
+    """La reserva venció y otro intento tomó la tarea: este debe detenerse sin cerrarla."""
+
+    def __init__(self) -> None:
+        super().__init__("La reserva de la tarea venció mientras se ejecutaba.")
+
+
 # Errores propios: su mensaje lo escribimos nosotros y nunca lleva datos personales.
-_OWN_ERRORS: Final = (PermanentJobError, EmailDeliveryError)
+_OWN_ERRORS: Final = (PermanentJobError, EmailDeliveryError, LeaseLostError)
 
 logger = logging.getLogger(__name__)
 
@@ -116,8 +126,14 @@ class Worker:
             if handler is None:
                 msg = f"No hay manejador para {job.kind}."
                 raise PermanentJobError(msg)
-            with Session(self._engine) as session, session.begin():
-                handler(session, job.payload, self._context)
+            handler(
+                JobRun(
+                    payload=job.payload,
+                    context=self._context,
+                    open_session=lambda: Session(self._engine),
+                    renew_lease=lambda: self._renew_lease(job),
+                )
+            )
         except Exception as exc:
             # Cualquier falla del manejador se registra y decide si la tarea se reintenta.
             self._fail(job, exc)
@@ -128,6 +144,13 @@ class Worker:
             logger.info("Tarea terminada", extra=_log(job))
         else:
             logger.warning("La reserva venció antes de cerrar la tarea", extra=_log(job))
+
+    def _renew_lease(self, job: ClaimedJob) -> None:
+        """Extiende la reserva de la tarea en curso por otro LEASE."""
+        with Session(self._engine) as session, session.begin():
+            owned = jobs_repository.renew_lease(session, job, LEASE)
+        if not owned:
+            raise LeaseLostError
 
     def _fail(self, job: ClaimedJob, exc: Exception) -> None:
         retry_in = None if isinstance(exc, PermanentJobError) else retry_delay(job.attempts)
