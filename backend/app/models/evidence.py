@@ -7,6 +7,7 @@ from typing import Any, Final
 from sqlalchemy import (
     BigInteger,
     CheckConstraint,
+    FetchedValue,
     ForeignKey,
     ForeignKeyConstraint,
     Index,
@@ -176,8 +177,9 @@ class CustodyEvent(Base):
     occurred_at: Mapped[datetime.datetime]
     # Hash del evento anterior; 32 bytes en cero en el primero.
     prev_hash: Mapped[bytes]
-    # SHA-256 de la serialización canónica de este evento.
-    event_hash: Mapped[bytes]
+    # SHA-256 de la serialización canónica de este evento. Lo calcula la base al insertar
+    # (custody_events_chain, ADR-037); la aplicación no lo manda y lo lee de vuelta.
+    event_hash: Mapped[bytes] = mapped_column(server_default=FetchedValue())
 
 
 class Export(Base):
