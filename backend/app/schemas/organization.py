@@ -27,6 +27,15 @@ class InvitationRequest(BaseModel):
     role: InvitableRole = Field(description="Rol con que entrará: admin, lawyer o assistant.")
 
 
+class RoleChangeRequest(BaseModel):
+    """El rol nuevo de un miembro (API-020). El propietario no se asigna: nace con la
+    organización (RN-010)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    role: InvitableRole = Field(description="Rol nuevo: admin, lawyer o assistant.")
+
+
 class InvitationOut(BaseModel):
     """Una invitación sin aceptar ni revocar."""
 
