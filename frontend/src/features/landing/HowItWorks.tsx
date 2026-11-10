@@ -47,12 +47,7 @@ export function HowItWorks() {
 
         <ol className={styles.steps}>
           {STEPS.map((step, index) => (
-            <Reveal
-              as="li"
-              key={step.title}
-              delay={(index + 1) as 1 | 2 | 3 | 4}
-              className={styles.step}
-            >
+            <Reveal as="li" key={step.title} className={styles.step}>
               <span className={styles.icon}>
                 <step.icon size={24} />
               </span>

@@ -100,8 +100,8 @@ export function StandardsSection() {
             </div>
           </Reveal>
 
-          {FEATURES.map((feature, index) => (
-            <Reveal key={feature.title} delay={(index + 1) as 1 | 2 | 3 | 4}>
+          {FEATURES.map((feature) => (
+            <Reveal key={feature.title}>
               <div data-spotlight className={`${section.card} ${styles.card}`}>
                 <span className={section.iconTile}>
                   <feature.icon size={22} />

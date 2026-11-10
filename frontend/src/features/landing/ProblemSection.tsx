@@ -41,13 +41,8 @@ export function ProblemSection() {
         />
 
         <ul ref={gridRef} className={styles.grid}>
-          {PROBLEMS.map((problem, index) => (
-            <Reveal
-              as="li"
-              key={problem.title}
-              delay={(index + 1) as 1 | 2 | 3}
-              className={styles.item}
-            >
+          {PROBLEMS.map((problem) => (
+            <Reveal as="li" key={problem.title} className={styles.item}>
               <div data-spotlight className={`${section.card} ${styles.card}`}>
                 <span className={section.iconTile}>
                   <problem.icon size={22} />
