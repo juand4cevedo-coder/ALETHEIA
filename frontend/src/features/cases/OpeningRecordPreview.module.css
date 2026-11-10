@@ -1,0 +1,225 @@
+/* Vista previa del registro de apertura: un acta sobre la sala oscura, con el primer eslabón de
+   la cadena encendido cuando el caso ya se puede abrir. */
+.preview {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.label {
+  margin: 0;
+  color: var(--color-text-inverse-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.record {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-6) var(--space-6) var(--space-6);
+  border: 1px solid var(--color-ink-700);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(
+    180deg,
+    var(--color-ink-850),
+    var(--color-ink-925)
+  );
+  box-shadow:
+    var(--shadow-panel),
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-inverse) 5%, transparent);
+}
+
+/* Anillos de sello en la esquina: decoración, sin contenido. */
+.record::after {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  border: 1px solid
+    color-mix(in srgb, var(--color-primary-300) 10%, transparent);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 18px color-mix(in srgb, var(--color-primary-300) 3%, transparent),
+    0 0 0 40px color-mix(in srgb, var(--color-primary-300) 2%, transparent);
+  pointer-events: none;
+}
+
+.reference {
+  position: relative;
+  margin: 0 0 var(--space-1);
+  color: var(--color-primary-300);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
+.title {
+  position: relative;
+  margin: 0;
+  color: var(--color-text-inverse);
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.title[data-empty] {
+  color: var(--color-text-inverse-muted);
+  font-weight: 500;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-4);
+  margin: var(--space-6) 0;
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--color-ink-700);
+  border-bottom: 1px solid var(--color-ink-700);
+}
+
+.facts dt {
+  margin-bottom: var(--space-1);
+  color: var(--color-text-inverse-muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.facts dd {
+  margin: 0;
+  color: var(--color-text-inverse);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.genesis {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+/* El primer eslabón: un rombo que se enciende cuando el caso está listo para abrirse. */
+.node {
+  width: 22px;
+  height: 22px;
+  margin: var(--space-1) 0 0 2px;
+  border: 1px solid var(--color-ink-650);
+  border-radius: var(--radius-sm);
+  background: var(--color-ink-900);
+  transform: rotate(45deg);
+  transition:
+    border-color var(--motion-slow) var(--ease-out),
+    background-color var(--motion-slow) var(--ease-out),
+    box-shadow var(--motion-slow) var(--ease-out);
+}
+
+.record[data-ready] .node {
+  border-color: var(--color-primary-400);
+  background: color-mix(in srgb, var(--color-primary-400) 14%, transparent);
+  box-shadow: 0 0 22px
+    color-mix(in srgb, var(--color-primary-400) 35%, transparent);
+}
+
+.event {
+  min-width: 0;
+}
+
+.eventName {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text-inverse);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.eventNote {
+  margin: 0;
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+}
+
+.hashes {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+}
+
+.hashes div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: var(--space-3);
+  font-size: 12px;
+}
+
+.hashes dt {
+  color: var(--color-text-inverse-muted);
+}
+
+.hashes dd {
+  margin: 0;
+  color: var(--color-text-inverse);
+  overflow-wrap: anywhere;
+}
+
+.hashes code {
+  font-family: var(--font-mono);
+}
+
+.key {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-6) 0 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-ink-800);
+  border-radius: var(--radius-md);
+  background: var(--color-ink-950);
+  color: var(--color-text-inverse);
+  font-size: 13px;
+}
+
+.key svg {
+  flex: none;
+  color: var(--color-primary-300);
+}
+
+.key code {
+  margin-left: auto;
+  color: var(--color-text-inverse-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.footnote {
+  margin: 0;
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 560px) {
+  .record {
+    padding: var(--space-4);
+  }
+
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hashes div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node {
+    transition: none;
+  }
+}
