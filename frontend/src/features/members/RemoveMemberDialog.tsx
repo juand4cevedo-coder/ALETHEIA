@@ -1,0 +1,74 @@
+import { UserMinus } from "lucide-react";
+
+import type { MemberOut } from "../../api/generated";
+import { Button } from "../../components/ui/Button.tsx";
+import { Dialog } from "../../components/ui/Dialog.tsx";
+import { Notice } from "../../components/ui/Notice.tsx";
+
+type Props = {
+  member: MemberOut | null;
+  onClose: () => void;
+  onConfirm: (member: MemberOut) => void;
+  busy: boolean;
+  /** Texto de la API si no se pudo retirar, o true si fue una falla del sistema. */
+  failure: string | boolean;
+};
+
+// Confirmación antes de retirar a un miembro (UI-021, FLU-004): dice a quién y qué pierde.
+// El foco empieza en Cancelar, que es lo seguro.
+export function RemoveMemberDialog({
+  member,
+  onClose,
+  onConfirm,
+  busy,
+  failure,
+}: Props) {
+  return (
+    <Dialog
+      open={member !== null}
+      onClose={onClose}
+      busy={busy}
+      title="¿Retirar a esta persona?"
+      icon={<UserMinus size={22} />}
+      actions={
+        <>
+          <Button
+            surface="dark"
+            variant="secondary"
+            size="sm"
+            shape="pill"
+            data-autofocus
+            onClick={onClose}
+            disabled={busy}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="bright"
+            size="sm"
+            shape="pill"
+            busy={busy}
+            onClick={() => member && onConfirm(member)}
+          >
+            {busy ? "Retirando…" : "Retirar"}
+          </Button>
+        </>
+      }
+    >
+      <p>
+        <strong translate="no">{member?.full_name}</strong> perderá el acceso a
+        la organización y a sus casos, y se cerrarán sus sesiones ahora mismo.
+        Su cuenta sigue existiendo, y lo que hizo queda en la cadena de
+        custodia. Si cambia de opinión, puede invitarla de nuevo; el retiro
+        libera su cupo.
+      </p>
+      {failure && (
+        <Notice tone="error">
+          {typeof failure === "string"
+            ? failure
+            : "No pudimos retirar a la persona. Revise su conexión e inténtelo de nuevo."}
+        </Notice>
+      )}
+    </Dialog>
+  );
+}

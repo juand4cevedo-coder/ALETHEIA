@@ -7,12 +7,13 @@ import { Clock, MailPlus, UsersRound } from "lucide-react";
 import { type ReactNode, useId, useState } from "react";
 import { Link, useOutletContext } from "react-router";
 
-import type { InvitationOut, Me, SeatsOut } from "../api/generated";
+import type { InvitationOut, Me, MemberOut, SeatsOut } from "../api/generated";
 import {
   listInvitationsInfiniteOptions,
   listInvitationsInfiniteQueryKey,
   listMembersInfiniteOptions,
   listMembersInfiniteQueryKey,
+  removeMemberMutation,
   revokeInvitationMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
@@ -22,7 +23,9 @@ import { ROUTES } from "../config/routes.ts";
 import { SITE_NAME } from "../config/site.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { dateTime, shortDate } from "../features/members/format.ts";
+import { ChangeRoleDialog } from "../features/members/ChangeRoleDialog.tsx";
 import { InviteDialog } from "../features/members/InviteDialog.tsx";
+import { RemoveMemberDialog } from "../features/members/RemoveMemberDialog.tsx";
 import { RevokeInvitationDialog } from "../features/members/RevokeInvitationDialog.tsx";
 import { managesTeam, ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./MembersPage.module.css";
@@ -60,7 +63,7 @@ export function MembersPage() {
       </header>
 
       {managesTeam(me.organization?.role) ? (
-        <Team />
+        <Team currentUserId={me.id} />
       ) : (
         <Notice tone="error">
           <p>{NOT_ALLOWED}</p>
@@ -70,11 +73,14 @@ export function MembersPage() {
   );
 }
 
-function Team() {
+function Team({ currentUserId }: { currentUserId: string }) {
   const queryClient = useQueryClient();
   const [inviting, setInviting] = useState(false);
   const [sent, setSent] = useState<InvitationOut | null>(null);
   const [revoking, setRevoking] = useState<InvitationOut | null>(null);
+  const [changing, setChanging] = useState<MemberOut | null>(null);
+  const [removing, setRemoving] = useState<MemberOut | null>(null);
+  const [removed, setRemoved] = useState<string | null>(null);
 
   const members = useInfiniteQuery({
     ...listMembersInfiniteOptions(),
@@ -114,6 +120,22 @@ function Team() {
     },
   });
 
+  const remove = useMutation({
+    ...removeMemberMutation(),
+    onSuccess: async () => {
+      setRemoved(removing?.full_name ?? null);
+      setRemoving(null);
+      await refresh();
+    },
+    onError: async (error) => {
+      // Si ya no era miembro (otra persona la retiró), la lista lo dirá.
+      if (apiProblem(error).status === 404) {
+        setRemoving(null);
+        await refresh();
+      }
+    },
+  });
+
   const seats = members.data?.pages[0]?.seats;
   const memberRows = members.data?.pages.flatMap((page) => page.items) ?? [];
   const invitationRows =
@@ -128,11 +150,19 @@ function Team() {
         </Notice>
       )}
 
+      {removed && (
+        <Notice tone="success">
+          <strong translate="no">{removed}</strong> ya no pertenece a la
+          organización y sus sesiones quedaron cerradas.
+        </Notice>
+      )}
+
       <SeatsBar
         seats={seats}
         loading={members.isPending}
         onInvite={() => {
           setSent(null);
+          setRemoved(null);
           setInviting(true);
         }}
       />
@@ -152,7 +182,11 @@ function Team() {
         ) : (
           <ul className={styles.rows}>
             {memberRows.map((member) => (
-              <li key={member.user_id} className={styles.row}>
+              <li
+                key={member.user_id}
+                className={styles.row}
+                data-actions={isManageable(member, currentUserId) || undefined}
+              >
                 <span className={styles.who}>
                   <span className={styles.name}>{member.full_name}</span>
                   <span className={styles.email} translate="no">
@@ -168,6 +202,37 @@ function Team() {
                     {shortDate(member.joined_at)}
                   </time>
                 </span>
+                {isManageable(member, currentUserId) && (
+                  <span className={styles.rowActions}>
+                    <Button
+                      surface="dark"
+                      variant="secondary"
+                      size="sm"
+                      shape="pill"
+                      aria-label={`Cambiar el rol de ${member.full_name}`}
+                      onClick={() => {
+                        setRemoved(null);
+                        setChanging(member);
+                      }}
+                    >
+                      Cambiar rol
+                    </Button>
+                    <Button
+                      surface="dark"
+                      variant="secondary"
+                      size="sm"
+                      shape="pill"
+                      aria-label={`Retirar a ${member.full_name}`}
+                      onClick={() => {
+                        remove.reset();
+                        setRemoved(null);
+                        setRemoving(member);
+                      }}
+                    >
+                      Retirar
+                    </Button>
+                  </span>
+                )}
               </li>
             ))}
           </ul>
@@ -254,6 +319,30 @@ function Team() {
           void refresh();
         }}
       />
+      <ChangeRoleDialog
+        key={changing?.user_id ?? "ninguno"}
+        member={changing}
+        onClose={() => setChanging(null)}
+        onChanged={() => {
+          setChanging(null);
+          void refresh();
+        }}
+      />
+      <RemoveMemberDialog
+        member={removing}
+        onClose={() => setRemoving(null)}
+        onConfirm={(member) =>
+          remove.mutate({ path: { user_id: member.user_id } })
+        }
+        busy={remove.isPending}
+        failure={
+          remove.isError &&
+          apiProblem(remove.error).status !== 404 &&
+          (apiProblem(remove.error).status === 403
+            ? (apiProblem(remove.error).detail ?? true)
+            : true)
+        }
+      />
       <RevokeInvitationDialog
         invitation={revoking}
         onClose={() => setRevoking(null)}
@@ -265,6 +354,12 @@ function Team() {
       />
     </>
   );
+}
+
+// El propietario no se cambia ni se retira (RN-010), y nadie se gestiona a sí mismo desde aquí:
+// la API también lo rechaza (HU-013), así que el botón ni se ofrece.
+function isManageable(member: MemberOut, currentUserId: string): boolean {
+  return member.role !== "owner" && member.user_id !== currentUserId;
 }
 
 // Cupo del plan (RN-012): cuántas personas e invitaciones caben y el botón para invitar. Con el
