@@ -55,6 +55,7 @@ export function StandardsSection() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-estandares"
+          index={3}
           kicker="Seguridad y estándares"
           title="Garantías que cualquier perito puede comprobar"
           lead="No usamos criptografía propia ni cadenas de bloques. Cada garantía descansa en estándares abiertos, documentados y verificables con herramientas independientes."

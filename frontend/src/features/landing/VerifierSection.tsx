@@ -30,9 +30,14 @@ export function VerifierSection() {
       <div className={section.inner}>
         <Reveal className={styles.panel}>
           <div className={styles.copy}>
-            <p className={section.kicker}>
-              Para jueces, peritos y contrapartes
-            </p>
+            <div className={section.folioBlock}>
+              <p className={section.folio} aria-hidden="true">
+                § 05
+              </p>
+              <p className={section.kicker}>
+                Para jueces, peritos y contrapartes
+              </p>
+            </div>
             <h2 id="titulo-verificador" className={styles.title}>
               ¿Recibió un paquete de preservación?
             </h2>

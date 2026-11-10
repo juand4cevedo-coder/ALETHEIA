@@ -40,6 +40,7 @@ export function HowItWorks() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-como-funciona"
+          index={2}
           kicker="Cómo funciona"
           title="De la recepción del archivo al expediente, en cuatro pasos"
           lead="No necesita instalar nada ni cambiar la forma en que su oficina recibe la información. Nosotros nos encargamos de preservarla desde el primer momento."

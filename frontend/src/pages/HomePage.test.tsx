@@ -111,6 +111,25 @@ describe("Página de inicio (HU-001)", () => {
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
+  it("los H2 de la landing siguen el orden de los folios", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    await renderRoute("/");
+
+    const headings = within(screen.getByRole("main")).getAllByRole("heading", {
+      level: 2,
+    });
+    expect(headings.map((heading) => heading.textContent)).toEqual([
+      "Una captura de pantalla no es el archivo original",
+      "De la recepción del archivo al expediente, en cuatro pasos",
+      "Garantías que cualquier perito puede comprobar",
+      "Preservamos y documentamos. La valoración es del juez.",
+      "¿Recibió un paquete de preservación?",
+      "Las mismas garantías en todos los planes",
+      "Lo que más nos preguntan",
+      "Empiece a preservar su evidencia hoy",
+    ]);
+  });
+
   it("abre y cierra las preguntas frecuentes", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const user = userEvent.setup();
