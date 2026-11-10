@@ -15,7 +15,7 @@ function FingerprintBlocks({ hash }: { hash: string }) {
       <span className="visually-hidden">{hash}</span>
       <span className={styles.blocks} aria-hidden="true">
         {blocks.map((start) => (
-          <span key={start} className={styles.block}>
+          <span key={start}>
             {Array.from(hash.slice(start, start + 8), (char, i) => (
               <span
                 key={i}
@@ -53,6 +53,8 @@ export function HashDemo() {
         value={text}
         onChange={(event) => setText(event.target.value)}
         rows={2}
+        // Sin cálculo disponible, editar dejaría la «Huella actual» desfasada del texto.
+        readOnly={!supported}
         spellCheck={false}
       />
 
