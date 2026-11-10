@@ -49,26 +49,11 @@
   line-height: 27px;
 }
 
-.steps {
-  display: grid;
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.step {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  border: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 7%, transparent);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-ink-950) 50%, transparent);
+/* Los pasos van en la línea de tiempo compartida (Timeline.module.css); aquí solo el texto. */
+.stepText {
   color: var(--color-text-inverse-muted);
   font-size: 15px;
-  line-height: 23px;
+  line-height: 24px;
 }
 
 @media (max-width: 900px) {
