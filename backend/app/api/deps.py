@@ -8,6 +8,7 @@ from fastapi.security import APIKeyCookie
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
+from app.adapters.keys import KeyWrapper
 from app.api.cookies import ACCESS_COOKIE
 from app.core.config import Settings
 from app.core.legal import LegalAcceptanceRequiredError
@@ -23,6 +24,12 @@ def get_engine(request: Request) -> Engine:
         msg = "La aplicación no tiene motor de base de datos"
         raise TypeError(msg)
     return engine
+
+
+def get_key_wrapper(request: Request) -> KeyWrapper:
+    """El envoltorio de llaves (AWS KMS o la llave local) creado al construir la aplicación."""
+    wrapper: KeyWrapper = request.app.state.key_wrapper
+    return wrapper
 
 
 def get_session(engine: Annotated[Engine, Depends(get_engine)]) -> Iterator[Session]:

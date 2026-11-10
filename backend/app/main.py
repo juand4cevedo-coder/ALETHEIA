@@ -8,7 +8,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
-from app.api import API_PREFIX, auth, health, invitations, me, organization, plans
+from app.adapters.keys import build_key_wrapper
+from app.api import API_PREFIX, auth, cases, health, invitations, me, organization, plans
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logs import configure_logging
@@ -63,6 +64,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(me.router, prefix=API_PREFIX)
     app.include_router(organization.router, prefix=API_PREFIX)
     app.include_router(invitations.router, prefix=API_PREFIX)
+    app.include_router(cases.router, prefix=API_PREFIX)
     install_problem_details(app)
     return app
 
@@ -73,6 +75,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     configure_logging(settings.log_level)
     app = build_api(public_docs=settings.environment != "production")
     app.state.engine = create_db_engine(settings)
+    # AWS KMS en producción y la llave local en desarrollo; falla al arrancar si falta.
+    app.state.key_wrapper = build_key_wrapper(settings)
     # La configuración con que se armó esta aplicación: las rutas la leen de aquí y no de
     # get_settings(), así una prueba o un despliegue usan siempre la que pasaron.
     app.state.settings = settings

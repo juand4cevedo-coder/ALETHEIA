@@ -76,6 +76,8 @@ class CaseView:
     """El caso, su equipo y sus últimos eventos, del más reciente al más antiguo."""
 
     case: Case
+    # Quien abrió el caso, aunque ya no esté en su equipo.
+    created_by_name: str
     members: list[CaseMemberView]
     recent_events: list[CustodyEventView]
 
@@ -186,6 +188,7 @@ def get_case(session: Session, principal: Principal, case_id: uuid.UUID) -> Case
         raise CaseNotFoundError
     return CaseView(
         case=case,
+        created_by_name=cases_repository.user_name(session, case.created_by),
         members=cases_repository.case_members(session, organization_id, case.id),
         recent_events=cases_repository.recent_events(session, case.id, RECENT_EVENTS),
     )
