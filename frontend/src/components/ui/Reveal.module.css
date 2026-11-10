@@ -1,37 +1,18 @@
-.reveal {
-  transition:
-    opacity var(--motion-slow) var(--ease-out),
-    transform var(--motion-slow) var(--ease-out);
-}
+/* Entrada ligada al desplazamiento: el contenido ya es visible sin esto, así que solo se declara
+   cuando el navegador la soporta y la persona no pidió menos movimiento. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
 
-.reveal[data-state="pending"] {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.reveal[data-delay="1"] {
-  transition-delay: 90ms;
-}
-
-.reveal[data-delay="2"] {
-  transition-delay: 180ms;
-}
-
-.reveal[data-delay="3"] {
-  transition-delay: 270ms;
-}
-
-.reveal[data-delay="4"] {
-  transition-delay: 360ms;
-}
-
-.reveal[data-delay="5"] {
-  transition-delay: 450ms;
-}
-
-/* Con movimiento reducido solo cambia la opacidad, sin desplazamiento. */
-@media (prefers-reduced-motion: reduce) {
-  .reveal[data-state="pending"] {
-    transform: none;
+    @keyframes reveal-in {
+      from {
+        opacity: 0.6;
+        transform: translateY(12px);
+      }
+    }
   }
 }
