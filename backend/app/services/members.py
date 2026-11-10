@@ -1,4 +1,4 @@
-"""Miembros e invitaciones de la organización (RF-014, RF-016, HU-011).
+"""Miembros e invitaciones de la organización (RF-014, RF-016, HU-011 y HU-013).
 
 Solo el propietario y el administrador gestionan el equipo (RN-008); la API lo exige antes de
 llegar aquí. Una invitación tiene un rol, sirve una sola vez, vence a las 72 horas y ocupa un
@@ -18,8 +18,9 @@ from typing import Final
 from sqlalchemy.orm import Session
 
 from app.core.tokens import new_opaque_token, opaque_token_hash
-from app.models import AuditLog, Invitation, Plan
+from app.models import AuditLog, Invitation, Membership, Plan
 from app.repositories import organization as organization_repository
+from app.repositories import sessions as sessions_repository
 from app.repositories.organization import MemberRow
 from app.services import jobs, rate_limit
 from app.services.audit import audit_ip, audit_user_agent
@@ -77,6 +78,18 @@ class SeatLimitReachedError(Exception):
 
 class InvitationNotFoundError(Exception):
     """No hay una invitación pendiente con ese identificador en la organización."""
+
+
+class MemberNotFoundError(Exception):
+    """La persona no pertenece a la organización de quien hace la petición."""
+
+
+class OwnerProtectedError(Exception):
+    """Nadie cambia el rol del propietario ni lo retira (RN-010, CA-HU-013-02)."""
+
+
+class SelfChangeError(Exception):
+    """Quien administra no cambia su propio rol ni se retira a sí mismo desde aquí."""
 
 
 def organization_of_manager(principal: Principal) -> uuid.UUID:
@@ -187,6 +200,75 @@ def revoke(
     invitation.revoked_at = now
     _audit(session, principal, "invitation_revoked", invitation.id, client_ip, user_agent, now)
     session.commit()
+
+
+def change_role(
+    session: Session,
+    principal: Principal,
+    user_id: uuid.UUID,
+    role: str,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> MemberRow:
+    """Cambia el rol de un miembro (API-020, CA-HU-013-01).
+
+    El cambio vale desde la petición siguiente de esa persona: su rol se lee de la base en cada
+    petición, no del token. Repetir el mismo rol no cambia nada ni deja otro evento.
+    """
+    organization_id = organization_of_manager(principal)
+    membership = _target(session, principal, organization_id, user_id)
+    if membership.role != role:
+        now = datetime.datetime.now(datetime.UTC)
+        membership.role = role
+        _audit(session, principal, "role_changed", user_id, client_ip, user_agent, now)
+    session.flush()
+    row = organization_repository.member_row(session, organization_id, user_id)
+    session.commit()
+    if row is None:  # La membresía acaba de leerse con su candado.
+        msg = "El miembro desapareció dentro de la transacción"
+        raise LookupError(msg)
+    return row
+
+
+def remove_member(
+    session: Session,
+    principal: Principal,
+    user_id: uuid.UUID,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> None:
+    """Retira a un miembro y cierra todas sus sesiones (API-021, CA-HU-013-01).
+
+    La persona pierde el acceso en su petición siguiente: sus tokens de renovación quedan
+    revocados y con ellos su sesión deja de valer, aunque su token de acceso no haya vencido.
+    Su cuenta sigue existiendo: puede ingresar de nuevo, sin organización.
+    """
+    organization_id = organization_of_manager(principal)
+    membership = _target(session, principal, organization_id, user_id)
+    now = datetime.datetime.now(datetime.UTC)
+    organization_repository.remove_membership(session, membership)
+    sessions_repository.revoke_user_sessions(session, user_id, now)
+    _audit(session, principal, "member_removed", user_id, client_ip, user_agent, now)
+    session.commit()
+
+
+def _target(
+    session: Session, principal: Principal, organization_id: uuid.UUID, user_id: uuid.UUID
+) -> Membership:
+    """La membresía que se va a cambiar, con las reglas que la protegen."""
+    membership = organization_repository.membership_for_update(session, organization_id, user_id)
+    if membership is None:
+        session.rollback()
+        raise MemberNotFoundError
+    if membership.role == "owner":
+        session.rollback()
+        raise OwnerProtectedError
+    if user_id == principal.user_id:
+        session.rollback()
+        raise SelfChangeError
+    return membership
 
 
 def pending_invitations(
