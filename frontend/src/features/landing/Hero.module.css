@@ -109,8 +109,9 @@
 /* font.display ampliado para la portada: 68/72 en escritorio, 40/44 en móvil. */
 .title {
   margin-top: var(--space-6);
+  font-family: var(--font-display);
   font-size: 68px;
-  font-weight: 600;
+  font-weight: 560;
   line-height: 72px;
   letter-spacing: -0.035em;
 }
