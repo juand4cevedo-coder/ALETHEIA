@@ -30,7 +30,7 @@ describe("Demostración de la huella", () => {
     const box = screen.getByRole("textbox", { name: "Texto de ejemplo" });
 
     await user.clear(box);
-    await user.type(box, SAMPLE_TEXT.replace("lunes", "martes"));
+    await user.paste(SAMPLE_TEXT.replace("lunes", "martes"));
 
     expect(await screen.findByText("No coincide")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("No coincide");
