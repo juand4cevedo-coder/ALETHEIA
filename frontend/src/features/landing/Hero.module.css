@@ -165,12 +165,10 @@
   font-size: 12px;
 }
 
-/* La ventana crece respecto del texto: es la prueba de lo que promete el titular. El margen
-   inferior deja sitio a la ficha del sello, que sobresale por debajo. */
+/* La ventana crece respecto del texto: es la prueba de lo que promete el titular. */
 .preview {
-  position: relative;
   max-width: 1120px;
-  margin: var(--space-16) auto var(--space-12);
+  margin: var(--space-16) auto 0;
   padding: 0 var(--space-6);
 }
 
@@ -221,14 +219,15 @@
   }
 }
 
-/* Ficha del sello sobre la esquina inferior derecha de la ventana. El fondo sólido evita que
-   la ventana se vea a través de la ficha translúcida. */
+/* Ficha del sello en el flujo, después de la ventana y alineada a la derecha. Sube solo
+   var(--space-6) sobre el pie de la ventana: pisa el borde y el relleno del pie de figura, cuyo
+   texto, corto y alineado a la izquierda, queda libre; nunca tapa la cadena de custodia. El
+   fondo sólido evita que la ventana se vea a través de la ficha translúcida. */
 .stamp {
-  position: absolute;
-  right: 0;
-  bottom: calc(-1 * var(--space-12));
+  position: relative;
   z-index: 2;
   width: 320px;
+  margin: calc(-1 * var(--space-6)) 0 0 auto;
   border-radius: var(--radius-lg);
   background: var(--color-ink-900);
   box-shadow: var(--shadow-raised);
@@ -310,7 +309,6 @@
 
   /* En pantallas angostas la ficha va debajo de la ventana, sin taparla. */
   .stamp {
-    position: static;
     width: auto;
     margin-top: var(--space-4);
   }
