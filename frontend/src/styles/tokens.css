@@ -67,6 +67,8 @@
   --motion-fast: 120ms;
   --motion-base: 200ms;
   --motion-slow: 700ms;
+  /* Destello de los caracteres que cambian en la demostración de la huella. */
+  --motion-flash: 600ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   /* Para entradas: arranca rápido y frena suave, sin rebote. */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
