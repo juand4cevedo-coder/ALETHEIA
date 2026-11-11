@@ -100,7 +100,7 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
     await renderRoute(PAGE);
 
     await user.click(
-      screen.getByRole("button", { name: "Elegir una por una" }),
+      screen.getByRole("button", { name: "Elegir por categoría" }),
     );
 
     const panel = cookiePanel()!;

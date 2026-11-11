@@ -137,6 +137,7 @@
 .elision {
   display: inline-block;
   width: var(--space-4);
+  margin-right: var(--space-1);
   border-bottom: 1px dotted currentColor;
   vertical-align: middle;
 }

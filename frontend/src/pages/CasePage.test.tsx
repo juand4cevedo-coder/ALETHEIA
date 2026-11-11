@@ -109,7 +109,7 @@ describe("Página del caso (HU-015)", () => {
     ).toBeInTheDocument();
   });
 
-  it("muestra el evento 1 con su hash abreviado y la hora de Colombia", async () => {
+  it("muestra el evento 1 con su huella abreviada y la hora de Colombia", async () => {
     serve(() => jsonResponse(DETAIL));
     await openCase();
 
@@ -126,7 +126,7 @@ describe("Página del caso (HU-015)", () => {
     expect(time.parentElement).toHaveTextContent(/^Laura Gómez, /);
     // Inicio y final de la huella, sin puntos suspensivos entre ellos.
     const hash = within(event).getByText(/^9f2c 71d0 b8e4/);
-    expect(hash).toHaveTextContent("9f2c 71d0 b8e4 a41e");
+    expect(hash.textContent).toBe("9f2c 71d0 b8e4 a41e");
     expect(hash.closest("[translate='no']")).not.toBeNull();
     // El lector de pantalla recibe la huella completa.
     expect(within(event).getByText(EVENT_HASH)).toBeInTheDocument();

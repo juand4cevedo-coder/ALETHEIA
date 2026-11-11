@@ -264,8 +264,8 @@ export function CasesPage() {
         <EmptyState
           title={
             mayOpen
-              ? "Todavía no tiene casos."
-              : "Todavía no tiene casos asignados."
+              ? "Todavía no tiene casos"
+              : "Todavía no tiene casos asignados"
           }
           description={
             mayOpen
@@ -474,7 +474,7 @@ function Principles() {
           <p className={styles.principleTitle}>Un historial que no se edita</p>
           <p className={styles.principleText}>
             Cada acción sobre el caso queda en su cadena de custodia. Cada
-            evento lleva el hash del anterior; si alguien alterara uno, la
+            evento lleva la huella del anterior. Si alguien alterara uno, la
             cadena dejaría de cuadrar.
           </p>
         </div>

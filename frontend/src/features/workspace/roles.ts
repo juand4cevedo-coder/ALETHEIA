@@ -25,13 +25,12 @@ export const INVITABLE_ROLES: readonly {
   {
     value: "lawyer",
     label: ROLE_LABELS.lawyer,
-    description: "Crea casos y trabaja en los que le asignan.",
+    description: "Abre casos y trabaja en los que le asignen.",
   },
   {
     value: "assistant",
     label: ROLE_LABELS.assistant,
-    description:
-      "Apoya los casos que le asignan, sin descargar ni exportar evidencias.",
+    description: "Trabaja en los casos que le asignen.",
   },
   {
     value: "admin",

@@ -162,13 +162,6 @@
   color: var(--text-2);
 }
 
-.key code {
-  margin-left: auto;
-  color: var(--color-text-inverse-muted);
-  font-family: var(--font-mono);
-  font-size: 11px;
-}
-
 .footnote {
   margin: 0;
   color: var(--color-text-inverse-muted);

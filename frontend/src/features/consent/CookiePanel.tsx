@@ -97,8 +97,8 @@ export function CookiePanel({
         <>
           <p className={styles.text}>
             Solo usamos las cookies necesarias para mantener su sesión. No
-            usamos analítica ni publicidad. Una cookie opcional queda apagada
-            hasta que usted la acepte.{" "}
+            usamos analítica ni publicidad. Las opcionales quedan apagadas hasta
+            que usted las acepte.{" "}
             <Link to={legalRoute("cookies")}>Política de cookies</Link>
           </p>
           <div className={styles.actions}>
@@ -122,7 +122,7 @@ export function CookiePanel({
             className={styles.configure}
             onClick={openSettings}
           >
-            Elegir una por una
+            Elegir por categoría
           </button>
         </>
       ) : (
