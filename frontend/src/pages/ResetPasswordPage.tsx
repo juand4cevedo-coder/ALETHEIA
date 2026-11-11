@@ -10,7 +10,6 @@ import { SITE_NAME } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { apiProblem } from "../features/auth/apiProblem.ts";
-import { Emblem } from "../components/ui/Emblem.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { tokenFromHash } from "../features/auth/linkToken.ts";
@@ -94,7 +93,6 @@ export function ResetPasswordPage() {
         {stage === "form" && (
           <>
             <header className={styles.intro}>
-              <Emblem state={reset.isPending ? "working" : "idle"} />
               <h1 id={TITLE_ID} className={styles.title}>
                 Elija una contraseña nueva
               </h1>
@@ -140,13 +138,7 @@ export function ResetPasswordPage() {
               </fieldset>
 
               <div className={styles.submit}>
-                <Button
-                  type="submit"
-                  variant="bright"
-                  shape="pill"
-                  block
-                  busy={reset.isPending}
-                >
+                <Button type="submit" block busy={reset.isPending}>
                   {reset.isPending ? "Guardando…" : "Guardar la contraseña"}
                 </Button>
               </div>
@@ -169,9 +161,7 @@ export function ResetPasswordPage() {
               Cerramos la sesión en todos sus dispositivos y le enviamos un
               aviso por correo. Ingrese con su contraseña nueva.
             </p>
-            <ButtonLink to={ROUTES.signIn} variant="bright" shape="pill">
-              Ingresar
-            </ButtonLink>
+            <ButtonLink to={ROUTES.signIn}>Ingresar</ButtonLink>
           </section>
         )}
 
@@ -191,11 +181,7 @@ export function ResetPasswordPage() {
               sirven una sola vez. Pida uno nuevo y ábralo desde el último
               correo que le enviemos.
             </p>
-            <ButtonLink
-              to={ROUTES.forgotPassword}
-              variant="bright"
-              shape="pill"
-            >
+            <ButtonLink to={ROUTES.forgotPassword}>
               Pedir un enlace nuevo
             </ButtonLink>
           </section>

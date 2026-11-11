@@ -14,9 +14,8 @@ import {
   legalRoute,
   type LegalSlug,
 } from "../../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME } from "../../config/site.ts";
-import { AuthScene } from "../../components/ui/AuthScene.tsx";
-import { Emblem } from "../../components/ui/Emblem.tsx";
+import logoUrl from "../../assets/logo.svg";
+import { CONTACT_EMAIL, SITE_NAME, WORDMARK } from "../../config/site.ts";
 import { useSignOut } from "../session/useSignOut.ts";
 import { currentLegalChanges } from "./changes.ts";
 import { formatEffectiveDate } from "./format.ts";
@@ -33,8 +32,6 @@ import {
 
 const TITLE_ID = "titulo-textos-nuevos";
 const CHANGES_ID = "titulo-cambios";
-// Lo que tarda el anillo del emblema en cerrarse antes de abrir el espacio de trabajo.
-const SEAL_MS = 520;
 
 const POLICY_ICONS: Record<LegalSlug, IconComponent> = {
   privacidad: EscudoVistoIcon,
@@ -56,12 +53,6 @@ function problemFrom(error: unknown): Problem {
     return { kind: "unexpected", requestId };
   }
   return { kind: "unexpected" };
-}
-
-function prefersReducedMotion(): boolean {
-  return (
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? true
-  );
 }
 
 /**
@@ -90,9 +81,6 @@ export function LegalRenewal({ me }: { me: Me }) {
     ...acceptLegalTermsMutation(),
     onSuccess: async () => {
       setDone(true);
-      if (!prefersReducedMotion()) {
-        await new Promise((resolve) => window.setTimeout(resolve, SEAL_MS));
-      }
       await queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
     },
     onError: (error) => {
@@ -115,20 +103,19 @@ export function LegalRenewal({ me }: { me: Me }) {
     });
   }
 
-  const emblemState = done ? "done" : accept.isPending ? "working" : "idle";
-
   return (
     <div className={styles.shell}>
       <title>{`Textos legales actualizados · ${SITE_NAME}`}</title>
-      <AuthScene />
 
       <header className={styles.header}>
-        <p className={styles.brand}>{SITE_NAME}</p>
+        <p className={styles.brand}>
+          <img src={logoUrl} alt="" width={24} height={24} />
+          {WORDMARK}
+        </p>
       </header>
 
       <main id="contenido" className={styles.main} tabIndex={-1}>
         <header className={styles.intro}>
-          <Emblem state={emblemState} />
           <p className={styles.eyebrow}>
             Vigentes desde el{" "}
             <time dateTime={LEGAL_EFFECTIVE_DATE}>{formatEffectiveDate()}</time>
@@ -210,7 +197,6 @@ export function LegalRenewal({ me }: { me: Me }) {
                     para ver la versión vigente.
                   </p>
                   <Button
-                    surface="dark"
                     variant="secondary"
                     size="sm"
                     onClick={() => window.location.reload()}
@@ -255,13 +241,7 @@ export function LegalRenewal({ me }: { me: Me }) {
             </Checkbox>
           </div>
 
-          <Button
-            type="submit"
-            variant="bright"
-            shape="pill"
-            block
-            busy={accept.isPending || done}
-          >
+          <Button type="submit" block busy={accept.isPending || done}>
             {done
               ? "Abriendo su espacio de trabajo…"
               : accept.isPending

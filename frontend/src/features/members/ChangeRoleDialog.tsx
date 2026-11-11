@@ -84,23 +84,14 @@ export function ChangeRoleDialog({ member, onClose, onChanged }: Props) {
       actions={
         <>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
-            shape="pill"
             onClick={close}
             disabled={change.isPending}
           >
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            form={formId}
-            variant="bright"
-            size="sm"
-            shape="pill"
-            busy={change.isPending}
-          >
+          <Button type="submit" form={formId} size="sm" busy={change.isPending}>
             {change.isPending ? "Guardando…" : "Guardar el rol"}
           </Button>
         </>

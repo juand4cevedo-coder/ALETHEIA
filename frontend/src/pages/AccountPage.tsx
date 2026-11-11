@@ -238,12 +238,7 @@ function PasswordCard() {
           <PasswordMeter id={METER_ID} password={values.next} />
         </Field>
         <div className={styles.actions}>
-          <Button
-            type="submit"
-            variant="bright"
-            shape="pill"
-            busy={change.isPending}
-          >
+          <Button type="submit" busy={change.isPending}>
             {change.isPending ? "Guardando…" : "Cambiar la contraseña"}
           </Button>
         </div>
@@ -269,9 +264,7 @@ function SessionsCard() {
       )}
       <div className={styles.sessionActions}>
         <Button
-          surface="dark"
           variant="secondary"
-          shape="pill"
           busy={session.pending === "device"}
           disabled={session.pending !== null}
           onClick={session.signOut}
@@ -281,9 +274,7 @@ function SessionsCard() {
             : "Cerrar esta sesión"}
         </Button>
         <Button
-          surface="dark"
           variant="secondary"
-          shape="pill"
           disabled={session.pending !== null}
           onClick={() => setConfirming(true)}
         >

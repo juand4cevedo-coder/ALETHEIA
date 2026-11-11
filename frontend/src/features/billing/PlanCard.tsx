@@ -115,7 +115,6 @@ export function PlanCard({
 
       <ButtonLink
         to={signupUrl}
-        surface="dark"
         variant={recommended ? "primary" : "secondary"}
         aria-describedby={headingId}
       >

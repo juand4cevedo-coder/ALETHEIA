@@ -19,7 +19,6 @@ type CookiePanelProps = {
 // Mismo peso visual para aceptar y rechazar (UI-004): ninguna opción se destaca sobre la otra.
 const choiceButton = buttonClassName({
   variant: "secondary",
-  surface: "dark",
   size: "sm",
 });
 

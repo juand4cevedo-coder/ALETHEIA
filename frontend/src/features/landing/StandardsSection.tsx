@@ -1,7 +1,6 @@
 import { useRef } from "react";
 
 import { Reveal } from "../../components/ui/Reveal.tsx";
-import { useSpotlight } from "../../components/ui/useSpotlight.ts";
 import { ChainDemo } from "./ChainDemo.tsx";
 import { HashDemo } from "./HashDemo.tsx";
 import demo from "./IntegrityDemo.module.css";
@@ -38,7 +37,6 @@ const GUARANTEES: Guarantee[] = [
 // AES‑256‑GCM llevan guiones que no parten la línea (U+2011).
 export function StandardsSection() {
   const demosRef = useRef<HTMLDivElement>(null);
-  useSpotlight(demosRef);
 
   return (
     <section className={section.section} aria-labelledby="titulo-estandares">

@@ -1,5 +1,6 @@
 /* Panel de cookies (UI-004): esquina inferior en escritorio y hoja inferior en celular. No
-   cubre la página ni la oscurece, para que se pueda seguir leyendo. */
+   cubre la página ni la oscurece, para que se pueda seguir leyendo. Aparece quieto: nadie lo
+   pidió, así que no se anima. */
 .panel {
   position: fixed;
   right: var(--space-6);
@@ -9,32 +10,15 @@
   gap: var(--space-4);
   width: min(400px, calc(100% - 2 * var(--space-6)));
   padding: var(--space-6);
-  border: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 12%, transparent);
+  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background: linear-gradient(
-    180deg,
-    var(--color-ink-800),
-    var(--color-ink-900)
-  );
-  box-shadow: var(--shadow-raised);
-  color: var(--color-text-inverse);
-  animation: enter var(--motion-slow) var(--ease-out);
-}
-
-.panel :focus-visible {
-  outline-color: var(--color-primary-300);
+  background: var(--surface-1);
+  box-shadow: var(--shadow-float);
+  color: var(--text);
 }
 
 .panel a {
-  color: var(--color-primary-300);
-}
-
-@keyframes enter {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
+  color: var(--accent-strong);
 }
 
 .head {
@@ -53,7 +37,7 @@
 }
 
 .title svg {
-  color: var(--color-primary-300);
+  color: var(--text-2);
 }
 
 .title:focus {
@@ -61,7 +45,7 @@
 }
 
 .title:focus-visible {
-  outline: 2px solid var(--color-primary-300);
+  outline: 2px solid var(--accent);
   outline-offset: 4px;
   border-radius: var(--radius-sm);
 }
@@ -105,7 +89,7 @@
   padding: 0 var(--space-2);
   border: 0;
   background: none;
-  color: var(--color-primary-300);
+  color: var(--accent-strong);
   font: inherit;
   font-size: 14px;
   font-weight: 500;

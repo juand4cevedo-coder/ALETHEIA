@@ -1,4 +1,6 @@
-/* Miniatura de la cadena: rombos unidos por un trazo fino, como los eslabones de la maqueta 01. */
+/* Miniatura de la cadena: rombos unidos por un trazo fino, como eslabones. Sin brillo ni
+   latido: un rombo ámbar fijo basta para decir que el sello sigue pendiente, y el aria-label lo
+   dice en palabras. */
 .strip {
   display: inline-flex;
   align-items: center;
@@ -13,42 +15,24 @@
 /* El trazo que une cada rombo con el anterior. */
 .link + .link::before {
   content: "";
-  width: 9px;
+  width: var(--space-2);
   height: 1px;
-  background: var(--color-ink-650);
+  background: var(--line-control);
 }
 
 .link::after {
   content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 2px;
-  background: var(--color-primary-400);
-  opacity: 0.9;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  background: var(--text-2);
   transform: rotate(45deg);
 }
 
+/* Los eventos más antiguos se atenúan: la vista va hacia lo último que ocurrió. */
 .link[data-faded]::after {
-  opacity: 0.35;
+  background: var(--line-control);
 }
 
-/* Sello de tiempo pendiente: ámbar con un halo, además del texto del aria-label. */
 .link[data-pending]::after {
-  background: var(--color-warning-400);
-  box-shadow: 0 0 10px
-    color-mix(in srgb, var(--color-warning-400) 60%, transparent);
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .link[data-pending]::after {
-    animation: pending var(--motion-pulse) var(--ease-standard) infinite;
-  }
-}
-
-@keyframes pending {
-  50% {
-    box-shadow: 0 0 4px
-      color-mix(in srgb, var(--color-warning-400) 30%, transparent);
-  }
+  background: var(--warn);
 }

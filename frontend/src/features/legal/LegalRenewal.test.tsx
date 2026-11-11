@@ -43,7 +43,7 @@ function acceptanceRequests(): Request[] {
 beforeEach(() => {
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
-  // Sin animaciones: el anillo del emblema no hace esperar a las pruebas.
+  // jsdom no trae matchMedia; con movimiento reducido la pantalla no anima nada.
   vi.stubGlobal(
     "matchMedia",
     vi.fn(() => ({ matches: true }) as unknown as MediaQueryList),

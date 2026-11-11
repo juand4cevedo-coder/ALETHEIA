@@ -37,7 +37,7 @@ export function Notice({ tone, children, ref }: NoticeProps) {
       role={tone === "error" ? "alert" : "status"}
       tabIndex={tone === "error" ? -1 : undefined}
     >
-      <Icon size={18} aria-hidden="true" />
+      <Icon size={16} aria-hidden="true" />
       <div className={styles.content}>{children}</div>
     </div>
   );

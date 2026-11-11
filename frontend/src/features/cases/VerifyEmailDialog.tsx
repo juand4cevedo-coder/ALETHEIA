@@ -19,13 +19,7 @@ export function VerifyEmailDialog({ open, onClose }: VerifyEmailDialogProps) {
       title="Verifique su correo"
       icon={<CorreoIcon size={22} />}
       actions={
-        <Button
-          surface="dark"
-          variant="secondary"
-          size="sm"
-          shape="pill"
-          onClick={onClose}
-        >
+        <Button variant="secondary" size="sm" onClick={onClose}>
           Cerrar
         </Button>
       }

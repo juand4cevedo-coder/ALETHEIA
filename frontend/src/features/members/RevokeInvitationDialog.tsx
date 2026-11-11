@@ -31,10 +31,8 @@ export function RevokeInvitationDialog({
       actions={
         <>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
-            shape="pill"
             data-autofocus
             onClick={onClose}
             disabled={busy}
@@ -42,9 +40,7 @@ export function RevokeInvitationDialog({
             Cancelar
           </Button>
           <Button
-            variant="bright"
             size="sm"
-            shape="pill"
             busy={busy}
             onClick={() => invitation && onConfirm(invitation)}
           >

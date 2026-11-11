@@ -14,7 +14,6 @@ import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
-import { Emblem } from "../components/ui/Emblem.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { rememberSession } from "../features/session/sessionHint.ts";
 import { sessionNotice } from "../features/session/useSignOut.ts";
@@ -31,14 +30,6 @@ import {
 
 const EMPTY: SignInValues = { email: "", password: "" };
 const TITLE_ID = "titulo-ingreso";
-// Lo que tarda el anillo del emblema en cerrarse antes de pasar al espacio de trabajo.
-const SEAL_MS = 520;
-
-function prefersReducedMotion(): boolean {
-  return (
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? true
-  );
-}
 
 type FormProblem =
   | { kind: "invalidCredentials" }
@@ -70,10 +61,9 @@ const SESSION_NOTICES = {
   expired: MESSAGES.sessionExpired,
 } as const;
 
-// Ingresar (UI-008, HU-007): una columna sobre la escena del alba (ADR-029). Mientras la API
-// responde, el anillo del emblema gira; al entrar se cierra y lleva a la pantalla de /app que
-// la persona intentaba abrir (NAV-003). El mensaje de error es el mismo exista o no la cuenta
-// (RN-026).
+// Ingresar (UI-008, HU-007): un panel en la columna de acceso (ADR-029). Mientras la API
+// responde, el botón dice que trabaja; al entrar lleva a la pantalla de /app que la persona
+// intentaba abrir (NAV-003). El mensaje de error es el mismo exista o no la cuenta (RN-026).
 export function SignInPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -103,9 +93,6 @@ export function SignInPage() {
       setSignedIn(true);
       rememberSession();
       await queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
-      if (!prefersReducedMotion()) {
-        await new Promise((resolve) => window.setTimeout(resolve, SEAL_MS));
-      }
       await navigate(destination, { replace: true });
     },
     onError: (error) => {
@@ -160,8 +147,6 @@ export function SignInPage() {
     signIn.mutate({ body: toLoginRequest(values) });
   }
 
-  const emblemState = signedIn ? "done" : signIn.isPending ? "working" : "idle";
-
   return (
     <>
       <title>{`Ingresar · ${SITE_NAME}`}</title>
@@ -173,7 +158,6 @@ export function SignInPage() {
 
       <div className={styles.screen}>
         <header className={styles.intro}>
-          <Emblem state={emblemState} />
           <h1 id={TITLE_ID} className={styles.title}>
             Hola de nuevo
           </h1>
@@ -238,13 +222,7 @@ export function SignInPage() {
           </fieldset>
 
           <div className={styles.submit}>
-            <Button
-              type="submit"
-              variant="bright"
-              shape="pill"
-              block
-              busy={signIn.isPending || signedIn}
-            >
+            <Button type="submit" block busy={signIn.isPending || signedIn}>
               {signIn.isPending || signedIn ? "Comprobando…" : "Ingresar"}
             </Button>
           </div>

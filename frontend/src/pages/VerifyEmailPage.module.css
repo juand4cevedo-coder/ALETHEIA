@@ -1,5 +1,5 @@
-/* Misma columna centrada de las demás pantallas de acceso (ADR-029): emblema, título y
-   mensaje al centro; la constancia y el formulario de reenvío ocupan el ancho completo. */
+/* Verificar el correo, dentro del panel de acceso (ADR-029): título y mensaje; la constancia y
+   el formulario de reenvío ocupan el ancho completo. */
 .screen {
   display: grid;
   gap: var(--space-6);
@@ -7,24 +7,16 @@
   width: 100%;
 }
 
-.screen > h1,
-.screen > .lead,
-.screen > .status {
-  justify-self: center;
-  text-align: center;
-}
-
 .status {
   display: grid;
-  justify-items: center;
   gap: var(--space-3);
 }
 
 .title {
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 38px;
-  letter-spacing: -0.024em;
+  font-size: var(--font-size-title);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  line-height: var(--line-height-title);
 }
 
 .title:focus {
@@ -32,28 +24,27 @@
 }
 
 .lead {
-  color: var(--color-text-inverse-muted);
-  font-size: 17px;
+  color: var(--text-2);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
 }
 
-/* Constancia: una ficha con el mismo borde de luz de la matriz del registro. Sus renglones
-   entran uno tras otro, una sola vez, como al llenarse el documento. */
+/* Constancia de la verificación: renglones de etiqueta y valor sobre --surface-2. */
 .record {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
   margin: 0;
-  padding: var(--space-6);
-  border: 1px solid
-    color-mix(in srgb, var(--color-success-400) 35%, transparent);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-ink-950) 50%, transparent);
-  backdrop-filter: blur(14px);
+  background: var(--surface-2);
 }
 
 .recordTitle {
-  color: var(--color-success-400);
-  font-size: 13px;
-  font-weight: 600;
+  color: var(--text);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
 .rows {
@@ -66,32 +57,16 @@
   grid-template-columns: 10rem minmax(0, 1fr);
   gap: var(--space-4);
   padding: var(--space-3) 0;
-  border-top: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
-  animation: fill 480ms var(--ease-out) both;
-}
-
-.row:nth-child(2) {
-  animation-delay: 120ms;
-}
-
-.row:nth-child(3) {
-  animation-delay: 240ms;
-}
-
-@keyframes fill {
-  from {
-    opacity: 0;
-    transform: translateX(-8px);
-  }
+  border-top: 1px solid var(--line);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .row dt {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--color-text-inverse-muted);
-  font-size: 14px;
+  color: var(--text-2);
 }
 
 .row dd {
@@ -100,11 +75,6 @@
 }
 
 @media (max-width: 560px) {
-  .title {
-    font-size: 28px;
-    line-height: 34px;
-  }
-
   .row {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-1);

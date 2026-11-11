@@ -10,7 +10,6 @@ import {
 import type { InvitationPreview } from "../api/generated";
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
-import { Emblem } from "../components/ui/Emblem.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
@@ -86,7 +85,6 @@ export function AcceptInvitationPage() {
           <Unusable />
         ) : invitation.isPending ? (
           <header className={styles.intro}>
-            <Emblem state="working" />
             <p className={styles.lead} role="status">
               Abriendo su invitación…
             </p>
@@ -112,7 +110,6 @@ export function AcceptInvitationPage() {
 function Intro({ invitation }: { invitation: InvitationPreview }) {
   return (
     <header className={styles.intro}>
-      <Emblem state="idle" />
       <h1 id={TITLE_ID} className={styles.title}>
         Únase a {invitation.organization_name}
       </h1>
@@ -301,13 +298,7 @@ function AcceptForm({
         )}
 
         <div className={styles.submit}>
-          <Button
-            type="submit"
-            variant="bright"
-            shape="pill"
-            block
-            busy={accept.isPending}
-          >
+          <Button type="submit" block busy={accept.isPending}>
             {accept.isPending
               ? "Entrando…"
               : isNew
@@ -332,9 +323,7 @@ function MemberElsewhere({ invitation }: { invitation: InvitationPreview }) {
         organización en ALETHEIA. Por ahora cada persona puede estar en una sola
         organización, así que no puede unirse a {invitation.organization_name}.
       </p>
-      <ButtonLink to={ROUTES.signIn} variant="bright" shape="pill">
-        Ingresar a mi cuenta
-      </ButtonLink>
+      <ButtonLink to={ROUTES.signIn}>Ingresar a mi cuenta</ButtonLink>
     </section>
   );
 }
@@ -351,9 +340,7 @@ function Unusable() {
         que ya la haya aceptado o que la hayan revocado. Pida una nueva a quien
         le envió la invitación.
       </p>
-      <ButtonLink to={ROUTES.signIn} variant="bright" shape="pill">
-        Ingresar
-      </ButtonLink>
+      <ButtonLink to={ROUTES.signIn}>Ingresar</ButtonLink>
     </section>
   );
 }

@@ -9,7 +9,6 @@ import { ROUTES } from "../config/routes.ts";
 import { SITE_NAME, SITE_URL } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { AccountTypeChoice } from "../features/auth/AccountTypeChoice.tsx";
-import { Emblem } from "../components/ui/Emblem.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import {
@@ -57,9 +56,9 @@ function problemFrom(error: unknown): FormProblem | null {
   return { kind: "unexpected" };
 }
 
-// Crear cuenta (UI-006, HU-005): una columna sobre la escena del alba (ADR-029). Mientras la
-// API responde, el anillo del emblema gira; al crearse la cuenta se cierra y el formulario da
-// paso al aviso de revisar el correo (NAV-002), que es el mismo exista o no el correo.
+// Crear cuenta (UI-006, HU-005): un panel en la columna de acceso (ADR-029). Mientras la API
+// responde, el botón dice que trabaja; al crearse la cuenta el formulario da paso al aviso de
+// revisar el correo (NAV-002), que es el mismo exista o no el correo.
 export function SignUpPage() {
   const [values, setValues] = useState<SignUpValues>(EMPTY);
   const [errors, setErrors] = useState<SignUpErrors>({});
@@ -129,7 +128,6 @@ export function SignUpPage() {
   }
 
   const firm = values.accountType === "firm";
-  const emblemState = sentTo ? "done" : register.isPending ? "working" : "idle";
 
   return (
     <>
@@ -142,7 +140,6 @@ export function SignUpPage() {
 
       <div className={styles.screen}>
         <header className={styles.intro}>
-          <Emblem state={emblemState} />
           <h1 id={TITLE_ID} className={styles.title}>
             Cree su cuenta
           </h1>
@@ -257,13 +254,7 @@ export function SignUpPage() {
             </div>
 
             <div className={styles.submit}>
-              <Button
-                type="submit"
-                variant="bright"
-                shape="pill"
-                block
-                busy={register.isPending}
-              >
+              <Button type="submit" block busy={register.isPending}>
                 {register.isPending ? "Creando la cuenta…" : "Crear cuenta"}
               </Button>
             </div>
@@ -284,7 +275,6 @@ function ProblemMessage({ problem }: { problem: FormProblem }) {
             página para ver la versión vigente antes de abrir la cuenta.
           </p>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
             onClick={() => window.location.reload()}

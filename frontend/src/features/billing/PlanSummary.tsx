@@ -48,7 +48,6 @@ export function PlanSummary() {
           <button
             type="button"
             className={buttonClassName({
-              surface: "dark",
               variant: "secondary",
             })}
             onClick={() => void refetch()}
@@ -86,7 +85,7 @@ export function PlanSummary() {
           </p>
         </div>
         <a
-          className={buttonClassName({ surface: "dark", variant: "secondary" })}
+          className={buttonClassName({ variant: "secondary" })}
           href={CORPORATE_QUOTE_URL}
         >
           <CorreoIcon size={16} />

@@ -30,23 +30,15 @@ export function SignOutEverywhereDialog({
       actions={
         <>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
-            shape="pill"
             data-autofocus
             onClick={onClose}
             disabled={busy}
           >
             Cancelar
           </Button>
-          <Button
-            variant="bright"
-            size="sm"
-            shape="pill"
-            busy={busy}
-            onClick={onConfirm}
-          >
+          <Button size="sm" busy={busy} onClick={onConfirm}>
             {busy ? "Cerrando sesiones…" : "Cerrar todas"}
           </Button>
         </>

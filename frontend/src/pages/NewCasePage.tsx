@@ -144,13 +144,7 @@ export function NewCasePage() {
             <p>{NOT_ALLOWED}</p>
           </Notice>
           <div>
-            <ButtonLink
-              to={ROUTES.app}
-              variant="secondary"
-              surface="dark"
-              size="sm"
-              shape="pill"
-            >
+            <ButtonLink to={ROUTES.app} variant="secondary" size="sm">
               Volver al inicio
             </ButtonLink>
           </div>
@@ -194,8 +188,6 @@ function NewCaseForm({ me }: { me: Me }) {
 
   const titleHelpId = useId();
   const filingHelpId = useId();
-  const referenceHelpId = useId();
-  const courtHelpId = useId();
 
   const digits = normalizeFilingNumber(filing);
   const filingValid = isValidFilingNumber(digits);
@@ -333,21 +325,24 @@ function NewCaseForm({ me }: { me: Me }) {
               maxLength={TITLE_MAX_LENGTH}
               value={title}
               error={errors.title}
-              describedBy={titleHelpId}
+              // El error reemplaza la ayuda (especificación de identidad, sección 7).
+              describedBy={errors.title ? undefined : titleHelpId}
               onChange={(event) => {
                 setTitle(event.target.value);
                 clearError("title");
               }}
             >
-              <p id={titleHelpId} className={styles.help}>
-                <span>
-                  Así lo verá su equipo y así aparecerá en el informe de
-                  custodia.
-                </span>
-                <span className={styles.counter}>
-                  {`${title.length} de ${TITLE_MAX_LENGTH}`}
-                </span>
-              </p>
+              {!errors.title && (
+                <p id={titleHelpId} className={styles.help}>
+                  <span>
+                    Así lo verá su equipo y así aparecerá en el informe de
+                    custodia.
+                  </span>
+                  <span className={styles.counter}>
+                    {`${title.length} de ${TITLE_MAX_LENGTH}`}
+                  </span>
+                </p>
+              )}
             </Field>
 
             <Field
@@ -360,7 +355,7 @@ function NewCaseForm({ me }: { me: Me }) {
               maxLength={FILING_INPUT_MAX_LENGTH}
               value={filing}
               error={errors.filingNumber}
-              describedBy={filingHelpId}
+              describedBy={errors.filingNumber ? undefined : filingHelpId}
               onChange={(event) => {
                 const next = event.target.value;
                 setFiling(next);
@@ -396,14 +391,18 @@ function NewCaseForm({ me }: { me: Me }) {
                   />
                 </div>
               )}
-              <p
-                id={filingHelpId}
-                className={styles.help}
-                data-tone={filingOk ? "ok" : undefined}
-              >
-                {filingOk && <CirculoVistoIcon size={14} aria-hidden="true" />}
-                <span>{filingHelp(digits)}</span>
-              </p>
+              {!errors.filingNumber && (
+                <p
+                  id={filingHelpId}
+                  className={styles.help}
+                  data-tone={filingOk ? "ok" : undefined}
+                >
+                  {filingOk && (
+                    <CirculoVistoIcon size={16} aria-hidden="true" />
+                  )}
+                  <span>{filingHelp(digits)}</span>
+                </p>
+              )}
             </Field>
 
             <div className={styles.pair}>
@@ -428,16 +427,12 @@ function NewCaseForm({ me }: { me: Me }) {
                 maxLength={REFERENCE_MAX_LENGTH}
                 value={internalReference}
                 error={errors.internalReference}
-                describedBy={referenceHelpId}
+                help="Su código, por ejemplo RA-2026-031."
                 onChange={(event) => {
                   setInternalReference(event.target.value);
                   clearError("internalReference");
                 }}
-              >
-                <p id={referenceHelpId} className={styles.help}>
-                  Su código, por ejemplo RA-2026-031.
-                </p>
-              </Field>
+              />
             </div>
 
             <Field
@@ -448,16 +443,12 @@ function NewCaseForm({ me }: { me: Me }) {
               maxLength={COURT_MAX_LENGTH}
               value={court}
               error={errors.court}
-              describedBy={courtHelpId}
+              help="Por ejemplo, Juzgado 3 Laboral del Circuito de Bogotá."
               onChange={(event) => {
                 setCourt(event.target.value);
                 clearError("court");
               }}
-            >
-              <p id={courtHelpId} className={styles.help}>
-                Por ejemplo, Juzgado 3 Laboral del Circuito de Bogotá.
-              </p>
-            </Field>
+            />
 
             <p className={styles.privacy}>
               <EscudoAlertaIcon size={18} aria-hidden="true" />
@@ -483,22 +474,10 @@ function NewCaseForm({ me }: { me: Me }) {
                 Usted quedará como miembro del caso.
               </p>
               <div className={styles.buttons}>
-                <ButtonLink
-                  to={ROUTES.cases}
-                  variant="secondary"
-                  surface="dark"
-                  size="sm"
-                  shape="pill"
-                >
+                <ButtonLink to={ROUTES.cases} variant="secondary" size="sm">
                   Cancelar
                 </ButtonLink>
-                <Button
-                  type="submit"
-                  variant="bright"
-                  size="sm"
-                  shape="pill"
-                  busy={create.isPending}
-                >
+                <Button type="submit" size="sm" busy={create.isPending}>
                   {create.isPending ? "Abriendo el caso…" : "Abrir caso"}
                 </Button>
               </div>

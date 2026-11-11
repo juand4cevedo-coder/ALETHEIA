@@ -181,18 +181,13 @@ export function CasesPage() {
   const mayOpen = canOpenCases(me.organization?.role);
   const openCase = (label: string) =>
     me.email_verified ? (
-      <ButtonLink to={ROUTES.newCase} variant="bright" size="sm" shape="pill">
+      <ButtonLink to={ROUTES.newCase} size="sm">
         <MasIcon size={16} aria-hidden="true" />
         {label}
       </ButtonLink>
     ) : (
       // Con el correo sin verificar el botón no se oculta: abre el aviso que explica por qué.
-      <Button
-        variant="bright"
-        size="sm"
-        shape="pill"
-        onClick={() => setVerifying(true)}
-      >
+      <Button size="sm" onClick={() => setVerifying(true)}>
         <MasIcon size={16} aria-hidden="true" />
         {label}
       </Button>
@@ -245,10 +240,8 @@ export function CasesPage() {
           </Notice>
           <div>
             <Button
-              surface="dark"
               variant="secondary"
               size="sm"
-              shape="pill"
               onClick={() => void book.refetch()}
             >
               Intentar de nuevo
@@ -425,10 +418,8 @@ export function CasesPage() {
       {book.hasNextPage && !loadingSegment && (
         <div className={styles.more}>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
-            shape="pill"
             busy={book.isFetchingNextPage}
             onClick={() => void loadMore()}
           >
@@ -658,8 +649,7 @@ function CourtCell({ item }: { item: CaseSummaryOut }) {
   return (
     <>
       {item.practice_area && (
-        <span className={styles.area} data-area={item.practice_area}>
-          <i aria-hidden="true" />
+        <span className={styles.area}>
           {PRACTICE_AREA_LABELS[item.practice_area]}
         </span>
       )}
