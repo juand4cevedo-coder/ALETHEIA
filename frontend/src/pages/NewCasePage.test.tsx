@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LEGAL_VERSION } from "../config/legal.ts";
+import { SYSTEM_ERROR_LEAD } from "../content/messages.ts";
 import { seriousAxeViolations } from "../test/axe.ts";
 import { jsonResponse, renderRoute } from "../test/render.tsx";
 
@@ -14,6 +15,8 @@ const CASE_ID = "01890a5d-ac96-774b-bcce-b302099a8090";
 const RADICADO = "11001310500320260014300";
 const FILING_NUMBER_TAKEN_PROBLEM =
   "https://aletheia.sbs/problemas/radicado-repetido";
+const KEYS_UNAVAILABLE =
+  "No pudimos preparar la llave de cifrado del caso. Inténtelo de nuevo en unos minutos";
 
 function me(role: Role, emailVerified = true) {
   return {
@@ -83,6 +86,8 @@ describe("Abrir un caso (HU-015)", () => {
   it("abre el caso y lleva a su página", async () => {
     serve("lawyer", {
       "POST /api/v1/cases": () => jsonResponse(CREATED, 201),
+      [`GET /api/v1/cases/${CASE_ID}`]: () =>
+        jsonResponse({ ...CREATED, members: [], recent_events: [] }),
     });
     const user = userEvent.setup();
     const { router } = await renderRoute("/app/casos/nuevo");
@@ -101,7 +106,10 @@ describe("Abrir un caso (HU-015)", () => {
     await waitFor(() =>
       expect(router.state.location.pathname).toBe(`/app/casos/${CASE_ID}`),
     );
-    expect(router.state.location.state).toEqual({ justOpened: true });
+    // La página del caso recibe «recién abierto», muestra el aviso y lo borra del historial.
+    expect(
+      await screen.findByText("Caso abierto. Su cadena de custodia comenzó."),
+    ).toBeInTheDocument();
     const [request] = posts();
     expect(await request!.json()).toEqual({
       title: "Despido sin justa causa · Torres",
@@ -264,7 +272,10 @@ describe("Abrir un caso (HU-015)", () => {
   it("sin KMS explica que no se pudo preparar la llave", async () => {
     serve("owner", {
       "POST /api/v1/cases": () =>
-        jsonResponse({ type: "about:blank", status: 503, detail: "KMS" }, 503),
+        jsonResponse(
+          { type: "about:blank", status: 503, detail: KEYS_UNAVAILABLE },
+          503,
+        ),
     });
     const user = userEvent.setup();
     await renderRoute("/app/casos/nuevo");
@@ -276,8 +287,62 @@ describe("Abrir un caso (HU-015)", () => {
     await user.click(screen.getByRole("button", { name: "Abrir caso" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "No pudimos preparar la llave de cifrado del caso. Inténtelo de nuevo en unos minutos",
+      KEYS_UNAVAILABLE,
     );
+  });
+
+  it("con la base caída muestra el detalle de la API, no el de KMS", async () => {
+    const unavailable = "El servicio no está disponible en este momento.";
+    serve("owner", {
+      "POST /api/v1/cases": () =>
+        jsonResponse(
+          { type: "about:blank", status: 503, detail: unavailable },
+          503,
+        ),
+    });
+    const user = userEvent.setup();
+    await renderRoute("/app/casos/nuevo");
+
+    await user.type(
+      await screen.findByLabelText("Título del caso"),
+      "Sucesión Gómez Pardo",
+    );
+    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(unavailable);
+    expect(alert).not.toHaveTextContent(KEYS_UNAVAILABLE);
+  });
+
+  it("un 503 sin detalle muestra el error del sistema", async () => {
+    serve("owner", {
+      "POST /api/v1/cases": () => new Response(null, { status: 503 }),
+    });
+    const user = userEvent.setup();
+    await renderRoute("/app/casos/nuevo");
+
+    await user.type(
+      await screen.findByLabelText("Título del caso"),
+      "Sucesión Gómez Pardo",
+    );
+    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(SYSTEM_ERROR_LEAD);
+    expect(alert).not.toHaveTextContent(KEYS_UNAVAILABLE);
+  });
+
+  it("el aviso de privacidad dice que la evidencia irá cifrada, en futuro", async () => {
+    serve("owner");
+    await renderRoute("/app/casos/nuevo");
+
+    await screen.findByLabelText("Título del caso");
+    expect(
+      screen.getByText(
+        /La evidencia que suba irá cifrada con la llave propia del caso\./,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/sí va cifrada/)).not.toBeInTheDocument();
   });
 
   it("sin título no envía y enfoca el campo", async () => {

@@ -111,10 +111,15 @@
   background: var(--color-primary-300);
 }
 
+/* El desplazamiento horizontal recorta lo que sale de la caja: el relleno deja sitio al anillo de
+   foco (2px de borde a 2px de distancia) y el margen negativo conserva la posición de las
+   pestañas. */
 .tabs {
   display: flex;
   gap: var(--space-6);
-  margin-top: var(--space-6);
+  margin: calc(var(--space-6) - var(--space-1)) calc(-1 * var(--space-1))
+    calc(-1 * var(--space-1));
+  padding: var(--space-1);
   overflow-x: auto;
 }
 

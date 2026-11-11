@@ -220,11 +220,13 @@ function NewCaseForm({ me }: { me: Me }) {
           return;
         }
       }
-      if (status === 503) {
+      // El 503 de KMS trae su propio texto; otro 503 (la base caída) muestra el detalle que
+      // mande la API o, sin él, el error del sistema.
+      if (status === 503 && detail === CASE_MESSAGES.keysUnavailable) {
         setFailure({ kind: "message", text: CASE_MESSAGES.keysUnavailable });
         return;
       }
-      if ((status === 403 || status === 409) && detail) {
+      if ((status === 403 || status === 409 || status === 503) && detail) {
         setFailure({ kind: "message", text: detail });
         return;
       }
@@ -455,7 +457,7 @@ function NewCaseForm({ me }: { me: Me }) {
               <span>
                 No escriba aquí datos sensibles ni más nombres de los
                 necesarios: estos campos los ve todo el equipo del caso. La
-                evidencia sí va cifrada con la llave propia del caso.
+                evidencia que suba irá cifrada con la llave propia del caso.
               </span>
             </p>
 

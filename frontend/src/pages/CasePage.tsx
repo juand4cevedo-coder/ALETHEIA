@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
-import { type KeyboardEvent, useId, useRef, useState } from "react";
-import { useLocation, useParams } from "react-router";
+import { type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router";
 
 import type { CaseDetail, CaseMemberOut } from "../api/generated";
 import { readCaseOptions } from "../api/generated/@tanstack/react-query.gen.ts";
@@ -37,8 +37,18 @@ function isMissing(error: unknown): boolean {
 export function CasePage() {
   const { caseId = "" } = useParams();
   const location = useLocation();
-  const justOpened =
-    (location.state as { justOpened?: boolean } | null)?.justOpened === true;
+  const navigate = useNavigate();
+  // El aviso se guarda al llegar y el estado se borra del historial: se ve en esta visita, pero
+  // no otra vez al recargar ni al volver atrás.
+  const [justOpened] = useState(
+    () =>
+      (location.state as { justOpened?: boolean } | null)?.justOpened === true,
+  );
+  useEffect(() => {
+    if (justOpened) {
+      void navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [justOpened, location.pathname, navigate]);
   const detail = useQuery({
     ...readCaseOptions({ path: { case_id: caseId } }),
     // Un caso inexistente, ajeno o con un id mal formado (422 de la ruta) no cambia con otro
