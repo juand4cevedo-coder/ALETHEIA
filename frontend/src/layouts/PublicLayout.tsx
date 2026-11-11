@@ -1,11 +1,3 @@
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Landmark,
-  Mail,
-  Menu,
-  X,
-} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, ScrollRestoration } from "react-router";
 
@@ -18,6 +10,14 @@ import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import { prefetchLikelyNext } from "../routes/lazyRoutes.ts";
 import styles from "./PublicLayout.module.css";
+import {
+  CerrarIcon,
+  CorreoIcon,
+  FlechaDerechaIcon,
+  FlechaDiagonalIcon,
+  InstitucionIcon,
+  MenuIcon,
+} from "../components/ui/icons.tsx";
 
 // Año del aviso de derechos, calculado una vez al cargar el sitio.
 const CURRENT_YEAR = new Date().getFullYear();
@@ -143,7 +143,7 @@ export function PublicLayout() {
             <span className={styles.headerCta}>
               <ButtonLink to={ROUTES.signUp} surface="dark" size="sm">
                 Probar gratis
-                <ArrowRight size={16} />
+                <FlechaDerechaIcon size={16} />
               </ButtonLink>
             </span>
             <button
@@ -154,7 +154,7 @@ export function PublicLayout() {
               aria-controls="menu-movil"
               onClick={openMenu}
             >
-              <Menu size={18} />
+              <MenuIcon size={18} />
               Menú
             </button>
           </div>
@@ -181,7 +181,7 @@ export function PublicLayout() {
             className={styles.sheetClose}
             onClick={closeMenu}
           >
-            <X size={18} />
+            <CerrarIcon size={18} />
             Cerrar
           </button>
         </div>
@@ -203,7 +203,7 @@ export function PublicLayout() {
         <div className={styles.sheetCta}>
           <ButtonLink to={ROUTES.signUp} surface="dark" onClick={closeMenu}>
             Crear cuenta gratis
-            <ArrowRight size={18} />
+            <FlechaDerechaIcon size={18} />
           </ButtonLink>
         </div>
       </dialog>
@@ -224,7 +224,7 @@ export function PublicLayout() {
               constancia de cada paso, para que usted pueda demostrarlo.
             </p>
             <a className={styles.footerMail} href={`mailto:${CONTACT_EMAIL}`}>
-              <Mail size={16} aria-hidden="true" />
+              <CorreoIcon size={16} aria-hidden="true" />
               <span translate="no">{CONTACT_EMAIL}</span>
             </a>
           </div>
@@ -277,9 +277,9 @@ export function PublicLayout() {
             href={CONSUMER_AUTHORITY.url}
             rel="noopener noreferrer"
           >
-            <Landmark size={16} aria-hidden="true" />
+            <InstitucionIcon size={16} aria-hidden="true" />
             {CONSUMER_AUTHORITY.name}
-            <ArrowUpRight size={14} aria-hidden="true" />
+            <FlechaDiagonalIcon size={14} aria-hidden="true" />
           </a>
         </div>
 

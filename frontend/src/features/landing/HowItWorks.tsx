@@ -1,29 +1,33 @@
-import { Fingerprint, History, PackageCheck, Upload } from "lucide-react";
-
 import { Reveal } from "../../components/ui/Reveal.tsx";
 import styles from "./HowItWorks.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
 import timeline from "./Timeline.module.css";
+import {
+  CadenaIcon,
+  HuellaIcon,
+  PaqueteIcon,
+  SubirIcon,
+} from "../../components/ui/icons.tsx";
 
 const STEPS = [
   {
-    icon: Upload,
+    icon: SubirIcon,
     title: "Suba el original",
     text: "Cargue dentro de un caso el chat exportado, el correo, el audio, la fotografía o el PDF, tal como lo recibió. Lo guardamos cifrado y sin modificarlo.",
   },
   {
-    icon: Fingerprint,
+    icon: HuellaIcon,
     title: "Huella y sello de tiempo",
     text: "Al recibirlo calculamos su huella SHA‑256 y una autoridad externa la sella con fecha y hora. Desde ese momento, cualquier cambio en el archivo queda en evidencia.",
   },
   {
-    icon: History,
+    icon: CadenaIcon,
     title: "Cadena de custodia",
     text: "Cada vez que alguien de su equipo sube, consulta, descarga o exporta la evidencia, queda registrado quién lo hizo y cuándo, en un historial que no se puede editar.",
   },
   {
-    icon: PackageCheck,
+    icon: PaqueteIcon,
     title: "Paquete verificable",
     text: "Exporte los originales con sus huellas, los sellos de tiempo y un informe de custodia en PDF, listo para aportar y para que cualquiera lo compruebe.",
   },

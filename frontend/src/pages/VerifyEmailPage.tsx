@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { CircleCheck, LinkIcon, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -12,6 +11,11 @@ import { Emblem } from "../components/ui/Emblem.tsx";
 import { tokenFromHash } from "../features/auth/linkToken.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import styles from "./VerifyEmailPage.module.css";
+import {
+  CirculoVistoIcon,
+  EscudoVistoIcon,
+  VinculoIcon,
+} from "../components/ui/icons.tsx";
 
 const DATE = new Intl.DateTimeFormat("es-CO", { dateStyle: "long" });
 const TIME = new Intl.DateTimeFormat("es-CO", {
@@ -113,14 +117,14 @@ export function VerifyEmailPage() {
             <dl className={styles.rows}>
               <div className={styles.row}>
                 <dt>
-                  <CircleCheck size={16} aria-hidden="true" />
+                  <CirculoVistoIcon size={16} aria-hidden="true" />
                   Estado
                 </dt>
                 <dd>Verificado</dd>
               </div>
               <div className={styles.row}>
                 <dt>
-                  <ShieldCheck size={16} aria-hidden="true" />
+                  <EscudoVistoIcon size={16} aria-hidden="true" />
                   Fecha y hora
                 </dt>
                 <dd>
@@ -129,7 +133,7 @@ export function VerifyEmailPage() {
               </div>
               <div className={styles.row}>
                 <dt>
-                  <LinkIcon size={16} aria-hidden="true" />
+                  <VinculoIcon size={16} aria-hidden="true" />
                   Enlace
                 </dt>
                 <dd>Usado. No vuelve a servir.</dd>

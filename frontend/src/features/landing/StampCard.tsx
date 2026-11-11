@@ -1,7 +1,6 @@
-import { BadgeCheck } from "lucide-react";
-
 import { Hash } from "../../components/ui/Hash.tsx";
 import styles from "./StampCard.module.css";
+import { SelloIcon } from "../../components/ui/icons.tsx";
 
 // La misma huella de ejemplo que muestra la vista del hero (EvidencePreview): el sello se
 // emite sobre ella.
@@ -22,7 +21,7 @@ export function StampCard({ size = "full" }: StampCardProps) {
       <div className={styles.header}>
         {/* El sello es solo un motivo: dos anillos alrededor del ícono. */}
         <span className={styles.seal} aria-hidden="true">
-          <BadgeCheck aria-hidden="true" />
+          <SelloIcon aria-hidden="true" />
         </span>
         <span className={styles.fictitious}>Datos ficticios</span>
       </div>

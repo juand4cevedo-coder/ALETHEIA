@@ -1,11 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  FolderOpen,
-  House,
-  type LucideIcon,
-  UserRound,
-  UsersRound,
-} from "lucide-react";
 import { NavLink } from "react-router";
 
 import type { Me } from "../../api/generated";
@@ -13,11 +6,18 @@ import { listCasesOptions } from "../../api/generated/@tanstack/react-query.gen.
 import { ROUTES } from "../../config/routes.ts";
 import { managesTeam } from "./roles.ts";
 import styles from "./WorkspaceNav.module.css";
+import {
+  CarpetaAbiertaIcon,
+  InicioIcon,
+  UsuarioIcon,
+  UsuariosIcon,
+  type IconComponent,
+} from "../../components/ui/icons.tsx";
 
 type Item = {
   to: string;
   label: string;
-  icon: LucideIcon;
+  icon: IconComponent;
   /** Solo el inicio coincide exacto: las demás secciones incluyen sus subrutas. */
   end?: boolean;
   /** Si la persona ve la opción; sin regla, la ven todos los roles. */
@@ -29,15 +29,20 @@ type Item = {
 // Secciones del espacio de trabajo en el orden del menú lateral (Diseño UX/UI, 4.2). Cada
 // historia agrega la suya cuando existe: el menú nunca anuncia lo que todavía no funciona.
 const ITEMS: readonly Item[] = [
-  { to: ROUTES.app, label: "Inicio", icon: House, end: true },
-  { to: ROUTES.cases, label: "Casos", icon: FolderOpen, openCount: true },
+  { to: ROUTES.app, label: "Inicio", icon: InicioIcon, end: true },
+  {
+    to: ROUTES.cases,
+    label: "Casos",
+    icon: CarpetaAbiertaIcon,
+    openCount: true,
+  },
   {
     to: ROUTES.members,
     label: "Miembros",
-    icon: UsersRound,
+    icon: UsuariosIcon,
     visible: (me) => managesTeam(me.organization?.role),
   },
-  { to: ROUTES.account, label: "Mi cuenta", icon: UserRound },
+  { to: ROUTES.account, label: "Mi cuenta", icon: UsuarioIcon },
 ];
 
 /** Casos abiertos de la persona. Pide una sola fila: el número sale de los totales de la lista,

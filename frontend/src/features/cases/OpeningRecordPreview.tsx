@@ -1,8 +1,8 @@
-import { KeyRound } from "lucide-react";
 import { useId } from "react";
 
 import { formatFilingNumber } from "./filingNumber.ts";
 import styles from "./OpeningRecordPreview.module.css";
+import { LlaveIcon } from "../../components/ui/icons.tsx";
 
 type OpeningRecordPreviewProps = {
   title: string;
@@ -96,7 +96,7 @@ export function OpeningRecordPreview({
           </div>
         </div>
         <p className={styles.key}>
-          <KeyRound size={16} aria-hidden="true" />
+          <LlaveIcon size={16} aria-hidden="true" />
           <span>Llave de cifrado propia, AES-256-GCM, guardada envuelta</span>
           <code translate="no">KMS</code>
         </p>

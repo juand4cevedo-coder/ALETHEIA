@@ -1,9 +1,8 @@
-import { UserMinus } from "lucide-react";
-
 import type { MemberOut } from "../../api/generated";
 import { Button } from "../../components/ui/Button.tsx";
 import { Dialog } from "../../components/ui/Dialog.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
+import { UsuarioQuitarIcon } from "../../components/ui/icons.tsx";
 
 type Props = {
   member: MemberOut | null;
@@ -29,7 +28,7 @@ export function RemoveMemberDialog({
       onClose={onClose}
       busy={busy}
       title="¿Retirar a esta persona?"
-      icon={<UserMinus size={22} />}
+      icon={<UsuarioQuitarIcon size={22} />}
       actions={
         <>
           <Button

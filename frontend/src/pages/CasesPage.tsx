@@ -1,5 +1,4 @@
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
-import { ChevronRight, LoaderCircle, Plus, Search } from "lucide-react";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { Link, useOutletContext, useSearchParams } from "react-router";
 
@@ -28,6 +27,12 @@ import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { canOpenCases } from "../features/cases/roles.ts";
 import { VerifyEmailDialog } from "../features/cases/VerifyEmailDialog.tsx";
 import styles from "./CasesPage.module.css";
+import {
+  BuscarIcon,
+  CargandoIcon,
+  ChevronDerechaIcon,
+  MasIcon,
+} from "../components/ui/icons.tsx";
 
 type Status = "open" | "closed" | "all";
 
@@ -177,7 +182,7 @@ export function CasesPage() {
   const openCase = (label: string) =>
     me.email_verified ? (
       <ButtonLink to={ROUTES.newCase} variant="bright" size="sm" shape="pill">
-        <Plus size={16} aria-hidden="true" />
+        <MasIcon size={16} aria-hidden="true" />
         {label}
       </ButtonLink>
     ) : (
@@ -188,7 +193,7 @@ export function CasesPage() {
         shape="pill"
         onClick={() => setVerifying(true)}
       >
-        <Plus size={16} aria-hidden="true" />
+        <MasIcon size={16} aria-hidden="true" />
         {label}
       </Button>
     );
@@ -217,7 +222,7 @@ export function CasesPage() {
         {head}
         {header()}
         <p className={styles.loading} role="status">
-          <LoaderCircle
+          <CargandoIcon
             className={styles.spinner}
             size={20}
             aria-hidden="true"
@@ -350,7 +355,11 @@ export function CasesPage() {
           <label htmlFor={filterId} className="visually-hidden">
             Filtrar los casos cargados por título, radicado o despacho
           </label>
-          <Search className={styles.filterIcon} size={15} aria-hidden="true" />
+          <BuscarIcon
+            className={styles.filterIcon}
+            size={15}
+            aria-hidden="true"
+          />
           <input
             id={filterId}
             type="search"
@@ -379,7 +388,7 @@ export function CasesPage() {
       >
         {loadingSegment ? (
           <p className={styles.loading} role="status">
-            <LoaderCircle
+            <CargandoIcon
               className={styles.spinner}
               size={20}
               aria-hidden="true"
@@ -525,7 +534,7 @@ function CaseTable({ items, caption }: ListProps) {
             <td className={styles.integrityCell}>
               <span className={styles.integrity}>
                 <StatusBadge tone="muted">Sin verificar</StatusBadge>
-                <ChevronRight
+                <ChevronDerechaIcon
                   className={styles.chevron}
                   size={16}
                   aria-hidden="true"

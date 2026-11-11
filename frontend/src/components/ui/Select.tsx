@@ -1,4 +1,3 @@
-import { ChevronDown } from "lucide-react";
 import {
   type ReactNode,
   type Ref,
@@ -7,6 +6,7 @@ import {
 } from "react";
 
 import styles from "./Select.module.css";
+import { ChevronAbajoIcon } from "./icons.tsx";
 
 type SelectProps = Omit<
   SelectHTMLAttributes<HTMLSelectElement>,
@@ -60,7 +60,11 @@ export function Select({
         <label htmlFor={id} className={styles.label}>
           {label}
         </label>
-        <ChevronDown className={styles.chevron} size={18} aria-hidden="true" />
+        <ChevronAbajoIcon
+          className={styles.chevron}
+          size={18}
+          aria-hidden="true"
+        />
       </div>
       {children}
       {error && (

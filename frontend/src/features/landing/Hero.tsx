@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, ShieldCheck } from "lucide-react";
 
 import { listPlansOptions } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
@@ -8,6 +7,10 @@ import { trialDays } from "../billing/plans.ts";
 import { EvidencePreview } from "./EvidencePreview.tsx";
 import styles from "./Hero.module.css";
 import { StampCard } from "./StampCard.tsx";
+import {
+  EscudoVistoIcon,
+  FlechaDerechaIcon,
+} from "../../components/ui/icons.tsx";
 
 // Estándares en los que descansa cada garantía; se nombran tal cual porque un perito los
 // reconoce de inmediato.
@@ -26,7 +29,7 @@ export function Hero() {
 
       <div className={styles.inner}>
         <p className={`${styles.badge} ${styles.enter}`}>
-          <ShieldCheck size={16} />
+          <EscudoVistoIcon size={16} />
           Preservación de evidencia digital para abogados en Colombia
         </p>
 
@@ -46,7 +49,7 @@ export function Hero() {
         <div className={`${styles.actions} ${styles.enter}`}>
           <ButtonLink to={ROUTES.signUp} surface="dark">
             Crear cuenta gratis
-            <ArrowRight size={18} />
+            <FlechaDerechaIcon size={18} />
           </ButtonLink>
           <ButtonLink to={ROUTES.howItWorks} surface="dark" variant="secondary">
             Ver cómo funciona

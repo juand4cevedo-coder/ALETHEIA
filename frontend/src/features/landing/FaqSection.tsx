@@ -1,9 +1,8 @@
-import { ChevronDown } from "lucide-react";
-
 import { Reveal } from "../../components/ui/Reveal.tsx";
 import styles from "./FaqSection.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
+import { ChevronAbajoIcon } from "../../components/ui/icons.tsx";
 
 const QUESTIONS = [
   {
@@ -57,7 +56,7 @@ export function FaqSection() {
             <details key={item.question} className={styles.item}>
               <summary className={styles.summary}>
                 <span>{item.question}</span>
-                <ChevronDown size={20} className={styles.chevron} />
+                <ChevronAbajoIcon size={20} className={styles.chevron} />
               </summary>
               <p className={styles.answer}>{item.answer}</p>
             </details>

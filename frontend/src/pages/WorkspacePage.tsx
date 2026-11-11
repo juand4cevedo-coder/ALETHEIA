@@ -1,4 +1,3 @@
-import { CircleAlert, CircleCheck, FolderOpen } from "lucide-react";
 import { useOutletContext } from "react-router";
 
 import type { Me } from "../api/generated";
@@ -8,6 +7,11 @@ import { SITE_NAME } from "../config/site.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./WorkspacePage.module.css";
+import {
+  CarpetaAbiertaIcon,
+  CirculoAlertaIcon,
+  CirculoVistoIcon,
+} from "../components/ui/icons.tsx";
 
 // Inicio del espacio de trabajo. Por ahora muestra a nombre de quién está la sesión, el estado
 // real de la cuenta y el camino al libro de casos, donde se abren; HU-031 lo convierte en el
@@ -34,7 +38,7 @@ export function WorkspacePage() {
               size="sm"
               shape="pill"
             >
-              <FolderOpen size={16} aria-hidden="true" />
+              <CarpetaAbiertaIcon size={16} aria-hidden="true" />
               Ver mis casos
             </ButtonLink>
           </div>
@@ -58,12 +62,12 @@ export function WorkspacePage() {
             <span translate="no">{me.email}</span>
             {me.email_verified ? (
               <span className={styles.verified}>
-                <CircleCheck size={16} aria-hidden="true" />
+                <CirculoVistoIcon size={16} aria-hidden="true" />
                 Verificado
               </span>
             ) : (
               <span className={styles.pending}>
-                <CircleAlert size={16} aria-hidden="true" />
+                <CirculoAlertaIcon size={16} aria-hidden="true" />
                 Sin verificar
               </span>
             )}

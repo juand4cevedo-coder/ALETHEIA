@@ -1,11 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import {
-  CircleAlert,
-  CircleCheck,
-  KeyRound,
-  MonitorSmartphone,
-  UserRound,
-} from "lucide-react";
 import { type FormEvent, type ReactNode, useId, useRef, useState } from "react";
 import { useOutletContext } from "react-router";
 
@@ -24,6 +17,13 @@ import { PASSWORD_MAX_LENGTH } from "../features/auth/signUp.ts";
 import { SignOutEverywhereDialog } from "../features/session/SignOutEverywhereDialog.tsx";
 import { useSignOut } from "../features/session/useSignOut.ts";
 import styles from "./AccountPage.module.css";
+import {
+  CirculoAlertaIcon,
+  CirculoVistoIcon,
+  DispositivosIcon,
+  LlaveIcon,
+  UsuarioIcon,
+} from "../components/ui/icons.tsx";
 
 const METER_ID = "medidor-cambio";
 const EMPTY = { current: "", next: "" };
@@ -56,7 +56,7 @@ export function AccountPage() {
       </header>
 
       <Card
-        icon={<UserRound size={20} />}
+        icon={<UsuarioIcon size={20} />}
         title="Perfil"
         description="Los datos con los que ingresa a ALETHEIA."
       >
@@ -71,12 +71,12 @@ export function AccountPage() {
               <span translate="no">{me.email}</span>
               {me.email_verified ? (
                 <span className={styles.verified}>
-                  <CircleCheck size={16} aria-hidden="true" />
+                  <CirculoVistoIcon size={16} aria-hidden="true" />
                   Verificado
                 </span>
               ) : (
                 <span className={styles.pending}>
-                  <CircleAlert size={16} aria-hidden="true" />
+                  <CirculoAlertaIcon size={16} aria-hidden="true" />
                   Sin verificar
                 </span>
               )}
@@ -184,7 +184,7 @@ function PasswordCard() {
 
   return (
     <Card
-      icon={<KeyRound size={20} />}
+      icon={<LlaveIcon size={20} />}
       title="Contraseña"
       description="Al cambiarla cerraremos la sesión en sus otros dispositivos; en este seguirá trabajando."
     >
@@ -258,7 +258,7 @@ function SessionsCard() {
 
   return (
     <Card
-      icon={<MonitorSmartphone size={20} />}
+      icon={<DispositivosIcon size={20} />}
       title="Sesiones"
       description="Si perdió un equipo o cree que alguien más entró a su cuenta, cierre todas las sesiones."
     >

@@ -3,7 +3,6 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Clock, MailPlus, UsersRound } from "lucide-react";
 import { type ReactNode, useId, useState } from "react";
 import { Link, useOutletContext } from "react-router";
 
@@ -29,6 +28,11 @@ import { RemoveMemberDialog } from "../features/members/RemoveMemberDialog.tsx";
 import { RevokeInvitationDialog } from "../features/members/RevokeInvitationDialog.tsx";
 import { managesTeam, ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./MembersPage.module.css";
+import {
+  CorreoIcon,
+  RelojIcon,
+  UsuariosIcon,
+} from "../components/ui/icons.tsx";
 
 // MSG-010 del catálogo de mensajes.
 const NOT_ALLOWED =
@@ -168,7 +172,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
       />
 
       <Card
-        icon={<UsersRound size={20} />}
+        icon={<UsuariosIcon size={20} />}
         title="Personas"
         description="Quienes ya ingresan a la organización, en el orden en que llegaron."
       >
@@ -246,7 +250,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
       </Card>
 
       <Card
-        icon={<Clock size={20} />}
+        icon={<RelojIcon size={20} />}
         title="Invitaciones pendientes"
         description="Cada invitación ocupa un cupo hasta que la aceptan, vence a las 72 horas o la revoca."
       >
@@ -414,7 +418,7 @@ function SeatsBar({
         </Notice>
       ) : (
         <Button variant="bright" shape="pill" onClick={onInvite}>
-          <MailPlus size={18} aria-hidden="true" />
+          <CorreoIcon size={18} aria-hidden="true" />
           Invitar
         </Button>
       )}

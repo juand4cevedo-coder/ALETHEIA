@@ -1,8 +1,12 @@
-import { Building2, type LucideIcon, UserRound } from "lucide-react";
 import { useId } from "react";
 
 import type { AccountType } from "./signUp.ts";
 import styles from "./AccountTypeChoice.module.css";
+import {
+  EdificioIcon,
+  UsuarioIcon,
+  type IconComponent,
+} from "../../components/ui/icons.tsx";
 
 type AccountTypeChoiceProps = {
   value: AccountType;
@@ -11,12 +15,12 @@ type AccountTypeChoiceProps = {
 };
 
 const OPTIONS = [
-  { value: "individual", title: "Independiente", Icon: UserRound },
-  { value: "firm", title: "Oficina o firma", Icon: Building2 },
+  { value: "individual", title: "Independiente", Icon: UsuarioIcon },
+  { value: "firm", title: "Oficina o firma", Icon: EdificioIcon },
 ] as const satisfies ReadonlyArray<{
   value: AccountType;
   title: string;
-  Icon: LucideIcon;
+  Icon: IconComponent;
 }>;
 
 // Para quién es la cuenta, como un selector segmentado. Son botones de opción nativos con otro

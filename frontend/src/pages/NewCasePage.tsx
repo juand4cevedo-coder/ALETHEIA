@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CircleCheck, ShieldAlert } from "lucide-react";
 import {
   type FormEvent,
   type RefObject,
@@ -45,6 +44,7 @@ import { canOpenCases } from "../features/cases/roles.ts";
 import { VerifyEmailDialog } from "../features/cases/VerifyEmailDialog.tsx";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./NewCasePage.module.css";
+import { CirculoVistoIcon, EscudoAlertaIcon } from "../components/ui/icons.tsx";
 
 // Mismos límites que la API (CaseCreate).
 const TITLE_MAX_LENGTH = 160;
@@ -401,7 +401,7 @@ function NewCaseForm({ me }: { me: Me }) {
                 className={styles.help}
                 data-tone={filingOk ? "ok" : undefined}
               >
-                {filingOk && <CircleCheck size={14} aria-hidden="true" />}
+                {filingOk && <CirculoVistoIcon size={14} aria-hidden="true" />}
                 <span>{filingHelp(digits)}</span>
               </p>
             </Field>
@@ -460,7 +460,7 @@ function NewCaseForm({ me }: { me: Me }) {
             </Field>
 
             <p className={styles.privacy}>
-              <ShieldAlert size={18} aria-hidden="true" />
+              <EscudoAlertaIcon size={18} aria-hidden="true" />
               <span>
                 No escriba aquí datos sensibles ni más nombres de los
                 necesarios: estos campos los ve todo el equipo del caso. La

@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Mail } from "lucide-react";
 
 import { listPlansOptions } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
@@ -10,6 +9,7 @@ import { CONTACT_EMAIL } from "../../config/site.ts";
 import { trialDays } from "../billing/plans.ts";
 import styles from "./ClosingSection.module.css";
 import section from "./Section.module.css";
+import { CorreoIcon, FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 
 // Cierre del inicio: una sola invitación clara a empezar.
 export function ClosingSection() {
@@ -33,7 +33,7 @@ export function ClosingSection() {
           <div className={styles.actions}>
             <ButtonLink to={ROUTES.signUp} surface="dark">
               Crear cuenta gratis
-              <ArrowRight size={18} />
+              <FlechaDerechaIcon size={18} />
             </ButtonLink>
             <a
               className={buttonClassName({
@@ -42,7 +42,7 @@ export function ClosingSection() {
               })}
               href={`mailto:${CONTACT_EMAIL}`}
             >
-              <Mail size={18} />
+              <CorreoIcon size={18} />
               Escribirnos
             </a>
           </div>

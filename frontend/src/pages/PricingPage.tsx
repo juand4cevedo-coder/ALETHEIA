@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { Mail } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -20,6 +19,7 @@ import {
   RECOMMENDED_PLAN,
 } from "../features/billing/plans.ts";
 import styles from "./PricingPage.module.css";
+import { CorreoIcon } from "../components/ui/icons.tsx";
 
 // Página de planes y precios (UI-002, HU-002).
 export function PricingPage() {
@@ -239,7 +239,7 @@ export function PricingPage() {
               className={buttonClassName({ surface: "dark" })}
               href={CORPORATE_QUOTE_URL}
             >
-              <Mail size={18} />
+              <CorreoIcon size={18} />
               Solicitar cotización
             </a>
           </div>

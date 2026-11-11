@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { UserCog } from "lucide-react";
 import { type FormEvent, useId, useState } from "react";
 
 import type { MemberOut } from "../../api/generated";
@@ -12,6 +11,7 @@ import { SystemError } from "../../components/ui/SystemError.tsx";
 import { apiProblem } from "../auth/apiProblem.ts";
 import { INVITABLE_ROLES, type InvitableRole } from "../workspace/roles.ts";
 import styles from "./InviteDialog.module.css";
+import { UsuarioAjustesIcon } from "../../components/ui/icons.tsx";
 
 type Props = {
   member: MemberOut | null;
@@ -80,7 +80,7 @@ export function ChangeRoleDialog({ member, onClose, onChanged }: Props) {
       onClose={close}
       busy={change.isPending}
       title="Cambiar el rol"
-      icon={<UserCog size={22} />}
+      icon={<UsuarioAjustesIcon size={22} />}
       actions={
         <>
           <Button

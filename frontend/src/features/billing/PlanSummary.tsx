@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Mail, RefreshCw } from "lucide-react";
 
 import { listPlansOptions } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { buttonClassName } from "../../components/ui/buttonStyles.ts";
@@ -10,6 +9,11 @@ import {
   RECOMMENDED_PLAN,
 } from "./plans.ts";
 import styles from "./PlanSummary.module.css";
+import {
+  ActualizarIcon,
+  CorreoIcon,
+  EdificioIcon,
+} from "../../components/ui/icons.tsx";
 
 // Planes del inicio (UI-001): las mismas tarjetas de la página de precios, con el precio
 // mensual. Precios y límites salen del catálogo (RN-019).
@@ -50,7 +54,7 @@ export function PlanSummary() {
             onClick={() => void refetch()}
             disabled={isFetching}
           >
-            <RefreshCw size={16} />
+            <ActualizarIcon size={16} />
             {isFetching ? "Reintentando…" : "Reintentar"}
           </button>
         </div>
@@ -72,7 +76,7 @@ export function PlanSummary() {
 
       <div className={styles.corporate}>
         <span className={styles.corporateIcon}>
-          <Building2 size={22} />
+          <EdificioIcon size={22} />
         </span>
         <div className={styles.corporateCopy}>
           <h3 className={styles.corporateTitle}>Corporativo</h3>
@@ -85,7 +89,7 @@ export function PlanSummary() {
           className={buttonClassName({ surface: "dark", variant: "secondary" })}
           href={CORPORATE_QUOTE_URL}
         >
-          <Mail size={16} />
+          <CorreoIcon size={16} />
           Solicitar cotización
         </a>
       </div>

@@ -1,13 +1,12 @@
-import {
-  BadgeCheck,
-  Clock3,
-  FileArchive,
-  Fingerprint,
-  Lock,
-} from "lucide-react";
-
 import { Hash } from "../../components/ui/Hash.tsx";
 import styles from "./EvidencePreview.module.css";
+import {
+  ArchivoComprimidoIcon,
+  CandadoIcon,
+  HuellaIcon,
+  SelloIcon,
+  VerificadoIcon,
+} from "../../components/ui/icons.tsx";
 
 // Huella real de un texto de ejemplo, para que la vista muestre un valor con la forma exacta
 // de una SHA-256.
@@ -36,7 +35,7 @@ export function EvidencePreview() {
           Caso 2026-014 · Laboral <span aria-hidden="true">/</span> Evidencias
         </span>
         <span className={styles.status}>
-          <BadgeCheck size={14} />
+          <VerificadoIcon size={14} />
           Preservada
         </span>
       </div>
@@ -45,7 +44,7 @@ export function EvidencePreview() {
         <div className={styles.main}>
           <div className={styles.file}>
             <span className={styles.fileIcon}>
-              <FileArchive size={22} />
+              <ArchivoComprimidoIcon size={22} />
             </span>
             <div>
               <p className={styles.fileName}>chat_cliente.zip</p>
@@ -58,7 +57,7 @@ export function EvidencePreview() {
           <dl className={styles.facts}>
             <div className={styles.fact}>
               <dt>
-                <Fingerprint size={15} />
+                <HuellaIcon size={15} />
                 Huella SHA-256
               </dt>
               <dd className={styles.hash}>
@@ -67,7 +66,7 @@ export function EvidencePreview() {
             </div>
             <div className={styles.fact}>
               <dt>
-                <Clock3 size={15} />
+                <SelloIcon size={15} />
                 Sello de tiempo
               </dt>
               <dd>
@@ -79,7 +78,7 @@ export function EvidencePreview() {
             </div>
             <div className={styles.fact}>
               <dt>
-                <Lock size={15} />
+                <CandadoIcon size={15} />
                 Cifrado
               </dt>
               <dd>
