@@ -91,7 +91,7 @@ def test_un_enlace_alterado_no_sirve() -> None:
 
 
 def test_un_token_sin_firma_no_sirve() -> None:
-    sin_firma = jwt.encode(_contenido(_enlace()), key=None, algorithm="none")
+    sin_firma = jwt.encode(_contenido(_enlace()), key="", algorithm="none")
 
     with pytest.raises(InvalidLinkError):
         read_link(_CLAVE, _PROPOSITO, sin_firma)
@@ -167,7 +167,7 @@ def test_un_enlace_no_sirve_como_acceso_ni_un_acceso_como_enlace() -> None:
 def test_un_acceso_sin_sesion_o_sin_firma_no_sirve() -> None:
     sin_sesion = {k: v for k, v in _contenido(_acceso()).items() if k != "sid"}
     con_la_maestra = jwt.encode(sin_sesion, _CLAVE, algorithm="HS256")
-    sin_firma = jwt.encode(_contenido(_acceso()), key=None, algorithm="none")
+    sin_firma = jwt.encode(_contenido(_acceso()), key="", algorithm="none")
 
     for token in (con_la_maestra, sin_firma):
         with pytest.raises(InvalidAccessTokenError):

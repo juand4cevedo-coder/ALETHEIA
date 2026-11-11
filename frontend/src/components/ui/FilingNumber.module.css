@@ -1,0 +1,40 @@
+.value {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--color-text-inverse-muted);
+  overflow-wrap: anywhere;
+}
+
+.breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+/* La etiqueta (dt) va antes en el código, pero se ve debajo de los dígitos. */
+.part {
+  display: flex;
+  flex-direction: column-reverse;
+  text-align: center;
+}
+
+.digits {
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-ink-700);
+  border-radius: var(--radius-sm);
+  background: var(--color-ink-850);
+  color: var(--color-text-inverse);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.label {
+  margin-top: var(--space-1);
+  color: var(--color-text-inverse-muted);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}

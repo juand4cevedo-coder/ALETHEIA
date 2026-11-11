@@ -1,0 +1,169 @@
+/* Abrir un caso (maqueta 02): el formulario sobre la sala oscura y, a su lado, la vista previa
+   del registro de apertura, iluminada desde arriba. */
+.screen {
+  display: grid;
+}
+
+.denied {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 720px;
+}
+
+.compose {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--color-ink-800);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-raised);
+}
+
+.formPanel {
+  display: grid;
+  align-content: start;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-8) var(--space-6);
+  border-right: 1px solid var(--color-ink-800);
+  background: var(--color-ink-950);
+}
+
+.previewPanel {
+  padding: var(--space-8);
+  background:
+    radial-gradient(
+      600px 420px at 50% 10%,
+      color-mix(in srgb, var(--color-primary-400) 10%, transparent),
+      transparent 70%
+    ),
+    var(--color-ink-1000);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-6);
+  container-type: inline-size;
+}
+
+.help {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: 0 var(--space-6);
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.help[data-tone="ok"] {
+  color: var(--color-success-400);
+}
+
+.help[data-tone="ok"] {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
+.help svg {
+  flex: none;
+  margin-top: 3px;
+}
+
+.counter {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdown {
+  padding: 0 var(--space-4);
+}
+
+/* Especialidad y referencia van juntas cuando el formulario tiene ancho para las dos; los
+   rótulos de las cápsulas no caben en media columna más angosta. */
+.pair {
+  display: grid;
+  gap: var(--space-6);
+}
+
+@container (min-width: 640px) {
+  .pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+    align-items: start;
+  }
+}
+
+.privacy {
+  display: flex;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 25%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-gold-400) 6%, transparent);
+  color: var(--color-text-inverse);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.privacy svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--color-gold-400);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-ink-800);
+}
+
+.note {
+  margin: 0;
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* Por debajo de 900 px la vista previa queda debajo del formulario. */
+@media (max-width: 900px) {
+  .compose {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .formPanel {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-ink-800);
+  }
+}
+
+@media (max-width: 560px) {
+  .formPanel,
+  .previewPanel {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .buttons {
+    flex-direction: column-reverse;
+  }
+
+  .buttons > * {
+    width: 100%;
+  }
+}
