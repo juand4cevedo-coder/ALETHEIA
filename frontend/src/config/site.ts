@@ -5,6 +5,9 @@ export const SITE_NAME = "ALETHEIA";
 export const WORDMARK = "Aletheia";
 export const SITE_URL = "https://aletheia.sbs";
 export const CONTACT_EMAIL = "contacto@aletheia.sbs";
+/** La acción principal del sitio público. Dice lo mismo que el enlace de la pantalla de
+ * ingreso. */
+export const SIGN_UP_LABEL = "Crear una cuenta";
 
 /** Título de la pestaña: el nombre de la pantalla, una barra vertical y la marca
  * («Casos | ALETHEIA»). Es la única convención; ningún título se arma a mano. */

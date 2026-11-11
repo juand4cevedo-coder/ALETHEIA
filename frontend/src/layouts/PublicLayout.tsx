@@ -5,7 +5,12 @@ import logoUrl from "../assets/logo.svg";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { CONSUMER_AUTHORITY, DATA_CONTROLLER } from "../config/legal.ts";
 import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME, WORDMARK } from "../config/site.ts";
+import {
+  CONTACT_EMAIL,
+  SIGN_UP_LABEL,
+  SITE_NAME,
+  WORDMARK,
+} from "../config/site.ts";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import { prefetchLikelyNext } from "../routes/lazyRoutes.ts";
@@ -20,9 +25,6 @@ import {
 
 // Año del aviso de derechos, calculado una vez al cargar el sitio.
 const CURRENT_YEAR = new Date().getFullYear();
-
-// La acción principal del sitio público. Dice lo mismo que el enlace de la pantalla de ingreso.
-const SIGN_UP_LABEL = "Crear una cuenta";
 
 // Cada enlace lleva a una sección que existe en el inicio o a una página propia.
 const PRIMARY_LINKS = [
@@ -186,7 +188,7 @@ export function PublicLayout() {
             Cerrar
           </button>
         </div>
-        <nav aria-label="Menú">
+        <nav aria-label="Principal">
           <ul className={styles.sheetList}>
             {[...PRIMARY_LINKS, access].map((link) => (
               <li key={link.to}>
@@ -218,7 +220,7 @@ export function PublicLayout() {
             <Brand />
             <p className={styles.footerText}>
               Conserva el archivo original de su evidencia digital y deja
-              constancia de cada paso que da su equipo con él.
+              constancia de quién lo sube, lo descarga o lo exporta.
             </p>
             <a className={styles.footerMail} href={`mailto:${CONTACT_EMAIL}`}>
               <CorreoIcon size={16} aria-hidden="true" />

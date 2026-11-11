@@ -117,16 +117,16 @@ function evidenceCount(evidence: Record<string, number>): number {
 
 // El libro de casos del espacio de trabajo, construido con los mismos componentes de la
 // aplicación (insignias, radicados, cadena y franja de la custodia) para que la imagen no se
-// aparte del producto. Es una imagen: los lectores de pantalla reciben su descripción.
+// aparte del producto. Es una imagen (role="img"): los lectores de pantalla reciben su
+// descripción y no su contenido.
 export function WorkspacePreview() {
   return (
     <div className={styles.wrap}>
-      <p className="visually-hidden">
-        Vista del espacio de trabajo: el libro de casos de una firma, con las
-        evidencias de cada caso, su cadena de custodia y el estado de
-        integridad. Un caso tiene un sello de tiempo en curso.
-      </p>
-      <div className={styles.window} aria-hidden="true">
+      <div
+        className={styles.window}
+        role="img"
+        aria-label="Vista del espacio de trabajo: el libro de casos de una firma, con las evidencias de cada caso, su cadena de custodia y el estado de integridad. Un caso tiene un sello de tiempo en curso."
+      >
         <div className={styles.topbar}>
           <span className={styles.brand}>
             <img src={logoUrl} alt="" width={20} height={20} />

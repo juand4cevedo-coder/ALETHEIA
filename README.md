@@ -212,9 +212,12 @@ El repositorio usa pre-commit para revisar cada commit antes de crearlo. Bloquea
 Después de clonar el repositorio, en PowerShell:
 
 ```powershell
+winget install --id Gitleaks.Gitleaks --exact
 uv tool install pre-commit
 pre-commit install
 ```
+
+Gitleaks se instala aparte porque el gancho usa la copia del sistema: la que compila pre-commit queda bloqueada por el control de aplicaciones de Windows.
 
 ### Revisiones antes de abrir un pull request
 

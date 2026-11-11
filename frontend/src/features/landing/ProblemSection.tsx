@@ -36,7 +36,8 @@ const POINTS: readonly Point[] = [
   {
     label: "Quién lo manejó",
     capture: "No queda registro.",
-    original: "Cada acceso, con nombre y hora, en la cadena de custodia.",
+    original:
+      "Cada carga, sello y descarga, con nombre y hora, en la cadena de custodia.",
     icon: CadenaIcon,
   },
 ];

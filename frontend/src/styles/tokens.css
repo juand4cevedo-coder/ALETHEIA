@@ -158,7 +158,7 @@
   /* Párrafos breves junto a otra columna, como el del pie. */
   --measure-narrow: 40ch;
   /* Titulares grandes: líneas cortas que se leen de un vistazo. */
-  --measure-display: 22ch;
+  --measure-display: 30ch;
   /* Ancho de los paneles de una columna: el acceso y los diálogos. */
   --panel-width: 448px;
   /* Ancho del menú lateral del espacio de trabajo. */

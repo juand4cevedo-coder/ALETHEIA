@@ -21,7 +21,7 @@ describe("Página de inicio (HU-001)", () => {
     const main = screen.getByRole("main");
     expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(within(main).getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Demuestre que el archivo que aporta es el mismo que recibió.",
+      "Demuestre que el archivo que aporta no cambió desde que lo preservó.",
     );
     expect(
       within(main).getByRole("heading", {
@@ -140,24 +140,43 @@ describe("Página de inicio (HU-001)", () => {
     const { container } = await renderRoute("/");
 
     // Es una imagen: los lectores de pantalla reciben su descripción y no la tabla.
-    const shot = container.querySelector<HTMLElement>(
-      "[aria-hidden='true'] table",
-    )!;
-    expect(shot).not.toBeNull();
+    const shot = screen.getByRole("img", {
+      name: /^Vista del espacio de trabajo/,
+    });
+    expect(shot.querySelector("table")).not.toBeNull();
     expect(within(shot).getAllByText("Sin verificar").length).toBeGreaterThan(
       0,
     );
     expect(within(shot).getByText("Sellando")).toBeInTheDocument();
     // El verde es solo para lo que el sistema verificó: ninguna insignia de la portada lo usa.
     expect(container.querySelector("[data-tone='ok']")).toBeNull();
-    expect(
-      screen.getByText(/^Vista del espacio de trabajo/),
-    ).toBeInTheDocument();
     // Los datos de ejemplo del inicio y de Cómo funciona no llevan la etiqueta de ficticios.
     for (const id of ["titulo-inicio", "titulo-como-funciona"]) {
       const region = container.querySelector(`[aria-labelledby='${id}']`)!;
       expect(region.textContent).not.toMatch(/ficticios/i);
     }
+  });
+
+  it("no afirma que la cadena registre quién abre o consulta un archivo", async () => {
+    // La lista cerrada de acciones de custodia (custodyActions.ts) no tiene un evento de
+    // apertura ni de consulta: la portada no puede decir que se registran.
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    const { container } = await renderRoute("/");
+
+    const texts = [
+      ...Array.from(
+        container.querySelectorAll(
+          "[aria-labelledby='titulo-inicio'], [aria-labelledby='titulo-problema'], [aria-labelledby='titulo-como-funciona'], footer",
+        ),
+        (element) => element.textContent ?? "",
+      ),
+      screen
+        .getByRole("img", { name: /^Vista del espacio de trabajo/ })
+        .getAttribute("aria-label") ?? "",
+    ].join(" ");
+    expect(texts).not.toMatch(
+      /(?<!\p{L})(abre|abri[óo]|accesos?|consult\p{L}*|vio|visualiz\p{L}*)(?!\p{L})/iu,
+    );
   });
 
   it("cada enlace de la navegación lleva a una sección o página que existe", async () => {
