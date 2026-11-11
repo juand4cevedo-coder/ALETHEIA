@@ -18,6 +18,8 @@ from app.services.rate_limit import RateLimitExceededError
 PROBLEM_JSON = "application/problem+json"
 # Segundos que el cliente debería esperar antes de reintentar cuando la base no responde.
 _RETRY_AFTER_SECONDS = "30"
+# Detalle de toda respuesta 500: la causa queda en los registros, nunca en la respuesta.
+UNEXPECTED_ERROR = "Ocurrió un error inesperado."
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +125,7 @@ def unexpected_error_response(request: Request) -> JSONResponse:
     return problem_response(
         request,
         HTTPStatus.INTERNAL_SERVER_ERROR,
-        detail="Ocurrió un error inesperado.",
+        detail=UNEXPECTED_ERROR,
     )
 
 
