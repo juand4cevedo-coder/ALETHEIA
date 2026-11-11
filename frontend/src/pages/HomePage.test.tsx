@@ -2,6 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { SIGN_UP_LABEL } from "../config/site.ts";
 import { seriousAxeViolations } from "../test/axe.ts";
 import { CATALOG } from "../test/plans.ts";
 import { jsonResponse, renderRoute } from "../test/render.tsx";
@@ -37,7 +38,7 @@ describe("Página de inicio (HU-001)", () => {
     ).toBeInTheDocument();
     expect(
       within(main).getByText(
-        "No certificamos pruebas ni determinamos su validez.",
+        "No certifica pruebas ni decide sobre su validez.",
       ),
     ).toBeInTheDocument();
     expect(
@@ -126,12 +127,12 @@ describe("Página de inicio (HU-001)", () => {
     expect(headings.map((heading) => heading.textContent)).toEqual([
       "Una captura de pantalla no es el archivo original",
       "Lo que pasa con su archivo desde que lo sube",
-      "Garantías que cualquier perito puede comprobar",
+      "Cómo se sabe que nadie alteró el archivo",
       "Preservamos y documentamos. La valoración es del juez.",
-      "¿Recibió un paquete de preservación?",
+      "La contraparte puede comprobar el paquete sin una cuenta",
       "Las mismas garantías en todos los planes",
-      "Lo que más nos preguntan",
-      "Empiece a preservar su evidencia hoy",
+      "Antes de empezar",
+      "Pruebe ALETHEIA con uno de sus casos",
     ]);
   });
 
@@ -150,33 +151,55 @@ describe("Página de inicio (HU-001)", () => {
     expect(within(shot).getByText("Sellando")).toBeInTheDocument();
     // El verde es solo para lo que el sistema verificó: ninguna insignia de la portada lo usa.
     expect(container.querySelector("[data-tone='ok']")).toBeNull();
-    // Los datos de ejemplo del inicio y de Cómo funciona no llevan la etiqueta de ficticios.
-    for (const id of ["titulo-inicio", "titulo-como-funciona"]) {
-      const region = container.querySelector(`[aria-labelledby='${id}']`)!;
-      expect(region.textContent).not.toMatch(/ficticios/i);
-    }
+    // Los datos de ejemplo de toda la página no llevan la etiqueta de ficticios ni de ejemplo.
+    expect(screen.getByRole("main").textContent).not.toMatch(
+      /ficticios|datos de ejemplo/i,
+    );
   });
 
-  it("no afirma que la cadena registre quién abre o consulta un archivo", async () => {
+  it("ninguna parte de la página afirma que la cadena registre quién abre o consulta un archivo", async () => {
     // La lista cerrada de acciones de custodia (custodyActions.ts) no tiene un evento de
     // apertura ni de consulta: la portada no puede decir que se registran.
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const { container } = await renderRoute("/");
 
+    // Toda la página: el texto del encabezado, de cada sección (también las respuestas cerradas
+    // de las preguntas frecuentes) y del pie, más las descripciones para lectores de pantalla.
+    await screen.findByText(/^\$59\.900/);
     const texts = [
+      container.textContent ?? "",
       ...Array.from(
-        container.querySelectorAll(
-          "[aria-labelledby='titulo-inicio'], [aria-labelledby='titulo-problema'], [aria-labelledby='titulo-como-funciona'], footer",
-        ),
-        (element) => element.textContent ?? "",
+        container.querySelectorAll("[aria-label]"),
+        (element) => element.getAttribute("aria-label") ?? "",
       ),
-      screen
-        .getByRole("img", { name: /^Vista del espacio de trabajo/ })
-        .getAttribute("aria-label") ?? "",
     ].join(" ");
     expect(texts).not.toMatch(
       /(?<!\p{L})(abre|abri[óo]|accesos?|consult\p{L}*|vio|visualiz\p{L}*)(?!\p{L})/iu,
     );
+  });
+
+  it("el verificador no enlaza a una página que aún no existe y el cierre tiene una sola acción", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    const { container } = await renderRoute("/");
+
+    // HU-026 llega con la versión 1.0: hasta entonces ningún enlace lleva a /verificador.
+    expect(container.querySelector("a[href='/verificador']")).toBeNull();
+    const verifier = container.querySelector("#verificador")!;
+    expect(within(verifier as HTMLElement).queryAllByRole("link")).toEqual([]);
+    expect(verifier).toHaveTextContent("Todavía no está abierto.");
+
+    const closing = container.querySelector(
+      "[aria-labelledby='titulo-cierre']",
+    ) as HTMLElement;
+    const actions = within(closing).getAllByRole("link");
+    expect(actions).toHaveLength(1);
+    expect(actions[0]).toHaveTextContent(SIGN_UP_LABEL);
+    expect(actions[0]).toHaveAttribute("href", "/registro");
+    expect(
+      await within(closing).findByText(
+        /La prueba gratuita dura 14 días y no pide tarjeta de crédito\./,
+      ),
+    ).toBeInTheDocument();
   });
 
   it("cada enlace de la navegación lleva a una sección o página que existe", async () => {

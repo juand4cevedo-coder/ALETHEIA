@@ -12,20 +12,6 @@ const FORBIDDEN = ["·", "§", "—", "–", "…", "→", "−"] as const;
 
 const SRC = join(import.meta.dirname, "..");
 
-// Secciones de la landing que se reescriben en la tarea 6, que vacía esta lista.
-const PENDING = [
-  "features/landing/ChainDemo.tsx",
-  "features/landing/ClosingSection.tsx",
-  "features/landing/FaqSection.tsx",
-  "features/landing/HashDemo.tsx",
-  "features/landing/PlansSection.tsx",
-  "features/landing/ScopeSection.tsx",
-  "features/landing/StandardsSection.tsx",
-  "features/landing/VerifierSection.tsx",
-  "features/landing/chain.ts",
-  "features/landing/useSha256.ts",
-];
-
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name);
@@ -41,9 +27,7 @@ function relativePath(path: string): string {
 }
 
 function inScope(path: string): boolean {
-  const rel = relativePath(path);
-  if (rel.startsWith("api/generated/")) return false;
-  return !PENDING.some((pending) => rel === pending || rel.startsWith(pending));
+  return !relativePath(path).startsWith("api/generated/");
 }
 
 // Entidades HTML con nombre de los caracteres prohibidos. El texto de JSX y sus atributos las

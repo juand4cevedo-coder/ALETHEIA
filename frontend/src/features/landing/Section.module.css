@@ -47,20 +47,6 @@
   line-height: var(--line-height-subtitle);
 }
 
-/* Folio de las secciones que aún no se rehicieron (el verificador). Se retira con ellas. */
-.folioBlock {
-  display: grid;
-  gap: var(--space-2);
-  justify-items: start;
-}
-
-.folio {
-  color: var(--text-3);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-label);
-  line-height: var(--line-height-label);
-}
-
 /* Panel de las secciones: la primera superficie y la línea, nada más. */
 .card {
   position: relative;

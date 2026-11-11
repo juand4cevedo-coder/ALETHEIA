@@ -1,5 +1,5 @@
-/* Las tres demostraciones de la pieza central. La huella necesita todo el ancho (64 caracteres
-   en bloques); la cadena y el sello van lado a lado debajo, desde 1024 px. */
+/* Las tres comprobaciones. La huella necesita todo el ancho (64 caracteres en bloques) y lleva
+   su explicación al lado; la cadena y el sello van lado a lado debajo, desde 1024 px. */
 .demos {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -9,67 +9,61 @@
 .panel {
   display: grid;
   grid-template-rows: auto 1fr;
-  gap: var(--space-6);
+  gap: var(--space-4);
+  /* Cada panel mide lo que su contenido: la ficha del sello no se estira hasta el alto de la
+     cadena con un hueco vacío. */
+  align-items: start;
   min-width: 0;
 }
 
-/* Título y explicación de cada demostración: fuera de la tarjeta, como el rótulo de un anexo. */
+/* Título y explicación de cada comprobación, fuera del panel. */
 .panelHead {
   display: grid;
   align-content: start;
   gap: var(--space-2);
-  max-width: 560px;
-}
-
-.exhibit {
-  color: var(--color-text-inverse-muted);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  max-width: var(--measure);
 }
 
 .panelTitle {
-  font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 560;
-  line-height: 32px;
-  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-subtitle);
+  font-weight: 500;
+  line-height: var(--line-height-subtitle);
+  letter-spacing: var(--tracking-subtitle);
+}
+
+.panelTitle svg {
+  flex: none;
+  color: var(--text-2);
 }
 
 .panelText {
-  color: var(--color-text-inverse-muted);
-  font-size: 15px;
-  line-height: 24px;
-}
-
-/* Contenedor de la luz del puntero: no tiene relleno, así que mide lo mismo que la tarjeta que
-   envuelve y las coordenadas coinciden. */
-.surface {
-  display: grid;
-  min-width: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
 }
 
 @media (min-width: 1024px) {
   .demos {
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   }
 
-  /* La cadena y el sello comparten las filas de la cuadrícula (subgrid): sus tarjetas empiezan
+  /* La cadena y el sello comparten las filas de la cuadrícula (subgrid): sus paneles empiezan
      a la misma altura aunque una explicación sea más larga que la otra. */
   .panel {
     grid-row: span 2;
     grid-template-rows: subgrid;
-    row-gap: var(--space-6);
+    row-gap: var(--space-4);
   }
 
-  /* La huella ocupa la fila completa y repite la columna del folio del encabezado: el rótulo
-     a la izquierda y la demostración a la derecha. */
+  /* La huella ocupa la fila completa: la explicación a la izquierda y el panel a la derecha. */
   .hashPanel {
     grid-row: auto;
     grid-column: 1 / -1;
     grid-template-rows: none;
-    grid-template-columns: minmax(160px, 0.32fr) 1fr;
-    gap: var(--space-8);
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: var(--space-12);
   }
 }

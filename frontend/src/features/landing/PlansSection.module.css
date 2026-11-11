@@ -1,27 +1,24 @@
-/* Alineado a la izquierda, como el encabezado foliado y el resto del expediente. */
 .more {
-  display: flex;
-  justify-content: flex-start;
   margin-top: var(--space-8);
 }
 
+/* Enlace de texto: violeta porque lleva a otra página. */
 .link {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--color-primary-300);
-  font-weight: 600;
+  color: var(--accent-strong);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
   text-decoration: none;
 }
 
-.link svg {
-  transition: transform var(--motion-base) var(--ease-standard);
-}
-
 .link:hover {
-  color: var(--color-text-inverse);
+  text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
 }
 
-.link:hover svg {
-  transform: translateX(3px);
+.link svg {
+  flex: none;
 }
