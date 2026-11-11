@@ -487,12 +487,14 @@ function CaseTable({ items, caption }: ListProps) {
               <ChainCell item={item} />
             </td>
             <td className={styles.integrityCell}>
-              <StatusBadge tone="muted">Sin verificar</StatusBadge>
-              <ChevronRight
-                className={styles.chevron}
-                size={16}
-                aria-hidden="true"
-              />
+              <span className={styles.integrity}>
+                <StatusBadge tone="muted">Sin verificar</StatusBadge>
+                <ChevronRight
+                  className={styles.chevron}
+                  size={16}
+                  aria-hidden="true"
+                />
+              </span>
             </td>
           </tr>
         ))}
