@@ -408,27 +408,21 @@ describe("Abrir un caso (HU-015)", () => {
 });
 
 describe("Inicio del espacio de trabajo", () => {
-  it.each(["owner", "admin", "lawyer"] as const)(
-    "un %s ve la acción «Abrir caso»",
+  it.each(["owner", "admin", "lawyer", "assistant"] as const)(
+    "un %s no ve «Abrir caso» y llega al libro de casos",
     async (role) => {
       serve(role);
       const user = userEvent.setup();
       const { router } = await renderRoute("/app");
 
-      await user.click(await screen.findByRole("link", { name: "Abrir caso" }));
+      await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
+      expect(
+        screen.queryByRole("link", { name: "Abrir caso" }),
+      ).not.toBeInTheDocument();
+      await user.click(screen.getByRole("link", { name: "Ver mis casos" }));
       await waitFor(() =>
-        expect(router.state.location.pathname).toBe("/app/casos/nuevo"),
+        expect(router.state.location.pathname).toBe("/app/casos"),
       );
     },
   );
-
-  it("un asistente no ve la acción «Abrir caso»", async () => {
-    serve("assistant");
-    await renderRoute("/app");
-
-    await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
-    expect(
-      screen.queryByRole("link", { name: "Abrir caso" }),
-    ).not.toBeInTheDocument();
-  });
 });
