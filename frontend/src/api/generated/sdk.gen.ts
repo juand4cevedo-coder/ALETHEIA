@@ -33,6 +33,9 @@ import type {
   HealthData,
   HealthErrors,
   HealthResponses,
+  ListCasesData,
+  ListCasesErrors,
+  ListCasesResponses,
   ListInvitationsData,
   ListInvitationsErrors,
   ListInvitationsResponses,
@@ -586,6 +589,28 @@ export const acceptInvitation = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+/**
+ * Listar los casos donde la persona es miembro, con su actividad
+ */
+export const listCases = <ThrowOnError extends boolean = false>(
+  options?: Options<ListCasesData, ThrowOnError>,
+): RequestResult<ListCasesResponses, ListCasesErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    ListCasesResponses,
+    ListCasesErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases",
+    ...options,
   });
 
 /**

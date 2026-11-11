@@ -250,6 +250,13 @@ describe("Página del caso (HU-015)", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "Caso no disponible" }),
     ).toBeInTheDocument();
+    // Quien buscaba un caso vuelve a la lista de casos, no al inicio.
+    expect(
+      screen.getByRole("link", { name: "Volver a los casos" }),
+    ).toHaveAttribute("href", "/app/casos");
+    expect(
+      screen.queryByRole("link", { name: "Volver al inicio" }),
+    ).not.toBeInTheDocument();
   });
 
   it("un id mal formado también muestra MSG-011 y no un error del sistema", async () => {
