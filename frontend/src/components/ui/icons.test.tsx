@@ -24,9 +24,9 @@ function archivos(dir: string): string[] {
 }
 
 describe("Íconos de la interfaz", () => {
-  it("ningún archivo de src importa lucide-react", () => {
+  it("ningún archivo de src importa lucide-react ni @phosphor-icons", () => {
     const infractores = archivos(SRC).filter((ruta) =>
-      /from\s+["']lucide-react["']|import\(\s*["']lucide-react["']/.test(
+      /(?:from[ ]+|import[(][ ]*)["'](?:lucide-react|@phosphor-icons)/.test(
         readFileSync(ruta, "utf8"),
       ),
     );
@@ -58,5 +58,15 @@ describe("Íconos de la interfaz", () => {
     expect(svg).toHaveAttribute("stroke", "currentColor");
     expect(svg).toHaveAttribute("stroke-width", "1.5");
     expect(svg).toHaveAttribute("stroke-linecap", "round");
+  });
+
+  it.each([
+    ["HuellaIcon", HuellaIcon],
+    ["SelloIcon", SelloIcon],
+    ["CadenaIcon", CadenaIcon],
+    ["PaqueteIcon", PaqueteIcon],
+  ])("%s conserva su dibujo", (_nombre, Icono) => {
+    const { container } = render(<Icono />);
+    expect(container.innerHTML).toMatchSnapshot();
   });
 });

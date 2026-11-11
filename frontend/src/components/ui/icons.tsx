@@ -11,60 +11,7 @@ import {
   type SVGProps,
 } from "react";
 
-import { ArrowRight } from "@phosphor-icons/react/dist/ssr/ArrowRight";
-import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr/ArrowUpRight";
-import { SealCheck } from "@phosphor-icons/react/dist/ssr/SealCheck";
-import { Buildings } from "@phosphor-icons/react/dist/ssr/Buildings";
-import { Check } from "@phosphor-icons/react/dist/ssr/Check";
-import { CaretDown } from "@phosphor-icons/react/dist/ssr/CaretDown";
-import { CaretRight } from "@phosphor-icons/react/dist/ssr/CaretRight";
-import { WarningCircle } from "@phosphor-icons/react/dist/ssr/WarningCircle";
-import { CheckCircle } from "@phosphor-icons/react/dist/ssr/CheckCircle";
-import { Prohibit } from "@phosphor-icons/react/dist/ssr/Prohibit";
-import { Clock } from "@phosphor-icons/react/dist/ssr/Clock";
-import { Cookie } from "@phosphor-icons/react/dist/ssr/Cookie";
-import { Copy } from "@phosphor-icons/react/dist/ssr/Copy";
-import { DownloadSimple } from "@phosphor-icons/react/dist/ssr/DownloadSimple";
-import { Eye } from "@phosphor-icons/react/dist/ssr/Eye";
-import { EyeSlash } from "@phosphor-icons/react/dist/ssr/EyeSlash";
-import { FileZip } from "@phosphor-icons/react/dist/ssr/FileZip";
-import { FileMagnifyingGlass } from "@phosphor-icons/react/dist/ssr/FileMagnifyingGlass";
-import { FileArrowUp } from "@phosphor-icons/react/dist/ssr/FileArrowUp";
-import { FileX } from "@phosphor-icons/react/dist/ssr/FileX";
-import { FolderOpen } from "@phosphor-icons/react/dist/ssr/FolderOpen";
-import { HardDrive } from "@phosphor-icons/react/dist/ssr/HardDrive";
-import { ClockCounterClockwise } from "@phosphor-icons/react/dist/ssr/ClockCounterClockwise";
-import { House } from "@phosphor-icons/react/dist/ssr/House";
-import { Info } from "@phosphor-icons/react/dist/ssr/Info";
-import { Key } from "@phosphor-icons/react/dist/ssr/Key";
-import { Bank } from "@phosphor-icons/react/dist/ssr/Bank";
-import { Laptop } from "@phosphor-icons/react/dist/ssr/Laptop";
-import { LinkSimple } from "@phosphor-icons/react/dist/ssr/LinkSimple";
-import { Link } from "@phosphor-icons/react/dist/ssr/Link";
-import { List } from "@phosphor-icons/react/dist/ssr/List";
-import { CircleNotch } from "@phosphor-icons/react/dist/ssr/CircleNotch";
-import { Lock } from "@phosphor-icons/react/dist/ssr/Lock";
-import { SignOut } from "@phosphor-icons/react/dist/ssr/SignOut";
-import { Envelope } from "@phosphor-icons/react/dist/ssr/Envelope";
-import { Devices } from "@phosphor-icons/react/dist/ssr/Devices";
-import { Plus } from "@phosphor-icons/react/dist/ssr/Plus";
-import { Printer } from "@phosphor-icons/react/dist/ssr/Printer";
-import { Receipt } from "@phosphor-icons/react/dist/ssr/Receipt";
-import { ArrowsClockwise } from "@phosphor-icons/react/dist/ssr/ArrowsClockwise";
-import { Scales } from "@phosphor-icons/react/dist/ssr/Scales";
-import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass";
-import { Shield } from "@phosphor-icons/react/dist/ssr/Shield";
-import { ShieldWarning } from "@phosphor-icons/react/dist/ssr/ShieldWarning";
-import { ShieldCheck } from "@phosphor-icons/react/dist/ssr/ShieldCheck";
-import { Warning } from "@phosphor-icons/react/dist/ssr/Warning";
-import { LinkSimpleBreak } from "@phosphor-icons/react/dist/ssr/LinkSimpleBreak";
-import { UploadSimple } from "@phosphor-icons/react/dist/ssr/UploadSimple";
-import { UserGear } from "@phosphor-icons/react/dist/ssr/UserGear";
-import { UserMinus } from "@phosphor-icons/react/dist/ssr/UserMinus";
-import { UserPlus } from "@phosphor-icons/react/dist/ssr/UserPlus";
-import { User } from "@phosphor-icons/react/dist/ssr/User";
-import { Users } from "@phosphor-icons/react/dist/ssr/Users";
-import { X } from "@phosphor-icons/react/dist/ssr/X";
+import { TRAZADOS } from "./icons.paths.ts";
 
 /** Props comunes de todos los íconos de la interfaz. */
 export type IconProps = Omit<
@@ -92,98 +39,88 @@ function accesibilidad(
   return { "aria-hidden": props["aria-hidden"] ?? true };
 }
 
-type BasePhosphor = ComponentType<
-  {
-    size?: number | string;
-    weight?: "regular";
-    alt?: string;
-    ref?: Ref<SVGSVGElement>;
-  } & Omit<SVGProps<SVGSVGElement>, "ref" | "width" | "height">
->;
-
-function crearIcono(Base: BasePhosphor, nombre: string): IconComponent {
+function crearIcono(clave: string): IconComponent {
+  const elementos = TRAZADOS[clave] ?? [];
   const Icono = forwardRef<SVGSVGElement, IconProps>(
-    ({ size = TAMANO_PREDETERMINADO, title, ...resto }, ref) => (
-      <Base
+    (
+      { size = TAMANO_PREDETERMINADO, title, ...resto },
+      ref: Ref<SVGSVGElement>,
+    ) => (
+      <svg
         ref={ref}
-        weight="regular"
-        size={size}
-        alt={title}
+        xmlns="http://www.w3.org/2000/svg"
+        width={size}
+        height={size}
+        viewBox="0 0 256 256"
+        fill="currentColor"
         {...resto}
         {...accesibilidad(title, resto)}
-      />
+      >
+        {title ? <title>{title}</title> : null}
+        {elementos.map(([Etiqueta, atributos], i) => (
+          <Etiqueta key={i} {...atributos} />
+        ))}
+      </svg>
     ),
   );
-  Icono.displayName = nombre;
+  Icono.displayName = clave + "Icon";
   return Icono;
 }
 
-export const FlechaDerechaIcon = crearIcono(ArrowRight, "FlechaDerechaIcon");
-export const FlechaDiagonalIcon = crearIcono(
-  ArrowUpRight,
-  "FlechaDiagonalIcon",
-);
-export const VerificadoIcon = crearIcono(SealCheck, "VerificadoIcon");
-export const EdificioIcon = crearIcono(Buildings, "EdificioIcon");
-export const VistoIcon = crearIcono(Check, "VistoIcon");
-export const ChevronAbajoIcon = crearIcono(CaretDown, "ChevronAbajoIcon");
-export const ChevronDerechaIcon = crearIcono(CaretRight, "ChevronDerechaIcon");
-export const CirculoAlertaIcon = crearIcono(WarningCircle, "CirculoAlertaIcon");
-export const CirculoVistoIcon = crearIcono(CheckCircle, "CirculoVistoIcon");
-export const CirculoProhibidoIcon = crearIcono(
-  Prohibit,
-  "CirculoProhibidoIcon",
-);
-export const RelojIcon = crearIcono(Clock, "RelojIcon");
-export const GalletaIcon = crearIcono(Cookie, "GalletaIcon");
-export const CopiarIcon = crearIcono(Copy, "CopiarIcon");
-export const DescargarIcon = crearIcono(DownloadSimple, "DescargarIcon");
-export const OjoIcon = crearIcono(Eye, "OjoIcon");
-export const OjoTachadoIcon = crearIcono(EyeSlash, "OjoTachadoIcon");
-export const ArchivoComprimidoIcon = crearIcono(
-  FileZip,
-  "ArchivoComprimidoIcon",
-);
-export const ArchivoBusquedaIcon = crearIcono(
-  FileMagnifyingGlass,
-  "ArchivoBusquedaIcon",
-);
-export const ArchivoSubirIcon = crearIcono(FileArrowUp, "ArchivoSubirIcon");
-export const ArchivoEquisIcon = crearIcono(FileX, "ArchivoEquisIcon");
-export const CarpetaAbiertaIcon = crearIcono(FolderOpen, "CarpetaAbiertaIcon");
-export const DiscoIcon = crearIcono(HardDrive, "DiscoIcon");
-export const HistorialIcon = crearIcono(ClockCounterClockwise, "HistorialIcon");
-export const InicioIcon = crearIcono(House, "InicioIcon");
-export const InfoIcon = crearIcono(Info, "InfoIcon");
-export const LlaveIcon = crearIcono(Key, "LlaveIcon");
-export const InstitucionIcon = crearIcono(Bank, "InstitucionIcon");
-export const PortatilIcon = crearIcono(Laptop, "PortatilIcon");
-export const EnlaceIcon = crearIcono(LinkSimple, "EnlaceIcon");
-export const VinculoIcon = crearIcono(Link, "VinculoIcon");
-export const MenuIcon = crearIcono(List, "MenuIcon");
-export const CargandoIcon = crearIcono(CircleNotch, "CargandoIcon");
-export const CandadoIcon = crearIcono(Lock, "CandadoIcon");
-export const SalirIcon = crearIcono(SignOut, "SalirIcon");
-export const CorreoIcon = crearIcono(Envelope, "CorreoIcon");
-export const DispositivosIcon = crearIcono(Devices, "DispositivosIcon");
-export const MasIcon = crearIcono(Plus, "MasIcon");
-export const ImprimirIcon = crearIcono(Printer, "ImprimirIcon");
-export const ReciboIcon = crearIcono(Receipt, "ReciboIcon");
-export const ActualizarIcon = crearIcono(ArrowsClockwise, "ActualizarIcon");
-export const BalanzaIcon = crearIcono(Scales, "BalanzaIcon");
-export const BuscarIcon = crearIcono(MagnifyingGlass, "BuscarIcon");
-export const EscudoIcon = crearIcono(Shield, "EscudoIcon");
-export const EscudoAlertaIcon = crearIcono(ShieldWarning, "EscudoAlertaIcon");
-export const EscudoVistoIcon = crearIcono(ShieldCheck, "EscudoVistoIcon");
-export const AdvertenciaIcon = crearIcono(Warning, "AdvertenciaIcon");
-export const EnlaceRotoIcon = crearIcono(LinkSimpleBreak, "EnlaceRotoIcon");
-export const SubirIcon = crearIcono(UploadSimple, "SubirIcon");
-export const UsuarioAjustesIcon = crearIcono(UserGear, "UsuarioAjustesIcon");
-export const UsuarioQuitarIcon = crearIcono(UserMinus, "UsuarioQuitarIcon");
-export const UsuarioAgregarIcon = crearIcono(UserPlus, "UsuarioAgregarIcon");
-export const UsuarioIcon = crearIcono(User, "UsuarioIcon");
-export const UsuariosIcon = crearIcono(Users, "UsuariosIcon");
-export const CerrarIcon = crearIcono(X, "CerrarIcon");
+export const FlechaDerechaIcon = crearIcono("FlechaDerecha");
+export const FlechaDiagonalIcon = crearIcono("FlechaDiagonal");
+export const VerificadoIcon = crearIcono("Verificado");
+export const EdificioIcon = crearIcono("Edificio");
+export const VistoIcon = crearIcono("Visto");
+export const ChevronAbajoIcon = crearIcono("ChevronAbajo");
+export const ChevronDerechaIcon = crearIcono("ChevronDerecha");
+export const CirculoAlertaIcon = crearIcono("CirculoAlerta");
+export const CirculoVistoIcon = crearIcono("CirculoVisto");
+export const CirculoProhibidoIcon = crearIcono("CirculoProhibido");
+export const RelojIcon = crearIcono("Reloj");
+export const GalletaIcon = crearIcono("Galleta");
+export const CopiarIcon = crearIcono("Copiar");
+export const DescargarIcon = crearIcono("Descargar");
+export const OjoIcon = crearIcono("Ojo");
+export const OjoTachadoIcon = crearIcono("OjoTachado");
+export const ArchivoComprimidoIcon = crearIcono("ArchivoComprimido");
+export const ArchivoBusquedaIcon = crearIcono("ArchivoBusqueda");
+export const ArchivoSubirIcon = crearIcono("ArchivoSubir");
+export const ArchivoEquisIcon = crearIcono("ArchivoEquis");
+export const CarpetaAbiertaIcon = crearIcono("CarpetaAbierta");
+export const DiscoIcon = crearIcono("Disco");
+export const HistorialIcon = crearIcono("Historial");
+export const InicioIcon = crearIcono("Inicio");
+export const InfoIcon = crearIcono("Info");
+export const LlaveIcon = crearIcono("Llave");
+export const InstitucionIcon = crearIcono("Institucion");
+export const PortatilIcon = crearIcono("Portatil");
+export const EnlaceIcon = crearIcono("Enlace");
+export const VinculoIcon = crearIcono("Vinculo");
+export const MenuIcon = crearIcono("Menu");
+export const CargandoIcon = crearIcono("Cargando");
+export const CandadoIcon = crearIcono("Candado");
+export const SalirIcon = crearIcono("Salir");
+export const CorreoIcon = crearIcono("Correo");
+export const DispositivosIcon = crearIcono("Dispositivos");
+export const MasIcon = crearIcono("Mas");
+export const ImprimirIcon = crearIcono("Imprimir");
+export const ReciboIcon = crearIcono("Recibo");
+export const ActualizarIcon = crearIcono("Actualizar");
+export const BalanzaIcon = crearIcono("Balanza");
+export const BuscarIcon = crearIcono("Buscar");
+export const EscudoIcon = crearIcono("Escudo");
+export const EscudoAlertaIcon = crearIcono("EscudoAlerta");
+export const EscudoVistoIcon = crearIcono("EscudoVisto");
+export const AdvertenciaIcon = crearIcono("Advertencia");
+export const EnlaceRotoIcon = crearIcono("EnlaceRoto");
+export const SubirIcon = crearIcono("Subir");
+export const UsuarioAjustesIcon = crearIcono("UsuarioAjustes");
+export const UsuarioQuitarIcon = crearIcono("UsuarioQuitar");
+export const UsuarioAgregarIcon = crearIcono("UsuarioAgregar");
+export const UsuarioIcon = crearIcono("Usuario");
+export const UsuariosIcon = crearIcono("Usuarios");
+export const CerrarIcon = crearIcono("Cerrar");
 
 // Íconos propios. Cuadrícula de 24 px, trazo de 1,5 (el de Phosphor regular a 24 px),
 // extremos y uniones redondeados, color heredado del texto.
@@ -213,34 +150,47 @@ function crearPropio(nombre: string, trazado: ReactElement): IconComponent {
   return Icono;
 }
 
-/** Huella de un archivo: crestas concéntricas abiertas, como una huella dactilar. */
+/** Huella de un archivo: crestas concéntricas con 3 px entre ejes, abiertas por abajo. */
 export const HuellaIcon = crearPropio(
   "HuellaIcon",
   <>
-    <path d="M7 19.5c.8-1.6 1.2-3.5 1.2-5.5a3.8 3.8 0 0 1 7.6 0c0 1.2-.1 2.4-.3 3.5" />
-    <path d="M4 15.5c.7-1.4 1-2.9 1-4.5a7 7 0 0 1 14 0c0 .9 0 1.9-.2 2.8" />
-    <path d="M12 14c0 2.2-.4 4.2-1.2 6" />
-    <path d="M8 4.7A9 9 0 0 1 21 11c0 1.4-.1 2.8-.4 4.1" />
-    <path d="M15.5 20.3c.4-.9.7-1.8.9-2.8" />
+    <path d="M3 16v-4a9 9 0 0 1 18 0v1" />
+    <path d="M21 16.5v2.5" />
+    <path d="M6 20v-8a6 6 0 0 1 12 0v5" />
+    <path d="M9 21v-9a3 3 0 0 1 6 0v6" />
+    <path d="M12 14v7" />
   </>,
 );
 
-/** Sello de tiempo: doble anillo de sello con las manecillas de un reloj. */
+/** Sello de tiempo: borde dentado, anillo interior y las manecillas de un reloj. */
 export const SelloIcon = crearPropio(
   "SelloIcon",
   <>
-    <circle cx="12" cy="12" r="9.25" />
-    <circle cx="12" cy="12" r="6.5" />
-    <path d="M12 8.5V12l2.5 1.5" />
+    <path d="M12 2.2L14.17 3.89L16.9 3.51L17.94 6.06L20.49 7.1L20.11 9.83L21.8 12L20.11 14.17L20.49 16.9L17.94 17.94L16.9 20.49L14.17 20.11L12 21.8L9.83 20.11L7.1 20.49L6.06 17.94L3.51 16.9L3.89 14.17L2.2 12L3.89 9.83L3.51 7.1L6.06 6.06L7.1 3.51L9.83 3.89z" />
+    <path d="M12 8v4l2.5 1.5" />
   </>,
 );
 
-/** Cadena de custodia: dos eslabones unidos entre sí. */
+/** Cadena de custodia: dos eslabones inclinados que se enlazan por el centro. */
 export const CadenaIcon = crearPropio(
   "CadenaIcon",
   <>
-    <rect x="2.5" y="8.5" width="11" height="7" rx="3.5" />
-    <rect x="10.5" y="8.5" width="11" height="7" rx="3.5" />
+    <rect
+      x="3"
+      y="11.5"
+      width="12"
+      height="7"
+      rx="3.5"
+      transform="rotate(-45 9 15)"
+    />
+    <rect
+      x="9"
+      y="5.5"
+      width="12"
+      height="7"
+      rx="3.5"
+      transform="rotate(-45 15 9)"
+    />
   </>,
 );
 
