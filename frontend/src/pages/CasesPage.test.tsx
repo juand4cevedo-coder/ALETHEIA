@@ -182,6 +182,36 @@ describe("Libro de casos (HU-017)", () => {
     );
   });
 
+  it("antes del primer caso no promete lo que aún no existe", async () => {
+    serve("lawyer", () => EMPTY);
+    await openBook();
+    await screen.findByRole("link", { name: "Abrir mi primer caso" });
+
+    // Lo que ya ocurre se dice en presente; lo de la evidencia, que aún no se sube, en futuro.
+    expect(
+      screen.getByText(
+        "Cada caso recibe su propia llave de cifrado en el momento en que se abre.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText((text) =>
+        text.startsWith(
+          "La evidencia que suba se guardará tal como llegó, cifrada con la llave del caso.",
+        ),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText((text) =>
+        text.startsWith(
+          "Cada acción sobre el caso queda en su cadena de custodia",
+        ),
+      ),
+    ).toBeInTheDocument();
+    // Ni eliminar casos ni destruir llaves existe todavía.
+    expect(document.body).not.toHaveTextContent(/elimin|destru|ilegible/i);
+    expect(document.body).not.toHaveTextContent(/Guardamos/);
+  });
+
   it("un asistente sin casos ve el texto para asistentes y no ve el botón", async () => {
     serve("assistant", () => EMPTY);
     await openBook();
@@ -306,14 +336,19 @@ describe("Libro de casos (HU-017)", () => {
     const segments = await screen.findByRole("radiogroup", {
       name: "Estado de los casos",
     });
-    const open = within(segments).getByRole("radio", { name: /Abiertos/ });
+    // El conteo visible no se pega al nombre: se lee «Abiertos, 3 casos», no «Abiertos3».
+    const open = within(segments).getByRole("radio", {
+      name: "Abiertos, 3 casos",
+    });
     expect(open).toBeChecked();
     expect(open.closest("label")).toHaveTextContent("3");
-    const closed = within(segments).getByRole("radio", { name: /Cerrados/ });
+    const closed = within(segments).getByRole("radio", {
+      name: "Cerrados, 1 caso",
+    });
     expect(closed.closest("label")).toHaveTextContent("1");
     expect(
-      within(segments).getByRole("radio", { name: /Todos/ }).closest("label"),
-    ).toHaveTextContent("4");
+      within(segments).getByRole("radio", { name: "Todos, 4 casos" }),
+    ).toBeInTheDocument();
 
     await user.click(closed);
 
@@ -324,6 +359,64 @@ describe("Libro de casos (HU-017)", () => {
     expect(bookRequests().map((query) => query.get("status"))).toEqual([
       "open",
       "closed",
+    ]);
+  });
+
+  it("el segmento queda en la dirección y se conserva al volver de un caso", async () => {
+    serve("lawyer", (query) =>
+      query.get("status") === "all"
+        ? { items: [TORRES, ARCHIVED], next_cursor: null, totals: TOTALS }
+        : BOOK,
+    );
+    const user = userEvent.setup();
+    const { router } = await openBook();
+
+    await user.click(
+      await screen.findByRole("radio", { name: "Todos, 4 casos" }),
+    );
+    await waitFor(() =>
+      expect(router.state.location.search).toBe("?estado=todos"),
+    );
+    await screen.findByRole("table", { name: /Todos los casos/ });
+
+    await router.navigate("/app/casos/01890a5d-ac96-774b-bcce-b302099a8090");
+    await router.navigate(-1);
+
+    expect(
+      await screen.findByRole("radio", { name: "Todos, 4 casos" }),
+    ).toBeChecked();
+    expect(router.state.location.search).toBe("?estado=todos");
+  });
+
+  it("la dirección elige el segmento", async () => {
+    serve("lawyer", (query) =>
+      query.get("status") === "closed"
+        ? { items: [ARCHIVED], next_cursor: null, totals: TOTALS }
+        : BOOK,
+    );
+    await renderRoute("/app/casos?estado=cerrados");
+
+    expect(
+      await screen.findByRole("radio", { name: "Cerrados, 1 caso" }),
+    ).toBeChecked();
+    expect(
+      await screen.findByRole("table", { name: /Casos cerrados/ }),
+    ).toBeInTheDocument();
+    expect(bookRequests().map((query) => query.get("status"))).toEqual([
+      "closed",
+    ]);
+  });
+
+  it("un estado desconocido en la dirección muestra los abiertos", async () => {
+    serve("lawyer", () => BOOK);
+    await renderRoute("/app/casos?estado=archivados");
+
+    expect(
+      await screen.findByRole("radio", { name: "Abiertos, 3 casos" }),
+    ).toBeChecked();
+    await screen.findByRole("table", { name: /Casos abiertos/ });
+    expect(bookRequests().map((query) => query.get("status"))).toEqual([
+      "open",
     ]);
   });
 

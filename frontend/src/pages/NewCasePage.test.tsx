@@ -118,6 +118,50 @@ describe("Abrir un caso (HU-015)", () => {
     });
   });
 
+  it("al abrir el caso vuelve a pedir la lista de casos", async () => {
+    const book = {
+      items: [],
+      next_cursor: null,
+      totals: {
+        open: 0,
+        closed: 0,
+        evidences: 0,
+        pending_stamps: 0,
+        custody_events: 0,
+      },
+    };
+    serve("lawyer", {
+      "GET /api/v1/cases": () => jsonResponse(book),
+      "POST /api/v1/cases": () => jsonResponse(CREATED, 201),
+      [`GET /api/v1/cases/${CASE_ID}`]: () =>
+        jsonResponse({ ...CREATED, members: [], recent_events: [] }),
+    });
+    const user = userEvent.setup();
+    const { router } = await renderRoute("/app/casos/nuevo");
+    const calls = () =>
+      fetchMock.mock.calls.map(([input]) => {
+        const request = input as Request;
+        return `${request.method} ${new URL(request.url).pathname}`;
+      });
+    // El conteo del menú ya pidió la lista antes de abrir el caso.
+    await waitFor(() => expect(calls()).toContain("GET /api/v1/cases"));
+
+    await user.type(
+      await screen.findByLabelText("Título del caso"),
+      "Despido sin justa causa · Torres",
+    );
+    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(`/app/casos/${CASE_ID}`),
+    );
+
+    // Después del POST, la lista ya no está al día y se vuelve a pedir.
+    await waitFor(() => {
+      const after = calls().slice(calls().indexOf("POST /api/v1/cases") + 1);
+      expect(after).toContain("GET /api/v1/cases");
+    });
+  });
+
   it("desglosa el radicado mientras se escribe y avisa si no tiene 23 dígitos", async () => {
     serve("owner");
     const user = userEvent.setup();
