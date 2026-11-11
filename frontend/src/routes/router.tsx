@@ -10,6 +10,7 @@ import {
   loadAccountPage,
   loadAppShell,
   loadAuthLayout,
+  loadCasePage,
   loadForgotPasswordPage,
   loadLegalPage,
   loadMembersPage,
@@ -131,6 +132,11 @@ export const routes: RouteObject[] = [
       {
         path: ROUTES.newCase.slice(ROUTES.app.length + 1),
         lazy: { Component: loadNewCasePage },
+      },
+      {
+        // El segmento fijo «nuevo» gana sobre :caseId, así que el orden no importa.
+        path: "casos/:caseId",
+        lazy: { Component: loadCasePage },
       },
     ],
   },

@@ -17,6 +17,8 @@ export const MESSAGES = {
     "Hizo varios intentos seguidos. Espere 15 minutos e inténtelo de nuevo.",
   /** MSG-005. Contraseña corta (RN-025). */
   passwordTooShort: "La contraseña debe tener al menos 12 caracteres.",
+  /** MSG-011. Lo pedido no existe o es de otra organización; no revela cuál de los dos es. */
+  notFound: "No encontramos lo que busca o no tiene acceso a ello.",
   /** MSG-012. Sesión expirada (UI-027, NAV-004). */
   sessionExpired:
     "Su sesión terminó por seguridad. Ingrese de nuevo para continuar donde iba.",
