@@ -1,47 +1,71 @@
-"""Diseño común de los correos de ALETHEIA: una columna con los colores del sitio.
+"""Diseño común de los correos de ALETHEIA: una columna clara con los colores de la marca.
 
-Los clientes de correo ignoran las hojas de estilo, así que todo va con estilos en línea. Los
-textos llegan ya escapados; aquí solo se escapan el botón y su enlace.
+Los clientes de correo ignoran las hojas de estilo y casi nunca cargan tipografías propias, así
+que todo va con estilos en línea y una pila de fuentes del sistema. Los textos llegan ya
+escapados; aquí solo se escapan el botón y su enlace.
 """
 
 import html
 from typing import Final
 
-# Colores del sitio: el correo se lee como parte del mismo producto.
-_PAGE: Final = "#070b14"
-_CARD: Final = "#0e1626"
-_TEXT: Final = "#e8eef7"
-_MUTED: Final = "#9aa8bd"
-_ACTION: Final = "#6cb8f0"
-_ACTION_TEXT: Final = "#04101f"
+# Paleta sobre fondo claro. Contrastes sobre blanco (WCAG): texto 19,2:1, texto secundario
+# 10,2:1, apoyo 6,0:1 (5,5:1 sobre la página); texto blanco sobre el botón 6,5:1.
+_PAGE: Final = "#F4F5F7"
+_CARD: Final = "#FFFFFF"
+_LINE: Final = "#E1E4EA"
+_TEXT: Final = "#0D0F13"
+_TEXT_2: Final = "#3A4150"
+_MUTED: Final = "#5B6475"
+_ACTION: Final = "#5544D8"
+_ACTION_TEXT: Final = "#FFFFFF"
+_FONT: Final = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
+
+# El logo se sirve desde una ruta pública estable del sitio: un PNG de 64 px que se muestra a
+# 32 px, porque muchos clientes de correo no dibujan SVG.
+LOGO_PATH: Final = "/email/logo-claro.png"
+_LOGO_SIZE: Final = 32
 
 
 def email_layout(
-    greeting: str, paragraphs: list[str], action: tuple[str, str], closing: str
+    greeting: str,
+    paragraphs: list[str],
+    action: tuple[str, str],
+    closing: str,
+    *,
+    site_url: str,
 ) -> str:
-    """Un correo de una columna. Los textos ya llegan escapados."""
+    """Un correo de una columna. Los textos ya llegan escapados; `site_url` es la dirección
+    pública del sitio, de donde sale el logo."""
     label, url = action
+    logo = html.escape(f"{site_url}{LOGO_PATH}")
     body = "".join(
-        f'<p style="margin:0 0 16px;color:{_TEXT};font-size:16px;line-height:24px">{text}</p>'
+        f'<p style="margin:0 0 16px;color:{_TEXT_2};font-size:16px;line-height:24px">{text}</p>'
         for text in paragraphs
     )
     button = (
-        f'<p style="margin:24px 0"><a href="{html.escape(url)}" style="display:inline-block;'
-        f"padding:12px 20px;border-radius:6px;background:{_ACTION};color:{_ACTION_TEXT};"
-        f'font-weight:600;text-decoration:none">{html.escape(label)}</a></p>'
+        f'<p style="margin:24px 0 28px"><a href="{html.escape(url)}" style="display:inline-block;'
+        f"padding:12px 22px;border-radius:6px;background:{_ACTION};color:{_ACTION_TEXT};"
+        f'font-size:16px;font-weight:600;line-height:24px;text-decoration:none">'
+        f"{html.escape(label)}</a></p>"
     )
     return (
-        '<!doctype html><html lang="es"><body style="margin:0;padding:0;'
-        f'background:{_PAGE}">'
+        '<!doctype html><html lang="es"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+        f'<body style="margin:0;padding:0;background:{_PAGE}">'
         '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
         f'style="background:{_PAGE};padding:32px 16px"><tr><td align="center">'
         '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
-        f'style="max-width:560px;background:{_CARD};border-radius:12px;padding:32px;'
-        'font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif">'
-        f'<tr><td><p style="margin:0 0 24px;color:{_TEXT};font-size:14px;font-weight:700;'
-        'letter-spacing:0.08em">ALETHEIA</p>'
+        f'style="max-width:560px;background:{_CARD};border:1px solid {_LINE};'
+        f'border-radius:8px;font-family:{_FONT}">'
+        '<tr><td style="padding:32px">'
+        '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 28px"><tr>'
+        f'<td style="padding:0 10px 0 0"><img src="{logo}" width="{_LOGO_SIZE}" '
+        f'height="{_LOGO_SIZE}" alt="" style="display:block;border:0"></td>'
+        f'<td style="color:{_TEXT};font-size:20px;font-weight:600;line-height:32px">Aletheia</td>'
+        "</tr></table>"
         f'<p style="margin:0 0 16px;color:{_TEXT};font-size:16px;line-height:24px">'
         f"{greeting}</p>{body}{button}"
-        f'<p style="margin:0;color:{_MUTED};font-size:13px;line-height:20px">{closing}</p>'
+        f'<p style="margin:0;padding-top:20px;border-top:1px solid {_LINE};color:{_MUTED};'
+        f'font-size:14px;line-height:22px">{closing}</p>'
         "</td></tr></table></td></tr></table></body></html>"
     )
