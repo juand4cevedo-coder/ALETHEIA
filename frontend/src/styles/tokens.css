@@ -130,8 +130,11 @@
   --control-height-sm: 32px;
   /* Punto de las insignias de estado y rombo de la cadena de custodia. */
   --dot-size: 6px;
-  /* Anillo de foco de los campos: 3 px de violeta al 18 %. */
-  --ring-focus: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  /* Foco de los campos: el borde violeta se engrosa a 2 px (5,4:1 sobre --surface-1 y 5,8:1
+     sobre --bg) y lo rodea el anillo de 3 px de violeta al 18 %. */
+  --ring-focus:
+    0 0 0 1px var(--accent),
+    0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
 
   /* La única sombra del sistema, solo para menús y diálogos que flotan sobre la página. */
   --shadow-float: 0 12px 32px rgb(0 0 0 / 45%);
@@ -161,6 +164,10 @@
   /* Ancho del menú lateral del espacio de trabajo. */
   --sidebar-width: 224px;
   --header-height: 64px;
+  /* Alto mínimo de las filas de tabla (especificación de identidad, sección 7). */
+  --row-height: 52px;
+  /* Distancia del subrayado de los enlaces al texto. */
+  --underline-offset: 3px;
 }
 
 /* Al imprimir, el puente vuelve a tinta oscura: el papel es blanco y los navegadores no

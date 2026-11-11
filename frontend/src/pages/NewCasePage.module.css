@@ -51,12 +51,9 @@
 
 .help[data-tone="ok"] {
   /* Un radicado bien escrito no es una verificación: el visto va en el color del texto. */
-  color: var(--text);
-}
-
-.help[data-tone="ok"] {
   flex-wrap: nowrap;
   align-items: flex-start;
+  color: var(--text);
 }
 
 .help svg {

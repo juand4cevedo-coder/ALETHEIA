@@ -38,9 +38,12 @@
   color: var(--text);
 }
 
+/* El activo lleva, además de la superficie, una raya violeta de 2 px a la izquierda (5,1:1
+   sobre --surface-2): es el enlace activo, uno de los usos del violeta. */
 .active,
 .active:hover {
   background: var(--surface-2);
+  box-shadow: inset 2px 0 0 var(--accent);
   color: var(--text);
 }
 
@@ -78,6 +81,12 @@
 
   .count {
     margin-left: 0;
+  }
+
+  /* En la franja la raya del activo va abajo. */
+  .active,
+  .active:hover {
+    box-shadow: inset 0 -2px 0 var(--accent);
   }
 }
 

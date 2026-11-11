@@ -64,6 +64,7 @@
   gap: var(--space-2);
   min-height: var(--control-height-sm);
   padding: 0 var(--space-3);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   color: var(--text-2);
   font-size: var(--font-size-support);
@@ -86,7 +87,10 @@
   cursor: pointer;
 }
 
+/* El segmento elegido lleva borde --line-control (3,5:1 sobre --surface-1, 3,3:1 sobre
+   --surface-2): la superficie sola no se distingue. */
 .segment:has(.segmentInput:checked) {
+  border-color: var(--line-control);
   background: var(--surface-2);
   color: var(--text);
 }
@@ -224,7 +228,7 @@
 /* Filas de 52 px como mínimo; las que llevan radicado debajo del título crecen. */
 .row {
   position: relative;
-  height: 52px;
+  height: var(--row-height);
   border-top: 1px solid var(--line);
   transition: background-color var(--motion-fast) var(--ease-standard);
 }
@@ -304,7 +308,7 @@
 
 .title:hover {
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: var(--underline-offset);
 }
 
 .title:focus-visible {
