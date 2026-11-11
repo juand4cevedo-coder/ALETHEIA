@@ -21,7 +21,7 @@ type CustodyTimelineProps = {
 };
 
 // Cadena de custodia del caso (maqueta 03): cada evento con su número, quién lo hizo, la hora
-// exacta en Colombia y su hash abreviado, y al final el hueco del siguiente eslabón. No dice que
+// exacta en Colombia y su huella abreviada, y al final el hueco del siguiente eslabón. No dice que
 // la cadena esté íntegra: eso solo lo puede afirmar el verificador independiente (HU-024).
 export function CustodyTimeline({
   events,
@@ -52,12 +52,12 @@ export function CustodyTimeline({
                 <span className={styles.hashLabel} aria-hidden="true">
                   {`#${event.seq}`}
                 </span>
-                <span className="visually-hidden">Hash del evento:</span>{" "}
+                <span className="visually-hidden">Huella del evento:</span>{" "}
                 <code translate="no">
                   <span aria-hidden="true">
                     {`${abbreviateHash(event.event_hash).head} `}
                     <span className={styles.elision} />
-                    {` ${abbreviateHash(event.event_hash).tail}`}
+                    {abbreviateHash(event.event_hash).tail}
                   </span>
                   <span className="visually-hidden">
                     {event.event_hash.toLowerCase()}

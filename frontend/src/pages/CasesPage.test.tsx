@@ -170,7 +170,7 @@ describe("Libro de casos (HU-017)", () => {
     expect(
       await screen.findByRole("heading", {
         level: 2,
-        name: "Todavía no tiene casos.",
+        name: "Todavía no tiene casos",
       }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();

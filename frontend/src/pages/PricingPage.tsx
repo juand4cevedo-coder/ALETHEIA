@@ -38,7 +38,7 @@ export function PricingPage() {
       <title>{pageTitle("Planes y precios")}</title>
       <meta
         name="description"
-        content="Planes de ALETHEIA para abogados independientes y firmas: precio mensual o anual, usuarios, almacenamiento y tamaño de archivo."
+        content="Precios de ALETHEIA en pesos colombianos, con pago mensual o anual. Cada plan cambia en usuarios incluidos, almacenamiento y tamaño máximo por archivo."
       />
       <link rel="canonical" href={`${SITE_URL}/precios`} />
 
@@ -48,8 +48,9 @@ export function PricingPage() {
             Planes y precios
           </h1>
           <p className={styles.lead}>
-            La preservación es la misma en todos los planes. Cambian el
-            almacenamiento y el número de usuarios.
+            Todos los planes preservan la evidencia de la misma forma. Cambian
+            los usuarios incluidos, el almacenamiento y el tamaño máximo de cada
+            archivo.
           </p>
 
           <fieldset className={styles.cycle}>

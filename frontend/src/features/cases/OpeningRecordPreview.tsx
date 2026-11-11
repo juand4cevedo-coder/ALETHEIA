@@ -82,14 +82,14 @@ export function OpeningRecordPreview({
             </p>
             <dl className={styles.hashes}>
               <div>
-                <dt>Hash anterior</dt>
+                <dt>Huella anterior</dt>
                 <dd>
                   <code translate="no">{GENESIS_PREFIX}</code>, porque es el
                   inicio de la cadena
                 </dd>
               </div>
               <div>
-                <dt>Hash del evento</dt>
+                <dt>Huella del evento</dt>
                 <dd>Se calcula al abrir el caso</dd>
               </div>
             </dl>
@@ -98,9 +98,9 @@ export function OpeningRecordPreview({
         <p className={styles.key}>
           <LlaveIcon size={16} aria-hidden="true" />
           <span>
-            Llave de cifrado propia del caso (AES-256-GCM), protegida por el
+            Este caso tiene su propia llave de cifrado. Se guarda cifrada con
+            una llave maestra que está fuera de la base de datos.
           </span>
-          <code translate="no">KMS</code>
         </p>
       </article>
       <p className={styles.footnote}>

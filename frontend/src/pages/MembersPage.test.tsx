@@ -372,7 +372,7 @@ describe("Cambiar el rol y retirar (UI-021, HU-013)", () => {
     expect(select).toHaveValue("lawyer");
     await user.selectOptions(select, "assistant");
     expect(
-      within(dialog).getByText(/Apoya los casos que le asignan/),
+      within(dialog).getByText(/Trabaja en los casos que le asignen/),
     ).toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("button", { name: "Guardar el rol" }),

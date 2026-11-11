@@ -247,8 +247,8 @@ function CaseView({
                 Cadena de custodia
               </h2>
               <p className={styles.caption}>
-                Cada evento lleva el hash del anterior. Si alguien alterara uno,
-                la cadena dejaría de cuadrar.
+                Cada evento lleva la huella del anterior. Si alguien alterara
+                uno, la cadena dejaría de cuadrar.
               </p>
               <CustodyTimeline
                 events={detail.recent_events}

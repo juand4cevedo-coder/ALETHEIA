@@ -300,7 +300,7 @@ function AcceptForm({
         <div className={styles.submit}>
           <Button type="submit" block busy={accept.isPending}>
             {accept.isPending
-              ? "Entrando"
+              ? "Ingresando"
               : isNew
                 ? "Crear mi cuenta y entrar"
                 : "Aceptar la invitación"}

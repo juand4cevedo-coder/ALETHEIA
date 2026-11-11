@@ -162,7 +162,7 @@ export function SignInPage() {
             Ingrese a su cuenta
           </h1>
           <p className={styles.lead}>
-            Use el correo y la contraseña con los que se registró.
+            Use el correo y la contraseña de su cuenta.
           </p>
         </header>
 
@@ -223,9 +223,7 @@ export function SignInPage() {
 
           <div className={styles.submit}>
             <Button type="submit" block busy={signIn.isPending || signedIn}>
-              {signIn.isPending || signedIn
-                ? "Comprobando los datos"
-                : "Ingresar"}
+              {signIn.isPending || signedIn ? "Ingresando" : "Ingresar"}
             </Button>
           </div>
         </form>

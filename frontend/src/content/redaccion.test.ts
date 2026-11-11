@@ -39,6 +39,30 @@ function inScope(path: string): boolean {
   return !PENDING.some((pending) => rel === pending || rel.startsWith(pending));
 }
 
+// Entidades HTML con nombre de los caracteres prohibidos. El texto de JSX y sus atributos las
+// muestran decodificadas, así que se decodifican antes de revisar.
+const NAMED_ENTITIES: Record<string, string> = {
+  middot: "·",
+  sect: "§",
+  mdash: "—",
+  ndash: "–",
+  hellip: "…",
+  rarr: "→",
+  minus: "−",
+};
+
+/** Decodifica las entidades con nombre de la lista y las numéricas (&#8230; y &#x2026;). */
+function decodeEntities(text: string): string {
+  return text.replace(
+    /&(?:#(\d+)|#[xX]([0-9a-fA-F]+)|([a-zA-Z]+));/g,
+    (match, decimal?: string, hex?: string, name?: string) => {
+      if (decimal) return String.fromCodePoint(Number(decimal));
+      if (hex) return String.fromCodePoint(parseInt(hex, 16));
+      return NAMED_ENTITIES[name ?? ""] ?? match;
+    },
+  );
+}
+
 /** Los textos de un archivo que pueden llegar a la pantalla: literales de cadena, plantillas y
  * texto de JSX. Las rutas de import y export no se muestran y se saltan. */
 function visibleTexts(
@@ -61,7 +85,13 @@ function visibleTexts(
 
   function visit(node: ts.Node) {
     if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) return;
-    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+    if (ts.isStringLiteral(node) && ts.isJsxAttribute(node.parent)) {
+      // TypeScript entrega el atributo sin decodificar: «&middot;» llega tal cual.
+      add(node, decodeEntities(node.text));
+    } else if (
+      ts.isStringLiteral(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node)
+    ) {
       add(node, node.text);
     } else if (ts.isTemplateExpression(node)) {
       add(
@@ -72,7 +102,7 @@ function visibleTexts(
         ].join(""),
       );
     } else if (ts.isJsxText(node)) {
-      add(node, node.text);
+      add(node, decodeEntities(node.text));
     }
     ts.forEachChild(node, visit);
   }
@@ -108,7 +138,7 @@ describe("redacción de la interfaz", () => {
     const texts = [
       ...html.matchAll(/<title>([^<]*)<\/title>/g),
       ...html.matchAll(/content="([^"]*)"/g),
-    ].map((match) => match[1]);
+    ].map((match) => decodeEntities(match[1]!));
     expect(texts.filter((text) => offenders(text).length > 0)).toEqual([]);
   });
 
@@ -120,5 +150,13 @@ describe("redacción de la interfaz", () => {
       'const a = <p title="Uno · dos">Cargando…</p>; // comentario con — que no cuenta',
     ).map(({ text }) => text);
     expect(texts.flatMap(offenders)).toEqual(["·", "…"]);
+  });
+
+  it("la prueba detecta los caracteres prohibidos escritos como entidades HTML", () => {
+    const texts = visibleTexts(
+      "control.tsx",
+      'const a = <p title="a &middot; b" aria-label="x &#x2192; y">Cargando&hellip; &#8212; &#183;</p>;',
+    ).map(({ text }) => text);
+    expect(texts.map(offenders)).toEqual([["·"], ["→"], ["·", "—", "…"]]);
   });
 });

@@ -53,7 +53,7 @@ export function Hash({ value, variant = "full", copyable = true }: HashProps) {
           <span aria-hidden="true">
             {`${blocks.slice(0, 2).join(" ")} `}
             <span className={styles.elision} />
-            {` ${blocks.at(-1)}`}
+            {blocks.at(-1)}
           </span>
           <span className="visually-hidden">{normalized}</span>
         </code>
