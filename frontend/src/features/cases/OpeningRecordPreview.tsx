@@ -77,8 +77,8 @@ export function OpeningRecordPreview({
           <div className={styles.event}>
             <p className={styles.eventName}>Caso creado</p>
             <p className={styles.eventNote}>
-              Es el evento 1 de la cadena. Queda con la hora del servidor, en
-              hora de Colombia.
+              Es el evento 1: lo que se haga después en el caso se encadena a
+              él. Queda con la hora del servidor, en hora de Colombia.
             </p>
             <dl className={styles.hashes}>
               <div>
@@ -104,9 +104,8 @@ export function OpeningRecordPreview({
         </p>
       </article>
       <p className={styles.footnote}>
-        El registro de apertura es el primer eslabón. Todo lo que se haga
-        después en el caso se encadena a él. ALETHEIA documenta la preservación;
-        valorar la prueba le corresponde al juez.
+        ALETHEIA documenta la preservación; valorar la prueba le corresponde al
+        juez.
       </p>
     </section>
   );

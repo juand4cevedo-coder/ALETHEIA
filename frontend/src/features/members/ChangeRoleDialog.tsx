@@ -80,7 +80,7 @@ export function ChangeRoleDialog({ member, onClose, onChanged }: Props) {
       onClose={close}
       busy={change.isPending}
       title="Cambiar el rol"
-      icon={<UsuarioAjustesIcon size={22} />}
+      icon={<UsuarioAjustesIcon size={20} />}
       actions={
         <>
           <Button

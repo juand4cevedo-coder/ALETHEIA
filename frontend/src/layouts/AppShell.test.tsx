@@ -88,7 +88,10 @@ describe("Espacio de trabajo protegido (API-014)", () => {
     });
     reintentar.click();
 
-    expect(await screen.findByText("Verificado")).toBeInTheDocument();
+    const verified = await screen.findByText("Verificado");
+    // Un correo confirmado no es una evidencia verificada: la insignia no usa el tono verde.
+    expect(verified.closest("[data-tone]")).toBeNull();
+    expect(document.querySelector("[data-tone='ok']")).toBeNull();
   });
 });
 

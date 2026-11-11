@@ -28,7 +28,7 @@ export function RemoveMemberDialog({
       onClose={onClose}
       busy={busy}
       title="¿Retirar a esta persona?"
-      icon={<UsuarioQuitarIcon size={22} />}
+      icon={<UsuarioQuitarIcon size={20} />}
       actions={
         <>
           <Button

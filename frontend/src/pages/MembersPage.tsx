@@ -17,6 +17,7 @@ import {
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
+import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
@@ -28,11 +29,7 @@ import { RemoveMemberDialog } from "../features/members/RemoveMemberDialog.tsx";
 import { RevokeInvitationDialog } from "../features/members/RevokeInvitationDialog.tsx";
 import { managesTeam, ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./MembersPage.module.css";
-import {
-  CorreoIcon,
-  RelojIcon,
-  UsuariosIcon,
-} from "../components/ui/icons.tsx";
+import { CorreoIcon } from "../components/ui/icons.tsx";
 
 // MSG-010 del catálogo de mensajes.
 const NOT_ALLOWED =
@@ -51,28 +48,31 @@ export function MembersPage() {
   const me = useOutletContext<Me>();
 
   return (
-    <section className={styles.screen} aria-labelledby="titulo-miembros">
+    <div className={styles.screen}>
       <title>{pageTitle("Miembros")}</title>
       <meta name="robots" content="noindex" />
-
-      <header className={styles.intro}>
-        <p className={styles.eyebrow}>Su equipo</p>
-        <h1 id="titulo-miembros" className={styles.title}>
-          Miembros
-        </h1>
-        <p className={styles.lead}>
-          Cada persona entra con su propio acceso. Lo que ve depende de su rol.
-        </p>
-      </header>
 
       {managesTeam(me.organization?.role) ? (
         <Team currentUserId={me.id} />
       ) : (
-        <Notice tone="error">
-          <p>{NOT_ALLOWED}</p>
-        </Notice>
+        <>
+          <Header />
+          <Notice tone="error">
+            <p>{NOT_ALLOWED}</p>
+          </Notice>
+        </>
       )}
-    </section>
+    </div>
+  );
+}
+
+function Header({ action }: { action?: ReactNode }) {
+  return (
+    <PageHeader
+      title="Miembros"
+      description="Cada persona entra con su propio acceso. Lo que ve depende de su rol."
+      actions={action}
+    />
   );
 }
 
@@ -144,8 +144,27 @@ function Team({ currentUserId }: { currentUserId: string }) {
   const invitationRows =
     invitations.data?.pages.flatMap((page) => page.items) ?? [];
 
+  // Invitar es la acción que se espera aquí: va arriba, como «Abrir un caso» en Casos. Mientras
+  // carga el cupo o con el plan lleno no se ofrece; el aviso del cupo dice cómo seguir.
+  const invite =
+    seats && !seats.full ? (
+      <Button
+        size="sm"
+        onClick={() => {
+          setSent(null);
+          setRemoved(null);
+          setInviting(true);
+        }}
+      >
+        <CorreoIcon size={16} aria-hidden="true" />
+        Invitar a una persona
+      </Button>
+    ) : undefined;
+
   return (
     <>
+      <Header action={invite} />
+
       {sent && (
         <Notice tone="success">
           Enviamos la invitación a <strong translate="no">{sent.email}</strong>.
@@ -160,21 +179,9 @@ function Team({ currentUserId }: { currentUserId: string }) {
         </Notice>
       )}
 
-      <SeatsBar
-        seats={seats}
-        loading={members.isPending}
-        onInvite={() => {
-          setSent(null);
-          setRemoved(null);
-          setInviting(true);
-        }}
-      />
+      <SeatsBar seats={seats} loading={members.isPending} />
 
-      <Card
-        icon={<UsuariosIcon size={20} />}
-        title="Personas"
-        description="Quienes ya ingresan a la organización, en el orden en que llegaron."
-      >
+      <Card title="Personas">
         {members.isError ? (
           <LoadError
             error={members.error}
@@ -245,11 +252,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
         )}
       </Card>
 
-      <Card
-        icon={<RelojIcon size={20} />}
-        title="Invitaciones pendientes"
-        description="Cada invitación ocupa un cupo mientras siga pendiente. Vence a las 72 horas si nadie la acepta."
-      >
+      <Card title="Invitaciones pendientes">
         {invitations.isError ? (
           <LoadError
             error={invitations.error}
@@ -263,7 +266,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
             aquí hasta que acepte.
           </p>
         ) : (
-          <ul className={styles.rows}>
+          <ul className={styles.rows} data-kind="invitations">
             {invitationRows.map((invitation) => (
               <li key={invitation.id} className={styles.row}>
                 <span className={styles.who}>
@@ -361,19 +364,18 @@ function isManageable(member: MemberOut, currentUserId: string): boolean {
   return member.role !== "owner" && member.user_id !== currentUserId;
 }
 
-// Cupo del plan (RN-012): cuántas personas e invitaciones caben y el botón para invitar. Con el
-// plan lleno, el botón no se muestra y el aviso dice cómo seguir (FLU-003, E1).
+// Cupo del plan (RN-012): cuántas personas e invitaciones caben. Con el plan lleno, el botón de
+// invitar no se muestra y el aviso, debajo del cupo, dice cómo seguir (FLU-003, E1).
 function SeatsBar({
   seats,
   loading,
-  onInvite,
 }: {
   seats: SeatsOut | undefined;
   loading: boolean;
-  onInvite: () => void;
 }) {
   const meterId = useId();
   if (loading || !seats) {
+    // Reserva el alto del cupo para que la página no salte cuando llega.
     return <div className={styles.seats} aria-hidden="true" />;
   }
   const unlimited = seats.extra_user_price_cop !== null;
@@ -381,16 +383,18 @@ function SeatsBar({
   const users = seats.included === 1 ? "usuario" : "usuarios";
 
   return (
-    <div className={styles.seats}>
-      <div className={styles.seatsText}>
-        <p id={meterId} className={styles.seatsCount}>
-          <strong>{seats.used}</strong> de {seats.included} {users} en uso
-        </p>
-        <p className={styles.seatsHint}>
-          {unlimited
-            ? "Su plan admite usuarios adicionales con cobro mensual."
-            : "Cuentan los miembros y las invitaciones que siguen abiertas."}
-        </p>
+    <>
+      <div className={styles.seats}>
+        <div className={styles.seatsText}>
+          <p id={meterId} className={styles.seatsCount}>
+            <strong>{seats.used}</strong> de {seats.included} {users} en uso
+          </p>
+          <p className={styles.seatsHint}>
+            {unlimited
+              ? "Su plan admite usuarios adicionales con cobro mensual."
+              : "Cuentan los miembros y las invitaciones que siguen abiertas."}
+          </p>
+        </div>
         <span
           className={styles.meter}
           role="meter"
@@ -403,7 +407,7 @@ function SeatsBar({
           <span style={{ inlineSize: `${ratio * 100}%` }} />
         </span>
       </div>
-      {seats.full ? (
+      {seats.full && (
         <Notice tone="warning">
           <p>
             Su plan ya no tiene cupo. Para invitar a alguien más,{" "}
@@ -411,41 +415,19 @@ function SeatsBar({
             invitación pendiente.
           </p>
         </Notice>
-      ) : (
-        <Button onClick={onInvite}>
-          <CorreoIcon size={18} aria-hidden="true" />
-          Invitar a una persona
-        </Button>
       )}
-    </div>
+    </>
   );
 }
 
-function Card({
-  icon,
-  title,
-  description,
-  children,
-}: {
-  icon: ReactNode;
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
+// Un panel por lista: el título arriba y las filas de borde a borde, como el libro de casos.
+function Card({ title, children }: { title: string; children: ReactNode }) {
   const titleId = useId();
   return (
     <section className={styles.card} aria-labelledby={titleId}>
-      <div className={styles.cardHead}>
-        <span className={styles.cardIcon} aria-hidden="true">
-          {icon}
-        </span>
-        <div>
-          <h2 id={titleId} className={styles.cardTitle}>
-            {title}
-          </h2>
-          <p className={styles.cardText}>{description}</p>
-        </div>
-      </div>
+      <h2 id={titleId} className={styles.cardTitle}>
+        {title}
+      </h2>
       {children}
     </section>
   );

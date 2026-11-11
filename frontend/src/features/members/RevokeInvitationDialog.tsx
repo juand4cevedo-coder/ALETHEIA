@@ -27,7 +27,7 @@ export function RevokeInvitationDialog({
       onClose={onClose}
       busy={busy}
       title="¿Revocar la invitación?"
-      icon={<CorreoIcon size={22} />}
+      icon={<CorreoIcon size={20} />}
       actions={
         <>
           <Button

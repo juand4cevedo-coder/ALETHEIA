@@ -1,5 +1,5 @@
 /* Libro de casos (maquetas 01 y 04): la franja de la custodia, las herramientas de la lista y el
-   libro, una tabla sobria con filas que se iluminan desde la izquierda al pasar. */
+   libro, una tabla sobria cuya fila se resalta al pasar. */
 .screen {
   display: grid;
   gap: var(--space-6);
@@ -9,9 +9,11 @@
 .loading {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   margin: 0;
-  color: var(--color-text-inverse-muted);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .book > .loading {
@@ -37,7 +39,7 @@
 .failure {
   display: grid;
   gap: var(--space-4);
-  max-width: 720px;
+  max-width: var(--column-width);
 }
 
 /* ---------- Herramientas de la lista ---------- */
@@ -75,7 +77,7 @@
 }
 
 .segment:hover {
-  color: var(--color-text-inverse);
+  color: var(--text);
 }
 
 /* El radio nativo da el teclado (flechas) y la semántica; se ve el segmento. */
@@ -101,31 +103,33 @@
 }
 
 .segmentCount {
-  color: var(--color-text-inverse-muted);
-  font-family: var(--font-mono);
-  font-size: 11px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
   font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-label);
 }
 
 .filter {
   position: relative;
   display: flex;
   align-items: center;
-  flex: 0 1 300px;
+  flex: 0 1 calc(var(--space-24) * 3);
   min-width: 0;
 }
 
 .filterIcon {
   position: absolute;
   left: var(--space-3);
-  color: var(--color-text-inverse-muted);
+  color: var(--text-3);
   pointer-events: none;
 }
 
 .filterInput {
   width: 100%;
   min-height: var(--control-height);
-  padding: 0 var(--space-3) 0 calc(var(--space-3) + 15px + var(--space-2));
+  /* El texto empieza después del ícono de 16 px. */
+  padding: 0 var(--space-3) 0
+    calc(var(--space-3) + var(--space-4) + var(--space-2));
   border: 1px solid var(--line-control);
   border-radius: var(--radius-md);
   background: var(--surface-1);
@@ -149,12 +153,13 @@
 
 .order {
   margin: 0 0 0 auto;
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
 .order b {
-  color: var(--color-text-inverse);
+  color: var(--text-2);
   font-weight: 500;
 }
 
@@ -178,8 +183,9 @@
 .none {
   margin: 0;
   padding: var(--space-8) var(--space-6);
-  color: var(--color-text-inverse-muted);
-  font-size: 14px;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
   text-align: center;
 }
 
@@ -221,7 +227,9 @@
 .table thead th:nth-child(5) {
   /* Fijo, para que la insignia «Sin verificar» y el chevron quepan siempre, uno al lado del
      otro, a cualquier ancho de escritorio: un porcentaje los cortaba o los encimaba. */
-  width: calc(var(--space-3) + 7.5rem + var(--space-2) + 16px + var(--space-4));
+  width: calc(
+    var(--space-3) + 7.5rem + var(--space-2) + var(--space-4) + var(--space-4)
+  );
 }
 
 /* Toda la fila lleva al caso: el enlace del título se extiende sobre ella (ver .title::after). */
@@ -268,8 +276,8 @@
 
 .chevron {
   flex: none;
-  color: var(--color-text-inverse-muted);
-  transition: transform var(--motion-fast) var(--ease-standard);
+  color: var(--text-3);
+  transition: color var(--motion-fast) var(--ease-standard);
 }
 
 .row:hover .chevron {
@@ -282,16 +290,15 @@
   align-items: center;
   gap: var(--space-1) var(--space-2);
   min-width: 0;
-  margin-bottom: 6px;
+  margin-bottom: var(--space-1);
 }
 
 .title {
   min-width: 0;
-  color: var(--color-text-inverse);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  line-height: 1.35;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
   text-decoration: none;
   overflow-wrap: anywhere;
 }
@@ -340,14 +347,15 @@
 }
 
 .noFiling {
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
 .noFiling b {
-  color: var(--color-text-inverse);
+  color: var(--text-2);
   font-family: var(--font-mono);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 /* La especialidad es una etiqueta, no un estado: va en grafito y sin punto de color. */
@@ -366,32 +374,34 @@
 .court,
 .noCourt {
   display: block;
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
-  line-height: 1.4;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
   overflow-wrap: anywhere;
 }
 
+/* Lo que aún falta se lee más tenue que un dato. */
 .noCourt {
-  font-style: italic;
+  color: var(--text-3);
 }
 
 .evidence {
   display: grid;
-  gap: 3px;
+  gap: var(--space-1);
 }
 
 .evidenceCount {
-  color: var(--color-text-inverse);
-  font-size: 15px;
+  color: var(--text);
+  font-size: var(--font-size-ui);
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: var(--line-height-ui);
 }
 
 .evidenceTypes {
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
-  line-height: 1.4;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
 /* Cada tipo se queda entero en su renglón: «9 chats», nunca «9» y «chats» separados. */
@@ -401,23 +411,22 @@
 
 .chain {
   display: grid;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .when {
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
-  line-height: 1.4;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
 .whenAction {
   display: block;
-  color: var(--color-text-inverse);
+  color: var(--text);
 }
 
 .when time {
-  color: var(--color-text-inverse);
-  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -432,8 +441,9 @@
 
 .moreNote {
   margin: 0;
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
 /* ---------- Antes del primer caso ---------- */
@@ -446,41 +456,33 @@
 
 .principles li {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: var(--space-4);
-  padding: var(--space-3) 0;
-  border-top: 1px solid var(--color-ink-800);
+  gap: var(--space-1);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
 }
 
 .principles li:first-child {
+  padding-top: 0;
   border-top: 0;
 }
 
-.principleNumber {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--color-ink-700);
-  border-radius: var(--radius-md);
-  background: var(--color-ink-850);
-  color: var(--text-2);
-  font-family: var(--font-mono);
-  font-size: 12px;
+.principles li:last-child {
+  padding-bottom: 0;
 }
 
 .principleTitle {
-  margin: 0 0 3px;
-  color: var(--color-text-inverse);
-  font-size: 14px;
-  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
 }
 
 .principleText {
   margin: 0;
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-  line-height: 1.5;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 /* ---------- Tarjetas (900 px o menos) ---------- */
@@ -492,7 +494,7 @@
 }
 
 .cards > li + li {
-  border-top: 1px solid var(--color-ink-800);
+  border-top: 1px solid var(--line);
 }
 
 .card {
@@ -517,11 +519,10 @@
 
 .cardFacts dt {
   margin-bottom: var(--space-1);
-  color: var(--color-text-inverse-muted);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
 .cardFacts dd {
@@ -570,9 +571,5 @@
   .chevron,
   .card {
     transition: none;
-  }
-
-  .row:hover .chevron {
-    transform: none;
   }
 }
