@@ -307,9 +307,11 @@ function CaseFacts({ detail }: { detail: CaseDetail }) {
         </div>
         <div>
           <dt>Estado</dt>
+          {/* Tono neutro: el verde queda para cuando el verificador independiente haya
+              comprobado la cadena (HU-024), nunca por defecto. */}
           <dd>
             {detail.status === "open" ? (
-              <StatusBadge tone="ok">Abierto</StatusBadge>
+              <StatusBadge tone="muted">Abierto</StatusBadge>
             ) : (
               <StatusBadge tone="closed">Cerrado</StatusBadge>
             )}
