@@ -1,4 +1,4 @@
-"""Esquemas para abrir un caso y ver su detalle (API-022 y API-024)."""
+"""Esquemas para abrir un caso, listar los casos y ver su detalle (API-022 a API-024)."""
 
 import datetime
 import re
@@ -20,6 +20,9 @@ PracticeArea = Literal[
     "constitutional",
     "other",
 ]
+
+# Los mismos valores de evidences.declared_type.
+DeclaredType = Literal["chat", "email", "audio", "image", "document", "other"]
 
 # MSG nuevo de la sección 5.3 del diseño: dice cuántos dígitos tiene y cómo revisarlos.
 INVALID_FILING_NUMBER: Final = (
@@ -108,3 +111,53 @@ class CaseDetail(CaseOut):
     recent_events: list[CustodyEventOut] = Field(
         description="Últimos eventos de la cadena, del más reciente al más antiguo."
     )
+
+
+class LastEventOut(BaseModel):
+    """El último evento de la cadena de un caso."""
+
+    action: str = Field(description="Qué ocurrió, por ejemplo evidence_uploaded.")
+    actor_name: str | None = Field(description="Quién lo hizo, o null si fue el sistema.")
+    occurred_at: datetime.datetime = Field(description="Cuándo ocurrió.")
+
+
+class CaseSummaryOut(CaseOut):
+    """Un caso de la lista con su actividad (API-023)."""
+
+    evidence_count: int = Field(description="Evidencias del caso.")
+    evidence_by_type: dict[DeclaredType, int] = Field(
+        description="Evidencias por tipo declarado; solo los tipos que tienen alguna."
+    )
+    member_initials: list[str] = Field(
+        description="Iniciales de las tres primeras personas en llegar al caso.", max_length=3
+    )
+    last_event: LastEventOut | None = Field(
+        description="Último evento de la cadena; null solo si el caso no tiene eventos."
+    )
+    recent_actions: list[str] = Field(
+        description="Acciones de los últimos cinco eventos, el más reciente al final.",
+        max_length=5,
+    )
+    last_activity_at: datetime.datetime = Field(
+        description="Hora del último evento de la cadena; por ella se ordena la lista."
+    )
+
+
+class CaseTotalsOut(BaseModel):
+    """Totales de los casos donde la persona es miembro, sin importar el filtro."""
+
+    open: int = Field(description="Casos abiertos.")
+    closed: int = Field(description="Casos cerrados.")
+    evidences: int = Field(description="Evidencias en esos casos.")
+    pending_stamps: int = Field(description="Evidencias cuyo sello de tiempo está pendiente.")
+    custody_events: int = Field(description="Eventos de custodia de esos casos.")
+
+
+class CasePage(BaseModel):
+    """Una página de los casos de la persona y los totales (API-023)."""
+
+    items: list[CaseSummaryOut] = Field(
+        description="Casos de la actividad más reciente a la más antigua."
+    )
+    next_cursor: str | None = Field(description="Cursor de la página siguiente, o null.")
+    totals: CaseTotalsOut = Field(description="Totales de los casos de la persona.")

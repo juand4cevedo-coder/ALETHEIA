@@ -1330,15 +1330,20 @@
         ],
         "summary": "Abrir un caso",
         "operationId": "create_case",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CaseCreate"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "201": {
@@ -1401,12 +1406,103 @@
               }
             }
           }
-        },
+        }
+      },
+      "get": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Listar los casos donde la persona es miembro, con su actividad",
+        "operationId": "list_cases",
         "security": [
           {
             "sesion": []
           }
-        ]
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "open",
+                "closed",
+                "all"
+              ],
+              "type": "string",
+              "description": "Casos abiertos, cerrados o todos.",
+              "default": "open",
+              "title": "Status"
+            },
+            "description": "Casos abiertos, cerrados o todos."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "next_cursor de la página anterior.",
+              "title": "Cursor"
+            },
+            "description": "next_cursor de la página anterior."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "description": "Casos por página.",
+              "default": 25,
+              "title": "Limit"
+            },
+            "description": "Casos por página."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasePage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/cases/{case_id}": {
@@ -1918,6 +2014,258 @@
         "title": "CaseOut",
         "description": "Un caso abierto."
       },
+      "CasePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CaseSummaryOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Casos de la actividad más reciente a la más antigua."
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Cursor de la página siguiente, o null."
+          },
+          "totals": {
+            "$ref": "#/components/schemas/CaseTotalsOut",
+            "description": "Totales de los casos de la persona."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor",
+          "totals"
+        ],
+        "title": "CasePage",
+        "description": "Una página de los casos de la persona y los totales (API-023)."
+      },
+      "CaseSummaryOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador del caso."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Título del caso."
+          },
+          "filing_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Number",
+            "description": "Los 23 dígitos del radicado, si lo tiene."
+          },
+          "court": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Court",
+            "description": "Despacho que lleva el proceso."
+          },
+          "practice_area": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "civil",
+                  "commercial",
+                  "family",
+                  "labor",
+                  "criminal",
+                  "administrative",
+                  "constitutional",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Practice Area",
+            "description": "Especialidad."
+          },
+          "internal_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internal Reference",
+            "description": "Referencia interna de la oficina."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed"
+            ],
+            "title": "Status",
+            "description": "Si el caso sigue abierto."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Cuándo se abrió."
+          },
+          "created_by_name": {
+            "type": "string",
+            "title": "Created By Name",
+            "description": "Nombre de quien lo abrió."
+          },
+          "member_count": {
+            "type": "integer",
+            "title": "Member Count",
+            "description": "Personas asignadas al caso."
+          },
+          "evidence_count": {
+            "type": "integer",
+            "title": "Evidence Count",
+            "description": "Evidencias del caso."
+          },
+          "evidence_by_type": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "chat",
+                "email",
+                "audio",
+                "image",
+                "document",
+                "other"
+              ]
+            },
+            "type": "object",
+            "title": "Evidence By Type",
+            "description": "Evidencias por tipo declarado; solo los tipos que tienen alguna."
+          },
+          "member_initials": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Member Initials",
+            "description": "Iniciales de las tres primeras personas en llegar al caso."
+          },
+          "last_event": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LastEventOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Último evento de la cadena; null solo si el caso no tiene eventos."
+          },
+          "recent_actions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Recent Actions",
+            "description": "Acciones de los últimos cinco eventos, el más reciente al final."
+          },
+          "last_activity_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Activity At",
+            "description": "Hora del último evento de la cadena; por ella se ordena la lista."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "filing_number",
+          "court",
+          "practice_area",
+          "internal_reference",
+          "status",
+          "created_at",
+          "created_by_name",
+          "member_count",
+          "evidence_count",
+          "evidence_by_type",
+          "member_initials",
+          "last_event",
+          "recent_actions",
+          "last_activity_at"
+        ],
+        "title": "CaseSummaryOut",
+        "description": "Un caso de la lista con su actividad (API-023)."
+      },
+      "CaseTotalsOut": {
+        "properties": {
+          "open": {
+            "type": "integer",
+            "title": "Open",
+            "description": "Casos abiertos."
+          },
+          "closed": {
+            "type": "integer",
+            "title": "Closed",
+            "description": "Casos cerrados."
+          },
+          "evidences": {
+            "type": "integer",
+            "title": "Evidences",
+            "description": "Evidencias en esos casos."
+          },
+          "pending_stamps": {
+            "type": "integer",
+            "title": "Pending Stamps",
+            "description": "Evidencias cuyo sello de tiempo está pendiente."
+          },
+          "custody_events": {
+            "type": "integer",
+            "title": "Custody Events",
+            "description": "Eventos de custodia de esos casos."
+          }
+        },
+        "type": "object",
+        "required": [
+          "open",
+          "closed",
+          "evidences",
+          "pending_stamps",
+          "custody_events"
+        ],
+        "title": "CaseTotalsOut",
+        "description": "Totales de los casos donde la persona es miembro, sin importar el filtro."
+      },
       "ChangePasswordRequest": {
         "properties": {
           "current_password": {
@@ -2243,6 +2591,41 @@
         ],
         "title": "InvitationTokenRequest",
         "description": "El token del enlace de la invitación (API-052)."
+      },
+      "LastEventOut": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "Qué ocurrió, por ejemplo evidence_uploaded."
+          },
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name",
+            "description": "Quién lo hizo, o null si fue el sistema."
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At",
+            "description": "Cuándo ocurrió."
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "actor_name",
+          "occurred_at"
+        ],
+        "title": "LastEventOut",
+        "description": "El último evento de la cadena de un caso."
       },
       "LegalAcceptanceRequest": {
         "properties": {
