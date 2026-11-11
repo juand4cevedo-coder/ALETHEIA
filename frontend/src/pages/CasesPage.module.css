@@ -200,26 +200,28 @@
   text-transform: uppercase;
 }
 
-/* Proporciones de la maqueta: el caso manda, la integridad cierra la fila. */
+/* Proporciones de la maqueta: el caso manda, la integridad cierra la fila. El caso no lleva
+   ancho: toma lo que dejan las demás, y así la integridad puede tener uno fijo. */
 .table thead th:nth-child(1) {
-  width: 31%;
   padding-left: var(--space-6);
 }
 
 .table thead th:nth-child(2) {
-  width: 19%;
+  width: 17%;
 }
 
 .table thead th:nth-child(3) {
-  width: 15%;
+  width: 13%;
 }
 
 .table thead th:nth-child(4) {
-  width: 19%;
+  width: 17%;
 }
 
 .table thead th:nth-child(5) {
-  width: 16%;
+  /* Fijo, para que la insignia «Sin verificar» y el chevron quepan siempre, uno al lado del
+     otro, a cualquier ancho de escritorio: un porcentaje los cortaba o los encimaba. */
+  width: calc(var(--space-3) + 7.5rem + var(--space-2) + 16px + var(--space-4));
 }
 
 /* Toda la fila lleva al caso: el enlace del título se extiende sobre ella (ver .title::after). */
@@ -251,22 +253,26 @@
 }
 
 .row > .integrityCell {
-  position: relative;
-  padding-right: calc(var(--space-4) + 16px + var(--space-2));
+  padding-right: var(--space-4);
+}
+
+/* La insignia y el chevron van en la misma línea, en el flujo: nunca se tapan. */
+.integrity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
 .chevron {
-  position: absolute;
-  top: 50%;
-  right: var(--space-4);
+  flex: none;
   color: var(--color-text-inverse-muted);
-  transform: translateY(-50%);
   transition: transform var(--motion-fast) var(--ease-standard);
 }
 
 .row:hover .chevron {
   color: var(--color-text-inverse);
-  transform: translate(3px, -50%);
+  transform: translateX(3px);
 }
 
 .titleLine {
@@ -289,8 +295,8 @@
   overflow-wrap: anywhere;
 }
 
-/* Encima de las celdas posicionadas (la de integridad lleva el chevron), para que un clic en
-   cualquier punto de la fila llegue al enlace. Basta el nivel 1: queda bajo el encabezado de la
+/* Encima del contenido de las celdas, para que un clic en cualquier punto de la fila llegue al
+   enlace. Basta el nivel 1: queda bajo el encabezado de la
    aplicación (30) y el menú de la cuenta (20), que deben seguir cubriendo la lista. */
 .title::after {
   content: "";
@@ -322,6 +328,14 @@
 
 .identity {
   min-width: 0;
+}
+
+/* El radicado y la referencia interna quedan por encima del enlace extendido (.title::after):
+   así se pueden seleccionar y copiar desde la lista. Solo cubren su propio texto; el resto de
+   la fila sigue llevando al caso. */
+.identity > * {
+  position: relative;
+  z-index: 2;
 }
 
 .noFiling {
@@ -568,6 +582,6 @@
   }
 
   .row:hover .chevron {
-    transform: translateY(-50%);
+    transform: none;
   }
 }
