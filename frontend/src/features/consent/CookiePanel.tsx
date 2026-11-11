@@ -1,4 +1,3 @@
-import { Cookie, X } from "lucide-react";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 
@@ -6,6 +5,7 @@ import { buttonClassName } from "../../components/ui/buttonStyles.ts";
 import { legalRoute } from "../../config/routes.ts";
 import { type CookieChoice, saveCookieChoice } from "./cookieConsent.ts";
 import styles from "./CookiePanel.module.css";
+import { CerrarIcon, GalletaIcon } from "../../components/ui/icons.tsx";
 
 type CookiePanelProps = {
   /** La elección guardada, o null en la primera visita. */
@@ -81,7 +81,7 @@ export function CookiePanel({
           tabIndex={-1}
           className={styles.title}
         >
-          <Cookie size={18} />
+          <GalletaIcon size={18} />
           Cookies en ALETHEIA
         </p>
         <button
@@ -90,7 +90,7 @@ export function CookiePanel({
           aria-label="Cerrar"
           onClick={dismiss}
         >
-          <X size={18} />
+          <CerrarIcon size={18} />
         </button>
       </div>
 

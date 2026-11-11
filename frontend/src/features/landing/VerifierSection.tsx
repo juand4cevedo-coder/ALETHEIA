@@ -1,21 +1,24 @@
-import { BadgeCheck, FileSearch, Laptop } from "lucide-react";
-
 import { Reveal } from "../../components/ui/Reveal.tsx";
 import section from "./Section.module.css";
 import timeline from "./Timeline.module.css";
 import styles from "./VerifierSection.module.css";
+import {
+  ArchivoBusquedaIcon,
+  PortatilIcon,
+  VerificadoIcon,
+} from "../../components/ui/icons.tsx";
 
 const STEPS = [
   {
-    icon: FileSearch,
+    icon: ArchivoBusquedaIcon,
     text: "Abra el verificador público. No necesita crear una cuenta.",
   },
   {
-    icon: Laptop,
+    icon: PortatilIcon,
     text: "Seleccione el archivo y el manifiesto del paquete. La comprobación ocurre en su navegador: el archivo no se envía a ningún servidor.",
   },
   {
-    icon: BadgeCheck,
+    icon: VerificadoIcon,
     text: "Obtenga un resultado claro para cada archivo: coincide o no coincide con lo que se preservó.",
   },
 ] as const;

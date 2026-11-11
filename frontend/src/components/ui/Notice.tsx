@@ -1,21 +1,21 @@
-import {
-  CircleAlert,
-  CircleCheck,
-  Info,
-  type LucideIcon,
-  TriangleAlert,
-} from "lucide-react";
 import type { ReactNode, Ref } from "react";
 
 import styles from "./Notice.module.css";
+import {
+  AdvertenciaIcon,
+  CirculoAlertaIcon,
+  CirculoVistoIcon,
+  InfoIcon,
+  type IconComponent,
+} from "./icons.tsx";
 
 type Tone = "info" | "success" | "warning" | "error";
 
-const ICONS: Record<Tone, LucideIcon> = {
-  info: Info,
-  success: CircleCheck,
-  warning: TriangleAlert,
-  error: CircleAlert,
+const ICONS: Record<Tone, IconComponent> = {
+  info: InfoIcon,
+  success: CirculoVistoIcon,
+  warning: AdvertenciaIcon,
+  error: CirculoAlertaIcon,
 };
 
 type NoticeProps = {

@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { CircleCheck, LinkIcon } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -18,6 +17,7 @@ import { tokenFromHash } from "../features/auth/linkToken.ts";
 import { newPasswordError } from "../features/auth/newPassword.ts";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import { PASSWORD_MAX_LENGTH } from "../features/auth/signUp.ts";
+import { CirculoVistoIcon, VinculoIcon } from "../components/ui/icons.tsx";
 
 const TITLE_ID = "titulo-restablecer";
 const METER_ID = "medidor-restablecer";
@@ -156,7 +156,7 @@ export function ResetPasswordPage() {
 
         {stage === "done" && (
           <section className={styles.notice} aria-labelledby={TITLE_ID}>
-            <CircleCheck size={28} aria-hidden="true" />
+            <CirculoVistoIcon size={28} aria-hidden="true" />
             <h1
               id={TITLE_ID}
               className={styles.noticeTitle}
@@ -177,7 +177,7 @@ export function ResetPasswordPage() {
 
         {stage === "invalid" && (
           <section className={styles.notice} aria-labelledby={TITLE_ID}>
-            <LinkIcon size={28} aria-hidden="true" />
+            <VinculoIcon size={28} aria-hidden="true" />
             <h1
               id={TITLE_ID}
               className={styles.noticeTitle}

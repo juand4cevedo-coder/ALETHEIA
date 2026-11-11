@@ -1,4 +1,3 @@
-import { Eye, EyeOff } from "lucide-react";
 import {
   type InputHTMLAttributes,
   type ReactNode,
@@ -8,6 +7,7 @@ import {
 } from "react";
 
 import styles from "./Field.module.css";
+import { OjoIcon, OjoTachadoIcon } from "./icons.tsx";
 
 type FieldProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -71,9 +71,9 @@ export function Field({
             onClick={() => setRevealed((value) => !value)}
           >
             {revealed ? (
-              <EyeOff size={18} aria-hidden="true" />
+              <OjoTachadoIcon size={18} aria-hidden="true" />
             ) : (
-              <Eye size={18} aria-hidden="true" />
+              <OjoIcon size={18} aria-hidden="true" />
             )}
           </button>
         )}

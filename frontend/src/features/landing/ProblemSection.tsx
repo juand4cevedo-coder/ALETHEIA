@@ -1,9 +1,8 @@
-import { Scale } from "lucide-react";
-
 import { Reveal } from "../../components/ui/Reveal.tsx";
 import styles from "./ProblemSection.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
+import { BalanzaIcon } from "../../components/ui/icons.tsx";
 
 const PROBLEMS = [
   {
@@ -52,7 +51,7 @@ export function ProblemSection() {
           </ol>
 
           <Reveal className={styles.source}>
-            <Scale size={16} />
+            <BalanzaIcon size={16} />
             <p>
               Código General del Proceso, artículo 247, y Corte Constitucional,
               sentencia C-604 de 2016.

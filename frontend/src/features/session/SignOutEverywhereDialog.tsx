@@ -1,8 +1,7 @@
-import { MonitorSmartphone } from "lucide-react";
-
 import { Button } from "../../components/ui/Button.tsx";
 import { Dialog } from "../../components/ui/Dialog.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
+import { DispositivosIcon } from "../../components/ui/icons.tsx";
 
 type Props = {
   open: boolean;
@@ -27,7 +26,7 @@ export function SignOutEverywhereDialog({
       onClose={onClose}
       busy={busy}
       title="¿Cerrar todas las sesiones?"
-      icon={<MonitorSmartphone size={22} />}
+      icon={<DispositivosIcon size={22} />}
       actions={
         <>
           <Button

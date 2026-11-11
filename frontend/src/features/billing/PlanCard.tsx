@@ -1,11 +1,3 @@
-import {
-  ArrowRight,
-  FileUp,
-  HardDrive,
-  UserPlus,
-  UsersRound,
-} from "lucide-react";
-
 import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 
 import type { PublicPlan } from "../../api/generated";
@@ -17,6 +9,13 @@ import {
   formatCop,
 } from "./format.ts";
 import styles from "./PlanCard.module.css";
+import {
+  ArchivoSubirIcon,
+  DiscoIcon,
+  FlechaDerechaIcon,
+  UsuarioAgregarIcon,
+  UsuariosIcon,
+} from "../../components/ui/icons.tsx";
 
 type PlanCardProps = {
   plan: PublicPlan;
@@ -93,23 +92,23 @@ export function PlanCard({
 
       <ul className={styles.limits}>
         <li>
-          <UsersRound size={16} />
+          <UsuariosIcon size={16} />
           {plan.included_users === 1
             ? "1 usuario"
             : `${plan.included_users} usuarios incluidos`}
         </li>
         {plan.extra_user_price_cop != null && (
           <li>
-            <UserPlus size={16} />
+            <UsuarioAgregarIcon size={16} />
             Usuario adicional: {formatCop(plan.extra_user_price_cop)} al mes
           </li>
         )}
         <li>
-          <HardDrive size={16} />
+          <DiscoIcon size={16} />
           {formatBytes(plan.storage_limit_bytes)} de almacenamiento
         </li>
         <li>
-          <FileUp size={16} />
+          <ArchivoSubirIcon size={16} />
           Archivos de hasta {formatBytes(plan.max_file_bytes)}
         </li>
       </ul>
@@ -121,7 +120,7 @@ export function PlanCard({
         aria-describedby={headingId}
       >
         {isFree ? "Empezar la prueba" : `Elegir ${plan.name}`}
-        <ArrowRight size={16} />
+        <FlechaDerechaIcon size={16} />
       </ButtonLink>
     </article>
   );

@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { MailPlus } from "lucide-react";
 import { type FormEvent, useId, useRef, useState } from "react";
 
 import type { InvitationOut } from "../../api/generated";
@@ -20,6 +19,7 @@ import {
 import { INVITABLE_ROLES, type InvitableRole } from "../workspace/roles.ts";
 import styles from "./InviteDialog.module.css";
 import { isEmailConflict } from "./messages.ts";
+import { CorreoIcon } from "../../components/ui/icons.tsx";
 
 type Props = {
   open: boolean;
@@ -109,7 +109,7 @@ export function InviteDialog({ open, onClose, onInvited }: Props) {
       onClose={close}
       busy={invite.isPending}
       title="Invitar a una persona"
-      icon={<MailPlus size={22} />}
+      icon={<CorreoIcon size={22} />}
       actions={
         <>
           <Button

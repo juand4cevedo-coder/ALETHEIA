@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { LoaderCircle } from "lucide-react";
 import {
   Link,
   Navigate,
@@ -23,6 +22,7 @@ import {
   rememberSession,
 } from "../features/session/sessionHint.ts";
 import styles from "./AppShell.module.css";
+import { CargandoIcon } from "../components/ui/icons.tsx";
 
 function isUnauthorized(error: unknown): boolean {
   return (
@@ -93,7 +93,7 @@ export function AppShell() {
       >
         {me.isPending && (
           <p className={styles.status} role="status">
-            <LoaderCircle
+            <CargandoIcon
               className={styles.spinner}
               size={20}
               aria-hidden="true"

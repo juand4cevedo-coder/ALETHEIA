@@ -1,9 +1,8 @@
-import { MailX } from "lucide-react";
-
 import type { InvitationOut } from "../../api/generated";
 import { Button } from "../../components/ui/Button.tsx";
 import { Dialog } from "../../components/ui/Dialog.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
+import { CorreoIcon } from "../../components/ui/icons.tsx";
 
 type Props = {
   invitation: InvitationOut | null;
@@ -28,7 +27,7 @@ export function RevokeInvitationDialog({
       onClose={onClose}
       busy={busy}
       title="¿Revocar la invitación?"
-      icon={<MailX size={22} />}
+      icon={<CorreoIcon size={22} />}
       actions={
         <>
           <Button

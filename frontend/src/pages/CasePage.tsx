@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { LoaderCircle } from "lucide-react";
 import { type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
@@ -21,6 +20,7 @@ import { formatColombiaTime } from "../features/cases/dates.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./CasePage.module.css";
+import { CargandoIcon } from "../components/ui/icons.tsx";
 
 type TabKey = "chain" | "team";
 const TAB_ORDER: readonly TabKey[] = ["chain", "team"];
@@ -62,7 +62,7 @@ export function CasePage() {
         <title>{`Caso · ${SITE_NAME}`}</title>
         <meta name="robots" content="noindex" />
         <p className={styles.loading} role="status">
-          <LoaderCircle
+          <CargandoIcon
             className={styles.spinner}
             size={20}
             aria-hidden="true"

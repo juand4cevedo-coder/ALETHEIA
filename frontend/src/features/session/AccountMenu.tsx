@@ -1,9 +1,3 @@
-import {
-  ChevronDown,
-  LogOut,
-  MonitorSmartphone,
-  UserRound,
-} from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router";
 
@@ -14,6 +8,12 @@ import styles from "./AccountMenu.module.css";
 import { initialsOf } from "./initials.ts";
 import { SignOutEverywhereDialog } from "./SignOutEverywhereDialog.tsx";
 import { useSignOut } from "./useSignOut.ts";
+import {
+  ChevronAbajoIcon,
+  DispositivosIcon,
+  SalirIcon,
+  UsuarioIcon,
+} from "../../components/ui/icons.tsx";
 
 // Menú de la cuenta en el encabezado del espacio de trabajo (HU-009). Es un botón que despliega
 // un panel, no un menú de aplicación: se recorre con Tab, se cierra con Escape o con un clic
@@ -71,7 +71,11 @@ export function AccountMenu({ me }: { me: Me }) {
             <span className={styles.organization}>{membership}</span>
           )}
         </span>
-        <ChevronDown className={styles.chevron} size={16} aria-hidden="true" />
+        <ChevronAbajoIcon
+          className={styles.chevron}
+          size={16}
+          aria-hidden="true"
+        />
         <span className="visually-hidden">Opciones de la cuenta</span>
       </button>
 
@@ -90,7 +94,7 @@ export function AccountMenu({ me }: { me: Me }) {
               className={styles.action}
               onClick={() => setOpen(false)}
             >
-              <UserRound size={18} aria-hidden="true" />
+              <UsuarioIcon size={18} aria-hidden="true" />
               <span className={styles.actionText}>
                 <span className={styles.actionLabel}>Mi cuenta</span>
                 <span className={styles.actionHint}>
@@ -107,7 +111,7 @@ export function AccountMenu({ me }: { me: Me }) {
               disabled={session.pending !== null}
               aria-busy={session.pending === "device" || undefined}
             >
-              <LogOut size={18} aria-hidden="true" />
+              <SalirIcon size={18} aria-hidden="true" />
               <span className={styles.actionText}>
                 <span className={styles.actionLabel}>
                   {session.pending === "device"
@@ -130,7 +134,7 @@ export function AccountMenu({ me }: { me: Me }) {
               }}
               disabled={session.pending !== null}
             >
-              <MonitorSmartphone size={18} aria-hidden="true" />
+              <DispositivosIcon size={18} aria-hidden="true" />
               <span className={styles.actionText}>
                 <span className={styles.actionLabel}>
                   Cerrar todas las sesiones

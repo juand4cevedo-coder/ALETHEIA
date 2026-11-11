@@ -1,4 +1,3 @@
-import { FileX2, KeyRound, type LucideIcon } from "lucide-react";
 import { useRef } from "react";
 
 import { Reveal } from "../../components/ui/Reveal.tsx";
@@ -10,19 +9,24 @@ import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
 import { StampCard } from "./StampCard.tsx";
 import styles from "./StandardsSection.module.css";
+import {
+  ArchivoEquisIcon,
+  LlaveIcon,
+  type IconComponent,
+} from "../../components/ui/icons.tsx";
 
-type Guarantee = { icon: LucideIcon; title: string; text: string };
+type Guarantee = { icon: IconComponent; title: string; text: string };
 
 // Las dos garantías que no se pueden manipular en pantalla van como lista, debajo de las
 // demostraciones.
 const GUARANTEES: Guarantee[] = [
   {
-    icon: KeyRound,
+    icon: LlaveIcon,
     title: "Cifrado por caso",
     text: "Cada caso tiene su propia llave AES‑256‑GCM, protegida por una llave maestra que vive en AWS KMS, fuera de la base de datos.",
   },
   {
-    icon: FileX2,
+    icon: ArchivoEquisIcon,
     title: "Eliminación con constancia",
     text: "Al cerrar un caso destruimos su llave y el contenido queda ilegible. Usted recibe una constancia con la fecha y el alcance de la eliminación.",
   },

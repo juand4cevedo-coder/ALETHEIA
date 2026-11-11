@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { MailCheck } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import { forgotPasswordMutation } from "../api/generated/@tanstack/react-query.gen.ts";
@@ -17,6 +16,7 @@ import {
   EMAIL_PATTERN,
   SIGN_UP_MESSAGES,
 } from "../features/auth/signUp.ts";
+import { CorreoIcon } from "../components/ui/icons.tsx";
 
 const TITLE_ID = "titulo-recuperar";
 
@@ -92,7 +92,7 @@ export function ForgotPasswordPage() {
 
         {sentTo ? (
           <section className={styles.notice} aria-labelledby="titulo-enviado">
-            <MailCheck size={28} aria-hidden="true" />
+            <CorreoIcon size={28} aria-hidden="true" />
             <h2
               id="titulo-enviado"
               className={styles.noticeTitle}

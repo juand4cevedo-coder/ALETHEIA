@@ -1,7 +1,6 @@
-import { Shield } from "lucide-react";
-
 import type { CaseTotalsOut } from "../../api/generated";
 import styles from "./CustodyStrip.module.css";
+import { CadenaIcon } from "../../components/ui/icons.tsx";
 
 const NUMBER = new Intl.NumberFormat("es-CO");
 
@@ -14,7 +13,7 @@ export function CustodyStrip({ totals }: { totals: CaseTotalsOut }) {
     <section className={styles.strip} aria-label="Estado de la custodia">
       <div className={styles.integrity}>
         <span className={styles.ring} aria-hidden="true">
-          <Shield size={20} />
+          <CadenaIcon size={20} />
         </span>
         <div>
           <p className={styles.label}>Integridad de las cadenas</p>

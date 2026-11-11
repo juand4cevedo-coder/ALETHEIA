@@ -1,10 +1,10 @@
-import { Link2, Unlink } from "lucide-react";
 import { useState } from "react";
 
 import { Hash } from "../../components/ui/Hash.tsx";
 import { CHAIN_EVENTS, GENESIS, chainRecord } from "./chain.ts";
 import styles from "./ChainDemo.module.css";
 import { useSha256 } from "./useSha256.ts";
+import { EnlaceIcon, EnlaceRotoIcon } from "../../components/ui/icons.tsx";
 
 // La alteración que se demuestra: antedatar el evento 2, el tipo de cambio que interesaría a
 // quien quiere mover la hora de una prueba.
@@ -37,7 +37,7 @@ export function ChainDemo() {
         {CHAIN_EVENTS.map((event, index) => {
           const broken = altered && index >= ALTERED_INDEX;
           const isTarget = altered && index === ALTERED_INDEX;
-          const LinkIcon = broken ? Unlink : Link2;
+          const LinkIcon = broken ? EnlaceRotoIcon : EnlaceIcon;
           return (
             <li
               key={event.hash}
@@ -120,9 +120,9 @@ export function ChainDemo() {
           className={altered ? styles.statusBroken : styles.statusIntact}
         >
           {altered ? (
-            <Unlink size={16} aria-hidden="true" />
+            <EnlaceRotoIcon size={16} aria-hidden="true" />
           ) : (
-            <Link2 size={16} aria-hidden="true" />
+            <EnlaceIcon size={16} aria-hidden="true" />
           )}
           {altered
             ? "La cadena se rompe en el evento 2"

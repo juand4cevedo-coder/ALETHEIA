@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { MailCheck } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import type { RegisterAccountError } from "../api/generated";
@@ -25,6 +24,7 @@ import {
 } from "../features/auth/signUp.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { LegalConsent } from "../features/auth/LegalConsent.tsx";
+import { CorreoIcon } from "../components/ui/icons.tsx";
 
 // Por defecto, la cuenta personal: es el caso del perfil principal (PER-001).
 const EMPTY: SignUpValues = {
@@ -151,7 +151,7 @@ export function SignUpPage() {
 
         {sentTo ? (
           <section className={styles.notice} aria-labelledby="titulo-aviso">
-            <MailCheck size={28} aria-hidden="true" />
+            <CorreoIcon size={28} aria-hidden="true" />
             <h2
               id="titulo-aviso"
               className={styles.noticeTitle}

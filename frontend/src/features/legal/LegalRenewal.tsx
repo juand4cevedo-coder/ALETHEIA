@@ -1,13 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowUpRight,
-  Cookie,
-  LogOut,
-  ReceiptText,
-  Scale,
-  ShieldCheck,
-  type LucideIcon,
-} from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import type { Me } from "../../api/generated";
@@ -30,17 +21,26 @@ import { useSignOut } from "../session/useSignOut.ts";
 import { currentLegalChanges } from "./changes.ts";
 import { formatEffectiveDate } from "./format.ts";
 import styles from "./LegalRenewal.module.css";
+import {
+  BalanzaIcon,
+  EscudoVistoIcon,
+  FlechaDiagonalIcon,
+  GalletaIcon,
+  ReciboIcon,
+  SalirIcon,
+  type IconComponent,
+} from "../../components/ui/icons.tsx";
 
 const TITLE_ID = "titulo-textos-nuevos";
 const CHANGES_ID = "titulo-cambios";
 // Lo que tarda el anillo del emblema en cerrarse antes de abrir el espacio de trabajo.
 const SEAL_MS = 520;
 
-const POLICY_ICONS: Record<LegalSlug, LucideIcon> = {
-  privacidad: ShieldCheck,
-  terminos: Scale,
-  cookies: Cookie,
-  reembolsos: ReceiptText,
+const POLICY_ICONS: Record<LegalSlug, IconComponent> = {
+  privacidad: EscudoVistoIcon,
+  terminos: BalanzaIcon,
+  cookies: GalletaIcon,
+  reembolsos: ReciboIcon,
 };
 
 type Problem =
@@ -176,7 +176,7 @@ export function LegalRenewal({ me }: { me: Me }) {
               >
                 <Icon size={18} aria-hidden="true" />
                 <span>{page.label}</span>
-                <ArrowUpRight
+                <FlechaDiagonalIcon
                   className={styles.documentArrow}
                   size={16}
                   aria-hidden="true"
@@ -294,7 +294,7 @@ function SignOutLater() {
         disabled={session.pending !== null}
         aria-busy={session.pending === "device" || undefined}
       >
-        <LogOut size={16} aria-hidden="true" />
+        <SalirIcon size={16} aria-hidden="true" />
         {session.pending === "device"
           ? "Cerrando sesión…"
           : "Revisarlos más tarde y cerrar sesión"}

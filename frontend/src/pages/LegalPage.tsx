@@ -1,18 +1,4 @@
 import {
-  Check,
-  Cookie,
-  Copy,
-  Download,
-  Fingerprint,
-  Landmark,
-  List,
-  Printer,
-  ReceiptText,
-  Scale,
-  ShieldCheck,
-  type LucideIcon,
-} from "lucide-react";
-import {
   type CSSProperties,
   type RefObject,
   useEffect,
@@ -37,6 +23,20 @@ import type { LegalDocument } from "../features/legal/types.ts";
 import { useActiveSection } from "../features/legal/useActiveSection.ts";
 import { NotFoundPage } from "./NotFoundPage.tsx";
 import styles from "./LegalPage.module.css";
+import {
+  BalanzaIcon,
+  CopiarIcon,
+  DescargarIcon,
+  EscudoVistoIcon,
+  GalletaIcon,
+  HuellaIcon,
+  ImprimirIcon,
+  InstitucionIcon,
+  MenuIcon,
+  ReciboIcon,
+  VistoIcon,
+  type IconComponent,
+} from "../components/ui/icons.tsx";
 
 // Destino del índice para el bloque de contacto que cierra cada política.
 const CONTACT_ID = "contacto";
@@ -47,11 +47,11 @@ const WORDS_PER_MINUTE = 200;
 // Cuánto se muestra el aviso de huella copiada.
 const COPIED_FOR_MS = 2000;
 
-const POLICY_ICONS: Record<LegalSlug, LucideIcon> = {
-  privacidad: ShieldCheck,
-  terminos: Scale,
-  cookies: Cookie,
-  reembolsos: ReceiptText,
+const POLICY_ICONS: Record<LegalSlug, IconComponent> = {
+  privacidad: EscudoVistoIcon,
+  terminos: BalanzaIcon,
+  cookies: GalletaIcon,
+  reembolsos: ReciboIcon,
 };
 
 // Páginas legales (UI-003, HU-003): una sola plantilla de lectura para las cuatro políticas.
@@ -204,7 +204,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
               data-ready={fingerprint ? "true" : "false"}
             >
               <p id="huella-titulo" className={styles.sealLabel}>
-                <Fingerprint size={16} aria-hidden="true" />
+                <HuellaIcon size={16} aria-hidden="true" />
                 Huella SHA-256 de este texto
               </p>
               <p className={styles.sealHash} aria-live="polite">
@@ -228,7 +228,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
                   onClick={download}
                   disabled={!fingerprint}
                 >
-                  <Download size={16} aria-hidden="true" />
+                  <DescargarIcon size={16} aria-hidden="true" />
                   Descargar
                 </button>
                 <button
@@ -242,9 +242,9 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
                   disabled={!fingerprint?.hash}
                 >
                   {copied ? (
-                    <Check size={16} aria-hidden="true" />
+                    <VistoIcon size={16} aria-hidden="true" />
                   ) : (
-                    <Copy size={16} aria-hidden="true" />
+                    <CopiarIcon size={16} aria-hidden="true" />
                   )}
                   {copied ? "Huella copiada" : "Copiar huella"}
                 </button>
@@ -257,7 +257,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
                   })}
                   onClick={() => window.print()}
                 >
-                  <Printer size={16} aria-hidden="true" />
+                  <ImprimirIcon size={16} aria-hidden="true" />
                   Imprimir
                 </button>
               </div>
@@ -305,7 +305,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
               aria-controls="indice-lista"
               onClick={() => setIndexOpen((open) => !open)}
             >
-              <List size={16} aria-hidden="true" />
+              <MenuIcon size={16} aria-hidden="true" />
               {indexOpen ? "Ocultar el índice" : "Ver el índice"}
             </button>
             <ol id="indice-lista" className={styles.indexList}>
@@ -357,7 +357,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
               </h2>
               {section.basis && (
                 <p className={styles.basis}>
-                  <Landmark size={14} aria-hidden="true" />
+                  <InstitucionIcon size={14} aria-hidden="true" />
                   <span>Fundamento: {section.basis.join("; ")}</span>
                 </p>
               )}

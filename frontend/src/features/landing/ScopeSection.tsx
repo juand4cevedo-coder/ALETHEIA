@@ -1,9 +1,14 @@
-import { Check, CircleSlash, Scale, ShieldCheck, X } from "lucide-react";
-
 import { Reveal } from "../../components/ui/Reveal.tsx";
 import styles from "./ScopeSection.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
+import {
+  BalanzaIcon,
+  CerrarIcon,
+  CirculoProhibidoIcon,
+  EscudoVistoIcon,
+  VistoIcon,
+} from "../../components/ui/icons.tsx";
 
 const DOES = [
   "Conservamos el archivo original, cifrado y sin modificaciones.",
@@ -41,14 +46,14 @@ export function ScopeSection() {
           <div className={styles.columns}>
             <div className={styles.column}>
               <h3 className={styles.columnTitle}>
-                <ShieldCheck size={20} className={styles.yesIcon} />
+                <EscudoVistoIcon size={20} className={styles.yesIcon} />
                 Lo que hacemos
               </h3>
               <ul className={styles.list}>
                 {DOES.map((item) => (
                   <li key={item}>
                     <span className={`${styles.mark} ${styles.yes}`}>
-                      <Check size={14} strokeWidth={3} />
+                      <VistoIcon size={14} />
                     </span>
                     {item}
                   </li>
@@ -58,14 +63,14 @@ export function ScopeSection() {
 
             <div className={styles.column}>
               <h3 className={styles.columnTitle}>
-                <CircleSlash size={20} className={styles.noIcon} />
+                <CirculoProhibidoIcon size={20} className={styles.noIcon} />
                 Lo que no hacemos
               </h3>
               <ul className={styles.list}>
                 {DOES_NOT.map((item) => (
                   <li key={item}>
                     <span className={`${styles.mark} ${styles.no}`}>
-                      <X size={14} strokeWidth={3} />
+                      <CerrarIcon size={14} />
                     </span>
                     {item}
                   </li>
@@ -75,7 +80,7 @@ export function ScopeSection() {
           </div>
 
           <p className={styles.note}>
-            <Scale size={18} />
+            <BalanzaIcon size={18} />
             Determinar si una prueba es auténtica, veraz o admisible, y qué
             valor tiene, corresponde siempre a la autoridad judicial.
           </p>
