@@ -38,9 +38,17 @@ function FingerprintBlocks({ hash }: { hash: string }) {
  * se calcula de verdad en el navegador de quien escribe, por eso el resultado sí usa el verde. */
 export function HashDemo() {
   const [text, setText] = useState(SAMPLE_TEXT);
-  const { hash, supported } = useSha256(text, SAMPLE_HASH);
+  const { hash, supported, computed } = useSha256(text, SAMPLE_HASH);
   const matches = hash === SAMPLE_HASH;
-  const state = !supported ? "unsupported" : matches ? "match" : "mismatch";
+  // Hasta que llega el primer cálculo del navegador, el punto queda gris: el verde solo dice lo
+  // que de verdad se comprobó.
+  const state = !supported
+    ? "unsupported"
+    : !computed
+      ? "pending"
+      : matches
+        ? "match"
+        : "mismatch";
 
   return (
     <div className={styles.panel}>
@@ -81,12 +89,14 @@ export function HashDemo() {
 
       <div className={styles.footer}>
         <p role="status" className={styles.status} data-state={state}>
-          {supported && <i className={styles.dot} aria-hidden="true" />}
+          {supported && <span className={styles.dot} aria-hidden="true" />}
           {!supported
             ? "Su navegador no permite recalcular la huella en esta página."
-            : matches
-              ? "Coincide"
-              : "No coincide"}
+            : !computed
+              ? "Calculando la huella"
+              : matches
+                ? "Coincide"
+                : "No coincide"}
         </p>
         <button
           type="button"

@@ -12,18 +12,18 @@ import {
 const STEPS = [
   {
     icon: ArchivoBusquedaIcon,
-    title: "Entra al verificador público",
-    text: "Desde el sitio de ALETHEIA, sin crear una cuenta ni pagar.",
+    title: "Sin cuenta ni pago",
+    text: "El verificador estará en el sitio de ALETHEIA y no pedirá crear una cuenta.",
   },
   {
     icon: PortatilIcon,
-    title: "Elige el archivo y el manifiesto del paquete",
-    text: "La huella se calcula en su navegador. El archivo no se envía a ningún servidor.",
+    title: "La huella se calcula en el navegador",
+    text: "Se eligen el archivo y el manifiesto del paquete. El archivo no se enviará a ningún servidor.",
   },
   {
     icon: VerificadoIcon,
-    title: "Ve el resultado de cada archivo",
-    text: "Coincide o no coincide con lo que se preservó.",
+    title: "Un resultado por archivo",
+    text: "Cada archivo coincide o no coincide con lo que usted preservó.",
   },
 ] as const;
 
@@ -42,14 +42,13 @@ export function VerifierSection() {
           <SectionHeading
             id="titulo-verificador"
             kicker="Verificador"
-            title="La contraparte puede comprobar el paquete sin una cuenta"
-            lead="El juez, el perito o la contraparte comprueban por su cuenta que cada archivo es el mismo que usted preservó."
+            title="La contraparte podrá comprobar el paquete sin una cuenta"
+            lead="El juez, el perito o la contraparte podrán comprobar que cada archivo es el mismo que usted preservó."
             className={section.headingStacked}
           />
           <p className={styles.availability}>
             <RelojIcon size={16} aria-hidden="true" />
-            El verificador público llega con la versión 1.0 de ALETHEIA. Todavía
-            no está abierto.
+            El verificador público llega con la versión 1.0 de ALETHEIA.
           </p>
         </div>
 

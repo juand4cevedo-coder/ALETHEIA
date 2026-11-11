@@ -18,10 +18,13 @@ export async function sha256Hex(text: string): Promise<string> {
 export function useSha256(
   text: string,
   fallback: string,
-): { hash: string; supported: boolean } {
+): { hash: string; supported: boolean; computed: boolean } {
   const [failed, setFailed] = useState(false);
   const supported = Boolean(globalThis.crypto?.subtle) && !failed;
   const [hash, setHash] = useState(fallback);
+  // Falso hasta que llega el primer resultado del navegador: mientras tanto la huella es la de
+  // respaldo y nadie la ha comprobado.
+  const [computed, setComputed] = useState(false);
   const requestId = useRef(0);
 
   useEffect(() => {
@@ -31,12 +34,15 @@ export function useSha256(
     const id = ++requestId.current;
     sha256Hex(text)
       .then((value) => {
-        if (id === requestId.current) setHash(value);
+        if (id === requestId.current) {
+          setHash(value);
+          setComputed(true);
+        }
       })
       .catch(() => {
         if (id === requestId.current) setFailed(true);
       });
   }, [text, supported]);
 
-  return { hash, supported };
+  return { hash, supported, computed: supported && computed };
 }

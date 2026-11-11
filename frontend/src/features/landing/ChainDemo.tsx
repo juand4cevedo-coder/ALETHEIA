@@ -55,9 +55,9 @@ export function ChainDemo() {
               <div className={styles.body}>
                 <p className={styles.meta}>
                   <span>Evento {index + 1}</span>
-                  <time className={isTarget ? styles.tampered : styles.time}>
+                  <span className={isTarget ? styles.tampered : styles.time}>
                     {isTarget ? ALTERED_TIME : event.time}
-                  </time>
+                  </span>
                 </p>
                 <p className={styles.text}>{event.text}</p>
                 {isTarget && (

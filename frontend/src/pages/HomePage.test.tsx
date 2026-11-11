@@ -33,7 +33,7 @@ describe("Página de inicio (HU-001)", () => {
     expect(
       within(main).getByRole("heading", {
         level: 2,
-        name: "Preservamos y documentamos. La valoración es del juez.",
+        name: "ALETHEIA preserva y documenta. La valoración es del juez.",
       }),
     ).toBeInTheDocument();
     expect(
@@ -128,8 +128,8 @@ describe("Página de inicio (HU-001)", () => {
       "Una captura de pantalla no es el archivo original",
       "Lo que pasa con su archivo desde que lo sube",
       "Cómo se sabe que nadie alteró el archivo",
-      "Preservamos y documentamos. La valoración es del juez.",
-      "La contraparte puede comprobar el paquete sin una cuenta",
+      "ALETHEIA preserva y documenta. La valoración es del juez.",
+      "La contraparte podrá comprobar el paquete sin una cuenta",
       "Las mismas garantías en todos los planes",
       "Antes de empezar",
       "Pruebe ALETHEIA con uno de sus casos",
@@ -173,8 +173,13 @@ describe("Página de inicio (HU-001)", () => {
         (element) => element.getAttribute("aria-label") ?? "",
       ),
     ].join(" ");
-    expect(texts).not.toMatch(
-      /(?<!\p{L})(abre|abri[óo]|accesos?|consult\p{L}*|vio|visualiz\p{L}*)(?!\p{L})/iu,
+    // Lista explícita de formas: abrir como evento registrado (abre, abrió, abrir, abierto,
+    // apertura), acceso, consulta, ver y visualizar. Las palabras se comparan enteras, así que
+    // «abril», «previo» o «abrecartas» no cuentan.
+    // «Abrir un caso» es el nombre de la acción de crear un caso en la aplicación (aparece en la
+    // imagen del espacio de trabajo), no un evento de apertura de un archivo: se quita antes.
+    expect(texts.replaceAll(/Abrir un caso/g, "")).not.toMatch(
+      /(?<!\p{L})(abre|abren|abri[óo]|abrieron|abrir|abierto|abierta|aperturas?|accesos?|accedi[óo]|consult\p{L}*|vio|vieron|visualiz\p{L}*)(?!\p{L})/iu,
     );
   });
 
@@ -186,7 +191,9 @@ describe("Página de inicio (HU-001)", () => {
     expect(container.querySelector("a[href='/verificador']")).toBeNull();
     const verifier = container.querySelector("#verificador")!;
     expect(within(verifier as HTMLElement).queryAllByRole("link")).toEqual([]);
-    expect(verifier).toHaveTextContent("Todavía no está abierto.");
+    expect(verifier).toHaveTextContent(
+      "El verificador público llega con la versión 1.0 de ALETHEIA.",
+    );
 
     const closing = container.querySelector(
       "[aria-labelledby='titulo-cierre']",
@@ -197,7 +204,7 @@ describe("Página de inicio (HU-001)", () => {
     expect(actions[0]).toHaveAttribute("href", "/registro");
     expect(
       await within(closing).findByText(
-        /La prueba gratuita dura 14 días y no pide tarjeta de crédito\./,
+        "Cree su cuenta y abra su primer caso. La prueba dura 14 días y no pide tarjeta de crédito.",
       ),
     ).toBeInTheDocument();
   });

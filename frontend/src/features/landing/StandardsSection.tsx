@@ -46,7 +46,7 @@ export function StandardsSection() {
           id="titulo-estandares"
           kicker="Lo que se puede comprobar"
           title="Cómo se sabe que nadie alteró el archivo"
-          lead="La huella y el sello siguen estándares abiertos. Un perito puede repetir cada cálculo con herramientas independientes, sin pedirnos nada."
+          lead="Un perito puede repetir cada cálculo con herramientas independientes."
         />
 
         <div className={demo.demos}>
