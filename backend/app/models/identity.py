@@ -40,6 +40,7 @@ AUDIT_ACTIONS: Final = (
     "account_unblocked",
     "legal_accepted",
     "logout",
+    "case_created",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.

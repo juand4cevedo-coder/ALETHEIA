@@ -14,13 +14,19 @@
   --color-success-400: #5ccf96;
   --color-error-400: #f28b82;
   --color-warning-400: #f0b45a;
+  /* Oro del aviso de privacidad del espacio de trabajo (ADR-023). */
+  --color-gold-400: #d9b86a;
 
   --color-canvas: #f5f7fa;
   --color-surface: #ffffff;
+  --color-ink-1000: #04070f;
   --color-ink-950: #070c18;
+  --color-ink-925: #0a1121;
   --color-ink-900: #0c1426;
+  --color-ink-850: #101a30;
   --color-ink-800: #15213a;
   --color-ink-700: #1f2e4d;
+  --color-ink-650: #2c3d63;
   --color-ink-600: #64789e;
 
   --color-text-primary: #0e1726;
@@ -62,9 +68,11 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
+  --radius-xl: 18px;
   --radius-pill: 999px;
 
   --shadow-overlay: 0 8px 24px rgb(7 12 24 / 16%);
+  --shadow-panel: 0 40px 120px rgb(0 0 0 / 55%);
   --shadow-raised: 0 24px 64px rgb(2 6 16 / 55%);
 
   --motion-fast: 120ms;

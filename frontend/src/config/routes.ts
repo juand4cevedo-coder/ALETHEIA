@@ -18,6 +18,8 @@ export const ROUTES = {
   app: "/app",
   account: "/app/cuenta",
   members: "/app/miembros",
+  newCase: "/app/casos/nuevo",
+  caseDetail: (id: string) => `/app/casos/${id}`,
 } as const;
 
 export const LEGAL_PAGES = [
