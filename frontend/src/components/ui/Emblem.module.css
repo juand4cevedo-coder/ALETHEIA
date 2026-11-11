@@ -6,24 +6,8 @@
   height: 92px;
   margin: 0 auto;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-brand-blue) 30%, transparent),
-    color-mix(in srgb, var(--color-ink-950) 40%, transparent) 70%
-  );
-  box-shadow:
-    0 0 24px color-mix(in srgb, var(--color-primary-400) 55%, transparent),
-    inset 0 0 18px color-mix(in srgb, var(--color-primary-400) 35%, transparent);
-  animation: glow 4s var(--ease-standard) infinite alternate;
-}
-
-@keyframes glow {
-  to {
-    box-shadow:
-      0 0 36px color-mix(in srgb, var(--color-primary-400) 75%, transparent),
-      inset 0 0 22px
-        color-mix(in srgb, var(--color-primary-400) 45%, transparent);
-  }
+  /* Sin halo ni degradado: la identidad no usa luces decorativas. */
+  background: var(--surface-1);
 }
 
 .ring {
@@ -41,20 +25,15 @@
 }
 
 .track {
-  stroke: var(--color-primary-300);
+  stroke: var(--line);
 }
 
 /* El arco solo aparece al trabajar y al terminar; en reposo se ve el anillo completo. */
 .arc {
-  stroke: var(--color-primary-50);
+  stroke: var(--accent);
   stroke-linecap: round;
   stroke-dasharray: 0 100;
   opacity: 0;
-  filter: drop-shadow(0 0 3px var(--color-primary-300));
-}
-
-.emblem[data-state="working"] .track {
-  stroke: color-mix(in srgb, var(--color-primary-300) 35%, transparent);
 }
 
 .emblem[data-state="working"] .ring {
@@ -86,13 +65,9 @@
 
 .mark {
   position: relative;
-  filter: drop-shadow(
-    0 0 8px color-mix(in srgb, var(--color-primary-400) 60%, transparent)
-  );
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .emblem,
   .emblem[data-state="working"] .ring {
     animation: none;
   }

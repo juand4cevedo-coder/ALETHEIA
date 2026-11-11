@@ -22,7 +22,7 @@
   z-index: -1;
   width: 420px;
   aspect-ratio: 1;
-  background: url("../../assets/aletheia-mark.png") center / contain no-repeat;
+  background: url("../../assets/logo.svg") center / contain no-repeat;
   opacity: 0.04;
   pointer-events: none;
 }

@@ -11,7 +11,7 @@ import {
 
 import type { ReadMeError } from "../api/generated";
 import { readMeOptions } from "../api/generated/@tanstack/react-query.gen.ts";
-import markUrl from "../assets/aletheia-mark.png";
+import logoUrl from "../assets/logo.svg";
 import { Button } from "../components/ui/Button.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
@@ -79,7 +79,7 @@ export function AppShell() {
       </a>
       <header className={styles.header}>
         <Link to={ROUTES.app} className={styles.brand}>
-          <img src={markUrl} alt="" width={25} height={24} />
+          <img src={logoUrl} alt="" width={24} height={24} />
           <span>{SITE_NAME}</span>
         </Link>
         {me.data && <AccountMenu me={me.data} />}

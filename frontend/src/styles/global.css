@@ -24,10 +24,11 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-sans);
-  font-size: 16px;
-  line-height: 1.5;
-  color: var(--color-text-primary);
-  background: var(--color-canvas);
+  font-size: var(--font-size-body);
+  /* Cuerpo 15/24, como proporción para que un título sin interlineado propio no se encime. */
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -49,13 +50,15 @@ p {
   text-wrap: pretty;
 }
 
+/* Los enlaces dentro de un texto usan el violeta claro, que pasa 4,5:1 sobre las tres
+   superficies. */
 a {
-  color: var(--color-primary-600);
+  color: var(--accent-strong);
 }
 
-/* Foco visible de teclado en todo el sitio (focus.ring). */
+/* Foco visible de teclado en todo el sitio (focus.ring): siempre violeta. */
 :focus-visible {
-  outline: 2px solid var(--color-primary-600);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -84,8 +87,10 @@ a {
   }
 }
 
+/* Al imprimir, tinta oscura sobre el papel blanco. */
 @media print {
   body {
-    background: var(--color-surface);
+    color: var(--bg);
+    background: none;
   }
 }

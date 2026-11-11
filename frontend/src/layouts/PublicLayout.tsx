@@ -9,7 +9,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, ScrollRestoration } from "react-router";
 
-import markUrl from "../assets/aletheia-mark.png";
+import logoUrl from "../assets/logo.svg";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { CONSUMER_AUTHORITY, DATA_CONTROLLER } from "../config/legal.ts";
 import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
@@ -110,7 +110,7 @@ export function PublicLayout() {
       >
         <div className={styles.bar}>
           <Link to={ROUTES.home} className={styles.brand}>
-            <img src={markUrl} alt="" width={25} height={24} />
+            <img src={logoUrl} alt="" width={24} height={24} />
             <span>{SITE_NAME}</span>
           </Link>
 
@@ -216,7 +216,7 @@ export function PublicLayout() {
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
             <Link to={ROUTES.home} className={styles.brand}>
-              <img src={markUrl} alt="" width={25} height={24} />
+              <img src={logoUrl} alt="" width={24} height={24} />
               <span>{SITE_NAME}</span>
             </Link>
             <p className={styles.footerText}>
