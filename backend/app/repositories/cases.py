@@ -252,6 +252,12 @@ def member_cases(
         )
         .select_from(team)
         .join(member_user, member_user.id == team.user_id)
+        # Como en case_members: quien ya no pertenece a la organización no cuenta en el equipo.
+        .join(
+            Membership,
+            (Membership.user_id == team.user_id)
+            & (Membership.organization_id == team.organization_id),
+        )
         .where(team.case_id == Case.id, team.organization_id == Case.organization_id)
         .lateral("members")
     )
