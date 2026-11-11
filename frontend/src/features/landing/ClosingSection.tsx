@@ -22,11 +22,10 @@ export function ClosingSection() {
             Pruebe ALETHEIA con uno de sus casos
           </h2>
           <p className={styles.text}>
-            Cree su cuenta y suba un archivo real para ver su huella y su sello
-            de tiempo.{" "}
+            Cree su cuenta y abra su primer caso.{" "}
             {days === null
               ? "La prueba es gratuita y no pide tarjeta de crédito."
-              : `La prueba gratuita dura ${days} días y no pide tarjeta de crédito.`}
+              : `La prueba dura ${days} días y no pide tarjeta de crédito.`}
           </p>
         </div>
         <ButtonLink to={ROUTES.signUp}>{SIGN_UP_LABEL}</ButtonLink>

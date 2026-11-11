@@ -43,8 +43,8 @@ export function ScopeSection() {
         <SectionHeading
           id="titulo-alcance"
           kicker="Alcance"
-          title="Preservamos y documentamos. La valoración es del juez."
-          lead="ALETHEIA es una herramienta técnica de preservación. Le da elementos para sustentar que su evidencia no cambió."
+          title="ALETHEIA preserva y documenta. La valoración es del juez."
+          lead="Es una herramienta técnica de preservación. Le da elementos para sustentar que su evidencia no cambió."
         />
 
         <div className={styles.columns}>
