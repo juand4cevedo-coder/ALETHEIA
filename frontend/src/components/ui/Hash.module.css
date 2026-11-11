@@ -6,7 +6,7 @@
   min-width: 0;
 }
 
-/* font.mono.md: JetBrains Mono 13/20. En pantallas angostas la huella baja de línea entre
+/* font.mono.md: Geist Mono 13/20. En pantallas angostas la huella baja de línea entre
    bloques y nunca obliga a desplazarse de lado. */
 .value {
   font-family: var(--font-mono);

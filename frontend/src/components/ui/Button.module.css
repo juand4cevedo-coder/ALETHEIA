@@ -105,7 +105,6 @@
 }
 
 .bright:hover {
-  background: var(--color-surface);
   box-shadow: 0 14px 36px -14px
     color-mix(in srgb, var(--color-primary-300) 50%, transparent);
   transform: translateY(-1px);
