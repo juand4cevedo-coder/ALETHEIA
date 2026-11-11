@@ -88,3 +88,19 @@
     padding: 0 var(--space-4);
   }
 }
+
+/* Número de casos abiertos, alineado a la derecha en la columna y junto al nombre en la franja. */
+.count {
+  margin-left: auto;
+  padding-left: var(--space-2);
+  color: var(--color-text-inverse-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .count {
+    margin-left: 0;
+  }
+}

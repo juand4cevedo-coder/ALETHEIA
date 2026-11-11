@@ -1,13 +1,8 @@
 import type { CustodyEventOut } from "../../api/generated";
 import { StatusBadge } from "../../components/ui/StatusBadge.tsx";
+import { custodyActionLabel } from "./custodyActions.ts";
 import { formatColombiaTime } from "./dates.ts";
 import styles from "./CustodyTimeline.module.css";
-
-// Nombre de cada acción de la cadena tal como lo lee la persona. Una acción que todavía no
-// tenga nombre aquí se muestra con su código, nunca se oculta.
-const ACTION_LABELS: Record<string, string> = {
-  case_created: "Caso creado",
-};
 
 /** "9f2c 71d0 b8e4 … a41e": los primeros 12 caracteres en bloques de 4 y los últimos 4. Basta
  * para reconocer un evento a simple vista; la huella completa queda para el lector. */
@@ -45,9 +40,7 @@ export function CustodyTimeline({
           >
             <span className={styles.node} aria-hidden="true" />
             <div className={styles.body}>
-              <p className={styles.name}>
-                {ACTION_LABELS[event.action] ?? event.action}
-              </p>
+              <p className={styles.name}>{custodyActionLabel(event.action)}</p>
               <p className={styles.meta}>
                 {`${event.actor_name ?? "Sistema"} · `}
                 <time dateTime={event.occurred_at}>
