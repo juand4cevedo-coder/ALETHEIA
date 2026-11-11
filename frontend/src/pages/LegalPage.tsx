@@ -1,11 +1,4 @@
-import {
-  type CSSProperties,
-  type RefObject,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useParams } from "react-router";
 
 import { buttonClassName } from "../components/ui/buttonStyles.ts";
@@ -117,8 +110,6 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
     [doc],
   );
   const active = useActiveSection(sectionIds);
-  const activeIndex = active ? sectionIds.indexOf(active) : -1;
-  const progress = (activeIndex + 1) / sectionIds.length;
 
   useEffect(() => {
     if (!copied) return;
@@ -203,11 +194,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
               </dl>
             </div>
 
-            <section
-              className={styles.seal}
-              aria-labelledby="huella-titulo"
-              data-ready={fingerprint ? "true" : "false"}
-            >
+            <section className={styles.seal} aria-labelledby="huella-titulo">
               <p id="huella-titulo" className={styles.sealLabel}>
                 <HuellaIcon size={16} aria-hidden="true" />
                 Huella SHA-256 de este texto
@@ -227,6 +214,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
                 <button
                   type="button"
                   className={buttonClassName({
+                    variant: "secondary",
                     size: "sm",
                   })}
                   onClick={download}
@@ -294,7 +282,6 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
             aria-labelledby="indice-titulo"
             className={styles.index}
             data-open={indexOpen ? "true" : "false"}
-            style={{ "--progress": progress } as CSSProperties}
           >
             <p id="indice-titulo" className={styles.indexTitle}>
               En esta página
@@ -359,7 +346,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
               </h2>
               {section.basis && (
                 <p className={styles.basis}>
-                  <InstitucionIcon size={14} aria-hidden="true" />
+                  <InstitucionIcon size={16} aria-hidden="true" />
                   <span>Fundamento: {section.basis.join("; ")}</span>
                 </p>
               )}

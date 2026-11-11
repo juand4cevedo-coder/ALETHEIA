@@ -60,6 +60,39 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     },
   );
 
+  // Regla 11 de la identidad: el texto de las políticas no cambia con un rediseño. Su huella
+  // depende solo del texto que se lee, no de la presentación; si una de estas cambia, cambió el
+  // texto vigente y eso exige una versión legal nueva con su propio proceso (RN-029), no un
+  // ajuste de estilo. Las huellas son las de la versión del 6 de noviembre de 2026.
+  it.each([
+    [
+      "privacidad",
+      "25d7fbe978a96ad9d5355bf5e16c3847fea6ed2de1572fff146a1e1dd36fdc0b",
+    ],
+    [
+      "terminos",
+      "753e9d2945e9666089357cbc4ba5e72b08631057b4d99400cb8051b67cf0760e",
+    ],
+    [
+      "cookies",
+      "b7e6feb1d7472d45bbd44b4c05985f866297d205d9067be23666fa364a695558",
+    ],
+    [
+      "reembolsos",
+      "6efa3998739d8cefd14dcff7260f64634041f4175657c22aae199e3fc0e8e52e",
+    ],
+  ] as const)(
+    "la huella de %s es la de la versión vigente",
+    async (slug, expected) => {
+      expect(LEGAL_EFFECTIVE_DATE).toBe("2026-11-06");
+      await renderRoute(legalRoute(slug));
+      expect(
+        (await screen.findByText(/^[0-9a-f]{64}$/, {}, { timeout: 5000 }))
+          .textContent,
+      ).toBe(expected);
+    },
+  );
+
   it("se abren desde el pie de la página de inicio y de cada política (CA-HU-003-02)", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const user = userEvent.setup();

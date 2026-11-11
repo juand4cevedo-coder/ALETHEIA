@@ -1,31 +1,31 @@
-/* Plantilla de lectura de las políticas (UI-003), sobre el mismo fondo oscuro del sitio
-   público. Arriba, la ficha del texto y su huella; abajo, el índice con su avance y el texto,
-   que no pasa de 68 caracteres por línea para que se lea sin esfuerzo. */
+/* Plantilla de lectura de las políticas (UI-003), sobre el mismo fondo del sitio público.
+   Arriba, la ficha del texto y su huella; abajo, el índice y el texto, que no pasa de 64
+   caracteres por línea. Solo cambia la presentación: el texto de cada política vive en
+   features/legal y su huella no depende de nada de este archivo. */
 
 /* Bloque superior: sube por detrás del encabezado transparente, que se superpone a la página.
    Sin focos de luz ni retícula: el texto y su huella bastan. */
 .head {
-  position: relative;
   margin-top: calc(-1 * var(--header-height));
   padding: calc(var(--header-height) + var(--space-12)) 0 var(--space-12);
   border-bottom: 1px solid var(--line);
 }
 
 .inner {
-  position: relative;
   max-width: var(--content-width);
   margin: 0 auto;
   padding: 0 var(--space-6);
 }
 
-/* Cambio de política: un riel con las cuatro, la actual en relieve (aria-current de NavLink). */
+/* Cambio de política: el selector segmentado del sitio. La actual lleva superficie, borde de
+   control (3:1 o más) y texto principal (aria-current de NavLink). */
 .switcherList {
   display: inline-flex;
   flex-wrap: wrap;
   gap: var(--space-1);
   margin: 0 0 var(--space-12);
   padding: calc(var(--space-1) - 1px);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-control);
   border-radius: var(--radius-md);
   background: var(--surface-1);
   list-style: none;
@@ -37,6 +37,7 @@
   gap: var(--space-2);
   min-height: var(--control-height-sm);
   padding: 0 var(--space-3);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   color: var(--text-2);
   font-size: var(--font-size-ui);
@@ -45,14 +46,16 @@
   text-decoration: none;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
     color var(--motion-fast) var(--ease-standard);
 }
 
 .switcherLink:hover {
-  color: var(--color-text-inverse);
+  color: var(--text);
 }
 
 .switcherLink[aria-current="page"] {
+  border-color: var(--line-control);
   background: var(--surface-2);
   color: var(--text);
 }
@@ -60,20 +63,22 @@
 /* Título y ficha a la izquierda; la huella del texto a la derecha. */
 .headGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 480px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, var(--panel-width));
   gap: var(--space-12);
-  align-items: center;
+  align-items: start;
 }
 
 .title {
-  max-width: 14ch;
-  font-size: 56px;
+  max-width: var(--measure-display);
+  font-size: var(--font-size-section);
   font-weight: 600;
-  line-height: 60px;
-  letter-spacing: -0.032em;
+  letter-spacing: var(--tracking-section);
+  line-height: var(--line-height-section);
   text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
+/* Ficha: rótulo encima y valor debajo, separados por la línea de los controles. */
 .facts {
   display: flex;
   flex-wrap: wrap;
@@ -87,25 +92,27 @@
 }
 
 .facts dt {
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
 .facts dd {
   margin: var(--space-1) 0 0;
-  color: var(--color-text-inverse);
-  font-size: 15px;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+  font-variant-numeric: tabular-nums;
 }
 
-/* Huella del texto: la misma idea que ALETHEIA aplica a cada evidencia, aplicada a sus
-   propias reglas. Mientras se calcula, el panel reserva el lugar de la huella. */
+/* Huella del texto: la misma idea que ALETHEIA aplica a cada evidencia, aplicada a sus propias
+   reglas. Mientras se calcula, el panel reserva las dos líneas que ocupa la huella, así que
+   nada salta cuando aparece. */
 .seal {
-  position: relative;
+  display: grid;
+  gap: var(--space-3);
   padding: var(--space-6);
-  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--surface-1);
@@ -116,109 +123,86 @@
   align-items: center;
   gap: var(--space-2);
   color: var(--text-2);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: var(--font-size-support);
+  font-weight: 500;
+  line-height: var(--line-height-support);
 }
 
 .sealHash {
-  min-height: 44px;
-  margin-top: var(--space-3);
-  color: var(--color-text-inverse);
+  min-height: calc(var(--line-height-mono) * 2);
+  color: var(--text);
   font-family: var(--font-mono);
-  font-size: 14px;
-  line-height: 22px;
-  letter-spacing: 0.02em;
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-mono);
   overflow-wrap: anywhere;
 }
 
-.seal[data-ready="true"] .sealHash {
-  animation: reveal var(--motion-base) var(--ease-standard);
-}
-
-@keyframes reveal {
-  from {
-    opacity: 0;
-  }
-}
-
 .sealNote {
-  margin-top: var(--space-3);
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-  line-height: 20px;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 .sealActions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: var(--space-4);
+  margin-top: var(--space-1);
 }
 
-/* Lo esencial: tres ideas en tarjetas numeradas. */
+/* Lo esencial: tres ideas en columnas, cada una bajo una línea. Sin tarjetas ni números
+   dibujados; la lista ordenada ya dice el orden a quien usa lector de pantalla. */
 .keyPoints {
   margin-top: var(--space-12);
 }
 
 .keyPointsTitle {
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  color: var(--text);
+  font-size: var(--font-size-subtitle);
+  font-weight: 500;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-subtitle);
 }
 
 .keyPointList {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-4);
+  gap: var(--space-6);
   margin: var(--space-4) 0 0;
   padding: 0;
   list-style: none;
-  counter-reset: esencial;
 }
 
 .keyPoint {
-  position: relative;
-  padding: var(--space-6);
-  border: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-ink-900) 65%, transparent);
-  color: var(--color-text-inverse-muted);
-  font-size: 15px;
-  line-height: 24px;
-  counter-increment: esencial;
-}
-
-.keyPoint::before {
-  display: block;
-  margin-bottom: var(--space-3);
-  color: var(--text-3);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  content: counter(esencial, decimal-leading-zero);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .keyPointTitle {
   margin-bottom: var(--space-1);
-  color: var(--color-text-inverse);
-  font-size: 16px;
-  font-weight: 600;
+  color: var(--text);
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  line-height: var(--line-height-body);
 }
 
 .keyPointsNote {
-  margin-top: var(--space-3);
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
+  margin-top: var(--space-6);
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 /* Índice lateral y texto. */
 .body {
   display: grid;
-  grid-template-columns: 260px minmax(0, 68ch);
+  grid-template-columns: calc(var(--label-column) + var(--space-24)) minmax(
+      0,
+      var(--measure)
+    );
   gap: var(--space-16);
   max-width: var(--content-width);
   margin: 0 auto;
@@ -235,61 +219,45 @@
 
 .indexTitle {
   margin-bottom: var(--space-3);
-  color: var(--color-text-inverse);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
 .indexToggle {
   display: none;
 }
 
-/* La línea del índice se llena a medida que se avanza en la lectura. */
+/* Cada entrada cuelga de una línea; la del apartado que se lee la marca en violeta, como el
+   enlace activo del menú. */
 .indexList {
-  position: relative;
   display: grid;
-  gap: 2px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.indexList::before,
-.indexList::after {
-  height: calc(var(--progress, 0) * 100%);
-  background: var(--accent);
-  transition: height var(--motion-base) var(--ease-standard);
-}
-
-.indexList::before {
-  height: 100%;
-  background: color-mix(in srgb, var(--color-text-inverse) 10%, transparent);
-}
-
-.indexList::after {
-  height: calc(var(--progress, 0) * 100%);
-  background: var(--accent);
-  transition: height var(--motion-base) var(--ease-standard);
-}
-
 .indexLink {
   display: block;
-  padding: 6px var(--space-3) 6px var(--space-4);
-  color: var(--color-text-inverse-muted);
-  font-size: 14px;
-  line-height: 20px;
+  padding: var(--space-1) var(--space-3);
+  border-left: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
   text-decoration: none;
-  transition: color var(--motion-base) var(--ease-standard);
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
 }
 
-.indexLink:hover,
-.indexLink[aria-current="location"] {
-  color: var(--color-text-inverse);
+.indexLink:hover {
+  color: var(--text);
 }
 
 .indexLink[aria-current="location"] {
+  border-left-color: var(--accent);
+  color: var(--text);
   font-weight: 500;
 }
 
@@ -297,12 +265,12 @@
   margin-top: var(--space-2);
 }
 
-/* Cada apartado: número grande al margen, título, fundamento y texto. */
+/* Cada apartado: número al margen, título, fundamento y texto. El número ayuda a citar un
+   apartado y por eso se conserva, en el tono de apoyo y fuera del texto que se descarga. */
 .section {
   position: relative;
   padding: var(--space-12) 0;
-  border-top: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 7%, transparent);
+  border-top: 1px solid var(--line);
 }
 
 .section:first-child {
@@ -314,10 +282,11 @@
   position: absolute;
   top: var(--space-12);
   right: calc(100% + var(--space-6));
-  color: color-mix(in srgb, var(--color-primary-300) 55%, transparent);
+  color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 14px;
-  line-height: 32px;
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-subtitle);
+  font-variant-numeric: tabular-nums;
 }
 
 .section:first-child .sectionNumber {
@@ -325,38 +294,34 @@
 }
 
 .sectionTitle {
-  font-size: 24px;
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
-  line-height: 32px;
-  letter-spacing: -0.014em;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-subtitle);
 }
 
+/* Normas en que se apoya el apartado: una línea de apoyo, sin cápsula ni violeta. */
 .basis {
-  display: inline-flex;
+  display: flex;
   align-items: flex-start;
   gap: var(--space-2);
-  margin-top: var(--space-3);
-  padding: 4px var(--space-3);
-  border: 1px solid
-    color-mix(in srgb, var(--color-primary-300) 20%, transparent);
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-primary-700) 14%, transparent);
-  color: var(--color-primary-300);
-  font-size: 13px;
-  line-height: 20px;
+  margin-top: var(--space-2);
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 .basis svg {
   flex: none;
-  margin-top: 3px;
+  margin-top: calc((var(--line-height-support) - var(--space-4)) / 2);
 }
 
 /* Texto de cada apartado: lo escriben los archivos de features/legal sin clases propias. */
 .prose {
   margin-top: var(--space-4);
-  color: var(--color-text-inverse-muted);
-  font-size: 16px;
-  line-height: 28px;
+  color: var(--text-2);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
 }
 
 .prose > * + * {
@@ -365,10 +330,10 @@
 
 .prose h3 {
   margin-top: var(--space-6);
-  color: var(--color-text-inverse);
-  font-size: 17px;
+  color: var(--text);
+  font-size: var(--font-size-body);
   font-weight: 600;
-  line-height: 26px;
+  line-height: var(--line-height-body);
 }
 
 .prose ul,
@@ -379,34 +344,39 @@
 }
 
 .prose li::marker {
-  color: var(--color-primary-400);
+  color: var(--text-3);
 }
 
 .prose ol li::marker {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: var(--font-size-mono);
 }
 
 .prose strong {
-  color: var(--color-text-inverse);
+  color: var(--text);
   font-weight: 600;
 }
 
+.prose a {
+  color: var(--accent-strong);
+  text-underline-offset: var(--underline-offset);
+}
+
 .prose code {
-  padding: 1px 6px;
+  padding: 0 var(--space-1);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-ink-700) 70%, transparent);
-  color: var(--color-text-inverse);
+  background: var(--surface-2);
+  color: var(--text);
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--font-size-mono);
   overflow-wrap: anywhere;
 }
 
 .prose table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
-  line-height: 22px;
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .prose caption {
@@ -421,18 +391,16 @@
 .prose th,
 .prose td {
   padding: var(--space-3);
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+  border-bottom: 1px solid var(--line);
   text-align: left;
   vertical-align: top;
 }
 
 .prose th {
-  color: var(--color-text-inverse);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
 /* Bloque final con los datos del responsable, igual en las cuatro políticas. */
@@ -444,35 +412,41 @@
   background: var(--surface-1);
 }
 
+.contact a {
+  color: var(--accent-strong);
+  text-underline-offset: var(--underline-offset);
+}
+
 .contactTitle {
   margin-bottom: var(--space-6);
-  font-size: 20px;
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
-  line-height: 28px;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-subtitle);
 }
 
 .contactList {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(calc(var(--label-column) + var(--space-16)), 1fr)
+  );
   gap: var(--space-4) var(--space-8);
   margin: 0;
 }
 
 .contactList dt {
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
 .contactList dd {
-  margin: 2px 0 0;
-  font-size: 15px;
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
   overflow-wrap: anywhere;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .seal[data-ready="true"] .sealHash {
-    animation: none;
-  }
 }
 
 @media (max-width: 1100px) {
@@ -482,7 +456,7 @@
   }
 
   .seal {
-    max-width: 640px;
+    max-width: var(--screen-narrow-width);
   }
 }
 
@@ -494,38 +468,43 @@
 
   .keyPointList {
     grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
   }
 
   /* En una sola columna el número va sobre el título y el índice antes del texto, plegado. */
   .sectionNumber {
     position: static;
     display: block;
-    line-height: 20px;
+    line-height: var(--line-height-mono);
   }
 
   .aside {
     position: static;
     max-height: none;
     overflow: visible;
-    padding: var(--space-4);
-    border: 1px solid
-      color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
-    border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--color-ink-900) 60%, transparent);
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--surface-1);
+  }
+
+  .indexTitle {
+    margin-bottom: 0;
   }
 
   .indexToggle {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    min-height: 40px;
+    min-height: var(--touch-target);
     padding: 0;
     border: 0;
     background: none;
-    color: var(--color-primary-300);
+    color: var(--accent-strong);
     font: inherit;
-    font-size: 15px;
+    font-size: var(--font-size-ui);
     font-weight: 500;
+    line-height: var(--line-height-ui);
     cursor: pointer;
   }
 
@@ -534,7 +513,7 @@
   }
 
   .index[data-open="true"] .indexList {
-    margin-top: var(--space-3);
+    margin: var(--space-1) 0 var(--space-3);
   }
 }
 
@@ -554,33 +533,25 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
     margin-bottom: var(--space-8);
-    border-radius: var(--radius-lg);
   }
 
   .switcherLink {
     justify-content: center;
-    border-radius: var(--radius-md);
   }
 
   .title {
     max-width: none;
-    font-size: 34px;
-    line-height: 40px;
+    font-size: var(--font-size-section-sm);
+    line-height: var(--line-height-section-sm);
   }
 
   .seal,
-  .keyPoint,
   .contact {
     padding: var(--space-4);
   }
 
   .sealActions > * {
     flex: 1 1 auto;
-  }
-
-  .sectionTitle {
-    font-size: 20px;
-    line-height: 28px;
   }
 
   .section {
@@ -601,26 +572,36 @@
 
   .prose tr {
     padding: var(--space-3) 0;
-    border-bottom: 1px solid
-      color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
+    border-bottom: 1px solid var(--line);
   }
 
   .prose td {
-    padding: 2px 0;
+    padding: 0;
     border: 0;
+  }
+
+  .prose td + td {
+    margin-top: var(--space-1);
   }
 }
 
-/* Al imprimir queda el texto con su huella: sin riel, sin índice ni botones, en tinta oscura
-   sobre blanco. */
+@media (prefers-reduced-motion: reduce) {
+  .switcherLink,
+  .indexLink {
+    transition: none;
+  }
+}
+
+/* Al imprimir queda el texto con su huella: sin selector, sin índice ni botones, en tinta
+   oscura sobre blanco. La tinta es el color del fondo de pantalla, el más oscuro del sistema,
+   y las líneas son las de los controles, que se ven sobre papel. */
 @media print {
   .head {
     margin-top: 0;
     padding: 0 0 var(--space-6);
-    background: none;
+    border-color: var(--line-control);
   }
 
-  .head::before,
   .switcher,
   .aside,
   .sealActions,
@@ -638,31 +619,42 @@
   .seal,
   .contact {
     margin-top: var(--space-4);
-    border-color: var(--color-border-subtle);
+    border-color: var(--line-control);
     background: none;
-    box-shadow: none;
   }
 
   .title,
+  .facts dt,
   .facts dd,
+  .sealLabel,
   .sealHash,
+  .sectionNumber,
   .sectionTitle,
+  .basis,
   .prose,
   .prose strong,
   .prose h3,
   .prose th,
-  .contactList dt {
-    color: var(--color-text-primary);
+  .prose a,
+  .contactTitle,
+  .contact a,
+  .contactList dt,
+  .contactList dd {
+    color: var(--bg);
+  }
+
+  .prose code {
+    background: none;
+    color: var(--bg);
   }
 
   .sectionNumber {
     position: static;
-    color: var(--color-primary-700);
   }
 
   .section {
     padding: var(--space-4) 0;
-    border-color: var(--color-border-subtle);
+    border-color: var(--line-control);
   }
 
   .sectionTitle {

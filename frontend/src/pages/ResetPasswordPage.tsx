@@ -150,7 +150,7 @@ export function ResetPasswordPage() {
 
         {stage === "done" && (
           <section className={styles.notice} aria-labelledby={TITLE_ID}>
-            <CirculoVistoIcon size={28} aria-hidden="true" />
+            <CirculoVistoIcon size={20} aria-hidden="true" />
             <h1
               id={TITLE_ID}
               className={styles.noticeTitle}
@@ -169,7 +169,7 @@ export function ResetPasswordPage() {
 
         {stage === "invalid" && (
           <section className={styles.notice} aria-labelledby={TITLE_ID}>
-            <VinculoIcon size={28} aria-hidden="true" />
+            <VinculoIcon size={20} aria-hidden="true" />
             <h1
               id={TITLE_ID}
               className={styles.noticeTitle}

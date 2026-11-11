@@ -72,7 +72,7 @@ export function WorkspacePage() {
             nuevo.
           </p>
           <div className={styles.resend}>
-            <ResendVerification />
+            <ResendVerification email={me.email} />
           </div>
         </section>
       )}

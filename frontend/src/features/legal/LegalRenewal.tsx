@@ -161,7 +161,7 @@ export function LegalRenewal({ me }: { me: Me }) {
                 target="_blank"
                 rel="noopener"
               >
-                <Icon size={18} aria-hidden="true" />
+                <Icon size={16} aria-hidden="true" />
                 <span>{page.label}</span>
                 <FlechaDiagonalIcon
                   className={styles.documentArrow}

@@ -90,7 +90,7 @@ export function ForgotPasswordPage() {
 
         {sentTo ? (
           <section className={styles.notice} aria-labelledby="titulo-enviado">
-            <CorreoIcon size={28} aria-hidden="true" />
+            <CorreoIcon size={20} aria-hidden="true" />
             <h2
               id="titulo-enviado"
               className={styles.noticeTitle}

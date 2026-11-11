@@ -214,7 +214,11 @@ export function CasesPage() {
     />
   );
   const dialog = (
-    <VerifyEmailDialog open={verifying} onClose={() => setVerifying(false)} />
+    <VerifyEmailDialog
+      email={me.email}
+      open={verifying}
+      onClose={() => setVerifying(false)}
+    />
   );
 
   if (book.isPending) {
