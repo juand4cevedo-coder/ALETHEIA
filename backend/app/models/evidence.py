@@ -13,6 +13,7 @@ from sqlalchemy import (
     Index,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -23,6 +24,17 @@ from app.models._columns import CreatedAt, UUIDv7Pk, text_values
 CASE_STATUSES: Final = ("open", "closed", "deleting")
 # Tipo que declara quien sube la evidencia; la interfaz lo muestra en español.
 DECLARED_TYPES: Final = ("chat", "email", "audio", "image", "document", "other")
+# Especialidad del caso; la interfaz la muestra en español.
+PRACTICE_AREAS: Final = (
+    "civil",
+    "commercial",
+    "family",
+    "labor",
+    "criminal",
+    "administrative",
+    "constitutional",
+    "other",
+)
 TSA_STATUSES: Final = ("pending", "stamped", "failed")
 EXPORT_STATUSES: Final = ("queued", "building", "ready", "failed", "expired")
 # Lista cerrada de acciones de la cadena de custodia (RN-006). Agregar una exige una migración.
@@ -57,6 +69,10 @@ class Case(Base):
         CheckConstraint(
             "char_length(internal_reference) BETWEEN 1 AND 80", name="internal_reference_length"
         ),
+        # Radicado colombiano: exactamente 23 dígitos, sin separadores.
+        CheckConstraint("filing_number ~ '^[0-9]{23}$'", name="filing_number_format"),
+        CheckConstraint("char_length(court) BETWEEN 1 AND 160", name="court_length"),
+        CheckConstraint(text_values("practice_area", PRACTICE_AREAS), name="practice_area"),
         CheckConstraint(text_values("status", CASE_STATUSES), name="status"),
         CheckConstraint("char_length(key_version) BETWEEN 1 AND 120", name="key_version_length"),
         CheckConstraint("custody_seq >= 0", name="custody_seq"),
@@ -67,12 +83,24 @@ class Case(Base):
         # Lista los casos de una organización por cursor (IDX-006) y sirve de destino a las
         # llaves compuestas de las tablas hijas.
         UniqueConstraint("organization_id", "id"),
+        # Un radicado identifica un solo caso dentro de la organización.
+        Index(
+            "uq_cases_organization_filing_number",
+            "organization_id",
+            "filing_number",
+            unique=True,
+            postgresql_where=text("filing_number IS NOT NULL"),
+        ),
     )
 
     id: Mapped[UUIDv7Pk]
     organization_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("organizations.id"))
     title: Mapped[str]
     internal_reference: Mapped[str | None]
+    # Datos procesales opcionales: radicado de 23 dígitos, despacho y especialidad.
+    filing_number: Mapped[str | None]
+    court: Mapped[str | None]
+    practice_area: Mapped[str | None]
     status: Mapped[str] = mapped_column(server_default="open")
     # Llave de datos del caso, envuelta por la llave maestra de AWS KMS. Nunca en claro.
     wrapped_key: Mapped[bytes | None]

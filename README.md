@@ -72,6 +72,15 @@ Abre `backend/.env` y reemplaza cada `CLAVE` por la del usuario correspondiente 
 | `ALETHEIA_SMTP_HOST` y `ALETHEIA_SMTP_PORT` | No | `127.0.0.1` y `1025`, el Mailpit de Compose |
 | `ALETHEIA_TOKEN_SIGNING_KEY` | Sí, para los enlaces de los correos y las sesiones | Al menos 32 caracteres aleatorios: `uv run python -c "import secrets; print(secrets.token_urlsafe(48))"`. En producción se lee de Parameter Store |
 | `ALETHEIA_DEV_PUBLIC_URL` | No | `http://localhost:5173`, la dirección de los enlaces fuera de producción |
+| `ALETHEIA_LOCAL_KEY_PATH` | Sí, fuera de producción | `../infra/dev-key.pem`, la llave con la que se envuelven las llaves de los casos. En producción no se define: la maestra vive en AWS KMS y la API rechaza la variable |
+
+La llave local se genera una sola vez, desde `backend/`. `*.pem` está en `.gitignore`, así que `infra/dev-key.pem` nunca entra al repositorio:
+
+```powershell
+uv run python -c "from cryptography.hazmat.primitives import serialization as s; from cryptography.hazmat.primitives.asymmetric import rsa; k = rsa.generate_private_key(public_exponent=65537, key_size=3072); open('../infra/dev-key.pem', 'wb').write(k.private_bytes(s.Encoding.PEM, s.PrivateFormat.PKCS8, s.NoEncryption()))"
+```
+
+Si se pierde o se reemplaza esa llave, los casos creados con ella dejan de poder abrirse en ese equipo: solo sirve para desarrollo.
 
 Con los servicios de Compose encendidos:
 

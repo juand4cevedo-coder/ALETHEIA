@@ -46,6 +46,257 @@ export type AcceptInvitationRequest = {
 };
 
 /**
+ * CaseCreate
+ *
+ * Datos con que se abre un caso (API-022).
+ */
+export type CaseCreate = {
+  /**
+   * Title
+   *
+   * Título del caso.
+   */
+  title: string;
+  /**
+   * Filing Number
+   *
+   * Número de radicación. Se aceptan espacios, puntos y guiones; se guardan solo sus 23 dígitos.
+   */
+  filing_number?: string | null;
+  /**
+   * Court
+   *
+   * Despacho que lleva el proceso.
+   */
+  court?: string | null;
+  /**
+   * Practice Area
+   *
+   * Especialidad.
+   */
+  practice_area?:
+    | "civil"
+    | "commercial"
+    | "family"
+    | "labor"
+    | "criminal"
+    | "administrative"
+    | "constitutional"
+    | "other"
+    | null;
+  /**
+   * Internal Reference
+   *
+   * Referencia con que la oficina identifica el caso.
+   */
+  internal_reference?: string | null;
+};
+
+/**
+ * CaseDetail
+ *
+ * El caso con su equipo y sus últimos eventos (API-024).
+ */
+export type CaseDetail = {
+  /**
+   * Id
+   *
+   * Identificador del caso.
+   */
+  id: string;
+  /**
+   * Title
+   *
+   * Título del caso.
+   */
+  title: string;
+  /**
+   * Filing Number
+   *
+   * Los 23 dígitos del radicado, si lo tiene.
+   */
+  filing_number: string | null;
+  /**
+   * Court
+   *
+   * Despacho que lleva el proceso.
+   */
+  court: string | null;
+  /**
+   * Practice Area
+   *
+   * Especialidad.
+   */
+  practice_area:
+    | "civil"
+    | "commercial"
+    | "family"
+    | "labor"
+    | "criminal"
+    | "administrative"
+    | "constitutional"
+    | "other"
+    | null;
+  /**
+   * Internal Reference
+   *
+   * Referencia interna de la oficina.
+   */
+  internal_reference: string | null;
+  /**
+   * Status
+   *
+   * Si el caso sigue abierto.
+   */
+  status: "open" | "closed";
+  /**
+   * Created At
+   *
+   * Cuándo se abrió.
+   */
+  created_at: string;
+  /**
+   * Created By Name
+   *
+   * Nombre de quien lo abrió.
+   */
+  created_by_name: string;
+  /**
+   * Member Count
+   *
+   * Personas asignadas al caso.
+   */
+  member_count: number;
+  /**
+   * Members
+   *
+   * Equipo del caso.
+   */
+  members: Array<CaseMemberOut>;
+  /**
+   * Recent Events
+   *
+   * Últimos eventos de la cadena, del más reciente al más antiguo.
+   */
+  recent_events: Array<CustodyEventOut>;
+};
+
+/**
+ * CaseMemberOut
+ *
+ * Una persona asignada al caso.
+ */
+export type CaseMemberOut = {
+  /**
+   * User Id
+   *
+   * Identificador de la persona.
+   */
+  user_id: string;
+  /**
+   * Full Name
+   *
+   * Nombre de la persona.
+   */
+  full_name: string;
+  /**
+   * Email
+   *
+   * Correo de la persona.
+   */
+  email: string;
+  /**
+   * Role
+   *
+   * Rol en la organización.
+   */
+  role: "owner" | "admin" | "lawyer" | "assistant";
+  /**
+   * Added At
+   *
+   * Cuándo se asignó al caso.
+   */
+  added_at: string;
+};
+
+/**
+ * CaseOut
+ *
+ * Un caso abierto.
+ */
+export type CaseOut = {
+  /**
+   * Id
+   *
+   * Identificador del caso.
+   */
+  id: string;
+  /**
+   * Title
+   *
+   * Título del caso.
+   */
+  title: string;
+  /**
+   * Filing Number
+   *
+   * Los 23 dígitos del radicado, si lo tiene.
+   */
+  filing_number: string | null;
+  /**
+   * Court
+   *
+   * Despacho que lleva el proceso.
+   */
+  court: string | null;
+  /**
+   * Practice Area
+   *
+   * Especialidad.
+   */
+  practice_area:
+    | "civil"
+    | "commercial"
+    | "family"
+    | "labor"
+    | "criminal"
+    | "administrative"
+    | "constitutional"
+    | "other"
+    | null;
+  /**
+   * Internal Reference
+   *
+   * Referencia interna de la oficina.
+   */
+  internal_reference: string | null;
+  /**
+   * Status
+   *
+   * Si el caso sigue abierto.
+   */
+  status: "open" | "closed";
+  /**
+   * Created At
+   *
+   * Cuándo se abrió.
+   */
+  created_at: string;
+  /**
+   * Created By Name
+   *
+   * Nombre de quien lo abrió.
+   */
+  created_by_name: string;
+  /**
+   * Member Count
+   *
+   * Personas asignadas al caso.
+   */
+  member_count: number;
+};
+
+/**
  * ChangePasswordRequest
  *
  * Contraseña actual y nueva de quien tiene la sesión (API-013).
@@ -63,6 +314,44 @@ export type ChangePasswordRequest = {
    * Contraseña nueva, de 12 a 128 caracteres.
    */
   new_password: string;
+};
+
+/**
+ * CustodyEventOut
+ *
+ * Un evento de la cadena de custodia del caso.
+ */
+export type CustodyEventOut = {
+  /**
+   * Seq
+   *
+   * Posición del evento en la cadena, desde 1.
+   */
+  seq: number;
+  /**
+   * Action
+   *
+   * Qué ocurrió, por ejemplo case_created.
+   */
+  action: string;
+  /**
+   * Actor Name
+   *
+   * Quién lo hizo, o null si fue el sistema.
+   */
+  actor_name: string | null;
+  /**
+   * Occurred At
+   *
+   * Cuándo ocurrió.
+   */
+  occurred_at: string;
+  /**
+   * Event Hash
+   *
+   * Huella SHA-256 del evento, en hexadecimal.
+   */
+  event_hash: string;
 };
 
 /**
@@ -1610,3 +1899,82 @@ export type AcceptInvitationResponses = {
 
 export type AcceptInvitationResponse =
   AcceptInvitationResponses[keyof AcceptInvitationResponses];
+
+export type CreateCaseData = {
+  body: CaseCreate;
+  path?: never;
+  query?: never;
+  url: "/api/v1/cases";
+};
+
+export type CreateCaseErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no abre casos o la persona no ha verificado su correo.
+   */
+  403: Problem;
+  /**
+   * La organización está en solo lectura o ya hay un caso con ese radicado (tipo https://aletheia.sbs/problemas/radicado-repetido).
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * KMS no respondió y no se pudo preparar la llave del caso.
+   */
+  503: Problem;
+};
+
+export type CreateCaseError = CreateCaseErrors[keyof CreateCaseErrors];
+
+export type CreateCaseResponses = {
+  /**
+   * Successful Response
+   */
+  201: CaseOut;
+};
+
+export type CreateCaseResponse = CreateCaseResponses[keyof CreateCaseResponses];
+
+export type ReadCaseData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}";
+};
+
+export type ReadCaseErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El caso no existe o la persona no es miembro de él.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ReadCaseError = ReadCaseErrors[keyof ReadCaseErrors];
+
+export type ReadCaseResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseDetail;
+};
+
+export type ReadCaseResponse = ReadCaseResponses[keyof ReadCaseResponses];

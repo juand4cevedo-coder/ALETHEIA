@@ -1,0 +1,136 @@
+/* Cadena de custodia: rombos unidos por un hilo que se apaga hacia el siguiente eslabón. */
+.timeline {
+  display: grid;
+}
+
+.events {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.event,
+.next {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+}
+
+/* El hilo que une un evento con el siguiente; el último evento lo tiende hacia el hueco. */
+.event::before {
+  content: "";
+  position: absolute;
+  top: 26px;
+  bottom: 0;
+  left: 10px;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    var(--color-ink-600),
+    color-mix(in srgb, var(--color-ink-600) 20%, transparent)
+  );
+}
+
+.node,
+.ghost {
+  width: 18px;
+  height: 18px;
+  margin: var(--space-1) 0 0 2px;
+  border-radius: var(--radius-sm);
+  transform: rotate(45deg);
+}
+
+.node {
+  border: 1px solid var(--color-primary-400);
+  background: color-mix(in srgb, var(--color-primary-400) 14%, transparent);
+  box-shadow: 0 0 16px
+    color-mix(in srgb, var(--color-primary-400) 25%, transparent);
+}
+
+.ghost {
+  border: 1px dashed var(--color-ink-600);
+}
+
+/* Al llegar recién abierto, el primer eslabón se enciende una vez. */
+.timeline[data-just-opened] .event:first-child .node {
+  animation: seal var(--motion-slow) var(--ease-out) both;
+}
+
+@keyframes seal {
+  from {
+    border-color: var(--color-ink-650);
+    background: var(--color-ink-900);
+    box-shadow: none;
+  }
+}
+
+.body {
+  min-width: 0;
+}
+
+.name,
+.nextName {
+  margin: 0 0 var(--space-1);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-inverse);
+}
+
+.nextName {
+  font-weight: 500;
+  color: var(--color-text-inverse-muted);
+}
+
+.meta {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-inverse-muted);
+}
+
+.meta time {
+  font-variant-numeric: tabular-nums;
+}
+
+.hash {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--color-text-inverse-muted);
+}
+
+.hash code {
+  font-family: inherit;
+  color: var(--color-primary-300);
+}
+
+/* Sin verificación independiente todavía: un estado gris, nunca un sello verde por defecto. */
+.verification {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-ink-800);
+  border-radius: var(--radius-md);
+  background: var(--color-ink-950);
+}
+
+.verification p {
+  flex: 1 1 220px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-inverse-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline[data-just-opened] .event:first-child .node {
+    animation: none;
+  }
+}
