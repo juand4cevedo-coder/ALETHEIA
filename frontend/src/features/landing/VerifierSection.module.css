@@ -1,81 +1,36 @@
-/* Panel con borde de luz y un resplandor de marca en la esquina: es la única sección que
-   habla a otro público, y se distingue sin romper el fondo continuo. */
-.panel {
-  position: relative;
+/* El encabezado a la izquierda y los tres pasos a la derecha, alineados arriba. */
+.layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: center;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   gap: var(--space-12);
-  overflow: hidden;
-  padding: var(--space-12);
-  border: 1px solid transparent;
-  border-radius: 24px;
-  background:
-    radial-gradient(
-        circle at 0% 0%,
-        color-mix(in srgb, var(--color-brand-blue) 18%, transparent),
-        transparent 55%
-      )
-      padding-box,
-    linear-gradient(160deg, var(--color-ink-800), var(--color-ink-950))
-      padding-box,
-    linear-gradient(
-        160deg,
-        color-mix(in srgb, var(--color-primary-300) 22%, transparent),
-        color-mix(in srgb, var(--color-text-inverse) 6%, transparent) 50%,
-        color-mix(in srgb, var(--color-primary-400) 12%, transparent)
-      )
-      border-box;
+  align-items: start;
 }
 
 .copy {
   display: grid;
+  gap: var(--space-6);
   justify-items: start;
-  gap: var(--space-4);
 }
 
-.title {
-  font-family: var(--font-display);
-  font-size: 36px;
-  font-weight: 560;
-  line-height: 44px;
-  letter-spacing: -0.025em;
+/* Disponibilidad dicha con texto, en grafito: no es el estado de una evidencia. */
+.availability {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: var(--measure-narrow);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
-.text {
-  margin-bottom: var(--space-2);
-  color: var(--color-text-inverse-muted);
-  font-size: 17px;
-  line-height: 27px;
+.availability svg {
+  flex: none;
+  margin-top: calc(var(--space-1) / 2);
 }
 
-/* Los pasos van en la línea de tiempo compartida (Timeline.module.css); aquí solo el texto. */
-.stepText {
-  color: var(--color-text-inverse-muted);
-  font-size: 15px;
-  line-height: 24px;
-}
-
-@media (max-width: 900px) {
-  .panel {
+@media (max-width: 960px) {
+  .layout {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-8);
-    padding: var(--space-8) var(--space-6);
   }
-
-  .title {
-    font-size: 28px;
-    line-height: 36px;
-  }
-}
-
-.availability {
-  justify-self: start;
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid
-    color-mix(in srgb, var(--color-primary-300) 30%, transparent);
-  border-radius: var(--radius-pill);
-  color: var(--color-primary-300);
-  font-size: 14px;
-  font-weight: 500;
 }
