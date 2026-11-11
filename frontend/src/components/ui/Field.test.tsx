@@ -49,6 +49,19 @@ describe("Campo de texto", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("con foco, un campo con error sigue marcado y describe el error", async () => {
+    const user = userEvent.setup();
+    render(
+      <Field label="Correo" type="email" error="Escriba un correo válido." />,
+    );
+
+    const input = screen.getByLabelText("Correo");
+    await user.click(input);
+    expect(input).toHaveFocus();
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(input).toHaveAccessibleDescription("Escriba un correo válido.");
+  });
+
   it("la ayuda dinámica se suma a la descripción del campo", () => {
     render(
       <Field label="Contraseña" type="password" describedBy="medidor">

@@ -75,14 +75,15 @@
   text-align: center;
 }
 
+/* El enlace va subrayado: el color solo (1,2:1 frente al texto que lo rodea) no lo distingue. */
 .switch a {
   font-weight: 500;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
 }
 
 .switch a:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--text);
 }
 
 .footer {

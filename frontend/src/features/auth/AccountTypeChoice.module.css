@@ -1,4 +1,4 @@
-/* Selector segmentado: dos opciones en un mismo control. La elegida pasa a --surface-2 con el
+/* Selector segmentado: dos opciones en un mismo control. La elegida lleva superficie, borde y
    texto principal, como el elemento activo del menú lateral. */
 .choice {
   min-width: 0;
@@ -33,6 +33,7 @@
   gap: var(--space-2);
   min-height: var(--control-height-sm);
   padding: 0 var(--space-3);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   color: var(--text-2);
   font-size: var(--font-size-ui);
@@ -42,6 +43,7 @@
   cursor: pointer;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
     color var(--motion-fast) var(--ease-standard);
 }
 
@@ -55,8 +57,11 @@
   color: var(--text);
 }
 
-.option:has(input:checked) {
+/* La elegida se distingue por su borde --line-control (3,5:1 sobre --surface-1 y 3,3:1 sobre
+   --surface-2), además de la superficie y el texto. */
+.option[data-checked] {
   background: var(--surface-2);
+  border-color: var(--line-control);
   color: var(--text);
 }
 

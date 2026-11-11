@@ -94,7 +94,7 @@
   font-size: 14px;
   font-weight: 500;
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: var(--underline-offset);
   cursor: pointer;
 }
 
@@ -133,7 +133,8 @@
 
 .always {
   flex: none;
-  color: var(--color-success-400);
+  /* Que estén siempre activas no es una verificación: va en grafito y no en verde. */
+  color: var(--text-2);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;

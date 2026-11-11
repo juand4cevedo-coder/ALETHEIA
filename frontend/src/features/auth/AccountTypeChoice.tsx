@@ -37,7 +37,11 @@ export function AccountTypeChoice({
       <legend className={styles.legend}>¿Para quién es la cuenta?</legend>
       <div className={styles.options}>
         {OPTIONS.map(({ value: option, title, Icon }) => (
-          <label key={option} className={styles.option}>
+          <label
+            key={option}
+            className={styles.option}
+            data-checked={value === option || undefined}
+          >
             <input
               type="radio"
               name={name}

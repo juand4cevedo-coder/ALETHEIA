@@ -91,7 +91,7 @@
 
 .forgot:hover {
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: var(--underline-offset);
 }
 
 /* Aviso que reemplaza al formulario cuando la acción terminó. Ya está dentro del panel, así que
