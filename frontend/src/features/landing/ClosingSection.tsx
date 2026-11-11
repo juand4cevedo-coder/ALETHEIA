@@ -31,13 +31,12 @@ export function ClosingSection() {
               : `Tiene ${days} días de prueba gratuita, sin tarjeta de crédito.`}
           </p>
           <div className={styles.actions}>
-            <ButtonLink to={ROUTES.signUp} surface="dark">
+            <ButtonLink to={ROUTES.signUp}>
               Crear cuenta gratis
               <FlechaDerechaIcon size={18} />
             </ButtonLink>
             <a
               className={buttonClassName({
-                surface: "dark",
                 variant: "secondary",
               })}
               href={`mailto:${CONTACT_EMAIL}`}

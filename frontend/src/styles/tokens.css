@@ -146,12 +146,6 @@
   --motion-slow: 700ms;
   /* Destello de los caracteres que cambian en la demostración de la huella. */
   --motion-flash: 600ms;
-  /* Una vuelta del borde de luz del hero: la única animación continua, lenta a propósito. */
-  --motion-orbit: 14s;
-  /* Entrada «estampada» de la ficha del sello en el hero, una sola vez al cargar. */
-  --motion-stamp: 500ms;
-  /* Espera a que la ventana ya esté a la vista antes de estampar el sello. */
-  --motion-stamp-delay: 900ms;
   /* Una vuelta de la rueda que dice que una acción está en curso. */
   --motion-spin: 900ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
@@ -159,6 +153,12 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   --content-width: 1200px;
+  /* Texto corrido: 64 caracteres como máximo (especificación de identidad, sección 5). */
+  --measure: 64ch;
+  /* Párrafos breves junto a otra columna, como el del pie. */
+  --measure-narrow: 40ch;
+  /* Titulares grandes: líneas cortas que se leen de un vistazo. */
+  --measure-display: 22ch;
   /* Ancho de los paneles de una columna: el acceso y los diálogos. */
   --panel-width: 448px;
   /* Ancho del menú lateral del espacio de trabajo. */

@@ -1,63 +1,98 @@
-import { Reveal } from "../../components/ui/Reveal.tsx";
 import styles from "./ProblemSection.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
-import { BalanzaIcon } from "../../components/ui/icons.tsx";
+import {
+  CadenaIcon,
+  HuellaIcon,
+  type IconComponent,
+} from "../../components/ui/icons.tsx";
 
-const PROBLEMS = [
-  {
-    title: "La captura pierde información",
-    text: "Un pantallazo o una impresión dejan atrás los metadatos del archivo: fechas, formato y el contenido completo del mensaje. Lo que llega al expediente ya no es el original.",
-  },
-  {
-    title: "No hay cómo probar que no cambió",
-    text: "Si nadie registró la huella del archivo al recibirlo, tampoco se puede demostrar después que el documento que se aporta es el mismo que llegó a la oficina.",
-  },
-  {
-    title: "Nadie sabe quién lo manipuló",
-    text: "Entre correos, memorias USB y carpetas compartidas no queda registro de quién abrió, copió o modificó cada archivo, ni en qué momento lo hizo.",
-  },
-] as const;
+type Point = {
+  label: string;
+  capture: string;
+  original: string;
+  icon?: IconComponent;
+};
 
-// Por qué importa el original: el problema que resuelve ALETHEIA. Se lee como un alegato: el
-// planteamiento a la izquierda y los tres puntos numerados a la derecha, con la norma como nota
-// al pie. Los números son decorativos (aria-hidden): la <ol> ya comunica el orden.
+// Lo mismo, visto desde la captura y desde el original. Cuatro puntos que un abogado reconoce
+// cuando la contraparte tacha una prueba.
+const POINTS: readonly Point[] = [
+  {
+    label: "Metadatos",
+    capture: "Se pierden. Queda solo la fecha de la captura.",
+    original: "Intactos, dentro del archivo que llegó.",
+  },
+  {
+    label: "Contenido",
+    capture: "Lo que cabía en la pantalla.",
+    original: "El archivo completo, sin convertir.",
+  },
+  {
+    label: "Prueba de que no cambió",
+    capture: "Ninguna.",
+    original: "Su huella SHA-256, sellada por un tercero con fecha y hora.",
+    icon: HuellaIcon,
+  },
+  {
+    label: "Quién lo manejó",
+    capture: "No queda registro.",
+    original: "Cada acceso, con nombre y hora, en la cadena de custodia.",
+    icon: CadenaIcon,
+  },
+];
+
+// El problema: por qué no basta con una captura de pantalla. La respuesta es una comparación
+// punto por punto, en dos paneles del mismo estilo; en escritorio sus filas se alinean.
 export function ProblemSection() {
   return (
     <section className={section.section} aria-labelledby="titulo-problema">
-      <div className={`${section.inner} ${styles.layout}`}>
+      <div className={section.inner}>
         <SectionHeading
           id="titulo-problema"
-          index={1}
-          kicker="Por qué importa"
+          kicker="El problema"
           title="Una captura de pantalla no es el archivo original"
-          lead="En un proceso, la evidencia digital se valora a partir de su formato original o de uno que lo reproduzca con exactitud. Conservarla bien desde el primer día evita discusiones que no deberían existir."
-          className={`${section.headingStacked} ${styles.heading}`}
+          lead="El Código General del Proceso valora como mensaje de datos el archivo en el formato en que se generó o se recibió. Su impresión se valora como un documento común."
         />
 
-        <div className={styles.body}>
-          <ol className={styles.list}>
-            {PROBLEMS.map((problem, index) => (
-              <Reveal as="li" key={problem.title} className={styles.item}>
-                <span className={styles.number} aria-hidden="true">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <div className={styles.copy}>
-                  <h3 className={section.cardTitle}>{problem.title}</h3>
-                  <p className={section.cardText}>{problem.text}</p>
+        <div className={styles.compare}>
+          <div className={styles.panel}>
+            <h3 className={styles.panelTitle}>Una captura de pantalla</h3>
+            <dl className={styles.points}>
+              {POINTS.map((point) => (
+                <div key={point.label} className={styles.point}>
+                  <dt>{point.label}</dt>
+                  <dd className={styles.muted}>{point.capture}</dd>
                 </div>
-              </Reveal>
-            ))}
-          </ol>
+              ))}
+            </dl>
+          </div>
 
-          <Reveal className={styles.source}>
-            <BalanzaIcon size={16} />
-            <p>
-              Código General del Proceso, artículo 247, y Corte Constitucional,
-              sentencia C-604 de 2016.
-            </p>
-          </Reveal>
+          <div className={styles.panel}>
+            <h3 className={styles.panelTitle}>El original en ALETHEIA</h3>
+            <dl className={styles.points}>
+              {POINTS.map((point) => (
+                <div key={point.label} className={styles.point}>
+                  <dt>{point.label}</dt>
+                  <dd>
+                    {point.icon && (
+                      <point.icon
+                        className={styles.icon}
+                        size={16}
+                        aria-hidden="true"
+                      />
+                    )}
+                    {point.original}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </div>
+
+        <p className={styles.source}>
+          Código General del Proceso, artículo 247, y sentencia C‑604 de 2016 de
+          la Corte Constitucional.
+        </p>
       </div>
     </section>
   );

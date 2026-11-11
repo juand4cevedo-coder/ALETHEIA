@@ -1,0 +1,345 @@
+/* El espacio de trabajo como imagen: las mismas superficies, la misma línea y las mismas
+   medidas de la aplicación. La ventana se apoya en la línea que cierra el inicio, como una
+   captura que sigue hacia abajo. */
+.wrap {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.window {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--bg);
+  text-align: left;
+  user-select: none;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--header-height);
+  padding: 0 var(--space-6);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-1);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-ui);
+  font-weight: 600;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-ui);
+}
+
+.account {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-2);
+}
+
+/* Iniciales de la persona, como en el menú de la cuenta. */
+.seal {
+  display: grid;
+  place-items: center;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  border: 1px solid var(--line-control);
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  line-height: var(--line-height-label);
+}
+
+.who {
+  display: grid;
+  text-align: left;
+}
+
+.person {
+  color: var(--text);
+  font-size: var(--font-size-support);
+  font-weight: 500;
+  line-height: var(--line-height-support);
+}
+
+.organization {
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+}
+
+.nav {
+  display: grid;
+  align-content: start;
+  gap: calc(var(--space-1) / 2);
+  margin: 0;
+  padding: var(--space-4) var(--space-3);
+  border-right: 1px solid var(--line);
+  background: var(--surface-1);
+  list-style: none;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+  white-space: nowrap;
+}
+
+/* Activo: la superficie y la raya violeta del enlace activo, igual que en la aplicación. */
+.navItem[data-active] {
+  background: var(--surface-2);
+  box-shadow: inset 2px 0 0 var(--accent);
+  color: var(--text);
+}
+
+.count {
+  margin-left: auto;
+  padding-left: var(--space-2);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-label);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-label);
+}
+
+.main {
+  display: grid;
+  align-content: start;
+  gap: var(--space-6);
+  min-width: 0;
+  padding: var(--space-8) var(--space-8) 0;
+}
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.eyebrow {
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
+}
+
+.title {
+  margin-top: var(--space-1);
+  font-size: var(--font-size-title);
+  font-weight: 600;
+  line-height: var(--line-height-title);
+  letter-spacing: var(--tracking-title);
+}
+
+/* La tabla del libro de casos (especificación de identidad, sección 7). */
+.book {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--surface-1);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.table th {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
+  text-align: left;
+}
+
+.table td {
+  height: var(--row-height);
+  padding: var(--space-3);
+  border-top: 1px solid var(--line);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+  vertical-align: middle;
+}
+
+.table tbody tr:first-child td {
+  border-top: 0;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-left: var(--space-6);
+}
+
+.courtColumn {
+  width: 18%;
+}
+
+.evidenceColumn {
+  width: 13%;
+}
+
+.chainColumn {
+  width: 18%;
+}
+
+.integrityColumn {
+  width: 16%;
+}
+
+.caseTitle {
+  display: block;
+  margin-bottom: var(--space-1);
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 600;
+  line-height: var(--line-height-ui);
+}
+
+.noFiling {
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.noFiling b {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.area {
+  display: inline-flex;
+  margin-bottom: var(--space-1);
+  padding: calc(var(--space-1) / 2) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.court {
+  display: block;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.evidenceCount {
+  display: block;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-ui);
+}
+
+.evidenceTypes,
+.when {
+  display: block;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.when {
+  margin-top: var(--space-1);
+}
+
+.whenAction {
+  display: block;
+  color: var(--text-2);
+}
+
+/* Pantallas medianas: sale el despacho para que el resto respire. */
+@media (max-width: 1100px) {
+  .courtColumn {
+    display: none;
+  }
+}
+
+/* Tabletas y celulares: el menú pasa arriba como franja, igual que en la aplicación, y la
+   tabla se queda con el caso y su integridad. */
+@media (max-width: 900px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nav {
+    display: flex;
+    gap: var(--space-1);
+    overflow: hidden;
+    padding: var(--space-2) var(--space-4);
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .navItem[data-active] {
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+
+  .main {
+    padding: var(--space-6) var(--space-4) 0;
+  }
+
+  .chainColumn {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .wrap {
+    padding: 0 var(--space-4);
+  }
+
+  .topbar {
+    padding: 0 var(--space-4);
+  }
+
+  .who,
+  .evidenceColumn {
+    display: none;
+  }
+
+  .integrityColumn {
+    width: 40%;
+  }
+
+  /* Tres casos bastan para leer la imagen en un celular. */
+  .table tbody tr:nth-child(n + 4) {
+    display: none;
+  }
+
+  .table th:first-child,
+  .table td:first-child {
+    padding-left: var(--space-4);
+  }
+}

@@ -12,11 +12,18 @@ const FORBIDDEN = ["·", "§", "—", "–", "…", "→", "−"] as const;
 
 const SRC = join(import.meta.dirname, "..");
 
-// La landing se reescribe en las tareas 5 y 6; la 6 vacía esta lista.
+// Secciones de la landing que se reescriben en la tarea 6, que vacía esta lista.
 const PENDING = [
-  "features/landing/",
-  "pages/HomePage.tsx",
-  "layouts/PublicLayout.tsx",
+  "features/landing/ChainDemo.tsx",
+  "features/landing/ClosingSection.tsx",
+  "features/landing/FaqSection.tsx",
+  "features/landing/HashDemo.tsx",
+  "features/landing/PlansSection.tsx",
+  "features/landing/ScopeSection.tsx",
+  "features/landing/StandardsSection.tsx",
+  "features/landing/VerifierSection.tsx",
+  "features/landing/chain.ts",
+  "features/landing/useSha256.ts",
 ];
 
 function sourceFiles(dir: string): string[] {

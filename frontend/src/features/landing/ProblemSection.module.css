@@ -1,85 +1,115 @@
-/* Planteamiento a la izquierda y lista numerada a la derecha: un alegato, no una vitrina. */
-.layout {
+/* Dos paneles lado a lado. Con subgrid, cada punto de la captura queda a la altura del mismo
+   punto del original, aunque un texto ocupe más líneas que el otro. */
+.compare {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: var(--space-16);
-  align-items: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
 }
 
-.heading {
-  max-width: 480px;
-}
-
-.body {
+/* La captura va solo con la línea; el original, sobre la primera superficie. */
+.panel {
   display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  gap: 0;
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
 }
 
-/* Reglas finas entre los puntos, como los renglones de un escrito. */
-.list {
+.panel + .panel {
+  background: var(--surface-1);
+}
+
+.panelTitle {
+  padding-bottom: var(--space-4);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  line-height: var(--line-height-body);
+}
+
+.points {
+  display: grid;
+  grid-template-rows: repeat(4, auto);
   margin: 0;
-  padding: 0;
-  border-bottom: 1px solid var(--color-ink-700);
-  list-style: none;
 }
 
-.item {
+@supports (grid-template-rows: subgrid) {
+  .compare {
+    grid-template-rows: auto repeat(4, auto);
+  }
+
+  .panel {
+    grid-row: span 5;
+  }
+
+  .points {
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+  }
+}
+
+.point {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: var(--space-6);
-  padding: var(--space-8) 0;
-  border-top: 1px solid var(--color-ink-700);
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
 }
 
-.number {
-  color: var(--color-primary-300);
-  font-family: var(--font-display);
-  font-size: 40px;
+.point:last-child {
+  padding-bottom: 0;
+}
+
+.point dt {
+  color: var(--text-3);
+  font-size: var(--font-size-label);
   font-weight: 500;
-  line-height: 1;
-  font-variant-numeric: lining-nums tabular-nums;
+  line-height: var(--line-height-label);
 }
 
-.copy {
-  display: grid;
-  gap: var(--space-2);
-}
-
-/* La norma va como nota al pie, bajo su propia regla. */
-.source {
+.point dd {
   display: flex;
   align-items: flex-start;
   gap: var(--space-2);
-  margin-top: var(--space-6);
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-  line-height: 20px;
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
 }
 
-.source svg {
+.point .muted {
+  color: var(--text-2);
+}
+
+/* El ícono va a la altura de la primera línea del texto. */
+.icon {
   flex: none;
-  margin-top: 2px;
-  color: var(--color-primary-300);
+  margin-top: var(--space-1);
+  color: var(--text-2);
 }
 
-@media (max-width: 900px) {
-  .layout {
+.source {
+  margin-top: var(--space-6);
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+@media (max-width: 760px) {
+  .compare,
+  .panel,
+  .points {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-12);
+    grid-template-rows: none;
   }
 
-  .heading {
-    max-width: none;
-  }
-}
-
-@media (max-width: 560px) {
-  .item {
-    grid-template-columns: 48px minmax(0, 1fr);
-    gap: var(--space-4);
-    padding: var(--space-6) 0;
+  .panel,
+  .points {
+    grid-row: auto;
   }
 
-  .number {
-    font-size: 30px;
+  .panel {
+    padding: var(--space-4);
   }
 }

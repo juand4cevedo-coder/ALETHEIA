@@ -1,41 +1,41 @@
-import { Reveal } from "../../components/ui/Reveal.tsx";
+import { EvidencePreview } from "./EvidencePreview.tsx";
 import styles from "./HowItWorks.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
-import timeline from "./Timeline.module.css";
 import {
   CadenaIcon,
   HuellaIcon,
   PaqueteIcon,
+  SelloIcon,
   SubirIcon,
 } from "../../components/ui/icons.tsx";
 
+// Cada paso lleva el mismo ícono que su fila en la vista de la evidencia, para leerlos juntos.
 const STEPS = [
   {
     icon: SubirIcon,
     title: "Suba el original",
-    text: "Cargue dentro de un caso el chat exportado, el correo, el audio, la fotografía o el PDF, tal como lo recibió. Lo guardamos cifrado y sin modificarlo.",
+    text: "El archivo tal como le llegó, sin convertirlo. Queda cifrado con la llave del caso.",
   },
   {
     icon: HuellaIcon,
-    title: "Huella y sello de tiempo",
-    text: "Al recibirlo calculamos su huella SHA‑256 y una autoridad externa la sella con fecha y hora. Desde ese momento, cualquier cambio en el archivo queda en evidencia.",
+    title: "ALETHEIA calcula su huella",
+    text: "Un código SHA-256 que cambia por completo si el archivo cambia en un solo byte.",
   },
   {
-    icon: CadenaIcon,
-    title: "Cadena de custodia",
-    text: "Cada vez que alguien de su equipo sube, consulta, descarga o exporta la evidencia, queda registrado quién lo hizo y cuándo, en un historial que no se puede editar.",
+    icon: SelloIcon,
+    title: "Un tercero sella la huella",
+    text: "Una autoridad de sellado de tiempo la firma con la fecha y la hora. Así consta que el archivo existía en ese momento.",
   },
   {
     icon: PaqueteIcon,
-    title: "Paquete verificable",
-    text: "Exporte los originales con sus huellas, los sellos de tiempo y un informe de custodia en PDF, listo para aportar y para que cualquiera lo compruebe.",
+    title: "Exporte el paquete",
+    text: "Los originales, sus huellas, los sellos y el informe de custodia, en un archivo listo para aportar al proceso.",
   },
 ] as const;
 
-// Los cuatro pasos del servicio, en el lenguaje del abogado, como una línea de tiempo: en
-// pantallas anchas va en fila y en las angostas baja en vertical. SHA‑256 lleva un guion que no
-// parte la línea (U+2011).
+// Cómo funciona: qué pasa con el archivo desde que se sube. Los cuatro pasos a la izquierda y, a
+// la derecha, la evidencia como se ve en la aplicación.
 export function HowItWorks() {
   return (
     <section
@@ -46,28 +46,37 @@ export function HowItWorks() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-como-funciona"
-          index={2}
           kicker="Cómo funciona"
-          title="De la recepción del archivo al expediente, en cuatro pasos"
-          lead="No necesita instalar nada ni cambiar la forma en que su oficina recibe la información. Nosotros nos encargamos de preservarla desde el primer momento."
+          title="Lo que pasa con su archivo desde que lo sube"
         />
 
-        <ol className={`${timeline.timeline} ${timeline.horizontal}`}>
-          {STEPS.map((step, index) => (
-            <Reveal as="li" key={step.title} className={timeline.step}>
-              <span className={timeline.node}>
-                <step.icon size={20} />
+        <div className={styles.layout}>
+          <div>
+            <ol className={styles.steps}>
+              {STEPS.map((step) => (
+                <li key={step.title} className={styles.step}>
+                  <span className={styles.marker}>
+                    <step.icon size={16} aria-hidden="true" />
+                  </span>
+                  <div className={styles.copy}>
+                    <h3 className={section.cardTitle}>{step.title}</h3>
+                    <p className={section.cardText}>{step.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            <p className={styles.custody}>
+              <CadenaIcon size={16} aria-hidden="true" />
+              <span>
+                Durante todo el proceso, la cadena de custodia anota quién abre
+                o descarga el archivo, y a qué hora.
               </span>
-              <div className={timeline.content}>
-                <p className={styles.number}>
-                  Paso {String(index + 1).padStart(2, "0")}
-                </p>
-                <h3 className={section.cardTitle}>{step.title}</h3>
-                <p className={section.cardText}>{step.text}</p>
-              </div>
-            </Reveal>
-          ))}
-        </ol>
+            </p>
+          </div>
+
+          <EvidencePreview />
+        </div>
       </div>
     </section>
   );
