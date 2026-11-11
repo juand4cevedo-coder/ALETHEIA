@@ -3,6 +3,8 @@
 export const ROUTES = {
   home: "/",
   howItWorks: "/#como-funciona",
+  // Las garantías técnicas y su demostración, en el inicio.
+  security: "/#seguridad",
   pricing: "/precios",
   verifier: "/verificador",
   // Mientras el verificador público no existe (HU-026), la navegación lleva a la sección de la

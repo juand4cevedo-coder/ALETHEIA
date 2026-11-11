@@ -39,11 +39,14 @@ export function StandardsSection() {
   const demosRef = useRef<HTMLDivElement>(null);
 
   return (
-    <section className={section.section} aria-labelledby="titulo-estandares">
+    <section
+      id="seguridad"
+      className={section.section}
+      aria-labelledby="titulo-estandares"
+    >
       <div className={section.inner}>
         <SectionHeading
           id="titulo-estandares"
-          index={3}
           kicker="Seguridad y estándares"
           title="Garantías que cualquier perito puede comprobar"
           lead="No usamos criptografía propia ni cadenas de bloques. Cada garantía descansa en estándares abiertos, documentados y verificables con herramientas independientes."

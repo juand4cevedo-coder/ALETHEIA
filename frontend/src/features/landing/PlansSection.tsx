@@ -15,7 +15,6 @@ export function PlansSection() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-planes"
-          index={6}
           kicker="Planes"
           title="Las mismas garantías en todos los planes"
           lead="Todos los planes preservan igual: huella, sello de tiempo, cadena de custodia, exportación y verificador. Lo que cambia es la capacidad, el número de usuarios y el soporte."

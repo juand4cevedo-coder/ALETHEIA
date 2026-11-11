@@ -32,7 +32,6 @@ export function ScopeSection() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-alcance"
-          index={4}
           kicker="Alcance del servicio"
           title="Preservamos y documentamos. La valoración es del juez."
           lead="Somos una herramienta técnica de preservación. Le damos elementos sólidos para sustentar la integridad de su evidencia, sin reemplazar el criterio de nadie."

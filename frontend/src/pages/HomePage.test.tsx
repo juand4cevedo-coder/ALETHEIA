@@ -21,12 +21,12 @@ describe("Página de inicio (HU-001)", () => {
     const main = screen.getByRole("main");
     expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(within(main).getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Preserve la evidencia digital tal como la recibió.",
+      "Demuestre que el archivo que aporta es el mismo que recibió.",
     );
     expect(
       within(main).getByRole("heading", {
         level: 2,
-        name: "De la recepción del archivo al expediente, en cuatro pasos",
+        name: "Lo que pasa con su archivo desde que lo sube",
       }),
     ).toBeInTheDocument();
     expect(
@@ -41,7 +41,7 @@ describe("Página de inicio (HU-001)", () => {
       ),
     ).toBeInTheDocument();
     expect(
-      within(main).getAllByRole("link", { name: "Crear cuenta gratis" })[0],
+      within(main).getAllByRole("link", { name: "Crear una cuenta" })[0],
     ).toHaveAttribute("href", "/registro");
   });
 
@@ -55,7 +55,7 @@ describe("Página de inicio (HU-001)", () => {
       screen.getByRole("link", { name: /Pedir una cotización/ }),
     ).toHaveAttribute("href", expect.stringContaining("mailto:"));
     expect(
-      screen.getByText("14 días de prueba gratuita · Sin tarjeta de crédito"),
+      screen.getByText("14 días de prueba gratuita, sin tarjeta de crédito."),
     ).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -116,7 +116,7 @@ describe("Página de inicio (HU-001)", () => {
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
-  it("los H2 de la landing siguen el orden de los folios", async () => {
+  it("los H2 de la landing siguen el orden de la especificación", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     await renderRoute("/");
 
@@ -125,7 +125,7 @@ describe("Página de inicio (HU-001)", () => {
     });
     expect(headings.map((heading) => heading.textContent)).toEqual([
       "Una captura de pantalla no es el archivo original",
-      "De la recepción del archivo al expediente, en cuatro pasos",
+      "Lo que pasa con su archivo desde que lo sube",
       "Garantías que cualquier perito puede comprobar",
       "Preservamos y documentamos. La valoración es del juez.",
       "¿Recibió un paquete de preservación?",
@@ -133,6 +133,51 @@ describe("Página de inicio (HU-001)", () => {
       "Lo que más nos preguntan",
       "Empiece a preservar su evidencia hoy",
     ]);
+  });
+
+  it("la imagen del espacio de trabajo dice el estado real de cada caso, sin verde", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    const { container } = await renderRoute("/");
+
+    // Es una imagen: los lectores de pantalla reciben su descripción y no la tabla.
+    const shot = container.querySelector<HTMLElement>(
+      "[aria-hidden='true'] table",
+    )!;
+    expect(shot).not.toBeNull();
+    expect(within(shot).getAllByText("Sin verificar").length).toBeGreaterThan(
+      0,
+    );
+    expect(within(shot).getByText("Sellando")).toBeInTheDocument();
+    // El verde es solo para lo que el sistema verificó: ninguna insignia de la portada lo usa.
+    expect(container.querySelector("[data-tone='ok']")).toBeNull();
+    expect(
+      screen.getByText(/^Vista del espacio de trabajo/),
+    ).toBeInTheDocument();
+    // Los datos de ejemplo del inicio y de Cómo funciona no llevan la etiqueta de ficticios.
+    for (const id of ["titulo-inicio", "titulo-como-funciona"]) {
+      const region = container.querySelector(`[aria-labelledby='${id}']`)!;
+      expect(region.textContent).not.toMatch(/ficticios/i);
+    }
+  });
+
+  it("cada enlace de la navegación lleva a una sección o página que existe", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    await renderRoute("/");
+
+    const nav = screen.getByRole("navigation", { name: "Principal" });
+    const links = within(nav).getAllByRole("link");
+    expect(links.map((link) => link.textContent)).toEqual([
+      "Producto",
+      "Seguridad",
+      "Precios",
+      "Verificar",
+    ]);
+    for (const link of links) {
+      const href = link.getAttribute("href")!;
+      const [, hash] = href.split("#");
+      if (hash) expect(document.getElementById(hash)).not.toBeNull();
+      else expect(href).toBe("/precios");
+    }
   });
 
   it("abre y cierra las preguntas frecuentes", async () => {

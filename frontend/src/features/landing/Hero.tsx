@@ -4,19 +4,12 @@ import { listPlansOptions } from "../../api/generated/@tanstack/react-query.gen.
 import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../../config/routes.ts";
 import { trialDays } from "../billing/plans.ts";
-import { EvidencePreview } from "./EvidencePreview.tsx";
 import styles from "./Hero.module.css";
-import { StampCard } from "./StampCard.tsx";
-import {
-  EscudoVistoIcon,
-  FlechaDerechaIcon,
-} from "../../components/ui/icons.tsx";
+import { WorkspacePreview } from "./WorkspacePreview.tsx";
+import { HuellaIcon } from "../../components/ui/icons.tsx";
 
-// Estándares en los que descansa cada garantía; se nombran tal cual porque un perito los
-// reconoce de inmediato.
-const STANDARDS = ["SHA-256", "RFC 3161", "AES-256-GCM"] as const;
-
-// Portada del inicio (UI-001): un solo h1, la acción principal y la vista de una evidencia.
+// Inicio (UI-001): qué es y por qué le sirve al abogado. Un solo h1, una frase de apoyo, dos
+// acciones y el espacio de trabajo como imagen.
 export function Hero() {
   // Misma consulta que el resumen de planes: TanStack Query la pide una sola vez.
   const { data: plans } = useQuery(listPlansOptions());
@@ -24,60 +17,38 @@ export function Hero() {
 
   return (
     <section className={styles.hero} aria-labelledby="titulo-inicio">
-      <div className={styles.aurora} aria-hidden="true" />
-      <div className={styles.grid} aria-hidden="true" />
-
       <div className={styles.inner}>
-        <p className={`${styles.badge} ${styles.enter}`}>
-          <EscudoVistoIcon size={16} />
-          Preservación de evidencia digital para abogados en Colombia
+        {/* Hechos que un perito puede comprobar, no un eslogan. */}
+        <p className={styles.facts}>
+          <HuellaIcon size={16} aria-hidden="true" />
+          Huella SHA-256 y sello de tiempo RFC 3161 emitido por un tercero
         </p>
 
-        <h1 id="titulo-inicio" className={`${styles.title} ${styles.enter}`}>
-          Preserve la evidencia digital{" "}
-          <span className={styles.accent}>tal como la recibió.</span>
+        <h1 id="titulo-inicio" className={styles.title}>
+          Demuestre que el archivo que aporta es el mismo que recibió.
         </h1>
 
-        <p className={`${styles.lead} ${styles.enter}`}>
-          Guardamos el archivo original de cada evidencia con su huella
-          criptográfica y un sello de tiempo emitido por un tercero, y dejamos
-          constancia de cada acceso en una cadena de custodia que nadie puede
-          editar. Cuando lo necesite, usted exporta un paquete que cualquier
-          persona puede verificar por su cuenta.
+        <p className={styles.lead}>
+          Conservamos el original con su huella y un sello de tiempo de un
+          tercero, y registramos quién lo abre y cuándo.
         </p>
 
-        <div className={`${styles.actions} ${styles.enter}`}>
-          <ButtonLink to={ROUTES.signUp} surface="dark">
-            Crear cuenta gratis
-            <FlechaDerechaIcon size={18} />
-          </ButtonLink>
-          <ButtonLink to={ROUTES.howItWorks} surface="dark" variant="secondary">
+        <div className={styles.actions}>
+          <ButtonLink to={ROUTES.signUp}>Crear una cuenta</ButtonLink>
+          <ButtonLink to={ROUTES.howItWorks} variant="secondary">
             Ver cómo funciona
           </ButtonLink>
         </div>
 
-        <p className={`${styles.trial} ${styles.enter}`}>
+        <p className={styles.trial}>
           {days === null
-            ? "Prueba gratuita sin tarjeta de crédito"
-            : `${days} días de prueba gratuita · Sin tarjeta de crédito`}
+            ? "Prueba gratuita, sin tarjeta de crédito."
+            : `${days} días de prueba gratuita, sin tarjeta de crédito.`}
         </p>
-
-        <ul className={`${styles.standards} ${styles.enter}`}>
-          {STANDARDS.map((standard) => (
-            <li key={standard}>{standard}</li>
-          ))}
-        </ul>
       </div>
 
-      {/* La ventana va en un marco con el borde de luz; el sello RFC 3161 se le superpone
-          porque lo emite un tercero sobre esa misma huella. */}
-      <div className={`${styles.preview} ${styles.enter}`}>
-        <div className={styles.frame}>
-          <EvidencePreview />
-        </div>
-        <div className={styles.stamp}>
-          <StampCard size="compact" />
-        </div>
+      <div className={styles.shot}>
+        <WorkspacePreview />
       </div>
     </section>
   );

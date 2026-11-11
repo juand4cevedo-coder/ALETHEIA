@@ -6,11 +6,6 @@ export type ButtonVariant = "primary" | "secondary" | "text";
 export type ButtonStyleOptions = {
   variant?: ButtonVariant;
   size?: "md" | "sm";
-  /**
-   * @deprecated Sin efecto: todo el sitio usa ya las superficies grafito. Solo lo pasa la
-   * landing, que se rehace en otra tarea; no se usa en código nuevo.
-   */
-  surface?: "light" | "dark";
 };
 
 /** Clases del botón (CMP-UI-001), para un <button> o para un enlace que se ve como botón. */

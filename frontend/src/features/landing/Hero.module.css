@@ -1,134 +1,54 @@
-/* El padding superior suma el alto del encabezado: la página sube por detrás de él (ver
-   HomePage.module.css). Sin overflow oculto, para que el halo de la ventana no se corte. */
+/* Inicio centrado: los hechos, el titular, la frase, las acciones y, debajo, el producto. Sin
+   luces ni entradas animadas: todo está en su lugar desde el primer cuadro. */
 .hero {
-  position: relative;
-  isolation: isolate;
-  padding: calc(var(--header-height) + var(--space-16)) 0 var(--space-16);
-}
-
-/* Aurora: dos focos de luz de marca que se desplazan muy despacio. Solo se animan
-   transformaciones, que el navegador resuelve en la GPU sin repintar la página. */
-.aurora {
-  position: absolute;
-  inset: -20% -10% 30%;
-  z-index: -2;
-  pointer-events: none;
-}
-
-.aurora::before,
-.aurora::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  will-change: transform;
-}
-
-.aurora::before {
-  top: 0;
-  left: 18%;
-  width: 62%;
-  height: 80%;
-  background: radial-gradient(
-    closest-side,
-    color-mix(in srgb, var(--color-brand-blue) 30%, transparent),
-    transparent
-  );
-  animation: drift 22s var(--ease-standard) infinite alternate;
-}
-
-.aurora::after {
-  top: 18%;
-  left: 42%;
-  width: 46%;
-  height: 64%;
-  background: radial-gradient(
-    closest-side,
-    color-mix(in srgb, var(--color-primary-300) 9%, transparent),
-    transparent
-  );
-  animation: drift 28s var(--ease-standard) -9s infinite alternate-reverse;
-}
-
-@keyframes drift {
-  from {
-    transform: translate3d(-6%, -4%, 0) scale(1);
-  }
-
-  to {
-    transform: translate3d(6%, 5%, 0) scale(1.12);
-  }
-}
-
-/* Retícula técnica que se desvanece hacia los bordes. */
-.grid {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image:
-    linear-gradient(
-      color-mix(in srgb, var(--color-text-inverse) 5%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-text-inverse) 5%, transparent) 1px,
-      transparent 1px
-    );
-  background-size: 56px 56px;
-  mask-image: radial-gradient(
-    ellipse 60% 50% at 50% 28%,
-    var(--color-ink-950),
-    transparent
-  );
-  pointer-events: none;
+  padding-top: var(--space-24);
 }
 
 .inner {
   display: grid;
   justify-items: center;
-  max-width: 920px;
+  max-width: var(--content-width);
   margin: 0 auto;
   padding: 0 var(--space-6);
   text-align: center;
 }
 
-.badge {
+/* Insignia de hechos: una cápsula con la línea, en gris. Ni verde ni violeta, porque no es un
+   estado ni una acción. */
+.facts {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid
-    color-mix(in srgb, var(--color-primary-300) 24%, transparent);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--line);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-ink-800) 60%, transparent);
-  color: var(--color-primary-300);
-  font-size: 13px;
-  font-weight: 500;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
-/* font.display ampliado para la portada: 76/80 en escritorio, 44/48 en móvil. */
+.facts svg {
+  flex: none;
+  color: var(--text-3);
+}
+
 .title {
+  max-width: var(--measure-display);
   margin-top: var(--space-6);
-  font-family: var(--font-display);
-  font-size: 76px;
-  font-weight: 560;
-  line-height: 80px;
-  letter-spacing: -0.035em;
-}
-
-/* La segunda línea del titular en el celeste de acción, sólido: resalta sin efectos. */
-.accent {
-  display: block;
-  padding-bottom: 0.08em;
-  color: var(--color-primary-300);
+  font-size: var(--font-size-display);
+  font-weight: 600;
+  line-height: var(--line-height-display);
+  letter-spacing: var(--tracking-display);
 }
 
 .lead {
-  max-width: 720px;
+  max-width: var(--measure);
   margin-top: var(--space-6);
-  color: var(--color-text-inverse-muted);
-  font-size: 19px;
-  line-height: 30px;
+  color: var(--text-2);
+  font-size: var(--font-size-subtitle);
+  line-height: var(--line-height-subtitle);
+  letter-spacing: var(--tracking-subtitle);
+  text-wrap: balance;
 }
 
 .actions {
@@ -141,200 +61,44 @@
 
 .trial {
   margin-top: var(--space-4);
-  color: var(--color-text-inverse-muted);
-  font-size: 14px;
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
-.standards {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-2);
-  margin: var(--space-8) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.standards li {
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 10%, transparent);
-  border-radius: var(--radius-pill);
-  color: var(--color-text-inverse-muted);
-  font-family: var(--font-mono);
-  font-size: 12px;
-}
-
-/* La ventana crece respecto del texto: es la prueba de lo que promete el titular. */
-.preview {
-  max-width: 1120px;
-  margin: var(--space-16) auto 0;
-  padding: 0 var(--space-6);
-}
-
-/* Marco de la ventana. Su ::before es un anillo de 1 px con un degradado cónico que gira
-   despacio: dice «protegida y en vivo» sin ningún otro brillo. */
-.frame {
-  position: relative;
-  isolation: isolate;
-}
-
-/* Ángulo registrado para poder animarlo. Es la única excepción a «solo transform y opacity»
-   que admite la spec: se anima un ángulo personalizado del degradado, que no mueve el diseño
-   ni repinta el contenido de la ventana. Sin soporte, el anillo queda quieto y visible. */
-@property --angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
-.frame::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  padding: 1px;
-  /* El mismo radio que .window en EvidencePreview.module.css. */
-  border-radius: 20px;
-  /* Casi todo el círculo es transparente: solo un arco tenue recorre el borde. */
-  background: conic-gradient(
-    from var(--angle),
-    transparent 0deg,
-    color-mix(in srgb, var(--color-primary-400) 55%, transparent) 40deg,
-    color-mix(in srgb, var(--color-brand-blue) 35%, transparent) 80deg,
-    transparent 130deg
-  );
-  /* Dos capas de máscara, una limitada al relleno: al excluirlas queda solo el anillo. */
-  mask:
-    linear-gradient(var(--color-ink-950) 0 0) content-box,
-    linear-gradient(var(--color-ink-950) 0 0);
-  mask-composite: exclude;
-  pointer-events: none;
-  animation: orbit var(--motion-orbit) linear infinite;
-}
-
-@keyframes orbit {
-  to {
-    --angle: 360deg;
-  }
-}
-
-/* Ficha del sello en el flujo, después de la ventana y alineada a la derecha. Sube solo
-   var(--space-6) sobre el pie de la ventana: pisa el borde y el relleno del pie de figura, cuyo
-   texto, corto y alineado a la izquierda, queda libre; nunca tapa la cadena de custodia. El
-   fondo sólido evita que la ventana se vea a través de la ficha translúcida. */
-.stamp {
-  position: relative;
-  z-index: 2;
-  width: 320px;
-  margin: calc(-1 * var(--space-6)) 0 0 auto;
-  border-radius: var(--radius-lg);
-  background: var(--color-ink-900);
-  box-shadow: var(--shadow-raised);
-}
-
-/* Entrada escalonada al cargar: cada bloque sube y aparece un poco después del anterior. */
-.enter {
-  animation: enter 900ms var(--ease-out) both;
-}
-
-.badge.enter {
-  animation-delay: 60ms;
-}
-
-.title.enter {
-  animation-delay: 140ms;
-}
-
-.lead.enter {
-  animation-delay: 240ms;
-}
-
-.actions.enter {
-  animation-delay: 330ms;
-}
-
-.trial.enter {
-  animation-delay: 400ms;
-}
-
-.standards.enter {
-  animation-delay: 460ms;
-}
-
-.preview.enter {
-  animation-delay: 560ms;
-  animation-duration: 1200ms;
-}
-
-@keyframes enter {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
+.shot {
+  margin-top: var(--space-16);
 }
 
 @media (max-width: 760px) {
   .hero {
-    padding: calc(var(--header-height) + var(--space-12)) 0 var(--space-12);
+    padding-top: var(--space-16);
   }
 
-  .inner,
-  .preview {
+  .inner {
     padding: 0 var(--space-4);
   }
 
-  .badge {
-    font-size: 12px;
+  .facts {
+    text-align: left;
   }
 
   .title {
-    font-size: 44px;
-    line-height: 48px;
+    font-size: var(--font-size-display-sm);
+    line-height: var(--line-height-display-sm);
   }
 
   .lead {
-    font-size: 17px;
-    line-height: 27px;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
   }
 
   .actions {
-    flex-direction: column;
+    display: grid;
     justify-self: stretch;
   }
 
-  .preview {
-    margin: var(--space-12) auto 0;
-  }
-
-  /* En pantallas angostas la ficha va debajo de la ventana, sin taparla. */
-  .stamp {
-    width: auto;
-    margin-top: var(--space-4);
-  }
-}
-
-/* La ficha se «estampa» una sola vez: llega apenas más grande y se asienta. Sin esta
-   preferencia simplemente está a la vista. */
-@media (prefers-reduced-motion: no-preference) {
-  .stamp {
-    animation: stamp var(--motion-stamp) var(--ease-out)
-      var(--motion-stamp-delay) both;
-  }
-}
-
-@keyframes stamp {
-  from {
-    opacity: 0;
-    transform: scale(1.04);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .aurora::before,
-  .aurora::after,
-  .enter,
-  .frame::before {
-    animation: none;
+  .shot {
+    margin-top: var(--space-12);
   }
 }

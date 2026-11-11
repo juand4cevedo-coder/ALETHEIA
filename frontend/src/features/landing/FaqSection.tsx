@@ -46,7 +46,6 @@ export function FaqSection() {
       <div className={`${section.inner} ${styles.layout}`}>
         <SectionHeading
           id="titulo-preguntas"
-          index={7}
           kicker="Preguntas frecuentes"
           title="Lo que más nos preguntan"
           className={`${section.headingStacked} ${styles.heading}`}

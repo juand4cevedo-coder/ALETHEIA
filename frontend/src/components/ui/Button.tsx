@@ -15,7 +15,6 @@ type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className"> &
 // Botón de acción (CMP-UI-001). Para ir a otra página se usa ButtonLink.
 export function Button({
   variant,
-  surface: _surface,
   size,
   block = false,
   busy = false,
