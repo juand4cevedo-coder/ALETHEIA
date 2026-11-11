@@ -16,7 +16,7 @@ import { StatusBadge } from "../components/ui/StatusBadge.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { useMediaQuery } from "../components/ui/useMediaQuery.ts";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { custodyActionLabel } from "../features/cases/custodyActions.ts";
 import { CustodyStrip } from "../features/cases/CustodyStrip.tsx";
@@ -195,7 +195,7 @@ export function CasesPage() {
 
   const head = (
     <>
-      <title>{`Casos · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Casos")}</title>
       <meta name="robots" content="noindex" />
     </>
   );
@@ -222,7 +222,7 @@ export function CasesPage() {
             size={20}
             aria-hidden="true"
           />
-          Cargando sus casos…
+          Cargando sus casos
         </p>
       </div>
     );
@@ -264,12 +264,12 @@ export function CasesPage() {
         <EmptyState
           title={
             mayOpen
-              ? "Abra un caso y su cadena de custodia empieza a contar."
+              ? "Todavía no tiene casos."
               : "Todavía no tiene casos asignados."
           }
           description={
             mayOpen
-              ? "Desde ese momento, cada acción de su equipo sobre el caso queda registrada, y la evidencia que suba se guardará tal como llegó."
+              ? "Al abrir un caso empieza su cadena de custodia. Desde ahí, cada acción de su equipo sobre él queda registrada."
               : `${ASSISTANT_EMPTY}.`
           }
           actions={mayOpen ? openCase("Abrir mi primer caso") : undefined}
@@ -301,7 +301,7 @@ export function CasesPage() {
   return (
     <div className={styles.screen}>
       {head}
-      {header(mayOpen ? openCase("Abrir caso") : undefined)}
+      {header(mayOpen ? openCase("Abrir un caso") : undefined)}
 
       <CustodyStrip totals={totals} />
 
@@ -386,7 +386,7 @@ export function CasesPage() {
               size={20}
               aria-hidden="true"
             />
-            Cargando sus casos…
+            Cargando sus casos
           </p>
         ) : loaded.length === 0 ? (
           <p className={styles.none}>{NONE_IN_SEGMENT[status]}</p>
@@ -450,8 +450,7 @@ function Principles() {
         <div>
           <p className={styles.principleTitle}>Una llave por caso</p>
           <p className={styles.principleText}>
-            Cada caso recibe su propia llave de cifrado en el momento en que se
-            abre.
+            Cada caso recibe su propia llave de cifrado al abrirse.
           </p>
         </div>
       </li>
@@ -474,8 +473,8 @@ function Principles() {
         <div>
           <p className={styles.principleTitle}>Un historial que no se edita</p>
           <p className={styles.principleText}>
-            Cada acción sobre el caso queda en su cadena de custodia, y cada
-            evento lleva el hash del anterior: si alguien alterara uno, la
+            Cada acción sobre el caso queda en su cadena de custodia. Cada
+            evento lleva el hash del anterior; si alguien alterara uno, la
             cadena dejaría de cuadrar.
           </p>
         </div>
@@ -634,7 +633,7 @@ function CaseIdentity({
             Sin radicado
             {item.internal_reference && (
               <>
-                {" · ref. interna "}
+                {", referencia interna "}
                 <b translate="no">{item.internal_reference}</b>
               </>
             )}
@@ -661,16 +660,16 @@ function CourtCell({ item }: { item: CaseSummaryOut }) {
 }
 
 function EvidenceCell({ item }: { item: CaseSummaryOut }) {
-  const parts = describeEvidenceByType(item.evidence_by_type).split(" · ");
+  const parts = describeEvidenceByType(item.evidence_by_type).split(", ");
   return (
     <span className={styles.evidence}>
       <span className={styles.evidenceCount}>{item.evidence_count}</span>
       <span className={styles.evidenceTypes}>
         {item.evidence_count === 0
-          ? "Sin evidencias aún"
+          ? "Sin evidencias"
           : parts.map((part, index) => (
               <span key={part}>
-                {index > 0 && " · "}
+                {index > 0 && ", "}
                 {part}
               </span>
             ))}
@@ -687,8 +686,11 @@ function ChainCell({ item }: { item: CaseSummaryOut }) {
       <span className={styles.when}>
         {event ? (
           <>
-            {custodyActionLabel(event.action)}
-            {` · ${event.actor_name ?? "Sistema"} · `}
+            {/* Qué pasó en un renglón; quién y cuándo, en el siguiente. */}
+            <span className={styles.whenAction}>
+              {custodyActionLabel(event.action)}
+            </span>
+            {`${event.actor_name ?? "Sistema"}, `}
             <time dateTime={event.occurred_at}>
               {formatRecentActivity(event.occurred_at)}
             </time>

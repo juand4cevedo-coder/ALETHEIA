@@ -19,7 +19,7 @@ import { Button } from "../components/ui/Button.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { dateTime, shortDate } from "../features/members/format.ts";
 import { ChangeRoleDialog } from "../features/members/ChangeRoleDialog.tsx";
@@ -52,7 +52,7 @@ export function MembersPage() {
 
   return (
     <section className={styles.screen} aria-labelledby="titulo-miembros">
-      <title>{`Miembros · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Miembros")}</title>
       <meta name="robots" content="noindex" />
 
       <header className={styles.intro}>
@@ -61,8 +61,7 @@ export function MembersPage() {
           Miembros
         </h1>
         <p className={styles.lead}>
-          Invite a cada persona con su propio acceso y el rol justo: cada una ve
-          solo lo que su rol permite.
+          Cada persona entra con su propio acceso. Lo que ve depende de su rol.
         </p>
       </header>
 
@@ -182,7 +181,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
             onRetry={() => void members.refetch()}
           />
         ) : members.isPending ? (
-          <p className={styles.loading}>Cargando miembros…</p>
+          <p className={styles.loading}>Cargando las personas</p>
         ) : (
           <ul className={styles.rows}>
             {memberRows.map((member) => (
@@ -217,7 +216,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
                         setChanging(member);
                       }}
                     >
-                      Cambiar rol
+                      Cambiar el rol
                     </Button>
                     <Button
                       variant="secondary"
@@ -239,6 +238,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
         )}
         {members.hasNextPage && (
           <MoreButton
+            label="Cargar más personas"
             busy={members.isFetchingNextPage}
             onClick={() => void members.fetchNextPage()}
           />
@@ -248,7 +248,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
       <Card
         icon={<RelojIcon size={20} />}
         title="Invitaciones pendientes"
-        description="Cada invitación ocupa un cupo hasta que la aceptan, vence a las 72 horas o la revoca."
+        description="Cada invitación ocupa un cupo mientras siga pendiente. Vence a las 72 horas si nadie la acepta."
       >
         {invitations.isError ? (
           <LoadError
@@ -256,7 +256,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
             onRetry={() => void invitations.refetch()}
           />
         ) : invitations.isPending ? (
-          <p className={styles.loading}>Cargando invitaciones…</p>
+          <p className={styles.loading}>Cargando las invitaciones</p>
         ) : invitationRows.length === 0 ? (
           <p className={styles.empty}>
             No hay invitaciones pendientes. Cuando invite a alguien, aparecerá
@@ -302,6 +302,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
         )}
         {invitations.hasNextPage && (
           <MoreButton
+            label="Cargar más invitaciones"
             busy={invitations.isFetchingNextPage}
             onClick={() => void invitations.fetchNextPage()}
           />
@@ -413,7 +414,7 @@ function SeatsBar({
       ) : (
         <Button onClick={onInvite}>
           <CorreoIcon size={18} aria-hidden="true" />
-          Invitar
+          Invitar a una persona
         </Button>
       )}
     </div>
@@ -469,11 +470,19 @@ function LoadError({
   );
 }
 
-function MoreButton({ busy, onClick }: { busy: boolean; onClick: () => void }) {
+function MoreButton({
+  label,
+  busy,
+  onClick,
+}: {
+  label: string;
+  busy: boolean;
+  onClick: () => void;
+}) {
   return (
     <div className={styles.more}>
       <Button variant="secondary" size="sm" busy={busy} onClick={onClick}>
-        {busy ? "Cargando…" : "Cargar más"}
+        {busy ? "Cargando" : label}
       </Button>
     </div>
   );

@@ -39,7 +39,7 @@ export function OpeningRecordPreview({
   const reference = filingNumber
     ? formatFilingNumber(filingNumber)
     : internalReference
-      ? `Sin radicado · ref. interna ${internalReference}`
+      ? `Sin radicado, referencia interna ${internalReference}`
       : "Sin radicado";
 
   return (
@@ -49,7 +49,7 @@ export function OpeningRecordPreview({
       </h2>
       <article className={styles.record} data-ready={ready || undefined}>
         <p className={styles.reference} translate="no">
-          {`CASO · ${reference}`}
+          {reference}
         </p>
         <h3 className={styles.title} data-empty={!title || undefined}>
           {title || "Título del caso"}
@@ -75,36 +75,38 @@ export function OpeningRecordPreview({
         <div className={styles.genesis}>
           <span className={styles.node} aria-hidden="true" />
           <div className={styles.event}>
-            <p className={styles.eventName}>Evento 1 · Caso creado</p>
+            <p className={styles.eventName}>Caso creado</p>
             <p className={styles.eventNote}>
-              Se registrará con la hora del servidor, en hora de Colombia
-              (UTC−5).
+              Es el evento 1 de la cadena. Queda con la hora del servidor, en
+              hora de Colombia.
             </p>
             <dl className={styles.hashes}>
               <div>
                 <dt>Hash anterior</dt>
                 <dd>
-                  <code translate="no">{GENESIS_PREFIX}</code> · inicio de la
-                  cadena
+                  <code translate="no">{GENESIS_PREFIX}</code>, porque es el
+                  inicio de la cadena
                 </dd>
               </div>
               <div>
                 <dt>Hash del evento</dt>
-                <dd>se calcula al abrir el caso</dd>
+                <dd>Se calcula al abrir el caso</dd>
               </div>
             </dl>
           </div>
         </div>
         <p className={styles.key}>
           <LlaveIcon size={16} aria-hidden="true" />
-          <span>Llave de cifrado propia, AES-256-GCM, guardada envuelta</span>
+          <span>
+            Llave de cifrado propia del caso (AES-256-GCM), protegida por el
+          </span>
           <code translate="no">KMS</code>
         </p>
       </article>
       <p className={styles.footnote}>
-        El registro de apertura es el primer eslabón: todo lo que se haga
+        El registro de apertura es el primer eslabón. Todo lo que se haga
         después en el caso se encadena a él. ALETHEIA documenta la preservación;
-        la valoración de la prueba corresponde al juez.
+        valorar la prueba le corresponde al juez.
       </p>
     </section>
   );

@@ -64,7 +64,9 @@ describe("Pedir el enlace (HU-010, API-011)", () => {
     const user = userEvent.setup();
     const { router } = await renderRoute("/ingresar");
 
-    await user.click(await screen.findByRole("link", { name: "¿La olvidó?" }));
+    await user.click(
+      await screen.findByRole("link", { name: "¿Olvidó su contraseña?" }),
+    );
 
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/recuperar"),

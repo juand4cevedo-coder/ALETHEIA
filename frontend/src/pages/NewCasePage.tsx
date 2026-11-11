@@ -23,7 +23,7 @@ import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Select } from "../components/ui/Select.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import {
   CASE_MESSAGES,
@@ -120,7 +120,7 @@ function filingHelp(digits: string): string {
   if (isValidFilingNumber(digits)) return `23 dígitos. ${NO_PROCESS_YET}`;
   const count = digits.replace(/\D/g, "").length;
   if (count > FILING_LENGTH) {
-    return `Tiene ${count} dígitos: sobran ${count - FILING_LENGTH}.`;
+    return `Tiene ${count} dígitos. Sobran ${count - FILING_LENGTH}.`;
   }
   return `Lleva ${count} de ${FILING_LENGTH} dígitos.`;
 }
@@ -133,7 +133,7 @@ export function NewCasePage() {
 
   return (
     <div className={styles.screen}>
-      <title>{`Abrir un caso · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Abrir un caso")}</title>
       <meta name="robots" content="noindex" />
       {canOpenCases(me.organization?.role) ? (
         <NewCaseForm me={me} />
@@ -302,7 +302,7 @@ function NewCaseForm({ me }: { me: Me }) {
 
   const role = me.organization?.role;
   const openedBy = role
-    ? `${me.full_name} · ${ROLE_LABELS[role]}`
+    ? `${me.full_name} (${ROLE_LABELS[role]})`
     : me.full_name;
 
   return (
@@ -334,10 +334,7 @@ function NewCaseForm({ me }: { me: Me }) {
             >
               {!errors.title && (
                 <p id={titleHelpId} className={styles.help}>
-                  <span>
-                    Así lo verá su equipo y así aparecerá en el informe de
-                    custodia.
-                  </span>
+                  <span>Así lo verá su equipo en la lista de casos.</span>
                   <span className={styles.counter}>
                     {`${title.length} de ${TITLE_MAX_LENGTH}`}
                   </span>
@@ -454,8 +451,7 @@ function NewCaseForm({ me }: { me: Me }) {
               <EscudoAlertaIcon size={18} aria-hidden="true" />
               <span>
                 No escriba aquí datos sensibles ni más nombres de los
-                necesarios: estos campos los ve todo el equipo del caso. La
-                evidencia que suba irá cifrada con la llave propia del caso.
+                necesarios. Estos campos los ve todo el equipo del caso.
               </span>
             </p>
 
@@ -478,7 +474,7 @@ function NewCaseForm({ me }: { me: Me }) {
                   Cancelar
                 </ButtonLink>
                 <Button type="submit" size="sm" busy={create.isPending}>
-                  {create.isPending ? "Abriendo el caso…" : "Abrir caso"}
+                  {create.isPending ? "Abriendo el caso" : "Abrir el caso"}
                 </Button>
               </div>
             </div>

@@ -11,7 +11,7 @@ import { Button } from "../components/ui/Button.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
+import { CONTACT_EMAIL, SITE_URL, pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { Field } from "../components/ui/Field.tsx";
@@ -149,7 +149,7 @@ export function SignInPage() {
 
   return (
     <>
-      <title>{`Ingresar · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Ingresar")}</title>
       <meta
         name="description"
         content="Ingrese a ALETHEIA con su correo y su contraseña para trabajar en sus casos."
@@ -159,10 +159,10 @@ export function SignInPage() {
       <div className={styles.screen}>
         <header className={styles.intro}>
           <h1 id={TITLE_ID} className={styles.title}>
-            Hola de nuevo
+            Ingrese a su cuenta
           </h1>
           <p className={styles.lead}>
-            Ingrese con el correo y la contraseña de su cuenta.
+            Use el correo y la contraseña con los que se registró.
           </p>
         </header>
 
@@ -217,13 +217,15 @@ export function SignInPage() {
               onChange={(event) => update("password", event.target.value)}
             />
             <Link to={ROUTES.forgotPassword} className={styles.forgot}>
-              ¿La olvidó?
+              ¿Olvidó su contraseña?
             </Link>
           </fieldset>
 
           <div className={styles.submit}>
             <Button type="submit" block busy={signIn.isPending || signedIn}>
-              {signIn.isPending || signedIn ? "Comprobando…" : "Ingresar"}
+              {signIn.isPending || signedIn
+                ? "Comprobando los datos"
+                : "Ingresar"}
             </Button>
           </div>
         </form>
@@ -254,7 +256,7 @@ function ProblemMessage({ problem }: { problem: FormProblem }) {
       return (
         <p>
           {problem.detail ??
-            `Esta cuenta está bloqueada. Escríbanos a ${CONTACT_EMAIL}.`}
+            `Esta cuenta está bloqueada. Para saber por qué y cómo desbloquearla, escríbanos a ${CONTACT_EMAIL}.`}
         </p>
       );
     case "tooManyAttempts":

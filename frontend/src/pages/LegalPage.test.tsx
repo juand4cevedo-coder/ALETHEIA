@@ -154,7 +154,9 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     await renderRoute(legalRoute("terminos"));
 
     const hash = (await screen.findByText(/^[0-9a-f]{64}$/)).textContent;
-    await user.click(screen.getByRole("button", { name: "Descargar" }));
+    await user.click(
+      screen.getByRole("button", { name: "Descargar el texto" }),
+    );
 
     expect(click).toHaveBeenCalledTimes(1);
     const blob = createObjectURL.mock.calls[0]![0];

@@ -60,11 +60,13 @@ describe("Espacio de trabajo protegido (API-014)", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" }),
     ).toBeInTheDocument();
+    // La organización va en el botón; el rol, en su propia línea dentro del panel.
     expect(
       within(
         screen.getByRole("button", { name: /Opciones de la cuenta/ }),
-      ).getByText("Restrepo Abogados · Abogado"),
+      ).getByText("Restrepo Abogados"),
     ).toBeInTheDocument();
+    expect(screen.getByText("Rol: Abogado")).toBeInTheDocument();
     expect(screen.getByText("Sin verificar")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Verifique su correo" }),
@@ -215,7 +217,9 @@ describe("Sesión del espacio de trabajo (HU-009)", () => {
     expect(dialog).toHaveAttribute("open");
     expect(requests("/api/v1/auth/logout-all")).toHaveLength(0);
 
-    await user.click(screen.getByRole("button", { name: "Cerrar todas" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Cerrar todas las sesiones" }),
+    );
 
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/ingresar"),

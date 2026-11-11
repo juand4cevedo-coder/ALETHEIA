@@ -49,7 +49,12 @@ export function Hash({ value, variant = "full", copyable = true }: HashProps) {
         <code className={styles.value}>{blocks.join(" ")}</code>
       ) : (
         <code className={styles.value}>
-          <span aria-hidden="true">{`${blocks.slice(0, 2).join(" ")} …`}</span>
+          {/* Los dos primeros bloques y el último; lo omitido es un trazo punteado. */}
+          <span aria-hidden="true">
+            {`${blocks.slice(0, 2).join(" ")} `}
+            <span className={styles.elision} />
+            {` ${blocks.at(-1)}`}
+          </span>
           <span className="visually-hidden">{normalized}</span>
         </code>
       )}

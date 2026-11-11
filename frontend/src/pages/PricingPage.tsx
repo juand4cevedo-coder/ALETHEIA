@@ -5,7 +5,7 @@ import { Link } from "react-router";
 import { listPlansOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 import { buttonClassName } from "../components/ui/buttonStyles.ts";
 import { legalRoute } from "../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
+import { CONTACT_EMAIL, SITE_URL, pageTitle } from "../config/site.ts";
 import {
   annualMonthsSaved,
   type BillingCycle,
@@ -35,7 +35,7 @@ export function PricingPage() {
 
   return (
     <>
-      <title>{`Planes y precios · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Planes y precios")}</title>
       <meta
         name="description"
         content="Planes de ALETHEIA para abogados independientes y firmas: precio mensual o anual, usuarios, almacenamiento y tamaño de archivo."
@@ -48,9 +48,8 @@ export function PricingPage() {
             Planes y precios
           </h1>
           <p className={styles.lead}>
-            Todos los planes preservan igual: huella de cada archivo, sello de
-            tiempo de un tercero, cadena de custodia y paquete de exportación
-            verificable. Cambian la capacidad y el número de usuarios.
+            La preservación es la misma en todos los planes. Cambian el
+            almacenamiento y el número de usuarios.
           </p>
 
           <fieldset className={styles.cycle}>
@@ -89,7 +88,7 @@ export function PricingPage() {
           {isPending && (
             <div className={styles.grid} aria-busy="true">
               <p role="status" className="visually-hidden">
-                Cargando los planes…
+                Cargando los planes
               </p>
               {Array.from({ length: 4 }, (_, index) => (
                 <div
@@ -104,8 +103,7 @@ export function PricingPage() {
           {isError && (
             <div role="alert" className={styles.error}>
               <p>
-                No pudimos cargar los precios en este momento. Intente de nuevo
-                o escríbanos a{" "}
+                No pudimos cargar los precios. Inténtelo de nuevo o escríbanos a{" "}
                 <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
               </p>
               <button
@@ -114,7 +112,9 @@ export function PricingPage() {
                 onClick={() => void refetch()}
                 disabled={isFetching}
               >
-                {isFetching ? "Reintentando…" : "Reintentar"}
+                {isFetching
+                  ? "Cargando los precios"
+                  : "Cargar los precios de nuevo"}
               </button>
             </div>
           )}
@@ -237,7 +237,7 @@ export function PricingPage() {
             </div>
             <a className={buttonClassName()} href={CORPORATE_QUOTE_URL}>
               <CorreoIcon size={18} />
-              Solicitar cotización
+              Pedir una cotización por correo
             </a>
           </div>
         </div>

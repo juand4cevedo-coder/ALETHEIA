@@ -6,7 +6,7 @@ import { registerAccountMutation } from "../api/generated/@tanstack/react-query.
 import { Button } from "../components/ui/Button.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME, SITE_URL } from "../config/site.ts";
+import { SITE_URL, pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { AccountTypeChoice } from "../features/auth/AccountTypeChoice.tsx";
 import { Field } from "../components/ui/Field.tsx";
@@ -131,10 +131,10 @@ export function SignUpPage() {
 
   return (
     <>
-      <title>{`Crear cuenta · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Crear cuenta")}</title>
       <meta
         name="description"
-        content="Abra su cuenta de ALETHEIA y empiece la prueba gratis para preservar evidencia digital con huella, sello de tiempo y cadena de custodia."
+        content="Cree su cuenta de ALETHEIA y empiece la prueba gratuita, sin tarjeta de crédito."
       />
       <link rel="canonical" href={`${SITE_URL}${ROUTES.signUp}`} />
 
@@ -160,8 +160,9 @@ export function SignUpPage() {
             <p>
               Si <strong>{sentTo}</strong> puede usarse, le enviamos un enlace
               para verificarlo. Ábralo para activar la cuenta y empezar la
-              prueba. Si no le llega en unos minutos, revise la carpeta de spam.
+              prueba.
             </p>
+            <p>Si no le llega en unos minutos, revise la carpeta de spam.</p>
           </section>
         ) : (
           <form
@@ -255,7 +256,7 @@ export function SignUpPage() {
 
             <div className={styles.submit}>
               <Button type="submit" block busy={register.isPending}>
-                {register.isPending ? "Creando la cuenta…" : "Crear cuenta"}
+                {register.isPending ? "Creando la cuenta" : "Crear la cuenta"}
               </Button>
             </div>
           </form>
@@ -271,8 +272,8 @@ function ProblemMessage({ problem }: { problem: FormProblem }) {
       return (
         <>
           <p>
-            Los términos o la política de privacidad cambiaron. Recargue la
-            página para ver la versión vigente antes de abrir la cuenta.
+            Los términos o la política de privacidad cambiaron mientras llenaba
+            el formulario. Recargue la página para ver la versión vigente.
           </p>
           <Button
             variant="secondary"

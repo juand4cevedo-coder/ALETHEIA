@@ -44,7 +44,7 @@ export function RevokeInvitationDialog({
             busy={busy}
             onClick={() => invitation && onConfirm(invitation)}
           >
-            {busy ? "Revocando…" : "Revocar"}
+            {busy ? "Revocando la invitación" : "Revocar la invitación"}
           </Button>
         </>
       }
@@ -52,8 +52,7 @@ export function RevokeInvitationDialog({
       <p>
         El enlace que enviamos a{" "}
         <strong translate="no">{invitation?.email}</strong> dejará de servir y
-        el cupo quedará libre. Si cambia de opinión, puede enviar una invitación
-        nueva.
+        el cupo quedará libre. Si cambia de opinión, puede enviar otra.
       </p>
       {failed && (
         <Notice tone="error">

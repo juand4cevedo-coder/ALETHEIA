@@ -15,7 +15,7 @@ import {
   type LegalSlug,
 } from "../../config/routes.ts";
 import logoUrl from "../../assets/logo.svg";
-import { CONTACT_EMAIL, SITE_NAME, WORDMARK } from "../../config/site.ts";
+import { CONTACT_EMAIL, WORDMARK, pageTitle } from "../../config/site.ts";
 import { useSignOut } from "../session/useSignOut.ts";
 import { currentLegalChanges } from "./changes.ts";
 import { formatEffectiveDate } from "./format.ts";
@@ -105,7 +105,7 @@ export function LegalRenewal({ me }: { me: Me }) {
 
   return (
     <div className={styles.shell}>
-      <title>{`Textos legales actualizados · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Textos legales actualizados")}</title>
 
       <header className={styles.header}>
         <p className={styles.brand}>
@@ -130,7 +130,7 @@ export function LegalRenewal({ me }: { me: Me }) {
           </h1>
           <p className={styles.lead}>
             {firstName}, antes de seguir revise qué cambió y acepte la versión
-            vigente. Su cuenta, sus casos y su sesión siguen intactos.
+            vigente. Su cuenta y sus casos siguen como estaban.
           </p>
         </header>
 
@@ -201,13 +201,13 @@ export function LegalRenewal({ me }: { me: Me }) {
                     size="sm"
                     onClick={() => window.location.reload()}
                   >
-                    Recargar
+                    Recargar la página
                   </Button>
                 </>
               ) : (
                 <p>
-                  No pudimos registrar su aceptación. Inténtelo de nuevo; si
-                  continúa, escríbanos a{" "}
+                  No pudimos registrar su aceptación. Inténtelo de nuevo. Si
+                  vuelve a pasar, escríbanos a{" "}
                   <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
                   {problem.requestId && (
                     <>
@@ -243,18 +243,18 @@ export function LegalRenewal({ me }: { me: Me }) {
 
           <Button type="submit" block busy={accept.isPending || done}>
             {done
-              ? "Abriendo su espacio de trabajo…"
+              ? "Abriendo su espacio de trabajo"
               : accept.isPending
-                ? "Registrando…"
-                : "Aceptar y continuar"}
+                ? "Registrando su aceptación"
+                : "Aceptar los textos vigentes"}
           </Button>
         </form>
 
         <p className={styles.decline}>
           Si no está de acuerdo, no tiene que aceptar. Escríbanos a{" "}
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> y cancelamos
-          su suscripción sin ningún costo; tendrá 30 días para exportar sus
-          casos, como dicen los términos.
+          su suscripción sin costo. Como dicen los términos, la cuenta queda 30
+          días en solo lectura.
         </p>
         <SignOutLater />
       </main>
@@ -276,8 +276,8 @@ function SignOutLater() {
       >
         <SalirIcon size={16} aria-hidden="true" />
         {session.pending === "device"
-          ? "Cerrando sesión…"
-          : "Revisarlos más tarde y cerrar sesión"}
+          ? "Cerrando la sesión"
+          : "Cerrar la sesión y revisarlos después"}
       </button>
       {session.failed && (
         <p className={styles.leaveFailure} role="alert">

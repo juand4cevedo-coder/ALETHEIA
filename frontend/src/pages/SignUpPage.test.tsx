@@ -45,7 +45,7 @@ async function fillForm(
 }
 
 async function submit(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole("button", { name: "Crear cuenta" }));
+  await user.click(screen.getByRole("button", { name: "Crear la cuenta" }));
 }
 
 describe("Crear cuenta (HU-005, CP-005)", () => {
@@ -62,9 +62,10 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
       "autocomplete",
       "new-password",
     );
-    expect(
-      screen.getByRole("link", { name: "Volver a ingresar" }),
-    ).toHaveAttribute("href", "/ingresar");
+    expect(screen.getByRole("link", { name: "Ingresar" })).toHaveAttribute(
+      "href",
+      "/ingresar",
+    );
     expect(
       screen.getByRole("button", { name: "Configurar cookies" }),
     ).toBeInTheDocument();
@@ -164,7 +165,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     // queda en ningún campo de la página.
     expect(screen.queryByLabelText("Nombre completo")).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Crear cuenta" }),
+      screen.queryByRole("button", { name: "Crear la cuenta" }),
     ).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument();
 
@@ -224,7 +225,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     await submit(user);
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Los términos o la política de privacidad cambiaron.",
+      "Los términos o la política de privacidad cambiaron mientras llenaba el formulario.",
     );
     expect(
       screen.getByRole("button", { name: "Recargar la página" }),

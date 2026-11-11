@@ -56,7 +56,7 @@ export const routes: RouteObject[] = [
           redirectSignedIn: true,
           authSwitch: {
             question: "¿Todavía no tiene cuenta?",
-            label: "Crear cuenta gratis",
+            label: "Crear una cuenta",
             to: ROUTES.signUp,
           } satisfies AuthSwitch,
         },
@@ -68,7 +68,7 @@ export const routes: RouteObject[] = [
           redirectSignedIn: true,
           authSwitch: {
             question: "¿Ya tiene cuenta?",
-            label: "Volver a ingresar",
+            label: "Ingresar",
             to: ROUTES.signIn,
           } satisfies AuthSwitch,
         },
@@ -107,7 +107,7 @@ export const routes: RouteObject[] = [
         handle: {
           authSwitch: {
             question: "¿Ya verificó su correo?",
-            label: "Volver a ingresar",
+            label: "Ingresar",
             to: ROUTES.signIn,
           } satisfies AuthSwitch,
         },

@@ -52,7 +52,7 @@ describe("Página de inicio (HU-001)", () => {
     expect(await screen.findByText(/^\$59\.900/)).toBeInTheDocument();
     expect(screen.getByText("Recomendado")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /Solicitar cotización/ }),
+      screen.getByRole("link", { name: /Pedir una cotización/ }),
     ).toHaveAttribute("href", expect.stringContaining("mailto:"));
     expect(
       screen.getByText("14 días de prueba gratuita · Sin tarjeta de crédito"),
@@ -80,7 +80,11 @@ describe("Página de inicio (HU-001)", () => {
     expect(alert).toHaveTextContent(
       "No pudimos cargar los precios en este momento.",
     );
-    await user.click(within(alert).getByRole("button", { name: "Reintentar" }));
+    await user.click(
+      within(alert).getByRole("button", {
+        name: "Cargar los precios de nuevo",
+      }),
+    );
 
     expect(await screen.findByText(/^\$59\.900/)).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();

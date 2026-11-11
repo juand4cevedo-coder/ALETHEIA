@@ -6,7 +6,7 @@ import { resetPasswordMutation } from "../api/generated/@tanstack/react-query.ge
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { apiProblem } from "../features/auth/apiProblem.ts";
@@ -86,7 +86,7 @@ export function ResetPasswordPage() {
 
   return (
     <>
-      <title>{`Elegir una contraseña nueva · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Elegir una contraseña nueva")}</title>
       <meta name="robots" content="noindex" />
 
       <div className={styles.screen}>
@@ -139,7 +139,9 @@ export function ResetPasswordPage() {
 
               <div className={styles.submit}>
                 <Button type="submit" block busy={reset.isPending}>
-                  {reset.isPending ? "Guardando…" : "Guardar la contraseña"}
+                  {reset.isPending
+                    ? "Guardando la contraseña"
+                    : "Guardar la contraseña"}
                 </Button>
               </div>
             </form>

@@ -15,7 +15,7 @@ import { Notice } from "../components/ui/Notice.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { LEGAL_VERSION } from "../config/legal.ts";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { apiProblem } from "../features/auth/apiProblem.ts";
@@ -77,7 +77,7 @@ export function AcceptInvitationPage() {
 
   return (
     <>
-      <title>{`Aceptar la invitación · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Aceptar la invitación")}</title>
       <meta name="robots" content="noindex" />
 
       <div className={styles.screen}>
@@ -86,7 +86,7 @@ export function AcceptInvitationPage() {
         ) : invitation.isPending ? (
           <header className={styles.intro}>
             <p className={styles.lead} role="status">
-              Abriendo su invitación…
+              Abriendo su invitación
             </p>
           </header>
         ) : invitation.isError ? (
@@ -293,14 +293,14 @@ function AcceptForm({
           </div>
         ) : (
           <Link to={ROUTES.forgotPassword} className={styles.forgot}>
-            ¿La olvidó?
+            ¿Olvidó su contraseña?
           </Link>
         )}
 
         <div className={styles.submit}>
           <Button type="submit" block busy={accept.isPending}>
             {accept.isPending
-              ? "Entrando…"
+              ? "Entrando"
               : isNew
                 ? "Crear mi cuenta y entrar"
                 : "Aceptar la invitación"}
@@ -320,8 +320,9 @@ function MemberElsewhere({ invitation }: { invitation: InvitationPreview }) {
       </h1>
       <p>
         <strong translate="no">{invitation.email}</strong> ya pertenece a una
-        organización en ALETHEIA. Por ahora cada persona puede estar en una sola
-        organización, así que no puede unirse a {invitation.organization_name}.
+        organización en ALETHEIA. Por ahora, cada persona puede estar en una
+        sola organización. Por eso no puede unirse a{" "}
+        {invitation.organization_name}.
       </p>
       <ButtonLink to={ROUTES.signIn}>Ingresar a mi cuenta</ButtonLink>
     </section>

@@ -50,7 +50,9 @@ describe("Verificar el correo (HU-006, CP-006)", () => {
     });
     expect(screen.getByText("Usado. No vuelve a servir.")).toBeInTheDocument();
     expect(
-      within(screen.getByRole("main")).getByRole("link", { name: "Ingresar" }),
+      within(screen.getByRole("main")).getByRole("link", {
+        name: "Ingresar a mi cuenta",
+      }),
     ).toHaveAttribute("href", "/ingresar");
     expect(await seriousAxeViolations(container)).toEqual([]);
   });

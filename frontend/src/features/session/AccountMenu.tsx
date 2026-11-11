@@ -48,9 +48,9 @@ export function AccountMenu({ me }: { me: Me }) {
     };
   }, [open]);
 
-  const membership = me.organization
-    ? `${me.organization.name} · ${ROLE_LABELS[me.organization.role]}`
-    : null;
+  // La organización y el rol van en líneas separadas, no unidos por un separador.
+  const organization = me.organization?.name ?? null;
+  const role = me.organization ? ROLE_LABELS[me.organization.role] : null;
 
   return (
     <div ref={rootRef} className={styles.root}>
@@ -63,12 +63,12 @@ export function AccountMenu({ me }: { me: Me }) {
         onClick={() => setOpen((current) => !current)}
       >
         <span className={styles.seal} aria-hidden="true">
-          {initialsOf(me.full_name)}
+          {initialsOf(me.full_name) || <UsuarioIcon size={16} />}
         </span>
         <span className={styles.who}>
           <span className={styles.person}>{me.full_name}</span>
-          {membership && (
-            <span className={styles.organization}>{membership}</span>
+          {organization && (
+            <span className={styles.organization}>{organization}</span>
           )}
         </span>
         <ChevronAbajoIcon
@@ -85,7 +85,8 @@ export function AccountMenu({ me }: { me: Me }) {
           <p className={styles.panelEmail} translate="no">
             {me.email}
           </p>
-          {membership && <p className={styles.panelRole}>{membership}</p>}
+          {organization && <p className={styles.panelRole}>{organization}</p>}
+          {role && <p className={styles.panelRole}>{`Rol: ${role}`}</p>}
         </div>
         <ul className={styles.actions}>
           <li>
@@ -115,7 +116,7 @@ export function AccountMenu({ me }: { me: Me }) {
               <span className={styles.actionText}>
                 <span className={styles.actionLabel}>
                   {session.pending === "device"
-                    ? "Cerrando sesión…"
+                    ? "Cerrando la sesión"
                     : "Cerrar sesión"}
                 </span>
                 <span className={styles.actionHint}>
