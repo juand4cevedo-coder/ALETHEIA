@@ -1,108 +1,38 @@
-/* Cuadrícula de tres columnas: la huella ocupa dos y abre la sección; las demás garantías
-   llenan el resto con el mismo peso visual. */
-.bento {
+/* Cifrado y eliminación: una lista compacta de dos columnas bajo una regla fina, sin
+   tarjetas, para no competir con las demostraciones. */
+.guarantees {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-12);
+  margin: var(--space-16) 0 0;
+  padding: var(--space-8) 0 0;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-text-inverse) 10%, transparent);
+  list-style: none;
 }
 
-.bento > * {
-  display: flex;
-}
-
-.featured {
-  grid-column: span 2;
-}
-
-.card {
+.guarantee {
   display: grid;
-  align-content: start;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-4);
-  width: 100%;
-  padding: var(--space-8);
+  align-items: start;
 }
 
-.featured .card {
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  align-items: center;
-  gap: var(--space-8);
+.icon {
+  display: grid;
+  place-items: center;
+  padding-top: 3px;
+  color: var(--color-primary-300);
 }
 
 .copy {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-2);
 }
 
-.compare {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.compareRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-2) var(--space-3);
-  padding: var(--space-4);
-  border: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 7%, transparent);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-ink-950) 55%, transparent);
-}
-
-.compareLabel {
-  grid-column: 1 / -1;
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.compareHash {
-  overflow: hidden;
-  color: var(--color-text-inverse);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.chip {
-  align-self: center;
-  padding: 2px 10px;
-  border-radius: var(--radius-pill);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.match {
-  background: color-mix(in srgb, var(--color-success-400) 14%, transparent);
-  color: var(--color-success-400);
-}
-
-.mismatch {
-  background: color-mix(in srgb, var(--color-error-400) 14%, transparent);
-  color: var(--color-error-400);
-}
-
-@media (max-width: 1000px) {
-  .bento {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .featured {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 680px) {
-  .bento {
+@media (max-width: 760px) {
+  .guarantees {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .card {
-    padding: var(--space-6);
-  }
-
-  .featured .card {
-    grid-template-columns: minmax(0, 1fr);
+    margin-top: var(--space-12);
   }
 }

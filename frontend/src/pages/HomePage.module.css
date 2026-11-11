@@ -1,29 +1,64 @@
-/* Fondo continuo del inicio: el mismo azul profundo de principio a fin, con focos de luz de
-   marca repartidos a lo largo de la página. Cada sección se apoya en uno de ellos, así que el
-   paso de una a otra se siente como un recorrido y no como un cambio de fondo. */
+/* Fondo continuo del inicio: el mismo azul profundo de principio a fin, con un foco de luz de
+   marca por sección, alternando de lado para que el recorrido tenga ritmo sin cambiar de fondo.
+   El más intenso va detrás de la pieza central (§ 03, Garantías) y el del cierre recoge la
+   página al final. Las alturas son la proporción medida a 1440 px; en otros anchos los focos
+   son lo bastante amplios para seguir cayendo sobre su sección. (El hero tiene su propia luz.) */
 .page {
   position: relative;
   /* Sube por detrás del encabezado transparente, así la luz de la portada empieza en el borde
      superior de la pantalla. clip recorta lo que sale por los lados sin crear otra zona de
-     desplazamiento. */
+     desplazamiento (y no rompe el sticky de Preguntas). */
   margin-top: calc(-1 * var(--header-height));
   overflow: clip;
   background:
+    /* § 01 Problema */
     radial-gradient(
-      60rem 40rem at 10% 34%,
-      color-mix(in srgb, var(--color-brand-blue) 9%, transparent),
+      50rem 30rem at 8% 22%,
+      color-mix(in srgb, var(--color-brand-blue) 7%, transparent),
       transparent 70%
     ),
+    /* § 02 Cómo funciona */
     radial-gradient(
-      55rem 36rem at 92% 52%,
-      color-mix(in srgb, var(--color-primary-400) 5%, transparent),
-      transparent 70%
-    ),
+        50rem 30rem at 92% 31%,
+        color-mix(in srgb, var(--color-primary-400) 5%, transparent),
+        transparent 70%
+      ),
+    /* § 03 Garantías: el foco más intenso de la página */
     radial-gradient(
-      60rem 40rem at 12% 74%,
-      color-mix(in srgb, var(--color-brand-blue) 8%, transparent),
-      transparent 70%
-    ),
+        70rem 46rem at 50% 46%,
+        color-mix(in srgb, var(--color-brand-blue) 14%, transparent),
+        transparent 70%
+      ),
+    /* § 04 Alcance: un halo detrás de la hoja para que el papel no quede recortado en negro */
+    radial-gradient(
+        55rem 32rem at 50% 62%,
+        color-mix(in srgb, var(--color-primary-400) 5%, transparent),
+        transparent 70%
+      ),
+    /* § 05 Verificador */
+    radial-gradient(
+        50rem 30rem at 10% 71%,
+        color-mix(in srgb, var(--color-brand-blue) 8%, transparent),
+        transparent 70%
+      ),
+    /* § 06 Planes */
+    radial-gradient(
+        50rem 30rem at 90% 80%,
+        color-mix(in srgb, var(--color-primary-400) 5%, transparent),
+        transparent 70%
+      ),
+    /* § 07 Preguntas */
+    radial-gradient(
+        45rem 28rem at 8% 89%,
+        color-mix(in srgb, var(--color-brand-blue) 6%, transparent),
+        transparent 70%
+      ),
+    /* Cierre */
+    radial-gradient(
+        60rem 30rem at 50% 98%,
+        color-mix(in srgb, var(--color-brand-blue) 10%, transparent),
+        transparent 70%
+      ),
     linear-gradient(
       180deg,
       var(--color-ink-950) 0%,

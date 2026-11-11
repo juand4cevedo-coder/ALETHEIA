@@ -1,37 +1,21 @@
-import {
-  Clock3,
-  FileX2,
-  Fingerprint,
-  KeyRound,
-  Link2,
-  type LucideIcon,
-} from "lucide-react";
+import { FileX2, KeyRound, type LucideIcon } from "lucide-react";
 import { useRef } from "react";
 
 import { Reveal } from "../../components/ui/Reveal.tsx";
 import { useSpotlight } from "../../components/ui/useSpotlight.ts";
+import { ChainDemo } from "./ChainDemo.tsx";
+import { HashDemo } from "./HashDemo.tsx";
+import demo from "./IntegrityDemo.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
+import { StampCard } from "./StampCard.tsx";
 import styles from "./StandardsSection.module.css";
 
-// Dos huellas reales: la del texto de ejemplo y la del mismo texto con una sola letra
-// distinta. Muestran que un cambio mínimo produce una huella completamente diferente.
-const ORIGINAL_HASH = "52a910d44b570bc5cd4d35e1";
-const ALTERED_HASH = "b8d74f10b6bf8fc8e36028d5";
+type Guarantee = { icon: LucideIcon; title: string; text: string };
 
-type Feature = { icon: LucideIcon; title: string; text: string };
-
-const FEATURES: Feature[] = [
-  {
-    icon: Clock3,
-    title: "Sello de tiempo RFC 3161",
-    text: "Una autoridad externa firma la huella con fecha y hora. El sello se comprueba con herramientas de uso común, como OpenSSL, sin depender de nosotros.",
-  },
-  {
-    icon: Link2,
-    title: "Cadena de custodia encadenada",
-    text: "Cada evento guarda la huella del anterior. Si alguien altera un registro, la cadena se rompe y la verificación lo detecta.",
-  },
+// Las dos garantías que no se pueden manipular en pantalla van como lista, debajo de las
+// demostraciones.
+const GUARANTEES: Guarantee[] = [
   {
     icon: KeyRound,
     title: "Cifrado por caso",
@@ -44,74 +28,83 @@ const FEATURES: Feature[] = [
   },
 ];
 
-// Las garantías técnicas, cada una apoyada en un estándar abierto. En los textos, los nombres
-// como AES‑256‑GCM llevan guiones que no parten la línea (U+2011).
+// Pieza central de la landing: las garantías técnicas se demuestran en vez de enumerarse. Cada
+// demostración envuelve su superficie en un contenedor con data-spotlight del mismo tamaño,
+// para que la luz del puntero caiga donde está el puntero. En los textos, los nombres como
+// AES‑256‑GCM llevan guiones que no parten la línea (U+2011).
 export function StandardsSection() {
-  const gridRef = useRef<HTMLDivElement>(null);
-  useSpotlight(gridRef);
+  const demosRef = useRef<HTMLDivElement>(null);
+  useSpotlight(demosRef);
 
   return (
     <section className={section.section} aria-labelledby="titulo-estandares">
       <div className={section.inner}>
         <SectionHeading
           id="titulo-estandares"
+          index={3}
           kicker="Seguridad y estándares"
           title="Garantías que cualquier perito puede comprobar"
           lead="No usamos criptografía propia ni cadenas de bloques. Cada garantía descansa en estándares abiertos, documentados y verificables con herramientas independientes."
         />
 
-        <div ref={gridRef} className={styles.bento}>
-          <Reveal className={styles.featured}>
-            <div data-spotlight className={`${section.card} ${styles.card}`}>
-              <div className={styles.copy}>
-                <span className={section.iconTile}>
-                  <Fingerprint size={22} />
-                </span>
-                <h3 className={section.cardTitle}>Huella SHA-256</h3>
-                <p className={section.cardText}>
-                  La calculamos en el momento en que el archivo llega. El mismo
-                  archivo produce siempre la misma huella; si cambia un solo
-                  carácter, la huella es otra por completo.
-                </p>
-              </div>
-
-              <div className={styles.compare} aria-hidden="true">
-                <div className={styles.compareRow}>
-                  <span className={styles.compareLabel}>Archivo original</span>
-                  <code className={styles.compareHash}>{ORIGINAL_HASH}…</code>
-                  <span className={`${styles.chip} ${styles.match}`}>
-                    Coincide
-                  </span>
-                </div>
-                <div className={styles.compareRow}>
-                  <span className={styles.compareLabel}>
-                    Una letra modificada
-                  </span>
-                  <code className={styles.compareHash}>{ALTERED_HASH}…</code>
-                  <span className={`${styles.chip} ${styles.mismatch}`}>
-                    No coincide
-                  </span>
-                </div>
-              </div>
-              <p className="visually-hidden">
-                Ejemplo: el archivo original coincide con su huella; el mismo
-                archivo con una letra modificada no coincide.
+        <div ref={demosRef} className={demo.demos}>
+          <Reveal className={`${demo.panel} ${demo.hashPanel}`}>
+            <div className={demo.panelHead}>
+              <p className={demo.exhibit}>Demostración A</p>
+              <h3 className={demo.panelTitle}>Huella SHA-256</h3>
+              <p className={demo.panelText}>
+                El mismo archivo produce siempre la misma huella; si cambia un
+                solo carácter, la huella es otra por completo.
               </p>
+            </div>
+            <div data-spotlight className={demo.surface}>
+              <HashDemo />
             </div>
           </Reveal>
 
-          {FEATURES.map((feature, index) => (
-            <Reveal key={feature.title} delay={(index + 1) as 1 | 2 | 3 | 4}>
-              <div data-spotlight className={`${section.card} ${styles.card}`}>
-                <span className={section.iconTile}>
-                  <feature.icon size={22} />
-                </span>
-                <h3 className={section.cardTitle}>{feature.title}</h3>
-                <p className={section.cardText}>{feature.text}</p>
+          <Reveal className={demo.panel}>
+            <div className={demo.panelHead}>
+              <p className={demo.exhibit}>Demostración B</p>
+              <h3 className={demo.panelTitle}>Cadena de custodia encadenada</h3>
+              <p className={demo.panelText}>
+                Cada evento guarda la huella del anterior: si alguien altera un
+                registro, la cadena se rompe y la verificación lo detecta.
+              </p>
+            </div>
+            <div data-spotlight className={demo.surface}>
+              <ChainDemo />
+            </div>
+          </Reveal>
+
+          <Reveal className={demo.panel}>
+            <div className={demo.panelHead}>
+              <p className={demo.exhibit}>Demostración C</p>
+              <h3 className={demo.panelTitle}>Sello de tiempo RFC 3161</h3>
+              <p className={demo.panelText}>
+                Una autoridad externa firma la huella con fecha y hora, y el
+                sello se comprueba con herramientas de uso común, como OpenSSL,
+                sin depender de nosotros.
+              </p>
+            </div>
+            <div data-spotlight className={demo.surface}>
+              <StampCard />
+            </div>
+          </Reveal>
+        </div>
+
+        <ul className={styles.guarantees}>
+          {GUARANTEES.map((item) => (
+            <Reveal as="li" key={item.title} className={styles.guarantee}>
+              <span className={styles.icon} aria-hidden="true">
+                <item.icon size={20} aria-hidden="true" />
+              </span>
+              <div className={styles.copy}>
+                <h3 className={section.cardTitle}>{item.title}</h3>
+                <p className={section.cardText}>{item.text}</p>
               </div>
             </Reveal>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );
