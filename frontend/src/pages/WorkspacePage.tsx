@@ -1,4 +1,4 @@
-import { CircleAlert, CircleCheck, FolderPlus } from "lucide-react";
+import { CircleAlert, CircleCheck, FolderOpen } from "lucide-react";
 import { useOutletContext } from "react-router";
 
 import type { Me } from "../api/generated";
@@ -6,12 +6,11 @@ import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { SITE_NAME } from "../config/site.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
-import { canOpenCases } from "../features/cases/roles.ts";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./WorkspacePage.module.css";
 
 // Inicio del espacio de trabajo. Por ahora muestra a nombre de quién está la sesión, el estado
-// real de la cuenta y, para quien puede, la acción de abrir un caso; HU-031 lo convierte en el
+// real de la cuenta y el camino al libro de casos, donde se abren; HU-031 lo convierte en el
 // tablero con casos, evidencias y exportaciones. Nada aquí anuncia funciones que no existen.
 export function WorkspacePage() {
   const me = useOutletContext<Me>();
@@ -26,17 +25,17 @@ export function WorkspacePage() {
         <h1 id="titulo-espacio" className={styles.title}>
           {me.full_name}
         </h1>
-        {canOpenCases(me.organization?.role) && (
-          // Con el correo sin verificar la acción no se oculta: la pantalla explica por qué.
+        {me.organization && (
+          // Los casos se abren y se consultan en el libro de casos, para todos los roles.
           <div className={styles.actions}>
             <ButtonLink
-              to={ROUTES.newCase}
+              to={ROUTES.cases}
               variant="bright"
               size="sm"
               shape="pill"
             >
-              <FolderPlus size={16} aria-hidden="true" />
-              Abrir caso
+              <FolderOpen size={16} aria-hidden="true" />
+              Ver mis casos
             </ButtonLink>
           </div>
         )}

@@ -86,6 +86,8 @@
   --motion-stamp: 500ms;
   /* Espera a que la ventana ya esté a la vista antes de estampar el sello. */
   --motion-stamp-delay: 900ms;
+  /* Latido de lo que sigue en curso, como un sello de tiempo pendiente. */
+  --motion-pulse: 2400ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   /* Para entradas: arranca rápido y frena suave, sin rebote. */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);

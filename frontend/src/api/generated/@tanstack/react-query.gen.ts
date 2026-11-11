@@ -17,6 +17,7 @@ import {
   createInvitation,
   forgotPassword,
   health,
+  listCases,
   listInvitations,
   listMembers,
   listPlans,
@@ -60,6 +61,9 @@ import type {
   HealthData,
   HealthError,
   HealthResponse,
+  ListCasesData,
+  ListCasesError,
+  ListCasesResponse,
   ListInvitationsData,
   ListInvitationsError,
   ListInvitationsResponse,
@@ -867,6 +871,82 @@ export const acceptInvitationMutation = (
     },
   };
   return mutationOptions;
+};
+
+export const listCasesQueryKey = (options?: Options<ListCasesData>) =>
+  createQueryKey("listCases", options);
+
+/**
+ * Listar los casos donde la persona es miembro, con su actividad
+ */
+export const listCasesOptions = (options?: Options<ListCasesData>) =>
+  queryOptions<
+    ListCasesResponse,
+    ListCasesError,
+    ListCasesResponse,
+    ReturnType<typeof listCasesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listCases({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listCasesQueryKey(options),
+  });
+
+export const listCasesInfiniteQueryKey = (
+  options?: Options<ListCasesData>,
+): QueryKey<Options<ListCasesData>> =>
+  createQueryKey("listCases", options, true);
+
+/**
+ * Listar los casos donde la persona es miembro, con su actividad
+ */
+export const listCasesInfiniteOptions = (options?: Options<ListCasesData>) => {
+  const opts = infiniteQueryOptions<
+    ListCasesResponse,
+    ListCasesError,
+    InfiniteData<ListCasesResponse>,
+    QueryKey<Options<ListCasesData>>,
+    | string
+    | null
+    | Pick<
+        QueryKey<Options<ListCasesData>>[0],
+        "body" | "headers" | "path" | "query"
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<ListCasesData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  cursor: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listCases({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: listCasesInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
 };
 
 /**

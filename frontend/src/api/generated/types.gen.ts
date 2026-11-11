@@ -297,6 +297,181 @@ export type CaseOut = {
 };
 
 /**
+ * CasePage
+ *
+ * Una página de los casos de la persona y los totales (API-023).
+ */
+export type CasePage = {
+  /**
+   * Items
+   *
+   * Casos de la actividad más reciente a la más antigua.
+   */
+  items: Array<CaseSummaryOut>;
+  /**
+   * Next Cursor
+   *
+   * Cursor de la página siguiente, o null.
+   */
+  next_cursor: string | null;
+  /**
+   * Totales de los casos de la persona.
+   */
+  totals: CaseTotalsOut;
+};
+
+/**
+ * CaseSummaryOut
+ *
+ * Un caso de la lista con su actividad (API-023).
+ */
+export type CaseSummaryOut = {
+  /**
+   * Id
+   *
+   * Identificador del caso.
+   */
+  id: string;
+  /**
+   * Title
+   *
+   * Título del caso.
+   */
+  title: string;
+  /**
+   * Filing Number
+   *
+   * Los 23 dígitos del radicado, si lo tiene.
+   */
+  filing_number: string | null;
+  /**
+   * Court
+   *
+   * Despacho que lleva el proceso.
+   */
+  court: string | null;
+  /**
+   * Practice Area
+   *
+   * Especialidad.
+   */
+  practice_area:
+    | "civil"
+    | "commercial"
+    | "family"
+    | "labor"
+    | "criminal"
+    | "administrative"
+    | "constitutional"
+    | "other"
+    | null;
+  /**
+   * Internal Reference
+   *
+   * Referencia interna de la oficina.
+   */
+  internal_reference: string | null;
+  /**
+   * Status
+   *
+   * Si el caso sigue abierto.
+   */
+  status: "open" | "closed";
+  /**
+   * Created At
+   *
+   * Cuándo se abrió.
+   */
+  created_at: string;
+  /**
+   * Created By Name
+   *
+   * Nombre de quien lo abrió.
+   */
+  created_by_name: string;
+  /**
+   * Member Count
+   *
+   * Personas asignadas al caso.
+   */
+  member_count: number;
+  /**
+   * Evidence Count
+   *
+   * Evidencias del caso.
+   */
+  evidence_count: number;
+  /**
+   * Evidence By Type
+   *
+   * Evidencias por tipo declarado; solo los tipos que tienen alguna.
+   */
+  evidence_by_type: {
+    [key: string]: number;
+  };
+  /**
+   * Member Initials
+   *
+   * Iniciales de las tres primeras personas en llegar al caso.
+   */
+  member_initials: Array<string>;
+  /**
+   * Último evento de la cadena; null solo si el caso no tiene eventos.
+   */
+  last_event: LastEventOut | null;
+  /**
+   * Recent Actions
+   *
+   * Acciones de los últimos cinco eventos, el más reciente al final.
+   */
+  recent_actions: Array<string>;
+  /**
+   * Last Activity At
+   *
+   * Hora del último evento de la cadena; por ella se ordena la lista.
+   */
+  last_activity_at: string;
+};
+
+/**
+ * CaseTotalsOut
+ *
+ * Totales de los casos donde la persona es miembro, sin importar el filtro.
+ */
+export type CaseTotalsOut = {
+  /**
+   * Open
+   *
+   * Casos abiertos.
+   */
+  open: number;
+  /**
+   * Closed
+   *
+   * Casos cerrados.
+   */
+  closed: number;
+  /**
+   * Evidences
+   *
+   * Evidencias en esos casos.
+   */
+  evidences: number;
+  /**
+   * Pending Stamps
+   *
+   * Evidencias cuyo sello de tiempo está pendiente.
+   */
+  pending_stamps: number;
+  /**
+   * Custody Events
+   *
+   * Eventos de custodia de esos casos.
+   */
+  custody_events: number;
+};
+
+/**
  * ChangePasswordRequest
  *
  * Contraseña actual y nueva de quien tiene la sesión (API-013).
@@ -544,6 +719,32 @@ export type InvitationTokenRequest = {
    * Token del fragmento del enlace (#t=…).
    */
   token: string;
+};
+
+/**
+ * LastEventOut
+ *
+ * El último evento de la cadena de un caso.
+ */
+export type LastEventOut = {
+  /**
+   * Action
+   *
+   * Qué ocurrió, por ejemplo evidence_uploaded.
+   */
+  action: string;
+  /**
+   * Actor Name
+   *
+   * Quién lo hizo, o null si fue el sistema.
+   */
+  actor_name: string | null;
+  /**
+   * Occurred At
+   *
+   * Cuándo ocurrió.
+   */
+  occurred_at: string;
 };
 
 /**
@@ -1899,6 +2100,54 @@ export type AcceptInvitationResponses = {
 
 export type AcceptInvitationResponse =
   AcceptInvitationResponses[keyof AcceptInvitationResponses];
+
+export type ListCasesData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Status
+     *
+     * Casos abiertos, cerrados o todos.
+     */
+    status?: "open" | "closed" | "all";
+    /**
+     * Cursor
+     *
+     * next_cursor de la página anterior.
+     */
+    cursor?: string | null;
+    /**
+     * Limit
+     *
+     * Casos por página.
+     */
+    limit?: number;
+  };
+  url: "/api/v1/cases";
+};
+
+export type ListCasesErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListCasesError = ListCasesErrors[keyof ListCasesErrors];
+
+export type ListCasesResponses = {
+  /**
+   * Successful Response
+   */
+  200: CasePage;
+};
+
+export type ListCasesResponse = ListCasesResponses[keyof ListCasesResponses];
 
 export type CreateCaseData = {
   body: CaseCreate;
