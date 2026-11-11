@@ -1,5 +1,6 @@
-/* El caso (maqueta 03): la identidad procesal arriba, en un panel, y debajo las pestañas de lo
-   que ya existe en el caso. */
+/* El caso (maqueta 03): un solo panel con la identidad procesal arriba y, debajo, las pestañas de
+   lo que ya existe en el caso. Dentro del panel no hay más recuadros: las columnas se separan
+   con una línea. */
 .screen {
   display: grid;
   gap: var(--space-6);
@@ -8,9 +9,11 @@
 .loading {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   margin: 0;
-  color: var(--color-text-inverse-muted);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .spinner {
@@ -26,13 +29,13 @@
 .unavailable {
   display: grid;
   gap: var(--space-6);
-  max-width: 720px;
+  max-width: var(--column-width);
 }
 
 .unavailableActions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .case {
@@ -49,51 +52,45 @@
 
 .reference {
   margin: 0;
-  color: var(--color-text-inverse-muted);
+  color: var(--text-2);
   font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 0.03em;
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-mono);
   overflow-wrap: anywhere;
 }
 
-/* El radicado del encabezado se lee un punto más grande que en las tablas. */
 .reference code {
+  color: var(--text);
   font-family: inherit;
   font-size: inherit;
-  color: var(--color-text-inverse);
 }
 
 .title {
   margin: var(--space-2) 0 var(--space-3);
-  color: var(--color-text-inverse);
-  font-size: 32px;
-  font-weight: 650;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
+  color: var(--text);
+  font-size: var(--font-size-title);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  line-height: var(--line-height-title);
   overflow-wrap: anywhere;
 }
 
+/* Los datos del caso en una línea, separados por el espacio: no son botones ni estados, así que
+   no llevan cápsula. */
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-1) var(--space-6);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
   max-width: 100%;
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--color-ink-700);
-  border-radius: var(--radius-pill);
-  background: var(--color-ink-900);
-  color: var(--color-text-inverse);
-  font-size: 12px;
-  line-height: 18px;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
   overflow-wrap: anywhere;
 }
 
@@ -117,9 +114,10 @@
   padding: var(--space-1) 0 var(--space-3);
   border: 0;
   background: none;
-  color: var(--color-text-inverse-muted);
+  color: var(--text-2);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
   cursor: pointer;
   box-shadow: inset 0 -2px 0 transparent;
   transition:
@@ -128,21 +126,22 @@
 }
 
 .tab:hover {
-  color: var(--color-text-inverse);
+  color: var(--text);
 }
 
 .tab[aria-selected="true"] {
-  color: var(--color-text-inverse);
+  color: var(--text);
   box-shadow: inset 0 -2px 0 var(--accent);
 }
 
 .count {
-  padding: 1px var(--space-2);
+  padding: 0 var(--space-2);
   border-radius: var(--radius-sm);
-  background: var(--color-ink-850);
-  color: var(--color-text-inverse-muted);
-  font-family: var(--font-mono);
-  font-size: 11px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-label);
 }
 
 .panel {
@@ -159,7 +158,7 @@
 .chainLayout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-6);
+  gap: var(--space-8);
   align-items: start;
 }
 
@@ -167,48 +166,50 @@
   .chainLayout {
     grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
   }
-}
 
-.card {
-  padding: var(--space-6);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--bg);
-}
-
-.cardTitle {
-  margin: 0 0 var(--space-1);
-  color: var(--color-text-inverse);
-  font-size: 15px;
-  font-weight: 600;
+  /* Al lado de la cadena, los datos se separan con una línea vertical, no con otro recuadro. */
+  .facts {
+    padding-left: var(--space-8);
+    border-left: 1px solid var(--line);
+  }
 }
 
 .caption {
+  max-width: var(--measure);
   margin: 0 0 var(--space-6);
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-  line-height: 1.5;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
-.facts {
+.factsTitle {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+}
+
+.factList {
   display: grid;
   gap: var(--space-4);
   margin: var(--space-4) 0 0;
 }
 
 /* Solo los rótulos y valores de la ficha: el desglose del radicado trae los suyos. */
-.facts > div > dt {
-  margin-bottom: var(--space-2);
-  color: var(--color-text-inverse-muted);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.factList > div > dt {
+  margin-bottom: var(--space-1);
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
-.facts > div > dd {
+.factList > div > dd {
   margin: 0;
-  color: var(--color-text-inverse);
-  font-size: 14px;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
   overflow-wrap: anywhere;
 }
 
@@ -231,49 +232,56 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) 0;
-  border-top: 1px solid var(--color-ink-800);
-  font-size: 14px;
+  min-height: var(--row-height);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--line);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .member:first-child {
   border-top: 0;
 }
 
+/* Iniciales en grafito, como el sello de la cuenta: el violeta queda para la acción. */
 .avatar {
   display: grid;
   flex: none;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--color-ink-700);
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  border: 1px solid var(--line-control);
   border-radius: 50%;
-  background: var(--color-ink-850);
-  color: var(--color-primary-300);
-  font-size: 11px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--font-size-label);
   font-weight: 600;
+  line-height: var(--line-height-label);
 }
 
 .who {
   display: grid;
-  flex: 1 1 200px;
+  flex: 1 1 calc(var(--space-24) * 2);
   min-width: 0;
 }
 
 .memberName {
-  color: var(--color-text-inverse);
+  color: var(--text);
+  font-weight: 500;
 }
 
 .memberEmail {
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
   overflow-wrap: anywhere;
 }
 
 .role {
   margin-left: auto;
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
   text-align: right;
 }
 
@@ -288,20 +296,13 @@
     padding: var(--space-6) var(--space-4) 0;
   }
 
-  .title {
-    font-size: 26px;
-  }
-
   .panel {
     padding: var(--space-4);
   }
 
-  .card {
-    padding: var(--space-4);
-  }
-
   .role {
-    margin-left: calc(32px + var(--space-3));
+    margin-left: calc(var(--control-height-sm) + var(--space-3));
+    text-align: left;
   }
 }
 

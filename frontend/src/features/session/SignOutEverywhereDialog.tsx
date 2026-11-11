@@ -26,7 +26,7 @@ export function SignOutEverywhereDialog({
       onClose={onClose}
       busy={busy}
       title="¿Cerrar todas las sesiones?"
-      icon={<DispositivosIcon size={22} />}
+      icon={<DispositivosIcon size={20} />}
       actions={
         <>
           <Button

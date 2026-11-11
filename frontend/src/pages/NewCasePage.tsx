@@ -139,7 +139,7 @@ export function NewCasePage() {
         <NewCaseForm me={me} />
       ) : (
         <div className={styles.denied}>
-          <PageHeader eyebrow="Nuevo expediente" title="Abrir un caso" />
+          <PageHeader title="Abrir un caso" />
           <Notice tone="error">
             <p>{NOT_ALLOWED}</p>
           </Notice>
@@ -309,7 +309,7 @@ function NewCaseForm({ me }: { me: Me }) {
     <>
       <div className={styles.compose}>
         <div className={styles.formPanel}>
-          <PageHeader eyebrow="Nuevo expediente" title="Abrir un caso" />
+          <PageHeader title="Abrir un caso" />
           <form
             className={styles.form}
             aria-label="Abrir un caso"
@@ -448,7 +448,7 @@ function NewCaseForm({ me }: { me: Me }) {
             />
 
             <p className={styles.privacy}>
-              <EscudoAlertaIcon size={18} aria-hidden="true" />
+              <EscudoAlertaIcon size={16} aria-hidden="true" />
               <span>
                 No escriba aquí datos sensibles ni más nombres de los
                 necesarios. Estos campos los ve todo el equipo del caso.

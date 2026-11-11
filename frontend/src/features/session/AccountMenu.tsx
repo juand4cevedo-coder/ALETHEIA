@@ -95,7 +95,7 @@ export function AccountMenu({ me }: { me: Me }) {
               className={styles.action}
               onClick={() => setOpen(false)}
             >
-              <UsuarioIcon size={18} aria-hidden="true" />
+              <UsuarioIcon size={16} aria-hidden="true" />
               <span className={styles.actionText}>
                 <span className={styles.actionLabel}>Mi cuenta</span>
                 <span className={styles.actionHint}>
@@ -112,7 +112,7 @@ export function AccountMenu({ me }: { me: Me }) {
               disabled={session.pending !== null}
               aria-busy={session.pending === "device" || undefined}
             >
-              <SalirIcon size={18} aria-hidden="true" />
+              <SalirIcon size={16} aria-hidden="true" />
               <span className={styles.actionText}>
                 <span className={styles.actionLabel}>
                   {session.pending === "device"
@@ -135,7 +135,7 @@ export function AccountMenu({ me }: { me: Me }) {
               }}
               disabled={session.pending !== null}
             >
-              <DispositivosIcon size={18} aria-hidden="true" />
+              <DispositivosIcon size={16} aria-hidden="true" />
               <span className={styles.actionText}>
                 <span className={styles.actionLabel}>
                   Cerrar todas las sesiones

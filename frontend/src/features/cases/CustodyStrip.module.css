@@ -1,141 +1,106 @@
-/* Franja de la custodia: la integridad a la izquierda y las cifras en columnas separadas por un
-   filete, como el encabezado de un libro de registro. */
+/* Franja de la custodia: cuatro cifras en celdas separadas por un filete, dentro de un solo
+   panel. La integridad abre la fila y lleva una insignia en lugar de un número. */
 .strip {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 3fr);
   overflow: hidden;
-  border: 1px solid var(--color-ink-800);
+  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--surface-1);
 }
 
-.integrity {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-6);
-}
-
-/* Anillo gris: el verde queda reservado para la verificación independiente (HU-024). */
-.ring {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--color-ink-650);
-  border-radius: 50%;
-  background: var(--surface-2);
-  color: var(--color-text-inverse-muted);
-}
-
-.label {
-  margin: 0 0 var(--space-1);
-  color: var(--color-text-inverse-muted);
-  font-size: 11px;
-  letter-spacing: 0.02em;
-}
-
-.state {
-  margin: 0;
-  color: var(--color-text-inverse);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.note {
-  margin: var(--space-1) 0 0;
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
-  line-height: 1.45;
-}
-
 .figures {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
   margin: 0;
 }
 
 .figure {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
   padding: var(--space-4) var(--space-6);
-  border-left: 1px solid var(--color-ink-800);
+  border-left: 1px solid var(--line);
+}
+
+.figure:first-child {
+  border-left: 0;
 }
 
 .figure dt {
-  margin-bottom: var(--space-2);
-  color: var(--color-text-inverse-muted);
-  font-size: 11px;
-  letter-spacing: 0.02em;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
 .figure dd {
   margin: 0;
-  color: var(--color-text-inverse);
-  font-size: 22px;
-  font-weight: 650;
+}
+
+.value {
+  color: var(--text);
+  font-size: var(--font-size-subtitle);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-subtitle);
 }
 
-.figure[data-pending] dd {
-  color: var(--color-warning-400);
+.value[data-pending] {
+  color: var(--warn);
 }
 
-.unit {
-  margin-left: var(--space-1);
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0;
+.state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  /* Mismo alto que una cifra, para que las cuatro celdas se lean en una línea. */
+  min-height: var(--line-height-subtitle);
+}
+
+.note {
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 @media (max-width: 1100px) {
-  .strip {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .figures {
-    border-top: 1px solid var(--color-ink-800);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  /* La integridad ocupa su propia fila sobre las tres cifras. */
   .figure:first-child {
+    grid-column: 1 / -1;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .figure:nth-child(2) {
     border-left: 0;
   }
 }
 
 @media (max-width: 560px) {
-  .integrity {
-    padding-inline: var(--space-4);
-  }
-
   .figures {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .figure {
-    flex-direction: row;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-3);
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
     padding: var(--space-3) var(--space-4);
-    border-top: 1px solid var(--color-ink-800);
+    border-top: 1px solid var(--line);
     border-left: 0;
   }
 
   .figure:first-child {
+    grid-template-columns: minmax(0, 1fr);
     border-top: 0;
+    border-bottom: 0;
   }
 
-  .figure dt {
-    margin: 0;
-    font-size: 13px;
-  }
-
-  .figure dd {
-    font-size: 18px;
+  .value {
+    text-align: right;
   }
 }

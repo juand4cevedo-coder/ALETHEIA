@@ -1,5 +1,12 @@
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import {
+  Fragment,
+  type ReactNode,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { Link, useOutletContext, useSearchParams } from "react-router";
 
 import type { CaseSummaryOut, CaseTotalsOut, Me } from "../api/generated";
@@ -201,9 +208,8 @@ export function CasesPage() {
   );
   const header = (actions?: ReactNode) => (
     <PageHeader
-      eyebrow="Expedientes"
       title="Casos"
-      description="Los casos en los que usted es miembro. Cada acción sobre ellos queda en su cadena de custodia."
+      description="Los casos en los que usted es miembro."
       actions={actions}
     />
   );
@@ -219,7 +225,7 @@ export function CasesPage() {
         <p className={styles.loading} role="status">
           <CargandoIcon
             className={styles.spinner}
-            size={20}
+            size={16}
             aria-hidden="true"
           />
           Cargando sus casos
@@ -350,7 +356,7 @@ export function CasesPage() {
           </label>
           <BuscarIcon
             className={styles.filterIcon}
-            size={15}
+            size={16}
             aria-hidden="true"
           />
           <input
@@ -383,7 +389,7 @@ export function CasesPage() {
           <p className={styles.loading} role="status">
             <CargandoIcon
               className={styles.spinner}
-              size={20}
+              size={16}
               aria-hidden="true"
             />
             Cargando sus casos
@@ -439,45 +445,31 @@ export function CasesPage() {
 }
 
 /** Lo que hace un caso desde que se abre y lo que hará con la evidencia (maqueta 04). Solo se
- * dice en presente lo que ya ocurre: la evidencia todavía no se puede subir. */
+ * dice en presente lo que ya ocurre: la evidencia todavía no se puede subir. La lista numerada
+ * ya dice el orden; no hacen falta cifras dibujadas. */
 function Principles() {
   return (
     <ol className={styles.principles}>
       <li>
-        <span className={styles.principleNumber} aria-hidden="true">
-          01
-        </span>
-        <div>
-          <p className={styles.principleTitle}>Una llave por caso</p>
-          <p className={styles.principleText}>
-            Cada caso recibe su propia llave de cifrado al abrirse.
-          </p>
-        </div>
+        <p className={styles.principleTitle}>Una llave por caso</p>
+        <p className={styles.principleText}>
+          Cada caso recibe su propia llave de cifrado al abrirse.
+        </p>
       </li>
       <li>
-        <span className={styles.principleNumber} aria-hidden="true">
-          02
-        </span>
-        <div>
-          <p className={styles.principleTitle}>El original, intacto</p>
-          <p className={styles.principleText}>
-            La evidencia que suba se guardará tal como llegó, cifrada con la
-            llave del caso. No se convertirá ni se comprimirá.
-          </p>
-        </div>
+        <p className={styles.principleTitle}>El original, intacto</p>
+        <p className={styles.principleText}>
+          La evidencia que suba se guardará tal como llegó, cifrada con la llave
+          del caso. No se convertirá ni se comprimirá.
+        </p>
       </li>
       <li>
-        <span className={styles.principleNumber} aria-hidden="true">
-          03
-        </span>
-        <div>
-          <p className={styles.principleTitle}>Un historial que no se edita</p>
-          <p className={styles.principleText}>
-            Cada acción sobre el caso queda en su cadena de custodia. Cada
-            evento lleva la huella del anterior. Si alguien alterara uno, la
-            cadena dejaría de cuadrar.
-          </p>
-        </div>
+        <p className={styles.principleTitle}>Un historial que no se edita</p>
+        <p className={styles.principleText}>
+          Cada acción sobre el caso queda en su cadena de custodia. Cada evento
+          lleva la huella del anterior. Si alguien alterara uno, la cadena
+          dejaría de cuadrar.
+        </p>
       </li>
     </ol>
   );
@@ -667,11 +659,13 @@ function EvidenceCell({ item }: { item: CaseSummaryOut }) {
       <span className={styles.evidenceTypes}>
         {item.evidence_count === 0
           ? "Sin evidencias"
-          : parts.map((part, index) => (
-              <span key={part}>
+          : // La coma y el espacio quedan fuera del tramo que no se parte: ahí puede
+            // saltar la línea, y «9 chats» sigue entero.
+            parts.map((part, index) => (
+              <Fragment key={part}>
                 {index > 0 && ", "}
-                {part}
-              </span>
+                <span>{part}</span>
+              </Fragment>
             ))}
       </span>
     </span>

@@ -161,6 +161,11 @@
   --measure-display: 30ch;
   /* Ancho de los paneles de una columna: el acceso y los diálogos. */
   --panel-width: 448px;
+  /* Pantallas de una columna del espacio de trabajo: el inicio, Mi cuenta y los avisos
+     de error. Una ficha más ancha separa demasiado el rótulo de su valor. */
+  --column-width: 720px;
+  /* Columna de los rótulos de una ficha: el dato a la izquierda y su valor a la derecha. */
+  --label-column: 160px;
   /* Ancho del menú lateral del espacio de trabajo. */
   --sidebar-width: 224px;
   --header-height: 64px;

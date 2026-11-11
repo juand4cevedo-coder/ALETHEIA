@@ -109,7 +109,7 @@ export function InviteDialog({ open, onClose, onInvited }: Props) {
       onClose={close}
       busy={invite.isPending}
       title="Invitar a una persona"
-      icon={<CorreoIcon size={22} />}
+      icon={<CorreoIcon size={20} />}
       actions={
         <>
           <Button
