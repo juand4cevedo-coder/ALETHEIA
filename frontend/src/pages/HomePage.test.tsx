@@ -159,10 +159,15 @@ describe("Página de inicio (HU-001)", () => {
     await user.click(within(dialog).getByRole("link", { name: "Precios" }));
     await waitFor(() => expect(dialog).not.toHaveAttribute("open"));
     expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name: "Planes y precios",
-      }),
+      // El chunk de la página se carga aparte: en jsdom tarda más del 1 s predeterminado.
+      await screen.findByRole(
+        "heading",
+        {
+          level: 1,
+          name: "Planes y precios",
+        },
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument();
   });
 });

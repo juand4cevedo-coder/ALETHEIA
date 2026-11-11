@@ -162,7 +162,7 @@ export const HuellaIcon = crearPropio(
   </>,
 );
 
-/** Sello de tiempo: borde dentado, anillo interior y las manecillas de un reloj. */
+/** Sello de tiempo: borde dentado y las manecillas de un reloj. */
 export const SelloIcon = crearPropio(
   "SelloIcon",
   <>
