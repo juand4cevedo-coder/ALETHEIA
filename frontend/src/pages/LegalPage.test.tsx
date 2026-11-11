@@ -79,10 +79,15 @@ describe("Páginas legales (HU-003, CP-003)", () => {
         within(footerLegal).getByRole("link", { name: page.label }),
       );
       expect(
-        await screen.findByRole("heading", {
-          level: 1,
-          name: LEGAL_DOCUMENTS[page.slug].title,
-        }),
+        // El chunk de la página se carga aparte: en jsdom tarda más del 1 s predeterminado.
+        await screen.findByRole(
+          "heading",
+          {
+            level: 1,
+            name: LEGAL_DOCUMENTS[page.slug].title,
+          },
+          { timeout: 5000 },
+        ),
       ).toBeInTheDocument();
     }
   });
@@ -100,10 +105,15 @@ describe("Páginas legales (HU-003, CP-003)", () => {
       within(switcher).getByRole("link", { name: "Reembolsos" }),
     );
     expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name: "Política de reembolsos y cancelación",
-      }),
+      // El chunk de la página se carga aparte: en jsdom tarda más del 1 s predeterminado.
+      await screen.findByRole(
+        "heading",
+        {
+          level: 1,
+          name: "Política de reembolsos y cancelación",
+        },
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument();
     // La política nueva monta su propio selector: se vuelve a buscar.
     const current = screen.getByRole("navigation", { name: "Políticas" });
