@@ -105,14 +105,38 @@ El rol `aletheia-prod-instancia` tiene tres políticas: `aletheia-prod-acceso` p
 | --- | --- | --- |
 | S3 | Bucket de evidencias | `GetObject`, `PutObject`, `DeleteObject` y `AbortMultipartUpload`. No puede listar |
 | S3 | Bucket de respaldos | `GetObject`, `PutObject`, `AbortMultipartUpload` y `ListBucket`. No puede borrar |
-| KMS | `alias/aletheia-prod-maestra` | `Encrypt` y `Decrypt`, solo con `RSAES_OAEP_SHA_256` |
+| KMS | `alias/aletheia-prod-maestra` (el alias, no el ARN de la llave; ver la comprobación pendiente abajo) | `Encrypt` y `Decrypt`, solo con `RSAES_OAEP_SHA_256` |
 | Parameter Store | Parámetros bajo `/aletheia/prod/` | `GetParameter`, `GetParameters` y `GetParametersByPath`. No puede escribir |
 | SES | Identidades de la cuenta en us-east-2 | `SendEmail` con la API v2, solo desde `notificaciones@aletheia.sbs` y con el nombre `ALETHEIA` |
 | Systems Manager | El agente de la máquina | Registrarse, recibir órdenes de Run Command y abrir sesiones de Session Manager (`ec2messages` y `ssmmessages`) |
 
 La política de correo nombra todas las identidades de la cuenta y no solo `aletheia.sbs` porque, en sandbox, SES también exige permiso sobre la identidad del destinatario. Las condiciones `ses:FromAddress`, `ses:FromDisplayName` y `ses:ApiVersion` impiden enviar con cualquier otro remitente.
 
-Desde HU-015 la API llama a `Encrypt` de KMS cada vez que se abre un caso y llamará a `Decrypt` para leer su evidencia. El permiso de la tabla ya cubre ambas operaciones, así que el IAM no cambia. Si KMS no responde, abrir un caso falla con 503 y no deja ninguna fila.
+Desde HU-015 la API llama a `Encrypt` de KMS cada vez que se abre un caso y llamará a `Decrypt` para leer su evidencia (HU-018). Si KMS no responde o niega la operación, abrir un caso falla con 503, no deja ninguna fila y la API registra el código de error de KMS.
+
+No está comprobado que la política actual baste. Nombra como recurso `alias/aletheia-prod-maestra`, y un ARN de alias en `Resource` puede no autorizar `Encrypt` ni `Decrypt` sobre la llave: para eso hace falta el ARN de la llave o una condición `kms:RequestAlias` o `kms:ResourceAliases`. Además, `Encrypt` se llama con el alias como `KeyId`, pero `Decrypt` se llamará con el ARN de la llave, que es la versión guardada con cada caso (HU-018).
+
+### Comprobación obligatoria antes de publicar HU-015
+
+**Pendiente: todavía no se ha hecho.** Desde la máquina, en una sesión de Session Manager y con el rol `aletheia-prod-instancia`:
+
+1. Se crea un archivo de 32 bytes aleatorios, por ejemplo `head -c 32 /dev/urandom > /tmp/prueba-kms.bin`, y se cifra:
+
+   ```bash
+   aws kms encrypt --key-id alias/aletheia-prod-maestra --encryption-algorithm RSAES_OAEP_SHA_256 --plaintext fileb:///tmp/prueba-kms.bin --query KeyId
+   ```
+
+   Funciona si imprime el ARN de la llave (`arn:aws:kms:us-east-2:047938357957:key/2bf06d55-...`) y no `AccessDeniedException`. Para el paso 2 se guarda también el cifrado: el mismo comando con `--query CiphertextBlob --output text | base64 -d > /tmp/prueba-kms.cifrado`.
+
+2. Se descifra con el ARN que imprimió el paso 1:
+
+   ```bash
+   aws kms decrypt --key-id <ARN> --encryption-algorithm RSAES_OAEP_SHA_256 --ciphertext-blob fileb:///tmp/prueba-kms.cifrado
+   ```
+
+   Funciona si responde con `KeyId` igual a ese ARN y un `Plaintext` (en base64) que corresponde al archivo original, sin `AccessDeniedException`. Al terminar se borran los dos archivos.
+
+Si alguno de los dos responde `AccessDeniedException`, se corrige la política `aletheia-prod-acceso` para nombrar el ARN de la llave (o agregar la condición de alias) antes de publicar, y se repite la comprobación.
 
 Para leer un `SecureString` cifrado con la llave `aws/ssm`, el rol no necesita permisos adicionales de KMS.
 
