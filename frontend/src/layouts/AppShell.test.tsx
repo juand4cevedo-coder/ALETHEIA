@@ -76,6 +76,39 @@ describe("Espacio de trabajo protegido (API-014)", () => {
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
+  it("pide el enlace nuevo al correo de la sesión, sin volver a preguntarlo", async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const { pathname } = new URL((input as Request).url);
+      return pathname.endsWith("/verify-email/resend")
+        ? jsonResponse({ detail: "ok" }, 202)
+        : jsonResponse(ME);
+    });
+    const user = userEvent.setup();
+    await renderRoute("/app");
+
+    const notice = (
+      await screen.findByRole("heading", { name: "Verifique su correo" })
+    ).closest("section")!;
+    // El aviso tiene su propio título: el formulario no agrega otro ni un campo de correo.
+    expect(within(notice).getAllByRole("heading")).toHaveLength(1);
+    expect(
+      within(notice).queryByLabelText("Correo electrónico"),
+    ).not.toBeInTheDocument();
+    expect(notice).toHaveTextContent(`Llegará a ${ME.email}.`);
+
+    await user.click(
+      within(notice).getByRole("button", { name: "Enviarme un enlace nuevo" }),
+    );
+
+    expect(await within(notice).findByRole("status")).toHaveTextContent(
+      `Le enviamos un enlace nuevo a ${ME.email}.`,
+    );
+    const resend = fetchMock.mock.calls
+      .map(([input]) => input as Request)
+      .find((request) => request.url.endsWith("/verify-email/resend"))!;
+    expect(await resend.json()).toEqual({ email: ME.email });
+  });
+
   it("si el servidor falla, lo dice y deja reintentar", async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse({ type: "about:blank", title: "Error", status: 503 }, 503),

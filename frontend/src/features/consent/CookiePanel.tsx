@@ -80,7 +80,7 @@ export function CookiePanel({
           tabIndex={-1}
           className={styles.title}
         >
-          <GalletaIcon size={18} />
+          <GalletaIcon size={16} />
           Cookies en ALETHEIA
         </p>
         <button
@@ -89,7 +89,7 @@ export function CookiePanel({
           aria-label="Cerrar"
           onClick={dismiss}
         >
-          <CerrarIcon size={18} />
+          <CerrarIcon size={16} />
         </button>
       </div>
 

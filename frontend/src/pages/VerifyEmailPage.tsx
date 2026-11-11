@@ -10,11 +10,6 @@ import { CONTACT_EMAIL, pageTitle } from "../config/site.ts";
 import { tokenFromHash } from "../features/auth/linkToken.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import styles from "./VerifyEmailPage.module.css";
-import {
-  CirculoVistoIcon,
-  EscudoVistoIcon,
-  VinculoIcon,
-} from "../components/ui/icons.tsx";
 
 // «10 de noviembre de 2026, 10:39 a. m.», en hora de Colombia como el resto de la plataforma.
 const DATE = new Intl.DateTimeFormat("es-CO", {
@@ -105,39 +100,23 @@ export function VerifyEmailPage() {
           >
             Correo verificado
           </h1>
-          <figure className={styles.record}>
-            <figcaption className={styles.recordTitle}>
-              Constancia de verificación
-            </figcaption>
-            <dl className={styles.rows}>
-              <div className={styles.row}>
-                <dt>
-                  <CirculoVistoIcon size={16} aria-hidden="true" />
-                  Estado
-                </dt>
-                <dd>Verificado</dd>
-              </div>
-              <div className={styles.row}>
-                <dt>
-                  <EscudoVistoIcon size={16} aria-hidden="true" />
-                  Fecha y hora
-                </dt>
-                <dd>
-                  {`${DATE.format(outcome.at)}, ${TIME.format(outcome.at)} (hora de Colombia)`}
-                </dd>
-              </div>
-              <div className={styles.row}>
-                <dt>
-                  <VinculoIcon size={16} aria-hidden="true" />
-                  Enlace
-                </dt>
-                <dd>Usado. No vuelve a servir.</dd>
-              </div>
-            </dl>
-          </figure>
           <p className={styles.lead}>
             Ya puede ingresar con su correo y su contraseña.
           </p>
+          {/* El título ya dice el estado: la constancia guarda solo cuándo pasó y qué fue del
+              enlace. Sin íconos ni recuadro, porque ya está dentro del panel de acceso. */}
+          <dl className={styles.record}>
+            <div className={styles.row}>
+              <dt>Fecha y hora</dt>
+              <dd>
+                {`${DATE.format(outcome.at)}, ${TIME.format(outcome.at)} (hora de Colombia)`}
+              </dd>
+            </div>
+            <div className={styles.row}>
+              <dt>Enlace</dt>
+              <dd>Usado. No vuelve a servir.</dd>
+            </div>
+          </dl>
           <ButtonLink to={ROUTES.signIn}>Ingresar a mi cuenta</ButtonLink>
         </>
       )}

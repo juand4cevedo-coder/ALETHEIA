@@ -1,78 +1,55 @@
+/* Planes y Corporativo, uno debajo del otro. */
 .wrap {
   display: grid;
   gap: var(--space-4);
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-4);
-}
-
-/* Mientras cargan los precios, el lugar de cada tarjeta queda reservado y quieto: nada se anima
-   solo. */
-.skeleton {
-  height: 440px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface-1);
-}
-
+/* Error al cargar el catálogo: el mismo aviso de las pantallas de acceso, con el botón para
+   intentarlo de nuevo al lado del texto. */
 .error {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-4);
-  padding: var(--space-6);
-  border: 1px solid color-mix(in srgb, var(--color-error-400) 35%, transparent);
+  padding: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--err) 40%, var(--line));
   border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-error-400) 8%, transparent);
+  background: var(--surface-1);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .error p {
-  flex: 1 1 280px;
+  flex: 1 1 calc(var(--space-24) * 3);
 }
 
+/* Corporativo: un panel más, del mismo estilo que las tarjetas, porque es una opción de la
+   misma lista. Su acción es secundaria: la principal de la página es crear la cuenta. */
 .corporate {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-6);
-  padding: var(--space-6) var(--space-8);
-  border: 1px dashed
-    color-mix(in srgb, var(--color-text-inverse) 18%, transparent);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-ink-900) 50%, transparent);
-}
-
-.corporateIcon {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 48px;
-  height: 48px;
+  gap: var(--space-4) var(--space-6);
+  padding: var(--space-6);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface-2);
-  color: var(--text);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
 }
 
 .corporateCopy {
-  flex: 1 1 320px;
-  color: var(--color-text-inverse-muted);
-  font-size: 15px;
+  display: grid;
+  gap: var(--space-1);
+  flex: 1 1 calc(var(--space-24) * 3);
+  max-width: var(--measure);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .corporateTitle {
-  margin-bottom: var(--space-1);
-  color: var(--color-text-inverse);
-  font-size: 18px;
+  color: var(--text);
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
-  line-height: 26px;
-}
-
-@media (max-width: 640px) {
-  .corporate {
-    padding: var(--space-6);
-  }
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-subtitle);
 }

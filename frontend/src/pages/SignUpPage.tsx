@@ -148,7 +148,7 @@ export function SignUpPage() {
 
         {sentTo ? (
           <section className={styles.notice} aria-labelledby="titulo-aviso">
-            <CorreoIcon size={28} aria-hidden="true" />
+            <CorreoIcon size={20} aria-hidden="true" />
             <h2
               id="titulo-aviso"
               className={styles.noticeTitle}

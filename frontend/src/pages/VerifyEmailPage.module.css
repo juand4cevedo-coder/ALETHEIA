@@ -1,5 +1,5 @@
-/* Verificar el correo, dentro del panel de acceso (ADR-029): título y mensaje; la constancia y
-   el formulario de reenvío ocupan el ancho completo. */
+/* Verificar el correo, dentro del panel de acceso (ADR-029): título, mensaje y, al verificar,
+   la constancia como una ficha de renglones sobre la misma superficie del panel. */
 .screen {
   display: grid;
   gap: var(--space-6);
@@ -17,6 +17,7 @@
   font-weight: 600;
   letter-spacing: var(--tracking-title);
   line-height: var(--line-height-title);
+  overflow-wrap: anywhere;
 }
 
 .title:focus {
@@ -25,36 +26,20 @@
 
 .lead {
   color: var(--text-2);
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
-/* Constancia de la verificación: renglones de etiqueta y valor sobre --surface-2. */
+/* Ficha de la constancia: rótulo a la izquierda y valor a la derecha, como Mi cuenta. */
 .record {
   display: grid;
-  gap: var(--space-3);
   margin: 0;
-  padding: var(--space-4);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface-2);
-}
-
-.recordTitle {
-  color: var(--text);
-  font-size: var(--font-size-label);
-  font-weight: 500;
-  line-height: var(--line-height-label);
-}
-
-.rows {
-  display: grid;
-  margin: 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .row {
   display: grid;
-  grid-template-columns: 10rem minmax(0, 1fr);
+  grid-template-columns: var(--label-column) minmax(0, 1fr);
   gap: var(--space-4);
   padding: var(--space-3) 0;
   border-top: 1px solid var(--line);
@@ -63,15 +48,13 @@
 }
 
 .row dt {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
   color: var(--text-2);
 }
 
 .row dd {
   margin: 0;
-  font-weight: 500;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 560px) {

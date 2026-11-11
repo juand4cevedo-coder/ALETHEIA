@@ -2,22 +2,31 @@ import { useQuery } from "@tanstack/react-query";
 
 import { listPlansOptions } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { buttonClassName } from "../../components/ui/buttonStyles.ts";
+import type { BillingCycle } from "./format.ts";
 import { PlanCard } from "./PlanCard.tsx";
+import cards from "./PlanCard.module.css";
 import {
   CORPORATE_QUOTE_URL,
   PLAN_TAGLINES,
   RECOMMENDED_PLAN,
 } from "./plans.ts";
 import styles from "./PlanSummary.module.css";
-import {
-  ActualizarIcon,
-  CorreoIcon,
-  EdificioIcon,
-} from "../../components/ui/icons.tsx";
+import { ActualizarIcon, CorreoIcon } from "../../components/ui/icons.tsx";
 
-// Planes del inicio (UI-001): las mismas tarjetas de la página de precios, con el precio
-// mensual. Precios y límites salen del catálogo (RN-019).
-export function PlanSummary() {
+type PlanSummaryProps = {
+  /** Forma de pago con la que se muestran los precios. */
+  cycle?: BillingCycle;
+  /** Nivel de los nombres de plan: 3 en una sección del inicio, 2 en la página de precios. */
+  headingLevel?: 2 | 3;
+};
+
+// Planes del catálogo con la tarjeta de cada uno y, al final, el Corporativo por cotización. Lo
+// usan el inicio (UI-001) y la página de precios (UI-002), así que se ven y fallan igual en los
+// dos lugares. Precios y límites salen del catálogo (RN-019).
+export function PlanSummary({
+  cycle = "monthly",
+  headingLevel = 3,
+}: PlanSummaryProps) {
   const {
     data: plans,
     isPending,
@@ -25,16 +34,17 @@ export function PlanSummary() {
     isFetching,
     refetch,
   } = useQuery(listPlansOptions());
+  const Heading = headingLevel === 2 ? "h2" : "h3";
 
   return (
     <div className={styles.wrap}>
       {isPending && (
-        <div className={styles.grid} aria-busy="true">
+        <div className={cards.grid} aria-busy="true">
           <p role="status" className="visually-hidden">
             Cargando los planes
           </p>
           {Array.from({ length: 4 }, (_, index) => (
-            <div key={index} className={styles.skeleton} aria-hidden="true" />
+            <div key={index} className={cards.skeleton} aria-hidden="true" />
           ))}
         </div>
       )}
@@ -47,9 +57,7 @@ export function PlanSummary() {
           </p>
           <button
             type="button"
-            className={buttonClassName({
-              variant: "secondary",
-            })}
+            className={buttonClassName({ variant: "secondary", size: "sm" })}
             onClick={() => void refetch()}
             disabled={isFetching}
           >
@@ -62,25 +70,25 @@ export function PlanSummary() {
       )}
 
       {plans && (
-        <div className={styles.grid}>
+        <div className={cards.grid}>
           {plans.map((plan) => (
             <PlanCard
               key={plan.code}
               plan={plan}
-              cycle="monthly"
+              cycle={cycle}
               recommended={plan.code === RECOMMENDED_PLAN}
               tagline={PLAN_TAGLINES[plan.code]}
+              headingLevel={headingLevel}
             />
           ))}
         </div>
       )}
 
-      <div className={styles.corporate}>
-        <span className={styles.corporateIcon}>
-          <EdificioIcon size={22} />
-        </span>
+      <section className={styles.corporate} aria-labelledby="plan-corporativo">
         <div className={styles.corporateCopy}>
-          <h3 className={styles.corporateTitle}>Corporativo</h3>
+          <Heading id="plan-corporativo" className={styles.corporateTitle}>
+            Corporativo
+          </Heading>
           <p>
             Para firmas grandes y departamentos jurídicos: usuarios,
             almacenamiento y soporte a la medida de su volumen, por cotización.
@@ -93,7 +101,7 @@ export function PlanSummary() {
           <CorreoIcon size={16} />
           Pedir una cotización por correo
         </a>
-      </div>
+      </section>
     </div>
   );
 }

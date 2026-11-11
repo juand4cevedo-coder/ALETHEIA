@@ -1,7 +1,6 @@
 /* Textos legales nuevos por aceptar (TT-012): el marco de las pantallas de acceso (ADR-029), con
-   una columna algo más ancha para leer qué cambió. */
+   una columna de lectura algo más ancha para ver qué cambió. */
 .shell {
-  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -11,12 +10,7 @@
 
 .shell :where(a:not([class])) {
   color: var(--accent-strong);
-}
-
-.header,
-.main {
-  position: relative;
-  z-index: 1;
+  text-underline-offset: var(--underline-offset);
 }
 
 .header {
@@ -40,7 +34,7 @@
   display: grid;
   gap: var(--space-6);
   width: 100%;
-  max-width: 560px;
+  max-width: calc(var(--panel-width) + var(--space-24));
   margin: 0 auto;
   padding: var(--space-8) var(--space-6) var(--space-16);
 }
@@ -52,24 +46,22 @@
 .intro {
   display: grid;
   justify-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   text-align: center;
 }
 
 .eyebrow {
-  margin-top: var(--space-2);
   color: var(--text-2);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: var(--font-size-support);
+  font-weight: 500;
+  line-height: var(--line-height-support);
 }
 
 .title {
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 38px;
-  letter-spacing: -0.024em;
+  font-size: var(--font-size-title);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  line-height: var(--line-height-title);
   text-wrap: balance;
 }
 
@@ -78,13 +70,13 @@
 }
 
 .lead {
-  max-width: 46ch;
-  color: color-mix(in srgb, var(--color-text-inverse) 78%, transparent);
-  font-size: 16px;
-  line-height: 24px;
+  max-width: var(--measure);
+  color: var(--text-2);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
 }
 
-/* Panel con los cambios, numerados como en la página legal. */
+/* Panel con los cambios. La lista ordenada lleva su número en mono y en el tono de apoyo. */
 .panel {
   padding: var(--space-6);
   border: 1px solid var(--line);
@@ -93,11 +85,10 @@
 }
 
 .panelTitle {
-  color: var(--color-text-inverse);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
 }
 
 .changes {
@@ -111,27 +102,29 @@
 
 .changes li {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  color: color-mix(in srgb, var(--color-text-inverse) 82%, transparent);
-  font-size: 15px;
-  line-height: 23px;
+  grid-template-columns: var(--space-8) minmax(0, 1fr);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
   counter-increment: cambio;
 }
 
 .changes li::before {
   color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-ui);
+  font-variant-numeric: tabular-nums;
   content: counter(cambio, decimal-leading-zero);
 }
 
 .note {
   margin-top: var(--space-4);
   padding-top: var(--space-3);
-  border-top: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
+  border-top: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 /* Los cuatro textos completos, en otra pestaña para no perder esta pantalla. */
@@ -145,22 +138,23 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 48px;
+  min-height: var(--touch-target);
   padding: 0 var(--space-4);
-  border: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 12%, transparent);
+  border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-ink-900) 50%, transparent);
-  color: var(--color-text-inverse);
-  font-size: 15px;
+  background: var(--surface-1);
+  color: var(--text);
+  font-size: var(--font-size-ui);
   font-weight: 500;
+  line-height: var(--line-height-ui);
   text-decoration: none;
   transition:
     border-color var(--motion-fast) var(--ease-standard),
     background-color var(--motion-fast) var(--ease-standard);
 }
 
-.document svg:first-child {
+.document svg {
+  flex: none;
   color: var(--text-2);
 }
 
@@ -171,12 +165,6 @@
 
 .documentArrow {
   margin-left: auto;
-  color: var(--color-text-inverse-muted);
-  transition: transform var(--motion-fast) var(--ease-standard);
-}
-
-.document:hover .documentArrow {
-  transform: translate(2px, -2px);
 }
 
 .form {
@@ -193,27 +181,32 @@
   line-height: var(--line-height-ui);
 }
 
+/* El mismo aviso de error de las pantallas de acceso. */
 .alert {
   display: grid;
   justify-items: start;
   gap: var(--space-3);
-  padding: var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--color-error-400) 45%, transparent);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--err) 40%, var(--line));
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-error-400) 10%, transparent);
-  font-size: 14px;
-  line-height: 21px;
+  background: var(--surface-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .alert:focus {
-  outline: 2px solid var(--color-error-400);
-  outline-offset: 2px;
+  outline: none;
+}
+
+.alert code {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
 }
 
 .decline {
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-  line-height: 20px;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
   text-align: center;
 }
 
@@ -227,15 +220,16 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 44px;
+  min-height: var(--touch-target);
   padding: 0 var(--space-4);
   border: 0;
   border-radius: var(--radius-md);
   background: none;
   color: var(--accent-strong);
   font: inherit;
-  font-size: 14px;
-  font-weight: 550;
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
   cursor: pointer;
   transition: background-color var(--motion-fast) var(--ease-standard);
 }
@@ -244,19 +238,26 @@
   background: var(--surface-2);
 }
 
+.leaveButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .leaveButton:disabled {
   cursor: progress;
   opacity: 0.7;
 }
 
 .leaveFailure {
-  color: var(--color-text-inverse);
-  font-size: 13px;
+  color: var(--err);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .document:hover .documentArrow {
-    transform: none;
+  .document,
+  .leaveButton {
+    transition: none;
   }
 }
 
@@ -264,11 +265,6 @@
   .main {
     padding-right: var(--space-4);
     padding-left: var(--space-4);
-  }
-
-  .title {
-    font-size: 27px;
-    line-height: 33px;
   }
 
   .panel {

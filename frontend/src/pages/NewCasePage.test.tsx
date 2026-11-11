@@ -419,6 +419,13 @@ describe("Abrir un caso (HU-015)", () => {
     expect(
       within(dialog).getByRole("button", { name: "Enviarme un enlace nuevo" }),
     ).toBeInTheDocument();
+    // La sesión ya conoce el correo: el diálogo lo muestra y no lo vuelve a pedir.
+    expect(
+      within(dialog).queryByLabelText("Correo electrónico"),
+    ).not.toBeInTheDocument();
+    expect(within(dialog).getByText(/^Llegará a/)).toHaveTextContent(
+      /^Llegará a \S+@\S+\.$/,
+    );
     expect(posts()).toHaveLength(0);
   });
 

@@ -49,7 +49,7 @@ export function AccountTypeChoice({
               checked={value === option}
               onChange={() => onChange(option)}
             />
-            <Icon className={styles.icon} size={18} aria-hidden="true" />
+            <Icon className={styles.icon} size={16} aria-hidden="true" />
             {title}
           </label>
         ))}

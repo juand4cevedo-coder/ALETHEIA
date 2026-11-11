@@ -497,7 +497,11 @@ function NewCaseForm({ me }: { me: Me }) {
         </div>
       </div>
 
-      <VerifyEmailDialog open={verifying} onClose={() => setVerifying(false)} />
+      <VerifyEmailDialog
+        email={me.email}
+        open={verifying}
+        onClose={() => setVerifying(false)}
+      />
     </>
   );
 }

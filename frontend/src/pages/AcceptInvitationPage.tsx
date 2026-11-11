@@ -314,7 +314,7 @@ function AcceptForm({
 function MemberElsewhere({ invitation }: { invitation: InvitationPreview }) {
   return (
     <section className={styles.notice} aria-labelledby={TITLE_ID}>
-      <UsuariosIcon size={28} aria-hidden="true" />
+      <UsuariosIcon size={20} aria-hidden="true" />
       <h1 id={TITLE_ID} className={styles.noticeTitle}>
         Su correo ya está en otra organización
       </h1>
@@ -332,7 +332,7 @@ function MemberElsewhere({ invitation }: { invitation: InvitationPreview }) {
 function Unusable() {
   return (
     <section className={styles.notice} aria-labelledby={TITLE_ID}>
-      <VinculoIcon size={28} aria-hidden="true" />
+      <VinculoIcon size={20} aria-hidden="true" />
       <h1 id={TITLE_ID} className={styles.noticeTitle}>
         Esta invitación ya no sirve
       </h1>
