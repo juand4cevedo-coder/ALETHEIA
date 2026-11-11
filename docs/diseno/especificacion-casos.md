@@ -75,7 +75,7 @@ class KeyWrapper(Protocol):
 
 Errores propios: `NotAllowedToCreateCasesError`, `EmailNotVerifiedError`, `OrganizationNotActiveError` (el de `members`) y `FilingNumberTakenError`.
 
-`list_cases(session, principal, *, status, cursor, limit)` devuelve los casos donde la persona es miembro, ordenados por última actividad descendente, con paginación por cursor (IDX-006) y, por caso, el número de evidencias por tipo declarado, el número de miembros, sus iniciales, el último evento (acción, actor y hora) y las acciones de los últimos cinco eventos. Usa una consulta con agregados, sin N+1. Los totales de la franja (casos por estado, evidencias, sellos pendientes y eventos) salen de una consulta aparte.
+`list_cases(session, principal, *, status, cursor, limit)` devuelve los casos donde la persona es miembro, ordenados por última actividad descendente, con paginación por cursor (IDX-006) y, por caso, el número de evidencias por tipo declarado (solo los tipos que tienen alguna), el número de miembros, sus iniciales, el último evento (acción, actor y hora; nulo si el caso no tiene eventos, y la pantalla muestra «Sin actividad registrada») y las acciones de los últimos cinco eventos. Usa una consulta con agregados, sin N+1. Los totales de la franja (casos por estado, evidencias, sellos pendientes y eventos) salen de una consulta aparte.
 
 `get_case(session, principal, case_id)` devuelve el caso, su equipo y sus últimos eventos. Un caso que no existe o del que la persona no es miembro responde lo mismo: 404 con MSG-011.
 
