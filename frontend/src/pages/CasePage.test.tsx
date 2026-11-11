@@ -208,6 +208,16 @@ describe("Página del caso (HU-015)", () => {
     expect(within(chips).getAllByRole("listitem")).toHaveLength(1);
   });
 
+  it("el estado del caso no usa el verde reservado a la verificación", async () => {
+    serve(() => jsonResponse(DETAIL));
+    const { container } = await openCase();
+
+    const badge = screen.getByText("Abierto").closest("[data-tone]");
+    expect(badge).toHaveAttribute("data-tone", "muted");
+    // Ningún elemento de la página lleva el tono verde por defecto.
+    expect(container.querySelector("[data-tone='ok']")).toBeNull();
+  });
+
   it("un caso que no existe muestra MSG-011", async () => {
     serve(() =>
       jsonResponse(
