@@ -1,4 +1,4 @@
-"""Casos: abrir uno y ver su detalle (RF-020, HU-015).
+"""Casos: abrir uno, ver su detalle y listar los de cada persona (RF-020, HU-015 y HU-017).
 
 Abrir un caso deja, en una sola transacción y bajo Row-Level Security, el caso con su llave
 envuelta, la membresía de quien lo abre, el primer evento de su cadena de custodia
@@ -14,12 +14,20 @@ se podría corregir ni eliminar (sección 3.2 del diseño).
 
 Un caso que no existe y uno del que la persona no es miembro dan el mismo CaseNotFoundError, que
 no revela cuál de los dos es (MSG-011).
+
+La lista trae solo los casos donde la persona es miembro, aunque sea propietaria o
+administradora de la organización. Pagina por cursor sobre (última actividad, id): el cursor es
+ese par en JSON y base64url, sin firma, porque no da acceso a nada que el filtro por miembro no
+permita ya; uno que no se puede leer es InvalidCursorError.
 """
 
+import base64
+import binascii
 import datetime
+import json
 import uuid
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, Literal
 
 from psycopg import errors as pg_errors
 from sqlalchemy.exc import IntegrityError
@@ -40,6 +48,16 @@ CASE_CREATORS: Final = frozenset({"owner", "admin", "lawyer"})
 CASE_CREATED: Final = "case_created"
 # Eventos de la cadena que trae el detalle del caso.
 RECENT_EVENTS: Final = 20
+# Acciones de la cadena que trae cada caso de la lista.
+RECENT_ACTIONS: Final = 5
+# Iniciales del equipo que trae cada caso de la lista.
+MEMBER_INITIALS: Final = 3
+# Estados que muestra cada filtro de la lista; un caso en eliminación no aparece en ninguno.
+STATUS_FILTERS: Final[dict[str, tuple[str, ...]]] = {
+    "open": ("open",),
+    "closed": ("closed",),
+    "all": ("open", "closed"),
+}
 _FILING_NUMBER_INDEX: Final = "uq_cases_organization_filing_number"
 
 
@@ -57,6 +75,10 @@ class FilingNumberTakenError(Exception):
 
 class CaseNotFoundError(Exception):
     """El caso no existe o la persona no es miembro de él (MSG-011)."""
+
+
+class InvalidCursorError(Exception):
+    """El cursor de la lista no salió de una página anterior: está alterado o incompleto."""
 
 
 @dataclass(frozen=True)
@@ -80,6 +102,62 @@ class CaseView:
     created_by_name: str
     members: list[CaseMemberView]
     recent_events: list[CustodyEventView]
+
+
+@dataclass(frozen=True)
+class LastEvent:
+    """El último evento de la cadena de un caso."""
+
+    action: str
+    # None en los eventos del sistema, como el sellado de tiempo.
+    actor_name: str | None
+    occurred_at: datetime.datetime
+
+
+@dataclass(frozen=True)
+class CaseSummary:
+    """Un caso de la lista con su actividad."""
+
+    id: uuid.UUID
+    title: str
+    filing_number: str | None
+    court: str | None
+    practice_area: str | None
+    internal_reference: str | None
+    status: str
+    created_at: datetime.datetime
+    created_by_name: str
+    member_count: int
+    evidence_count: int
+    # Solo los tipos declarados que tienen alguna evidencia.
+    evidence_by_type: dict[str, int]
+    # Las de las tres primeras personas en llegar al caso.
+    member_initials: list[str]
+    # None solo si el caso no tiene eventos, lo que no debería ocurrir.
+    last_event: LastEvent | None
+    # Las de los últimos cinco eventos, el más reciente al final.
+    recent_actions: list[str]
+    last_activity_at: datetime.datetime
+
+
+@dataclass(frozen=True)
+class CaseTotals:
+    """Totales de los casos de la persona, sin importar el filtro ni la página."""
+
+    open: int
+    closed: int
+    evidences: int
+    pending_stamps: int
+    custody_events: int
+
+
+@dataclass(frozen=True)
+class CaseListing:
+    """Una página de la lista, el cursor de la siguiente y los totales."""
+
+    items: list[CaseSummary]
+    next_cursor: str | None
+    totals: CaseTotals
 
 
 def create_case(
@@ -203,6 +281,124 @@ def get_case(session: Session, principal: Principal, case_id: uuid.UUID) -> Case
         members=cases_repository.case_members(session, organization_id, case.id),
         recent_events=cases_repository.recent_events(session, case.id, RECENT_EVENTS),
     )
+
+
+def list_cases(
+    session: Session,
+    principal: Principal,
+    *,
+    status: Literal["open", "closed", "all"],
+    cursor: str | None,
+    limit: int,
+) -> CaseListing:
+    """Los casos donde la persona es miembro, de la actividad más reciente a la más antigua.
+
+    Son dos consultas sin importar cuántos casos haya: la página y los totales.
+    """
+    after = _decode_cursor(cursor) if cursor is not None else None
+    organization_id = principal.organization_id
+    if organization_id is None:
+        # Quien ya no pertenece a una organización no es miembro de ningún caso.
+        return CaseListing(items=[], next_cursor=None, totals=CaseTotals(0, 0, 0, 0, 0))
+    set_tenant(session, TenantContext(organization_id=organization_id, user_id=principal.user_id))
+    # Se pide uno de más para saber si hay otra página sin una consulta adicional.
+    rows = cases_repository.member_cases(
+        session,
+        organization_id,
+        principal.user_id,
+        statuses=STATUS_FILTERS[status],
+        after=after,
+        limit=limit + 1,
+        recent_actions=RECENT_ACTIONS,
+    )
+    totals = cases_repository.member_case_totals(
+        session, organization_id, principal.user_id, statuses=STATUS_FILTERS["all"]
+    )
+    page = [_case_summary(row) for row in rows[:limit]]
+    last = page[-1] if page else None
+    return CaseListing(
+        items=page,
+        next_cursor=(
+            _encode_cursor(last.last_activity_at, last.id)
+            if last is not None and len(rows) > limit
+            else None
+        ),
+        totals=CaseTotals(
+            open=totals.open,
+            closed=totals.closed,
+            evidences=totals.evidences,
+            pending_stamps=totals.pending_stamps,
+            custody_events=totals.custody_events,
+        ),
+    )
+
+
+def initials(full_name: str) -> str:
+    """La inicial del primer nombre y la de la última palabra: «Ana María Restrepo» es «AR»."""
+    words = full_name.split()
+    if not words:
+        return ""
+    if len(words) == 1:
+        return words[0][0].upper()
+    return (words[0][0] + words[-1][0]).upper()
+
+
+def _case_summary(row: cases_repository.CaseActivityRow) -> CaseSummary:
+    case = row.case
+    last_event = (
+        LastEvent(
+            action=row.last_action,
+            actor_name=row.last_actor_name,
+            occurred_at=row.last_occurred_at,
+        )
+        if row.last_action is not None and row.last_occurred_at is not None
+        else None
+    )
+    return CaseSummary(
+        id=case.id,
+        title=case.title,
+        filing_number=case.filing_number,
+        court=case.court,
+        practice_area=case.practice_area,
+        internal_reference=case.internal_reference,
+        status=case.status,
+        created_at=case.created_at,
+        created_by_name=row.created_by_name,
+        member_count=row.member_count,
+        evidence_count=sum(row.evidence_by_type.values()),
+        evidence_by_type=row.evidence_by_type,
+        member_initials=[initials(name) for name in row.member_names[:MEMBER_INITIALS]],
+        last_event=last_event,
+        recent_actions=row.recent_actions,
+        last_activity_at=row.last_activity_at,
+    )
+
+
+def _encode_cursor(last_activity_at: datetime.datetime, case_id: uuid.UUID) -> str:
+    payload = json.dumps(
+        {"at": last_activity_at.isoformat(), "id": str(case_id)}, separators=(",", ":")
+    )
+    return base64.urlsafe_b64encode(payload.encode()).rstrip(b"=").decode()
+
+
+def _decode_cursor(cursor: str) -> tuple[datetime.datetime, uuid.UUID]:
+    """El par (última actividad, id) del cursor, o InvalidCursorError si no se puede leer."""
+    try:
+        raw = base64.b64decode(cursor + "=" * (-len(cursor) % 4), altchars=b"-_", validate=True)
+        data = json.loads(raw.decode())
+        if not isinstance(data, dict) or set(data) != {"at", "id"}:
+            raise InvalidCursorError
+        at, case_id = data["at"], data["id"]
+        if not isinstance(at, str) or not isinstance(case_id, str):
+            raise InvalidCursorError
+        last_activity_at = datetime.datetime.fromisoformat(at)
+        # Una hora sin zona no salió de este servidor.
+        if last_activity_at.utcoffset() is None:
+            raise InvalidCursorError
+        return last_activity_at, uuid.UUID(case_id)
+    except (binascii.Error, ValueError) as exc:
+        # json.JSONDecodeError y UnicodeDecodeError también son ValueError.
+        raise InvalidCursorError from exc
 
 
 def _is_filing_number_taken(exc: IntegrityError) -> bool:

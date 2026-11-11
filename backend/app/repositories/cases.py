@@ -1,5 +1,5 @@
-"""Consultas de los casos: abrir uno, encontrarlo para un miembro, su equipo y sus últimos
-eventos de custodia (DAT-11, DAT-12 y DAT-15).
+"""Consultas de los casos: abrir uno, encontrarlo para un miembro, listar los de una persona
+con su actividad, su equipo y sus últimos eventos de custodia (DAT-11, DAT-12 y DAT-15).
 
 Todas corren con el contexto de la organización ya fijado: Row-Level Security deja ver solo
 sus filas, y los filtros por organización y por miembro de cada consulta son una segunda barrera.
@@ -7,12 +7,24 @@ sus filas, y los filtros por organización y por miembro de cada consulta son un
 
 import datetime
 import uuid
+from collections.abc import Sequence
 from dataclasses import dataclass
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy import Select, func, select, true, tuple_
+from sqlalchemy.dialects.postgresql import aggregate_order_by
+from sqlalchemy.orm import Session, aliased, defer
 
-from app.models import AuditLog, Case, CaseMember, CustodyEvent, Membership, Organization, User
+from app.models import (
+    AuditLog,
+    Case,
+    CaseMember,
+    CustodyEvent,
+    Evidence,
+    Membership,
+    Organization,
+    User,
+)
+from app.models.evidence import DECLARED_TYPES
 
 
 @dataclass(frozen=True, slots=True)
@@ -124,6 +136,244 @@ def case_members(
         .order_by(CaseMember.added_at, User.id)
     )
     return [CaseMemberView(*row) for row in session.execute(statement)]
+
+
+@dataclass(frozen=True, slots=True)
+class CaseActivityRow:
+    """Un caso de la lista con su actividad, tal como sale de member_cases."""
+
+    case: Case
+    created_by_name: str
+    member_count: int
+    # Nombres del equipo en el orden en que llegó.
+    member_names: list[str]
+    evidence_by_type: dict[str, int]
+    last_action: str | None
+    last_actor_name: str | None
+    last_occurred_at: datetime.datetime | None
+    # Las acciones de los últimos eventos, del más antiguo al más reciente.
+    recent_actions: list[str]
+    last_activity_at: datetime.datetime
+
+
+@dataclass(frozen=True, slots=True)
+class CaseTotalsRow:
+    """Los totales de los casos de una persona."""
+
+    open: int
+    closed: int
+    evidences: int
+    pending_stamps: int
+    custody_events: int
+
+
+def _member_cases(
+    organization_id: uuid.UUID, user_id: uuid.UUID, statuses: Sequence[str]
+) -> Select[Case]:
+    # Los casos de la organización donde la persona es miembro, en los estados pedidos.
+    return (
+        select(Case)
+        .join(
+            CaseMember,
+            (CaseMember.case_id == Case.id)
+            & (CaseMember.organization_id == Case.organization_id)
+            & (CaseMember.user_id == user_id),
+        )
+        .where(Case.organization_id == organization_id, Case.status.in_(statuses))
+    )
+
+
+def member_cases(
+    session: Session,
+    organization_id: uuid.UUID,
+    user_id: uuid.UUID,
+    *,
+    statuses: Sequence[str],
+    after: tuple[datetime.datetime, uuid.UUID] | None,
+    limit: int,
+    recent_actions: int,
+) -> list[CaseActivityRow]:
+    """Una página de los casos de la persona, de la actividad más reciente a la más antigua.
+
+    Es una sola consulta para toda la página: cada dato por caso sale de una subconsulta
+    lateral que usa los índices del caso (evidencias por caso, la cadena por (case_id, seq) y
+    el equipo por case_id), así que el número de consultas no crece con el de casos. Una
+    subconsulta interna elige primero los casos de la página por su último evento; los
+    conteos solo se calculan para ellos.
+    `after` es la (última actividad, id) del último caso de la página anterior.
+    """
+    creator = aliased(User)
+    actor = aliased(User)
+    member_user = aliased(User)
+    team = aliased(CaseMember)
+
+    last_event = (
+        select(
+            CustodyEvent.action,
+            CustodyEvent.occurred_at,
+            actor.full_name.label("actor_name"),
+        )
+        .outerjoin(actor, actor.id == CustodyEvent.actor_user_id)
+        .where(CustodyEvent.case_id == Case.id)
+        .order_by(CustodyEvent.seq.desc())
+        .limit(1)
+        .lateral("last_event")
+    )
+    # custody_seq es el número del último evento (lo avanza el trigger de la cadena): los
+    # últimos n son los que tienen un número mayor que custody_seq - n.
+    recent = (
+        select(
+            func.array_agg(aggregate_order_by(CustodyEvent.action, CustodyEvent.seq)).label(
+                "actions"
+            )
+        )
+        .where(
+            CustodyEvent.case_id == Case.id,
+            CustodyEvent.seq > Case.custody_seq - recent_actions,
+        )
+        .lateral("recent")
+    )
+    evidences = (
+        select(
+            *(
+                func.count().filter(Evidence.declared_type == declared_type).label(declared_type)
+                for declared_type in DECLARED_TYPES
+            )
+        )
+        .where(Evidence.case_id == Case.id, Evidence.organization_id == Case.organization_id)
+        .lateral("evidences")
+    )
+    members = (
+        select(
+            func.count().label("count"),
+            func.array_agg(
+                aggregate_order_by(member_user.full_name, team.added_at, member_user.id)
+            ).label("names"),
+        )
+        .select_from(team)
+        .join(member_user, member_user.id == team.user_id)
+        .where(team.case_id == Case.id, team.organization_id == Case.organization_id)
+        .lateral("members")
+    )
+    # Un caso sin eventos no debería existir; si existe, cuenta desde su apertura.
+    last_activity_at = func.coalesce(last_event.c.occurred_at, Case.created_at)
+
+    # Primero la página: ordenar exige la última actividad de todos los casos de la persona,
+    # pero solo los de la página pagan los conteos de evidencias, equipo y acciones.
+    page_ids = (
+        _member_cases(organization_id, user_id, statuses)
+        .with_only_columns(
+            Case.id,
+            last_event.c.action.label("last_action"),
+            last_event.c.actor_name.label("last_actor_name"),
+            last_event.c.occurred_at.label("last_occurred_at"),
+            last_activity_at.label("last_activity_at"),
+        )
+        .outerjoin(last_event, true())
+        .order_by(last_activity_at.desc(), Case.id.desc())
+        .limit(limit)
+    )
+    if after is not None:
+        page_ids = page_ids.where(tuple_(last_activity_at, Case.id) < tuple_(*after))
+    page = page_ids.subquery("page")
+
+    statement = (
+        select(
+            Case,
+            creator.full_name.label("created_by_name"),
+            members.c.count.label("member_count"),
+            members.c.names.label("member_names"),
+            *(
+                evidences.c[declared_type].label(f"type_{declared_type}")
+                for declared_type in DECLARED_TYPES
+            ),
+            page.c.last_action,
+            page.c.last_actor_name,
+            page.c.last_occurred_at,
+            recent.c.actions.label("recent_actions"),
+            page.c.last_activity_at,
+        )
+        .select_from(page)
+        .join(Case, (Case.id == page.c.id) & (Case.organization_id == organization_id))
+        .join(creator, creator.id == Case.created_by)
+        .join(recent, true())
+        .join(evidences, true())
+        .join(members, true())
+        .order_by(page.c.last_activity_at.desc(), page.c.id.desc())
+        # La lista nunca necesita la llave envuelta: ni se lee ni se puede leer por error.
+        .options(defer(Case.wrapped_key, raiseload=True))
+    )
+
+    rows: list[CaseActivityRow] = []
+    for row in session.execute(statement):
+        values = row._mapping
+        by_type = {
+            declared_type: values[f"type_{declared_type}"] for declared_type in DECLARED_TYPES
+        }
+        rows.append(
+            CaseActivityRow(
+                case=values[Case],
+                created_by_name=values["created_by_name"],
+                member_count=values["member_count"],
+                member_names=list(values["member_names"] or []),
+                evidence_by_type={kind: count for kind, count in by_type.items() if count},
+                last_action=values["last_action"],
+                last_actor_name=values["last_actor_name"],
+                last_occurred_at=values["last_occurred_at"],
+                recent_actions=list(values["recent_actions"] or []),
+                last_activity_at=values["last_activity_at"],
+            )
+        )
+    return rows
+
+
+def member_case_totals(
+    session: Session,
+    organization_id: uuid.UUID,
+    user_id: uuid.UUID,
+    *,
+    statuses: Sequence[str],
+) -> CaseTotalsRow:
+    """Casos por estado, evidencias, sellos pendientes y eventos de los casos de la persona.
+
+    Una sola consulta. Los eventos se cuentan con custody_seq, que es el número del último
+    evento de cada caso: no hace falta recorrer la cadena.
+    """
+    mine = (
+        _member_cases(organization_id, user_id, statuses)
+        .with_only_columns(Case.id, Case.status, Case.custody_seq)
+        .cte("mine")
+    )
+    cases_part = select(
+        func.count().filter(mine.c.status == "open").label("open"),
+        func.count().filter(mine.c.status == "closed").label("closed"),
+        func.coalesce(func.sum(mine.c.custody_seq), 0).label("custody_events"),
+    ).subquery("cases_part")
+    evidences_part = (
+        select(
+            func.count().label("evidences"),
+            func.count().filter(Evidence.tsa_status == "pending").label("pending_stamps"),
+        )
+        .join(mine, mine.c.id == Evidence.case_id)
+        .where(Evidence.organization_id == organization_id)
+        .subquery("evidences_part")
+    )
+    row = session.execute(
+        select(
+            cases_part.c.open,
+            cases_part.c.closed,
+            evidences_part.c.evidences,
+            evidences_part.c.pending_stamps,
+            cases_part.c.custody_events,
+        ).select_from(cases_part.join(evidences_part, true()))
+    ).one()
+    return CaseTotalsRow(
+        open=row.open,
+        closed=row.closed,
+        evidences=row.evidences,
+        pending_stamps=row.pending_stamps,
+        custody_events=int(row.custody_events),
+    )
 
 
 def recent_events(session: Session, case_id: uuid.UUID, limit: int) -> list[CustodyEventView]:
