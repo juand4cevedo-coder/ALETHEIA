@@ -39,7 +39,7 @@
 .failure {
   display: grid;
   gap: var(--space-4);
-  max-width: var(--column-width);
+  max-width: var(--screen-narrow-width);
 }
 
 /* ---------- Herramientas de la lista ---------- */
@@ -227,9 +227,7 @@
 .table thead th:nth-child(5) {
   /* Fijo, para que la insignia «Sin verificar» y el chevron quepan siempre, uno al lado del
      otro, a cualquier ancho de escritorio: un porcentaje los cortaba o los encimaba. */
-  width: calc(
-    var(--space-3) + 7.5rem + var(--space-2) + var(--space-4) + var(--space-4)
-  );
+  width: var(--status-column);
 }
 
 /* Toda la fila lleva al caso: el enlace del título se extiende sobre ella (ver .title::after). */

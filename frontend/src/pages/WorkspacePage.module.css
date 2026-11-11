@@ -3,7 +3,7 @@
 .screen {
   display: grid;
   gap: var(--space-8);
-  max-width: var(--column-width);
+  max-width: var(--screen-narrow-width);
 }
 
 /* Cada dato es un renglón de la ficha: el rótulo a la izquierda y el valor sobre su línea. */

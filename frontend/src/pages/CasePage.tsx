@@ -242,9 +242,11 @@ function CaseView({
           tabIndex={0}
           hidden={tab !== "chain"}
         >
-          {/* La pestaña ya nombra el panel: la cadena no repite su título. */}
+          {/* La pestaña ya nombra el panel: el título de la cadena solo lo oye el lector de
+              pantalla, para que la navegación por encabezados la encuentre. */}
           <div className={styles.chainLayout}>
             <div>
+              <h2 className="visually-hidden">Cadena de custodia</h2>
               <p className={styles.caption}>
                 Cada evento lleva la huella del anterior. Si alguien alterara
                 uno, la cadena dejaría de cuadrar.

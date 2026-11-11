@@ -7,7 +7,7 @@
 .denied {
   display: grid;
   gap: var(--space-6);
-  max-width: var(--column-width);
+  max-width: var(--screen-narrow-width);
 }
 
 .compose {

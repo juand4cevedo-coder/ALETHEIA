@@ -1,5 +1,4 @@
-/* Encabezado de pantalla: etiqueta, título de pantalla (28/34) y descripción. La etiqueta va en
-   grafito: el violeta queda para la acción. */
+/* Encabezado de pantalla: título de pantalla (28/34) y descripción. */
 .header {
   display: flex;
   flex-wrap: wrap;
@@ -12,14 +11,6 @@
   min-width: 0;
 }
 
-.eyebrow {
-  margin: 0 0 var(--space-2);
-  color: var(--text-3);
-  font-size: var(--font-size-label);
-  font-weight: 500;
-  line-height: var(--line-height-label);
-}
-
 .title {
   margin: 0;
   color: var(--text);
@@ -27,6 +18,9 @@
   font-weight: 600;
   letter-spacing: var(--tracking-title);
   line-height: var(--line-height-title);
+  /* Nombres de personas y títulos de casos los escribe el usuario: una palabra larga baja de
+     línea en vez de desbordar. */
+  overflow-wrap: anywhere;
 }
 
 .description {

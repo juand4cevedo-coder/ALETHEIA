@@ -1,12 +1,9 @@
 import styles from "./EmailStatus.module.css";
-import {
-  CirculoAlertaIcon,
-  CirculoVistoIcon,
-} from "../../components/ui/icons.tsx";
+import { CirculoVistoIcon, RelojIcon } from "../../components/ui/icons.tsx";
 
-// Estado del correo de la cuenta, en el inicio y en Mi cuenta. Va en grafito: el verde queda
-// solo para la evidencia que el sistema comprobó, y un correo confirmado no es eso. Sin
-// verificar, el ícono va en ámbar porque hasta entonces no se pueden abrir casos.
+// Estado del correo de la cuenta, en el inicio y en Mi cuenta. Va en grafito en los dos casos:
+// el verde, el ámbar y el rojo dicen solo el estado de una evidencia, y un correo no lo es. Por
+// la misma razón no dice «Sin verificar», que es el estado de integridad de una cadena.
 export function EmailStatus({ verified }: { verified: boolean }) {
   return verified ? (
     <span className={styles.badge}>
@@ -14,9 +11,9 @@ export function EmailStatus({ verified }: { verified: boolean }) {
       Verificado
     </span>
   ) : (
-    <span className={styles.badge} data-pending="">
-      <CirculoAlertaIcon size={16} aria-hidden="true" />
-      Sin verificar
+    <span className={styles.badge}>
+      <RelojIcon size={16} aria-hidden="true" />
+      Pendiente de verificar
     </span>
   );
 }

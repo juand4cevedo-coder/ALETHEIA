@@ -67,7 +67,9 @@ describe("Espacio de trabajo protegido (API-014)", () => {
       ).getByText("Restrepo Abogados"),
     ).toBeInTheDocument();
     expect(screen.getByText("Rol: Abogado")).toBeInTheDocument();
-    expect(screen.getByText("Sin verificar")).toBeInTheDocument();
+    // El correo pendiente no usa «Sin verificar», que es el estado de integridad de una cadena.
+    expect(screen.getByText("Pendiente de verificar")).toBeInTheDocument();
+    expect(screen.queryByText("Sin verificar")).not.toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Verifique su correo" }),
     ).toBeInTheDocument();

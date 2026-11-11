@@ -58,6 +58,10 @@ export function AccountPage() {
               <EmailStatus verified={me.email_verified} />
             </dd>
           </div>
+          <div className={styles.row}>
+            <dt>Método de ingreso</dt>
+            <dd>Correo y contraseña</dd>
+          </div>
         </dl>
       </Card>
 
