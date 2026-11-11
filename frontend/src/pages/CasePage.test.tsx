@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -174,6 +174,20 @@ describe("Página del caso (HU-015)", () => {
       .getByText("Caso abierto. Su cadena de custodia comenzó.")
       .closest("[role='status']");
     expect(notice).not.toBeNull();
+  });
+
+  it("el aviso de recién abierto se muestra una vez y no vuelve al recargar", async () => {
+    serve(() => jsonResponse(DETAIL));
+    const { router } = await openCase({ justOpened: true });
+
+    // El estado se borra del historial: recargar o volver atrás no repite el aviso.
+    await waitFor(() => {
+      expect(router.state.location.state).toBeNull();
+    });
+    expect(router.state.location.pathname).toBe(`/app/casos/${CASE_ID}`);
+    expect(
+      screen.getAllByText("Caso abierto. Su cadena de custodia comenzó."),
+    ).toHaveLength(1);
   });
 
   it("sin el estado de recién abierto no muestra el aviso", async () => {
