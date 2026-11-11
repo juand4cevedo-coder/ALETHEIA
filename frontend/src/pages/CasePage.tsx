@@ -102,13 +102,13 @@ export function CasePage() {
               </Button>
             )}
             <ButtonLink
-              to={ROUTES.app}
+              to={ROUTES.cases}
               variant="secondary"
               surface="dark"
               size="sm"
               shape="pill"
             >
-              Volver al inicio
+              Volver a los casos
             </ButtonLink>
           </div>
         </div>

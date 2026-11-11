@@ -1,7 +1,7 @@
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { ChevronRight, LoaderCircle, Plus, Search } from "lucide-react";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
-import { Link, useOutletContext } from "react-router";
+import { Link, useOutletContext, useSearchParams } from "react-router";
 
 import type { CaseSummaryOut, CaseTotalsOut, Me } from "../api/generated";
 import { listCasesQueryKey } from "../api/generated/@tanstack/react-query.gen.ts";
@@ -44,6 +44,27 @@ const SEGMENTS: readonly {
     count: (totals) => totals.open + totals.closed,
   },
 ];
+
+/** El segmento vive en la dirección (?estado=…), para que volver de un caso lo conserve. */
+const STATUS_PARAM = "estado";
+
+const STATUS_IN_URL: Record<Status, string> = {
+  open: "abiertos",
+  closed: "cerrados",
+  all: "todos",
+};
+
+/** Sin el parámetro, o con un valor que no es un segmento, el libro muestra los abiertos. */
+function statusFromUrl(value: string | null): Status {
+  const found = (Object.keys(STATUS_IN_URL) as Status[]).find(
+    (status) => STATUS_IN_URL[status] === value,
+  );
+  return found ?? "open";
+}
+
+function casesCount(count: number): string {
+  return count === 1 ? "1 caso" : `${count} casos`;
+}
 
 const CAPTIONS: Record<Status, string> = {
   open: "Casos abiertos",
@@ -105,7 +126,8 @@ function matchMessage(count: number, loaded: number): string {
 // ordenados por su última actividad. Sin casos, la pantalla «Antes del primer caso».
 export function CasesPage() {
   const me = useOutletContext<Me>();
-  const [status, setStatus] = useState<Status>("open");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const status = statusFromUrl(searchParams.get(STATUS_PARAM));
   const [filter, setFilter] = useState("");
   const [loadedNote, setLoadedNote] = useState("");
   const [verifying, setVerifying] = useState(false);
@@ -249,7 +271,7 @@ export function CasesPage() {
           }
           description={
             mayOpen
-              ? "Desde ese momento, cada archivo que suba conserva su original, su huella y su sello de tiempo, y cada acción de su equipo queda registrada sin que nadie la pueda borrar."
+              ? "Desde ese momento, cada acción de su equipo sobre el caso queda registrada, y la evidencia que suba se guardará tal como llegó."
               : `${ASSISTANT_EMPTY}.`
           }
           actions={mayOpen ? openCase("Abrir mi primer caso") : undefined}
@@ -299,14 +321,26 @@ export function CasesPage() {
                 value={segment.value}
                 checked={status === segment.value}
                 onChange={() => {
-                  setStatus(segment.value);
+                  // Reemplaza la entrada del historial: cambiar de segmento no es navegar.
+                  setSearchParams(
+                    (current) => {
+                      const next = new URLSearchParams(current);
+                      next.set(STATUS_PARAM, STATUS_IN_URL[segment.value]);
+                      return next;
+                    },
+                    { replace: true },
+                  );
                   setLoadedNote("");
                 }}
                 className={styles.segmentInput}
               />
               <span>{segment.label}</span>
-              <span className={styles.segmentCount}>
+              {/* El número se ve; el lector de pantalla oye «Abiertos, 3 casos». */}
+              <span className={styles.segmentCount} aria-hidden="true">
                 {segment.count(totals)}
+              </span>
+              <span className="visually-hidden">
+                {`, ${casesCount(segment.count(totals))}`}
               </span>
             </label>
           ))}
@@ -404,7 +438,8 @@ export function CasesPage() {
   );
 }
 
-/** Lo que garantiza un caso desde que se abre (maqueta 04). */
+/** Lo que hace un caso desde que se abre y lo que hará con la evidencia (maqueta 04). Solo se
+ * dice en presente lo que ya ocurre: la evidencia todavía no se puede subir. */
 function Principles() {
   return (
     <ol className={styles.principles}>
@@ -415,8 +450,8 @@ function Principles() {
         <div>
           <p className={styles.principleTitle}>Una llave por caso</p>
           <p className={styles.principleText}>
-            Cada caso cifra su evidencia con su propia llave. Al eliminar el
-            caso se destruye la llave y la evidencia queda ilegible.
+            Cada caso recibe su propia llave de cifrado en el momento en que se
+            abre.
           </p>
         </div>
       </li>
@@ -427,8 +462,8 @@ function Principles() {
         <div>
           <p className={styles.principleTitle}>El original, intacto</p>
           <p className={styles.principleText}>
-            Guardamos el archivo tal como llegó, cifrado. Nunca lo convertimos
-            ni lo comprimimos.
+            La evidencia que suba se guardará tal como llegó, cifrada con la
+            llave del caso. No se convertirá ni se comprimirá.
           </p>
         </div>
       </li>
@@ -439,7 +474,8 @@ function Principles() {
         <div>
           <p className={styles.principleTitle}>Un historial que no se edita</p>
           <p className={styles.principleText}>
-            Cada evento lleva el hash del anterior: si alguien alterara uno, la
+            Cada acción sobre el caso queda en su cadena de custodia, y cada
+            evento lleva el hash del anterior: si alguien alterara uno, la
             cadena dejaría de cuadrar.
           </p>
         </div>
