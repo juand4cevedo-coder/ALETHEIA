@@ -197,7 +197,7 @@ def test_el_correo_lleva_el_enlace_en_el_fragmento_y_vence_en_una_hora(
     assert enlace.startswith("http://localhost:5173/restablecer-contrasena#t=")
     assert "60 minutos" in email.text
     assert email.html is not None
-    assert "Elegir una contraseña nueva" in email.html
+    assert "Crear una contraseña nueva" in email.html
 
 
 def test_una_cuenta_bloqueada_no_recibe_el_correo_aunque_ya_estuviera_en_cola(
