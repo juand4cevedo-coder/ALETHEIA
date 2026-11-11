@@ -81,6 +81,7 @@ El objeto `prueba/tt-007.bin` quedó a propósito en el bucket de respaldos: lo 
 | Tipo | RSA_3072, uso cifrar y descifrar, una sola región |
 | Política de la llave | La predeterminada: los permisos se conceden por IAM |
 | Uso | Envolver con `RSAES_OAEP_SHA_256` la llave de cada caso (ADR-014) |
+| Operaciones | La API llama a `Encrypt` al abrir un caso y llamará a `Decrypt` al leer su evidencia, siempre con `RSAES_OAEP_SHA_256`. En producción no hay llave local: la API rechaza `ALETHEIA_LOCAL_KEY_PATH` |
 
 ## Amazon SES
 
@@ -110,6 +111,8 @@ El rol `aletheia-prod-instancia` tiene tres políticas: `aletheia-prod-acceso` p
 | Systems Manager | El agente de la máquina | Registrarse, recibir órdenes de Run Command y abrir sesiones de Session Manager (`ec2messages` y `ssmmessages`) |
 
 La política de correo nombra todas las identidades de la cuenta y no solo `aletheia.sbs` porque, en sandbox, SES también exige permiso sobre la identidad del destinatario. Las condiciones `ses:FromAddress`, `ses:FromDisplayName` y `ses:ApiVersion` impiden enviar con cualquier otro remitente.
+
+Desde HU-015 la API llama a `Encrypt` de KMS cada vez que se abre un caso y llamará a `Decrypt` para leer su evidencia. El permiso de la tabla ya cubre ambas operaciones, así que el IAM no cambia. Si KMS no responde, abrir un caso falla con 503 y no deja ninguna fila.
 
 Para leer un `SecureString` cifrado con la llave `aws/ssm`, el rol no necesita permisos adicionales de KMS.
 
