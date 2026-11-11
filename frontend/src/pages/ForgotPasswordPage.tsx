@@ -8,7 +8,6 @@ import { SITE_NAME, SITE_URL } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { apiProblem } from "../features/auth/apiProblem.ts";
-import { Emblem } from "../components/ui/Emblem.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import {
@@ -80,7 +79,6 @@ export function ForgotPasswordPage() {
 
       <div className={styles.screen}>
         <header className={styles.intro}>
-          <Emblem state={request.isPending ? "working" : "idle"} />
           <h1 id={TITLE_ID} className={styles.title}>
             ¿Olvidó su contraseña?
           </h1>
@@ -151,13 +149,7 @@ export function ForgotPasswordPage() {
             </fieldset>
 
             <div className={styles.submit}>
-              <Button
-                type="submit"
-                variant="bright"
-                shape="pill"
-                block
-                busy={request.isPending}
-              >
+              <Button type="submit" block busy={request.isPending}>
                 {request.isPending ? "Enviando…" : "Enviarme el enlace"}
               </Button>
             </div>

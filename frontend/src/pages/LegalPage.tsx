@@ -222,7 +222,6 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
                 <button
                   type="button"
                   className={buttonClassName({
-                    surface: "dark",
                     size: "sm",
                   })}
                   onClick={download}
@@ -235,7 +234,6 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
                   type="button"
                   className={buttonClassName({
                     variant: "secondary",
-                    surface: "dark",
                     size: "sm",
                   })}
                   onClick={copyHash}
@@ -252,7 +250,6 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
                   type="button"
                   className={buttonClassName({
                     variant: "secondary",
-                    surface: "dark",
                     size: "sm",
                   })}
                   onClick={() => window.print()}

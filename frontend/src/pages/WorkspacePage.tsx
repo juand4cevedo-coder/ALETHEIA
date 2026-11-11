@@ -32,12 +32,7 @@ export function WorkspacePage() {
         {me.organization && (
           // Los casos se abren y se consultan en el libro de casos, para todos los roles.
           <div className={styles.actions}>
-            <ButtonLink
-              to={ROUTES.cases}
-              variant="bright"
-              size="sm"
-              shape="pill"
-            >
+            <ButtonLink to={ROUTES.cases} size="sm">
               <CarpetaAbiertaIcon size={16} aria-hidden="true" />
               Ver mis casos
             </ButtonLink>

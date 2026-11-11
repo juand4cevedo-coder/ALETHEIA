@@ -13,7 +13,7 @@ import { readMeOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 import logoUrl from "../assets/logo.svg";
 import { Button } from "../components/ui/Button.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
+import { CONTACT_EMAIL, WORDMARK } from "../config/site.ts";
 import { LegalRenewal } from "../features/legal/LegalRenewal.tsx";
 import { AccountMenu } from "../features/session/AccountMenu.tsx";
 import { WorkspaceNav } from "../features/workspace/WorkspaceNav.tsx";
@@ -79,55 +79,50 @@ export function AppShell() {
       </a>
       <header className={styles.header}>
         <Link to={ROUTES.app} className={styles.brand}>
-          <img src={logoUrl} alt="" width={24} height={24} />
-          <span>{SITE_NAME}</span>
+          <img src={logoUrl} alt="" width={20} height={20} />
+          <span>{WORDMARK}</span>
         </Link>
         {me.data && <AccountMenu me={me.data} />}
       </header>
 
-      <main
-        id="contenido"
-        className={styles.main}
-        tabIndex={-1}
-        aria-busy={me.isPending}
-      >
-        {me.isPending && (
-          <p className={styles.status} role="status">
-            <CargandoIcon
-              className={styles.spinner}
-              size={20}
-              aria-hidden="true"
-            />
-            Abriendo su espacio de trabajo…
-          </p>
-        )}
-        {me.isError && (
-          <div className={styles.failure} role="alert">
-            {/* MSG-019. */}
-            <p>
-              No pudimos abrir su espacio de trabajo. Inténtelo de nuevo; si
-              continúa, escríbanos a{" "}
-              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+      <div className={styles.body}>
+        {me.data && <WorkspaceNav me={me.data} />}
+        <main
+          id="contenido"
+          className={styles.main}
+          tabIndex={-1}
+          aria-busy={me.isPending}
+        >
+          {me.isPending && (
+            <p className={styles.status} role="status">
+              <CargandoIcon
+                className={styles.spinner}
+                size={16}
+                aria-hidden="true"
+              />
+              Abriendo su espacio de trabajo…
             </p>
-            <Button
-              surface="dark"
-              variant="secondary"
-              size="sm"
-              onClick={() => void me.refetch()}
-            >
-              Intentar de nuevo
-            </Button>
-          </div>
-        )}
-        {me.data && (
-          <div className={styles.workspace}>
-            <WorkspaceNav me={me.data} />
-            <div className={styles.content}>
-              <Outlet context={me.data} />
+          )}
+          {me.isError && (
+            <div className={styles.failure} role="alert">
+              {/* MSG-019. */}
+              <p>
+                No pudimos abrir su espacio de trabajo. Inténtelo de nuevo; si
+                continúa, escríbanos a{" "}
+                <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+              </p>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void me.refetch()}
+              >
+                Intentar de nuevo
+              </Button>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+          {me.data && <Outlet context={me.data} />}
+        </main>
+      </div>
       <ScrollRestoration />
     </div>
   );

@@ -27,11 +27,7 @@
   bottom: 0;
   left: 10px;
   width: 1px;
-  background: linear-gradient(
-    180deg,
-    var(--color-ink-600),
-    color-mix(in srgb, var(--color-ink-600) 20%, transparent)
-  );
+  background: var(--line-control);
 }
 
 .node,
@@ -43,27 +39,25 @@
   transform: rotate(45deg);
 }
 
+/* Eslabón de la cadena en grafito: el violeta queda para la acción y el foco. */
 .node {
-  border: 1px solid var(--color-primary-400);
-  background: color-mix(in srgb, var(--color-primary-400) 14%, transparent);
-  box-shadow: 0 0 16px
-    color-mix(in srgb, var(--color-primary-400) 25%, transparent);
+  border: 1px solid var(--text-2);
+  background: var(--surface-2);
 }
 
 .ghost {
   border: 1px dashed var(--color-ink-600);
 }
 
-/* Al llegar recién abierto, el primer eslabón se enciende una vez. */
+/* Al llegar recién abierto, el primer eslabón se marca una vez: responde a abrir el caso. */
 .timeline[data-just-opened] .event:first-child .node {
-  animation: seal var(--motion-slow) var(--ease-out) both;
+  animation: seal var(--motion-base) var(--ease-standard) both;
 }
 
 @keyframes seal {
   from {
-    border-color: var(--color-ink-650);
-    background: var(--color-ink-900);
-    box-shadow: none;
+    border-color: var(--line-control);
+    background: var(--surface-1);
   }
 }
 

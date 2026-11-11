@@ -1,46 +1,37 @@
+/* Insignia de estado: cápsula en --surface-2 con el texto secundario. Solo el punto lleva el
+   color del estado, así el color dice algo sin teñir toda la fila. */
 .badge {
-  --tone: var(--color-text-inverse-muted);
+  --tone: var(--text-3);
 
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid color-mix(in srgb, var(--tone) 24%, transparent);
+  padding: calc(var(--space-1) / 2) var(--space-2);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--tone) 10%, transparent);
-  color: var(--tone);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 18px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
   white-space: nowrap;
 }
 
 .badge[data-tone="ok"] {
-  --tone: var(--color-success-400);
+  --tone: var(--ok);
 }
 
 .badge[data-tone="pending"] {
-  --tone: var(--color-warning-400);
+  --tone: var(--warn);
 }
 
-.badge[data-tone="muted"],
-.badge[data-tone="closed"] {
-  border-color: var(--color-ink-700);
-  background: var(--color-ink-900);
+.badge[data-tone="error"] {
+  --tone: var(--err);
 }
 
 .dot {
-  width: 7px;
-  height: 7px;
+  flex: none;
+  width: var(--dot-size);
+  height: var(--dot-size);
   border-radius: 50%;
   background: var(--tone);
-}
-
-.badge[data-tone="ok"] .dot {
-  box-shadow: 0 0 8px var(--tone);
-}
-
-.badge[data-tone="muted"] .dot,
-.badge[data-tone="closed"] .dot {
-  background: var(--color-ink-600);
 }

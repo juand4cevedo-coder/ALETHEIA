@@ -6,11 +6,7 @@
   overflow: hidden;
   border: 1px solid var(--color-ink-800);
   border-radius: var(--radius-lg);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-text-inverse) 2%, transparent),
-    transparent
-  );
+  background: var(--surface-1);
 }
 
 .integrity {
@@ -29,11 +25,7 @@
   height: 44px;
   border: 1px solid var(--color-ink-650);
   border-radius: 50%;
-  background: radial-gradient(
-    circle at 50% 40%,
-    color-mix(in srgb, var(--color-text-inverse-muted) 14%, transparent),
-    color-mix(in srgb, var(--color-text-inverse-muted) 4%, transparent)
-  );
+  background: var(--surface-2);
   color: var(--color-text-inverse-muted);
 }
 

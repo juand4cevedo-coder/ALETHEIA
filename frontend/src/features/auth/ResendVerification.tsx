@@ -85,13 +85,7 @@ export function ResendVerification() {
         error={error}
         onChange={(event) => setEmail(event.target.value)}
       />
-      <Button
-        type="submit"
-        variant="bright"
-        shape="pill"
-        block
-        busy={resend.isPending}
-      >
+      <Button type="submit" block busy={resend.isPending}>
         {resend.isPending ? "Enviando…" : "Enviarme un enlace nuevo"}
       </Button>
     </form>

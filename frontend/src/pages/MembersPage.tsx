@@ -209,10 +209,8 @@ function Team({ currentUserId }: { currentUserId: string }) {
                 {isManageable(member, currentUserId) && (
                   <span className={styles.rowActions}>
                     <Button
-                      surface="dark"
                       variant="secondary"
                       size="sm"
-                      shape="pill"
                       aria-label={`Cambiar el rol de ${member.full_name}`}
                       onClick={() => {
                         setRemoved(null);
@@ -222,10 +220,8 @@ function Team({ currentUserId }: { currentUserId: string }) {
                       Cambiar rol
                     </Button>
                     <Button
-                      surface="dark"
                       variant="secondary"
                       size="sm"
-                      shape="pill"
                       aria-label={`Retirar a ${member.full_name}`}
                       onClick={() => {
                         remove.reset();
@@ -289,10 +285,8 @@ function Team({ currentUserId }: { currentUserId: string }) {
                 </span>
                 <span className={styles.rowAction}>
                   <Button
-                    surface="dark"
                     variant="secondary"
                     size="sm"
-                    shape="pill"
                     aria-label={`Revocar la invitación de ${invitation.email}`}
                     onClick={() => {
                       revoke.reset();
@@ -417,7 +411,7 @@ function SeatsBar({
           </p>
         </Notice>
       ) : (
-        <Button variant="bright" shape="pill" onClick={onInvite}>
+        <Button onClick={onInvite}>
           <CorreoIcon size={18} aria-hidden="true" />
           Invitar
         </Button>
@@ -468,13 +462,7 @@ function LoadError({
       <Notice tone="error">
         <SystemError requestId={apiProblem(error).requestId} />
       </Notice>
-      <Button
-        surface="dark"
-        variant="secondary"
-        size="sm"
-        shape="pill"
-        onClick={onRetry}
-      >
+      <Button variant="secondary" size="sm" onClick={onRetry}>
         Intentar de nuevo
       </Button>
     </div>
@@ -484,14 +472,7 @@ function LoadError({
 function MoreButton({ busy, onClick }: { busy: boolean; onClick: () => void }) {
   return (
     <div className={styles.more}>
-      <Button
-        surface="dark"
-        variant="secondary"
-        size="sm"
-        shape="pill"
-        busy={busy}
-        onClick={onClick}
-      >
+      <Button variant="secondary" size="sm" busy={busy} onClick={onClick}>
         {busy ? "Cargando…" : "Cargar más"}
       </Button>
     </div>

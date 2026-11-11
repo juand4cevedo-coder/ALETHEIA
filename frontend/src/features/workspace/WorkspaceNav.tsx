@@ -56,7 +56,7 @@ function useOpenCases(enabled: boolean): number | undefined {
   return data;
 }
 
-// Menú lateral del espacio de trabajo (CMP-UI-011). En pantallas anchas es una columna fija a
+// Menú lateral del espacio de trabajo (CMP-UI-011). En pantallas anchas es una columna a
 // la izquierda; en tabletas y celulares, una franja bajo el encabezado que se desliza de lado.
 // Cada persona ve solo las secciones de su rol, aunque la API también lo exige.
 export function WorkspaceNav({ me }: { me: Me }) {
@@ -76,7 +76,7 @@ export function WorkspaceNav({ me }: { me: Me }) {
                 isActive ? `${styles.link} ${styles.active}` : styles.link
               }
             >
-              <Icon size={18} aria-hidden="true" />
+              <Icon size={16} aria-hidden="true" />
               {label}
               {openCount && openCases !== undefined && (
                 <span className={styles.count}>

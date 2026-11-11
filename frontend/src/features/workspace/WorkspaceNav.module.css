@@ -1,27 +1,32 @@
-/* Menú lateral del espacio de trabajo (CMP-UI-011). */
+/* Menú lateral del espacio de trabajo (CMP-UI-011): una columna en --surface-1 separada del
+   contenido por la línea. El elemento activo pasa a --surface-2 con el texto principal; el
+   violeta queda para el foco. */
 .nav {
-  position: sticky;
-  top: var(--space-6);
+  border-right: 1px solid var(--line);
+  background: var(--surface-1);
 }
 
 .list {
+  position: sticky;
+  top: 0;
   display: grid;
-  gap: var(--space-1);
+  gap: calc(var(--space-1) / 2);
   margin: 0;
-  padding: 0;
+  padding: var(--space-4) var(--space-3);
   list-style: none;
 }
 
 .link {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  min-height: 44px;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  color: var(--color-text-inverse-muted);
-  font-size: 15px;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
   font-weight: 500;
+  line-height: var(--line-height-ui);
   text-decoration: none;
   white-space: nowrap;
   transition:
@@ -30,28 +35,33 @@
 }
 
 .link:hover {
-  background: var(--color-ink-800);
-  color: var(--color-text-inverse);
+  color: var(--text);
 }
 
 .active,
 .active:hover {
-  background: color-mix(in srgb, var(--color-primary-400) 12%, transparent);
-  color: var(--color-text-inverse);
+  background: var(--surface-2);
+  color: var(--text);
 }
 
-.active > svg {
-  color: var(--color-primary-300);
+/* Número de casos abiertos, alineado a la derecha en la columna y junto al nombre en la franja. */
+.count {
+  margin-left: auto;
+  padding-left: var(--space-2);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-label);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-label);
 }
 
-/* Tabletas y celulares: una franja que se desliza de lado bajo el encabezado. */
+/* Tabletas y celulares: una franja bajo el encabezado que se desliza de lado. El activo se marca
+   con la superficie, igual que en la columna. */
 @media (max-width: 900px) {
   .nav {
-    position: static;
-    margin: 0 calc(-1 * var(--space-6));
-    padding: 0 var(--space-6);
     overflow-x: auto;
-    border-bottom: 1px solid var(--color-ink-800);
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
     scrollbar-width: none;
   }
 
@@ -60,47 +70,19 @@
   }
 
   .list {
+    position: static;
     display: flex;
     gap: var(--space-1);
+    padding: var(--space-2) var(--space-4);
   }
 
-  .link {
-    min-height: 48px;
-    border-radius: 0;
-    background: none;
-    box-shadow: inset 0 -2px 0 transparent;
-  }
-
-  .link:hover {
-    background: none;
-  }
-
-  .active,
-  .active:hover {
-    background: none;
-    box-shadow: inset 0 -2px 0 var(--color-primary-300);
-  }
-}
-
-@media (max-width: 560px) {
-  .nav {
-    margin: 0 calc(-1 * var(--space-4));
-    padding: 0 var(--space-4);
-  }
-}
-
-/* Número de casos abiertos, alineado a la derecha en la columna y junto al nombre en la franja. */
-.count {
-  margin-left: auto;
-  padding-left: var(--space-2);
-  color: var(--color-text-inverse-muted);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-}
-
-@media (max-width: 900px) {
   .count {
     margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
   }
 }

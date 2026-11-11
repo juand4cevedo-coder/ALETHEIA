@@ -7,7 +7,6 @@ import { verifyEmailMutation } from "../api/generated/@tanstack/react-query.gen.
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
-import { Emblem } from "../components/ui/Emblem.tsx";
 import { tokenFromHash } from "../features/auth/linkToken.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import styles from "./VerifyEmailPage.module.css";
@@ -83,15 +82,6 @@ export function VerifyEmailPage() {
     <section className={styles.screen} aria-labelledby="titulo-verificacion">
       <title>{`Verificar el correo · ${SITE_NAME}`}</title>
       <meta name="robots" content="noindex" />
-      <Emblem
-        state={
-          outcome.kind === "verifying"
-            ? "working"
-            : outcome.kind === "verified"
-              ? "done"
-              : "idle"
-        }
-      />
       {outcome.kind === "verifying" && (
         <div className={styles.status} role="status">
           <h1 id="titulo-verificacion" className={styles.title}>
@@ -143,9 +133,7 @@ export function VerifyEmailPage() {
           <p className={styles.lead}>
             Ya puede ingresar con su correo y su contraseña.
           </p>
-          <ButtonLink to={ROUTES.signIn} variant="bright" shape="pill">
-            Ingresar
-          </ButtonLink>
+          <ButtonLink to={ROUTES.signIn}>Ingresar</ButtonLink>
         </>
       )}
 

@@ -15,9 +15,8 @@ type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className"> &
 // Botón de acción (CMP-UI-001). Para ir a otra página se usa ButtonLink.
 export function Button({
   variant,
-  surface,
+  surface: _surface,
   size,
-  shape,
   block = false,
   busy = false,
   type = "button",
@@ -25,7 +24,7 @@ export function Button({
   disabled,
   ...buttonProps
 }: ButtonProps) {
-  const className = buttonClassName({ variant, surface, size, shape });
+  const className = buttonClassName({ variant, size });
   return (
     <button
       {...buttonProps}
@@ -36,7 +35,7 @@ export function Button({
       aria-busy={busy || undefined}
     >
       {busy && (
-        <CargandoIcon className={styles.spinner} size={18} aria-hidden="true" />
+        <CargandoIcon className={styles.spinner} size={16} aria-hidden="true" />
       )}
       {children}
     </button>

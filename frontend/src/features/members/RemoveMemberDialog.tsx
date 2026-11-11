@@ -32,10 +32,8 @@ export function RemoveMemberDialog({
       actions={
         <>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
-            shape="pill"
             data-autofocus
             onClick={onClose}
             disabled={busy}
@@ -43,9 +41,7 @@ export function RemoveMemberDialog({
             Cancelar
           </Button>
           <Button
-            variant="bright"
             size="sm"
-            shape="pill"
             busy={busy}
             onClick={() => member && onConfirm(member)}
           >

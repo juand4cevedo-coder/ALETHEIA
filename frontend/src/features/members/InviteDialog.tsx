@@ -113,23 +113,14 @@ export function InviteDialog({ open, onClose, onInvited }: Props) {
       actions={
         <>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
-            shape="pill"
             onClick={close}
             disabled={invite.isPending}
           >
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            form={formId}
-            variant="bright"
-            size="sm"
-            shape="pill"
-            busy={invite.isPending}
-          >
+          <Button type="submit" form={formId} size="sm" busy={invite.isPending}>
             {invite.isPending ? "Enviando…" : "Enviar invitación"}
           </Button>
         </>

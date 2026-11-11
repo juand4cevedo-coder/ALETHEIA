@@ -92,22 +92,14 @@ export function CasePage() {
           <div className={styles.unavailableActions}>
             {!missing && (
               <Button
-                surface="dark"
                 variant="secondary"
                 size="sm"
-                shape="pill"
                 onClick={() => void detail.refetch()}
               >
                 Intentar de nuevo
               </Button>
             )}
-            <ButtonLink
-              to={ROUTES.cases}
-              variant="secondary"
-              surface="dark"
-              size="sm"
-              shape="pill"
-            >
+            <ButtonLink to={ROUTES.cases} variant="secondary" size="sm">
               Volver a los casos
             </ButtonLink>
           </div>
@@ -203,7 +195,6 @@ function CaseView({
           <ul className={styles.chips} aria-label="Datos del caso">
             {detail.practice_area && (
               <li className={styles.chip}>
-                <i className={styles.areaDot} aria-hidden="true" />
                 {PRACTICE_AREA_LABELS[detail.practice_area]}
               </li>
             )}

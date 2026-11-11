@@ -8,15 +8,9 @@ type ButtonLinkProps = Omit<LinkProps, "className"> & ButtonStyleOptions;
 // (CMP-UI-001, uso incorrecto: navegar a otra página).
 export function ButtonLink({
   variant,
-  surface,
+  surface: _surface,
   size,
-  shape,
   ...linkProps
 }: ButtonLinkProps) {
-  return (
-    <Link
-      {...linkProps}
-      className={buttonClassName({ variant, surface, size, shape })}
-    />
-  );
+  return <Link {...linkProps} className={buttonClassName({ variant, size })} />;
 }

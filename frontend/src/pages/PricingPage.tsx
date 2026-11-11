@@ -235,10 +235,7 @@ export function PricingPage() {
                 de su organización, y se contrata por cotización.
               </p>
             </div>
-            <a
-              className={buttonClassName({ surface: "dark" })}
-              href={CORPORATE_QUOTE_URL}
-            >
+            <a className={buttonClassName()} href={CORPORATE_QUOTE_URL}>
               <CorreoIcon size={18} />
               Solicitar cotización
             </a>
