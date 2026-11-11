@@ -69,8 +69,8 @@ export function HowItWorks() {
             <p className={styles.custody}>
               <CadenaIcon size={16} aria-hidden="true" />
               <span>
-                Durante todo el proceso, la cadena de custodia anota quién abre
-                o descarga el archivo, y a qué hora.
+                Durante todo el proceso, la cadena de custodia anota quién sube,
+                descarga o exporta el archivo, y a qué hora.
               </span>
             </p>
           </div>

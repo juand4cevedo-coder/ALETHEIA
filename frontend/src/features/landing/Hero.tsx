@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { listPlansOptions } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../../config/routes.ts";
+import { SIGN_UP_LABEL } from "../../config/site.ts";
 import { trialDays } from "../billing/plans.ts";
 import styles from "./Hero.module.css";
 import { WorkspacePreview } from "./WorkspacePreview.tsx";
@@ -25,16 +26,16 @@ export function Hero() {
         </p>
 
         <h1 id="titulo-inicio" className={styles.title}>
-          Demuestre que el archivo que aporta es el mismo que recibió.
+          Demuestre que el archivo que aporta no cambió desde que lo preservó.
         </h1>
 
         <p className={styles.lead}>
           Conservamos el original con su huella y un sello de tiempo de un
-          tercero, y registramos quién lo abre y cuándo.
+          tercero, y cada descarga queda registrada con nombre y hora.
         </p>
 
         <div className={styles.actions}>
-          <ButtonLink to={ROUTES.signUp}>Crear una cuenta</ButtonLink>
+          <ButtonLink to={ROUTES.signUp}>{SIGN_UP_LABEL}</ButtonLink>
           <ButtonLink to={ROUTES.howItWorks} variant="secondary">
             Ver cómo funciona
           </ButtonLink>

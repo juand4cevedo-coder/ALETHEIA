@@ -19,7 +19,7 @@ export function HomePage() {
       </title>
       <meta
         name="description"
-        content="Conserve el archivo original de cada evidencia digital con su huella SHA-256, un sello de tiempo de un tercero y una cadena de custodia que no se puede editar. Para abogados y firmas en Colombia."
+        content="Conserve el archivo original de su evidencia digital con su huella SHA-256 y un sello de tiempo de un tercero. Para abogados en Colombia."
       />
       <link rel="canonical" href={`${SITE_URL}/`} />
 

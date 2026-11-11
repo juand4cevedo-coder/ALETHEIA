@@ -16,13 +16,19 @@ const EXAMPLE_HASH =
   "52a910d44b570bc5cd4d35e1c7420d0d05c2920518d70b61b6f04595b5b9a6f5";
 
 const CUSTODY = [
-  { time: "10:39:04 a. m.", text: "Laura Gómez subió el archivo original" },
-  { time: "10:39:05 a. m.", text: "Se registró la huella SHA-256" },
+  {
+    time: "10:39:04 a. m.",
+    text: "Laura Gómez subió el original con su huella SHA-256",
+  },
   {
     time: "10:39:07 a. m.",
     text: "La autoridad externa emitió el sello de tiempo",
   },
-  { time: "11:02:41 a. m.", text: "Andrés Ruiz consultó la evidencia" },
+  { time: "11:02:41 a. m.", text: "Andrés Ruiz descargó el original" },
+  {
+    time: "11:15:20 a. m.",
+    text: "Laura Gómez solicitó el paquete de preservación",
+  },
 ] as const;
 
 // Una evidencia como se ve en la aplicación: el original, su huella, el sello, el paquete y la
