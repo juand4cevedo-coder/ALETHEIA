@@ -43,6 +43,17 @@
   --font-mono:
     "JetBrains Mono Variable", ui-monospace, "Cascadia Mono", Consolas,
     monospace;
+  /* Serif para titulares de la landing; sin carga de fuente, cae a Georgia. */
+  --font-display: "Source Serif 4 Variable", "Iowan Old Style", Georgia, serif;
+
+  /* Papel de la "hoja de expediente" de la sección Alcance: única superficie clara del sitio público. */
+  --color-paper: #f3efe6;
+  --color-paper-ink: #1b2333;
+  --color-paper-muted: #4a4f5c;
+  --color-paper-rule: #cfc6b4;
+  /* Rojo oscuro del «no» sobre el papel: el error-400 de la banda oscura no contrasta sobre
+     claro; este pasa de 4,5:1 sobre --color-paper. */
+  --color-paper-error: #a3342c;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -67,6 +78,14 @@
   --motion-fast: 120ms;
   --motion-base: 200ms;
   --motion-slow: 700ms;
+  /* Destello de los caracteres que cambian en la demostración de la huella. */
+  --motion-flash: 600ms;
+  /* Una vuelta del borde de luz del hero: la única animación continua, lenta a propósito. */
+  --motion-orbit: 14s;
+  /* Entrada «estampada» de la ficha del sello en el hero, una sola vez al cargar. */
+  --motion-stamp: 500ms;
+  /* Espera a que la ventana ya esté a la vista antes de estampar el sello. */
+  --motion-stamp-delay: 900ms;
   /* Latido de lo que sigue en curso, como un sello de tiempo pendiente. */
   --motion-pulse: 2400ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);

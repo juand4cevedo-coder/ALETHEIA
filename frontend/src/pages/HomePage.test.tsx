@@ -92,11 +92,12 @@ describe("Página de inicio (HU-001)", () => {
     const { container } = await renderRoute("/");
     await screen.findByText(/^\$59\.900/);
 
-    // Todo lo que se puede activar fuera del menú móvil cerrado, en orden del documento.
+    // Todo lo que se puede activar o editar fuera del menú móvil cerrado (incluido el texto de la
+    // demostración de la huella), en orden del documento.
     const menu = container.querySelector("dialog");
     const interactive = Array.from(
       container.querySelectorAll<HTMLElement>(
-        "a[href], button:not([disabled]), summary",
+        "a[href], button:not([disabled]), summary, textarea",
       ),
     ).filter((element) => !menu?.contains(element));
 
@@ -109,6 +110,25 @@ describe("Página de inicio (HU-001)", () => {
     expect(reached).toEqual(interactive);
 
     expect(await seriousAxeViolations(container)).toEqual([]);
+  });
+
+  it("los H2 de la landing siguen el orden de los folios", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    await renderRoute("/");
+
+    const headings = within(screen.getByRole("main")).getAllByRole("heading", {
+      level: 2,
+    });
+    expect(headings.map((heading) => heading.textContent)).toEqual([
+      "Una captura de pantalla no es el archivo original",
+      "De la recepción del archivo al expediente, en cuatro pasos",
+      "Garantías que cualquier perito puede comprobar",
+      "Preservamos y documentamos. La valoración es del juez.",
+      "¿Recibió un paquete de preservación?",
+      "Las mismas garantías en todos los planes",
+      "Lo que más nos preguntan",
+      "Empiece a preservar su evidencia hoy",
+    ]);
   });
 
   it("abre y cierra las preguntas frecuentes", async () => {

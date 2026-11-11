@@ -2,6 +2,7 @@ import { BadgeCheck, FileSearch, Laptop } from "lucide-react";
 
 import { Reveal } from "../../components/ui/Reveal.tsx";
 import section from "./Section.module.css";
+import timeline from "./Timeline.module.css";
 import styles from "./VerifierSection.module.css";
 
 const STEPS = [
@@ -19,7 +20,8 @@ const STEPS = [
   },
 ] as const;
 
-// Para quien recibe un paquete: juez, perito o contraparte (UI-005).
+// Para quien recibe un paquete: juez, perito o contraparte (UI-005). Los tres pasos usan la
+// misma línea de tiempo de Cómo funciona (§ 02): también son una secuencia.
 export function VerifierSection() {
   return (
     <section
@@ -30,9 +32,14 @@ export function VerifierSection() {
       <div className={section.inner}>
         <Reveal className={styles.panel}>
           <div className={styles.copy}>
-            <p className={section.kicker}>
-              Para jueces, peritos y contrapartes
-            </p>
+            <div className={section.folioBlock}>
+              <p className={section.folio} aria-hidden="true">
+                § 05
+              </p>
+              <p className={section.kicker}>
+                Para jueces, peritos y contrapartes
+              </p>
+            </div>
             <h2 id="titulo-verificador" className={styles.title}>
               ¿Recibió un paquete de preservación?
             </h2>
@@ -48,13 +55,15 @@ export function VerifierSection() {
             </p>
           </div>
 
-          <ol className={styles.steps}>
+          <ol className={timeline.timeline}>
             {STEPS.map((step) => (
-              <li key={step.text} className={styles.step}>
-                <span className={section.iconTile}>
+              <li key={step.text} className={timeline.step}>
+                <span className={timeline.node}>
                   <step.icon size={20} />
                 </span>
-                <p>{step.text}</p>
+                <p className={`${timeline.content} ${styles.stepText}`}>
+                  {step.text}
+                </p>
               </li>
             ))}
           </ol>

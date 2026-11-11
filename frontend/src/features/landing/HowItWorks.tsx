@@ -4,6 +4,7 @@ import { Reveal } from "../../components/ui/Reveal.tsx";
 import styles from "./HowItWorks.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
+import timeline from "./Timeline.module.css";
 
 const STEPS = [
   {
@@ -28,7 +29,8 @@ const STEPS = [
   },
 ] as const;
 
-// Los cuatro pasos del servicio, en el lenguaje del abogado. SHA‑256 lleva un guion que no
+// Los cuatro pasos del servicio, en el lenguaje del abogado, como una línea de tiempo: en
+// pantallas anchas va en fila y en las angostas baja en vertical. SHA‑256 lleva un guion que no
 // parte la línea (U+2011).
 export function HowItWorks() {
   return (
@@ -40,27 +42,25 @@ export function HowItWorks() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-como-funciona"
+          index={2}
           kicker="Cómo funciona"
           title="De la recepción del archivo al expediente, en cuatro pasos"
           lead="No necesita instalar nada ni cambiar la forma en que su oficina recibe la información. Nosotros nos encargamos de preservarla desde el primer momento."
         />
 
-        <ol className={styles.steps}>
+        <ol className={`${timeline.timeline} ${timeline.horizontal}`}>
           {STEPS.map((step, index) => (
-            <Reveal
-              as="li"
-              key={step.title}
-              delay={(index + 1) as 1 | 2 | 3 | 4}
-              className={styles.step}
-            >
-              <span className={styles.icon}>
-                <step.icon size={24} />
+            <Reveal as="li" key={step.title} className={timeline.step}>
+              <span className={timeline.node}>
+                <step.icon size={20} />
               </span>
-              <p className={styles.number}>
-                Paso {String(index + 1).padStart(2, "0")}
-              </p>
-              <h3 className={section.cardTitle}>{step.title}</h3>
-              <p className={section.cardText}>{step.text}</p>
+              <div className={timeline.content}>
+                <p className={styles.number}>
+                  Paso {String(index + 1).padStart(2, "0")}
+                </p>
+                <h3 className={section.cardTitle}>{step.title}</h3>
+                <p className={section.cardText}>{step.text}</p>
+              </div>
             </Reveal>
           ))}
         </ol>
