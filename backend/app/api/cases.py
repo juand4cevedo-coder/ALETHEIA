@@ -1,4 +1,5 @@
-"""Casos: abrir uno y ver su detalle (API-022 y API-024, HU-015).
+"""Casos: abrir uno, listar los de cada persona y ver su detalle (API-022 a API-024, HU-015 y
+HU-017).
 
 Abrir un caso lo pueden hacer el propietario, el administrador y el abogado (RN-008); el
 servicio lo comprueba y esta capa traduce sus errores. Las respuestas llevan datos de un
@@ -7,9 +8,9 @@ expediente, así que ningún intermediario guarda una copia, tampoco las de erro
 
 import logging
 import uuid
-from typing import Annotated, Any, Final
+from typing import Annotated, Any, Final, Literal
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -24,7 +25,11 @@ from app.schemas.cases import (
     CaseDetail,
     CaseMemberOut,
     CaseOut,
+    CasePage,
+    CaseSummaryOut,
+    CaseTotalsOut,
     CustodyEventOut,
+    LastEventOut,
 )
 from app.services import cases as cases_service
 from app.services.members import OrganizationNotActiveError
@@ -45,6 +50,12 @@ FILING_NUMBER_TAKEN_PROBLEM: Final = "https://aletheia.sbs/problemas/radicado-re
 KEYS_UNAVAILABLE: Final = (
     "No pudimos preparar la llave de cifrado del caso. Inténtelo de nuevo en unos minutos"
 )
+INVALID_CURSOR: Final = (
+    "No pudimos continuar la lista desde ese punto. Vuelva a cargarla desde el principio"
+)
+# Casos por página de la lista: 25 por defecto y como máximo 50.
+CASE_PAGE_SIZE_DEFAULT: Final = 25
+CASE_PAGE_SIZE_MAX: Final = 50
 ORGANIZATION_NOT_ACTIVE: Final = (
     "Su organización está en solo lectura: puede consultar y exportar, pero no abrir casos "
     "hasta reactivar el plan."
@@ -160,6 +171,54 @@ def create_case(
 
 
 @router.get(
+    "",
+    summary="Listar los casos donde la persona es miembro, con su actividad",
+    responses=_UNAUTHORIZED
+    | {
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {
+            "description": f"Parámetros inválidos, por ejemplo: {INVALID_CURSOR}."
+        }
+    },
+)
+def list_cases(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    case_status: Annotated[
+        Literal["open", "closed", "all"],
+        Query(alias="status", description="Casos abiertos, cerrados o todos."),
+    ] = "open",
+    cursor: Annotated[
+        str | None, Query(max_length=200, description="next_cursor de la página anterior.")
+    ] = None,
+    limit: Annotated[
+        int, Query(ge=1, le=CASE_PAGE_SIZE_MAX, description="Casos por página.")
+    ] = CASE_PAGE_SIZE_DEFAULT,
+) -> CasePage:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        listing = cases_service.list_cases(
+            session, principal, status=case_status, cursor=cursor, limit=limit
+        )
+    except cases_service.InvalidCursorError:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail=INVALID_CURSOR, headers=_NO_STORE
+        ) from None
+    totals = listing.totals
+    return CasePage(
+        items=[_case_summary_out(item) for item in listing.items],
+        next_cursor=listing.next_cursor,
+        totals=CaseTotalsOut(
+            open=totals.open,
+            closed=totals.closed,
+            evidences=totals.evidences,
+            pending_stamps=totals.pending_stamps,
+            custody_events=totals.custody_events,
+        ),
+    )
+
+
+@router.get(
     "/{case_id}",
     summary="Ver un caso con su equipo y su cadena de custodia",
     responses=_UNAUTHORIZED
@@ -208,6 +267,38 @@ def read_case(
             )
             for event in view.recent_events
         ],
+    )
+
+
+def _case_summary_out(item: cases_service.CaseSummary) -> CaseSummaryOut:
+    last_event = item.last_event
+    return CaseSummaryOut.model_validate(
+        {
+            "id": item.id,
+            "title": item.title,
+            "filing_number": item.filing_number,
+            "court": item.court,
+            "practice_area": item.practice_area,
+            "internal_reference": item.internal_reference,
+            "status": item.status,
+            "created_at": item.created_at,
+            "created_by_name": item.created_by_name,
+            "member_count": item.member_count,
+            "evidence_count": item.evidence_count,
+            "evidence_by_type": item.evidence_by_type,
+            "member_initials": item.member_initials,
+            "last_event": (
+                None
+                if last_event is None
+                else LastEventOut(
+                    action=last_event.action,
+                    actor_name=last_event.actor_name,
+                    occurred_at=last_event.occurred_at,
+                )
+            ),
+            "recent_actions": item.recent_actions,
+            "last_activity_at": item.last_activity_at,
+        }
     )
 
 

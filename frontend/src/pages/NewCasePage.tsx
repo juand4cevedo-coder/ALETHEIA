@@ -1,5 +1,5 @@
-import { useMutation } from "@tanstack/react-query";
-import { CircleCheck, MailCheck, ShieldAlert } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CircleCheck, ShieldAlert } from "lucide-react";
 import {
   type FormEvent,
   type RefObject,
@@ -11,10 +11,12 @@ import {
 import { useNavigate, useOutletContext } from "react-router";
 
 import type { CaseCreate, Me } from "../api/generated";
-import { createCaseMutation } from "../api/generated/@tanstack/react-query.gen.ts";
+import {
+  createCaseMutation,
+  listCasesQueryKey,
+} from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
-import { Dialog } from "../components/ui/Dialog.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { FilingNumber } from "../components/ui/FilingNumber.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
@@ -24,7 +26,6 @@ import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { SITE_NAME } from "../config/site.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
-import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import {
   CASE_MESSAGES,
   FILING_NUMBER_TAKEN_PROBLEM,
@@ -41,6 +42,7 @@ import {
   type PracticeArea,
 } from "../features/cases/practiceAreas.ts";
 import { canOpenCases } from "../features/cases/roles.ts";
+import { VerifyEmailDialog } from "../features/cases/VerifyEmailDialog.tsx";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./NewCasePage.module.css";
 
@@ -160,6 +162,7 @@ export function NewCasePage() {
 
 function NewCaseForm({ me }: { me: Me }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [filing, setFiling] = useState("");
   const [practiceArea, setPracticeArea] = useState<PracticeArea | "">("");
@@ -203,6 +206,10 @@ function NewCaseForm({ me }: { me: Me }) {
   const create = useMutation({
     ...createCaseMutation(),
     onSuccess: (created) => {
+      // El libro de casos y el conteo del menú ya no están al día: se vuelven a pedir.
+      void queryClient.invalidateQueries({
+        queryKey: [{ _id: listCasesQueryKey()[0]._id }],
+      });
       void navigate(ROUTES.caseDetail(created.id), {
         state: { justOpened: true },
       });
@@ -477,7 +484,7 @@ function NewCaseForm({ me }: { me: Me }) {
               </p>
               <div className={styles.buttons}>
                 <ButtonLink
-                  to={ROUTES.app}
+                  to={ROUTES.cases}
                   variant="secondary"
                   surface="dark"
                   size="sm"
@@ -515,26 +522,7 @@ function NewCaseForm({ me }: { me: Me }) {
         </div>
       </div>
 
-      <Dialog
-        open={verifying}
-        onClose={() => setVerifying(false)}
-        title="Verifique su correo"
-        icon={<MailCheck size={22} />}
-        actions={
-          <Button
-            surface="dark"
-            variant="secondary"
-            size="sm"
-            shape="pill"
-            onClick={() => setVerifying(false)}
-          >
-            Cerrar
-          </Button>
-        }
-      >
-        <p>{`${CASE_MESSAGES.emailNotVerified}.`}</p>
-        <ResendVerification />
-      </Dialog>
+      <VerifyEmailDialog open={verifying} onClose={() => setVerifying(false)} />
     </>
   );
 }

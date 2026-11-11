@@ -1,0 +1,149 @@
+/* Franja de la custodia: la integridad a la izquierda y las cifras en columnas separadas por un
+   filete, como el encabezado de un libro de registro. */
+.strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 3fr);
+  overflow: hidden;
+  border: 1px solid var(--color-ink-800);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-text-inverse) 2%, transparent),
+    transparent
+  );
+}
+
+.integrity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-6);
+}
+
+/* Anillo gris: el verde queda reservado para la verificación independiente (HU-024). */
+.ring {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-ink-650);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 40%,
+    color-mix(in srgb, var(--color-text-inverse-muted) 14%, transparent),
+    color-mix(in srgb, var(--color-text-inverse-muted) 4%, transparent)
+  );
+  color: var(--color-text-inverse-muted);
+}
+
+.label {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text-inverse-muted);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.state {
+  margin: 0;
+  color: var(--color-text-inverse);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.note {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-inverse-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-4) var(--space-6);
+  border-left: 1px solid var(--color-ink-800);
+}
+
+.figure dt {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-inverse-muted);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.figure dd {
+  margin: 0;
+  color: var(--color-text-inverse);
+  font-size: 22px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.figure[data-pending] dd {
+  color: var(--color-warning-400);
+}
+
+.unit {
+  margin-left: var(--space-1);
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+@media (max-width: 1100px) {
+  .strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .figures {
+    border-top: 1px solid var(--color-ink-800);
+  }
+
+  .figure:first-child {
+    border-left: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .integrity {
+    padding-inline: var(--space-4);
+  }
+
+  .figures {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .figure {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-ink-800);
+    border-left: 0;
+  }
+
+  .figure:first-child {
+    border-top: 0;
+  }
+
+  .figure dt {
+    margin: 0;
+    font-size: 13px;
+  }
+
+  .figure dd {
+    font-size: 18px;
+  }
+}

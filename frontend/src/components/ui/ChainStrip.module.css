@@ -1,0 +1,54 @@
+/* Miniatura de la cadena: rombos unidos por un trazo fino, como los eslabones de la maqueta 01. */
+.strip {
+  display: inline-flex;
+  align-items: center;
+  height: var(--space-4);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* El trazo que une cada rombo con el anterior. */
+.link + .link::before {
+  content: "";
+  width: 9px;
+  height: 1px;
+  background: var(--color-ink-650);
+}
+
+.link::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--color-primary-400);
+  opacity: 0.9;
+  transform: rotate(45deg);
+}
+
+.link[data-faded]::after {
+  opacity: 0.35;
+}
+
+/* Sello de tiempo pendiente: ámbar con un halo, además del texto del aria-label. */
+.link[data-pending]::after {
+  background: var(--color-warning-400);
+  box-shadow: 0 0 10px
+    color-mix(in srgb, var(--color-warning-400) 60%, transparent);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .link[data-pending]::after {
+    animation: pending var(--motion-pulse) var(--ease-standard) infinite;
+  }
+}
+
+@keyframes pending {
+  50% {
+    box-shadow: 0 0 4px
+      color-mix(in srgb, var(--color-warning-400) 30%, transparent);
+  }
+}

@@ -118,6 +118,50 @@ describe("Abrir un caso (HU-015)", () => {
     });
   });
 
+  it("al abrir el caso vuelve a pedir la lista de casos", async () => {
+    const book = {
+      items: [],
+      next_cursor: null,
+      totals: {
+        open: 0,
+        closed: 0,
+        evidences: 0,
+        pending_stamps: 0,
+        custody_events: 0,
+      },
+    };
+    serve("lawyer", {
+      "GET /api/v1/cases": () => jsonResponse(book),
+      "POST /api/v1/cases": () => jsonResponse(CREATED, 201),
+      [`GET /api/v1/cases/${CASE_ID}`]: () =>
+        jsonResponse({ ...CREATED, members: [], recent_events: [] }),
+    });
+    const user = userEvent.setup();
+    const { router } = await renderRoute("/app/casos/nuevo");
+    const calls = () =>
+      fetchMock.mock.calls.map(([input]) => {
+        const request = input as Request;
+        return `${request.method} ${new URL(request.url).pathname}`;
+      });
+    // El conteo del menú ya pidió la lista antes de abrir el caso.
+    await waitFor(() => expect(calls()).toContain("GET /api/v1/cases"));
+
+    await user.type(
+      await screen.findByLabelText("Título del caso"),
+      "Despido sin justa causa · Torres",
+    );
+    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(`/app/casos/${CASE_ID}`),
+    );
+
+    // Después del POST, la lista ya no está al día y se vuelve a pedir.
+    await waitFor(() => {
+      const after = calls().slice(calls().indexOf("POST /api/v1/cases") + 1);
+      expect(after).toContain("GET /api/v1/cases");
+    });
+  });
+
   it("desglosa el radicado mientras se escribe y avisa si no tiene 23 dígitos", async () => {
     serve("owner");
     const user = userEvent.setup();
@@ -408,27 +452,21 @@ describe("Abrir un caso (HU-015)", () => {
 });
 
 describe("Inicio del espacio de trabajo", () => {
-  it.each(["owner", "admin", "lawyer"] as const)(
-    "un %s ve la acción «Abrir caso»",
+  it.each(["owner", "admin", "lawyer", "assistant"] as const)(
+    "un %s no ve «Abrir caso» y llega al libro de casos",
     async (role) => {
       serve(role);
       const user = userEvent.setup();
       const { router } = await renderRoute("/app");
 
-      await user.click(await screen.findByRole("link", { name: "Abrir caso" }));
+      await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
+      expect(
+        screen.queryByRole("link", { name: "Abrir caso" }),
+      ).not.toBeInTheDocument();
+      await user.click(screen.getByRole("link", { name: "Ver mis casos" }));
       await waitFor(() =>
-        expect(router.state.location.pathname).toBe("/app/casos/nuevo"),
+        expect(router.state.location.pathname).toBe("/app/casos"),
       );
     },
   );
-
-  it("un asistente no ve la acción «Abrir caso»", async () => {
-    serve("assistant");
-    await renderRoute("/app");
-
-    await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
-    expect(
-      screen.queryByRole("link", { name: "Abrir caso" }),
-    ).not.toBeInTheDocument();
-  });
 });

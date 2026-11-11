@@ -1,0 +1,587 @@
+/* Libro de casos (maquetas 01 y 04): la franja de la custodia, las herramientas de la lista y el
+   libro, una tabla sobria con filas que se iluminan desde la izquierda al pasar. */
+.screen {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  color: var(--color-text-inverse-muted);
+}
+
+.book > .loading {
+  padding: var(--space-6);
+}
+
+.spinner {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
+.failure {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 720px;
+}
+
+/* ---------- Herramientas de la lista ---------- */
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: calc(-1 * var(--space-3));
+}
+
+.segments {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--color-ink-800);
+  border-radius: var(--radius-md);
+  background: var(--color-ink-925);
+}
+
+.segment {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border-radius: calc(var(--radius-md) - 3px);
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.segment:hover {
+  color: var(--color-text-inverse);
+}
+
+/* El radio nativo da el teclado (flechas) y la semántica; se ve el segmento. */
+.segmentInput {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.segment:has(.segmentInput:checked) {
+  background: var(--color-ink-800);
+  box-shadow: 0 1px 0
+    color-mix(in srgb, var(--color-text-inverse) 4%, transparent) inset;
+  color: var(--color-text-inverse);
+}
+
+.segment:has(.segmentInput:focus-visible) {
+  outline: 2px solid var(--color-primary-300);
+  outline-offset: 2px;
+}
+
+.segmentCount {
+  color: var(--color-text-inverse-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 1 300px;
+  min-width: 0;
+}
+
+.filterIcon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--color-text-inverse-muted);
+  pointer-events: none;
+}
+
+.filterInput {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--space-3) 0 calc(var(--space-3) + 15px + var(--space-2));
+  border: 1px solid var(--color-ink-700);
+  border-radius: var(--radius-md);
+  background: var(--color-ink-925);
+  color: var(--color-text-inverse);
+  font: inherit;
+  font-size: 13px;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard);
+}
+
+.filterInput::placeholder {
+  color: var(--color-text-inverse-muted);
+}
+
+.filterInput:focus-visible {
+  border-color: var(--color-primary-400);
+  outline: none;
+  box-shadow: 0 0 0 4px
+    color-mix(in srgb, var(--color-primary-400) 18%, transparent);
+}
+
+.order {
+  margin: 0 0 0 auto;
+  color: var(--color-text-inverse-muted);
+  font-size: 12px;
+}
+
+.order b {
+  color: var(--color-text-inverse);
+  font-weight: 500;
+}
+
+/* ---------- El libro ---------- */
+.book {
+  overflow: hidden;
+  border: 1px solid var(--color-ink-800);
+  border-radius: var(--radius-lg);
+  background: var(--color-ink-950);
+  box-shadow: var(--shadow-raised);
+}
+
+.book[aria-busy="true"] {
+  opacity: 0.7;
+}
+
+/* El foco llega aquí por programa, tras cargar más casos; no necesita anillo. */
+[data-book-focus]:focus {
+  outline: none;
+}
+
+.none {
+  margin: 0;
+  padding: var(--space-8) var(--space-6);
+  color: var(--color-text-inverse-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.table thead th {
+  padding: 11px var(--space-3);
+  background: var(--color-ink-925);
+  color: var(--color-text-inverse-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+/* Proporciones de la maqueta: el caso manda, la integridad cierra la fila. El caso no lleva
+   ancho: toma lo que dejan las demás, y así la integridad puede tener uno fijo. */
+.table thead th:nth-child(1) {
+  padding-left: var(--space-6);
+}
+
+.table thead th:nth-child(2) {
+  width: 17%;
+}
+
+.table thead th:nth-child(3) {
+  width: 13%;
+}
+
+.table thead th:nth-child(4) {
+  width: 17%;
+}
+
+.table thead th:nth-child(5) {
+  /* Fijo, para que la insignia «Sin verificar» y el chevron quepan siempre, uno al lado del
+     otro, a cualquier ancho de escritorio: un porcentaje los cortaba o los encimaba. */
+  width: calc(var(--space-3) + 7.5rem + var(--space-2) + 16px + var(--space-4));
+}
+
+/* Toda la fila lleva al caso: el enlace del título se extiende sobre ella (ver .title::after). */
+.row {
+  position: relative;
+  border-top: 1px solid var(--color-ink-900);
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.row:hover,
+.row:focus-within {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-primary-400) 7%, transparent),
+    transparent 60%
+  );
+}
+
+.row > th,
+.row > td {
+  padding: var(--space-4) var(--space-3);
+  font-weight: 400;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.row > .caseCell {
+  padding-left: var(--space-6);
+}
+
+.row > .integrityCell {
+  padding-right: var(--space-4);
+}
+
+/* La insignia y el chevron van en la misma línea, en el flujo: nunca se tapan. */
+.integrity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.chevron {
+  flex: none;
+  color: var(--color-text-inverse-muted);
+  transition: transform var(--motion-fast) var(--ease-standard);
+}
+
+.row:hover .chevron {
+  color: var(--color-text-inverse);
+  transform: translateX(3px);
+}
+
+.titleLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+  margin-bottom: 6px;
+}
+
+.title {
+  min-width: 0;
+  color: var(--color-text-inverse);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.35;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+/* Encima del contenido de las celdas, para que un clic en cualquier punto de la fila llegue al
+   enlace. Basta el nivel 1: queda bajo el encabezado de la
+   aplicación (30) y el menú de la cuenta (20), que deben seguir cubriendo la lista. */
+.title::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+}
+
+.title:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.title:focus-visible {
+  outline: none;
+}
+
+/* El foco se ve en toda la fila, que es lo que lleva al caso. */
+.title:focus-visible::after {
+  border-radius: var(--radius-sm);
+  outline: 2px solid var(--color-primary-300);
+  outline-offset: -3px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: inherit;
+}
+
+.identity {
+  min-width: 0;
+}
+
+/* El radicado y la referencia interna quedan por encima del enlace extendido (.title::after):
+   así se pueden seleccionar y copiar desde la lista. Solo cubren su propio texto; el resto de
+   la fila sigue llevando al caso. */
+.identity > * {
+  position: relative;
+  z-index: 2;
+}
+
+.noFiling {
+  color: var(--color-text-inverse-muted);
+  font-size: 12px;
+}
+
+.noFiling b {
+  color: var(--color-text-inverse);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.area {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 2px var(--space-2);
+  border: 1px solid var(--color-ink-700);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-text-inverse) 2%, transparent);
+  color: var(--color-text-inverse);
+  font-size: 12px;
+}
+
+.area i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary-300);
+}
+
+.area[data-area="family"] i {
+  background: var(--color-gold-400);
+}
+
+.court,
+.noCourt {
+  display: block;
+  color: var(--color-text-inverse-muted);
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.noCourt {
+  font-style: italic;
+}
+
+.evidence {
+  display: grid;
+  gap: 3px;
+}
+
+.evidenceCount {
+  color: var(--color-text-inverse);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.evidenceTypes {
+  color: var(--color-text-inverse-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Cada tipo se queda entero en su renglón: «9 chats», nunca «9» y «chats» separados. */
+.evidenceTypes > span {
+  white-space: nowrap;
+}
+
+.chain {
+  display: grid;
+  gap: 6px;
+}
+
+.when {
+  color: var(--color-text-inverse-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.when time {
+  color: var(--color-text-inverse);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ---------- Más casos ---------- */
+.more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.moreNote {
+  margin: 0;
+  color: var(--color-text-inverse-muted);
+  font-size: 12px;
+}
+
+/* ---------- Antes del primer caso ---------- */
+.principles {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.principles li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-ink-800);
+}
+
+.principles li:first-child {
+  border-top: 0;
+}
+
+.principleNumber {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-ink-700);
+  border-radius: var(--radius-md);
+  background: var(--color-ink-850);
+  color: var(--color-primary-300);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.principleTitle {
+  margin: 0 0 3px;
+  color: var(--color-text-inverse);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.principleText {
+  margin: 0;
+  color: var(--color-text-inverse-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- Tarjetas (900 px o menos) ---------- */
+.cards {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cards > li + li {
+  border-top: 1px solid var(--color-ink-800);
+}
+
+.card {
+  position: relative;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.card:hover,
+.card:focus-within {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-primary-400) 7%, transparent),
+    transparent 70%
+  );
+}
+
+.cardFacts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+.cardFacts dt {
+  margin-bottom: var(--space-1);
+  color: var(--color-text-inverse-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cardFacts dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.cardWide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  .order {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .segments {
+    display: flex;
+  }
+
+  .segment {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .filter {
+    flex-basis: auto;
+  }
+
+  .cardFacts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment,
+  .filterInput,
+  .row,
+  .chevron,
+  .card {
+    transition: none;
+  }
+
+  .row:hover .chevron {
+    transform: none;
+  }
+}
