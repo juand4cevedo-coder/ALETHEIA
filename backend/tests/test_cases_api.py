@@ -1,6 +1,8 @@
 """Pruebas de las rutas para abrir un caso y ver su detalle (HU-015, API-022 y API-024)."""
 
+import base64
 import datetime
+import logging
 import uuid
 from collections.abc import Iterator
 from pathlib import Path
@@ -24,6 +26,7 @@ from app.api.organization import NOT_FOUND
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import Case, Organization, User
 from app.schemas.cases import INVALID_FILING_NUMBER
+from app.services import cases as cases_service
 from tests.conftest import NuevoCliente
 from tests.organizations import CLAVE, Oficina, crear_miembro, crear_oficina
 
@@ -224,6 +227,62 @@ def test_kms_caido_responde_503(app: FastAPI, dispositivo: NuevoCliente, db: Ses
     assert respuesta.status_code == 503
     assert respuesta.json()["detail"] == KEYS_UNAVAILABLE
     assert _contar_casos(db, oficina) == 0
+
+
+class _KmsQueNiega:
+    """Recibe la llave en claro, la anota y falla como falla KMS: con su código de error."""
+
+    def __init__(self) -> None:
+        self.recibida: bytes | None = None
+
+    def wrap(self, plaintext: bytes) -> WrappedKey:
+        self.recibida = plaintext
+        msg = "AWS KMS no envolvió la llave (AccessDeniedException)."
+        raise KeyWrapperError(msg)
+
+    def unwrap(self, wrapped: WrappedKey) -> bytes:  # pragma: no cover - no se usa
+        raise NotImplementedError
+
+
+def test_el_fallo_de_kms_queda_en_los_registros_sin_la_llave(
+    app: FastAPI, dispositivo: NuevoCliente, db: Session, caplog: pytest.LogCaptureFixture
+) -> None:
+    _, cliente = _como_dueno(dispositivo, db)
+    kms = _KmsQueNiega()
+    app.dependency_overrides[get_key_wrapper] = lambda: kms
+
+    with caplog.at_level(logging.ERROR, logger="app.api.cases"):
+        respuesta = cliente.post(_CASOS, json=_datos())
+
+    assert respuesta.status_code == 503
+    (registro,) = [r for r in caplog.records if r.name == "app.api.cases"]
+    assert registro.levelno == logging.ERROR
+    assert "AccessDeniedException" in registro.getMessage()
+    assert kms.recibida is not None
+    texto = caplog.text
+    for forma in (kms.recibida.hex(), repr(kms.recibida), base64.b64encode(kms.recibida).decode()):
+        assert forma not in texto
+
+
+def test_si_el_caso_recien_abierto_no_se_lee_responde_500(
+    dispositivo: NuevoCliente,
+    db: Session,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    _, cliente = _como_dueno(dispositivo, db)
+
+    def _no_lo_encuentra(*_: object) -> None:
+        raise cases_service.CaseNotFoundError
+
+    monkeypatch.setattr(cases_service, "get_case", _no_lo_encuentra)
+
+    with caplog.at_level(logging.ERROR, logger="app.api.cases"):
+        respuesta = cliente.post(_CASOS, json=_datos())
+
+    assert respuesta.status_code == 500
+    assert respuesta.headers["Cache-Control"] == "no-store"
+    assert [r.levelno for r in caplog.records if r.name == "app.api.cases"] == [logging.ERROR]
 
 
 def test_sin_cabecera_propia_responde_403(dispositivo: NuevoCliente, db: Session) -> None:

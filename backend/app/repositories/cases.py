@@ -52,6 +52,28 @@ def creator_state(session: Session, user_id: uuid.UUID, organization_id: uuid.UU
     return CreatorState(email_verified=verified_at is not None, organization_status=status)
 
 
+def creator_role_for_share(
+    session: Session, user_id: uuid.UUID, organization_id: uuid.UUID
+) -> tuple[str | None, str | None]:
+    """El rol de la persona y el estado de la organización, bloqueados en modo compartido.
+
+    Se leen dentro de la transacción que abre el caso: quitar a un miembro o cambiar su rol
+    toma FOR UPDATE sobre la membresía, así que espera a que el caso quede abierto o lo ve
+    después; lo mismo el cambio de estado de la organización. Sin membresía, el rol es None.
+    """
+    role = session.scalar(
+        select(Membership.role)
+        .where(Membership.organization_id == organization_id, Membership.user_id == user_id)
+        .with_for_update(read=True)
+    )
+    status = session.scalar(
+        select(Organization.status)
+        .where(Organization.id == organization_id)
+        .with_for_update(read=True)
+    )
+    return role, status
+
+
 def add_case(
     session: Session,
     *,

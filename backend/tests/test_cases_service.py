@@ -3,17 +3,26 @@ CA-HU-015-02)."""
 
 import datetime
 import uuid
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 
 from app.adapters.keys import KeyWrapperError, LocalKeyWrapper, WrappedKey
 from app.core.case_keys import open_case_key
 from app.core.legal import LEGAL_VERSION
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, Case, CaseMember, CustodyEvent, Organization, User
+from app.models import (
+    AuditLog,
+    Case,
+    CaseMember,
+    CustodyEvent,
+    Membership,
+    Organization,
+    User,
+)
 from app.services import custody_chain
 from app.services.cases import (
     CaseNotFoundError,
@@ -294,6 +303,92 @@ def test_si_kms_falla_no_queda_nada(llave_local: LocalKeyWrapper, db: Session) -
         _abrir(db, _principal(oficina, propietario, "owner"), falla)
 
     assert falla.llamadas == 1
+    assert _filas(db, oficina) == {
+        "cases": 0,
+        "case_members": 0,
+        "custody_events": 0,
+        "audit_log": 0,
+    }
+
+
+class _EnvoltorioQueCambia(EnvoltorioDePrueba):
+    """Mientras KMS envuelve la llave, alguien cambia el rol o el estado de la organización."""
+
+    def __init__(
+        self, real: LocalKeyWrapper, session: Session, cambio: Callable[[Session], None]
+    ) -> None:
+        super().__init__(real, session)
+        self._cambio = cambio
+
+    def wrap(self, plaintext: bytes) -> WrappedKey:
+        envuelta = super().wrap(plaintext)
+        self._cambio(self._session)
+        self._session.commit()
+        return envuelta
+
+
+def _degradar(oficina: Oficina, persona: User) -> Callable[[Session], None]:
+    def cambio(db: Session) -> None:
+        _contexto(db, oficina)
+        db.execute(
+            update(Membership)
+            .where(
+                Membership.organization_id == oficina.organization_id,
+                Membership.user_id == persona.id,
+            )
+            .values(role="assistant")
+        )
+
+    return cambio
+
+
+def _retirar(oficina: Oficina, persona: User) -> Callable[[Session], None]:
+    def cambio(db: Session) -> None:
+        _contexto(db, oficina)
+        db.execute(
+            delete(Membership).where(
+                Membership.organization_id == oficina.organization_id,
+                Membership.user_id == persona.id,
+            )
+        )
+
+    return cambio
+
+
+def _congelar(oficina: Oficina, _: User) -> Callable[[Session], None]:
+    def cambio(db: Session) -> None:
+        _contexto(db, oficina)
+        db.execute(
+            update(Organization)
+            .where(Organization.id == oficina.organization_id)
+            .values(status="read_only")
+        )
+
+    return cambio
+
+
+@pytest.mark.parametrize(
+    ("cambio", "error"),
+    [
+        (_degradar, NotAllowedToCreateCasesError),
+        (_retirar, NotAllowedToCreateCasesError),
+        (_congelar, OrganizationNotActiveError),
+    ],
+)
+def test_el_rol_y_el_estado_se_revisan_otra_vez_al_escribir(
+    llave_local: LocalKeyWrapper,
+    db: Session,
+    cambio: Callable[[Oficina, User], Callable[[Session], None]],
+    error: type[Exception],
+) -> None:
+    oficina = crear_oficina(db)
+    abogado = _persona(db, oficina, "lawyer")
+    envoltorio = _EnvoltorioQueCambia(llave_local, db, cambio(oficina, abogado))
+
+    with pytest.raises(error):
+        _abrir(db, _principal(oficina, abogado, "lawyer"), envoltorio)
+
+    assert envoltorio.llamadas == 1
     assert _filas(db, oficina) == {
         "cases": 0,
         "case_members": 0,

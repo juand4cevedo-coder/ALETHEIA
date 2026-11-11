@@ -5,6 +5,7 @@ servicio lo comprueba y esta capa traduce sus errores. Las respuestas llevan dat
 expediente, así que ningún intermediario guarda una copia, tampoco las de error.
 """
 
+import logging
 import uuid
 from typing import Annotated, Any, Final
 
@@ -16,7 +17,7 @@ from app.adapters.keys import KeyWrapper, KeyWrapperError
 from app.api import API_PREFIX
 from app.api.deps import NOT_ALLOWED, get_client_ip, get_key_wrapper, get_principal, get_session
 from app.api.organization import NOT_FOUND
-from app.core.errors import problem_response
+from app.core.errors import UNEXPECTED_ERROR, problem_response
 from app.schemas.cases import (
     INVALID_FILING_NUMBER,
     CaseCreate,
@@ -28,6 +29,8 @@ from app.schemas.cases import (
 from app.services import cases as cases_service
 from app.services.members import OrganizationNotActiveError
 from app.services.sessions import Principal
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/cases", tags=["casos"])
 
@@ -134,16 +137,24 @@ def create_case(
             headers=_NO_STORE,
             problem_type=FILING_NUMBER_TAKEN_PROBLEM,
         )
-    except KeyWrapperError:
+    except KeyWrapperError as exc:
+        # El mensaje solo nombra el código de error de KMS o el tipo de la excepción, nunca la
+        # llave: se puede registrar tal cual.
+        logger.error("No se pudo envolver la llave del caso: %s", exc)
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=KEYS_UNAVAILABLE,
             headers=_NO_STORE | {"Retry-After": _KMS_RETRY_SECONDS},
         ) from None
-    except cases_service.CaseNotFoundError:  # pragma: no cover - acaba de crearse
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail=NOT_FOUND, headers=_NO_STORE
-        ) from None
+    except cases_service.CaseNotFoundError:
+        # El caso se acaba de crear: no encontrarlo es un error del servidor, no un 404.
+        logger.error("El caso recién abierto no se pudo leer")
+        return problem_response(
+            request,
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=UNEXPECTED_ERROR,
+            headers=_NO_STORE,
+        )
     response.headers["Location"] = f"{API_PREFIX}{router.prefix}/{view.case.id}"
     return _case_out(view)
 

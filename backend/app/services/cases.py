@@ -94,6 +94,8 @@ def create_case(
     """Abre un caso (API-022, CA-HU-015-01).
 
     Si KMS falla, KeyWrapperError se propaga sin que se haya abierto la transacción de escritura.
+    El rol y el estado de la organización se comprueban antes de llamar a KMS y otra vez dentro
+    de la transacción de escritura, por si cambiaron mientras tanto.
     """
     organization_id = principal.organization_id
     if organization_id is None or principal.role not in CASE_CREATORS:
@@ -140,6 +142,15 @@ def create_case(
                 session,
                 TenantContext(organization_id=organization_id, user_id=principal.user_id),
             )
+            # El rol y el estado pudieron cambiar mientras KMS envolvía la llave: se leen otra
+            # vez, bloqueados hasta el commit, para que un cambio no se cruce con la escritura.
+            role, organization_status = cases_repository.creator_role_for_share(
+                session, principal.user_id, organization_id
+            )
+            if role not in CASE_CREATORS:
+                raise NotAllowedToCreateCasesError
+            if organization_status != "active":
+                raise OrganizationNotActiveError
             cases_repository.add_case(
                 session,
                 case=case,
