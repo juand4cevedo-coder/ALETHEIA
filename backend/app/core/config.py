@@ -1,6 +1,7 @@
 """Configuración del backend, leída de variables de entorno con prefijo ALETHEIA_."""
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Final, Literal, Self
 
 from pydantic import Field, PostgresDsn, Secret, field_validator, model_validator
@@ -95,6 +96,13 @@ class Settings(DatabaseSettings):
         description="Parámetro SecureString con la clave de firma de los tokens.",
     )
 
+    # Llave RSA-3072 en PEM con la que se envuelven las llaves de los casos fuera de producción
+    # (app.adapters.keys). En production la llave maestra vive en AWS KMS y este campo no se usa.
+    local_key_path: Path | None = Field(
+        default=None,
+        description="Ruta del PEM de la llave maestra local; solo fuera de production.",
+    )
+
     @property
     def public_url(self) -> str:
         """Dirección pública del sitio, sin barra final, para armar los enlaces de los correos."""
@@ -138,6 +146,14 @@ class Settings(DatabaseSettings):
             raise ValueError(msg)
         if self.environment != "production" and from_store:
             msg = "la clave solo se lee de Parameter Store con environment production"
+            raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def _production_has_no_local_key(self) -> Self:
+        # Una llave maestra en un archivo no protege nada: en producción solo manda KMS.
+        if self.environment == "production" and self.local_key_path is not None:
+            msg = "la llave local solo se usa fuera de production: ahí la maestra vive en KMS"
             raise ValueError(msg)
         return self
 

@@ -13,6 +13,7 @@ import {
   acceptLegalTerms,
   changeMemberRole,
   changePassword,
+  createCase,
   createInvitation,
   forgotPassword,
   health,
@@ -21,6 +22,7 @@ import {
   listPlans,
   type Options,
   previewInvitation,
+  readCase,
   readMe,
   refreshSession,
   registerAccount,
@@ -46,6 +48,9 @@ import type {
   ChangePasswordData,
   ChangePasswordError,
   ChangePasswordResponse,
+  CreateCaseData,
+  CreateCaseError,
+  CreateCaseResponse,
   CreateInvitationData,
   CreateInvitationError,
   CreateInvitationResponse,
@@ -67,6 +72,9 @@ import type {
   PreviewInvitationData,
   PreviewInvitationError,
   PreviewInvitationResponse,
+  ReadCaseData,
+  ReadCaseError,
+  ReadCaseResponse,
   ReadMeData,
   ReadMeError,
   ReadMeResponse,
@@ -860,3 +868,55 @@ export const acceptInvitationMutation = (
   };
   return mutationOptions;
 };
+
+/**
+ * Abrir un caso
+ */
+export const createCaseMutation = (
+  options?: Partial<Options<CreateCaseData>>,
+): UseMutationOptions<
+  CreateCaseResponse,
+  CreateCaseError,
+  Options<CreateCaseData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateCaseResponse,
+    CreateCaseError,
+    Options<CreateCaseData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createCase({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const readCaseQueryKey = (options: Options<ReadCaseData>) =>
+  createQueryKey("readCase", options);
+
+/**
+ * Ver un caso con su equipo y su cadena de custodia
+ */
+export const readCaseOptions = (options: Options<ReadCaseData>) =>
+  queryOptions<
+    ReadCaseResponse,
+    ReadCaseError,
+    ReadCaseResponse,
+    ReturnType<typeof readCaseQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await readCase({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: readCaseQueryKey(options),
+  });

@@ -45,3 +45,4 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-039](adr-039.md) | Alcance de Row-Level Security y autorización dentro de las funciones privilegiadas | Aceptado | 10/11/2026 |
 | [ADR-040](adr-040.md) | Cambiar el rol y retirar miembros: reglas y efecto inmediato | Aceptado | 10/11/2026 |
 | [ADR-041](adr-041.md) | Landing con voz editorial, hoja de expediente y entradas ligadas al desplazamiento | Aceptado | 10/11/2026 |
+| [ADR-042](adr-042.md) | Abrir un caso: llave envuelta antes de la transacción, radicado único y datos procesales opcionales | Aceptado | 10/11/2026 |
