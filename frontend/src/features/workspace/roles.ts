@@ -14,7 +14,8 @@ export const ROLE_LABELS: Record<Role, string> = {
   assistant: "Asistente",
 };
 
-// Qué puede hacer cada rol que se invita, con las palabras del Manual de Usuario (sección 4).
+// Qué puede hacer cada rol que se invita, a partir del Manual de Usuario (sección 4). Solo se
+// nombra lo que la plataforma ya hace: la carga de evidencias y la auditoría aún no existen.
 // El propietario no se invita: nace con la organización (RN-010).
 export const INVITABLE_ROLES: readonly {
   value: InvitableRole;
@@ -30,13 +31,12 @@ export const INVITABLE_ROLES: readonly {
     value: "assistant",
     label: ROLE_LABELS.assistant,
     description:
-      "Sube evidencias en los casos que le asignan; no descarga ni exporta.",
+      "Apoya los casos que le asignan, sin descargar ni exportar evidencias.",
   },
   {
     value: "admin",
     label: ROLE_LABELS.admin,
-    description:
-      "Gestiona el equipo, ve todos los casos y consulta la auditoría.",
+    description: "Gestiona el equipo y ve todos los casos de la organización.",
   },
 ];
 

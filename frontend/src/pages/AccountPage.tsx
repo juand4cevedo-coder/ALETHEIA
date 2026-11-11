@@ -8,7 +8,7 @@ import { Button } from "../components/ui/Button.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { newPasswordError } from "../features/auth/newPassword.ts";
@@ -45,7 +45,7 @@ export function AccountPage() {
 
   return (
     <section className={styles.screen} aria-labelledby="titulo-cuenta">
-      <title>{`Mi cuenta · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Mi cuenta")}</title>
       <meta name="robots" content="noindex" />
 
       <header className={styles.intro}>
@@ -186,7 +186,7 @@ function PasswordCard() {
     <Card
       icon={<LlaveIcon size={20} />}
       title="Contraseña"
-      description="Al cambiarla cerraremos la sesión en sus otros dispositivos; en este seguirá trabajando."
+      description="Al cambiarla se cierran sus sesiones en otros dispositivos. En este puede seguir trabajando."
     >
       {changed && (
         <Notice tone="success">
@@ -239,7 +239,9 @@ function PasswordCard() {
         </Field>
         <div className={styles.actions}>
           <Button type="submit" busy={change.isPending}>
-            {change.isPending ? "Guardando…" : "Cambiar la contraseña"}
+            {change.isPending
+              ? "Cambiando la contraseña"
+              : "Cambiar la contraseña"}
           </Button>
         </div>
       </form>
@@ -270,7 +272,7 @@ function SessionsCard() {
           onClick={session.signOut}
         >
           {session.pending === "device"
-            ? "Cerrando sesión…"
+            ? "Cerrando la sesión"
             : "Cerrar esta sesión"}
         </Button>
         <Button

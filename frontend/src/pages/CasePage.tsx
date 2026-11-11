@@ -12,7 +12,7 @@ import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { StatusBadge } from "../components/ui/StatusBadge.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { CustodyTimeline } from "../features/cases/CustodyTimeline.tsx";
@@ -59,7 +59,7 @@ export function CasePage() {
   if (detail.isPending) {
     return (
       <div className={styles.screen}>
-        <title>{`Caso · ${SITE_NAME}`}</title>
+        <title>{pageTitle("Caso")}</title>
         <meta name="robots" content="noindex" />
         <p className={styles.loading} role="status">
           <CargandoIcon
@@ -67,7 +67,7 @@ export function CasePage() {
             size={20}
             aria-hidden="true"
           />
-          Abriendo el caso…
+          Abriendo el caso
         </p>
       </div>
     );
@@ -78,7 +78,7 @@ export function CasePage() {
     const { requestId } = apiProblem(detail.error);
     return (
       <div className={styles.screen}>
-        <title>{`Caso no disponible · ${SITE_NAME}`}</title>
+        <title>{pageTitle("Caso no disponible")}</title>
         <meta name="robots" content="noindex" />
         <div className={styles.unavailable}>
           <PageHeader eyebrow="Caso" title="Caso no disponible" />
@@ -118,7 +118,7 @@ function referenceLine(detail: CaseDetail) {
   if (!detail.internal_reference) return "Sin radicado";
   return (
     <>
-      {"Sin radicado · ref. interna "}
+      {"Sin radicado, referencia interna "}
       <code translate="no">{detail.internal_reference}</code>
     </>
   );
@@ -179,7 +179,7 @@ function CaseView({
 
   return (
     <div className={styles.screen}>
-      <title>{`${detail.title} · ${SITE_NAME}`}</title>
+      <title>{pageTitle(detail.title)}</title>
       <meta name="robots" content="noindex" />
 
       {justOpened && (
@@ -248,7 +248,7 @@ function CaseView({
               </h2>
               <p className={styles.caption}>
                 Cada evento lleva el hash del anterior. Si alguien alterara uno,
-                la cadena dejaría de cerrar.
+                la cadena dejaría de cuadrar.
               </p>
               <CustodyTimeline
                 events={detail.recent_events}
@@ -353,9 +353,10 @@ function TeamList({ detail }: { detail: CaseDetail }) {
             <span className={styles.memberEmail}>{member.email}</span>
           </span>
           <span className={styles.role}>
-            {member === creator
-              ? `${ROLE_LABELS[member.role]} · abrió el caso`
-              : ROLE_LABELS[member.role]}
+            {ROLE_LABELS[member.role]}
+            {member === creator && (
+              <span className={styles.roleNote}>Abrió el caso</span>
+            )}
           </span>
         </li>
       ))}

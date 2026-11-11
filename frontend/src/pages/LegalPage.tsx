@@ -15,7 +15,12 @@ import {
   LEGAL_EFFECTIVE_DATE,
 } from "../config/legal.ts";
 import { LEGAL_PAGES, legalRoute, type LegalSlug } from "../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
+import {
+  CONTACT_EMAIL,
+  SITE_NAME,
+  SITE_URL,
+  pageTitle,
+} from "../config/site.ts";
 import { findLegalDocument } from "../features/legal/documents.ts";
 import { formatEffectiveDate } from "../features/legal/format.ts";
 import { extractPlainText, sha256Hex } from "../features/legal/plainText.ts";
@@ -148,7 +153,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
 
   return (
     <>
-      <title>{`${doc.title} · ${SITE_NAME}`}</title>
+      <title>{pageTitle(doc.title)}</title>
       <meta name="description" content={doc.description} />
       <link rel="canonical" href={`${SITE_URL}${legalRoute(doc.slug)}`} />
 
@@ -209,14 +214,14 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
               </p>
               <p className={styles.sealHash} aria-live="polite">
                 {fingerprint === null
-                  ? "Calculando la huella…"
+                  ? "Calculando la huella"
                   : (fingerprint.hash ??
                     "Su navegador no permite calcular la huella.")}
               </p>
               <p className={styles.sealNote}>
-                Se calcula en su navegador sobre el texto que está leyendo.
-                Descárguelo y compruebe que su huella es esta misma: así sabrá
-                que guardó exactamente la versión vigente.
+                Se calcula en su navegador sobre el texto que está leyendo. Si
+                descarga el texto y su huella coincide con esta, guardó
+                exactamente la versión vigente.
               </p>
               <div className={styles.sealActions}>
                 <button
@@ -228,7 +233,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
                   disabled={!fingerprint}
                 >
                   <DescargarIcon size={16} aria-hidden="true" />
-                  Descargar
+                  Descargar el texto
                 </button>
                 <button
                   type="button"

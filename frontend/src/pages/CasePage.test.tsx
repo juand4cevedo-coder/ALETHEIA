@@ -32,7 +32,7 @@ const ME = {
 
 const DETAIL = {
   id: CASE_ID,
-  title: "Despido sin justa causa · Torres",
+  title: "Despido sin justa causa, Torres",
   filing_number: RADICADO,
   court: "Juzgado 3 Laboral del Circuito de Bogotá",
   practice_area: "labor",
@@ -80,7 +80,7 @@ async function openCase(state?: { justOpened: boolean }) {
   });
   await screen.findByRole("heading", {
     level: 1,
-    name: "Despido sin justa causa · Torres",
+    name: "Despido sin justa causa, Torres",
   });
   return rendered;
 }
@@ -103,11 +103,13 @@ describe("Página del caso (HU-015)", () => {
       within(chips).getByText("Juzgado 3 Laboral del Circuito de Bogotá"),
     ).toBeInTheDocument();
     expect(
-      within(chips).getByText(/^Abierto el .*10:32 por Laura Gómez$/),
+      within(chips).getByText(
+        /^Abierto el 10 de noviembre de 2026 a las 10:32 a\. m\. por Laura Gómez$/,
+      ),
     ).toBeInTheDocument();
   });
 
-  it("muestra el evento 1 con su hash abreviado y la hora en UTC−5", async () => {
+  it("muestra el evento 1 con su hash abreviado y la hora de Colombia", async () => {
     serve(() => jsonResponse(DETAIL));
     await openCase();
 
@@ -117,10 +119,14 @@ describe("Página del caso (HU-015)", () => {
     const panel = screen.getByRole("tabpanel", { name: /Cadena de custodia/ });
     const event = within(panel).getByRole("listitem", { name: /Evento 1/ });
     expect(within(event).getByText("Caso creado")).toBeInTheDocument();
-    const time = within(event).getByText(/10:32:07 \(UTC−5\)$/);
+    const time = within(event).getByText(
+      /10:32:07 a\. m\. \(hora de Colombia\)$/,
+    );
     expect(time).toHaveAttribute("datetime", "2026-11-10T15:32:07Z");
-    expect(time.parentElement).toHaveTextContent(/^Laura Gómez · /);
-    const hash = within(event).getByText("9f2c 71d0 b8e4 … a41e");
+    expect(time.parentElement).toHaveTextContent(/^Laura Gómez, /);
+    // Inicio y final de la huella, sin puntos suspensivos entre ellos.
+    const hash = within(event).getByText(/^9f2c 71d0 b8e4/);
+    expect(hash).toHaveTextContent("9f2c 71d0 b8e4 a41e");
     expect(hash.closest("[translate='no']")).not.toBeNull();
     // El lector de pantalla recibe la huella completa.
     expect(within(event).getByText(EVENT_HASH)).toBeInTheDocument();
@@ -142,9 +148,8 @@ describe("Página del caso (HU-015)", () => {
     const member = within(panel).getByRole("listitem");
     expect(within(member).getByText("Laura Gómez")).toBeInTheDocument();
     expect(within(member).getByText("laura@example.com")).toBeInTheDocument();
-    expect(
-      within(member).getByText("Abogado · abrió el caso"),
-    ).toBeInTheDocument();
+    expect(within(member).getByText("Abogado")).toBeInTheDocument();
+    expect(within(member).getByText("Abrió el caso")).toBeInTheDocument();
   });
 
   it("no muestra «Editar datos», «Subir evidencia» ni «Verificar ahora»", async () => {
@@ -210,9 +215,9 @@ describe("Página del caso (HU-015)", () => {
     );
     await openCase();
 
-    const reference = screen.getByText(/^Sin radicado · ref\. interna/);
+    const reference = screen.getByText(/^Sin radicado, referencia interna/);
     expect(reference).toHaveTextContent(
-      "Sin radicado · ref. interna RA-2026-031",
+      "Sin radicado, referencia interna RA-2026-031",
     );
     expect(within(reference).getByText("RA-2026-031")).toHaveAttribute(
       "translate",

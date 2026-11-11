@@ -4,7 +4,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { forgotPasswordMutation } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME, SITE_URL } from "../config/site.ts";
+import { SITE_URL, pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { apiProblem } from "../features/auth/apiProblem.ts";
@@ -70,7 +70,7 @@ export function ForgotPasswordPage() {
 
   return (
     <>
-      <title>{`Recuperar la contraseña · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Recuperar la contraseña")}</title>
       <meta
         name="description"
         content="Pida un enlace para elegir una contraseña nueva en ALETHEIA."
@@ -103,7 +103,7 @@ export function ForgotPasswordPage() {
             <p>{MESSAGES.recoveryRequested}</p>
             <p>
               Lo pidió para <strong translate="no">{sentTo}</strong>. El enlace
-              vence en una hora y sirve una sola vez; si no le llega en unos
+              vence en una hora y sirve una sola vez. Si no le llega en unos
               minutos, revise la carpeta de spam.
             </p>
           </section>
@@ -150,7 +150,9 @@ export function ForgotPasswordPage() {
 
             <div className={styles.submit}>
               <Button type="submit" block busy={request.isPending}>
-                {request.isPending ? "Enviando…" : "Enviarme el enlace"}
+                {request.isPending
+                  ? "Enviando el enlace"
+                  : "Enviarme el enlace"}
               </Button>
             </div>
           </form>

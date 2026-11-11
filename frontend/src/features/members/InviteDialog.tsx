@@ -121,14 +121,16 @@ export function InviteDialog({ open, onClose, onInvited }: Props) {
             Cancelar
           </Button>
           <Button type="submit" form={formId} size="sm" busy={invite.isPending}>
-            {invite.isPending ? "Enviando…" : "Enviar invitación"}
+            {invite.isPending
+              ? "Enviando la invitación"
+              : "Enviar la invitación"}
           </Button>
         </>
       }
     >
       <p>
-        Le enviaremos un correo con un enlace para unirse a su organización. La
-        invitación vence en 72 horas y sirve una sola vez.
+        Le enviaremos un correo con un enlace para unirse a su organización. El
+        enlace vence en 72 horas y sirve una sola vez.
       </p>
       <form id={formId} noValidate onSubmit={handleSubmit}>
         <fieldset className={styles.fields}>

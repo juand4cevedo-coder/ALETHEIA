@@ -45,17 +45,18 @@ export function RemoveMemberDialog({
             busy={busy}
             onClick={() => member && onConfirm(member)}
           >
-            {busy ? "Retirando…" : "Retirar"}
+            {busy ? "Retirando a la persona" : "Retirar de la organización"}
           </Button>
         </>
       }
     >
       <p>
         <strong translate="no">{member?.full_name}</strong> perderá el acceso a
-        la organización y a sus casos, y se cerrarán sus sesiones ahora mismo.
-        Su cuenta sigue existiendo, y lo que hizo queda en la cadena de
-        custodia. Si cambia de opinión, puede invitarla de nuevo; el retiro
-        libera su cupo.
+        la organización y a sus casos. Sus sesiones se cierran en este momento.
+      </p>
+      <p>
+        Su cuenta sigue existiendo y lo que hizo queda en la cadena de custodia.
+        El cupo queda libre, y puede invitarla de nuevo si cambia de opinión.
       </p>
       {failure && (
         <Notice tone="error">

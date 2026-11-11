@@ -16,6 +16,14 @@
   word-spacing: 0.15em;
 }
 
+/* Lo que se omite de la huella abreviada: un trazo punteado, no puntos suspensivos. */
+.elision {
+  display: inline-block;
+  width: var(--space-4);
+  border-bottom: 1px dotted currentColor;
+  vertical-align: middle;
+}
+
 .copy {
   padding: 0;
   border: 0;

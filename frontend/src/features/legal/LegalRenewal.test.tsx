@@ -97,7 +97,9 @@ describe("Textos legales nuevos por aceptar (TT-012)", () => {
     await renderRoute("/app");
 
     await user.click(
-      await screen.findByRole("button", { name: "Aceptar y continuar" }),
+      await screen.findByRole("button", {
+        name: "Aceptar los textos vigentes",
+      }),
     );
 
     expect(
@@ -122,7 +124,7 @@ describe("Textos legales nuevos por aceptar (TT-012)", () => {
 
     await user.click(await screen.findByRole("checkbox"));
     await user.click(
-      screen.getByRole("button", { name: "Aceptar y continuar" }),
+      screen.getByRole("button", { name: "Aceptar los textos vigentes" }),
     );
 
     expect(
@@ -156,13 +158,13 @@ describe("Textos legales nuevos por aceptar (TT-012)", () => {
 
     await user.click(await screen.findByRole("checkbox"));
     await user.click(
-      screen.getByRole("button", { name: "Aceptar y continuar" }),
+      screen.getByRole("button", { name: "Aceptar los textos vigentes" }),
     );
 
     const alerta = await screen.findByRole("alert");
     expect(alerta).toHaveTextContent("Los textos cambiaron mientras los leía");
     expect(
-      within(alerta).getByRole("button", { name: "Recargar" }),
+      within(alerta).getByRole("button", { name: "Recargar la página" }),
     ).toBeInTheDocument();
     await waitFor(() => expect(alerta).toHaveFocus());
   });
@@ -203,7 +205,7 @@ describe("Salir sin aceptar (HU-009, ADR-032)", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: "Revisarlos más tarde y cerrar sesión",
+        name: "Cerrar la sesión y revisarlos después",
       }),
     );
 

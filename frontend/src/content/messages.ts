@@ -27,4 +27,4 @@ export const MESSAGES = {
 /** MSG-019. Error del sistema: el resto del mensaje lleva el correo y, si la API lo da, el
  * código de la solicitud. */
 export const SYSTEM_ERROR_LEAD =
-  "No pudimos completar la operación. Inténtelo de nuevo; si continúa, escríbanos a";
+  "No pudimos completar la operación. Inténtelo de nuevo. Si vuelve a pasar, escríbanos a";

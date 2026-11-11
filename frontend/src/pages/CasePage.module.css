@@ -274,6 +274,13 @@
   margin-left: auto;
   color: var(--color-text-inverse-muted);
   font-size: 12px;
+  text-align: right;
+}
+
+/* «Abrió el caso» va debajo del rol, no unido por un separador. */
+.roleNote {
+  display: block;
+  color: var(--text-3);
 }
 
 @media (max-width: 560px) {

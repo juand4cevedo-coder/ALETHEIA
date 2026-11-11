@@ -35,7 +35,7 @@ function me(role: Role, emailVerified = true) {
 function summary(overrides: Record<string, unknown>) {
   return {
     id: "01890a5d-ac96-774b-bcce-b302099a8090",
-    title: "Despido sin justa causa · Torres",
+    title: "Despido sin justa causa, Torres",
     filing_number: "11001310500320260014300",
     court: "Juzgado 3 Laboral del Circuito de Bogotá",
     practice_area: "labor",
@@ -75,7 +75,7 @@ const GOMEZ = summary({
 });
 const CONTRERAS = summary({
   id: "01890a5d-ac96-774b-bcce-b302099a8092",
-  title: "Acoso laboral · Contreras (prejudicial)",
+  title: "Acoso laboral, Contreras (prejudicial)",
   filing_number: null,
   court: null,
   internal_reference: "RA-2026-031",
@@ -86,7 +86,7 @@ const CONTRERAS = summary({
 });
 const ARCHIVED = summary({
   id: "01890a5d-ac96-774b-bcce-b302099a8093",
-  title: "Restitución de inmueble · Ortiz",
+  title: "Restitución de inmueble, Ortiz",
   status: "closed",
 });
 
@@ -162,7 +162,7 @@ beforeEach(() => {
 });
 
 describe("Libro de casos (HU-017)", () => {
-  it("sin casos muestra «Abra un caso y su cadena de custodia empieza a contar» y el botón", async () => {
+  it("sin casos muestra «Todavía no tiene casos» y el botón para abrir el primero", async () => {
     serve("lawyer", () => EMPTY);
     const user = userEvent.setup();
     const { router } = await openBook();
@@ -170,7 +170,7 @@ describe("Libro de casos (HU-017)", () => {
     expect(
       await screen.findByRole("heading", {
         level: 2,
-        name: /^Abra un caso y su cadena de custodia empieza a contar/,
+        name: "Todavía no tiene casos.",
       }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
@@ -190,7 +190,7 @@ describe("Libro de casos (HU-017)", () => {
     // Lo que ya ocurre se dice en presente; lo de la evidencia, que aún no se sube, en futuro.
     expect(
       screen.getByText(
-        "Cada caso recibe su propia llave de cifrado en el momento en que se abre.",
+        "Cada caso recibe su propia llave de cifrado al abrirse.",
       ),
     ).toBeInTheDocument();
     expect(
@@ -227,36 +227,40 @@ describe("Libro de casos (HU-017)", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("un asistente con casos los ve sin el botón «Abrir caso»", async () => {
+  it("un asistente con casos los ve sin el botón «Abrir un caso»", async () => {
     serve("assistant", () => BOOK);
     await openBook();
 
     await screen.findByRole("table");
     expect(
-      screen.queryByRole("link", { name: "Abrir caso" }),
+      screen.queryByRole("link", { name: "Abrir un caso" }),
     ).not.toBeInTheDocument();
   });
 
   it.each(["owner", "admin", "lawyer"] as const)(
-    "un %s ve «Abrir caso» y lleva al formulario",
+    "un %s ve «Abrir un caso» y lleva al formulario",
     async (role) => {
       serve(role, () => BOOK);
       const user = userEvent.setup();
       const { router } = await openBook();
 
-      await user.click(await screen.findByRole("link", { name: "Abrir caso" }));
+      await user.click(
+        await screen.findByRole("link", { name: "Abrir un caso" }),
+      );
       await waitFor(() =>
         expect(router.state.location.pathname).toBe("/app/casos/nuevo"),
       );
     },
   );
 
-  it("con el correo sin verificar, «Abrir caso» abre el aviso", async () => {
+  it("con el correo sin verificar, «Abrir un caso» abre el aviso", async () => {
     serve("lawyer", () => BOOK, false);
     const user = userEvent.setup();
     const { router } = await openBook();
 
-    await user.click(await screen.findByRole("button", { name: "Abrir caso" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Abrir un caso" }),
+    );
     const dialog = screen.getByRole("dialog", { name: "Verifique su correo" });
     expect(dialog).toHaveTextContent(
       "Verifique su correo para abrir casos. Le enviamos un enlace al crear la cuenta; si venció, pida uno nuevo.",
@@ -287,7 +291,7 @@ describe("Libro de casos (HU-017)", () => {
     }
   });
 
-  it("cada fila muestra el radicado por bloques o «Sin radicado · ref. interna …»", async () => {
+  it("cada fila muestra el radicado por bloques o «Sin radicado, referencia interna»", async () => {
     serve("lawyer", () => BOOK);
     await openBook();
 
@@ -302,19 +306,19 @@ describe("Libro de casos (HU-017)", () => {
       within(gomez!).getByText("05001 31 10 012 2026 00388 00"),
     ).toBeInTheDocument();
     expect(contreras).toHaveTextContent(
-      "Sin radicado · ref. interna RA-2026-031",
+      "Sin radicado, referencia interna RA-2026-031",
     );
     expect(contreras).toHaveTextContent("Sin actividad registrada");
     expect(contreras).toHaveTextContent("Aún sin despacho");
 
     // El título es el enlace al caso.
     const link = within(torres!).getByRole("link", {
-      name: "Despido sin justa causa · Torres",
+      name: "Despido sin justa causa, Torres",
     });
     expect(link).toHaveAttribute("href", `/app/casos/${TORRES.id}`);
     expect(within(torres!).getAllByRole("link")).toHaveLength(1);
-    expect(torres).toHaveTextContent("9 chats · 2 audios · 1 documento");
-    expect(gomez).toHaveTextContent("3 documentos · 1 imagen");
+    expect(torres).toHaveTextContent("9 chats, 2 audios, 1 documento");
+    expect(gomez).toHaveTextContent("3 documentos, 1 imagen");
 
     // La cadena: un sello pendiente se ve y se dice.
     expect(
@@ -354,7 +358,7 @@ describe("Libro de casos (HU-017)", () => {
 
     const table = await screen.findByRole("table", { name: /Casos cerrados/ });
     expect(
-      await within(table).findByText("Restitución de inmueble · Ortiz"),
+      await within(table).findByText("Restitución de inmueble, Ortiz"),
     ).toBeInTheDocument();
     expect(bookRequests().map((query) => query.get("status"))).toEqual([
       "open",
@@ -436,7 +440,7 @@ describe("Libro de casos (HU-017)", () => {
     await user.type(filter, "2026 00143");
     expect(within(table).getAllByRole("row").slice(1)).toHaveLength(1);
     expect(
-      within(table).getByText("Despido sin justa causa · Torres"),
+      within(table).getByText("Despido sin justa causa, Torres"),
     ).toBeInTheDocument();
 
     await user.clear(filter);
@@ -572,10 +576,10 @@ describe("Libro de casos (HU-017)", () => {
     expect(cards).toHaveLength(3);
     expect(
       within(cards[0]!).getByRole("link", {
-        name: "Despido sin justa causa · Torres",
+        name: "Despido sin justa causa, Torres",
       }),
     ).toBeInTheDocument();
-    expect(cards[0]).toHaveAccessibleName("Despido sin justa causa · Torres");
+    expect(cards[0]).toHaveAccessibleName("Despido sin justa causa, Torres");
   });
 
   it("el menú lateral lleva a Casos con el conteo de abiertos", async () => {

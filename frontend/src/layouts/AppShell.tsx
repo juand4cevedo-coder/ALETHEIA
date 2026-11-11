@@ -100,15 +100,15 @@ export function AppShell() {
                 size={16}
                 aria-hidden="true"
               />
-              Abriendo su espacio de trabajo…
+              Abriendo su espacio de trabajo
             </p>
           )}
           {me.isError && (
             <div className={styles.failure} role="alert">
               {/* MSG-019. */}
+              <p>No pudimos abrir su espacio de trabajo.</p>
               <p>
-                No pudimos abrir su espacio de trabajo. Inténtelo de nuevo; si
-                continúa, escríbanos a{" "}
+                Inténtelo de nuevo. Si vuelve a pasar, escríbanos a{" "}
                 <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
               </p>
               <Button

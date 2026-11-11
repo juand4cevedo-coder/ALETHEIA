@@ -96,9 +96,9 @@ export function CookiePanel({
       {view === "summary" ? (
         <>
           <p className={styles.text}>
-            Solo usamos las cookies necesarias para que usted inicie sesión de
-            forma segura. No usamos analítica ni publicidad, y cualquier cookie
-            opcional queda apagada hasta que usted la acepte.{" "}
+            Solo usamos las cookies necesarias para mantener su sesión. No
+            usamos analítica ni publicidad. Una cookie opcional queda apagada
+            hasta que usted la acepte.{" "}
             <Link to={legalRoute("cookies")}>Política de cookies</Link>
           </p>
           <div className={styles.actions}>
@@ -122,7 +122,7 @@ export function CookiePanel({
             className={styles.configure}
             onClick={openSettings}
           >
-            Configurar
+            Elegir una por una
           </button>
         </>
       ) : (
@@ -152,7 +152,7 @@ export function CookiePanel({
                 >
                   Medirían de forma anónima cómo se usa el sitio. Hoy no usamos
                   ninguna herramienta de este tipo, así que esta opción no
-                  activa nada; si algún día la agregamos, le volveremos a
+                  activa nada. Si algún día la agregamos, le volveremos a
                   preguntar.
                 </p>
               </div>

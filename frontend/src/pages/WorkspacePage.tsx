@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router";
 import type { Me } from "../api/generated";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./WorkspacePage.module.css";
@@ -21,7 +21,7 @@ export function WorkspacePage() {
 
   return (
     <section className={styles.screen} aria-labelledby="titulo-espacio">
-      <title>{`Espacio de trabajo · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Espacio de trabajo")}</title>
       <meta name="robots" content="noindex" />
 
       <header className={styles.intro}>
@@ -76,9 +76,9 @@ export function WorkspacePage() {
             Verifique su correo
           </h2>
           <p>
-            Abra el enlace que le enviamos al crear la cuenta. Mientras el
-            correo no esté verificado no podrá crear casos. Si el enlace venció
-            o no le llegó, pida uno nuevo.
+            Abra el enlace que le enviamos al crear la cuenta. Hasta entonces no
+            podrá abrir casos. Si el enlace venció o no le llegó, pida uno
+            nuevo.
           </p>
           <ResendVerification />
         </aside>

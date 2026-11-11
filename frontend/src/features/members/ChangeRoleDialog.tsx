@@ -92,14 +92,14 @@ export function ChangeRoleDialog({ member, onClose, onChanged }: Props) {
             Cancelar
           </Button>
           <Button type="submit" form={formId} size="sm" busy={change.isPending}>
-            {change.isPending ? "Guardando…" : "Guardar el rol"}
+            {change.isPending ? "Guardando el rol" : "Guardar el rol"}
           </Button>
         </>
       }
     >
       <p>
-        El nuevo rol de <strong translate="no">{member?.full_name}</strong> rige
-        desde su próxima petición, sin que tenga que volver a ingresar.
+        El nuevo rol de <strong translate="no">{member?.full_name}</strong> se
+        aplica desde su siguiente acción. No tendrá que volver a ingresar.
       </p>
       <form id={formId} noValidate onSubmit={handleSubmit}>
         <fieldset className={styles.fields}>

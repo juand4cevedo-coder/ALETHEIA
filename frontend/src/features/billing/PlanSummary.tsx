@@ -31,7 +31,7 @@ export function PlanSummary() {
       {isPending && (
         <div className={styles.grid} aria-busy="true">
           <p role="status" className="visually-hidden">
-            Cargando los planes…
+            Cargando los planes
           </p>
           {Array.from({ length: 4 }, (_, index) => (
             <div key={index} className={styles.skeleton} aria-hidden="true" />
@@ -54,7 +54,9 @@ export function PlanSummary() {
             disabled={isFetching}
           >
             <ActualizarIcon size={16} />
-            {isFetching ? "Reintentando…" : "Reintentar"}
+            {isFetching
+              ? "Cargando los precios"
+              : "Cargar los precios de nuevo"}
           </button>
         </div>
       )}
@@ -89,7 +91,7 @@ export function PlanSummary() {
           href={CORPORATE_QUOTE_URL}
         >
           <CorreoIcon size={16} />
-          Solicitar cotización
+          Pedir una cotización por correo
         </a>
       </div>
     </div>

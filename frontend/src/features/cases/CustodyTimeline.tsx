@@ -4,12 +4,13 @@ import { custodyActionLabel } from "./custodyActions.ts";
 import { formatColombiaTime } from "./dates.ts";
 import styles from "./CustodyTimeline.module.css";
 
-/** "9f2c 71d0 b8e4 … a41e": los primeros 12 caracteres en bloques de 4 y los últimos 4. Basta
- * para reconocer un evento a simple vista; la huella completa queda para el lector. */
-function abbreviateHash(hash: string): string {
+/** Los primeros 12 caracteres en bloques de 4 y los últimos 4, con un trazo punteado entre
+ * ambos en lugar de puntos suspensivos. Basta para reconocer un evento a simple vista; la huella
+ * completa queda para el lector de pantalla. */
+function abbreviateHash(hash: string): { head: string; tail: string } {
   const value = hash.toLowerCase();
   const head = value.slice(0, 12).match(/.{1,4}/g) ?? [];
-  return `${head.join(" ")} … ${value.slice(-4)}`;
+  return { head: head.join(" "), tail: value.slice(-4) };
 }
 
 type CustodyTimelineProps = {
@@ -42,17 +43,21 @@ export function CustodyTimeline({
             <div className={styles.body}>
               <p className={styles.name}>{custodyActionLabel(event.action)}</p>
               <p className={styles.meta}>
-                {`${event.actor_name ?? "Sistema"} · `}
+                {`${event.actor_name ?? "Sistema"}, `}
                 <time dateTime={event.occurred_at}>
                   {formatColombiaTime(event.occurred_at, { seconds: true })}
                 </time>
               </p>
               <p className={styles.hash}>
-                <span aria-hidden="true">{`#${event.seq} · `}</span>
+                <span className={styles.hashLabel} aria-hidden="true">
+                  {`#${event.seq}`}
+                </span>
                 <span className="visually-hidden">Hash del evento:</span>{" "}
                 <code translate="no">
                   <span aria-hidden="true">
-                    {abbreviateHash(event.event_hash)}
+                    {`${abbreviateHash(event.event_hash).head} `}
+                    <span className={styles.elision} />
+                    {` ${abbreviateHash(event.event_hash).tail}`}
                   </span>
                   <span className="visually-hidden">
                     {event.event_hash.toLowerCase()}

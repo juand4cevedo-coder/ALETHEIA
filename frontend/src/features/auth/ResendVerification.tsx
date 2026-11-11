@@ -49,8 +49,8 @@ export function ResendVerification() {
     return (
       <p className={styles.sent} role="status">
         Si hay una cuenta por verificar con <strong>{email.trim()}</strong>, le
-        enviamos un enlace nuevo. Revise su bandeja de entrada y la carpeta de
-        spam.
+        enviamos un enlace nuevo. Si no lo ve en la bandeja de entrada, revise
+        la carpeta de spam.
       </p>
     );
   }
@@ -86,7 +86,7 @@ export function ResendVerification() {
         onChange={(event) => setEmail(event.target.value)}
       />
       <Button type="submit" block busy={resend.isPending}>
-        {resend.isPending ? "Enviando…" : "Enviarme un enlace nuevo"}
+        {resend.isPending ? "Enviando el enlace" : "Enviarme un enlace nuevo"}
       </Button>
     </form>
   );

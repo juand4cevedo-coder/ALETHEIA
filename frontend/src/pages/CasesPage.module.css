@@ -410,6 +410,11 @@
   line-height: 1.4;
 }
 
+.whenAction {
+  display: block;
+  color: var(--color-text-inverse);
+}
+
 .when time {
   color: var(--color-text-inverse);
   font-weight: 500;
