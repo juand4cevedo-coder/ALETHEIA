@@ -1,6 +1,6 @@
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { ChevronRight, LoaderCircle, Plus, Search } from "lucide-react";
-import { type ReactNode, useId, useRef, useState } from "react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { Link, useOutletContext } from "react-router";
 
 import type { CaseSummaryOut, CaseTotalsOut, Me } from "../api/generated";
@@ -85,10 +85,13 @@ function matchesFilter(item: CaseSummaryOut, query: string): boolean {
   );
 }
 
-function loadedMessage(count: number): string {
+/** Cada carga dice también el total, para que el texto cambie siempre: dos páginas completas
+ * seguidas darían el mismo «Se cargaron 25 casos más.» y el lector de pantalla no anunciaría
+ * la segunda. */
+function loadedMessage(count: number, total: number): string {
   return count === 1
-    ? "Se cargó 1 caso más."
-    : `Se cargaron ${count} casos más.`;
+    ? `Se cargó 1 caso más; ${total} en total.`
+    : `Se cargaron ${count} casos más; ${total} en total.`;
 }
 
 function matchMessage(count: number, loaded: number): string {
@@ -108,7 +111,26 @@ export function CasesPage() {
   const [verifying, setVerifying] = useState(false);
   const cards = useMediaQuery(CARDS_QUERY);
   const bookRef = useRef<HTMLDivElement>(null);
+  // Casos recién cargados que deben recibir el foco cuando el botón desaparece.
+  const pendingFocus = useRef<string[] | null>(null);
   const filterId = useId();
+
+  // Tras pintar la última página, el foco pasa al primer caso nuevo que se vea. Si el filtro los
+  // oculta todos, va a la tabla o a la lista, para no perderse con el botón que ya no está.
+  useEffect(() => {
+    const ids = pendingFocus.current;
+    const root = bookRef.current;
+    if (!ids || !root) return;
+    pendingFocus.current = null;
+    const target =
+      ids
+        .map((id) =>
+          root.querySelector<HTMLElement>(`[data-case-link="${id}"]`),
+        )
+        .find((link) => link !== null) ??
+      root.querySelector<HTMLElement>("[data-book-focus]");
+    target?.focus();
+  });
 
   const book = useInfiniteQuery({
     queryKey: [
@@ -246,16 +268,14 @@ export function CasesPage() {
 
   async function loadMore() {
     const result = await book.fetchNextPage();
-    const page = result.data?.pages.at(-1);
-    if (result.isError || !page) return;
-    setLoadedNote(loadedMessage(page.items.length));
-    // El botón puede desaparecer con la última página: el foco pasa al primer caso nuevo.
-    const first = page.items[0];
-    if (first && !result.hasNextPage) {
-      bookRef.current
-        ?.querySelector<HTMLElement>(`[data-case-link="${first.id}"]`)
-        ?.focus();
+    const pages = result.data?.pages;
+    const page = pages?.at(-1);
+    if (result.isError || !pages || !page) return;
+    const total = pages.reduce((sum, current) => sum + current.items.length, 0);
+    if (!result.hasNextPage) {
+      pendingFocus.current = page.items.map((item) => item.id);
     }
+    setLoadedNote(loadedMessage(page.items.length, total));
   }
 
   return (
@@ -305,7 +325,11 @@ export function CasesPage() {
             autoComplete="off"
             spellCheck={false}
             value={filter}
-            onChange={(event) => setFilter(event.target.value)}
+            onChange={(event) => {
+              setFilter(event.target.value);
+              // Al escribir solo cambia el número de coincidencias: la carga ya se anunció.
+              setLoadedNote("");
+            }}
           />
         </div>
 
@@ -331,7 +355,7 @@ export function CasesPage() {
         ) : loaded.length === 0 ? (
           <p className={styles.none}>{NONE_IN_SEGMENT[status]}</p>
         ) : visible.length === 0 ? (
-          <p className={styles.none}>
+          <p className={styles.none} tabIndex={-1} data-book-focus="">
             {`Ningún caso cargado coincide con «${filter.trim()}».`}
           </p>
         ) : cards ? (
@@ -343,7 +367,9 @@ export function CasesPage() {
 
       <p className="visually-hidden" role="status">
         {filtering && !loadingSegment
-          ? matchMessage(visible.length, loaded.length)
+          ? [loadedNote, matchMessage(visible.length, loaded.length)]
+              .filter(Boolean)
+              .join(" ")
           : loadedNote}
       </p>
 
@@ -427,7 +453,12 @@ type ListProps = { items: CaseSummaryOut[]; caption: string };
 // Escritorio: una tabla real. Toda la fila lleva al caso, pero el único enlace es el título.
 function CaseTable({ items, caption }: ListProps) {
   return (
-    <table className={styles.table} data-layout="table">
+    <table
+      className={styles.table}
+      data-layout="table"
+      tabIndex={-1}
+      data-book-focus=""
+    >
       <caption className="visually-hidden">
         {`${caption}, del de actividad más reciente al más antiguo`}
       </caption>
@@ -474,7 +505,13 @@ function CaseTable({ items, caption }: ListProps) {
 // y los demás datos como una lista de definiciones.
 function CaseCards({ items, caption }: ListProps) {
   return (
-    <ul className={styles.cards} aria-label={caption} data-layout="cards">
+    <ul
+      className={styles.cards}
+      aria-label={caption}
+      data-layout="cards"
+      tabIndex={-1}
+      data-book-focus=""
+    >
       {items.map((item) => (
         <li key={item.id}>
           <CaseCard item={item} />

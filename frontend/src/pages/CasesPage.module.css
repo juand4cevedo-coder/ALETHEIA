@@ -170,6 +170,11 @@
   opacity: 0.7;
 }
 
+/* El foco llega aquí por programa, tras cargar más casos; no necesita anillo. */
+[data-book-focus]:focus {
+  outline: none;
+}
+
 .none {
   margin: 0;
   padding: var(--space-8) var(--space-6);
@@ -284,9 +289,13 @@
   overflow-wrap: anywhere;
 }
 
+/* Encima de las celdas posicionadas (la de integridad lleva el chevron), para que un clic en
+   cualquier punto de la fila llegue al enlace. Basta el nivel 1: queda bajo el encabezado de la
+   aplicación (30) y el menú de la cuenta (20), que deben seguir cubriendo la lista. */
 .title::after {
   content: "";
   position: absolute;
+  z-index: 1;
   inset: 0;
 }
 

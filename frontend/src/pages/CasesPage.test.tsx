@@ -375,11 +375,85 @@ describe("Libro de casos (HU-017)", () => {
     await waitFor(() =>
       expect(within(table).getAllByRole("row").slice(1)).toHaveLength(3),
     );
-    expect(screen.getByText("Se cargó 1 caso más.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Se cargó 1 caso más; 3 en total."),
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Cargar más casos" }),
     ).not.toBeInTheDocument();
     expect(bookRequests().at(-1)?.get("cursor")).toBe("c2");
+    // El botón desapareció: el foco pasa al primer caso nuevo.
+    expect(
+      within(table).getByRole("link", { name: CONTRERAS.title as string }),
+    ).toHaveFocus();
+  });
+
+  it("cada carga de una página completa se anuncia con un texto distinto", async () => {
+    const page = (cursor: string, next: string | null) => ({
+      items: Array.from({ length: 25 }, (_, index) =>
+        summary({
+          id: `01890a5d-ac96-774b-bcce-${cursor}${String(index).padStart(10, "0")}`,
+          title: `Caso ${cursor} ${index}`,
+        }),
+      ),
+      next_cursor: next,
+      totals: { ...TOTALS, open: 75 },
+    });
+    serve("lawyer", (query) => {
+      const cursor = query.get("cursor");
+      if (cursor === "c2") return page("c2", "c3");
+      if (cursor === "c3") return page("c3", null);
+      return page("c1", "c2");
+    });
+    const user = userEvent.setup();
+    await openBook();
+    const table = await screen.findByRole("table");
+    const status = () =>
+      screen
+        .getAllByRole("status")
+        .find((region) => region.textContent?.startsWith("Se carg"));
+
+    await user.click(screen.getByRole("button", { name: "Cargar más casos" }));
+    await waitFor(() =>
+      expect(status()).toHaveTextContent(
+        "Se cargaron 25 casos más; 50 en total.",
+      ),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Cargar más casos" }));
+    await waitFor(() =>
+      expect(status()).toHaveTextContent(
+        "Se cargaron 25 casos más; 75 en total.",
+      ),
+    );
+    expect(within(table).getAllByRole("row").slice(1)).toHaveLength(75);
+  });
+
+  it("con el filtro activo anuncia la carga y las coincidencias, y el foco no se pierde", async () => {
+    serve("lawyer", (query) =>
+      query.get("cursor") === "c2"
+        ? { items: [CONTRERAS], next_cursor: null, totals: TOTALS }
+        : { items: [TORRES, GOMEZ], next_cursor: "c2", totals: TOTALS },
+    );
+    const user = userEvent.setup();
+    await openBook();
+    const table = await screen.findByRole("table");
+    await user.type(
+      screen.getByRole("searchbox", { name: /Filtrar/ }),
+      "torres",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Cargar más casos" }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Se cargó 1 caso más; 3 en total. 1 de 3 casos cargados coincide.",
+        ),
+      ).toBeInTheDocument(),
+    );
+    // El caso nuevo no coincide con el filtro: el foco va a la tabla, no se pierde.
+    expect(table).toHaveFocus();
   });
 
   it("en 900 px o menos las filas pasan a tarjetas", async () => {
