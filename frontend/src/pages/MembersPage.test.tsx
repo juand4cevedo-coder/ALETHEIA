@@ -144,6 +144,12 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     expect(screen.getByText("laura@example.com")).toBeInTheDocument();
     expect(screen.getByRole("meter")).toHaveAttribute("aria-valuenow", "3");
     expect(screen.getByText(/de 8 usuarios en uso/)).toBeInTheDocument();
+    // Una invitación pendiente ocupa un cupo, en cualquier plan.
+    expect(
+      screen.getByText(
+        "Cuentan los miembros y las invitaciones que siguen abiertas.",
+      ),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
         name: "Revocar la invitación de laura@example.com",

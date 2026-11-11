@@ -18,11 +18,12 @@
 }
 
 /* Mientras carga, el panel vacío reserva el alto del cupo para que la página no salte: la cifra
-   (28 px), el medidor y el relleno. */
+   y el medidor. Con la caja de contenido, el relleno y el borde se suman solos, como en el
+   panel lleno. */
 .seats[aria-hidden="true"] {
+  box-sizing: content-box;
   min-height: calc(
-    var(--line-height-subtitle) + var(--space-3) + var(--dot-size) + 2 *
-      var(--space-4) + 2px
+    var(--line-height-subtitle) + var(--space-3) + var(--meter-height)
   );
 }
 
@@ -61,7 +62,7 @@
    plan lleno, el aviso de abajo dice lo que pasa. */
 .meter {
   display: block;
-  height: var(--dot-size);
+  height: var(--meter-height);
   overflow: hidden;
   border-radius: var(--radius-pill);
   background: var(--surface-2);

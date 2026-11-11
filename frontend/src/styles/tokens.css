@@ -163,9 +163,21 @@
   --panel-width: 448px;
   /* Pantallas de una columna del espacio de trabajo: el inicio, Mi cuenta y los avisos
      de error. Una ficha más ancha separa demasiado el rótulo de su valor. */
-  --column-width: 720px;
+  --screen-narrow-width: 720px;
   /* Columna de los rótulos de una ficha: el dato a la izquierda y su valor a la derecha. */
   --label-column: 160px;
+  /* Columna de integridad del libro de casos: la insignia «Sin verificar» y el chevron, uno al
+     lado del otro. En rem para que crezca con el texto si se agranda la letra. */
+  --status-column: 10.75rem;
+  /* Botón de la cuenta en el encabezado: el nombre de la organización cabe sin cortarse
+     antes de tiempo. */
+  --measure-menu: 46ch;
+  /* Ancho del panel flotante del menú de la cuenta. */
+  --menu-width: 320px;
+  /* Blanco táctil mínimo de una opción de menú (WCAG 2.5.5). */
+  --touch-target: 44px;
+  /* Alto de la barra de un medidor, como el del cupo del plan. */
+  --meter-height: 6px;
   /* Ancho del menú lateral del espacio de trabajo. */
   --sidebar-width: 224px;
   --header-height: 64px;

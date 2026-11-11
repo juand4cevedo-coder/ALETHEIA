@@ -389,10 +389,12 @@ function SeatsBar({
           <p id={meterId} className={styles.seatsCount}>
             <strong>{seats.used}</strong> de {seats.included} {users} en uso
           </p>
+          {/* En los dos tipos de plan una invitación pendiente ocupa un cupo; con usuarios
+              adicionales, ese cupo puede cobrarse. */}
           <p className={styles.seatsHint}>
-            {unlimited
-              ? "Su plan admite usuarios adicionales con cobro mensual."
-              : "Cuentan los miembros y las invitaciones que siguen abiertas."}
+            Cuentan los miembros y las invitaciones que siguen abiertas.
+            {unlimited &&
+              " Por encima del cupo, cada usuario adicional tiene cobro mensual."}
           </p>
         </div>
         <span

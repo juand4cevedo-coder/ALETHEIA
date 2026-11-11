@@ -117,6 +117,13 @@ describe("Página del caso (HU-015)", () => {
     expect(tab).toHaveAttribute("aria-selected", "true");
     expect(tab).toHaveTextContent("1");
     const panel = screen.getByRole("tabpanel", { name: /Cadena de custodia/ });
+    // La navegación por encabezados encuentra la cadena aunque su título no se vea.
+    expect(
+      within(panel).getByRole("heading", {
+        level: 2,
+        name: "Cadena de custodia",
+      }),
+    ).toBeInTheDocument();
     const event = within(panel).getByRole("listitem", { name: /Evento 1/ });
     expect(within(event).getByText("Caso creado")).toBeInTheDocument();
     const time = within(event).getByText(
