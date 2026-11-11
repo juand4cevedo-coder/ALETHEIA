@@ -11,13 +11,13 @@ from contextlib import contextmanager
 from typing import Any, get_args
 
 import pytest
-from sqlalchemy import Engine, event
+from sqlalchemy import Engine, delete, event
 from sqlalchemy.orm import Session
 
 from app.api.cases import INVALID_CURSOR
 from app.core.legal import LEGAL_VERSION
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import Case, CaseMember, CustodyEvent, Evidence, User
+from app.models import Case, CaseMember, CustodyEvent, Evidence, Membership, User
 from app.models.evidence import DECLARED_TYPES
 from app.schemas.cases import DeclaredType
 from app.services.cases import InvalidCursorError, initials, list_cases
@@ -202,6 +202,30 @@ def test_cada_caso_trae_su_actividad(db: Session) -> None:
     assert item.last_event.actor_name == oficina.owner.full_name
     assert item.last_event.occurred_at == _AHORA - datetime.timedelta(minutes=3)
     assert item.last_activity_at == item.last_event.occurred_at
+
+
+def test_el_equipo_cuenta_solo_a_quienes_siguen_en_la_organizacion(db: Session) -> None:
+    # Igual que el detalle del caso: quien salió de la organización ya no es parte del equipo.
+    oficina = crear_oficina(db, nombre="Restrepo")
+    abogada = crear_miembro(db, oficina, "abogada@example.com", "lawyer")
+    asistente = crear_miembro(db, oficina, "asistente@example.com", "assistant")
+    _caso(db, oficina, [oficina.owner, abogada, asistente])
+    set_tenant(db, TenantContext(organization_id=oficina.organization_id, user_id=oficina.owner.id))
+    db.execute(
+        delete(Membership).where(
+            Membership.organization_id == oficina.organization_id,
+            Membership.user_id == abogada.id,
+        )
+    )
+    db.flush()
+    set_tenant(db, TenantContext())
+
+    (item,) = list_cases(
+        db, _principal(oficina, oficina.owner), status="open", cursor=None, limit=25
+    ).items
+
+    assert item.member_count == 2
+    assert item.member_initials == ["AR", "CG"]
 
 
 def test_ordena_por_ultima_actividad_y_pagina_por_cursor(db: Session) -> None:
