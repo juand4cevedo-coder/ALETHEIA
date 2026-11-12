@@ -87,10 +87,10 @@ a {
   }
 }
 
-/* Al imprimir, tinta oscura sobre el papel blanco. */
+/* Al imprimir, tinta oscura sobre el papel blanco (tokens.css cambia los tonos). */
 @media print {
   body {
-    color: var(--bg);
+    color: var(--text);
     background: none;
   }
 }
