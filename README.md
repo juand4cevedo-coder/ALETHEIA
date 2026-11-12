@@ -180,11 +180,11 @@ El código del frontend se organiza así (ADR-021):
 
 | Carpeta | Contenido |
 | --- | --- |
-| `src/routes` | Las rutas del sitio con React Router |
+| `src/routes` | Las rutas del sitio con React Router y `QueryRoot`, el proveedor de TanStack Query del acceso y del espacio de trabajo |
 | `src/layouts` | Los marcos que comparten varias páginas, como el encabezado y el pie del sitio público |
 | `src/pages` | Una página por ruta |
 | `src/features/<dominio>` | Componentes y funciones de un dominio, por ejemplo `billing` para planes y precios |
-| `src/components/ui` | Componentes del sistema de diseño que usan varias páginas: botón, huella, entrada al desplazarse (`Reveal`) y luz que sigue al puntero (`useSpotlight`) |
+| `src/components/ui` | Componentes del sistema de diseño que usan varias páginas: botón, campo, huella, número de radicado, insignia de estado e íconos (`icons.tsx`) |
 | `src/features/landing` | Las secciones de la página de inicio, una por archivo |
 | `src/features/legal` | El texto de las cuatro políticas legales, uno por archivo, que muestra la página `/legal/<política>` |
 | `src/features/consent` | El panel de cookies y la elección del visitante, que se guarda en el almacenamiento local del navegador |
@@ -195,7 +195,15 @@ El código del frontend se organiza así (ADR-021):
 | `src/api/generated` | El cliente generado desde el contrato; no se edita a mano |
 | `src/api/runtimeConfig.ts` | La configuración con que nace el cliente generado: el encabezado propio que la API exige contra CSRF |
 
-Los datos de la API se piden con TanStack Query y las opciones que genera Hey API, por ejemplo `useQuery(listPlansOptions())`. Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css`. Los íconos se importan de `lucide-react` uno por uno (ADR-023).
+El acceso y el espacio de trabajo piden los datos de la API con TanStack Query y las opciones que genera Hey API, por ejemplo `useQuery(readMeOptions())`. El proveedor lo monta `src/routes/QueryRoot.tsx`, que se descarga con esas pantallas. El sitio público no usa TanStack Query: el inicio y la página de precios leen el catálogo de planes con `usePlanCatalog()` (`src/features/billing/catalog.tsx`), un `fetch` pequeño que la landing carga sin el resto del cliente.
+
+Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css` (ADR-043). Una prueba falla si algún archivo usa los nombres del sistema anterior, como `--color-ink-900`. Al imprimir, `tokens.css` cambia los tonos de texto, enlaces y estados a tinta oscura sobre blanco.
+
+Los íconos se importan solo de `src/components/ui/icons.tsx`: Phosphor en peso regular, copiado en `src/components/ui/icons/` con un archivo por ícono, más cuatro propios (huella, sello, cadena y paquete). Para agregar uno, se copia su trazado regular de Phosphor en un archivo nuevo de esa carpeta, igual a los demás, y se exporta desde `icons.tsx`. Como cada ícono vive en su archivo, cada pantalla descarga solo los que dibuja.
+
+Las fuentes son Geist y Geist Mono, de `@fontsource-variable`, alojadas en el propio sitio: solo el subconjunto latino, un archivo woff2 variable por familia (`src/styles/fonts.css`). Mientras cargan se ve la fuente del sistema, y Geist se precarga en `index.html`.
+
+La landing tiene un presupuesto de carga (especificación de identidad, sección 8): menos de 120 KB de JavaScript inicial comprimido y menos de 30 KB de CSS. Cuenta lo que `dist/index.html` carga o precarga después de `pnpm build`; las secciones debajo del primer pantallazo llegan aparte (`src/features/landing/BelowFold.tsx`). Para revisarlo, se corre `pnpm build` y se suman los tamaños comprimidos que Vite muestra para los archivos que nombra `dist/index.html`.
 
 Las políticas legales comparten una sola versión y fecha de vigencia, definidas en `src/config/legal.ts`. Si un cambio de texto altera derechos u obligaciones, se sube la versión ahí y en ningún otro lugar: el registro guarda qué versión aceptó cada persona.
 

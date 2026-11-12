@@ -1,23 +1,16 @@
 import "./styles/fonts.css";
 import "./styles/global.css";
 
-import { QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 
-import { createQueryClient } from "./api/queryClient.ts";
 import { router } from "./routes/router.tsx";
 
-// Una respuesta se considera vigente un minuto, lo mismo que la API permite guardarla.
-const queryClient = createQueryClient({
-  queries: { staleTime: 60_000, retry: 2 },
-});
-
+// TanStack Query no se monta aquí: lo trae el marco del acceso y del espacio de trabajo
+// (routes/QueryRoot.tsx), para que la landing no lo descargue.
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <RouterProvider router={router} />
   </StrictMode>,
 );
