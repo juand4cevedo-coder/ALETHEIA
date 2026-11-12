@@ -441,7 +441,7 @@
 @media print {
   .shell {
     background: none;
-    color: var(--color-text-primary);
+    color: var(--text);
   }
 
   .skipLink,

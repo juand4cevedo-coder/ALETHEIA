@@ -1,6 +1,6 @@
 /// <reference types="node" />
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
@@ -41,4 +41,33 @@ describe("tokens.css", () => {
       expect(declaredValue(name)?.toLowerCase()).toBe(value.toLowerCase());
     },
   );
+});
+
+// Nombres del sistema anterior que el puente traducía a los tokens nuevos. Ya no existen: un
+// módulo que los use se quedaría sin color, tamaño o duración sin que nada falle.
+const RETIRED_TOKENS =
+  /--color-[a-z0-9]|--shadow-raised\b|--font-display\b|--motion-(?:flash|slow)\b/;
+const SRC = join(import.meta.dirname, "..");
+
+function sourceFiles(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    if (name === "generated" || name === "node_modules") return [];
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) return sourceFiles(path);
+    return /\.(css|ts|tsx)$/.test(name) && !name.endsWith(".test.ts")
+      ? [path]
+      : [];
+  });
+}
+
+describe("tokens retirados", () => {
+  it("ningún archivo de src usa los nombres del sistema anterior", () => {
+    // Este archivo nombra los tokens retirados en la expresión que los busca.
+    const offenders = sourceFiles(SRC).filter(
+      (path) =>
+        path !== import.meta.filename &&
+        RETIRED_TOKENS.test(readFileSync(path, "utf8")),
+    );
+    expect(offenders.map((path) => relative(SRC, path))).toEqual([]);
+  });
 });

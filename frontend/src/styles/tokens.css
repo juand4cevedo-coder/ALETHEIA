@@ -25,56 +25,11 @@
   --warn: #f2b33d;
   --err: #f2665a;
 
-  /* Puente temporal: los nombres viejos apuntan a los colores nuevos para que todo el sitio
-     adopte la paleta de una vez. Se retira cuando ningún módulo los use. */
-  --color-primary-700: var(--accent-strong);
-  --color-primary-600: var(--accent);
-  --color-primary-400: var(--accent);
-  --color-primary-300: var(--accent-strong);
-  --color-primary-50: var(--accent-strong);
-  --color-brand-navy: var(--surface-2);
-  --color-brand-blue: var(--accent);
-  --color-success-600: var(--ok);
-  --color-success-400: var(--ok);
-  --color-error-400: var(--err);
-  --color-warning-400: var(--warn);
-  --color-gold-400: var(--warn);
-
-  --color-canvas: var(--bg);
-  --color-surface: var(--surface-2);
-  --color-ink-1000: var(--bg);
-  --color-ink-950: var(--bg);
-  --color-ink-925: var(--bg);
-  --color-ink-900: var(--surface-1);
-  --color-ink-850: var(--surface-1);
-  --color-ink-800: var(--surface-2);
-  --color-ink-700: var(--line);
-  --color-ink-650: var(--line-control);
-  /* También se usa como texto (separadores del pie): va al tono de apoyo, que pasa 4,5:1. */
-  --color-ink-600: var(--text-3);
-
-  --color-text-primary: var(--text);
-  --color-text-secondary: var(--text-2);
-  --color-text-muted: var(--text-3);
-  --color-text-inverse: var(--text);
-  --color-text-inverse-muted: var(--text-2);
-
-  --color-border-control: var(--line-control);
-  --color-border-subtle: var(--line);
-
-  --color-paper: var(--surface-1);
-  --color-paper-ink: var(--text);
-  --color-paper-muted: var(--text-2);
-  --color-paper-rule: var(--line);
-  --color-paper-error: var(--err);
-
   /* Geist para todo y Geist Mono para huellas, radicados, horas exactas y códigos. */
   --font-sans:
     "Geist Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono:
     "Geist Mono Variable", ui-monospace, "Cascadia Mono", Consolas, monospace;
-  /* Puente temporal: los titulares ya no usan serif. */
-  --font-display: var(--font-sans);
 
   /* Tipografía (especificación de identidad, sección 4): tamaño, interlineado y espaciado de
      cada rol. El sufijo -sm es la versión para celular. */
@@ -138,14 +93,9 @@
 
   /* La única sombra del sistema, solo para menús y diálogos que flotan sobre la página. */
   --shadow-float: 0 12px 32px rgb(0 0 0 / 45%);
-  /* Puente temporal para la landing, que se rehace en otra tarea. */
-  --shadow-raised: var(--shadow-float);
 
   --motion-fast: 120ms;
   --motion-base: 200ms;
-  --motion-slow: 700ms;
-  /* Destello de los caracteres que cambian en la demostración de la huella. */
-  --motion-flash: 600ms;
   /* Una vuelta de la rueda que dice que una acción está en curso. */
   --motion-spin: 900ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
@@ -187,12 +137,23 @@
   --underline-offset: 3px;
 }
 
-/* Al imprimir, el puente vuelve a tinta oscura: el papel es blanco y los navegadores no
-   imprimen los fondos. */
+/* Al imprimir, tinta oscura sobre papel blanco. Los roles de texto y los enlaces pasan a los
+   tonos más oscuros del sistema (19:1, 17:1 y 5,2:1 sobre blanco) y las superficies, a blanco,
+   por si el navegador imprime los fondos. Los estados también pasan a tinta: en papel el verde,
+   el ámbar y el rojo no llegan a 4,5:1, y cada estado ya lleva la palabra que lo dice. El
+   violeta de la acción y su texto no cambian: un botón impreso se sigue leyendo. */
 @media print {
   :root {
-    --color-text-primary: var(--bg);
-    --color-primary-700: var(--bg);
-    --color-border-subtle: var(--line-control);
+    --bg: #ffffff;
+    --surface-1: #ffffff;
+    --surface-2: #ffffff;
+    --line: #646d80;
+    --text: #0d0f13;
+    --text-2: #191d25;
+    --text-3: #646d80;
+    --accent-strong: #0d0f13;
+    --ok: #0d0f13;
+    --warn: #0d0f13;
+    --err: #0d0f13;
   }
 }

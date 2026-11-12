@@ -592,9 +592,9 @@
   }
 }
 
-/* Al imprimir queda el texto con su huella: sin selector, sin índice ni botones, en tinta
-   oscura sobre blanco. La tinta es el color del fondo de pantalla, el más oscuro del sistema,
-   y las líneas son las de los controles, que se ven sobre papel. */
+/* Al imprimir queda el texto con su huella: sin selector, sin índice ni botones. La tinta
+   oscura sobre blanco sale de tokens.css, que cambia los tonos de texto, enlaces y líneas para
+   el papel; aquí solo se acomoda la página. */
 @media print {
   .head {
     margin-top: 0;
@@ -623,29 +623,8 @@
     background: none;
   }
 
-  .title,
-  .facts dt,
-  .facts dd,
-  .sealLabel,
-  .sealHash,
-  .sectionNumber,
-  .sectionTitle,
-  .basis,
-  .prose,
-  .prose strong,
-  .prose h3,
-  .prose th,
-  .prose a,
-  .contactTitle,
-  .contact a,
-  .contactList dt,
-  .contactList dd {
-    color: var(--bg);
-  }
-
   .prose code {
     background: none;
-    color: var(--bg);
   }
 
   .sectionNumber {
