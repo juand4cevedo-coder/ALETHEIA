@@ -133,6 +133,8 @@
   --header-height: 64px;
   /* Alto mínimo de las filas de tabla (especificación de identidad, sección 7). */
   --row-height: 52px;
+  /* Alto de una pantalla completa, para reservar el sitio de lo que aún se descarga. */
+  --viewport-fill: 100vh;
   /* Distancia del subrayado de los enlaces al texto. */
   --underline-offset: 3px;
 }

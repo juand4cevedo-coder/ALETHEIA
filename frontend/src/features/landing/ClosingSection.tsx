@@ -1,9 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-
-import { listPlansOptions } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../../config/routes.ts";
 import { SIGN_UP_LABEL } from "../../config/site.ts";
+import { usePlanCatalog } from "../billing/catalog.tsx";
 import { trialDays } from "../billing/plans.ts";
 import styles from "./ClosingSection.module.css";
 import section from "./Section.module.css";
@@ -11,7 +9,7 @@ import section from "./Section.module.css";
 // Cierre del inicio: una sola acción. Los días de prueba salen del catálogo; sin él, la frase no
 // da una cifra.
 export function ClosingSection() {
-  const { data: plans } = useQuery(listPlansOptions());
+  const { plans } = usePlanCatalog();
   const days = plans ? trialDays(plans) : null;
 
   return (

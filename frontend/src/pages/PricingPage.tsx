@@ -1,11 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router";
 
-import { listPlansOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { legalRoute, ROUTES } from "../config/routes.ts";
 import { SIGN_UP_LABEL, SITE_URL, pageTitle } from "../config/site.ts";
+import {
+  PlanCatalogProvider,
+  usePlanCatalog,
+} from "../features/billing/catalog.tsx";
 import {
   annualMonthsSaved,
   type BillingCycle,
@@ -18,8 +20,16 @@ import styles from "./PricingPage.module.css";
 // alinean entre planes y el selector cambia todos los precios a la vez. Hay una sola acción
 // principal, crear la cuenta, porque toda cuenta nueva empieza con la prueba sin elegir plan.
 export function PricingPage() {
+  return (
+    <PlanCatalogProvider>
+      <Pricing />
+    </PlanCatalogProvider>
+  );
+}
+
+function Pricing() {
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
-  const { data: plans } = useQuery(listPlansOptions());
+  const { plans } = usePlanCatalog();
   const monthsSaved = plans ? annualMonthsSaved(plans) : null;
   const days = plans ? trialDays(plans) : null;
 

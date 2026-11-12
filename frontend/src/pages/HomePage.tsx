@@ -1,19 +1,24 @@
+import { lazy, Suspense } from "react";
+
 import { pageTitle, SITE_URL } from "../config/site.ts";
-import { ClosingSection } from "../features/landing/ClosingSection.tsx";
-import { FaqSection } from "../features/landing/FaqSection.tsx";
+import { PlanCatalogProvider } from "../features/billing/catalog.tsx";
 import { Hero } from "../features/landing/Hero.tsx";
-import { HowItWorks } from "../features/landing/HowItWorks.tsx";
-import { PlansSection } from "../features/landing/PlansSection.tsx";
 import { ProblemSection } from "../features/landing/ProblemSection.tsx";
-import { ScopeSection } from "../features/landing/ScopeSection.tsx";
-import { StandardsSection } from "../features/landing/StandardsSection.tsx";
-import { VerifierSection } from "../features/landing/VerifierSection.tsx";
+import styles from "./HomePage.module.css";
+
+// Lo que queda debajo del primer pantallazo llega aparte (BelowFold.tsx).
+const BelowFold = lazy(() =>
+  import("../features/landing/BelowFold.tsx").then((module) => ({
+    default: module.BelowFold,
+  })),
+);
 
 // Página de inicio (UI-001, HU-001). Cada sección responde una pregunta del abogado, en el
-// orden en que se la hace (especificación de identidad, sección 11).
+// orden en que se la hace (especificación de identidad, sección 11). El titular, los planes y
+// el cierre leen el mismo catálogo, pedido una sola vez.
 export function HomePage() {
   return (
-    <>
+    <PlanCatalogProvider>
       <title>
         {pageTitle("Preservación de evidencia digital para abogados")}
       </title>
@@ -25,13 +30,18 @@ export function HomePage() {
 
       <Hero />
       <ProblemSection />
-      <HowItWorks />
-      <StandardsSection />
-      <ScopeSection />
-      <VerifierSection />
-      <PlansSection />
-      <FaqSection />
-      <ClosingSection />
-    </>
+      {/* Mientras llega, el espacio reservado mantiene el pie fuera de la vista. */}
+      <Suspense
+        fallback={
+          <div
+            className={styles.pending}
+            aria-busy="true"
+            data-route-loading=""
+          />
+        }
+      >
+        <BelowFold />
+      </Suspense>
+    </PlanCatalogProvider>
   );
 }

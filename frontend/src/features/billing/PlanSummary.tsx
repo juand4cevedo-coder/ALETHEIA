@@ -1,7 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-
-import { listPlansOptions } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { buttonClassName } from "../../components/ui/buttonStyles.ts";
+import { usePlanCatalog } from "./catalog.tsx";
 import type { BillingCycle } from "./format.ts";
 import { PlanCard } from "./PlanCard.tsx";
 import cards from "./PlanCard.module.css";
@@ -27,13 +25,7 @@ export function PlanSummary({
   cycle = "monthly",
   headingLevel = 3,
 }: PlanSummaryProps) {
-  const {
-    data: plans,
-    isPending,
-    isError,
-    isFetching,
-    refetch,
-  } = useQuery(listPlansOptions());
+  const { plans, isPending, isError, isFetching, refetch } = usePlanCatalog();
   const Heading = headingLevel === 2 ? "h2" : "h3";
 
   return (
@@ -58,7 +50,7 @@ export function PlanSummary({
           <button
             type="button"
             className={buttonClassName({ variant: "secondary", size: "sm" })}
-            onClick={() => void refetch()}
+            onClick={refetch}
             disabled={isFetching}
           >
             <ActualizarIcon size={16} />

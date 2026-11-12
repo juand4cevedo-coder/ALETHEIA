@@ -275,7 +275,9 @@ describe("Encabezado con sesión abierta (Diseño UX/UI, 4.2)", () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     await renderRoute("/");
 
-    const header = screen.getByRole("banner");
+    // El primero es el del sitio. jsdom también cuenta como encabezado el de cada tarjeta de
+    // plan, que llega con el catálogo.
+    const [header] = screen.getAllByRole("banner");
     expect(
       within(header).getByRole("link", { name: "Ingresar" }),
     ).toHaveAttribute("href", "/ingresar");
@@ -286,7 +288,9 @@ describe("Encabezado con sesión abierta (Diseño UX/UI, 4.2)", () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     await renderRoute("/");
 
-    const header = screen.getByRole("banner");
+    // El primero es el del sitio. jsdom también cuenta como encabezado el de cada tarjeta de
+    // plan, que llega con el catálogo.
+    const [header] = screen.getAllByRole("banner");
     expect(
       within(header).getByRole("link", { name: "Ir a mis casos" }),
     ).toHaveAttribute("href", "/app");
