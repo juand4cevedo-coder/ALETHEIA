@@ -87,7 +87,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Hola de nuevo",
+        name: "Ingrese a su cuenta",
       }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Correo electrónico")).toHaveAttribute(
@@ -99,7 +99,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
       "current-password",
     );
     expect(
-      screen.getByRole("link", { name: "Crear cuenta gratis" }),
+      screen.getByRole("link", { name: "Crear una cuenta" }),
     ).toHaveAttribute("href", "/registro");
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
@@ -222,7 +222,7 @@ describe("Acceso con una sesión abierta (Diseño UX/UI, 4.2)", () => {
     await renderRoute("/ingresar");
 
     expect(
-      await screen.findByRole("heading", { name: "Hola de nuevo" }),
+      await screen.findByRole("heading", { name: "Ingrese a su cuenta" }),
     ).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -252,7 +252,7 @@ describe("Acceso con una sesión abierta (Diseño UX/UI, 4.2)", () => {
     );
     expect(router.state.location.pathname).toBe("/ingresar");
     expect(
-      screen.getByRole("heading", { name: "Hola de nuevo" }),
+      screen.getByRole("heading", { name: "Ingrese a su cuenta" }),
     ).toBeInTheDocument();
   });
 });

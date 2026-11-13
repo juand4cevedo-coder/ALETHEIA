@@ -1,134 +1,130 @@
-/* Marco de acceso: una columna centrada que se desplaza sobre la escena fija del alba
-   (AuthScene). Todo lo visible va por encima de la escena. */
 .shell {
-  position: relative;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background: var(--color-ink-950);
-  color: var(--color-text-inverse);
+  background: #000 url("/media/auth-1920.webp") center / cover fixed;
 }
-
-/* El contenido va por encima de la escena, que está fija detrás. */
-.header,
-.main,
-.footer {
-  position: relative;
-  z-index: 1;
-}
-
-.shell :where(a:not([class])) {
-  color: var(--color-primary-300);
-}
-
-.shell :focus-visible {
-  outline-color: var(--color-primary-300);
-}
-
 .skipLink {
   position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
+  top: 8px;
+  left: 8px;
   z-index: 30;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
-  background: var(--color-ink-800);
-  color: var(--color-text-inverse);
   transform: translateY(-200%);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 8px 16px;
 }
-
 .skipLink:focus {
   transform: none;
 }
-
 .header {
-  display: flex;
-  justify-content: center;
-  padding: var(--space-6) var(--space-6) 0;
+  padding: 24px 32px;
 }
-
-/* El nombre en mayúsculas espaciadas, como el wordmark del logotipo. */
 .brand {
-  color: color-mix(in srgb, var(--color-text-inverse) 80%, transparent);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
   font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.42em;
+  font-weight: 650;
   text-decoration: none;
-  text-indent: 0.42em;
+  letter-spacing: -0.04em;
 }
-
+.brand img {
+  width: 24px;
+  height: 24px;
+}
 .brand:hover {
-  color: var(--color-text-inverse);
+  color: var(--text);
 }
-
 .main {
-  flex: 1;
-  display: grid;
-  align-content: start;
-  gap: var(--space-8);
   width: 100%;
-  max-width: 440px;
-  margin: 0 auto;
-  padding: var(--space-8) var(--space-6) var(--space-12);
+  max-width: 560px;
+  padding: 8px 24px 64px;
+  margin: 0 auto auto;
 }
-
 .main:focus {
   outline: none;
 }
-
+.symbol {
+  display: block;
+  margin: 0 auto 24px;
+  width: 48px;
+  height: 48px;
+  padding: 9px;
+  border: 1px solid #ffffff16;
+  border-radius: 12px;
+  background: #0008;
+}
+.panel {
+  width: 100%;
+}
 .switch {
-  display: grid;
-  gap: var(--space-3);
+  margin-top: 24px;
+  color: var(--text-2);
+  font-size: 14px;
   text-align: center;
 }
-
-.switch p {
-  color: var(--color-text-inverse-muted);
-  font-size: 14px;
+.switch a {
+  color: var(--text);
+  text-underline-offset: 4px;
 }
-
 .footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3) var(--space-6);
-  padding: var(--space-6);
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 24px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--text-3);
 }
-
 .footerList {
+  list-style: none;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--space-2) var(--space-6);
+  gap: 8px 24px;
   margin: 0;
   padding: 0;
-  list-style: none;
 }
-
-.footer a,
+.footerList a,
 .footerButton {
-  color: var(--color-text-inverse-muted);
+  color: var(--text-2);
   text-decoration: none;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
 }
-
-.footer a:hover,
-.footerButton:hover {
-  color: var(--color-text-inverse);
-}
-
 .footerButton {
-  padding: 0;
   border: 0;
   background: none;
+  padding: 0;
   font: inherit;
   cursor: pointer;
 }
-
-@media (max-width: 560px) {
+.footerList a:hover,
+.footerButton:hover {
+  color: var(--text);
+}
+@media (max-width: 600px) {
+  .shell {
+    background-image: url("/media/auth-1024.webp");
+    background-attachment: scroll;
+  }
+  .header {
+    padding: 20px 24px;
+  }
   .main {
-    padding: var(--space-6) var(--space-4) var(--space-8);
+    padding-top: 32px;
+    padding-bottom: 48px;
+  }
+}
+@media print {
+  .shell {
+    background: none;
+  }
+  .header,
+  .footer {
+    display: none;
   }
 }

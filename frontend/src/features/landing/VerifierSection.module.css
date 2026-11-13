@@ -1,81 +1,156 @@
-/* Panel con borde de luz y un resplandor de marca en la esquina: es la única sección que
-   habla a otro público, y se distingue sin romper el fondo continuo. */
-.panel {
-  position: relative;
+.section {
+  padding: var(--space-24) 0;
+  background: var(--brand-dark);
+  color: var(--on-brand);
+}
+.layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-24);
   align-items: center;
-  gap: var(--space-12);
-  overflow: hidden;
-  padding: var(--space-12);
-  border: 1px solid transparent;
-  border-radius: 24px;
-  background:
-    radial-gradient(
-        circle at 0% 0%,
-        color-mix(in srgb, var(--color-brand-blue) 18%, transparent),
-        transparent 55%
-      )
-      padding-box,
-    linear-gradient(160deg, var(--color-ink-800), var(--color-ink-950))
-      padding-box,
-    linear-gradient(
-        160deg,
-        color-mix(in srgb, var(--color-primary-300) 22%, transparent),
-        color-mix(in srgb, var(--color-text-inverse) 6%, transparent) 50%,
-        color-mix(in srgb, var(--color-primary-400) 12%, transparent)
-      )
-      border-box;
 }
-
 .copy {
+  --text: var(--on-brand);
+  --text-2: var(--brand-muted);
+  --text-3: var(--brand-muted);
   display: grid;
-  justify-items: start;
-  gap: var(--space-4);
+  gap: var(--space-6);
 }
-
-.title {
-  font-family: var(--font-display);
-  font-size: 36px;
-  font-weight: 560;
-  line-height: 44px;
-  letter-spacing: -0.025em;
+.privacy {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  font-size: var(--font-size-ui);
 }
-
-.text {
-  margin-bottom: var(--space-2);
-  color: var(--color-text-inverse-muted);
-  font-size: 17px;
-  line-height: 27px;
+.privacy svg {
+  flex: none;
 }
-
-/* Los pasos van en la línea de tiempo compartida (Timeline.module.css); aquí solo el texto. */
-.stepText {
-  color: var(--color-text-inverse-muted);
-  font-size: 15px;
-  line-height: 24px;
+.scope {
+  max-width: var(--measure-narrow);
+  color: var(--brand-muted);
+  font-size: var(--font-size-support);
+  line-height: 1.7;
 }
-
-@media (max-width: 900px) {
-  .panel {
+.form {
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  background: var(--surface-1);
+  min-width: 0;
+}
+.formHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+.formHead h3 {
+  font-size: var(--font-size-body);
+  font-weight: 650;
+}
+.formHead > span {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-label);
+  color: var(--text-3);
+}
+.fileField {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--font-size-support);
+}
+.fileField label {
+  font-weight: 600;
+}
+.fileField input {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px dashed var(--line-control);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.fileField input::file-selector-button {
+  border: 1px solid var(--line-control);
+  background: var(--surface-1);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: var(--space-2);
+  margin-right: var(--space-3);
+  font: inherit;
+  cursor: pointer;
+}
+.fileField p {
+  color: var(--text-2);
+}
+.error {
+  color: var(--err);
+  font-size: var(--font-size-support);
+}
+.result {
+  display: grid;
+  gap: var(--space-3);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-4);
+  font-size: var(--font-size-support);
+}
+.result code {
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-label);
+}
+.resultTitle {
+  font-weight: 700;
+}
+.result[data-match="true"] .resultTitle {
+  color: var(--ok);
+}
+.result[data-match="false"] .resultTitle {
+  color: var(--err);
+}
+@media (max-width: 960px) {
+  .layout {
+    gap: var(--space-12);
+  }
+}
+@media (max-width: 760px) {
+  .section {
+    padding: var(--space-16) 0;
+  }
+  .layout {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-8);
-    padding: var(--space-8) var(--space-6);
   }
-
-  .title {
-    font-size: 28px;
-    line-height: 36px;
+  .form {
+    padding: var(--space-6) var(--space-4);
   }
 }
 
-.availability {
-  justify-self: start;
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid
-    color-mix(in srgb, var(--color-primary-300) 30%, transparent);
-  border-radius: var(--radius-pill);
-  color: var(--color-primary-300);
-  font-size: 14px;
-  font-weight: 500;
+.layout {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+}
+.copy {
+  max-width: 680px;
+  margin: auto;
+  text-align: center;
+}
+.privacy {
+  justify-content: center;
+  color: var(--gold);
+}
+.scope {
+  max-width: 600px;
+  margin: auto;
+}
+.form {
+  width: 100%;
+  max-width: 620px;
+  margin: auto;
+  border-radius: 6px;
 }

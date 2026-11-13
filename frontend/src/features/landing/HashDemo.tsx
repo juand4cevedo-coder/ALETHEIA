@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { buttonClassName } from "../../components/ui/buttonStyles.ts";
 import styles from "./HashDemo.module.css";
 import { useSha256 } from "./useSha256.ts";
 
@@ -33,30 +34,43 @@ function FingerprintBlocks({ hash }: { hash: string }) {
   );
 }
 
-/** Demostración A: una sola letra distinta cambia toda la huella SHA-256. */
+/** Demostración de la huella: una sola letra distinta cambia toda la huella SHA-256. La huella
+ * se calcula de verdad en el navegador de quien escribe, por eso el resultado sí usa el verde. */
 export function HashDemo() {
   const [text, setText] = useState(SAMPLE_TEXT);
-  const { hash, supported } = useSha256(text, SAMPLE_HASH);
+  const { hash, supported, computed } = useSha256(text, SAMPLE_HASH);
   const matches = hash === SAMPLE_HASH;
+  // Hasta que llega el primer cálculo del navegador, el punto queda gris: el verde solo dice lo
+  // que de verdad se comprobó.
+  const state = !supported
+    ? "unsupported"
+    : !computed
+      ? "pending"
+      : matches
+        ? "match"
+        : "mismatch";
 
   return (
-    <div className={`${styles.demo} ${styles.panel}`}>
-      <label className={styles.label} htmlFor="hash-demo-text">
-        Texto de ejemplo
-      </label>
-      <p className={styles.helper}>
-        Cambie una sola letra y compare las huellas.
-      </p>
-      <textarea
-        id="hash-demo-text"
-        className={styles.textarea}
-        value={text}
-        onChange={(event) => setText(event.target.value)}
-        rows={2}
-        // Sin cálculo disponible, editar dejaría la «Huella actual» desfasada del texto.
-        readOnly={!supported}
-        spellCheck={false}
-      />
+    <div className={styles.panel}>
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="hash-demo-text">
+          Texto de ejemplo
+        </label>
+        <textarea
+          id="hash-demo-text"
+          className={styles.textarea}
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          rows={2}
+          aria-describedby="hash-demo-ayuda"
+          // Sin cálculo disponible, editar dejaría la «Huella actual» desfasada del texto.
+          readOnly={!supported}
+          spellCheck={false}
+        />
+        <p id="hash-demo-ayuda" className={styles.helper}>
+          Cambie una sola letra y compare las dos huellas.
+        </p>
+      </div>
 
       <dl className={styles.rows}>
         <div className={styles.row}>
@@ -74,25 +88,19 @@ export function HashDemo() {
       </dl>
 
       <div className={styles.footer}>
-        <p
-          role="status"
-          className={
-            !supported
-              ? styles.notice
-              : matches
-                ? styles.match
-                : styles.mismatch
-          }
-        >
+        <p role="status" className={styles.status} data-state={state}>
+          {supported && <span className={styles.dot} aria-hidden="true" />}
           {!supported
             ? "Su navegador no permite recalcular la huella en esta página."
-            : matches
-              ? "Coincide"
-              : "No coincide"}
+            : !computed
+              ? "Calculando la huella"
+              : matches
+                ? "Coincide"
+                : "No coincide"}
         </p>
         <button
           type="button"
-          className={styles.restore}
+          className={buttonClassName({ variant: "secondary", size: "sm" })}
           onClick={() => setText(SAMPLE_TEXT)}
         >
           Restaurar el texto

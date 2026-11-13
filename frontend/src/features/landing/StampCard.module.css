@@ -1,85 +1,21 @@
-/* Ficha del sello RFC 3161: un documento breve, de reglas finas, como un acta. */
+/* Ficha del sello RFC 3161: un panel con sus campos en filas separadas por la línea. */
 .card {
   composes: card from "./Section.module.css";
   display: grid;
   grid-template-rows: auto auto 1fr;
+  gap: var(--space-4);
   height: 100%;
-}
-
-/* Va al pie de la ficha: si la cadena de al lado es más alta, la nota baja con el borde. */
-.note {
-  align-self: end;
-  color: var(--color-text-inverse-muted);
-  font-size: 14px;
-  line-height: 22px;
-}
-
-.full {
-  --seal: 64px;
-
-  gap: var(--space-6);
   padding: var(--space-6);
 }
 
-/* En pequeño (hero): menos aire y tipografía menor, mismos campos. */
-.compact {
-  --seal: 40px;
-
-  gap: var(--space-3);
-  padding: var(--space-4);
-  font-size: 13px;
-}
-
 .header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
-
-/* Motivo de sello: un anillo fino y, por fuera, otro punteado, como la huella de un sello de
-   goma. El espacio del anillo exterior se reserva con el margen. */
-.seal {
-  position: relative;
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: var(--seal);
-  height: var(--seal);
-  margin: var(--space-1);
-  border: 1px solid
-    color-mix(in srgb, var(--color-primary-300) 45%, transparent);
-  border-radius: var(--radius-pill);
-  background: color-mix(
-    in srgb,
-    var(--color-brand-blue) 14%,
-    var(--color-ink-950)
-  );
-  color: var(--color-primary-300);
-}
-
-.seal::before {
-  content: "";
-  position: absolute;
-  inset: calc(-1 * var(--space-1));
-  border: 1px dashed
-    color-mix(in srgb, var(--color-primary-300) 35%, transparent);
-  border-radius: var(--radius-pill);
-}
-
-.seal svg {
-  width: 45%;
-  height: 45%;
-}
-
-.fictitious {
-  padding: 2px var(--space-2);
-  border: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 18%, transparent);
-  border-radius: var(--radius-pill);
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
   font-weight: 500;
+  line-height: var(--line-height-support);
 }
 
 .fields {
@@ -89,25 +25,24 @@
 
 .field {
   display: grid;
-  grid-template-columns: minmax(96px, 0.38fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 36%) minmax(0, 1fr);
   gap: var(--space-4);
   align-items: baseline;
   padding: var(--space-3) 0;
-  border-top: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 9%, transparent);
+  border-top: 1px solid var(--line);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .field:last-child {
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 9%, transparent);
+  border-bottom: 1px solid var(--line);
 }
 
 .field dt {
-  color: var(--color-text-inverse-muted);
-  font-size: 11px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
   font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  line-height: var(--line-height-label);
 }
 
 .field dd {
@@ -115,9 +50,12 @@
   margin: 0;
 }
 
-.compact .field {
-  gap: var(--space-3);
-  padding: var(--space-2) 0;
+/* Va al pie de la ficha: si la cadena de al lado es más alta, la nota baja con el borde. */
+.note {
+  align-self: end;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 @media (max-width: 420px) {

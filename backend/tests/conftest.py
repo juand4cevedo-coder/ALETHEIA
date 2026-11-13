@@ -19,7 +19,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import Connection, Engine, create_engine, make_url, pool
-from sqlalchemy.exc import DBAPIError
+from sqlalchemy.exc import ArgumentError, DBAPIError
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_session
@@ -57,8 +57,24 @@ def _required_url(variable: str) -> str:
     url = os.environ.get(variable)
     if not url:
         pytest.fail(f"Falta la variable {variable} con la URL de la base de pruebas.")
-    # Se acepta postgresql:// o postgresql+psycopg://; SQLAlchemy necesita el controlador.
-    return make_url(url).set(drivername="postgresql+psycopg").render_as_string(hide_password=False)
+    # La suite baja todas las migraciones. Una variable mal copiada nunca debe permitir
+    # que esa operación llegue a desarrollo o a producción, ni mostrar su clave al fallar.
+    try:
+        parsed = make_url(url)
+    except ArgumentError, ValueError:
+        pytest.fail(f"{variable} no contiene una URL válida de pruebas.", pytrace=False)
+    if (
+        parsed.drivername not in {"postgresql", "postgresql+psycopg"}
+        or parsed.database != "aletheia_test"
+        or parsed.host not in {"localhost", "127.0.0.1", "::1"}
+        or parsed.query
+    ):
+        pytest.fail(
+            f"{variable} debe apuntar a PostgreSQL local, base aletheia_test "
+            "y sin parámetros de conexión adicionales.",
+            pytrace=False,
+        )
+    return parsed.set(drivername="postgresql+psycopg").render_as_string(hide_password=False)
 
 
 @pytest.fixture(scope="session")

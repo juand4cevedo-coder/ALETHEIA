@@ -5,6 +5,8 @@ export const loadPricingPage = () =>
   import("../pages/PricingPage.tsx").then((module) => module.PricingPage);
 export const loadLegalPage = () =>
   import("../pages/LegalPage.tsx").then((module) => module.LegalPage);
+export const loadQueryRoot = () =>
+  import("./QueryRoot.tsx").then((module) => module.QueryRoot);
 export const loadAuthLayout = () =>
   import("../layouts/AuthLayout.tsx").then((module) => module.AuthLayout);
 export const loadSignInPage = () =>
@@ -42,9 +44,11 @@ export const loadNewCasePage = () =>
 export const loadCasePage = () =>
   import("../pages/CasePage.tsx").then((module) => module.CasePage);
 
-// Lo que alguien abre casi siempre después del inicio: precios, ingresar y crear cuenta.
+// Lo que alguien abre casi siempre después del inicio: precios, ingresar y crear cuenta (con el
+// proveedor de consultas que las envuelve).
 const LIKELY_NEXT = [
   loadPricingPage,
+  loadQueryRoot,
   loadAuthLayout,
   loadSignInPage,
   loadSignUpPage,

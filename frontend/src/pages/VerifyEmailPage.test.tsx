@@ -50,7 +50,9 @@ describe("Verificar el correo (HU-006, CP-006)", () => {
     });
     expect(screen.getByText("Usado. No vuelve a servir.")).toBeInTheDocument();
     expect(
-      within(screen.getByRole("main")).getByRole("link", { name: "Ingresar" }),
+      within(screen.getByRole("main")).getByRole("link", {
+        name: "Ingresar a mi cuenta",
+      }),
     ).toHaveAttribute("href", "/ingresar");
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
@@ -63,6 +65,9 @@ describe("Verificar el correo (HU-006, CP-006)", () => {
     await renderRoute("/verificar-correo#t=vencido");
 
     await screen.findByRole("heading", { name: "Este enlace ya no sirve" });
+    // Sin sesión se pide el correo, en un formulario con nombre y sin un segundo título.
+    const form = screen.getByRole("form", { name: "Pedir un enlace nuevo" });
+    expect(within(form).queryByRole("heading")).not.toBeInTheDocument();
     await user.type(
       screen.getByLabelText("Correo electrónico"),
       "ana@example.com",
