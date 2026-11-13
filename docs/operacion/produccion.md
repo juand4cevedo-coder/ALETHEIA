@@ -2,7 +2,7 @@
 
 Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su despliegue según ADR-018: qué existe, cómo quedó configurado y cómo se comprobó. Aquí no hay claves, contraseñas ni llaves privadas. Las claves viven en Parameter Store y la llave SSH solo en el equipo del administrador.
 
-Última actualización: 30/10/2026, con TT-008.
+Última actualización: 13/11/2026, con la comprobación de KMS y SES previa al release v0.3.0.
 
 ## Cuenta y costos
 
@@ -38,6 +38,7 @@ Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su
 ## Red y DNS
 
 - El dominio se compró en Hostinger y su DNS sigue ahí: `A @` hacia 3.22.173.241 y `CNAME www` hacia `aletheia.sbs`, los dos con TTL de 300 segundos. El certificado lo saca Caddy; la sección SSL de Hostinger no aplica.
+- El correo también depende de este DNS. Hostinger publica el MX, el SPF de la raíz y las tres firmas `hostingermail-*` del buzón `contacto@aletheia.sbs`. Amazon SES usa tres CNAME `*._domainkey` hacia `dkim.amazonses.com`, y `bounce` lleva su propio MX y su SPF, así que el SPF de la raíz no se toca. El único DMARC es `_dmarc`, con `p=none` y los informes dirigidos a `contacto@aletheia.sbs`.
 - No hay registros AAAA ni CAA. Un AAAA que apunte a otra parte hace fallar la validación de Let's Encrypt, y la máquina no tiene IPv6.
 - LLMNR y mDNS quedaron apagados en `/etc/systemd/resolved.conf.d/10-aletheia.conf`. Venían activos en la imagen de Debian y no tienen función en un servidor en la nube.
 
@@ -80,18 +81,62 @@ El objeto `prueba/tt-007.bin` quedó a propósito en el bucket de respaldos: lo 
 | Tipo | RSA_3072, uso cifrar y descifrar, una sola región |
 | Política de la llave | La predeterminada: los permisos se conceden por IAM |
 | Uso | Envolver con `RSAES_OAEP_SHA_256` la llave de cada caso (ADR-014) |
+| Operaciones | La API llama a `Encrypt` al abrir un caso y llamará a `Decrypt` al leer su evidencia, siempre con `RSAES_OAEP_SHA_256`. En producción no hay llave local: la API rechaza `ALETHEIA_LOCAL_KEY_PATH` |
+
+## Amazon SES
+
+| Elemento | Valor |
+| --- | --- |
+| Identidad | El dominio `aletheia.sbs`, verificado el 01/11/2026 en us-east-2 |
+| Autenticación | Easy DKIM con llaves de 2048 bits, MAIL FROM `bounce.aletheia.sbs` y DMARC. Gmail confirmó SPF, DKIM y DMARC en `PASS` |
+| Remitente | `ALETHEIA <notificaciones@aletheia.sbs>`, con las respuestas a `contacto@aletheia.sbs` |
+| Envío | Solo el trabajador, con la API v2 y el rol de la máquina. No hay credenciales SMTP |
+| Lista de supresión | La de la cuenta, activa para rebotes y quejas |
+| Plan | Essentials, que cobra 0,16 USD por cada 1.000 correos y se paga con los créditos |
+| Producción | Acceso de producción habilitado y envío activo, comprobados el 13/11/2026 con `sesv2:GetAccount`; cuota actual de 50.000 mensajes al día y 14 por segundo |
+
+En desarrollo y en la CI el correo va a Mailpit y nunca sale a internet; la regla vive en `app/adapters/email.py` y depende solo de `ALETHEIA_ENVIRONMENT`.
 
 ## IAM
 
-El rol `aletheia-prod-instancia` tiene dos políticas, `aletheia-prod-acceso` para los datos y `aletheia-ssm-agente` para Systems Manager, y llega a la máquina por el perfil de instancia del mismo nombre. Nada que no esté en esta tabla está permitido.
+El rol `aletheia-prod-instancia` tiene tres políticas: `aletheia-prod-acceso` para los datos, `aletheia-prod-correo` para enviar correo y `aletheia-ssm-agente` para Systems Manager. Llega a la máquina por el perfil de instancia del mismo nombre. Nada que no esté en esta tabla está permitido.
 
 | Servicio | Recurso | Permitido |
 | --- | --- | --- |
 | S3 | Bucket de evidencias | `GetObject`, `PutObject`, `DeleteObject` y `AbortMultipartUpload`. No puede listar |
 | S3 | Bucket de respaldos | `GetObject`, `PutObject`, `AbortMultipartUpload` y `ListBucket`. No puede borrar |
-| KMS | `alias/aletheia-prod-maestra` | `Encrypt` y `Decrypt`, solo con `RSAES_OAEP_SHA_256` |
+| KMS | ARN de la llave maestra `2bf06d55-cdf0-416f-9283-be72afed8a6d` | `Encrypt` y `Decrypt`, solo con `RSAES_OAEP_SHA_256` |
 | Parameter Store | Parámetros bajo `/aletheia/prod/` | `GetParameter`, `GetParameters` y `GetParametersByPath`. No puede escribir |
+| SES | Identidades de la cuenta en us-east-2 | `SendEmail` con la API v2, solo desde `notificaciones@aletheia.sbs` y con el nombre `ALETHEIA` |
 | Systems Manager | El agente de la máquina | Registrarse, recibir órdenes de Run Command y abrir sesiones de Session Manager (`ec2messages` y `ssmmessages`) |
+
+La política de correo aún nombra todas las identidades de la cuenta: se configuró así cuando SES estaba en sandbox y exigía autorización sobre la identidad del destinatario. SES ya tiene acceso de producción. Las condiciones `ses:FromAddress`, `ses:FromDisplayName` y `ses:ApiVersion` restringen el remitente; el alcance de `Resource` puede reducirse en una revisión separada, con una prueba de envío después del cambio.
+
+Desde HU-015 la API llama a `Encrypt` de KMS cada vez que se abre un caso y llamará a `Decrypt` para leer su evidencia (HU-018). Si KMS no responde o niega la operación, abrir un caso falla con 503, no deja ninguna fila y la API registra el código de error de KMS.
+
+La versión `v1` de la política administrada `aletheia-prod-acceso` nombra el ARN de la llave, restringe el algoritmo a `RSAES_OAEP_SHA_256` y autoriza `Encrypt` y `Decrypt`. Se comprobó en AWS el 13/11/2026. `Encrypt` recibe el alias como `KeyId`; `Decrypt` recibe el ARN guardado con cada caso.
+
+### Comprobación de KMS para HU-015
+
+**Aprobada el 13/11/2026.** La orden SSM `f86925b9-88a5-4cfd-bf7c-ecd906879019` se ejecutó en `aletheia-prod` con su rol de instancia: cifró 32 bytes aleatorios mediante el alias, los descifró mediante el ARN, comparó ambos archivos sin mostrarlos y eliminó los temporales. Terminó con código 0 y `KMS_WRAP_UNWRAP_OK`. Para repetir la comprobación manualmente desde la máquina:
+
+1. Se crea un archivo de 32 bytes aleatorios, por ejemplo `head -c 32 /dev/urandom > /tmp/prueba-kms.bin`, y se cifra:
+
+   ```bash
+   aws kms encrypt --key-id alias/aletheia-prod-maestra --encryption-algorithm RSAES_OAEP_SHA_256 --plaintext fileb:///tmp/prueba-kms.bin --query KeyId
+   ```
+
+   Funciona si imprime el ARN de la llave (`arn:aws:kms:us-east-2:047938357957:key/2bf06d55-...`) y no `AccessDeniedException`. Para el paso 2 se guarda también el cifrado: el mismo comando con `--query CiphertextBlob --output text | base64 -d > /tmp/prueba-kms.cifrado`.
+
+2. Se descifra con el ARN que imprimió el paso 1:
+
+   ```bash
+   aws kms decrypt --key-id <ARN> --encryption-algorithm RSAES_OAEP_SHA_256 --ciphertext-blob fileb:///tmp/prueba-kms.cifrado
+   ```
+
+   Funciona si responde con `KeyId` igual a ese ARN y un `Plaintext` (en base64) que corresponde al archivo original, sin `AccessDeniedException`. Al terminar se borran los dos archivos.
+
+Si una repetición responde `AccessDeniedException`, se revisa la política `aletheia-prod-acceso` y la política de la llave antes de publicar.
 
 Para leer un `SecureString` cifrado con la llave `aws/ssm`, el rol no necesita permisos adicionales de KMS.
 
@@ -125,6 +170,7 @@ Cada llamada del usuario queda en el historial de eventos de CloudTrail, que es 
 | `/aletheia/prod/postgres/owner-password` | SecureString (`aws/ssm`) | `aletheia_owner`: migraciones |
 | `/aletheia/prod/postgres/app-password` | SecureString (`aws/ssm`) | `aletheia_app`: API y trabajador |
 | `/aletheia/prod/postgres/support-password` | SecureString (`aws/ssm`) | `aletheia_support`: consultas de solo lectura |
+| `/aletheia/prod/app/token-signing-key` | SecureString (`aws/ssm`) | Clave de firma de los enlaces de un solo uso: API y trabajador |
 
 Las claves se generaron en CloudShell con 40 letras y números. Pasaron por una tubería directo a AWS, así que nunca aparecieron en pantalla, en el historial ni como argumento de un comando:
 
@@ -137,6 +183,17 @@ for usuario in admin owner app support; do
       --type SecureString --value file:///dev/stdin \
       --query Version --output text
 done
+```
+
+La clave de firma se creó de la misma forma, con 64 caracteres. La API y el trabajador derivan de ella una subclave por cada tipo de enlace (ADR-027):
+
+```bash
+openssl rand -base64 96 | tr -d '\n/+=' | head -c 64 |
+  aws ssm put-parameter --region us-east-2 \
+    --name "/aletheia/prod/app/token-signing-key" \
+    --description "Clave de firma de los enlaces de un solo uso" \
+    --type SecureString --value file:///dev/stdin \
+    --query Version --output text
 ```
 
 ## PostgreSQL
@@ -161,18 +218,19 @@ sudo docker compose --env-file /var/lib/aletheia/despliegue.env -f compose.prod.
 
 ## Contenedores
 
-`infra/compose.prod.yaml` define cuatro servicios en dos redes. En `frontal` están Caddy y la API; en `datos`, la API, las migraciones y PostgreSQL. Caddy no puede llegar a la base, y solo Caddy publica puertos.
+`infra/compose.prod.yaml` define cinco servicios en dos redes. En `frontal` están Caddy y la API; en `datos`, la API, el trabajador, las migraciones y PostgreSQL. Caddy no puede llegar a la base, y solo Caddy publica puertos.
 
 | Servicio | Imagen | Endurecimiento |
 | --- | --- | --- |
 | `caddy` | `aletheia-web`, por digest | Usuario 10002, solo lectura, sin capacidades salvo abrir puertos, `no-new-privileges`, 256 MB |
 | `api` | `aletheia-api`, por digest | Usuario 10001, solo lectura con `/tmp` en memoria, sin capacidades, `no-new-privileges`, 512 MB y healthcheck a `/api/v1/health` |
+| `worker` | La misma de la API, con `python -m app.worker` | Igual que la API, 256 MB y 45 segundos para terminar la tarea en curso. Su healthcheck revisa el latido con `python -m app.worker --check` |
 | `migrate` | La misma de la API | Igual que la API. Va en el perfil `migraciones` y solo corre con `docker compose run --rm migrate` |
 | `postgres` | `postgres:18.6-trixie` | Sin puertos publicados y solo en la red `datos` |
 
-La API y las migraciones reciben la URL de la base sin clave y el nombre de su parámetro. Leen la clave de Parameter Store al arrancar, con el rol de la máquina, así que `docker inspect` no muestra ninguna. En producción la API no publica `/api/v1/docs` ni `/api/v1/openapi.json`.
+La API, el trabajador y las migraciones reciben la URL de la base sin clave y el nombre de su parámetro. Leen la clave de Parameter Store al arrancar, con el rol de la máquina, así que `docker inspect` no muestra ninguna. En producción la API no publica `/api/v1/docs` ni `/api/v1/openapi.json`.
 
-Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy.Dockerfile`. Según ADR-019, las imágenes base, los entornos de ejecución, uv, pnpm y las acciones de GitHub deben tener más de 14 días de publicados, y las bibliotecas de Python y de JavaScript más de 7; Dependabot, uv y pnpm aplican esas esperas. Python 3.14.9, uv 0.13.5 y boto3 1.43.120 con sus tipos tienen una excepción que vence el 04/11/2026.
+Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy.Dockerfile`. Según ADR-019, las imágenes base, los entornos de ejecución, uv, pnpm y las acciones de GitHub deben tener más de 14 días de publicados, y las bibliotecas de Python y de JavaScript más de 7; Dependabot, uv y pnpm aplican esas esperas. La excepción de boto3 1.43.120 y sus tipos se retiró de `pyproject.toml` el 04/11/2026, cuando ya tenían más de 7 días. Python 3.14.9 y uv 0.13.5 pasan de 14 días el 05/11/2026 y el 06/11/2026; no tienen excepción en la configuración porque van fijados en la CI y en el Dockerfile.
 
 ## Caddy
 
@@ -259,4 +317,5 @@ Las pruebas de AWS corrieron desde la instancia, dentro de un contenedor con AWS
 
 - En CloudShell, al pegar bloques largos hay que confirmar que se ejecutaron completos, porque la salida a veces se corta. Antes de repetir una creación, se verifica con un comando de consulta.
 - En el simulador de IAM hay que pasar la región como contexto (`aws:RequestedRegion`). Sin ella, la política del plan gratuito aparece como `explicitDeny` aunque los permisos estén bien.
+- En la consola de AWS, la traducción automática del navegador cambia los valores de los registros DNS: `bounce` aparece como `rebote` y `include` como `incluye`. Los registros se copian con la página en su idioma original o desde el archivo .csv que ofrece SES.
 - Los comandos de Docker en el servidor necesitan `--env-file /var/lib/aletheia/despliegue.env`. Sin él, Compose usa las etiquetas `sin-desplegar`, que no existen, y no reemplaza nada.

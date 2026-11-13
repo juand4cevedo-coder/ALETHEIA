@@ -6,14 +6,23 @@
   min-width: 0;
 }
 
-/* font.mono.md: JetBrains Mono 13/20. En pantallas angostas la huella baja de línea entre
+/* font.mono.md: Geist Mono 13/20. En pantallas angostas la huella baja de línea entre
    bloques y nunca obliga a desplazarse de lado. */
 .value {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: var(--font-size-mono);
   line-height: 20px;
   overflow-wrap: anywhere;
   word-spacing: 0.15em;
+}
+
+/* Lo que se omite de la huella abreviada: un trazo punteado, no puntos suspensivos. */
+.elision {
+  display: inline-block;
+  width: var(--space-4);
+  margin-right: var(--space-1);
+  border-bottom: 1px dotted currentColor;
+  vertical-align: middle;
 }
 
 .copy {
@@ -22,9 +31,9 @@
   background: none;
   color: inherit;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--font-size-mono);
   font-weight: 500;
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: var(--underline-offset);
   cursor: pointer;
 }

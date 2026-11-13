@@ -1,0 +1,15 @@
+.fields {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.hint {
+  padding: 0 var(--space-6);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}

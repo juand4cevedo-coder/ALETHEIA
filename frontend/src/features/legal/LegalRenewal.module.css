@@ -1,0 +1,277 @@
+/* Textos legales nuevos por aceptar (TT-012): el marco de las pantallas de acceso (ADR-029), con
+   una columna de lectura algo más ancha para ver qué cambió. */
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.shell :where(a:not([class])) {
+  color: var(--accent-strong);
+  text-underline-offset: var(--underline-offset);
+}
+
+.header {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-6) var(--space-6) 0;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-body);
+}
+
+.main {
+  display: grid;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: calc(var(--panel-width) + var(--space-24));
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) var(--space-16);
+}
+
+.main:focus {
+  outline: none;
+}
+
+.intro {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.eyebrow {
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  font-weight: 500;
+  line-height: var(--line-height-support);
+}
+
+.title {
+  font-size: var(--font-size-title);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  line-height: var(--line-height-title);
+  text-wrap: balance;
+}
+
+.title:focus {
+  outline: none;
+}
+
+.lead {
+  max-width: var(--measure);
+  color: var(--text-2);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+/* Panel con los cambios. La lista ordenada lleva su número en mono y en el tono de apoyo. */
+.panel {
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+}
+
+.panelTitle {
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+}
+
+.changes {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: cambio;
+}
+
+.changes li {
+  display: grid;
+  grid-template-columns: var(--space-8) minmax(0, 1fr);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+  counter-increment: cambio;
+}
+
+.changes li::before {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-ui);
+  font-variant-numeric: tabular-nums;
+  content: counter(cambio, decimal-leading-zero);
+}
+
+.note {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+/* Los cuatro textos completos, en otra pestaña para no perder esta pantalla. */
+.documents {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.document {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+  text-decoration: none;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
+}
+
+.document svg {
+  flex: none;
+  color: var(--text-2);
+}
+
+.document:hover {
+  border-color: var(--line-control);
+  background: var(--surface-2);
+}
+
+.documentArrow {
+  margin-left: auto;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.consent {
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+/* El mismo aviso de error de las pantallas de acceso. */
+.alert {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--err) 40%, var(--line));
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+.alert:focus {
+  outline: none;
+}
+
+.alert code {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+}
+
+.decline {
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+  text-align: center;
+}
+
+.leave {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+}
+
+.leaveButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--accent-strong);
+  font: inherit;
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.leaveButton:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.leaveButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.leaveButton:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.leaveFailure {
+  color: var(--err);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .document,
+  .leaveButton {
+    transition: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
+
+  .panel {
+    padding: var(--space-4);
+  }
+
+  .documents {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

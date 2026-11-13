@@ -11,11 +11,15 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.core.legal import LEGAL_ACCEPTANCE_REQUIRED, LegalAcceptanceRequiredError
 from app.core.logs import request_id_var
+from app.services.rate_limit import RateLimitExceededError
 
 PROBLEM_JSON = "application/problem+json"
 # Segundos que el cliente debería esperar antes de reintentar cuando la base no responde.
 _RETRY_AFTER_SECONDS = "30"
+# Detalle de toda respuesta 500: la causa queda en los registros, nunca en la respuesta.
+UNEXPECTED_ERROR = "Ocurrió un error inesperado."
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +31,13 @@ def problem_response(
     detail: str | None = None,
     headers: Mapping[str, str] | None = None,
     extensions: dict[str, Any] | None = None,
+    problem_type: str = "about:blank",
 ) -> JSONResponse:
     """Construye una respuesta application/problem+json con los miembros estándar."""
     body: dict[str, Any] = {
-        # about:blank indica que el código HTTP basta para entender el problema.
-        "type": "about:blank",
+        # about:blank indica que el código HTTP basta para entender el problema; un tipo propio,
+        # que la interfaz tiene que distinguir de otros errores con el mismo código.
+        "type": problem_type,
         "title": HTTPStatus(status).phrase,
         "status": status,
         "instance": request.url.path,
@@ -85,19 +91,52 @@ async def _database_unavailable_handler(request: Request, exc: Exception) -> JSO
     )
 
 
+async def _rate_limit_handler(request: Request, exc: Exception) -> JSONResponse:
+    if not isinstance(exc, RateLimitExceededError):  # Lo garantiza el registro de abajo.
+        raise TypeError(type(exc).__name__)
+    # El mismo mensaje para una cuenta real que para una inexistente (RN-026).
+    return problem_response(
+        request,
+        HTTPStatus.TOO_MANY_REQUESTS,
+        detail="Hizo varios intentos seguidos. Espere unos minutos e inténtelo de nuevo.",
+        headers={"Retry-After": str(exc.retry_after), "Cache-Control": "no-store"},
+    )
+
+
+async def _legal_acceptance_handler(request: Request, exc: Exception) -> JSONResponse:
+    if not isinstance(exc, LegalAcceptanceRequiredError):  # Lo garantiza el registro de abajo.
+        raise TypeError(type(exc).__name__)
+    # Un 403 con su propio tipo: la interfaz lo distingue de un permiso que falta y muestra
+    # los textos nuevos en lugar de un error.
+    return problem_response(
+        request,
+        HTTPStatus.FORBIDDEN,
+        detail=(
+            "Los términos y la política de privacidad cambiaron. Revíselos y acéptelos para "
+            "seguir usando ALETHEIA."
+        ),
+        headers={"Cache-Control": "no-store"},
+        problem_type=LEGAL_ACCEPTANCE_REQUIRED,
+    )
+
+
 def unexpected_error_response(request: Request) -> JSONResponse:
     """Respuesta 500 genérica: la traza queda en los registros, nunca en la respuesta."""
     return problem_response(
         request,
         HTTPStatus.INTERNAL_SERVER_ERROR,
-        detail="Ocurrió un error inesperado.",
+        detail=UNEXPECTED_ERROR,
     )
 
 
 def register_exception_handlers(app: FastAPI) -> None:
-    """Errores HTTP, de validación y de base caída en Problem Details; los inesperados los atiende
-    RequestContextMiddleware, que conoce el request_id de la petición."""
+    """Errores HTTP, de validación, de base caída y de límite de peticiones en Problem Details;
+    los inesperados los atiende RequestContextMiddleware, que conoce el request_id."""
     app.add_exception_handler(StarletteHTTPException, _http_exception_handler)
     app.add_exception_handler(RequestValidationError, _validation_exception_handler)
     # Sin conexión con PostgreSQL la respuesta es 503, que el cliente puede reintentar, no 500.
     app.add_exception_handler(OperationalError, _database_unavailable_handler)
+    # Límite de peticiones (RN-026): 429 con los segundos que faltan en Retry-After.
+    app.add_exception_handler(RateLimitExceededError, _rate_limit_handler)
+    # Textos legales nuevos sin aceptar (RN-029): 403 con su propio tipo.
+    app.add_exception_handler(LegalAcceptanceRequiredError, _legal_acceptance_handler)

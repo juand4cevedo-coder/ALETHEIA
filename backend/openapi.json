@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -70,10 +70,2293 @@
           }
         }
       }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Crear una cuenta con su organización y la prueba gratis",
+        "operationId": "register_account",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationAccepted"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Los textos legales cambiaron; hay que recargar.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados registros desde esta IP.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify-email/resend": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Reenviar el enlace para verificar el correo",
+        "operationId": "resend_verification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationRequested"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiadas solicitudes.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Verificar el correo con el enlace recibido",
+        "operationId": "verify_email",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "El enlace no es válido o ya venció.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Ingresar con correo y contraseña",
+        "operationId": "sign_in",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Sesión abierta: llegan las cookies de acceso y de renovación."
+          },
+          "401": {
+            "description": "El correo o la contraseña no coinciden.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "La cuenta está bloqueada.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos fallidos para la cuenta o desde la IP.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Renovar la sesión y rotar el token de renovación",
+        "operationId": "refresh_session",
+        "responses": {
+          "204": {
+            "description": "Sesión renovada: llegan cookies nuevas y la anterior deja de servir."
+          },
+          "401": {
+            "description": "El token de renovación no sirve. Si ya se había usado, la sesión se cerró en todos los lugares donde estaba abierta.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "renovacion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Cerrar la sesión de este dispositivo",
+        "operationId": "sign_out",
+        "responses": {
+          "204": {
+            "description": "Sesión cerrada y cookies borradas."
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/logout-all": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Cerrar todas las sesiones, en todos los dispositivos",
+        "operationId": "sign_out_everywhere",
+        "responses": {
+          "204": {
+            "description": "Todas las sesiones cerradas, también esta; cookies borradas."
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/password/forgot": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Pedir el enlace para restablecer la contraseña",
+        "operationId": "forgot_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetRequested"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiadas solicitudes.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password/reset": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Elegir una contraseña nueva con el enlace recibido",
+        "operationId": "reset_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Contraseña cambiada; todas las sesiones quedaron cerradas."
+          },
+          "400": {
+            "description": "El enlace no es válido o ya venció.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "tags": [
+          "perfil"
+        ],
+        "summary": "Perfil, organización, rol y aceptación legal de quien tiene la sesión",
+        "operationId": "read_me",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/legal-acceptance": {
+      "post": {
+        "tags": [
+          "perfil"
+        ],
+        "summary": "Aceptar los textos legales vigentes",
+        "operationId": "accept_legal_terms",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegalAcceptanceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Aceptación registrada, o ya estaba registrada para estos textos."
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Los textos cambiaron mientras la persona los leía; hay que recargar.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/password": {
+      "put": {
+        "tags": [
+          "perfil"
+        ],
+        "summary": "Cambiar la contraseña",
+        "operationId": "change_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Contraseña cambiada; las demás sesiones quedaron cerradas."
+          },
+          "400": {
+            "description": "La contraseña actual no coincide o la nueva es igual.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos fallidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/organization/members": {
+      "get": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Miembros de la organización y cupo del plan",
+        "operationId": "list_members",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "next_cursor de la página anterior.",
+              "title": "Cursor"
+            },
+            "description": "next_cursor de la página anterior."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Miembros por página.",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Miembros por página."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No es propietario ni administrador.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organization/members/{user_id}": {
+      "patch": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Cambiar el rol de un miembro",
+        "operationId": "change_member_role",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoleChangeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No es propietario ni administrador, el miembro es el propietario o es uno mismo.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La persona no es miembro de la organización.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Retirar a un miembro",
+        "operationId": "remove_member",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No es propietario ni administrador, el miembro es el propietario o es uno mismo.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La persona no es miembro de la organización.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organization/invitations": {
+      "post": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Invitar a una persona con un rol",
+        "operationId": "create_invitation",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No es propietario ni administrador.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ya es miembro, ya tiene una invitación vigente, el plan no tiene cupo o la organización está en solo lectura.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiadas invitaciones seguidas.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Invitaciones pendientes",
+        "operationId": "list_invitations",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "next_cursor de la página anterior.",
+              "title": "Cursor"
+            },
+            "description": "next_cursor de la página anterior."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Invitaciones por página.",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Invitaciones por página."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No es propietario ni administrador.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/organization/invitations/{invitation_id}": {
+      "delete": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Revocar una invitación pendiente",
+        "operationId": "revoke_invitation",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No es propietario ni administrador.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No hay una invitación pendiente con ese id.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/invitations/preview": {
+      "post": {
+        "tags": [
+          "invitaciones"
+        ],
+        "summary": "Ver una invitación antes de aceptarla",
+        "operationId": "preview_invitation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationPreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "La invitación ya no sirve.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos seguidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/invitations/accept": {
+      "post": {
+        "tags": [
+          "invitaciones"
+        ],
+        "summary": "Aceptar una invitación",
+        "operationId": "accept_invitation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Miembro creado: llegan las cookies de acceso y de renovación.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "La invitación ya no sirve.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos seguidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "La cuenta existe y la contraseña no coincide.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El correo ya pertenece a una organización, la organización está en solo lectura o los textos legales cambiaron.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases": {
+      "post": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Abrir un caso",
+        "operationId": "create_case",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no abre casos o la persona no ha verificado su correo.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La organización está en solo lectura o ya hay un caso con ese radicado (tipo https://aletheia.sbs/problemas/radicado-repetido).",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "KMS no respondió y no se pudo preparar la llave del caso.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Listar los casos donde la persona es miembro, con su actividad",
+        "operationId": "list_cases",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "open",
+                "closed",
+                "all"
+              ],
+              "type": "string",
+              "description": "Casos abiertos, cerrados o todos.",
+              "default": "open",
+              "title": "Status"
+            },
+            "description": "Casos abiertos, cerrados o todos."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "next_cursor de la página anterior.",
+              "title": "Cursor"
+            },
+            "description": "next_cursor de la página anterior."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "description": "Casos por página.",
+              "default": 25,
+              "title": "Limit"
+            },
+            "description": "Casos por página."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasePage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}": {
+      "get": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Ver un caso con su equipo y su cadena de custodia",
+        "operationId": "read_case",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El caso no existe o la persona no es miembro de él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AcceptInvitationRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Token",
+            "description": "Token del fragmento del enlace (#t=…)."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "description": "Contraseña nueva de 12 a 128 caracteres para una cuenta nueva, o la contraseña de la cuenta existente."
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name",
+            "description": "Nombre de la persona. Solo para una cuenta nueva."
+          },
+          "legal_version": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Version",
+            "description": "Versión de los textos que vio la persona. Solo para una cuenta nueva."
+          },
+          "accepts_legal_terms": {
+            "anyOf": [
+              {
+                "type": "boolean",
+                "const": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepts Legal Terms",
+            "description": "Acepta los términos y autoriza el tratamiento de sus datos. Obligatorio para una cuenta nueva; nunca se presume."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token",
+          "password"
+        ],
+        "title": "AcceptInvitationRequest",
+        "description": "Aceptar la invitación (API-019).\n\nCon full_name se crea una cuenta nueva: la contraseña es la nueva y debe aceptar los textos\nlegales vigentes. Sin full_name, la persona ya tiene cuenta y la contraseña es la suya."
+      },
+      "CaseCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Título del caso."
+          },
+          "filing_number": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Number",
+            "description": "Número de radicación. Se aceptan espacios, puntos y guiones; se guardan solo sus 23 dígitos."
+          },
+          "court": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Court",
+            "description": "Despacho que lleva el proceso."
+          },
+          "practice_area": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "civil",
+                  "commercial",
+                  "family",
+                  "labor",
+                  "criminal",
+                  "administrative",
+                  "constitutional",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Practice Area",
+            "description": "Especialidad."
+          },
+          "internal_reference": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internal Reference",
+            "description": "Referencia con que la oficina identifica el caso."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "CaseCreate",
+        "description": "Datos con que se abre un caso (API-022)."
+      },
+      "CaseDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador del caso."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Título del caso."
+          },
+          "filing_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Number",
+            "description": "Los 23 dígitos del radicado, si lo tiene."
+          },
+          "court": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Court",
+            "description": "Despacho que lleva el proceso."
+          },
+          "practice_area": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "civil",
+                  "commercial",
+                  "family",
+                  "labor",
+                  "criminal",
+                  "administrative",
+                  "constitutional",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Practice Area",
+            "description": "Especialidad."
+          },
+          "internal_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internal Reference",
+            "description": "Referencia interna de la oficina."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed"
+            ],
+            "title": "Status",
+            "description": "Si el caso sigue abierto."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Cuándo se abrió."
+          },
+          "created_by_name": {
+            "type": "string",
+            "title": "Created By Name",
+            "description": "Nombre de quien lo abrió."
+          },
+          "member_count": {
+            "type": "integer",
+            "title": "Member Count",
+            "description": "Personas asignadas al caso."
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/CaseMemberOut"
+            },
+            "type": "array",
+            "title": "Members",
+            "description": "Equipo del caso."
+          },
+          "recent_events": {
+            "items": {
+              "$ref": "#/components/schemas/CustodyEventOut"
+            },
+            "type": "array",
+            "title": "Recent Events",
+            "description": "Últimos eventos de la cadena, del más reciente al más antiguo."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "filing_number",
+          "court",
+          "practice_area",
+          "internal_reference",
+          "status",
+          "created_at",
+          "created_by_name",
+          "member_count",
+          "members",
+          "recent_events"
+        ],
+        "title": "CaseDetail",
+        "description": "El caso con su equipo y sus últimos eventos (API-024)."
+      },
+      "CaseMemberOut": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id",
+            "description": "Identificador de la persona."
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name",
+            "description": "Nombre de la persona."
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "description": "Correo de la persona."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Rol en la organización."
+          },
+          "added_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Added At",
+            "description": "Cuándo se asignó al caso."
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "full_name",
+          "email",
+          "role",
+          "added_at"
+        ],
+        "title": "CaseMemberOut",
+        "description": "Una persona asignada al caso."
+      },
+      "CaseOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador del caso."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Título del caso."
+          },
+          "filing_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Number",
+            "description": "Los 23 dígitos del radicado, si lo tiene."
+          },
+          "court": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Court",
+            "description": "Despacho que lleva el proceso."
+          },
+          "practice_area": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "civil",
+                  "commercial",
+                  "family",
+                  "labor",
+                  "criminal",
+                  "administrative",
+                  "constitutional",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Practice Area",
+            "description": "Especialidad."
+          },
+          "internal_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internal Reference",
+            "description": "Referencia interna de la oficina."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed"
+            ],
+            "title": "Status",
+            "description": "Si el caso sigue abierto."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Cuándo se abrió."
+          },
+          "created_by_name": {
+            "type": "string",
+            "title": "Created By Name",
+            "description": "Nombre de quien lo abrió."
+          },
+          "member_count": {
+            "type": "integer",
+            "title": "Member Count",
+            "description": "Personas asignadas al caso."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "filing_number",
+          "court",
+          "practice_area",
+          "internal_reference",
+          "status",
+          "created_at",
+          "created_by_name",
+          "member_count"
+        ],
+        "title": "CaseOut",
+        "description": "Un caso abierto."
+      },
+      "CasePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CaseSummaryOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Casos de la actividad más reciente a la más antigua."
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Cursor de la página siguiente, o null."
+          },
+          "totals": {
+            "$ref": "#/components/schemas/CaseTotalsOut",
+            "description": "Totales de los casos de la persona."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor",
+          "totals"
+        ],
+        "title": "CasePage",
+        "description": "Una página de los casos de la persona y los totales (API-023)."
+      },
+      "CaseSummaryOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador del caso."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Título del caso."
+          },
+          "filing_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Number",
+            "description": "Los 23 dígitos del radicado, si lo tiene."
+          },
+          "court": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Court",
+            "description": "Despacho que lleva el proceso."
+          },
+          "practice_area": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "civil",
+                  "commercial",
+                  "family",
+                  "labor",
+                  "criminal",
+                  "administrative",
+                  "constitutional",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Practice Area",
+            "description": "Especialidad."
+          },
+          "internal_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Internal Reference",
+            "description": "Referencia interna de la oficina."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed"
+            ],
+            "title": "Status",
+            "description": "Si el caso sigue abierto."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Cuándo se abrió."
+          },
+          "created_by_name": {
+            "type": "string",
+            "title": "Created By Name",
+            "description": "Nombre de quien lo abrió."
+          },
+          "member_count": {
+            "type": "integer",
+            "title": "Member Count",
+            "description": "Personas asignadas al caso."
+          },
+          "evidence_count": {
+            "type": "integer",
+            "title": "Evidence Count",
+            "description": "Evidencias del caso."
+          },
+          "evidence_by_type": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "chat",
+                "email",
+                "audio",
+                "image",
+                "document",
+                "other"
+              ]
+            },
+            "type": "object",
+            "title": "Evidence By Type",
+            "description": "Evidencias por tipo declarado; solo los tipos que tienen alguna."
+          },
+          "member_initials": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Member Initials",
+            "description": "Iniciales de las tres primeras personas en llegar al caso."
+          },
+          "last_event": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LastEventOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Último evento de la cadena; null solo si el caso no tiene eventos."
+          },
+          "recent_actions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Recent Actions",
+            "description": "Acciones de los últimos cinco eventos, el más reciente al final."
+          },
+          "last_activity_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Activity At",
+            "description": "Hora del último evento de la cadena; por ella se ordena la lista."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "filing_number",
+          "court",
+          "practice_area",
+          "internal_reference",
+          "status",
+          "created_at",
+          "created_by_name",
+          "member_count",
+          "evidence_count",
+          "evidence_by_type",
+          "member_initials",
+          "last_event",
+          "recent_actions",
+          "last_activity_at"
+        ],
+        "title": "CaseSummaryOut",
+        "description": "Un caso de la lista con su actividad (API-023)."
+      },
+      "CaseTotalsOut": {
+        "properties": {
+          "open": {
+            "type": "integer",
+            "title": "Open",
+            "description": "Casos abiertos."
+          },
+          "closed": {
+            "type": "integer",
+            "title": "Closed",
+            "description": "Casos cerrados."
+          },
+          "evidences": {
+            "type": "integer",
+            "title": "Evidences",
+            "description": "Evidencias en esos casos."
+          },
+          "pending_stamps": {
+            "type": "integer",
+            "title": "Pending Stamps",
+            "description": "Evidencias cuyo sello de tiempo está pendiente."
+          },
+          "custody_events": {
+            "type": "integer",
+            "title": "Custody Events",
+            "description": "Eventos de custodia de esos casos."
+          }
+        },
+        "type": "object",
+        "required": [
+          "open",
+          "closed",
+          "evidences",
+          "pending_stamps",
+          "custody_events"
+        ],
+        "title": "CaseTotalsOut",
+        "description": "Totales de los casos donde la persona es miembro, sin importar el filtro."
+      },
+      "ChangePasswordRequest": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Current Password",
+            "description": "Contraseña actual."
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 12,
+            "title": "New Password",
+            "description": "Contraseña nueva, de 12 a 128 caracteres."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "ChangePasswordRequest",
+        "description": "Contraseña actual y nueva de quien tiene la sesión (API-013)."
+      },
+      "CustodyEventOut": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq",
+            "description": "Posición del evento en la cadena, desde 1."
+          },
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "Qué ocurrió, por ejemplo case_created."
+          },
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name",
+            "description": "Quién lo hizo, o null si fue el sistema."
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At",
+            "description": "Cuándo ocurrió."
+          },
+          "event_hash": {
+            "type": "string",
+            "title": "Event Hash",
+            "description": "Huella SHA-256 del evento, en hexadecimal."
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "action",
+          "actor_name",
+          "occurred_at",
+          "event_hash"
+        ],
+        "title": "CustodyEventOut",
+        "description": "Un evento de la cadena de custodia del caso."
+      },
+      "ForgotPasswordRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo de la cuenta."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "ForgotPasswordRequest",
+        "description": "Correo al que se envía el enlace para restablecer la contraseña (API-011)."
+      },
       "HealthStatus": {
         "properties": {
           "status": {
@@ -94,6 +2377,515 @@
         ],
         "title": "HealthStatus",
         "description": "Estado del servicio y de la base de datos cuando ambos responden."
+      },
+      "InvitationAccepted": {
+        "properties": {
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name",
+            "description": "Organización a la que entró."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Su rol en la organización."
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_name",
+          "role"
+        ],
+        "title": "InvitationAccepted",
+        "description": "A dónde entró la persona al aceptar."
+      },
+      "InvitationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador de la invitación."
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "description": "Correo invitado."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Rol ofrecido."
+          },
+          "invited_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Invited At",
+            "description": "Cuándo se envió."
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At",
+            "description": "Cuándo vence: 72 horas después."
+          },
+          "expired": {
+            "type": "boolean",
+            "title": "Expired",
+            "description": "Si ya venció sin que la aceptaran."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "role",
+          "invited_at",
+          "expires_at",
+          "expired"
+        ],
+        "title": "InvitationOut",
+        "description": "Una invitación sin aceptar ni revocar."
+      },
+      "InvitationPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InvitationOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Invitaciones de esta página."
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Cursor para la página siguiente, o null si no hay más."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "InvitationPage",
+        "description": "Invitaciones pendientes, de la más reciente a la más antigua (API-017)."
+      },
+      "InvitationPreview": {
+        "properties": {
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name",
+            "description": "Organización que invita."
+          },
+          "inviter_name": {
+            "type": "string",
+            "title": "Inviter Name",
+            "description": "Quién envió la invitación."
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "description": "Correo invitado; será el de acceso."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Rol ofrecido."
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At",
+            "description": "Cuándo vence la invitación."
+          },
+          "account": {
+            "type": "string",
+            "enum": [
+              "new",
+              "existing",
+              "member_elsewhere"
+            ],
+            "title": "Account",
+            "description": "new si el correo no tiene cuenta; existing si la tiene y no pertenece a ninguna organización; member_elsewhere si ya pertenece a una (RN-011)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_name",
+          "inviter_name",
+          "email",
+          "role",
+          "expires_at",
+          "account"
+        ],
+        "title": "InvitationPreview",
+        "description": "Lo que la persona invitada ve antes de aceptar (UI-011)."
+      },
+      "InvitationRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo al que llega la invitación."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Rol con que entrará: admin, lawyer o assistant."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email",
+          "role"
+        ],
+        "title": "InvitationRequest",
+        "description": "Correo y rol de la persona invitada (API-016)."
+      },
+      "InvitationTokenRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Token",
+            "description": "Token del fragmento del enlace (#t=…)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "InvitationTokenRequest",
+        "description": "El token del enlace de la invitación (API-052)."
+      },
+      "LastEventOut": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "Qué ocurrió, por ejemplo evidence_uploaded."
+          },
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name",
+            "description": "Quién lo hizo, o null si fue el sistema."
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At",
+            "description": "Cuándo ocurrió."
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "actor_name",
+          "occurred_at"
+        ],
+        "title": "LastEventOut",
+        "description": "El último evento de la cadena de un caso."
+      },
+      "LegalAcceptanceRequest": {
+        "properties": {
+          "legal_version": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Legal Version",
+            "description": "Fecha de los textos que la persona leyó y acepta; debe ser la vigente."
+          },
+          "accepts_legal_terms": {
+            "type": "boolean",
+            "const": true,
+            "title": "Accepts Legal Terms",
+            "description": "Acepta los términos y autoriza el tratamiento de sus datos. Nunca se presume: la interfaz lo envía solo si la persona marcó la casilla."
+          }
+        },
+        "type": "object",
+        "required": [
+          "legal_version",
+          "accepts_legal_terms"
+        ],
+        "title": "LegalAcceptanceRequest",
+        "description": "Aceptación expresa de los textos legales vigentes."
+      },
+      "LegalStatus": {
+        "properties": {
+          "accepted_version": {
+            "type": "string",
+            "title": "Accepted Version",
+            "description": "Fecha (AAAA-MM-DD) de los textos que la persona aceptó por última vez."
+          },
+          "current_version": {
+            "type": "string",
+            "title": "Current Version",
+            "description": "Fecha (AAAA-MM-DD) de los textos vigentes."
+          },
+          "acceptance_required": {
+            "type": "boolean",
+            "title": "Acceptance Required",
+            "description": "Si debe aceptar los textos vigentes antes de seguir usando el servicio."
+          }
+        },
+        "type": "object",
+        "required": [
+          "accepted_version",
+          "current_version",
+          "acceptance_required"
+        ],
+        "title": "LegalStatus",
+        "description": "Qué textos legales aceptó la persona y si debe aceptar unos nuevos (RN-029)."
+      },
+      "LoginRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo de la cuenta."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Password",
+            "description": "Contraseña de la cuenta."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginRequest",
+        "description": "Correo y contraseña para ingresar (API-005)."
+      },
+      "Me": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador de la persona."
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name",
+            "description": "Nombre de la persona."
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "description": "Correo de la cuenta."
+          },
+          "email_verified": {
+            "type": "boolean",
+            "title": "Email Verified",
+            "description": "Si ya verificó su correo (HU-006)."
+          },
+          "organization": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationMembership"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Su organización, o null si ya no pertenece a ninguna."
+          },
+          "legal": {
+            "$ref": "#/components/schemas/LegalStatus",
+            "description": "Su aceptación de los textos legales."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "full_name",
+          "email",
+          "email_verified",
+          "organization",
+          "legal"
+        ],
+        "title": "Me",
+        "description": "Perfil, organización y rol de quien tiene la sesión."
+      },
+      "MemberOut": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id",
+            "description": "Identificador de la persona."
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name",
+            "description": "Nombre de la persona."
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "description": "Correo de la persona."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Rol en la organización."
+          },
+          "joined_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Joined At",
+            "description": "Cuándo entró a la organización."
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "full_name",
+          "email",
+          "role",
+          "joined_at"
+        ],
+        "title": "MemberOut",
+        "description": "Una persona de la organización y su rol."
+      },
+      "MemberPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MemberOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Miembros de esta página."
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor",
+            "description": "Cursor para la página siguiente, o null si no hay más."
+          },
+          "seats": {
+            "$ref": "#/components/schemas/SeatsOut",
+            "description": "Cupo de usuarios del plan."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor",
+          "seats"
+        ],
+        "title": "MemberPage",
+        "description": "Miembros en el orden en que llegaron, con el cupo del plan (API-015)."
+      },
+      "OrganizationMembership": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador de la organización."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nombre de la oficina, la firma o la persona independiente."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Rol de la persona en la organización."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "role"
+        ],
+        "title": "OrganizationMembership",
+        "description": "La organización de la persona y su rol en ella."
+      },
+      "PasswordResetRequested": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Qué sigue."
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "PasswordResetRequested",
+        "description": "La misma respuesta exista o no una cuenta con ese correo (CA-HU-010-02)."
       },
       "Problem": {
         "additionalProperties": false,
@@ -223,6 +3015,198 @@
         "title": "PublicPlan",
         "description": "Plan que se muestra en la página de precios, con sus precios y límites del catálogo."
       },
+      "RegisterRequest": {
+        "properties": {
+          "account_type": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "firm"
+            ],
+            "title": "Account Type",
+            "description": "individual si trabaja por su cuenta; firm si abre la cuenta de una oficina."
+          },
+          "full_name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Full Name",
+            "description": "Nombre de la persona."
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo de la cuenta; también será el de acceso."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 12,
+            "title": "Password",
+            "description": "Contraseña de 12 a 128 caracteres."
+          },
+          "organization_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Name",
+            "description": "Nombre de la oficina o firma. Solo con account_type firm."
+          },
+          "legal_version": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Legal Version",
+            "description": "Versión de los términos y la privacidad que vio la persona."
+          },
+          "accepts_legal_terms": {
+            "type": "boolean",
+            "const": true,
+            "title": "Accepts Legal Terms",
+            "description": "Acepta los términos y autoriza el tratamiento de sus datos (CMP-UI-004)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "account_type",
+          "full_name",
+          "email",
+          "password",
+          "legal_version",
+          "accepts_legal_terms"
+        ],
+        "title": "RegisterRequest",
+        "description": "Datos para crear una cuenta con su organización y la prueba gratis (API-003)."
+      },
+      "RegistrationAccepted": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Qué sigue para la persona."
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "RegistrationAccepted",
+        "description": "La misma respuesta para un correo nuevo y para uno ya registrado (CA-HU-005-03)."
+      },
+      "ResendVerificationRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo de la cuenta por verificar."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "ResendVerificationRequest",
+        "description": "Correo al que se reenvía el enlace de verificación (UI-007)."
+      },
+      "ResetPasswordRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Token",
+            "description": "Token del enlace."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 12,
+            "title": "Password",
+            "description": "Contraseña nueva, de 12 a 128 caracteres."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token",
+          "password"
+        ],
+        "title": "ResetPasswordRequest",
+        "description": "Token del enlace y contraseña nueva (API-012). La página toma el token del fragmento."
+      },
+      "RoleChangeRequest": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "lawyer",
+              "assistant"
+            ],
+            "title": "Role",
+            "description": "Rol nuevo: admin, lawyer o assistant."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role"
+        ],
+        "title": "RoleChangeRequest",
+        "description": "El rol nuevo de un miembro (API-020). El propietario no se asigna: nace con la\norganización (RN-010)."
+      },
+      "SeatsOut": {
+        "properties": {
+          "used": {
+            "type": "integer",
+            "title": "Used",
+            "description": "Miembros más invitaciones abiertas."
+          },
+          "included": {
+            "type": "integer",
+            "title": "Included",
+            "description": "Usuarios que incluye el plan."
+          },
+          "extra_user_price_cop": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extra User Price Cop",
+            "description": "Precio mensual de cada usuario adicional, o null si el plan no los admite."
+          },
+          "full": {
+            "type": "boolean",
+            "title": "Full",
+            "description": "Si ya no cabe nadie más sin cambiar de plan."
+          }
+        },
+        "type": "object",
+        "required": [
+          "used",
+          "included",
+          "extra_user_price_cop",
+          "full"
+        ],
+        "title": "SeatsOut",
+        "description": "Cupo de usuarios del plan (RN-012)."
+      },
       "ValidationErrorItem": {
         "additionalProperties": false,
         "description": "Un dato inválido de la solicitud: dónde está, qué falló y el tipo de error.",
@@ -313,6 +3297,53 @@
         ],
         "title": "ValidationProblem",
         "type": "object"
+      },
+      "VerificationRequested": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Qué sigue para la persona."
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "VerificationRequested",
+        "description": "La misma respuesta exista o no una cuenta por verificar con ese correo."
+      },
+      "VerifyEmailRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Token",
+            "description": "Token del enlace."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "VerifyEmailRequest",
+        "description": "Token del enlace de verificación (API-004). La página lo toma del fragmento #t=."
+      }
+    },
+    "securitySchemes": {
+      "renovacion": {
+        "type": "apiKey",
+        "description": "Cookie de renovación que la API entrega al ingresar y en cada renovación.",
+        "in": "cookie",
+        "name": "__Secure-aletheia_refresh"
+      },
+      "sesion": {
+        "type": "apiKey",
+        "description": "Cookie de acceso que la API entrega al ingresar.",
+        "in": "cookie",
+        "name": "__Host-aletheia_access"
       }
     }
   }

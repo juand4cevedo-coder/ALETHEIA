@@ -1,5 +1,8 @@
 """Pruebas de la documentación de la API según el entorno."""
 
+from pathlib import Path
+from unittest.mock import MagicMock
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -11,24 +14,29 @@ _URL = "postgresql+psycopg://aletheia_app@127.0.0.1:1/aletheia"
 _RUTAS = ("/api/v1/openapi.json", "/api/v1/docs")
 
 
-def _cliente(**valores: str) -> TestClient:
+def _cliente(**valores: object) -> TestClient:
     # Cada campo va explícito: los valores directos tienen prioridad sobre el entorno y sobre
-    # backend/.env, que en desarrollo trae log_level DEBUG.
-    base = {"log_level": "INFO", "database_url": _URL}
+    # backend/.env, que en desarrollo trae log_level DEBUG y la clave de firma.
+    base: dict[str, object] = {"log_level": "INFO", "database_url": _URL, "token_signing_key": None}
     return TestClient(create_app(Settings.model_validate({**base, **valores})))
 
 
 @pytest.mark.parametrize("ruta", _RUTAS)
-def test_en_desarrollo_la_documentacion_esta_disponible(ruta: str) -> None:
-    with _cliente(environment="development") as client:
+def test_en_desarrollo_la_documentacion_esta_disponible(ruta: str, local_key_path: Path) -> None:
+    with _cliente(environment="development", local_key_path=local_key_path) as client:
         assert client.get(ruta).status_code == 200
 
 
 @pytest.mark.parametrize("ruta", _RUTAS)
-def test_en_produccion_la_documentacion_no_existe(ruta: str) -> None:
+def test_en_produccion_la_documentacion_no_existe(
+    ruta: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # En producción las llaves las envuelve AWS KMS; el cliente real no se crea en la prueba.
+    monkeypatch.setattr("app.adapters.keys.kms_client", MagicMock)
     produccion = _cliente(
         environment="production",
         database_password_parameter="/aletheia/prod/postgres/app-password",  # noqa: S106
+        token_signing_key_parameter="/aletheia/prod/app/token-signing-key",  # noqa: S106
     )
     with produccion as client:
         assert client.get(ruta).status_code == 404

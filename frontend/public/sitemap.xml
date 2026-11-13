@@ -8,6 +8,27 @@
     <loc>https://aletheia.sbs/precios</loc>
   </url>
   <url>
+    <loc>https://aletheia.sbs/registro</loc>
+  </url>
+  <url><loc>https://aletheia.sbs/docs</loc></url>
+  <url><loc>https://aletheia.sbs/docs/introduccion</loc></url>
+  <url><loc>https://aletheia.sbs/docs/crear-un-caso</loc></url>
+  <url><loc>https://aletheia.sbs/docs/invitar-al-equipo</loc></url>
+  <url><loc>https://aletheia.sbs/docs/verificar-un-archivo</loc></url>
+  <url><loc>https://aletheia.sbs/docs/recuperar-el-acceso</loc></url>
+  <url><loc>https://aletheia.sbs/blog</loc></url>
+  <url><loc>https://aletheia.sbs/blog/un-caso-con-contexto</loc></url>
+  <url><loc>https://aletheia.sbs/blog/que-dice-una-huella-sha256</loc></url>
+  <url><loc>https://aletheia.sbs/blog/permisos-con-intencion</loc></url>
+  <url><loc>https://aletheia.sbs/ayuda</loc></url>
+  <url><loc>https://aletheia.sbs/filosofia</loc></url>
+  <url><loc>https://aletheia.sbs/nosotros</loc></url>
+  <url><loc>https://aletheia.sbs/seguridad</loc></url>
+  <url><loc>https://aletheia.sbs/soporte</loc></url>
+  <url><loc>https://aletheia.sbs/empresa</loc></url>
+  <url><loc>https://aletheia.sbs/marca</loc></url>
+  <url><loc>https://aletheia.sbs/estado</loc></url>
+  <url>
     <loc>https://aletheia.sbs/legal/privacidad</loc>
   </url>
   <url>

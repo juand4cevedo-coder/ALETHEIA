@@ -1,0 +1,203 @@
+/* Vista previa del registro de apertura: un panel con el acta, y el primer eslabón de la cadena
+   marcado cuando el caso ya se puede abrir. Dentro del acta no hay más recuadros: las partes se
+   separan con una línea. */
+.preview {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.label {
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
+}
+
+.record {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+}
+
+.reference {
+  position: relative;
+  margin: 0 0 var(--space-1);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-mono);
+  overflow-wrap: anywhere;
+}
+
+.title {
+  position: relative;
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-subtitle);
+  font-weight: 500;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-subtitle);
+  overflow-wrap: anywhere;
+}
+
+.title[data-empty] {
+  color: var(--text-3);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-6) 0;
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.facts dt {
+  margin-bottom: var(--space-1);
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
+}
+
+.facts dd {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+  overflow-wrap: anywhere;
+}
+
+/* El rombo y su columna tienen las medidas de la cadena del caso. */
+.genesis {
+  display: grid;
+  grid-template-columns: var(--space-6) minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+/* El primer eslabón: un rombo que se enciende cuando el caso está listo para abrirse. */
+.node {
+  width: var(--space-4);
+  height: var(--space-4);
+  margin: var(--space-1) 0 0 var(--space-1);
+  border: 1px solid var(--line-control);
+  /* Medio radio: con el de 6 px un rombo de 16 px se lee como un círculo. */
+  border-radius: calc(var(--radius-sm) / 2);
+  background: var(--surface-1);
+  transform: rotate(45deg);
+  transition:
+    border-color var(--motion-base) var(--ease-standard),
+    background-color var(--motion-base) var(--ease-standard);
+}
+
+.record[data-ready] .node {
+  border-color: var(--text-2);
+  background: var(--surface-2);
+}
+
+.event {
+  min-width: 0;
+}
+
+.eventName {
+  margin: 0 0 var(--space-1);
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+}
+
+.eventNote {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+/* Los rótulos toman el ancho del más largo y los valores se alinean en la segunda columna. */
+.hashes {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-2) var(--space-3);
+  margin: var(--space-4) 0 0;
+}
+
+.hashes div {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.hashes dt {
+  color: var(--text-3);
+}
+
+.hashes dd {
+  margin: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.hashes code {
+  font-family: var(--font-mono);
+}
+
+.key {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin: var(--space-6) 0 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.key svg {
+  flex: none;
+  /* Centrado con la primera línea del texto. */
+  margin-top: calc((var(--line-height-support) - var(--space-4)) / 2);
+  color: var(--text-2);
+}
+
+.footnote {
+  max-width: var(--measure);
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+@media (max-width: 560px) {
+  .record {
+    padding: var(--space-4);
+  }
+
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hashes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hashes div {
+    row-gap: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node {
+    transition: none;
+  }
+}

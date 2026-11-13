@@ -1,0 +1,217 @@
+/* Menú de la cuenta (HU-009): un botón discreto en el encabezado que abre un panel flotante. */
+.root {
+  position: relative;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  max-width: min(var(--measure-menu), 70vw);
+  padding: 0 var(--space-2) 0 var(--space-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
+}
+
+.trigger:hover,
+.trigger[aria-expanded="true"] {
+  border-color: var(--line);
+  background: var(--surface-2);
+}
+
+.seal {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  border: 1px solid var(--line-control);
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  line-height: var(--line-height-label);
+}
+
+.who {
+  display: grid;
+  min-width: 0;
+}
+
+.person {
+  overflow: hidden;
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.organization {
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  flex: none;
+  color: var(--text-3);
+  transition: transform var(--motion-base) var(--ease-standard);
+}
+
+.trigger[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+/* El menú flota sobre la página: es uno de los dos usos de la sombra del sistema. */
+.panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 20;
+  width: min(var(--menu-width), calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+  box-shadow: var(--shadow-float);
+  animation: unfold var(--motion-fast) var(--ease-standard);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+@keyframes unfold {
+  from {
+    opacity: 0;
+  }
+}
+
+.account {
+  padding: var(--space-3) var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.panelName {
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+}
+
+.panelEmail {
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panelRole {
+  margin-top: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
+}
+
+.actions {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.action {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.action > svg {
+  flex: none;
+  /* Centrado con la primera línea del texto. */
+  margin-top: calc((var(--line-height-ui) - var(--space-4)) / 2);
+  color: var(--text-2);
+}
+
+.action:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.action:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.actionText {
+  display: grid;
+}
+
+.actionLabel {
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+}
+
+.actionHint {
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.failure {
+  margin: var(--space-2) var(--space-3) var(--space-1);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--err);
+  color: var(--text);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+@media (max-width: 560px) {
+  .who {
+    display: none;
+  }
+
+  .trigger {
+    padding-right: var(--space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+
+  .chevron {
+    transition: none;
+  }
+}

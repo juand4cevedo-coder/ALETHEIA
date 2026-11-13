@@ -1,0 +1,53 @@
+.notice {
+  --tone: var(--text-2);
+
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+.notice:focus {
+  outline: none;
+}
+
+/* Una acción que salió bien (caso abierto, invitación enviada) no es una verificación: el
+   verde queda solo para lo que el sistema comprobó, así que el visto va en el color del texto. */
+.notice[data-tone="success"] {
+  --tone: var(--text);
+}
+
+.notice[data-tone="warning"] {
+  --tone: var(--warn);
+}
+
+/* El error se distingue también por el borde: es lo que la persona debe atender primero. */
+.notice[data-tone="error"] {
+  --tone: var(--err);
+
+  border-color: color-mix(in srgb, var(--err) 40%, var(--line));
+}
+
+.notice > svg {
+  flex: none;
+  /* Centrado con la primera línea del texto. */
+  margin-top: calc((var(--line-height-ui) - var(--space-4)) / 2);
+  color: var(--tone);
+}
+
+.content {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.content :where(a) {
+  color: var(--accent-strong);
+}

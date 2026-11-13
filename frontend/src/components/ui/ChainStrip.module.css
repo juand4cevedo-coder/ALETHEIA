@@ -1,0 +1,38 @@
+/* Miniatura de la cadena: rombos unidos por un trazo fino, como eslabones. Sin brillo ni
+   latido: un rombo ámbar fijo basta para decir que el sello sigue pendiente, y el aria-label lo
+   dice en palabras. */
+.strip {
+  display: inline-flex;
+  align-items: center;
+  height: var(--space-4);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* El trazo que une cada rombo con el anterior. */
+.link + .link::before {
+  content: "";
+  width: var(--space-2);
+  height: 1px;
+  background: var(--line-control);
+}
+
+.link::after {
+  content: "";
+  width: var(--dot-size);
+  height: var(--dot-size);
+  background: var(--text-2);
+  transform: rotate(45deg);
+}
+
+/* Los eventos más antiguos se atenúan: la vista va hacia lo último que ocurrió. */
+.link[data-faded]::after {
+  background: var(--line-control);
+}
+
+.link[data-pending]::after {
+  background: var(--warn);
+}

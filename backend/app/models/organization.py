@@ -63,7 +63,12 @@ class Membership(Base):
 
 
 class Invitation(Base):
-    """Invitación por correo de un solo uso que vence a las 72 horas (DAT-07, RN-012)."""
+    """Invitación por correo de un solo uso que vence a las 72 horas (DAT-07, RN-012).
+
+    El enlace lleva un token opaco del que solo se guarda el SHA-256 (ADR-035). El token se
+    genera al enviar el correo; mientras tanto token_hash guarda el hash de un valor que nadie
+    conoce, así que ninguna invitación sirve antes de que salga su correo.
+    """
 
     __tablename__ = "invitations"
     __table_args__ = (
@@ -72,6 +77,12 @@ class Invitation(Base):
         ),
         CheckConstraint(text_values("role", INVITABLE_ROLES), name="role"),
         CheckConstraint("octet_length(token_hash) = 32", name="token_hash_sha256"),
+        # Invitaciones abiertas de una organización: cupos y correos con invitación vigente.
+        Index(
+            "ix_invitations_organization_id_pending",
+            "organization_id",
+            postgresql_where=text("accepted_at IS NULL AND revoked_at IS NULL"),
+        ),
     )
 
     id: Mapped[UUIDv7Pk]

@@ -1,0 +1,180 @@
+/* Inicio del espacio de trabajo: el nombre de la persona y una ficha de su cuenta, en una
+   columna. */
+.screen {
+  display: grid;
+  gap: var(--space-8);
+  max-width: var(--content-width);
+}
+
+/* Cada dato es un renglón de la ficha: el rótulo a la izquierda y el valor sobre su línea. */
+.record {
+  display: grid;
+  margin: 0;
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: var(--label-column) minmax(0, 1fr);
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+.row dt {
+  color: var(--text-2);
+}
+
+.row dd {
+  margin: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.email {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+/* Lo que falta para abrir casos: un panel más, sin color de acento; el botón del enlace nuevo
+   es la acción. */
+.notice {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+}
+
+.noticeTitle {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-subtitle);
+  font-weight: 500;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-subtitle);
+}
+
+.noticeText,
+.note {
+  max-width: var(--measure);
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+/* El formulario del enlace nuevo no se estira a todo el panel. */
+.resend {
+  max-width: var(--panel-width);
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 560px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+
+  .notice {
+    padding: var(--space-4);
+  }
+}
+
+.welcome {
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--line);
+}
+.eyebrow {
+  margin-bottom: var(--space-3);
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.welcomeText {
+  color: var(--text-2);
+  margin-top: var(--space-3);
+}
+.overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.metric {
+  padding: var(--space-6);
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.metric p {
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+}
+.metric strong {
+  display: block;
+  margin-top: var(--space-4);
+  font-family: var(--font-sans);
+  font-size: clamp(1.5rem, 3vw, 2.8rem);
+  font-weight: 500;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.quickActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-8);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+}
+.quickActions h2 {
+  margin-bottom: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+.quickActions p:last-child {
+  color: var(--text-2);
+  max-width: var(--measure-narrow);
+  font-size: var(--font-size-ui);
+}
+.actionLinks {
+  display: grid;
+  gap: var(--space-3);
+}
+@media (max-width: 620px) {
+  .overview {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+  .metric {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4);
+  }
+  .metric strong {
+    margin-top: 0;
+  }
+  .quickActions {
+    padding: var(--space-6);
+  }
+  .actionLinks {
+    width: 100%;
+  }
+}

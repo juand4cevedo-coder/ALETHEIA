@@ -1,0 +1,572 @@
+/* Libro de casos (maquetas 01 y 04): la franja de la custodia, las herramientas de la lista y el
+   libro, una tabla sobria cuya fila se resalta al pasar. */
+.screen {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+.book > .loading {
+  padding: var(--space-6);
+}
+
+.spinner {
+  animation: spin var(--motion-spin) linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
+.failure {
+  display: grid;
+  gap: var(--space-4);
+  max-width: var(--screen-narrow-width);
+}
+
+/* ---------- Herramientas de la lista ---------- */
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: calc(-1 * var(--space-3));
+}
+
+.segments {
+  display: inline-flex;
+  padding: calc(var(--space-1) - 1px);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+
+.segment {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.segment:hover {
+  color: var(--text);
+}
+
+/* El radio nativo da el teclado (flechas) y la semántica; se ve el segmento. */
+.segmentInput {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* El segmento elegido lleva borde --line-control (3,5:1 sobre --surface-1, 3,3:1 sobre
+   --surface-2): la superficie sola no se distingue. */
+.segment:has(.segmentInput:checked) {
+  border-color: var(--line-control);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.segment:has(.segmentInput:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.segmentCount {
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-label);
+}
+
+.filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 1 calc(var(--space-24) * 3);
+  min-width: 0;
+}
+
+.filterIcon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+.filterInput {
+  width: 100%;
+  min-height: var(--control-height);
+  /* El texto empieza después del ícono de 16 px. */
+  padding: 0 var(--space-3) 0
+    calc(var(--space-3) + var(--space-4) + var(--space-2));
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--font-size-ui);
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard);
+}
+
+.filterInput::placeholder {
+  color: var(--text-3);
+}
+
+.filterInput:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+.order {
+  margin: 0 0 0 auto;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.order b {
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+/* ---------- El libro ---------- */
+.book {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+}
+
+.book[aria-busy="true"] {
+  opacity: 0.7;
+}
+
+/* El foco llega aquí por programa, tras cargar más casos; no necesita anillo. */
+[data-book-focus]:focus {
+  outline: none;
+}
+
+.none {
+  margin: 0;
+  padding: var(--space-8) var(--space-6);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+  text-align: center;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Encabezado de la tabla (especificación de identidad, sección 7): --text-3 a 12 px. */
+.table thead th {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
+  text-align: left;
+}
+
+/* Proporciones de la maqueta: el caso manda, la integridad cierra la fila. El caso no lleva
+   ancho: toma lo que dejan las demás, y así la integridad puede tener uno fijo. */
+.table thead th:nth-child(1) {
+  padding-left: var(--space-6);
+}
+
+.table thead th:nth-child(2) {
+  width: 17%;
+}
+
+.table thead th:nth-child(3) {
+  width: 13%;
+}
+
+.table thead th:nth-child(4) {
+  width: 17%;
+}
+
+.table thead th:nth-child(5) {
+  /* Fijo, para que la insignia «Sin verificar» y el chevron quepan siempre, uno al lado del
+     otro, a cualquier ancho de escritorio: un porcentaje los cortaba o los encimaba. */
+  width: var(--status-column);
+}
+
+/* Toda la fila lleva al caso: el enlace del título se extiende sobre ella (ver .title::after). */
+/* Filas de 52 px como mínimo; las que llevan radicado debajo del título crecen. */
+.row {
+  position: relative;
+  height: var(--row-height);
+  border-top: 1px solid var(--line);
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.table tbody .row:first-child {
+  border-top: 0;
+}
+
+.row:hover,
+.row:focus-within {
+  background: var(--surface-2);
+}
+
+.row > th,
+.row > td {
+  padding: var(--space-3);
+  font-weight: 400;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.row > .caseCell {
+  padding-left: var(--space-6);
+}
+
+.row > .integrityCell {
+  padding-right: var(--space-4);
+}
+
+/* La insignia y el chevron van en la misma línea, en el flujo: nunca se tapan. */
+.integrity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.chevron {
+  flex: none;
+  color: var(--text-3);
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.row:hover .chevron {
+  color: var(--text);
+}
+
+.titleLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+  margin-bottom: var(--space-1);
+}
+
+.title {
+  min-width: 0;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+/* Encima del contenido de las celdas, para que un clic en cualquier punto de la fila llegue al
+   enlace. Basta el nivel 1: queda bajo el encabezado de la
+   aplicación (30) y el menú de la cuenta (20), que deben seguir cubriendo la lista. */
+.title::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+}
+
+.title:hover {
+  text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
+}
+
+.title:focus-visible {
+  outline: none;
+}
+
+/* El foco se ve en toda la fila, que es lo que lleva al caso. */
+.title:focus-visible::after {
+  border-radius: var(--radius-sm);
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: inherit;
+}
+
+.identity {
+  min-width: 0;
+}
+
+/* El radicado y la referencia interna quedan por encima del enlace extendido (.title::after):
+   así se pueden seleccionar y copiar desde la lista. Solo cubren su propio texto; el resto de
+   la fila sigue llevando al caso. */
+.identity > * {
+  position: relative;
+  z-index: 2;
+}
+
+.noFiling {
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.noFiling b {
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-weight: 400;
+}
+
+.area {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: var(--space-1);
+  padding: calc(var(--space-1) / 2) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.court,
+.noCourt {
+  display: block;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+  overflow-wrap: anywhere;
+}
+
+/* Lo que aún falta se lee más tenue que un dato. */
+.noCourt {
+  color: var(--text-3);
+}
+
+.evidence {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.evidenceCount {
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+}
+
+.evidenceTypes {
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+/* Cada tipo se queda entero en su renglón: «9 chats», nunca «9» y «chats» separados. */
+.evidenceTypes > span {
+  white-space: nowrap;
+}
+
+.chain {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.when {
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.whenAction {
+  display: block;
+  color: var(--text);
+}
+
+.when time {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---------- Más casos ---------- */
+.more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.moreNote {
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+/* ---------- Antes del primer caso ---------- */
+.principles {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.principles li {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
+}
+
+.principles li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.principles li:last-child {
+  padding-bottom: 0;
+}
+
+.principleTitle {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+}
+
+.principleText {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+/* ---------- Tarjetas (900 px o menos) ---------- */
+.cards {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cards > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.card {
+  position: relative;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.card:hover,
+.card:focus-within {
+  background: var(--surface-2);
+}
+
+.cardFacts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+.cardFacts dt {
+  margin-bottom: var(--space-1);
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
+}
+
+.cardFacts dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.cardWide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  .order {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .segments {
+    display: flex;
+  }
+
+  .segment {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .filter {
+    flex-basis: auto;
+  }
+
+  .cardFacts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment,
+  .filterInput,
+  .row,
+  .chevron,
+  .card {
+    transition: none;
+  }
+}

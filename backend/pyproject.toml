@@ -1,16 +1,20 @@
 [project]
 name = "aletheia-backend"
-version = "0.2.0"
+version = "0.3.0"
 description = "API de ALETHEIA: preservación de evidencia digital con integridad y trazabilidad."
 requires-python = ">=3.14,<3.15"
 dependencies = [
     "alembic==1.20.1",
-    "boto3==1.43.120",
+    "argon2-cffi==25.1.0",
+    "pyjwt==2.15.1",
+    "boto3==1.43.123",
+    "cryptography==50.0.2",
     "fastapi==0.162.0",
-    "psycopg[binary]==3.3.6",
-    "pydantic==2.14.1",
-    "pydantic-settings==2.16.1",
-    "sqlalchemy==2.1.6",
+    "psycopg[binary]==3.3.7",
+    "pydantic==2.14.2",
+    "pydantic-settings==2.16.2",
+    "sqlalchemy==2.1.8",
+    "tink==1.16.1",
     "uvicorn==0.54.0",
 ]
 
@@ -22,29 +26,19 @@ exclude-newer = "7 days"
 # Cada `uv add` fija la versión exacta resuelta.
 add-bounds = "exact"
 
-# Excepción hasta el 04/11/2026 (ADR-019): boto3 1.43.120 y sus tipos entraron con la espera
-# anterior de 3 días. Se retira cuando cumplan 7 días de publicados.
-[tool.uv.exclude-newer-package]
-boto3 = "2026-10-28T00:00:00Z"
-botocore = "2026-10-28T00:00:00Z"
-boto3-stubs = "2026-10-28T00:00:00Z"
-botocore-stubs = "2026-10-28T00:00:00Z"
-
 [dependency-groups]
 dev = [
-    "boto3-stubs[ssm]==1.43.120",
+    "boto3-stubs[kms,sesv2,ssm]==1.43.123",
     "httpx2==2.16.0",
-    "mypy==2.4.0",
-    "pytest==9.1.1",
-    "ruff==0.17.2",
+    "mypy==2.4.1",
+    "pytest==9.2.0",
+    "ruff==0.17.3",
 ]
 spike = [
     "asn1crypto==1.5.1",
-    "cryptography==50.0.2",
     "psutil==7.2.2",
-    "python-multipart==0.0.32",
+    "python-multipart==0.0.33",
     "rfc3161-client==1.0.9",
-    "tink==1.16.1",
     "types-psutil==7.2.2.20260906",
 ]
 

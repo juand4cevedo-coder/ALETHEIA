@@ -37,8 +37,13 @@ class Job(Base):
         CheckConstraint(text_values("status", JOB_STATUSES), name="status"),
         CheckConstraint("attempts >= 0", name="attempts"),
         CheckConstraint("char_length(last_error) <= 500", name="last_error_length"),
-        # El trabajador toma la siguiente tarea en cola sin recorrer las terminadas (IDX-010).
-        Index("ix_jobs_run_after_queued", "run_after", postgresql_where=text("status = 'queued'")),
+        # El trabajador toma la siguiente tarea pendiente, en cola o con la reserva vencida, sin
+        # recorrer las terminadas (IDX-010).
+        Index(
+            "ix_jobs_run_after_pending",
+            "run_after",
+            postgresql_where=text("status IN ('queued', 'running')"),
+        ),
     )
 
     id: Mapped[UUIDv7Pk]

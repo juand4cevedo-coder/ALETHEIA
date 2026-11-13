@@ -5,6 +5,545 @@ export type ClientOptions = {
 };
 
 /**
+ * AcceptInvitationRequest
+ *
+ * Aceptar la invitación (API-019).
+ *
+ * Con full_name se crea una cuenta nueva: la contraseña es la nueva y debe aceptar los textos
+ * legales vigentes. Sin full_name, la persona ya tiene cuenta y la contraseña es la suya.
+ */
+export type AcceptInvitationRequest = {
+  /**
+   * Token
+   *
+   * Token del fragmento del enlace (#t=…).
+   */
+  token: string;
+  /**
+   * Password
+   *
+   * Contraseña nueva de 12 a 128 caracteres para una cuenta nueva, o la contraseña de la cuenta existente.
+   */
+  password: string;
+  /**
+   * Full Name
+   *
+   * Nombre de la persona. Solo para una cuenta nueva.
+   */
+  full_name?: string | null;
+  /**
+   * Legal Version
+   *
+   * Versión de los textos que vio la persona. Solo para una cuenta nueva.
+   */
+  legal_version?: string | null;
+  /**
+   * Accepts Legal Terms
+   *
+   * Acepta los términos y autoriza el tratamiento de sus datos. Obligatorio para una cuenta nueva; nunca se presume.
+   */
+  accepts_legal_terms?: true | null;
+};
+
+/**
+ * CaseCreate
+ *
+ * Datos con que se abre un caso (API-022).
+ */
+export type CaseCreate = {
+  /**
+   * Title
+   *
+   * Título del caso.
+   */
+  title: string;
+  /**
+   * Filing Number
+   *
+   * Número de radicación. Se aceptan espacios, puntos y guiones; se guardan solo sus 23 dígitos.
+   */
+  filing_number?: string | null;
+  /**
+   * Court
+   *
+   * Despacho que lleva el proceso.
+   */
+  court?: string | null;
+  /**
+   * Practice Area
+   *
+   * Especialidad.
+   */
+  practice_area?:
+    | "civil"
+    | "commercial"
+    | "family"
+    | "labor"
+    | "criminal"
+    | "administrative"
+    | "constitutional"
+    | "other"
+    | null;
+  /**
+   * Internal Reference
+   *
+   * Referencia con que la oficina identifica el caso.
+   */
+  internal_reference?: string | null;
+};
+
+/**
+ * CaseDetail
+ *
+ * El caso con su equipo y sus últimos eventos (API-024).
+ */
+export type CaseDetail = {
+  /**
+   * Id
+   *
+   * Identificador del caso.
+   */
+  id: string;
+  /**
+   * Title
+   *
+   * Título del caso.
+   */
+  title: string;
+  /**
+   * Filing Number
+   *
+   * Los 23 dígitos del radicado, si lo tiene.
+   */
+  filing_number: string | null;
+  /**
+   * Court
+   *
+   * Despacho que lleva el proceso.
+   */
+  court: string | null;
+  /**
+   * Practice Area
+   *
+   * Especialidad.
+   */
+  practice_area:
+    | "civil"
+    | "commercial"
+    | "family"
+    | "labor"
+    | "criminal"
+    | "administrative"
+    | "constitutional"
+    | "other"
+    | null;
+  /**
+   * Internal Reference
+   *
+   * Referencia interna de la oficina.
+   */
+  internal_reference: string | null;
+  /**
+   * Status
+   *
+   * Si el caso sigue abierto.
+   */
+  status: "open" | "closed";
+  /**
+   * Created At
+   *
+   * Cuándo se abrió.
+   */
+  created_at: string;
+  /**
+   * Created By Name
+   *
+   * Nombre de quien lo abrió.
+   */
+  created_by_name: string;
+  /**
+   * Member Count
+   *
+   * Personas asignadas al caso.
+   */
+  member_count: number;
+  /**
+   * Members
+   *
+   * Equipo del caso.
+   */
+  members: Array<CaseMemberOut>;
+  /**
+   * Recent Events
+   *
+   * Últimos eventos de la cadena, del más reciente al más antiguo.
+   */
+  recent_events: Array<CustodyEventOut>;
+};
+
+/**
+ * CaseMemberOut
+ *
+ * Una persona asignada al caso.
+ */
+export type CaseMemberOut = {
+  /**
+   * User Id
+   *
+   * Identificador de la persona.
+   */
+  user_id: string;
+  /**
+   * Full Name
+   *
+   * Nombre de la persona.
+   */
+  full_name: string;
+  /**
+   * Email
+   *
+   * Correo de la persona.
+   */
+  email: string;
+  /**
+   * Role
+   *
+   * Rol en la organización.
+   */
+  role: "owner" | "admin" | "lawyer" | "assistant";
+  /**
+   * Added At
+   *
+   * Cuándo se asignó al caso.
+   */
+  added_at: string;
+};
+
+/**
+ * CaseOut
+ *
+ * Un caso abierto.
+ */
+export type CaseOut = {
+  /**
+   * Id
+   *
+   * Identificador del caso.
+   */
+  id: string;
+  /**
+   * Title
+   *
+   * Título del caso.
+   */
+  title: string;
+  /**
+   * Filing Number
+   *
+   * Los 23 dígitos del radicado, si lo tiene.
+   */
+  filing_number: string | null;
+  /**
+   * Court
+   *
+   * Despacho que lleva el proceso.
+   */
+  court: string | null;
+  /**
+   * Practice Area
+   *
+   * Especialidad.
+   */
+  practice_area:
+    | "civil"
+    | "commercial"
+    | "family"
+    | "labor"
+    | "criminal"
+    | "administrative"
+    | "constitutional"
+    | "other"
+    | null;
+  /**
+   * Internal Reference
+   *
+   * Referencia interna de la oficina.
+   */
+  internal_reference: string | null;
+  /**
+   * Status
+   *
+   * Si el caso sigue abierto.
+   */
+  status: "open" | "closed";
+  /**
+   * Created At
+   *
+   * Cuándo se abrió.
+   */
+  created_at: string;
+  /**
+   * Created By Name
+   *
+   * Nombre de quien lo abrió.
+   */
+  created_by_name: string;
+  /**
+   * Member Count
+   *
+   * Personas asignadas al caso.
+   */
+  member_count: number;
+};
+
+/**
+ * CasePage
+ *
+ * Una página de los casos de la persona y los totales (API-023).
+ */
+export type CasePage = {
+  /**
+   * Items
+   *
+   * Casos de la actividad más reciente a la más antigua.
+   */
+  items: Array<CaseSummaryOut>;
+  /**
+   * Next Cursor
+   *
+   * Cursor de la página siguiente, o null.
+   */
+  next_cursor: string | null;
+  /**
+   * Totales de los casos de la persona.
+   */
+  totals: CaseTotalsOut;
+};
+
+/**
+ * CaseSummaryOut
+ *
+ * Un caso de la lista con su actividad (API-023).
+ */
+export type CaseSummaryOut = {
+  /**
+   * Id
+   *
+   * Identificador del caso.
+   */
+  id: string;
+  /**
+   * Title
+   *
+   * Título del caso.
+   */
+  title: string;
+  /**
+   * Filing Number
+   *
+   * Los 23 dígitos del radicado, si lo tiene.
+   */
+  filing_number: string | null;
+  /**
+   * Court
+   *
+   * Despacho que lleva el proceso.
+   */
+  court: string | null;
+  /**
+   * Practice Area
+   *
+   * Especialidad.
+   */
+  practice_area:
+    | "civil"
+    | "commercial"
+    | "family"
+    | "labor"
+    | "criminal"
+    | "administrative"
+    | "constitutional"
+    | "other"
+    | null;
+  /**
+   * Internal Reference
+   *
+   * Referencia interna de la oficina.
+   */
+  internal_reference: string | null;
+  /**
+   * Status
+   *
+   * Si el caso sigue abierto.
+   */
+  status: "open" | "closed";
+  /**
+   * Created At
+   *
+   * Cuándo se abrió.
+   */
+  created_at: string;
+  /**
+   * Created By Name
+   *
+   * Nombre de quien lo abrió.
+   */
+  created_by_name: string;
+  /**
+   * Member Count
+   *
+   * Personas asignadas al caso.
+   */
+  member_count: number;
+  /**
+   * Evidence Count
+   *
+   * Evidencias del caso.
+   */
+  evidence_count: number;
+  /**
+   * Evidence By Type
+   *
+   * Evidencias por tipo declarado; solo los tipos que tienen alguna.
+   */
+  evidence_by_type: {
+    [key: string]: number;
+  };
+  /**
+   * Member Initials
+   *
+   * Iniciales de las tres primeras personas en llegar al caso.
+   */
+  member_initials: Array<string>;
+  /**
+   * Último evento de la cadena; null solo si el caso no tiene eventos.
+   */
+  last_event: LastEventOut | null;
+  /**
+   * Recent Actions
+   *
+   * Acciones de los últimos cinco eventos, el más reciente al final.
+   */
+  recent_actions: Array<string>;
+  /**
+   * Last Activity At
+   *
+   * Hora del último evento de la cadena; por ella se ordena la lista.
+   */
+  last_activity_at: string;
+};
+
+/**
+ * CaseTotalsOut
+ *
+ * Totales de los casos donde la persona es miembro, sin importar el filtro.
+ */
+export type CaseTotalsOut = {
+  /**
+   * Open
+   *
+   * Casos abiertos.
+   */
+  open: number;
+  /**
+   * Closed
+   *
+   * Casos cerrados.
+   */
+  closed: number;
+  /**
+   * Evidences
+   *
+   * Evidencias en esos casos.
+   */
+  evidences: number;
+  /**
+   * Pending Stamps
+   *
+   * Evidencias cuyo sello de tiempo está pendiente.
+   */
+  pending_stamps: number;
+  /**
+   * Custody Events
+   *
+   * Eventos de custodia de esos casos.
+   */
+  custody_events: number;
+};
+
+/**
+ * ChangePasswordRequest
+ *
+ * Contraseña actual y nueva de quien tiene la sesión (API-013).
+ */
+export type ChangePasswordRequest = {
+  /**
+   * Current Password
+   *
+   * Contraseña actual.
+   */
+  current_password: string;
+  /**
+   * New Password
+   *
+   * Contraseña nueva, de 12 a 128 caracteres.
+   */
+  new_password: string;
+};
+
+/**
+ * CustodyEventOut
+ *
+ * Un evento de la cadena de custodia del caso.
+ */
+export type CustodyEventOut = {
+  /**
+   * Seq
+   *
+   * Posición del evento en la cadena, desde 1.
+   */
+  seq: number;
+  /**
+   * Action
+   *
+   * Qué ocurrió, por ejemplo case_created.
+   */
+  action: string;
+  /**
+   * Actor Name
+   *
+   * Quién lo hizo, o null si fue el sistema.
+   */
+  actor_name: string | null;
+  /**
+   * Occurred At
+   *
+   * Cuándo ocurrió.
+   */
+  occurred_at: string;
+  /**
+   * Event Hash
+   *
+   * Huella SHA-256 del evento, en hexadecimal.
+   */
+  event_hash: string;
+};
+
+/**
+ * ForgotPasswordRequest
+ *
+ * Correo al que se envía el enlace para restablecer la contraseña (API-011).
+ */
+export type ForgotPasswordRequest = {
+  /**
+   * Email
+   *
+   * Correo de la cuenta.
+   */
+  email: string;
+};
+
+/**
  * HealthStatus
  *
  * Estado del servicio y de la base de datos cuando ambos responden.
@@ -18,6 +557,402 @@ export type HealthStatus = {
    * Database
    */
   database: "ok";
+};
+
+/**
+ * InvitationAccepted
+ *
+ * A dónde entró la persona al aceptar.
+ */
+export type InvitationAccepted = {
+  /**
+   * Organization Name
+   *
+   * Organización a la que entró.
+   */
+  organization_name: string;
+  /**
+   * Role
+   *
+   * Su rol en la organización.
+   */
+  role: "admin" | "lawyer" | "assistant";
+};
+
+/**
+ * InvitationOut
+ *
+ * Una invitación sin aceptar ni revocar.
+ */
+export type InvitationOut = {
+  /**
+   * Id
+   *
+   * Identificador de la invitación.
+   */
+  id: string;
+  /**
+   * Email
+   *
+   * Correo invitado.
+   */
+  email: string;
+  /**
+   * Role
+   *
+   * Rol ofrecido.
+   */
+  role: "admin" | "lawyer" | "assistant";
+  /**
+   * Invited At
+   *
+   * Cuándo se envió.
+   */
+  invited_at: string;
+  /**
+   * Expires At
+   *
+   * Cuándo vence: 72 horas después.
+   */
+  expires_at: string;
+  /**
+   * Expired
+   *
+   * Si ya venció sin que la aceptaran.
+   */
+  expired: boolean;
+};
+
+/**
+ * InvitationPage
+ *
+ * Invitaciones pendientes, de la más reciente a la más antigua (API-017).
+ */
+export type InvitationPage = {
+  /**
+   * Items
+   *
+   * Invitaciones de esta página.
+   */
+  items: Array<InvitationOut>;
+  /**
+   * Next Cursor
+   *
+   * Cursor para la página siguiente, o null si no hay más.
+   */
+  next_cursor: string | null;
+};
+
+/**
+ * InvitationPreview
+ *
+ * Lo que la persona invitada ve antes de aceptar (UI-011).
+ */
+export type InvitationPreview = {
+  /**
+   * Organization Name
+   *
+   * Organización que invita.
+   */
+  organization_name: string;
+  /**
+   * Inviter Name
+   *
+   * Quién envió la invitación.
+   */
+  inviter_name: string;
+  /**
+   * Email
+   *
+   * Correo invitado; será el de acceso.
+   */
+  email: string;
+  /**
+   * Role
+   *
+   * Rol ofrecido.
+   */
+  role: "admin" | "lawyer" | "assistant";
+  /**
+   * Expires At
+   *
+   * Cuándo vence la invitación.
+   */
+  expires_at: string;
+  /**
+   * Account
+   *
+   * new si el correo no tiene cuenta; existing si la tiene y no pertenece a ninguna organización; member_elsewhere si ya pertenece a una (RN-011).
+   */
+  account: "new" | "existing" | "member_elsewhere";
+};
+
+/**
+ * InvitationRequest
+ *
+ * Correo y rol de la persona invitada (API-016).
+ */
+export type InvitationRequest = {
+  /**
+   * Email
+   *
+   * Correo al que llega la invitación.
+   */
+  email: string;
+  /**
+   * Role
+   *
+   * Rol con que entrará: admin, lawyer o assistant.
+   */
+  role: "admin" | "lawyer" | "assistant";
+};
+
+/**
+ * InvitationTokenRequest
+ *
+ * El token del enlace de la invitación (API-052).
+ */
+export type InvitationTokenRequest = {
+  /**
+   * Token
+   *
+   * Token del fragmento del enlace (#t=…).
+   */
+  token: string;
+};
+
+/**
+ * LastEventOut
+ *
+ * El último evento de la cadena de un caso.
+ */
+export type LastEventOut = {
+  /**
+   * Action
+   *
+   * Qué ocurrió, por ejemplo evidence_uploaded.
+   */
+  action: string;
+  /**
+   * Actor Name
+   *
+   * Quién lo hizo, o null si fue el sistema.
+   */
+  actor_name: string | null;
+  /**
+   * Occurred At
+   *
+   * Cuándo ocurrió.
+   */
+  occurred_at: string;
+};
+
+/**
+ * LegalAcceptanceRequest
+ *
+ * Aceptación expresa de los textos legales vigentes.
+ */
+export type LegalAcceptanceRequest = {
+  /**
+   * Legal Version
+   *
+   * Fecha de los textos que la persona leyó y acepta; debe ser la vigente.
+   */
+  legal_version: string;
+  /**
+   * Accepts Legal Terms
+   *
+   * Acepta los términos y autoriza el tratamiento de sus datos. Nunca se presume: la interfaz lo envía solo si la persona marcó la casilla.
+   */
+  accepts_legal_terms: true;
+};
+
+/**
+ * LegalStatus
+ *
+ * Qué textos legales aceptó la persona y si debe aceptar unos nuevos (RN-029).
+ */
+export type LegalStatus = {
+  /**
+   * Accepted Version
+   *
+   * Fecha (AAAA-MM-DD) de los textos que la persona aceptó por última vez.
+   */
+  accepted_version: string;
+  /**
+   * Current Version
+   *
+   * Fecha (AAAA-MM-DD) de los textos vigentes.
+   */
+  current_version: string;
+  /**
+   * Acceptance Required
+   *
+   * Si debe aceptar los textos vigentes antes de seguir usando el servicio.
+   */
+  acceptance_required: boolean;
+};
+
+/**
+ * LoginRequest
+ *
+ * Correo y contraseña para ingresar (API-005).
+ */
+export type LoginRequest = {
+  /**
+   * Email
+   *
+   * Correo de la cuenta.
+   */
+  email: string;
+  /**
+   * Password
+   *
+   * Contraseña de la cuenta.
+   */
+  password: string;
+};
+
+/**
+ * Me
+ *
+ * Perfil, organización y rol de quien tiene la sesión.
+ */
+export type Me = {
+  /**
+   * Id
+   *
+   * Identificador de la persona.
+   */
+  id: string;
+  /**
+   * Full Name
+   *
+   * Nombre de la persona.
+   */
+  full_name: string;
+  /**
+   * Email
+   *
+   * Correo de la cuenta.
+   */
+  email: string;
+  /**
+   * Email Verified
+   *
+   * Si ya verificó su correo (HU-006).
+   */
+  email_verified: boolean;
+  /**
+   * Su organización, o null si ya no pertenece a ninguna.
+   */
+  organization: OrganizationMembership | null;
+  /**
+   * Su aceptación de los textos legales.
+   */
+  legal: LegalStatus;
+};
+
+/**
+ * MemberOut
+ *
+ * Una persona de la organización y su rol.
+ */
+export type MemberOut = {
+  /**
+   * User Id
+   *
+   * Identificador de la persona.
+   */
+  user_id: string;
+  /**
+   * Full Name
+   *
+   * Nombre de la persona.
+   */
+  full_name: string;
+  /**
+   * Email
+   *
+   * Correo de la persona.
+   */
+  email: string;
+  /**
+   * Role
+   *
+   * Rol en la organización.
+   */
+  role: "owner" | "admin" | "lawyer" | "assistant";
+  /**
+   * Joined At
+   *
+   * Cuándo entró a la organización.
+   */
+  joined_at: string;
+};
+
+/**
+ * MemberPage
+ *
+ * Miembros en el orden en que llegaron, con el cupo del plan (API-015).
+ */
+export type MemberPage = {
+  /**
+   * Items
+   *
+   * Miembros de esta página.
+   */
+  items: Array<MemberOut>;
+  /**
+   * Next Cursor
+   *
+   * Cursor para la página siguiente, o null si no hay más.
+   */
+  next_cursor: string | null;
+  /**
+   * Cupo de usuarios del plan.
+   */
+  seats: SeatsOut;
+};
+
+/**
+ * OrganizationMembership
+ *
+ * La organización de la persona y su rol en ella.
+ */
+export type OrganizationMembership = {
+  /**
+   * Id
+   *
+   * Identificador de la organización.
+   */
+  id: string;
+  /**
+   * Name
+   *
+   * Nombre de la oficina, la firma o la persona independiente.
+   */
+  name: string;
+  /**
+   * Role
+   *
+   * Rol de la persona en la organización.
+   */
+  role: "owner" | "admin" | "lawyer" | "assistant";
+};
+
+/**
+ * PasswordResetRequested
+ *
+ * La misma respuesta exista o no una cuenta con ese correo (CA-HU-010-02).
+ */
+export type PasswordResetRequested = {
+  /**
+   * Detail
+   *
+   * Qué sigue.
+   */
+  detail: string;
 };
 
 /**
@@ -127,6 +1062,151 @@ export type PublicPlan = {
 };
 
 /**
+ * RegisterRequest
+ *
+ * Datos para crear una cuenta con su organización y la prueba gratis (API-003).
+ */
+export type RegisterRequest = {
+  /**
+   * Account Type
+   *
+   * individual si trabaja por su cuenta; firm si abre la cuenta de una oficina.
+   */
+  account_type: "individual" | "firm";
+  /**
+   * Full Name
+   *
+   * Nombre de la persona.
+   */
+  full_name: string;
+  /**
+   * Email
+   *
+   * Correo de la cuenta; también será el de acceso.
+   */
+  email: string;
+  /**
+   * Password
+   *
+   * Contraseña de 12 a 128 caracteres.
+   */
+  password: string;
+  /**
+   * Organization Name
+   *
+   * Nombre de la oficina o firma. Solo con account_type firm.
+   */
+  organization_name?: string | null;
+  /**
+   * Legal Version
+   *
+   * Versión de los términos y la privacidad que vio la persona.
+   */
+  legal_version: string;
+  /**
+   * Accepts Legal Terms
+   *
+   * Acepta los términos y autoriza el tratamiento de sus datos (CMP-UI-004).
+   */
+  accepts_legal_terms: true;
+};
+
+/**
+ * RegistrationAccepted
+ *
+ * La misma respuesta para un correo nuevo y para uno ya registrado (CA-HU-005-03).
+ */
+export type RegistrationAccepted = {
+  /**
+   * Detail
+   *
+   * Qué sigue para la persona.
+   */
+  detail: string;
+};
+
+/**
+ * ResendVerificationRequest
+ *
+ * Correo al que se reenvía el enlace de verificación (UI-007).
+ */
+export type ResendVerificationRequest = {
+  /**
+   * Email
+   *
+   * Correo de la cuenta por verificar.
+   */
+  email: string;
+};
+
+/**
+ * ResetPasswordRequest
+ *
+ * Token del enlace y contraseña nueva (API-012). La página toma el token del fragmento.
+ */
+export type ResetPasswordRequest = {
+  /**
+   * Token
+   *
+   * Token del enlace.
+   */
+  token: string;
+  /**
+   * Password
+   *
+   * Contraseña nueva, de 12 a 128 caracteres.
+   */
+  password: string;
+};
+
+/**
+ * RoleChangeRequest
+ *
+ * El rol nuevo de un miembro (API-020). El propietario no se asigna: nace con la
+ * organización (RN-010).
+ */
+export type RoleChangeRequest = {
+  /**
+   * Role
+   *
+   * Rol nuevo: admin, lawyer o assistant.
+   */
+  role: "admin" | "lawyer" | "assistant";
+};
+
+/**
+ * SeatsOut
+ *
+ * Cupo de usuarios del plan (RN-012).
+ */
+export type SeatsOut = {
+  /**
+   * Used
+   *
+   * Miembros más invitaciones abiertas.
+   */
+  used: number;
+  /**
+   * Included
+   *
+   * Usuarios que incluye el plan.
+   */
+  included: number;
+  /**
+   * Extra User Price Cop
+   *
+   * Precio mensual de cada usuario adicional, o null si el plan no los admite.
+   */
+  extra_user_price_cop: number | null;
+  /**
+   * Full
+   *
+   * Si ya no cabe nadie más sin cambiar de plan.
+   */
+  full: boolean;
+};
+
+/**
  * ValidationErrorItem
  *
  * Un dato inválido de la solicitud: dónde está, qué falló y el tipo de error.
@@ -202,6 +1282,34 @@ export type ValidationProblem = {
   errors: Array<ValidationErrorItem>;
 };
 
+/**
+ * VerificationRequested
+ *
+ * La misma respuesta exista o no una cuenta por verificar con ese correo.
+ */
+export type VerificationRequested = {
+  /**
+   * Detail
+   *
+   * Qué sigue para la persona.
+   */
+  detail: string;
+};
+
+/**
+ * VerifyEmailRequest
+ *
+ * Token del enlace de verificación (API-004). La página lo toma del fragmento #t=.
+ */
+export type VerifyEmailRequest = {
+  /**
+   * Token
+   *
+   * Token del enlace.
+   */
+  token: string;
+};
+
 export type HealthData = {
   body?: never;
   path?: never;
@@ -253,3 +1361,869 @@ export type ListPlansResponses = {
 };
 
 export type ListPlansResponse = ListPlansResponses[keyof ListPlansResponses];
+
+export type RegisterAccountData = {
+  body: RegisterRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/register";
+};
+
+export type RegisterAccountErrors = {
+  /**
+   * Los textos legales cambiaron; hay que recargar.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados registros desde esta IP.
+   */
+  429: Problem;
+};
+
+export type RegisterAccountError =
+  RegisterAccountErrors[keyof RegisterAccountErrors];
+
+export type RegisterAccountResponses = {
+  /**
+   * Successful Response
+   */
+  202: RegistrationAccepted;
+};
+
+export type RegisterAccountResponse =
+  RegisterAccountResponses[keyof RegisterAccountResponses];
+
+export type ResendVerificationData = {
+  body: ResendVerificationRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/verify-email/resend";
+};
+
+export type ResendVerificationErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiadas solicitudes.
+   */
+  429: Problem;
+};
+
+export type ResendVerificationError =
+  ResendVerificationErrors[keyof ResendVerificationErrors];
+
+export type ResendVerificationResponses = {
+  /**
+   * Successful Response
+   */
+  202: VerificationRequested;
+};
+
+export type ResendVerificationResponse =
+  ResendVerificationResponses[keyof ResendVerificationResponses];
+
+export type VerifyEmailData = {
+  body: VerifyEmailRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/verify-email";
+};
+
+export type VerifyEmailErrors = {
+  /**
+   * El enlace no es válido o ya venció.
+   */
+  400: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+};
+
+export type VerifyEmailError = VerifyEmailErrors[keyof VerifyEmailErrors];
+
+export type VerifyEmailResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type VerifyEmailResponse =
+  VerifyEmailResponses[keyof VerifyEmailResponses];
+
+export type SignInData = {
+  body: LoginRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/login";
+};
+
+export type SignInErrors = {
+  /**
+   * El correo o la contraseña no coinciden.
+   */
+  401: Problem;
+  /**
+   * La cuenta está bloqueada.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos fallidos para la cuenta o desde la IP.
+   */
+  429: Problem;
+};
+
+export type SignInError = SignInErrors[keyof SignInErrors];
+
+export type SignInResponses = {
+  /**
+   * Sesión abierta: llegan las cookies de acceso y de renovación.
+   */
+  204: void;
+};
+
+export type SignInResponse = SignInResponses[keyof SignInResponses];
+
+export type RefreshSessionData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/refresh";
+};
+
+export type RefreshSessionErrors = {
+  /**
+   * El token de renovación no sirve. Si ya se había usado, la sesión se cerró en todos los lugares donde estaba abierta.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RefreshSessionError =
+  RefreshSessionErrors[keyof RefreshSessionErrors];
+
+export type RefreshSessionResponses = {
+  /**
+   * Sesión renovada: llegan cookies nuevas y la anterior deja de servir.
+   */
+  204: void;
+};
+
+export type RefreshSessionResponse =
+  RefreshSessionResponses[keyof RefreshSessionResponses];
+
+export type SignOutData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/logout";
+};
+
+export type SignOutErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type SignOutError = SignOutErrors[keyof SignOutErrors];
+
+export type SignOutResponses = {
+  /**
+   * Sesión cerrada y cookies borradas.
+   */
+  204: void;
+};
+
+export type SignOutResponse = SignOutResponses[keyof SignOutResponses];
+
+export type SignOutEverywhereData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/logout-all";
+};
+
+export type SignOutEverywhereErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type SignOutEverywhereError =
+  SignOutEverywhereErrors[keyof SignOutEverywhereErrors];
+
+export type SignOutEverywhereResponses = {
+  /**
+   * Todas las sesiones cerradas, también esta; cookies borradas.
+   */
+  204: void;
+};
+
+export type SignOutEverywhereResponse =
+  SignOutEverywhereResponses[keyof SignOutEverywhereResponses];
+
+export type ForgotPasswordData = {
+  body: ForgotPasswordRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/password/forgot";
+};
+
+export type ForgotPasswordErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiadas solicitudes.
+   */
+  429: Problem;
+};
+
+export type ForgotPasswordError =
+  ForgotPasswordErrors[keyof ForgotPasswordErrors];
+
+export type ForgotPasswordResponses = {
+  /**
+   * Successful Response
+   */
+  202: PasswordResetRequested;
+};
+
+export type ForgotPasswordResponse =
+  ForgotPasswordResponses[keyof ForgotPasswordResponses];
+
+export type ResetPasswordData = {
+  body: ResetPasswordRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/password/reset";
+};
+
+export type ResetPasswordErrors = {
+  /**
+   * El enlace no es válido o ya venció.
+   */
+  400: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+};
+
+export type ResetPasswordError = ResetPasswordErrors[keyof ResetPasswordErrors];
+
+export type ResetPasswordResponses = {
+  /**
+   * Contraseña cambiada; todas las sesiones quedaron cerradas.
+   */
+  204: void;
+};
+
+export type ResetPasswordResponse =
+  ResetPasswordResponses[keyof ResetPasswordResponses];
+
+export type ReadMeData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/me";
+};
+
+export type ReadMeErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+};
+
+export type ReadMeError = ReadMeErrors[keyof ReadMeErrors];
+
+export type ReadMeResponses = {
+  /**
+   * Successful Response
+   */
+  200: Me;
+};
+
+export type ReadMeResponse = ReadMeResponses[keyof ReadMeResponses];
+
+export type AcceptLegalTermsData = {
+  body: LegalAcceptanceRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/me/legal-acceptance";
+};
+
+export type AcceptLegalTermsErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * Los textos cambiaron mientras la persona los leía; hay que recargar.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type AcceptLegalTermsError =
+  AcceptLegalTermsErrors[keyof AcceptLegalTermsErrors];
+
+export type AcceptLegalTermsResponses = {
+  /**
+   * Aceptación registrada, o ya estaba registrada para estos textos.
+   */
+  204: void;
+};
+
+export type AcceptLegalTermsResponse =
+  AcceptLegalTermsResponses[keyof AcceptLegalTermsResponses];
+
+export type ChangePasswordData = {
+  body: ChangePasswordRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/me/password";
+};
+
+export type ChangePasswordErrors = {
+  /**
+   * La contraseña actual no coincide o la nueva es igual.
+   */
+  400: Problem;
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos fallidos.
+   */
+  429: Problem;
+};
+
+export type ChangePasswordError =
+  ChangePasswordErrors[keyof ChangePasswordErrors];
+
+export type ChangePasswordResponses = {
+  /**
+   * Contraseña cambiada; las demás sesiones quedaron cerradas.
+   */
+  204: void;
+};
+
+export type ChangePasswordResponse =
+  ChangePasswordResponses[keyof ChangePasswordResponses];
+
+export type ListMembersData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Cursor
+     *
+     * next_cursor de la página anterior.
+     */
+    cursor?: string | null;
+    /**
+     * Limit
+     *
+     * Miembros por página.
+     */
+    limit?: number;
+  };
+  url: "/api/v1/organization/members";
+};
+
+export type ListMembersErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListMembersError = ListMembersErrors[keyof ListMembersErrors];
+
+export type ListMembersResponses = {
+  /**
+   * Successful Response
+   */
+  200: MemberPage;
+};
+
+export type ListMembersResponse =
+  ListMembersResponses[keyof ListMembersResponses];
+
+export type RemoveMemberData = {
+  body?: never;
+  path: {
+    /**
+     * User Id
+     */
+    user_id: string;
+  };
+  query?: never;
+  url: "/api/v1/organization/members/{user_id}";
+};
+
+export type RemoveMemberErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador, el miembro es el propietario o es uno mismo.
+   */
+  403: Problem;
+  /**
+   * La persona no es miembro de la organización.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RemoveMemberError = RemoveMemberErrors[keyof RemoveMemberErrors];
+
+export type RemoveMemberResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type RemoveMemberResponse =
+  RemoveMemberResponses[keyof RemoveMemberResponses];
+
+export type ChangeMemberRoleData = {
+  body: RoleChangeRequest;
+  path: {
+    /**
+     * User Id
+     */
+    user_id: string;
+  };
+  query?: never;
+  url: "/api/v1/organization/members/{user_id}";
+};
+
+export type ChangeMemberRoleErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador, el miembro es el propietario o es uno mismo.
+   */
+  403: Problem;
+  /**
+   * La persona no es miembro de la organización.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ChangeMemberRoleError =
+  ChangeMemberRoleErrors[keyof ChangeMemberRoleErrors];
+
+export type ChangeMemberRoleResponses = {
+  /**
+   * Successful Response
+   */
+  200: MemberOut;
+};
+
+export type ChangeMemberRoleResponse =
+  ChangeMemberRoleResponses[keyof ChangeMemberRoleResponses];
+
+export type ListInvitationsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Cursor
+     *
+     * next_cursor de la página anterior.
+     */
+    cursor?: string | null;
+    /**
+     * Limit
+     *
+     * Invitaciones por página.
+     */
+    limit?: number;
+  };
+  url: "/api/v1/organization/invitations";
+};
+
+export type ListInvitationsErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListInvitationsError =
+  ListInvitationsErrors[keyof ListInvitationsErrors];
+
+export type ListInvitationsResponses = {
+  /**
+   * Successful Response
+   */
+  200: InvitationPage;
+};
+
+export type ListInvitationsResponse =
+  ListInvitationsResponses[keyof ListInvitationsResponses];
+
+export type CreateInvitationData = {
+  body: InvitationRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/organization/invitations";
+};
+
+export type CreateInvitationErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * Ya es miembro, ya tiene una invitación vigente, el plan no tiene cupo o la organización está en solo lectura.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiadas invitaciones seguidas.
+   */
+  429: Problem;
+};
+
+export type CreateInvitationError =
+  CreateInvitationErrors[keyof CreateInvitationErrors];
+
+export type CreateInvitationResponses = {
+  /**
+   * Successful Response
+   */
+  201: InvitationOut;
+};
+
+export type CreateInvitationResponse =
+  CreateInvitationResponses[keyof CreateInvitationResponses];
+
+export type RevokeInvitationData = {
+  body?: never;
+  path: {
+    /**
+     * Invitation Id
+     */
+    invitation_id: string;
+  };
+  query?: never;
+  url: "/api/v1/organization/invitations/{invitation_id}";
+};
+
+export type RevokeInvitationErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * No hay una invitación pendiente con ese id.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RevokeInvitationError =
+  RevokeInvitationErrors[keyof RevokeInvitationErrors];
+
+export type RevokeInvitationResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type RevokeInvitationResponse =
+  RevokeInvitationResponses[keyof RevokeInvitationResponses];
+
+export type PreviewInvitationData = {
+  body: InvitationTokenRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/invitations/preview";
+};
+
+export type PreviewInvitationErrors = {
+  /**
+   * La invitación ya no sirve.
+   */
+  400: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos seguidos.
+   */
+  429: Problem;
+};
+
+export type PreviewInvitationError =
+  PreviewInvitationErrors[keyof PreviewInvitationErrors];
+
+export type PreviewInvitationResponses = {
+  /**
+   * Successful Response
+   */
+  200: InvitationPreview;
+};
+
+export type PreviewInvitationResponse =
+  PreviewInvitationResponses[keyof PreviewInvitationResponses];
+
+export type AcceptInvitationData = {
+  body: AcceptInvitationRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/invitations/accept";
+};
+
+export type AcceptInvitationErrors = {
+  /**
+   * La invitación ya no sirve.
+   */
+  400: Problem;
+  /**
+   * La cuenta existe y la contraseña no coincide.
+   */
+  401: Problem;
+  /**
+   * El correo ya pertenece a una organización, la organización está en solo lectura o los textos legales cambiaron.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos seguidos.
+   */
+  429: Problem;
+};
+
+export type AcceptInvitationError =
+  AcceptInvitationErrors[keyof AcceptInvitationErrors];
+
+export type AcceptInvitationResponses = {
+  /**
+   * Miembro creado: llegan las cookies de acceso y de renovación.
+   */
+  201: InvitationAccepted;
+};
+
+export type AcceptInvitationResponse =
+  AcceptInvitationResponses[keyof AcceptInvitationResponses];
+
+export type ListCasesData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Status
+     *
+     * Casos abiertos, cerrados o todos.
+     */
+    status?: "open" | "closed" | "all";
+    /**
+     * Cursor
+     *
+     * next_cursor de la página anterior.
+     */
+    cursor?: string | null;
+    /**
+     * Limit
+     *
+     * Casos por página.
+     */
+    limit?: number;
+  };
+  url: "/api/v1/cases";
+};
+
+export type ListCasesErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListCasesError = ListCasesErrors[keyof ListCasesErrors];
+
+export type ListCasesResponses = {
+  /**
+   * Successful Response
+   */
+  200: CasePage;
+};
+
+export type ListCasesResponse = ListCasesResponses[keyof ListCasesResponses];
+
+export type CreateCaseData = {
+  body: CaseCreate;
+  path?: never;
+  query?: never;
+  url: "/api/v1/cases";
+};
+
+export type CreateCaseErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no abre casos o la persona no ha verificado su correo.
+   */
+  403: Problem;
+  /**
+   * La organización está en solo lectura o ya hay un caso con ese radicado (tipo https://aletheia.sbs/problemas/radicado-repetido).
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * KMS no respondió y no se pudo preparar la llave del caso.
+   */
+  503: Problem;
+};
+
+export type CreateCaseError = CreateCaseErrors[keyof CreateCaseErrors];
+
+export type CreateCaseResponses = {
+  /**
+   * Successful Response
+   */
+  201: CaseOut;
+};
+
+export type CreateCaseResponse = CreateCaseResponses[keyof CreateCaseResponses];
+
+export type ReadCaseData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}";
+};
+
+export type ReadCaseErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El caso no existe o la persona no es miembro de él.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ReadCaseError = ReadCaseErrors[keyof ReadCaseErrors];
+
+export type ReadCaseResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseDetail;
+};
+
+export type ReadCaseResponse = ReadCaseResponses[keyof ReadCaseResponses];

@@ -1,0 +1,87 @@
+/* Selector segmentado: dos opciones en un mismo control. La elegida lleva superficie, borde y
+   texto principal, como el elemento activo del menú lateral. */
+.choice {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: var(--space-2);
+  color: var(--text);
+  font-size: var(--font-size-support);
+  font-weight: 500;
+  line-height: var(--line-height-support);
+}
+
+.options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1);
+  padding: calc(var(--space-1) - 1px);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+
+.option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.option:hover {
+  color: var(--text);
+}
+
+/* La elegida se distingue por su borde --line-control (3,5:1 sobre --surface-1 y 3,3:1 sobre
+   --surface-2), además de la superficie y el texto. */
+.option[data-checked] {
+  background: var(--surface-2);
+  border-color: var(--line-control);
+  color: var(--text);
+}
+
+.option:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.icon {
+  flex: none;
+}
+
+@media (max-width: 380px) {
+  .icon {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .option {
+    transition: none;
+  }
+}

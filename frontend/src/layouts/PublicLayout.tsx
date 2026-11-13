@@ -1,173 +1,94 @@
-import { ArrowRight, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link, NavLink, Outlet, ScrollRestoration } from "react-router";
-
-import markUrl from "../assets/aletheia-mark.png";
+import { Link, Outlet, ScrollRestoration, useLocation } from "react-router";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
-import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
-import { CookiePanel } from "../features/consent/CookiePanel.tsx";
-import { useCookieChoice } from "../features/consent/useCookieChoice.ts";
+import { CONSUMER_AUTHORITY } from "../config/legal.ts";
+import { ROUTES } from "../config/routes.ts";
+import {
+  NAVIGATION as GROUPS,
+  FOOTER_NAVIGATION as FOOTER_GROUPS,
+} from "../config/navigation.ts";
+import { PublicNavigation } from "./PublicNavigation.tsx";
+import {
+  CONTACT_EMAIL,
+  SIGN_UP_LABEL,
+  SITE_NAME,
+  WORDMARK,
+} from "../config/site.ts";
+import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
+import { hasSessionHint } from "../features/session/sessionHint.ts";
+import { prefetchLikelyNext } from "../routes/lazyRoutes.ts";
+import {
+  CerrarIcon,
+  ChevronAbajoIcon,
+  FlechaDerechaIcon,
+  MenuIcon,
+} from "../components/ui/icons.tsx";
 import styles from "./PublicLayout.module.css";
 
-// Año del aviso de derechos, calculado una vez al cargar el sitio.
 const CURRENT_YEAR = new Date().getFullYear();
-
-// Desde cuántos píxeles de desplazamiento el encabezado toma fondo.
-const SCROLLED_AT = 8;
-
-const PRIMARY_LINKS = [
-  { to: ROUTES.howItWorks, label: "Cómo funciona" },
-  { to: ROUTES.pricing, label: "Precios" },
-  { to: ROUTES.verifier, label: "Verificador" },
-] as const;
-
-const FOOTER_GROUPS = [
-  { title: "Producto", links: PRIMARY_LINKS },
-  {
-    title: "Cuenta",
-    links: [
-      { to: ROUTES.signIn, label: "Ingresar" },
-      { to: ROUTES.signUp, label: "Crear cuenta" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: LEGAL_PAGES.map((page) => ({
-      to: legalRoute(page.slug),
-      label: page.label,
-    })),
-  },
-] as const;
-
-function navLinkClass({ isActive }: { isActive: boolean }) {
-  return isActive
-    ? `${styles.navLink} ${styles.navLinkActive}`
-    : styles.navLink;
+function Brand() {
+  return (
+    <Link to={ROUTES.home} className={styles.brand} aria-label={WORDMARK}>
+      <span aria-hidden="true">{WORDMARK}</span>
+    </Link>
+  );
 }
 
-// Marco del sitio público (CMP-UI-011, barra pública). El encabezado es transparente sobre la
-// portada y toma un fondo translúcido al desplazarse. En pantallas angostas la navegación se
-// abre en una hoja inferior: un <dialog> nativo que atrapa el foco y se cierra con Escape.
 export function PublicLayout() {
+  const location = useLocation();
+  const [access] = useState(() =>
+    hasSessionHint()
+      ? { to: ROUTES.app, label: "Ir a mis casos" }
+      : { to: ROUTES.signIn, label: "Ingresar" },
+  );
   const menuRef = useRef<HTMLDialogElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  // El panel de cookies aparece solo mientras no haya una elección guardada (primera visita o
-  // versión nueva del consentimiento) y cuando el visitante lo abre desde el pie.
-  const cookieChoice = useCookieChoice();
-  const [cookiesOpen, setCookiesOpen] = useState(false);
-  const [cookieNotice, setCookieNotice] = useState("");
-  const cookiesButtonRef = useRef<HTMLButtonElement>(null);
-
+  const {
+    panel: cookiePanel,
+    openPanel: openCookies,
+    openerRef: cookiesButtonRef,
+  } = useCookiePanel();
+  useEffect(() => prefetchLikelyNext(), []);
   useEffect(() => {
-    // React descarta el cambio de estado si el valor no cambió, así que el listener solo
-    // provoca un render al cruzar el umbral.
-    const update = () => setScrolled(window.scrollY > SCROLLED_AT);
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
-  }, []);
-
-  function openMenu() {
-    menuRef.current?.showModal();
-    setMenuOpen(true);
-  }
-
-  function closeMenu() {
     menuRef.current?.close();
-  }
-
-  function openCookies() {
-    setCookieNotice("");
-    setCookiesOpen(true);
-  }
-
-  function closeCookies(saved: boolean) {
-    if (saved) setCookieNotice("Guardamos su elección sobre las cookies.");
-    if (cookiesOpen) {
-      setCookiesOpen(false);
-      // El foco vuelve al botón del pie desde el que se abrió el panel.
-      cookiesButtonRef.current?.focus();
-    }
-  }
-
+  }, [location]);
+  const closeMenu = () => menuRef.current?.close();
   return (
     <div className={styles.shell}>
       <a className={styles.skipLink} href="#contenido">
         Saltar al contenido
       </a>
-
-      {(cookiesOpen || cookieChoice === null) && (
-        <CookiePanel
-          // Abrirlo desde el pie reinicia el panel en la vista de configuración.
-          key={cookiesOpen ? "pie" : "aviso"}
-          choice={cookieChoice}
-          openedByVisitor={cookiesOpen}
-          onClose={closeCookies}
-        />
-      )}
-      <p role="status" className="visually-hidden">
-        {cookieNotice}
-      </p>
-
-      <header
-        className={styles.header}
-        data-scrolled={scrolled ? "true" : "false"}
-      >
+      {cookiePanel}
+      <header className={styles.header}>
         <div className={styles.bar}>
-          <Link to={ROUTES.home} className={styles.brand}>
-            <img src={markUrl} alt="" width={25} height={24} />
-            <span>{SITE_NAME}</span>
-          </Link>
-
-          <nav aria-label="Principal" className={styles.desktopNav}>
-            <ul className={styles.navList}>
-              {PRIMARY_LINKS.map((link) => (
-                <li key={link.to}>
-                  {link.to.includes("#") ? (
-                    // Un enlace a una sección del inicio no marca la página como activa.
-                    <Link to={link.to} className={styles.navLink}>
-                      {link.label}
-                    </Link>
-                  ) : (
-                    <NavLink to={link.to} className={navLinkClass}>
-                      {link.label}
-                    </NavLink>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </nav>
-
+          <Brand />
+          <PublicNavigation key={location.pathname + location.hash} />
           <div className={styles.actions}>
-            <NavLink
-              to={ROUTES.signIn}
-              className={`${styles.navLink} ${styles.signIn}`}
-            >
-              Ingresar
-            </NavLink>
+            <Link to={access.to} className={styles.signIn}>
+              {access.label}
+            </Link>
             <span className={styles.headerCta}>
-              <ButtonLink to={ROUTES.signUp} surface="dark" size="sm">
-                Probar gratis
-                <ArrowRight size={16} />
+              <ButtonLink to={ROUTES.signUp} size="sm">
+                {SIGN_UP_LABEL}
               </ButtonLink>
             </span>
             <button
-              type="button"
               className={styles.menuButton}
+              type="button"
               aria-haspopup="dialog"
               aria-expanded={menuOpen}
               aria-controls="menu-movil"
-              onClick={openMenu}
+              onClick={() => {
+                menuRef.current?.showModal();
+                setMenuOpen(true);
+              }}
             >
-              <Menu size={18} />
-              Menú
+              <MenuIcon size={20} />
+              <span className="visually-hidden">Menú</span>
             </button>
           </div>
         </div>
       </header>
-
       <dialog
         id="menu-movil"
         ref={menuRef}
@@ -175,106 +96,98 @@ export function PublicLayout() {
         aria-labelledby="menu-movil-titulo"
         onClose={() => setMenuOpen(false)}
         onClick={(event) => {
-          // Un clic en el fondo oscuro, fuera de la hoja, la cierra.
           if (event.target === event.currentTarget) closeMenu();
         }}
       >
         <div className={styles.sheetHead}>
-          <p id="menu-movil-titulo" className={styles.sheetTitle}>
-            Menú
-          </p>
-          <button
-            type="button"
-            className={styles.sheetClose}
-            onClick={closeMenu}
-          >
-            <X size={18} />
+          <p id="menu-movil-titulo">Menú</p>
+          <button type="button" onClick={closeMenu}>
+            <CerrarIcon size={18} />
             Cerrar
           </button>
         </div>
-        <nav aria-label="Menú">
-          <ul className={styles.sheetList}>
-            {[...PRIMARY_LINKS, { to: ROUTES.signIn, label: "Ingresar" }].map(
-              (link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className={styles.sheetLink}
-                    onClick={closeMenu}
-                  >
+        <nav aria-label="Navegación móvil">
+          {GROUPS.map((group) => (
+            <details
+              key={group.title}
+              className={styles.mobileGroup}
+              name="mobile-navigation"
+            >
+              <summary>
+                {group.title}
+                <ChevronAbajoIcon size={16} aria-hidden="true" />
+              </summary>
+              <div className={styles.mobileLinks}>
+                {group.links.map((link) => (
+                  <Link key={link.to} to={link.to} onClick={closeMenu}>
                     {link.label}
                   </Link>
-                </li>
-              ),
-            )}
-          </ul>
+                ))}
+              </div>
+            </details>
+          ))}
+          <Link to={ROUTES.pricing} onClick={closeMenu}>
+            Precios
+          </Link>
+          <Link to={access.to} onClick={closeMenu}>
+            {access.label}
+          </Link>
         </nav>
         <div className={styles.sheetCta}>
-          <ButtonLink to={ROUTES.signUp} surface="dark" onClick={closeMenu}>
-            Crear cuenta gratis
-            <ArrowRight size={18} />
+          <ButtonLink to={ROUTES.signUp} onClick={closeMenu}>
+            {SIGN_UP_LABEL}
           </ButtonLink>
         </div>
       </dialog>
-
       <main id="contenido" className={styles.main} tabIndex={-1}>
         <Outlet />
       </main>
-
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
-            <Link to={ROUTES.home} className={styles.brand}>
-              <img src={markUrl} alt="" width={25} height={24} />
-              <span>{SITE_NAME}</span>
+            <Brand />
+            <p>Su trabajo. Con claridad.</p>
+            <a href={"mailto:" + CONTACT_EMAIL}>{CONTACT_EMAIL}</a>
+            <Link className={styles.statusLink} to="/estado">
+              Consultar estado <FlechaDerechaIcon size={14} />
             </Link>
-            <p className={styles.footerText}>
-              Preservación de evidencia digital para abogados y firmas en
-              Colombia.
-            </p>
-            <a className={styles.footerMail} href={`mailto:${CONTACT_EMAIL}`}>
-              {CONTACT_EMAIL}
-            </a>
           </div>
-          {FOOTER_GROUPS.map((group) => (
-            <nav
-              key={group.title}
-              aria-label={group.title}
-              className={styles.footerGroup}
-            >
-              <p className={styles.footerTitle}>{group.title}</p>
-              <ul className={styles.footerList}>
-                {group.links.map((link) => (
-                  <li key={link.to}>
-                    <Link to={link.to} className={styles.footerLink}>
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-                {group.title === "Legal" && (
-                  <li>
-                    <button
-                      ref={cookiesButtonRef}
-                      type="button"
-                      className={`${styles.footerLink} ${styles.footerButton}`}
-                      onClick={openCookies}
-                    >
-                      Configurar cookies
-                    </button>
-                  </li>
-                )}
-              </ul>
-            </nav>
-          ))}
+          <div className={styles.footerNav}>
+            {FOOTER_GROUPS.map((group) => (
+              <nav aria-label={group.title} key={group.title}>
+                <p className={styles.footerTitle}>{group.title}</p>
+                <ul>
+                  {group.links.map((link) => (
+                    <li key={link.to}>
+                      <Link to={link.to}>{link.label}</Link>
+                    </li>
+                  ))}
+                  {group.title === "Legal" && (
+                    <li>
+                      <button
+                        ref={cookiesButtonRef}
+                        type="button"
+                        onClick={openCookies}
+                      >
+                        Configurar cookies
+                      </button>
+                    </li>
+                  )}
+                </ul>
+              </nav>
+            ))}
+          </div>
         </div>
         <div className={styles.footerBottom}>
           <p>
-            © {CURRENT_YEAR} {SITE_NAME}. Todos los derechos reservados.
+            © {CURRENT_YEAR} {SITE_NAME}
           </p>
-          <p>
-            ALETHEIA preserva y documenta evidencia digital; no certifica
-            pruebas ni determina su validez.
-          </p>
+          <Link to="/legal/terminos">
+            Identificación y contacto del proveedor
+          </Link>
+          <a href={CONSUMER_AUTHORITY.url} rel="noopener noreferrer">
+            {CONSUMER_AUTHORITY.name}
+          </a>
         </div>
       </footer>
       <ScrollRestoration />

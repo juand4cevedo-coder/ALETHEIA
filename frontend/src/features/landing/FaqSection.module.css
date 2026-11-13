@@ -1,40 +1,24 @@
-.inner {
-  max-width: 840px;
+/* Dos columnas: el encabezado queda fijo a la izquierda mientras se leen las preguntas. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: var(--space-12);
+  /* start: un elemento estirado a la altura de la fila no tendría recorrido para quedarse fijo. */
+  align-items: start;
 }
 
+.heading {
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-8));
+}
+
+/* Las preguntas se separan con la línea. */
 .list {
-  display: grid;
-  gap: var(--space-3);
+  border-bottom: 1px solid var(--line);
 }
 
 .item {
-  border: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-ink-800) 45%, transparent);
-  transition:
-    border-color var(--motion-base) var(--ease-standard),
-    background-color var(--motion-base) var(--ease-standard);
-  /* La altura se anima donde el navegador lo permite; en los demás se abre al instante. */
-  interpolate-size: allow-keywords;
-}
-
-.item::details-content {
-  block-size: 0;
-  overflow: hidden;
-  transition:
-    block-size var(--motion-slow) var(--ease-out),
-    content-visibility var(--motion-slow) allow-discrete;
-}
-
-.item[open]::details-content {
-  block-size: auto;
-}
-
-.item:hover,
-.item[open] {
-  border-color: color-mix(in srgb, var(--color-primary-300) 24%, transparent);
-  background: color-mix(in srgb, var(--color-ink-800) 70%, transparent);
+  border-top: 1px solid var(--line);
 }
 
 .summary {
@@ -42,10 +26,10 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-6);
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 25px;
+  padding: var(--space-4) 0;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  line-height: var(--line-height-body);
   list-style: none;
   cursor: pointer;
 }
@@ -55,13 +39,16 @@
 }
 
 .summary:focus-visible {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
 }
 
 .chevron {
   flex: none;
-  color: var(--color-primary-300);
-  transition: transform var(--motion-base) var(--ease-standard);
+  color: var(--text-2);
+}
+
+.summary:hover .chevron {
+  color: var(--text);
 }
 
 .item[open] .chevron {
@@ -69,19 +56,65 @@
 }
 
 .answer {
-  padding: 0 var(--space-6) var(--space-6);
-  color: var(--color-text-inverse-muted);
-  font-size: 16px;
-  line-height: 26px;
+  max-width: var(--measure);
+  padding: 0 var(--space-8) var(--space-4) 0;
+  color: var(--text-2);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+/* Responde al clic: el ícono gira y la respuesta se despliega en 200 ms, donde el navegador
+   sabe animar la altura. Con menos movimiento se abre al instante. */
+@media (prefers-reduced-motion: no-preference) {
+  .item {
+    interpolate-size: allow-keywords;
+  }
+
+  .item::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition:
+      block-size var(--motion-base) var(--ease-standard),
+      content-visibility var(--motion-base) allow-discrete;
+  }
+
+  .item[open]::details-content {
+    block-size: auto;
+  }
+
+  .chevron {
+    transition: transform var(--motion-fast) var(--ease-standard);
+  }
+}
+
+/* En una sola columna el encabezado vuelve a su sitio: fijo taparía las preguntas. */
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+
+  .heading {
+    position: static;
+  }
 }
 
 @media (max-width: 560px) {
-  .summary {
-    padding: var(--space-4);
-    font-size: 16px;
-  }
-
   .answer {
-    padding: 0 var(--space-4) var(--space-4);
+    padding-right: 0;
   }
+}
+
+/* Una sola columna mantiene el ritmo de lectura del sitio público. */
+.layout {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+}
+.heading {
+  position: static;
+}
+.list {
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
 }

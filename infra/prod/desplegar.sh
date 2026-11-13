@@ -64,7 +64,9 @@ codigo_de_la_version_actual() {
 
 levantar_y_comprobar() {
     registrar "Actualizando los contenedores..."
-    compose up --detach --wait --wait-timeout 180 || return 1
+    # --remove-orphans: al volver a una versión sin un servicio que trajo la nueva (como el
+    # trabajador), ese contenedor se detiene en lugar de seguir corriendo con código nuevo.
+    compose up --detach --wait --wait-timeout 180 --remove-orphans || return 1
     # Por HTTPS y con el nombre del dominio, como llegaría un usuario, pero sin salir de la
     # máquina: así se comprueban a la vez Caddy, su certificado, la API y la base de datos.
     # Los reintentos cubren los segundos que tarda Caddy en pedir el primer certificado.
