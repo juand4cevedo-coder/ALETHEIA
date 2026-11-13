@@ -67,7 +67,7 @@ def upgrade() -> None:
         "terms_version, privacy_version, consented_at) ON users TO aletheia_app"
     )
     op.execute(
-        "GRANT UPDATE (password_hash, security_stamp, email_verified_at, status, "
+        "GRANT UPDATE (email, password_hash, security_stamp, email_verified_at, status, "
         "terms_version, privacy_version, consented_at, updated_at) "
         "ON users TO aletheia_app"
     )
