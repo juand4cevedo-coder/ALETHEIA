@@ -35,7 +35,7 @@ export const INVITABLE_ROLES: readonly {
   {
     value: "admin",
     label: ROLE_LABELS.admin,
-    description: "Gestiona el equipo y ve todos los casos de la organización.",
+    description: "Gestiona el equipo y trabaja en los casos que le asignen.",
   },
 ];
 

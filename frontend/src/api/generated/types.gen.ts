@@ -844,6 +844,24 @@ export type Me = {
    */
   email_verified: boolean;
   /**
+   * Platform Admin
+   *
+   * Puede administrar la plataforma; no concede acceso a otros despachos.
+   */
+  platform_admin: boolean;
+  /**
+   * Permissions
+   *
+   * Capacidades vigentes en su despacho y, por separado, en la plataforma.
+   */
+  permissions: Array<
+    | "platform.manage"
+    | "organization.view"
+    | "team.manage"
+    | "cases.read_assigned"
+    | "cases.create"
+  >;
+  /**
    * Su organización, o null si ya no pertenece a ninguna.
    */
   organization: OrganizationMembership | null;

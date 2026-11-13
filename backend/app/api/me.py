@@ -20,6 +20,7 @@ from app.api.deps import (
     get_session,
 )
 from app.core.legal import LEGAL_VERSION
+from app.core.permissions import permissions_for
 from app.schemas.auth import ChangePasswordRequest
 from app.schemas.me import LegalAcceptanceRequest, LegalStatus, Me, OrganizationMembership
 from app.services import accounts as accounts_service
@@ -55,6 +56,10 @@ def read_me(
         full_name=profile.user.full_name,
         email=profile.user.email,
         email_verified=profile.user.email_verified_at is not None,
+        platform_admin=profile.user.is_platform_admin,
+        permissions=sorted(
+            permissions_for(principal.role, platform_admin=profile.user.is_platform_admin)
+        ),
         organization=organization,
         legal=LegalStatus(
             accepted_version=principal.legal_version,
