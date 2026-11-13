@@ -10,7 +10,7 @@ import {
 
 import type { ReadMeError } from "../api/generated";
 import { readMeOptions } from "../api/generated/@tanstack/react-query.gen.ts";
-import logoUrl from "../assets/logo.svg";
+import logoUrl from "../assets/simbolo.svg";
 import { Button } from "../components/ui/Button.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, WORDMARK } from "../config/site.ts";
@@ -79,7 +79,7 @@ export function AppShell() {
       </a>
       <header className={styles.header}>
         <Link to={ROUTES.app} className={styles.brand}>
-          <img src={logoUrl} alt="" width={20} height={20} />
+          <img src={logoUrl} alt="" width={28} height={28} />
           <span>{WORDMARK}</span>
         </Link>
         {me.data && <AccountMenu me={me.data} />}

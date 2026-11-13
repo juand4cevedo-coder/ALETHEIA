@@ -50,13 +50,10 @@ p {
   text-wrap: pretty;
 }
 
-/* Los enlaces dentro de un texto usan el violeta claro, que pasa 4,5:1 sobre las tres
-   superficies. */
 a {
   color: var(--accent-strong);
 }
 
-/* Foco visible de teclado en todo el sitio (focus.ring): siempre violeta. */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -92,5 +89,23 @@ a {
   body {
     color: var(--text);
     background: none;
+  }
+}
+
+[data-reveal-ready] {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.65s ease,
+    transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+[data-reveal-ready][data-visible="true"] {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce), print {
+  [data-reveal-ready] {
+    opacity: 1;
+    transform: none;
   }
 }

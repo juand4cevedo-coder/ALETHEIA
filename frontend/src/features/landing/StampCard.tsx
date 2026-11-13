@@ -2,8 +2,7 @@ import { Hash } from "../../components/ui/Hash.tsx";
 import styles from "./StampCard.module.css";
 import { SelloIcon } from "../../components/ui/icons.tsx";
 
-// La misma huella de ejemplo que muestra la evidencia de Cómo funciona (EvidencePreview): el
-// sello se emite sobre ella.
+// Huella ilustrativa para explicar los campos de un sello; no es una certificación emitida.
 const STAMPED_HASH =
   "52a910d44b570bc5cd4d35e1c7420d0d05c2920518d70b61b6f04595b5b9a6f5";
 
@@ -13,7 +12,7 @@ export function StampCard() {
     <div className={styles.card}>
       <p className={styles.header}>
         <SelloIcon size={16} aria-hidden="true" />
-        Sello de tiempo
+        Ejemplo de sello de tiempo
       </p>
 
       <dl className={styles.fields}>

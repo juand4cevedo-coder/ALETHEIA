@@ -458,16 +458,22 @@ describe("Abrir un caso (HU-015)", () => {
 
 describe("Inicio del espacio de trabajo", () => {
   it.each(["owner", "admin", "lawyer", "assistant"] as const)(
-    "un %s no ve «Abrir un caso» y llega al libro de casos",
+    "un %s tiene las acciones de su rol y llega al libro de casos",
     async (role) => {
       serve(role);
       const user = userEvent.setup();
       const { router } = await renderRoute("/app");
 
       await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
-      expect(
-        screen.queryByRole("link", { name: "Abrir un caso" }),
-      ).not.toBeInTheDocument();
+      if (role === "assistant") {
+        expect(
+          screen.queryByRole("link", { name: "Abrir un caso" }),
+        ).not.toBeInTheDocument();
+      } else {
+        expect(
+          screen.getByRole("link", { name: "Abrir un caso" }),
+        ).toHaveAttribute("href", "/app/casos/nuevo");
+      }
       await user.click(screen.getByRole("link", { name: "Ver mis casos" }));
       await waitFor(() =>
         expect(router.state.location.pathname).toBe("/app/casos"),

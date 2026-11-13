@@ -150,7 +150,7 @@
 
 .always {
   flex: none;
-  /* Que estén siempre activas no es una verificación: va en grafito y no en verde. */
+
   color: var(--text-2);
   font-size: var(--font-size-label);
   font-weight: 500;
@@ -158,8 +158,6 @@
   white-space: nowrap;
 }
 
-/* Interruptor: una casilla nativa con role="switch", dibujada con su propio fondo. El borde es
-   el de los controles (3:1 o más); encendido se llena de violeta, porque es una acción. */
 .switch {
   position: relative;
   flex: none;

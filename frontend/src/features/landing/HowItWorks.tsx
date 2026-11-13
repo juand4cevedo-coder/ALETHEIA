@@ -1,44 +1,29 @@
-import { EvidencePreview } from "./EvidencePreview.tsx";
+import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
+import { ROUTES } from "../../config/routes.ts";
+import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 import styles from "./HowItWorks.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
-import {
-  CadenaIcon,
-  HuellaIcon,
-  PaqueteIcon,
-  SelloIcon,
-  SubirIcon,
-} from "../../components/ui/icons.tsx";
 
-// Cada paso lleva el mismo ícono que su fila en la vista de la evidencia, para leerlos juntos.
 const STEPS = [
   {
-    icon: SubirIcon,
-    title: "Suba el original",
-    text: "El archivo tal como le llegó, sin convertirlo. Queda cifrado con la llave del caso.",
+    title: "Reúna a su equipo",
+    text: "Invite a las personas con las que trabaja y asigne un rol a cada una.",
   },
   {
-    icon: HuellaIcon,
-    title: "ALETHEIA calcula su huella",
-    text: "Un código SHA-256 que cambia por completo si el archivo cambia en un solo byte.",
+    title: "Dé un lugar a cada caso",
+    text: "Guarde su radicado, especialidad y despacho. Retome el contexto sin empezar de nuevo.",
   },
   {
-    icon: SelloIcon,
-    title: "Un tercero sella la huella",
-    text: "Una autoridad de sellado de tiempo la firma con la fecha y la hora. Así consta que el archivo existía en ese momento.",
-  },
-  {
-    icon: PaqueteIcon,
-    title: "Exporte el paquete",
-    text: "Los originales, sus huellas, los sellos y el informe de custodia, en un archivo listo para aportar al proceso.",
+    title: "Trabajen con claridad",
+    text: "Consulte los casos a los que pertenece y encuentre a las personas responsables.",
   },
 ] as const;
 
-// Cómo funciona: qué pasa con el archivo desde que se sube. Los cuatro pasos a la izquierda y, a
-// la derecha, la evidencia como se ve en la aplicación.
 export function HowItWorks() {
   return (
     <section
+      data-reveal
       id="como-funciona"
       className={section.section}
       aria-labelledby="titulo-como-funciona"
@@ -46,36 +31,26 @@ export function HowItWorks() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-como-funciona"
-          kicker="Cómo funciona"
-          title="Lo que pasa con su archivo desde que lo sube"
+          kicker="Así empieza todo"
+          title="Un poco de orden. Mucho más espacio para pensar."
+          lead="Lo esencial, a mano. Sin tener que aprender una forma distinta de trabajar."
         />
-
-        <div className={styles.layout}>
-          <div>
-            <ol className={styles.steps}>
-              {STEPS.map((step) => (
-                <li key={step.title} className={styles.step}>
-                  <span className={styles.marker}>
-                    <step.icon size={16} aria-hidden="true" />
-                  </span>
-                  <div className={styles.copy}>
-                    <h3 className={section.cardTitle}>{step.title}</h3>
-                    <p className={section.cardText}>{step.text}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-
-            <p className={styles.custody}>
-              <CadenaIcon size={16} aria-hidden="true" />
-              <span>
-                Durante todo el proceso, la cadena de custodia anota quién sube,
-                descarga o exporta el archivo, y a qué hora.
+        <ol className={styles.steps}>
+          {STEPS.map((step, index) => (
+            <li key={step.title} className={styles.step}>
+              <span className={styles.marker} aria-hidden="true">
+                0{index + 1}
               </span>
-            </p>
-          </div>
-
-          <EvidencePreview />
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </li>
+          ))}
+        </ol>
+        <div className={styles.action}>
+          <ButtonLink to={ROUTES.signUp} variant="secondary">
+            Organizar mi espacio
+            <FlechaDerechaIcon size={18} aria-hidden="true" />
+          </ButtonLink>
         </div>
       </div>
     </section>

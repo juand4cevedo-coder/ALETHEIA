@@ -1,5 +1,3 @@
-/* Casilla de consentimiento (CMP-UI-004). La casilla nativa con el violeta del sistema: el
-   navegador conserva su teclado y su anuncio para el lector de pantalla. */
 .check {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -19,7 +17,6 @@
   cursor: pointer;
 }
 
-/* El contorno rojo solo sin foco: con foco manda el contorno violeta global de 2 px. */
 .check input[aria-invalid="true"]:not(:focus-visible) {
   outline: 1px solid var(--err);
   outline-offset: 2px;

@@ -1,7 +1,11 @@
-/* Menú lateral del espacio de trabajo (CMP-UI-011): una columna en --surface-1 separada del
-   contenido por la línea. El elemento activo pasa a --surface-2 con el texto principal; el
-   violeta queda para el foco. */
 .nav {
+  --text: var(--on-brand);
+  --text-2: var(--brand-muted);
+  --text-3: var(--brand-muted);
+  --surface-1: var(--brand-dark);
+  --surface-2: var(--brand-line);
+  --line: var(--brand-line);
+  --accent: var(--on-brand);
   border-right: 1px solid var(--line);
   background: var(--surface-1);
 }
@@ -10,9 +14,9 @@
   position: sticky;
   top: 0;
   display: grid;
-  gap: calc(var(--space-1) / 2);
+  gap: var(--space-2);
   margin: 0;
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-8) var(--space-4);
   list-style: none;
 }
 
@@ -20,7 +24,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: var(--control-height-sm);
+  min-height: var(--control-height);
   padding: 0 var(--space-3);
   border-radius: var(--radius-sm);
   color: var(--text-2);
@@ -38,8 +42,6 @@
   color: var(--text);
 }
 
-/* El activo lleva, además de la superficie, una raya violeta de 2 px a la izquierda (5,1:1
-   sobre --surface-2): es el enlace activo, uno de los usos del violeta. */
 .active,
 .active:hover {
   background: var(--surface-2);
@@ -47,7 +49,6 @@
   color: var(--text);
 }
 
-/* Número de casos abiertos, alineado a la derecha en la columna y junto al nombre en la franja. */
 .count {
   margin-left: auto;
   padding-left: var(--space-2);
@@ -58,10 +59,15 @@
   line-height: var(--line-height-label);
 }
 
-/* Tabletas y celulares: una franja bajo el encabezado que se desliza de lado. El activo se marca
-   con la superficie, igual que en la columna. */
 @media (max-width: 900px) {
   .nav {
+    --text: var(--on-brand);
+    --text-2: var(--brand-muted);
+    --text-3: var(--brand-muted);
+    --surface-1: var(--brand-dark);
+    --surface-2: var(--brand-line);
+    --line: var(--brand-line);
+    --accent: var(--on-brand);
     overflow-x: auto;
     border-right: 0;
     border-bottom: 1px solid var(--line);
@@ -83,7 +89,6 @@
     margin-left: 0;
   }
 
-  /* En la franja la raya del activo va abajo. */
   .active,
   .active:hover {
     box-shadow: inset 0 -2px 0 var(--accent);

@@ -17,8 +17,6 @@
   line-height: var(--line-height-ui);
 }
 
-/* Campo como los de la aplicación: borde de control y, al enfocarlo, el borde violeta con su
-   anillo. */
 .textarea {
   width: 100%;
   padding: var(--space-2) var(--space-3);

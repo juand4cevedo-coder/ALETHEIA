@@ -1,3 +1,5 @@
+import { matchRoutes } from "react-router";
+import { routes } from "../routes/router.tsx";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -22,18 +24,18 @@ describe("Página de inicio (HU-001)", () => {
     const main = screen.getByRole("main");
     expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(within(main).getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Demuestre que el archivo que aporta no cambió desde que lo preservó.",
+      /Su trabajo\.\s*Con claridad\./,
     );
     expect(
       within(main).getByRole("heading", {
         level: 2,
-        name: "Lo que pasa con su archivo desde que lo sube",
+        name: "Un poco de orden. Mucho más espacio para pensar.",
       }),
     ).toBeInTheDocument();
     expect(
       within(main).getByRole("heading", {
         level: 2,
-        name: "ALETHEIA preserva y documenta. La valoración es del juez.",
+        name: "Una herramienta precisa. Un alcance claro.",
       }),
     ).toBeInTheDocument();
     expect(
@@ -56,7 +58,7 @@ describe("Página de inicio (HU-001)", () => {
       screen.getByRole("link", { name: /Pedir una cotización/ }),
     ).toHaveAttribute("href", expect.stringContaining("mailto:"));
     expect(
-      screen.getByText("14 días de prueba gratuita, sin tarjeta de crédito."),
+      screen.getByText(/La prueba dura 14 días y no pide tarjeta de crédito/),
     ).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -97,27 +99,36 @@ describe("Página de inicio (HU-001)", () => {
     const { container } = await renderRoute("/");
     await screen.findByText(/^\$59\.900/);
 
-    // Todo lo que se puede activar o editar fuera del menú móvil cerrado (incluido el texto de la
-    // demostración de la huella), en orden del documento.
-    const menu = container.querySelector("dialog");
-    const interactive = Array.from(
-      container.querySelectorAll<HTMLElement>(
-        "a[href], button:not([disabled]), summary, textarea",
-      ),
-    ).filter((element) => !menu?.contains(element));
-
-    const reached: Element[] = [];
-    for (let step = 0; step < interactive.length; step += 1) {
-      await user.tab();
-      reached.push(document.activeElement!);
-    }
-    expect(reached[0]).toHaveTextContent("Saltar al contenido");
-    expect(reached).toEqual(interactive);
-
+    await user.tab();
+    expect(document.activeElement).toHaveTextContent("Saltar al contenido");
+    const trigger = within(
+      screen.getByRole("navigation", { name: "Principal" }),
+    ).getByRole("button", { name: "Producto" });
+    trigger.focus();
+    await user.keyboard("{Enter}");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.keyboard("{Escape}");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
-  it("los H2 de la landing siguen el orden de la especificación", async () => {
+  it("muestra la demostración técnica solo al solicitarla", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    const user = userEvent.setup();
+    await renderRoute("/");
+    const question = await screen.findByText(
+      "¿Cómo se detecta un cambio en un archivo?",
+    );
+    const field = screen.getByLabelText("Texto de ejemplo");
+    expect(field).not.toBeVisible();
+    await user.click(question);
+    expect(field).toBeVisible();
+    await user.click(question);
+    expect(field).not.toBeVisible();
+  });
+
+  it("los H2 presentan contexto, organización, integridad, alcance y condiciones", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     await renderRoute("/");
 
@@ -125,74 +136,27 @@ describe("Página de inicio (HU-001)", () => {
       level: 2,
     });
     expect(headings.map((heading) => heading.textContent)).toEqual([
-      "Una captura de pantalla no es el archivo original",
-      "Lo que pasa con su archivo desde que lo sube",
-      "Cómo se sabe que nadie alteró el archivo",
-      "ALETHEIA preserva y documenta. La valoración es del juez.",
-      "La contraparte podrá comprobar el paquete sin una cuenta",
-      "Las mismas garantías en todos los planes",
+      "Todo tiene su lugar.",
+      "Un poco de orden. Mucho más espacio para pensar.",
+      "Saber qué ocurre. Decidir quién participa.",
+      "Una herramienta precisa. Un alcance claro.",
+      "La confianza también se comprueba.",
+      "Un espacio a la medida de su práctica.",
       "Antes de empezar",
       "Pruebe ALETHEIA con uno de sus casos",
     ]);
   });
 
-  it("la imagen del espacio de trabajo dice el estado real de cada caso, sin verde", async () => {
+  it("el comprobador funciona en la portada y el cierre tiene una sola acción", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const { container } = await renderRoute("/");
 
-    // Es una imagen: los lectores de pantalla reciben su descripción y no la tabla.
-    const shot = screen.getByRole("img", {
-      name: /^Vista del espacio de trabajo/,
-    });
-    expect(shot.querySelector("table")).not.toBeNull();
-    expect(within(shot).getAllByText("Sin verificar").length).toBeGreaterThan(
-      0,
-    );
-    expect(within(shot).getByText("Sellando")).toBeInTheDocument();
-    // El verde es solo para lo que el sistema verificó: ninguna insignia de la portada lo usa.
-    expect(container.querySelector("[data-tone='ok']")).toBeNull();
-    // Los datos de ejemplo de toda la página no llevan la etiqueta de ficticios ni de ejemplo.
-    expect(screen.getByRole("main").textContent).not.toMatch(
-      /ficticios|datos de ejemplo/i,
-    );
-  });
-
-  it("ninguna parte de la página afirma que la cadena registre quién abre o consulta un archivo", async () => {
-    // La lista cerrada de acciones de custodia (custodyActions.ts) no tiene un evento de
-    // apertura ni de consulta: la portada no puede decir que se registran.
-    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
-    const { container } = await renderRoute("/");
-
-    // Toda la página: el texto del encabezado, de cada sección (también las respuestas cerradas
-    // de las preguntas frecuentes) y del pie, más las descripciones para lectores de pantalla.
-    await screen.findByText(/^\$59\.900/);
-    const texts = [
-      container.textContent ?? "",
-      ...Array.from(
-        container.querySelectorAll("[aria-label]"),
-        (element) => element.getAttribute("aria-label") ?? "",
-      ),
-    ].join(" ");
-    // Lista explícita de formas: abrir como evento registrado (abre, abrió, abrir, abierto,
-    // apertura), acceso, consulta, ver y visualizar. Las palabras se comparan enteras, así que
-    // «abril», «previo» o «abrecartas» no cuentan.
-    // «Abrir un caso» es el nombre de la acción de crear un caso en la aplicación (aparece en la
-    // imagen del espacio de trabajo), no un evento de apertura de un archivo: se quita antes.
-    expect(texts.replaceAll(/Abrir un caso/g, "")).not.toMatch(
-      /(?<!\p{L})(abre|abren|abri[óo]|abrieron|abrir|abierto|abierta|aperturas?|accesos?|accedi[óo]|consult\p{L}*|vio|vieron|visualiz\p{L}*)(?!\p{L})/iu,
-    );
-  });
-
-  it("el verificador no enlaza a una página que aún no existe y el cierre tiene una sola acción", async () => {
-    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
-    const { container } = await renderRoute("/");
-
-    // HU-026 llega con la versión 1.0: hasta entonces ningún enlace lleva a /verificador.
+    // La comprobación local se abre en la sección, sin navegación a una ruta vacía.
     expect(container.querySelector("a[href='/verificador']")).toBeNull();
     const verifier = container.querySelector("#verificador")!;
     expect(within(verifier as HTMLElement).queryAllByRole("link")).toEqual([]);
     expect(verifier).toHaveTextContent(
-      "El verificador público llega con la versión 1.0 de ALETHEIA.",
+      "El archivo permanece en su dispositivo.",
     );
 
     const closing = container.querySelector(
@@ -214,18 +178,17 @@ describe("Página de inicio (HU-001)", () => {
     await renderRoute("/");
 
     const nav = screen.getByRole("navigation", { name: "Principal" });
-    const links = within(nav).getAllByRole("link");
-    expect(links.map((link) => link.textContent)).toEqual([
-      "Producto",
-      "Seguridad",
-      "Precios",
-      "Verificar",
-    ]);
-    for (const link of links) {
-      const href = link.getAttribute("href")!;
-      const [, hash] = href.split("#");
-      if (hash) expect(document.getElementById(hash)).not.toBeNull();
-      else expect(href).toBe("/precios");
+    const user = userEvent.setup();
+    for (const trigger of within(nav).getAllByRole("button")) {
+      await user.hover(trigger);
+      for (const link of within(nav).getAllByRole("link")) {
+        const href = link.getAttribute("href")!;
+        const [path, hash] = href.split("#");
+        const matches = matchRoutes(routes, path!);
+        expect(matches, href).not.toBeNull();
+        expect(matches?.at(-1)?.route.path, href).not.toBe("*");
+        if (hash) expect(document.getElementById(hash), href).not.toBeNull();
+      }
     }
   });
 

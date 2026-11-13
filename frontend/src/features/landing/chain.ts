@@ -14,7 +14,7 @@ export function chainRecord(prev: string, time: string, text: string): string {
   return `${prev}|${time}|${text}`;
 }
 
-// Los mismos cuatro eventos de la evidencia de Cómo funciona (EvidencePreview). Cada uno es una
+// Cuatro eventos ilustrativos de una evidencia. Cada uno es una
 // acción de la lista cerrada de custodia (custodyActions.ts): evidence_uploaded,
 // evidence_stamped, evidence_downloaded y export_requested. Cada huella es la SHA-256 real de
 // chainRecord(huella anterior, hora, texto); la prueba la recalcula para que nadie pueda cambiar

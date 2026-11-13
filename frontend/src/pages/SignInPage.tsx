@@ -1,3 +1,4 @@
+import { SocialAccess } from "../features/auth/SocialAccess.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -162,9 +163,11 @@ export function SignInPage() {
             Ingrese a su cuenta
           </h1>
           <p className={styles.lead}>
-            Use el correo y la contraseña de su cuenta.
+            ¿Todavía no tiene cuenta?{" "}
+            <Link to={ROUTES.signUp}>Crear una cuenta</Link>
           </p>
         </header>
+        <SocialAccess />
 
         <form
           className={styles.form}

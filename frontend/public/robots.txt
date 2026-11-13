@@ -5,7 +5,9 @@ Disallow: /app/
 Disallow: /consola
 Disallow: /api/
 Disallow: /verificar-correo
-Disallow: /restablecer
+Disallow: /restablecer-contrasena
+Disallow: /recuperar
 Disallow: /invitacion
+Disallow: /ingresar
 
 Sitemap: https://aletheia.sbs/sitemap.xml

@@ -356,7 +356,6 @@
   font-weight: 400;
 }
 
-/* La especialidad es una etiqueta, no un estado: va en grafito y sin punto de color. */
 .area {
   display: inline-flex;
   align-items: center;

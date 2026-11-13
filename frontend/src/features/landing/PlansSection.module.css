@@ -2,7 +2,6 @@
   margin-top: var(--space-8);
 }
 
-/* Enlace de texto: violeta porque lleva a otra página. */
 .link {
   display: inline-flex;
   align-items: center;

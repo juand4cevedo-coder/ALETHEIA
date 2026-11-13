@@ -11,13 +11,17 @@ import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 // de este archivo; el enlace lleva a la comparación completa (UI-002).
 export function PlansSection() {
   return (
-    <section className={section.section} aria-labelledby="titulo-planes">
+    <section
+      data-reveal
+      className={section.section}
+      aria-labelledby="titulo-planes"
+    >
       <div className={section.inner}>
         <SectionHeading
           id="titulo-planes"
           kicker="Precios"
-          title="Las mismas garantías en todos los planes"
-          lead="Todos los planes preservan igual: huella, sello de tiempo, cadena de custodia y paquete. Cambian la capacidad, los usuarios y el soporte."
+          title="Un espacio a la medida de su práctica."
+          lead="Compare la capacidad, los integrantes y las condiciones de cada plan. Todos los valores se muestran en pesos colombianos."
         />
         <PlanSummary />
         <p className={styles.more}>

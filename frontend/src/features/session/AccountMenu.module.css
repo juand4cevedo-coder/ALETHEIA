@@ -28,7 +28,6 @@
   background: var(--surface-2);
 }
 
-/* Sello de la cuenta: las iniciales en un círculo grafito. */
 .seal {
   display: grid;
   flex: none;

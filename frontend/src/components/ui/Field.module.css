@@ -34,8 +34,6 @@
   border-color: var(--err);
 }
 
-/* El foco gana también sobre un campo con error: el borde de 2 px pasa a violeta y el mensaje
-   de error sigue diciendo qué corregir. Va después de [data-invalid] para imponerse. */
 .control:focus-within,
 .control[data-invalid]:focus-within {
   border-color: var(--accent);

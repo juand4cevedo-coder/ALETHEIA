@@ -201,9 +201,9 @@ Los estilos de cada componente van en su archivo `.module.css` y usan solo las v
 
 Los íconos se importan solo de `src/components/ui/icons.tsx`: Phosphor en peso regular, copiado en `src/components/ui/icons/` con un archivo por ícono, más cuatro propios (huella, sello, cadena y paquete). Para agregar uno, se copia su trazado regular de Phosphor en un archivo nuevo de esa carpeta, igual a los demás, y se exporta desde `icons.tsx`. Como cada ícono vive en su archivo, cada pantalla descarga solo los que dibuja.
 
-Las fuentes son Geist y Geist Mono, de `@fontsource-variable`, alojadas en el propio sitio: solo el subconjunto latino, un archivo woff2 variable por familia (`src/styles/fonts.css`). Mientras cargan se ve la fuente del sistema, y Geist se precarga en `index.html`.
+Las fuentes son Inter, Instrument Serif y Geist Mono, alojadas en el propio sitio con subconjunto latino (`src/styles/fonts.css`). Mientras cargan se ve la fuente del sistema, e Inter se precarga en `index.html`.
 
-La landing tiene un presupuesto de carga (especificación de identidad, sección 8): menos de 120 KB de JavaScript inicial comprimido y menos de 30 KB de CSS. Cuenta lo que `dist/index.html` carga o precarga después de `pnpm build`; las secciones debajo del primer pantallazo llegan aparte (`src/features/landing/BelowFold.tsx`). Para revisarlo, se corre `pnpm build` y se suman los tamaños comprimidos que Vite muestra para los archivos que nombra `dist/index.html`.
+La landing tiene un presupuesto de carga (especificación de identidad, sección 8): menos de 120 KB de JavaScript inicial comprimido y menos de 30 KB de CSS. El script `frontend/scripts/check-bundle-budget.mjs` mide la entrada y sus dependencias estáticas al ejecutar `pnpm build`; las secciones debajo del primer pantallazo llegan aparte (`src/features/landing/BelowFold.tsx`). La escena criptográfica del inicio usa SVG y CSS, sin WebGL.
 
 Las políticas legales comparten una sola versión y fecha de vigencia, definidas en `src/config/legal.ts`. Si un cambio de texto altera derechos u obligaciones, se sube la versión ahí y en ningún otro lugar: el registro guarda qué versión aceptó cada persona.
 

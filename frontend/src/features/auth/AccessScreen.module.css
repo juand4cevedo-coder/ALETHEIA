@@ -7,13 +7,15 @@
 .intro {
   display: grid;
   gap: var(--space-2);
+  text-align: center;
 }
 
 .title {
-  font-size: var(--font-size-title);
+  font-family: var(--font-sans);
+  font-size: 28px;
   font-weight: 600;
   letter-spacing: var(--tracking-title);
-  line-height: var(--line-height-title);
+  line-height: 1.25;
 }
 
 .title:focus {
@@ -28,12 +30,12 @@
 
 .form {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-6);
 }
 
 .fields {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-6);
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -129,4 +131,13 @@
   .appear {
     animation: none;
   }
+}
+
+.intro a {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+}
+.intro a:hover {
+  text-decoration: underline;
 }

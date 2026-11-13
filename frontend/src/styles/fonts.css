@@ -1,15 +1,28 @@
-/* Fuentes alojadas en el propio sitio (especificación de identidad, sección 4): solo el
-   subconjunto latino de Geist y Geist Mono, dos archivos woff2 variables. Mientras cargan se
-   muestra la fuente del sistema (swap); la de Geist se precarga en index.html. */
+/* Fuentes alojadas con el producto, sin solicitudes a servicios externos. */
 @font-face {
-  font-family: "Geist Variable";
+  font-family: "Inter Variable";
   font-style: normal;
   font-display: swap;
   font-weight: 100 900;
-  src: url("@fontsource-variable/geist/files/geist-latin-wght-normal.woff2")
+  src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2")
     format("woff2-variations");
 }
-
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2")
+    format("woff2");
+}
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url("@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2")
+    format("woff2");
+}
 @font-face {
   font-family: "Geist Mono Variable";
   font-style: normal;
