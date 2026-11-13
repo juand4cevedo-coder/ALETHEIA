@@ -5,6 +5,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.core.permissions import Permission
+
 # Los mismos roles de memberships.role (RN-010).
 MemberRole = Literal["owner", "admin", "lawyer", "assistant"]
 
@@ -51,6 +53,12 @@ class Me(BaseModel):
     full_name: str = Field(description="Nombre de la persona.")
     email: str = Field(description="Correo de la cuenta.")
     email_verified: bool = Field(description="Si ya verificó su correo (HU-006).")
+    platform_admin: bool = Field(
+        description="Puede administrar la plataforma; no concede acceso a otros despachos."
+    )
+    permissions: list[Permission] = Field(
+        description="Capacidades vigentes en su despacho y, por separado, en la plataforma."
+    )
     organization: OrganizationMembership | None = Field(
         description="Su organización, o null si ya no pertenece a ninguna."
     )

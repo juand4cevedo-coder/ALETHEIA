@@ -35,6 +35,7 @@ from sqlalchemy.orm import Session
 
 from app.adapters.keys import KeyWrapper
 from app.core.case_keys import new_wrapped_case_key
+from app.core.permissions import has_permission
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, Case, CaseMember, CustodyEvent
 from app.repositories import cases as cases_repository
@@ -44,7 +45,6 @@ from app.services.custody_chain import GENESIS_HASH
 from app.services.members import OrganizationNotActiveError
 from app.services.sessions import Principal
 
-CASE_CREATORS: Final = frozenset({"owner", "admin", "lawyer"})
 CASE_CREATED: Final = "case_created"
 # Eventos de la cadena que trae el detalle del caso.
 RECENT_EVENTS: Final = 20
@@ -176,7 +176,7 @@ def create_case(
     de la transacción de escritura, por si cambiaron mientras tanto.
     """
     organization_id = principal.organization_id
-    if organization_id is None or principal.role not in CASE_CREATORS:
+    if organization_id is None or not has_permission(principal.role, "cases.create"):
         raise NotAllowedToCreateCasesError
     set_tenant(session, TenantContext(organization_id=organization_id, user_id=principal.user_id))
 
@@ -225,7 +225,7 @@ def create_case(
             role, organization_status = cases_repository.creator_role_for_share(
                 session, principal.user_id, organization_id
             )
-            if role not in CASE_CREATORS:
+            if not has_permission(role, "cases.create"):
                 raise NotAllowedToCreateCasesError
             if organization_status != "active":
                 raise OrganizationNotActiveError
