@@ -38,7 +38,13 @@ AUDIT_ACTIONS: Final = (
     "subscription_canceled",
     "account_blocked",
     "account_unblocked",
+    "legal_accepted",
+    "logout",
+    "case_created",
 )
+
+# Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.
+LEGAL_ACCEPTANCE_CONTEXTS: Final = ("registration", "renewal")
 
 
 class User(Base):
@@ -63,6 +69,10 @@ class User(Base):
     email: Mapped[str]
     email_verified_at: Mapped[datetime.datetime | None]
     password_hash: Mapped[str | None]
+    # Valor aleatorio que cambia cada vez que cambian las credenciales: los enlaces de
+    # recuperación lo llevan sellado y dejan de valer en cuanto cambia. Así ningún token
+    # depende del hash de la contraseña.
+    security_stamp: Mapped[uuid.UUID] = mapped_column(server_default=text("gen_random_uuid()"))
     full_name: Mapped[str]
     status: Mapped[str] = mapped_column(server_default="active")
     is_platform_admin: Mapped[bool] = mapped_column(server_default="false")
@@ -138,5 +148,33 @@ class AuditLog(Base):
     # La fecha la pone la aplicación, no la base: así el INSERT no necesita leer la fila de
     # vuelta, algo que Row-Level Security impide con los eventos sin organización.
     created_at: Mapped[datetime.datetime] = mapped_column(
+        default=_utc_now, server_default=func.now()
+    )
+
+
+class LegalAcceptance(Base):
+    """Prueba de cada aceptación de los textos legales (DAT-20).
+
+    La Ley 1581 de 2012 (art. 9) pide que la autorización pueda consultarse después y la Ley
+    1480 de 2011 (art. 50, literal e) que la voluntad de contratar quede en un soporte duradero.
+    Por eso es de solo inserción: users guarda la aceptación vigente y esta tabla, todas.
+    """
+
+    __tablename__ = "legal_acceptances"
+    __table_args__ = (
+        CheckConstraint("char_length(version) BETWEEN 1 AND 20", name="version_length"),
+        CheckConstraint(text_values("context", LEGAL_ACCEPTANCE_CONTEXTS), name="context"),
+        CheckConstraint("char_length(email) <= 254", name="email_length"),
+        Index("ix_legal_acceptances_user_id_accepted_at", "user_id", "accepted_at"),
+    )
+
+    id: Mapped[UUIDv7Pk]
+    # Si la cuenta se elimina, la prueba queda con el correo con que se dio: la ley obliga a
+    # conservarla por el tiempo de los documentos de comercio.
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    email: Mapped[str]
+    version: Mapped[str]
+    context: Mapped[str]
+    accepted_at: Mapped[datetime.datetime] = mapped_column(
         default=_utc_now, server_default=func.now()
     )

@@ -27,3 +27,23 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-021](adr-021.md) | Rutas con React Router, datos con TanStack Query y estilos con tokens propios | Aceptado | 31/10/2026 |
 | [ADR-022](adr-022.md) | Pruebas del frontend con Vitest, Testing Library, jsdom y axe-core | Aceptado | 01/11/2026 |
 | [ADR-023](adr-023.md) | Sitio público oscuro y continuo, con íconos de Lucide | Aceptado | 01/11/2026 |
+| [ADR-024](adr-024.md) | Correo transaccional con Amazon SES | Aceptado | 03/11/2026 |
+| [ADR-025](adr-025.md) | Límite de peticiones con ventana deslizante en PostgreSQL | Aceptado | 03/11/2026 |
+| [ADR-026](adr-026.md) | Pantallas de acceso como acta, con la huella en vivo | Reemplazado por ADR-029 | 04/11/2026 |
+| [ADR-027](adr-027.md) | Enlaces firmados de un solo uso | Aceptado | 05/11/2026 |
+| [ADR-028](adr-028.md) | Sesiones comprobadas en cada petición y protección contra CSRF | Aceptado | 05/11/2026 |
+| [ADR-029](adr-029.md) | Pantallas de acceso sobre la escena del alba | Aceptado | 05/11/2026 |
+| [ADR-030](adr-030.md) | Pantallas descargadas por ruta, con descarga anticipada | Aceptado | 05/11/2026 |
+| [ADR-031](adr-031.md) | Políticas legales con su fundamento, su huella y descarga verificable | Aceptado | 06/11/2026 |
+| [ADR-032](adr-032.md) | Aceptación obligatoria de los textos legales nuevos, con prueba de solo inserción | Aceptado | 06/11/2026 |
+| [ADR-033](adr-033.md) | Rotación del token de renovación sin periodo de gracia y cierre de sesiones | Aceptado | 06/11/2026 |
+| [ADR-034](adr-034.md) | Recuperación de la contraseña con enlace firmado de una hora y cierre de sesiones | Aceptado | 06/11/2026 |
+| [ADR-035](adr-035.md) | Invitaciones con token opaco guardado como hash | Aceptado | 07/11/2026 |
+| [ADR-036](adr-036.md) | Aceptar una invitación sin contexto previo y entrar de una vez | Aceptado | 08/11/2026 |
+| [ADR-037](adr-037.md) | Hash de custodia calculado por la base, verificador independiente y anclaje externo | Aceptado | 10/11/2026 |
+| [ADR-038](adr-038.md) | Tareas sin transacciones abiertas durante la red, idempotencia por tipo y reservas extendibles | Aceptado | 10/11/2026 |
+| [ADR-039](adr-039.md) | Alcance de Row-Level Security y autorización dentro de las funciones privilegiadas | Aceptado | 10/11/2026 |
+| [ADR-040](adr-040.md) | Cambiar el rol y retirar miembros: reglas y efecto inmediato | Aceptado | 10/11/2026 |
+| [ADR-041](adr-041.md) | Landing con voz editorial, hoja de expediente y entradas ligadas al desplazamiento | Aceptado | 10/11/2026 |
+| [ADR-042](adr-042.md) | Abrir un caso: llave envuelta antes de la transacción, radicado único y datos procesales opcionales | Aceptado | 10/11/2026 |
+| [ADR-043](adr-043.md) | Identidad grafito y sistema de diseño: color con significado, Geist, Phosphor y sin efectos decorativos | Propuesto | 11/11/2026 |

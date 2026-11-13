@@ -15,4 +15,7 @@ repos:
   - repo: https://github.com/gitleaks/gitleaks
     rev: 2ca41cc1372d1e939a6a879f18cdc19fc1cac1ce  # frozen: v8.30.0
     hooks:
-      - id: gitleaks
+      # Usa el gitleaks instalado en el equipo (winget install Gitleaks.Gitleaks). La copia que
+      # compila pre-commit queda bloqueada por el control de aplicaciones de Windows.
+      - id: gitleaks-system
+        pass_filenames: false

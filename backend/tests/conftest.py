@@ -14,24 +14,42 @@ import psycopg
 import pytest
 from alembic import command
 from alembic.config import Config
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 from sqlalchemy import Connection, Engine, create_engine, make_url, pool
-from sqlalchemy.exc import DBAPIError
+from sqlalchemy.exc import ArgumentError, DBAPIError
 from sqlalchemy.orm import Session
 
+from app.api.deps import get_session
 from app.core.config import Settings
+from app.core.middleware import SAME_ORIGIN_HEADER
 from app.db.tenancy import TenantContext, set_tenant
+from app.main import create_app
 from app.models import Case, Evidence, Membership, Organization, User
 
 TEST_DATABASE_URL_VARIABLE = "ALETHEIA_TEST_DATABASE_URL"
 TEST_MIGRATION_DATABASE_URL_VARIABLE = "ALETHEIA_TEST_MIGRATION_DATABASE_URL"
+# Clave de firma fija de las pruebas: no depende de la que cada equipo tenga en backend/.env.
+TEST_SIGNING_KEY: Final = "clave-de-firma-de-las-pruebas-con-mas-de-32-caracteres"
 _BACKEND_DIR: Final = Path(__file__).resolve().parents[1]
+# El encabezado que la interfaz envía en toda petición que cambia algo. Los clientes de prueba
+# lo llevan siempre, como la interfaz; las pruebas de CSRF lo quitan a propósito.
+SAME_ORIGIN_HEADERS: Final = {SAME_ORIGIN_HEADER: "1"}
 
 
-def _build_settings(database_url: str) -> Settings:
+def _build_settings(database_url: str, local_key_path: Path) -> Settings:
     # Cada campo se da explícito: los valores directos tienen prioridad sobre el entorno y
     # sobre backend/.env, así que la prueba no depende de la configuración del equipo.
     return Settings.model_validate(
-        {"environment": "test", "log_level": "INFO", "database_url": database_url}
+        {
+            "environment": "test",
+            "log_level": "INFO",
+            "database_url": database_url,
+            "token_signing_key": TEST_SIGNING_KEY,
+            "local_key_path": local_key_path,
+        }
     )
 
 
@@ -39,20 +57,53 @@ def _required_url(variable: str) -> str:
     url = os.environ.get(variable)
     if not url:
         pytest.fail(f"Falta la variable {variable} con la URL de la base de pruebas.")
-    # Se acepta postgresql:// o postgresql+psycopg://; SQLAlchemy necesita el controlador.
-    return make_url(url).set(drivername="postgresql+psycopg").render_as_string(hide_password=False)
+    # La suite baja todas las migraciones. Una variable mal copiada nunca debe permitir
+    # que esa operación llegue a desarrollo o a producción, ni mostrar su clave al fallar.
+    try:
+        parsed = make_url(url)
+    except ArgumentError, ValueError:
+        pytest.fail(f"{variable} no contiene una URL válida de pruebas.", pytrace=False)
+    if (
+        parsed.drivername not in {"postgresql", "postgresql+psycopg"}
+        or parsed.database != "aletheia_test"
+        or parsed.host not in {"localhost", "127.0.0.1", "::1"}
+        or parsed.query
+    ):
+        pytest.fail(
+            f"{variable} debe apuntar a PostgreSQL local, base aletheia_test "
+            "y sin parámetros de conexión adicionales.",
+            pytrace=False,
+        )
+    return parsed.set(drivername="postgresql+psycopg").render_as_string(hide_password=False)
+
+
+@pytest.fixture(scope="session")
+def local_key_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Llave maestra RSA-3072 en PEM, generada una vez por ejecución de las pruebas."""
+    key = rsa.generate_private_key(public_exponent=65537, key_size=3072)
+    path = tmp_path_factory.mktemp("llaves") / "llave-local.pem"
+    path.write_bytes(
+        key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        )
+    )
+    return path
 
 
 @pytest.fixture
-def make_settings() -> Callable[[str], Settings]:
+def make_settings(local_key_path: Path) -> Callable[[str], Settings]:
     """Construye una configuración de prueba con la URL de base de datos indicada."""
-    return _build_settings
+    return lambda database_url: _build_settings(database_url, local_key_path)
 
 
 @pytest.fixture
-def settings() -> Settings:
+def settings(local_key_path: Path) -> Settings:
     """Configuración con una URL que nunca se usa para conectar."""
-    return _build_settings("postgresql+psycopg://aletheia:clave-de-prueba@localhost:5432/aletheia")
+    return _build_settings(
+        "postgresql+psycopg://aletheia:clave-de-prueba@localhost:5432/aletheia", local_key_path
+    )
 
 
 @pytest.fixture
@@ -223,3 +274,30 @@ def add_evidence(session: Session, tenant: Tenant, content: bytes) -> uuid.UUID:
     )
     session.flush()
     return evidence_id
+
+
+# --- Clientes HTTP de la aplicación ---------------------------------------------------------
+
+type NuevoCliente = Callable[[], TestClient]
+
+
+@pytest.fixture
+def app(settings: Settings, db: Session) -> FastAPI:
+    application = create_app(settings)
+    application.dependency_overrides[get_session] = lambda: db
+    return application
+
+
+@pytest.fixture
+def dispositivo(app: FastAPI) -> Iterator[NuevoCliente]:
+    abiertos: list[TestClient] = []
+
+    def nuevo() -> TestClient:
+        cliente = TestClient(app, base_url="https://testserver", headers=SAME_ORIGIN_HEADERS)
+        cliente.__enter__()
+        abiertos.append(cliente)
+        return cliente
+
+    yield nuevo
+    for cliente in abiertos:
+        cliente.__exit__(None, None, None)

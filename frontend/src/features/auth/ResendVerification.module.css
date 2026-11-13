@@ -1,0 +1,30 @@
+/* Reenvío del correo de verificación. Va dentro de una pantalla o un diálogo que ya tiene su
+   título y su panel, así que no lleva recuadro propio; solo el error se enmarca, como en las
+   demás pantallas de acceso. */
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.destination,
+.sent {
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+  overflow-wrap: anywhere;
+}
+
+.destination strong,
+.sent strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.alert {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--err) 40%, var(--line));
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
