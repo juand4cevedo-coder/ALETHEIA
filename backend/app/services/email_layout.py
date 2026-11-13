@@ -1,4 +1,4 @@
-"""Diseño común de los correos de ALETHEIA: una columna clara con los colores de la marca.
+"""Diseño común de los correos de ALETHEIA: una columna con los colores de la marca.
 
 Los clientes de correo ignoran las hojas de estilo y casi nunca cargan tipografías propias, así
 que todo va con estilos en línea y una pila de fuentes del sistema. Los textos llegan ya
@@ -8,16 +8,15 @@ escapados; aquí solo se escapan el botón y su enlace.
 import html
 from typing import Final
 
-# Paleta sobre fondo claro. Contrastes sobre blanco (WCAG): texto 19,2:1, texto secundario
-# 10,2:1, apoyo 6,0:1 (5,5:1 sobre la página); texto blanco sobre el botón 6,5:1.
-_PAGE: Final = "#F4F5F7"
-_CARD: Final = "#FFFFFF"
-_LINE: Final = "#E1E4EA"
-_TEXT: Final = "#0D0F13"
-_TEXT_2: Final = "#3A4150"
-_MUTED: Final = "#5B6475"
-_ACTION: Final = "#5544D8"
-_ACTION_TEXT: Final = "#FFFFFF"
+# La misma paleta de lectura y acción que utiliza el sitio.
+_PAGE: Final = "#000000"
+_CARD: Final = "#0E0F11"
+_LINE: Final = "#252629"
+_TEXT: Final = "#F0F0F0"
+_TEXT_2: Final = "#A1A4A5"
+_MUTED: Final = "#999DA3"
+_ACTION: Final = "#F0F0F0"
+_ACTION_TEXT: Final = "#08090B"
 _FONT: Final = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
 
 # El logo se sirve desde una ruta pública estable del sitio: un PNG de 64 px que se muestra a
@@ -61,7 +60,8 @@ def email_layout(
         '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 28px"><tr>'
         f'<td style="padding:0 10px 0 0"><img src="{logo}" width="{_LOGO_SIZE}" '
         f'height="{_LOGO_SIZE}" alt="" style="display:block;border:0"></td>'
-        f'<td style="color:{_TEXT};font-size:20px;font-weight:600;line-height:32px">Aletheia</td>'
+        f'<td style="color:{_TEXT};font-family:{_FONT};font-size:24px;'
+        'font-weight:700;line-height:32px">Aletheia</td>'
         "</tr></table>"
         f'<p style="margin:0 0 16px;color:{_TEXT};font-size:16px;line-height:24px">'
         f"{greeting}</p>{body}{button}"
