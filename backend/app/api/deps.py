@@ -12,8 +12,8 @@ from app.adapters.keys import KeyWrapper
 from app.api.cookies import ACCESS_COOKIE
 from app.core.config import Settings
 from app.core.legal import LegalAcceptanceRequiredError
+from app.core.permissions import has_permission
 from app.services import sessions as sessions_service
-from app.services.members import MANAGER_ROLES
 from app.services.sessions import NotAuthenticatedError, Principal
 
 
@@ -117,7 +117,7 @@ def get_manager(principal: Annotated[Principal, Depends(get_principal)]) -> Prin
     vuelven a comprobar: la autorización no depende de que la ruta recuerde pedir esta
     dependencia.
     """
-    if principal.organization_id is None or principal.role not in MANAGER_ROLES:
+    if principal.organization_id is None or not has_permission(principal.role, "team.manage"):
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             detail=NOT_ALLOWED,

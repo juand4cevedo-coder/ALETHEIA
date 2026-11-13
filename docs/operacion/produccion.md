@@ -283,6 +283,23 @@ aws ssm update-document-default-version --region us-east-2 --name aletheia-despl
 
 `aletheia-api` y `aletheia-web` son públicos, para que el servidor los descargue sin credenciales. GHCR crea cada paquete privado la primera vez que se publica; se cambia una sola vez en GitHub, en el perfil > Packages > el paquete > Package settings > Change visibility > Public.
 
+### Cuenta propietaria de la plataforma
+
+Tras desplegar la versión que incluya la migración 0016, la persona propietaria registra su
+cuenta y confirma el correo. El operador verifica que la cuenta está activa y ejecuta una sola
+vez, desde el servidor, el comando del contenedor de migraciones:
+
+```bash
+cd /opt/aletheia/infra
+sudo docker compose --env-file /var/lib/aletheia/despliegue.env -f compose.prod.yaml \
+  run --rm migrate python -m app.maintenance.platform_owner --email "correo@ejemplo.com"
+```
+
+La operación exige `aletheia_owner`, acepta solo una cuenta activa con correo verificado, deja
+`platform_admin_granted` en la auditoría y es idempotente para la misma cuenta. El usuario de la
+API no tiene permiso SQL para escribir `is_platform_admin`. Ese atributo no concede acceso a
+datos de otros despachos; la consola de administración de plataforma aún está pendiente.
+
 ## Pruebas de TT-007
 
 Las pruebas de AWS corrieron desde la instancia, dentro de un contenedor con AWS CLI y con las credenciales del rol.

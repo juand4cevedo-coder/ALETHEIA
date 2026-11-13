@@ -41,6 +41,7 @@ AUDIT_ACTIONS: Final = (
     "legal_accepted",
     "logout",
     "case_created",
+    "platform_admin_granted",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.
@@ -63,6 +64,12 @@ class User(Base):
         CheckConstraint("char_length(privacy_version) BETWEEN 1 AND 20", name="privacy_version"),
         # El correo es único sin distinguir mayúsculas (IDX-001).
         Index("uq_users_email_lower", text("lower(email)"), unique=True),
+        Index(
+            "uq_users_single_platform_admin",
+            "is_platform_admin",
+            unique=True,
+            postgresql_where=text("is_platform_admin"),
+        ),
     )
 
     id: Mapped[UUIDv7Pk]

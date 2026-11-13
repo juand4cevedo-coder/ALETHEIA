@@ -2726,6 +2726,26 @@
             "title": "Email Verified",
             "description": "Si ya verificó su correo (HU-006)."
           },
+          "platform_admin": {
+            "type": "boolean",
+            "title": "Platform Admin",
+            "description": "Puede administrar la plataforma; no concede acceso a otros despachos."
+          },
+          "permissions": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "platform.manage",
+                "organization.view",
+                "team.manage",
+                "cases.read_assigned",
+                "cases.create"
+              ]
+            },
+            "type": "array",
+            "title": "Permissions",
+            "description": "Capacidades vigentes en su despacho y, por separado, en la plataforma."
+          },
           "organization": {
             "anyOf": [
               {
@@ -2748,6 +2768,8 @@
           "full_name",
           "email",
           "email_verified",
+          "platform_admin",
+          "permissions",
           "organization",
           "legal"
         ],
