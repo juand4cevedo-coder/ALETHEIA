@@ -7,7 +7,12 @@ export default defineConfig({
   input: "../backend/openapi.json",
   output: "src/api/generated",
   plugins: [
-    "@hey-api/client-fetch",
+    // El cliente nace con la configuración de src/api/runtimeConfig.ts: el encabezado propio
+    // que la API exige en toda petición que cambia algo.
+    {
+      name: "@hey-api/client-fetch",
+      runtimeConfigPath: "./src/api/runtimeConfig.ts",
+    },
     "@hey-api/typescript",
     "@hey-api/sdk",
     // Opciones de consulta listas para TanStack Query: listPlansOptions(), y así por operación.

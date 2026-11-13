@@ -2,7 +2,11 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { LEGAL_EFFECTIVE_DATE, LEGAL_VERSION } from "../config/legal.ts";
+import {
+  CONSUMER_AUTHORITY,
+  DATA_CONTROLLER,
+  LEGAL_EFFECTIVE_DATE,
+} from "../config/legal.ts";
 import { LEGAL_PAGES, legalRoute } from "../config/routes.ts";
 import { LEGAL_DOCUMENTS } from "../features/legal/documents.ts";
 import { seriousAxeViolations } from "../test/axe.ts";
@@ -18,10 +22,10 @@ beforeEach(() => {
 
 describe("Páginas legales (HU-003, CP-003)", () => {
   it.each(LEGAL_PAGES)(
-    "publica $label con versión y fecha, sin cuenta ni llamadas a la API (CA-HU-003-01)",
+    "publica $label con su fecha de vigencia, sin cuenta ni llamadas a la API (CA-HU-003-01)",
     async ({ slug }) => {
       const legalDocument = LEGAL_DOCUMENTS[slug];
-      const { container } = renderRoute(legalRoute(slug));
+      const { container } = await renderRoute(legalRoute(slug));
 
       const main = screen.getByRole("main");
       expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(
@@ -30,27 +34,81 @@ describe("Páginas legales (HU-003, CP-003)", () => {
       expect(within(main).getByRole("heading", { level: 1 })).toHaveTextContent(
         legalDocument.title,
       );
-      expect(within(main).getByText(`Versión ${LEGAL_VERSION}`)).toBeVisible();
-      expect(within(main).getByText("2 de noviembre de 2026")).toHaveAttribute(
+      // Los textos se identifican por su vigencia: ninguna página muestra un número de versión.
+      expect(within(main).queryByText(/versión\s*\d/i)).not.toBeInTheDocument();
+      expect(within(main).getByText("6 de noviembre de 2026")).toHaveAttribute(
         "datetime",
         LEGAL_EFFECTIVE_DATE,
       );
-      // Cada política cierra con los datos del responsable (Decreto 1074 de 2015).
+      // Cada política cierra con los datos del responsable (Decreto 1377 de 2013, art. 13) y
+      // la identidad de quien vende en línea (Ley 1480 de 2011, art. 50, literal a).
+      const contact = within(main)
+        .getByRole("heading", { level: 2, name: "Responsable y contacto" })
+        .closest("section")!;
+      expect(contact).toHaveTextContent(DATA_CONTROLLER.nit);
+      expect(contact).toHaveTextContent(DATA_CONTROLLER.address);
       expect(
-        within(main).getByRole("heading", {
-          level: 2,
-          name: "Responsable y contacto",
-        }),
+        within(contact).getByRole("link", { name: CONSUMER_AUTHORITY.name }),
+      ).toHaveAttribute("href", CONSUMER_AUTHORITY.url);
+      // Lo esencial, en tarjetas, y la huella del texto, calculada en el navegador.
+      expect(within(main).getAllByRole("listitem").length).toBeGreaterThan(0);
+      expect(
+        await within(main).findByText(/^[0-9a-f]{64}$/),
       ).toBeInTheDocument();
       expect(fetchMock).not.toHaveBeenCalled();
       expect(await seriousAxeViolations(container)).toEqual([]);
     },
   );
 
+  // Regla 11 de la identidad: el texto de las políticas no cambia con un rediseño. Su huella
+  // depende solo del texto que se lee, no de la presentación; si una de estas cambia, cambió el
+  // texto vigente y eso exige una versión legal nueva con su propio proceso (RN-029), no un
+  // ajuste de estilo. Las huellas son las de la versión del 6 de noviembre de 2026.
+  it.each([
+    [
+      "privacidad",
+      "25d7fbe978a96ad9d5355bf5e16c3847fea6ed2de1572fff146a1e1dd36fdc0b",
+    ],
+    [
+      "terminos",
+      "753e9d2945e9666089357cbc4ba5e72b08631057b4d99400cb8051b67cf0760e",
+    ],
+    [
+      "cookies",
+      "b7e6feb1d7472d45bbd44b4c05985f866297d205d9067be23666fa364a695558",
+    ],
+    [
+      "reembolsos",
+      "6efa3998739d8cefd14dcff7260f64634041f4175657c22aae199e3fc0e8e52e",
+    ],
+  ] as const)(
+    "la huella de %s es la de la versión vigente",
+    async (slug, expected) => {
+      expect(LEGAL_EFFECTIVE_DATE).toBe("2026-11-06");
+      await renderRoute(legalRoute(slug));
+      expect(
+        (await screen.findByText(/^[0-9a-f]{64}$/, {}, { timeout: 5000 }))
+          .textContent,
+      ).toBe(expected);
+    },
+  );
+
   it("se abren desde el pie de la página de inicio y de cada política (CA-HU-003-02)", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const user = userEvent.setup();
-    renderRoute("/");
+    await renderRoute("/");
+
+    // El pie identifica a quien vende y enlaza a la autoridad de protección al consumidor
+    // (Ley 1480 de 2011, art. 50, literal a y parágrafo).
+    const footer = screen.getByRole("contentinfo");
+    expect(
+      within(footer).getByRole("link", {
+        name: "Identificación y contacto del proveedor",
+      }),
+    ).toHaveAttribute("href", "/legal/terminos");
+    expect(
+      within(footer).getByRole("link", { name: CONSUMER_AUTHORITY.name }),
+    ).toHaveAttribute("href", CONSUMER_AUTHORITY.url);
 
     for (const page of LEGAL_PAGES) {
       const footerLegal = screen.getByRole("navigation", { name: "Legal" });
@@ -58,17 +116,22 @@ describe("Páginas legales (HU-003, CP-003)", () => {
         within(footerLegal).getByRole("link", { name: page.label }),
       );
       expect(
-        await screen.findByRole("heading", {
-          level: 1,
-          name: LEGAL_DOCUMENTS[page.slug].title,
-        }),
+        // El chunk de la página se carga aparte: en jsdom tarda más del 1 s predeterminado.
+        await screen.findByRole(
+          "heading",
+          {
+            level: 1,
+            name: LEGAL_DOCUMENTS[page.slug].title,
+          },
+          { timeout: 5000 },
+        ),
       ).toBeInTheDocument();
     }
   });
 
   it("cambia de política y marca la actual", async () => {
     const user = userEvent.setup();
-    renderRoute(legalRoute("privacidad"));
+    await renderRoute(legalRoute("privacidad"));
 
     const switcher = screen.getByRole("navigation", { name: "Políticas" });
     expect(
@@ -79,10 +142,15 @@ describe("Páginas legales (HU-003, CP-003)", () => {
       within(switcher).getByRole("link", { name: "Reembolsos" }),
     );
     expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name: "Política de reembolsos y cancelación",
-      }),
+      // El chunk de la página se carga aparte: en jsdom tarda más del 1 s predeterminado.
+      await screen.findByRole(
+        "heading",
+        {
+          level: 1,
+          name: "Política de reembolsos y cancelación",
+        },
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument();
     // La política nueva monta su propio selector: se vuelve a buscar.
     const current = screen.getByRole("navigation", { name: "Políticas" });
@@ -94,8 +162,8 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     ).not.toHaveAttribute("aria-current");
   });
 
-  it("el índice lleva a cada apartado de la política", () => {
-    const { container } = renderRoute(legalRoute("terminos"));
+  it("el índice lleva a cada apartado de la política", async () => {
+    const { container } = await renderRoute(legalRoute("terminos"));
 
     const index = screen.getByRole("navigation", { name: "En esta página" });
     const links = within(index).getAllByRole("link");
@@ -110,10 +178,50 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     }
   });
 
+  it("descarga el texto vigente con la misma huella que muestra (Ley 1480, art. 50 d)", async () => {
+    const createObjectURL = vi.fn<(blob: Blob) => string>(() => "blob:texto");
+    vi.stubGlobal(
+      "URL",
+      Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() }),
+    );
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => {});
+    const user = userEvent.setup();
+    await renderRoute(legalRoute("terminos"));
+
+    const hash = (await screen.findByText(/^[0-9a-f]{64}$/)).textContent;
+    await user.click(
+      screen.getByRole("button", { name: "Descargar el texto" }),
+    );
+
+    expect(click).toHaveBeenCalledTimes(1);
+    const blob = createObjectURL.mock.calls[0]![0];
+    expect(blob.type).toBe("text/plain;charset=utf-8");
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    // Cualquiera puede comprobarlo: la SHA-256 del archivo es la huella de la página.
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    expect(
+      Array.from(new Uint8Array(digest), (byte) =>
+        byte.toString(16).padStart(2, "0"),
+      ).join(""),
+    ).toBe(hash);
+
+    const text = new TextDecoder().decode(bytes);
+    expect(text.startsWith("TÉRMINOS Y CONDICIONES\n")).toBe(true);
+    expect(text).toContain("Vigente desde el 6 de noviembre de 2026");
+    for (const section of LEGAL_DOCUMENTS.terminos.sections) {
+      expect(text).toContain(section.title.toUpperCase());
+    }
+    expect(text).toContain(`NIT:\n${DATA_CONTROLLER.nit}`);
+    expect(text).toContain("Fundamento: Ley 1480 de 2011, art. 50, literal a");
+    click.mockRestore();
+  });
+
   it("pliega el índice en pantallas angostas e imprime la política", async () => {
     const print = vi.spyOn(window, "print").mockImplementation(() => {});
     const user = userEvent.setup();
-    renderRoute(legalRoute("cookies"));
+    await renderRoute(legalRoute("cookies"));
 
     const toggle = screen.getByRole("button", { name: "Ver el índice" });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
@@ -125,8 +233,8 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     expect(print).toHaveBeenCalledTimes(1);
   });
 
-  it("muestra la página no encontrada si la política no existe", () => {
-    renderRoute("/legal/garantias");
+  it("muestra la página no encontrada si la política no existe", async () => {
+    await renderRoute("/legal/garantias");
 
     expect(
       screen.getByRole("heading", {

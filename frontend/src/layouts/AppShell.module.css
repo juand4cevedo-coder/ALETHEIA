@@ -1,0 +1,137 @@
+/* Marco del espacio de trabajo: encabezado de una línea, menú lateral en --surface-1 y el
+   contenido sobre el fondo. Aquí la atención va al trabajo, no a la marca. */
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.shell :where(a:not([class])) {
+  color: var(--accent-strong);
+}
+
+.skipLink {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 30;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  transform: translateY(-200%);
+}
+
+.skipLink:focus {
+  transform: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--header-height);
+  padding: 0 var(--space-6);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-1);
+}
+
+.brand {
+  font-family: var(--font-sans);
+  font-size: 23px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-ui);
+  text-decoration: none;
+}
+
+/* Menú lateral a la izquierda y contenido a la derecha. En pantallas angostas el menú pasa
+   arriba, como una franja (WorkspaceNav.module.css). */
+.body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+}
+
+/* Sin menú (mientras carga o si falla) el contenido ocupa todo el ancho. */
+.body > .main:only-child {
+  grid-column: 1 / -1;
+}
+
+.main {
+  width: 100%;
+  min-width: 0;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-12) var(--space-16);
+}
+
+.main:focus {
+  outline: none;
+}
+
+@media (max-width: 900px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+  }
+
+  .main {
+    padding: var(--space-6) var(--space-6) var(--space-12);
+  }
+}
+
+@media (max-width: 560px) {
+  .main {
+    padding: var(--space-6) var(--space-4) var(--space-12);
+  }
+
+  .header {
+    padding: 0 var(--space-4);
+  }
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+.spinner {
+  animation: spin var(--motion-spin) linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
+.failure {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  max-width: 64ch;
+  padding: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--err) 40%, var(--line));
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}

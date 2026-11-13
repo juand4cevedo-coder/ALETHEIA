@@ -1,18 +1,52 @@
+/* Página no encontrada o que falló al cargar: título, qué pasó y una sola acción principal.
+   Se muestra dentro del sitio público o sola, cuando falla el marco entero. */
 .page {
   display: grid;
   justify-items: start;
-  gap: var(--space-3);
-  max-width: var(--content-width);
+  align-content: start;
+  gap: var(--space-4);
+  max-width: var(--screen-narrow-width);
   margin: 0 auto;
   padding: var(--space-24) var(--space-6);
 }
 
 .title {
-  font-size: 32px;
+  font-size: var(--font-size-title);
   font-weight: 600;
-  line-height: 40px;
+  letter-spacing: var(--tracking-title);
+  line-height: var(--line-height-title);
+  text-wrap: balance;
 }
 
 .text {
-  color: var(--color-text-inverse-muted);
+  max-width: var(--measure);
+  margin-bottom: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.text a,
+.link {
+  color: var(--accent-strong);
+  text-underline-offset: var(--underline-offset);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.link {
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: var(--space-16) var(--space-4);
+  }
 }

@@ -31,5 +31,10 @@ dist/
 Thumbs.db
 desktop.ini
 
+# Herramientas locales de diseño y automatización; no forman parte del producto.
+.agents/
+skills-lock.json
+docs/diseno/figma-2026-11-12/
+
 # Raíces públicas de las autoridades de sellado de TT-006: son certificados, no llaves.
 !backend/spikes/tt006/sellos/*-raiz.pem

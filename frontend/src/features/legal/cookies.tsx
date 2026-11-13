@@ -1,15 +1,31 @@
+import { Link } from "react-router";
+
+import { legalRoute } from "../../config/routes.ts";
 import type { LegalDocument } from "./types.ts";
 
-// Política de cookies. Hoy el sitio solo usa las cookies de sesión de ADR-007 (HttpOnly, Secure
-// y SameSite=Strict); no hay analítica ni publicidad. Lo no esencial espera consentimiento
-// (RN-029), que se gestiona en el panel de cookies (HU-004).
+// Política de cookies. Describe exactamente lo que guarda el sitio: las dos cookies de sesión
+// de ADR-007 y ADR-028 (backend/app/api/cookies.py) y la decisión sobre cookies que el panel de
+// HU-004 guarda en el navegador (features/consent/cookieConsent.ts). Si cambia un nombre o una
+// duración allá, se cambia aquí.
 export const cookiePolicy: LegalDocument = {
   slug: "cookies",
   title: "Política de cookies",
   description:
-    "Qué cookies usa ALETHEIA, para qué sirven, cuánto duran y cómo borrarlas. El sitio no usa cookies de analítica ni de publicidad.",
-  summary:
-    "ALETHEIA solo usa las cookies indispensables para que usted inicie sesión de forma segura. No usamos cookies de analítica ni de publicidad, y ningún tercero sigue su navegación en este sitio.",
+    "Qué cookies usa ALETHEIA, para qué sirve cada una, cuánto dura y cómo borrarla. El sitio no usa cookies de analítica ni de publicidad.",
+  keyPoints: [
+    {
+      title: "Solo dos cookies",
+      text: "Las dos sirven para mantener su sesión de forma segura y solo existen cuando usted ingresa.",
+    },
+    {
+      title: "Nadie lo sigue",
+      text: "No hay cookies de analítica, de publicidad ni de redes sociales, y ningún tercero carga recursos en el sitio.",
+    },
+    {
+      title: "Usted decide",
+      text: "Si algún día agregamos cookies opcionales, quedarán apagadas hasta que las acepte.",
+    },
+  ],
   sections: [
     {
       id: "que-son",
@@ -19,7 +35,7 @@ export const cookiePolicy: LegalDocument = {
           Una cookie es un archivo pequeño que un sitio web guarda en su
           navegador para reconocerlo en las visitas siguientes. Algunas son
           necesarias para que el sitio funcione; otras sirven para medir visitas
-          o mostrar publicidad.
+          o mostrar publicidad. ALETHEIA solo usa las primeras.
         </p>
       ),
     },
@@ -29,37 +45,59 @@ export const cookiePolicy: LegalDocument = {
       body: (
         <>
           <p>
-            Solo usamos cookies propias de aletheia.sbs, y solo cuando usted
+            Las dos son propias de aletheia.sbs y solo se crean cuando usted
             inicia sesión:
           </p>
-          <ul>
-            <li>
-              <strong>Cookie de sesión.</strong> Demuestra que usted ya ingresó,
-              para no pedirle la contraseña en cada página. Dura 10 minutos y se
-              renueva sola mientras usa el servicio.
-            </li>
-            <li>
-              <strong>Cookie de renovación.</strong> Mantiene su sesión abierta
-              hasta 14 días. Cambia cada vez que se usa, y si alguien intenta
-              reutilizar una anterior, todas sus sesiones se cierran.
-            </li>
-          </ul>
+          <table>
+            <caption>Cookies de ALETHEIA</caption>
+            <thead>
+              <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Para qué sirve</th>
+                <th scope="col">Duración</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <code>__Host-aletheia_access</code>
+                </td>
+                <td>
+                  Demuestra que usted ya ingresó, para no pedirle la contraseña
+                  en cada página.
+                </td>
+                <td>10 minutos; se renueva sola mientras usa el servicio.</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>__Secure-aletheia_refresh</code>
+                </td>
+                <td>
+                  Mantiene la sesión abierta. Cambia cada vez que se usa, y si
+                  alguien intenta reutilizar una anterior, todas sus sesiones se
+                  cierran.
+                </td>
+                <td>Hasta 14 días desde que ingresó.</td>
+              </tr>
+            </tbody>
+          </table>
           <p>
             Ninguna de las dos se puede leer desde el código de una página, solo
-            viajan por conexiones cifradas y el navegador no las envía a otros
-            sitios. Al cerrar sesión se borran.
+            viajan por conexiones cifradas y el navegador no las envía cuando la
+            petición viene de otro sitio. Al cerrar sesión se borran.
           </p>
         </>
       ),
     },
     {
       id: "preferencias",
-      title: "Preferencias guardadas en su navegador",
+      title: "Lo que se guarda en su navegador",
       body: (
         <p>
-          Su decisión sobre las cookies se guarda en su propio navegador para no
-          preguntársela en cada visita. Ese dato no se envía a nuestros
-          servidores.
+          Su decisión sobre las cookies se guarda en el almacenamiento local de
+          su navegador con el nombre <code>aletheia:cookies</code>, junto con la
+          fecha en que la tomó, para no preguntársela en cada visita. Ese dato
+          no es una cookie y nunca se envía a nuestros servidores.
         </p>
       ),
     },
@@ -89,11 +127,16 @@ export const cookiePolicy: LegalDocument = {
       title: "Su consentimiento",
       body: (
         <p>
-          Las cookies de sesión no requieren su consentimiento porque sin ellas
+          Las cookies de sesión no necesitan su consentimiento, porque sin ellas
           no sería posible ingresar de forma segura. Si en el futuro agregamos
-          cookies que no sean indispensables, permanecerán desactivadas hasta
-          que usted las acepte, y podrá cambiar su decisión en cualquier momento
-          con el botón Configurar cookies, al pie de cualquier página.
+          cookies que no sean indispensables, quedarán apagadas hasta que usted
+          las acepte, y podrá cambiar su decisión cuando quiera con el botón
+          Configurar cookies, al pie de cualquier página. Lo que esas cookies
+          revelen sobre usted se tratará según la{" "}
+          <Link to={legalRoute("privacidad")}>
+            política de tratamiento de datos
+          </Link>
+          .
         </p>
       ),
     },
@@ -114,9 +157,9 @@ export const cookiePolicy: LegalDocument = {
       title: "Cambios en esta política",
       body: (
         <p>
-          Si cambiamos las cookies que usamos, actualizaremos esta página con
-          una nueva versión y fecha. Si el cambio incluye cookies que no sean
-          indispensables, le pediremos su consentimiento antes de activarlas.
+          Si cambiamos las cookies que usamos, actualizaremos esta página con la
+          fecha nueva. Si el cambio incluye cookies que no sean indispensables,
+          le pediremos su consentimiento antes de activarlas.
         </p>
       ),
     },

@@ -1,0 +1,316 @@
+/* El caso (maqueta 03): un solo panel con la identidad procesal arriba y, debajo, las pestañas de
+   lo que ya existe en el caso. Dentro del panel no hay más recuadros: las columnas se separan
+   con una línea. */
+.screen {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+.spinner {
+  animation: spin var(--motion-spin) linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.unavailable {
+  display: grid;
+  gap: var(--space-6);
+  max-width: var(--screen-narrow-width);
+}
+
+.unavailableActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.case {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+}
+
+.hero {
+  padding: var(--space-8) var(--space-8) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.reference {
+  margin: 0;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-mono);
+  overflow-wrap: anywhere;
+}
+
+.reference code {
+  color: var(--text);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.title {
+  margin: var(--space-2) 0 var(--space-3);
+  color: var(--text);
+  font-size: var(--font-size-title);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  line-height: var(--line-height-title);
+  overflow-wrap: anywhere;
+}
+
+/* Los datos del caso en una línea, separados por el espacio: no son botones ni estados, así que
+   no llevan cápsula. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  max-width: 100%;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+  overflow-wrap: anywhere;
+}
+
+/* El desplazamiento horizontal recorta lo que sale de la caja: el relleno deja sitio al anillo de
+   foco (2px de borde a 2px de distancia) y el margen negativo conserva la posición de las
+   pestañas. */
+.tabs {
+  display: flex;
+  gap: var(--space-6);
+  margin: calc(var(--space-6) - var(--space-1)) calc(-1 * var(--space-1))
+    calc(-1 * var(--space-1));
+  padding: var(--space-1);
+  overflow-x: auto;
+}
+
+.tab {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0 var(--space-3);
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+  cursor: pointer;
+  box-shadow: inset 0 -2px 0 transparent;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard);
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--text);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.count {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-label);
+}
+
+.panel {
+  padding: var(--space-6) var(--space-8) var(--space-8);
+  container-type: inline-size;
+}
+
+.panel:focus-visible {
+  outline-offset: -4px;
+}
+
+/* La cadena y los datos procesales van lado a lado solo cuando el panel tiene ancho para que el
+   desglose del radicado quede en dos filas holgadas; si no, uno sobre otro. */
+.chainLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+@container (min-width: 860px) {
+  .chainLayout {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  }
+
+  /* Al lado de la cadena, los datos se separan con una línea vertical, no con otro recuadro. */
+  .facts {
+    padding-left: var(--space-8);
+    border-left: 1px solid var(--line);
+  }
+}
+
+.caption {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-6);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.factsTitle {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+}
+
+.factList {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-4) 0 0;
+}
+
+/* Solo los rótulos y valores de la ficha: el desglose del radicado trae los suyos. */
+.factList > div > dt {
+  margin-bottom: var(--space-1);
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
+}
+
+.factList > div > dd {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+  overflow-wrap: anywhere;
+}
+
+/* En la columna angosta, las ocho partes del radicado van en dos filas parejas de cuatro. */
+@container (min-width: 860px) {
+  .filingParts > dl {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--row-height);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--line);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+.member:first-child {
+  border-top: 0;
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  border: 1px solid var(--line-control);
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  line-height: var(--line-height-label);
+}
+
+.who {
+  display: grid;
+  flex: 1 1 calc(var(--space-24) * 2);
+  min-width: 0;
+}
+
+.memberName {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.memberEmail {
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+  overflow-wrap: anywhere;
+}
+
+.role {
+  margin-left: auto;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+  text-align: right;
+}
+
+/* «Abrió el caso» va debajo del rol, no unido por un separador. */
+.roleNote {
+  display: block;
+  color: var(--text-3);
+}
+
+@media (max-width: 560px) {
+  .hero {
+    padding: var(--space-6) var(--space-4) 0;
+  }
+
+  .panel {
+    padding: var(--space-4);
+  }
+
+  .role {
+    margin-left: calc(var(--control-height-sm) + var(--space-3));
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+
+  .tab {
+    transition: none;
+  }
+}

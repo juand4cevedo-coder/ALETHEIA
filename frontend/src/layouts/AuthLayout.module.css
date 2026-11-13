@@ -1,0 +1,130 @@
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #000 url("/media/auth-1920.webp") center / cover fixed;
+}
+.skipLink {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 30;
+  transform: translateY(-200%);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 8px 16px;
+}
+.skipLink:focus {
+  transform: none;
+}
+.header {
+  padding: 24px 32px;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+  letter-spacing: -0.04em;
+}
+.brand img {
+  width: 24px;
+  height: 24px;
+}
+.brand:hover {
+  color: var(--text);
+}
+.main {
+  width: 100%;
+  max-width: 560px;
+  padding: 8px 24px 64px;
+  margin: 0 auto auto;
+}
+.main:focus {
+  outline: none;
+}
+.symbol {
+  display: block;
+  margin: 0 auto 24px;
+  width: 48px;
+  height: 48px;
+  padding: 9px;
+  border: 1px solid #ffffff16;
+  border-radius: 12px;
+  background: #0008;
+}
+.panel {
+  width: 100%;
+}
+.switch {
+  margin-top: 24px;
+  color: var(--text-2);
+  font-size: 14px;
+  text-align: center;
+}
+.switch a {
+  color: var(--text);
+  text-underline-offset: 4px;
+}
+.footer {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 24px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--text-3);
+}
+.footerList {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 24px;
+  margin: 0;
+  padding: 0;
+}
+.footerList a,
+.footerButton {
+  color: var(--text-2);
+  text-decoration: none;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+}
+.footerButton {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.footerList a:hover,
+.footerButton:hover {
+  color: var(--text);
+}
+@media (max-width: 600px) {
+  .shell {
+    background-image: url("/media/auth-1024.webp");
+    background-attachment: scroll;
+  }
+  .header {
+    padding: 20px 24px;
+  }
+  .main {
+    padding-top: 32px;
+    padding-bottom: 48px;
+  }
+}
+@media print {
+  .shell {
+    background: none;
+  }
+  .header,
+  .footer {
+    display: none;
+  }
+}

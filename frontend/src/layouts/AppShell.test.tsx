@@ -1,0 +1,303 @@
+import { focusManager } from "@tanstack/react-query";
+import { act, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { LEGAL_VERSION } from "../config/legal.ts";
+import { seriousAxeViolations } from "../test/axe.ts";
+import { jsonResponse, renderRoute } from "../test/render.tsx";
+
+const fetchMock = vi.fn<typeof fetch>();
+
+const ME = {
+  id: "01890a5d-ac96-774b-bcce-b302099a8057",
+  full_name: "Ana Restrepo",
+  email: "ana@example.com",
+  email_verified: false,
+  organization: {
+    id: "01890a5d-ac96-774b-bcce-b302099a8058",
+    name: "Restrepo Abogados",
+    role: "lawyer",
+  },
+  legal: {
+    accepted_version: LEGAL_VERSION,
+    current_version: LEGAL_VERSION,
+    acceptance_required: false,
+  },
+};
+
+beforeEach(() => {
+  fetchMock.mockReset();
+  vi.stubGlobal("fetch", fetchMock);
+});
+
+describe("Espacio de trabajo protegido (API-014)", () => {
+  it("sin sesión lleva a ingresar y recuerda la pantalla pedida", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        { type: "about:blank", title: "Unauthorized", status: 401 },
+        401,
+      ),
+    );
+    const { router } = await renderRoute("/app");
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/ingresar"),
+    );
+    expect(router.state.location.state).toEqual({
+      from: "/app",
+      expired: false,
+    });
+    expect(
+      screen.queryByText(/Su sesión terminó por seguridad/),
+    ).not.toBeInTheDocument();
+  });
+
+  it("con sesión muestra a la persona, su organización, su rol y el estado del correo", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(ME));
+    const { container } = await renderRoute("/app");
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" }),
+    ).toBeInTheDocument();
+    // La organización va en el botón; el rol, en su propia línea dentro del panel.
+    expect(
+      within(
+        screen.getByRole("button", { name: /Opciones de la cuenta/ }),
+      ).getByText("Restrepo Abogados"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Rol: Abogado")).toBeInTheDocument();
+    // El correo pendiente no usa «Sin verificar», que es el estado de integridad de una cadena.
+    expect(screen.getByText("Pendiente de verificar")).toBeInTheDocument();
+    expect(screen.queryByText("Sin verificar")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Verifique su correo" }),
+    ).toBeInTheDocument();
+    expect(await seriousAxeViolations(container)).toEqual([]);
+  });
+
+  it("pide el enlace nuevo al correo de la sesión, sin volver a preguntarlo", async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const { pathname } = new URL((input as Request).url);
+      return pathname.endsWith("/verify-email/resend")
+        ? jsonResponse({ detail: "ok" }, 202)
+        : jsonResponse(ME);
+    });
+    const user = userEvent.setup();
+    await renderRoute("/app");
+
+    const notice = (
+      await screen.findByRole("heading", { name: "Verifique su correo" })
+    ).closest("section")!;
+    // El aviso tiene su propio título: el formulario no agrega otro ni un campo de correo.
+    expect(within(notice).getAllByRole("heading")).toHaveLength(1);
+    expect(
+      within(notice).queryByLabelText("Correo electrónico"),
+    ).not.toBeInTheDocument();
+    expect(notice).toHaveTextContent(`Llegará a ${ME.email}.`);
+
+    await user.click(
+      within(notice).getByRole("button", { name: "Enviarme un enlace nuevo" }),
+    );
+
+    expect(await within(notice).findByRole("status")).toHaveTextContent(
+      `Le enviamos un enlace nuevo a ${ME.email}.`,
+    );
+    const resend = fetchMock.mock.calls
+      .map(([input]) => input as Request)
+      .find((request) => request.url.endsWith("/verify-email/resend"))!;
+    expect(await resend.json()).toEqual({ email: ME.email });
+  });
+
+  it("si el servidor falla, lo dice y deja reintentar", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ type: "about:blank", title: "Error", status: 503 }, 503),
+    );
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ ...ME, email_verified: true }),
+    );
+    await renderRoute("/app");
+
+    const reintentar = await screen.findByRole("button", {
+      name: "Intentar de nuevo",
+    });
+    reintentar.click();
+
+    const verified = await screen.findByText("Verificado");
+    // Un correo confirmado no es una evidencia verificada: la insignia no usa el tono verde.
+    expect(verified.closest("[data-tone]")).toBeNull();
+    expect(document.querySelector("[data-tone='ok']")).toBeNull();
+  });
+});
+
+describe("Sesión vencida (NAV-004, MSG-012)", () => {
+  it("si la sesión vence con la pantalla abierta, lleva a ingresar con el aviso", async () => {
+    let alive = true;
+    fetchMock.mockImplementation(async (input) => {
+      const path = new URL((input as Request).url).pathname;
+      if (path === "/api/v1/me" && alive) return jsonResponse(ME);
+      return jsonResponse({ type: "about:blank", status: 401 }, 401);
+    });
+    const { router } = await renderRoute("/app");
+    await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" });
+
+    alive = false;
+    act(() => {
+      focusManager.setFocused(false);
+      focusManager.setFocused(true);
+    });
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/ingresar"),
+    );
+    expect(
+      await screen.findByText(
+        "Su sesión terminó por seguridad. Ingrese de nuevo para continuar donde iba.",
+      ),
+    ).toBeInTheDocument();
+    focusManager.setFocused(undefined);
+  });
+});
+
+describe("Sesión del espacio de trabajo (HU-009)", () => {
+  // Una API mínima: el perfil responde mientras la sesión esté viva y los cierres la terminan.
+  function serve({ failSignOut = false } = {}) {
+    let alive = true;
+    fetchMock.mockImplementation(async (input) => {
+      const path = new URL((input as Request).url).pathname;
+      if (path === "/api/v1/me") {
+        return alive
+          ? jsonResponse(ME)
+          : jsonResponse({ type: "about:blank", status: 401 }, 401);
+      }
+      if (path === "/api/v1/auth/refresh") {
+        return jsonResponse({ type: "about:blank", status: 401 }, 401);
+      }
+      if (
+        path === "/api/v1/auth/logout" ||
+        path === "/api/v1/auth/logout-all"
+      ) {
+        if (failSignOut) {
+          return jsonResponse({ type: "about:blank", status: 503 }, 503);
+        }
+        alive = false;
+        return new Response(null, { status: 204 });
+      }
+      throw new Error(`Ruta inesperada: ${path}`);
+    });
+  }
+
+  function requests(path: string): Request[] {
+    return fetchMock.mock.calls
+      .map(([input]) => input as Request)
+      .filter((request) => new URL(request.url).pathname === path);
+  }
+
+  async function openMenu(user: ReturnType<typeof userEvent.setup>) {
+    const trigger = await screen.findByRole("button", {
+      name: /Opciones de la cuenta/,
+    });
+    await user.click(trigger);
+    return trigger;
+  }
+
+  it("el menú muestra la cuenta y se cierra con Escape devolviendo el foco", async () => {
+    serve();
+    const user = userEvent.setup();
+    const { container } = await renderRoute("/app");
+
+    const trigger = await openMenu(user);
+
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.getByText("ana@example.com", { selector: "p" }),
+    ).toBeVisible();
+    expect(await seriousAxeViolations(container)).toEqual([]);
+
+    await user.keyboard("{Escape}");
+
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+  });
+
+  it("cerrar la sesión llama a la API, olvida la cuenta y lo confirma al ingresar", async () => {
+    serve();
+    const user = userEvent.setup();
+    const { router } = await renderRoute("/app");
+
+    await openMenu(user);
+    await user.click(screen.getByRole("button", { name: /^Cerrar sesión/ }));
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/ingresar"),
+    );
+    const [request] = requests("/api/v1/auth/logout");
+    expect(request!.method).toBe("POST");
+    expect(request!.headers.get("X-Aletheia-Request")).toBe("1");
+    expect(
+      await screen.findByText("Cerró la sesión en este dispositivo."),
+    ).toBeInTheDocument();
+  });
+
+  it("cerrar todas las sesiones pide confirmación antes de llamar a la API", async () => {
+    serve();
+    const user = userEvent.setup();
+    const { router } = await renderRoute("/app");
+
+    await openMenu(user);
+    await user.click(
+      screen.getByRole("button", { name: /Cerrar todas las sesiones/ }),
+    );
+
+    const dialog = screen.getByRole("dialog", {
+      name: "¿Cerrar todas las sesiones?",
+    });
+    expect(dialog).toHaveAttribute("open");
+    expect(requests("/api/v1/auth/logout-all")).toHaveLength(0);
+
+    await user.click(
+      within(dialog).getByRole("button", { name: "Cerrar todas las sesiones" }),
+    );
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/ingresar"),
+    );
+    expect(requests("/api/v1/auth/logout-all")).toHaveLength(1);
+    expect(
+      await screen.findByText(
+        "Cerró la sesión en todos sus dispositivos. Para seguir, ingrese de nuevo.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("cancelar la confirmación no cierra nada", async () => {
+    serve();
+    const user = userEvent.setup();
+    const { router } = await renderRoute("/app");
+
+    await openMenu(user);
+    await user.click(
+      screen.getByRole("button", { name: /Cerrar todas las sesiones/ }),
+    );
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+
+    expect(requests("/api/v1/auth/logout-all")).toHaveLength(0);
+    expect(router.state.location.pathname).toBe("/app");
+  });
+
+  it("si el cierre falla, lo dice y la persona sigue en su espacio", async () => {
+    serve({ failSignOut: true });
+    const user = userEvent.setup();
+    const { router } = await renderRoute("/app");
+
+    await openMenu(user);
+    await user.click(screen.getByRole("button", { name: /^Cerrar sesión/ }));
+
+    expect(
+      await screen.findByText(
+        "No pudimos cerrar la sesión. Revise su conexión e inténtelo de nuevo.",
+      ),
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/app");
+  });
+});

@@ -1,0 +1,96 @@
+/* Diálogo modal (CMP-UI-005): un panel en --surface-1 que flota sobre la página velada. Es uno
+   de los dos casos que llevan la sombra del sistema; el otro son los menús. */
+.dialog {
+  width: min(var(--panel-width), calc(100vw - 2 * var(--space-4)));
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+  box-shadow: var(--shadow-float);
+  color: var(--text);
+}
+
+/* Responde a la acción de abrirlo: aparece sin desplazarse. */
+.dialog[open] {
+  animation: appear var(--motion-base) var(--ease-standard);
+}
+
+.dialog::backdrop {
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+.body {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  margin-bottom: var(--space-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.title {
+  color: var(--text);
+  font-size: var(--font-size-subtitle);
+  font-weight: 500;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-subtitle);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* En el celular el diálogo ocupa la pantalla y los botones van a todo el ancho. */
+@media (max-width: 560px) {
+  .dialog {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .body {
+    align-content: center;
+    min-height: 100%;
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions > * {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open] {
+    animation: none;
+  }
+}
