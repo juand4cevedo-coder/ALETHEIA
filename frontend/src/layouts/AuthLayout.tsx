@@ -6,14 +6,13 @@ import {
   Outlet,
   ScrollRestoration,
   useMatches,
+  useLocation,
 } from "react-router";
 
 import { readMeOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 
-import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
 import { SITE_NAME } from "../config/site.ts";
-import { AuthScene } from "../components/ui/AuthScene.tsx";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import styles from "./AuthLayout.module.css";
@@ -38,13 +37,14 @@ function isAuthSwitch(value: unknown): value is AuthSwitch {
   );
 }
 
+const logoUrl = "/brand/symbol-white.svg";
 const CURRENT_YEAR = new Date().getFullYear();
 
-// Marco de las pantallas de acceso: crear cuenta, ingresar, recuperar la contraseña, verificar
-// el correo y aceptar una invitación (ADR-029). Una columna centrada sobre la escena del alba,
-// sin la navegación del sitio, para que la atención quede en el formulario. Debajo van el
-// cambio a la otra pantalla, los enlaces legales y las cookies.
+// Un formulario centrado para todos los recorridos de acceso. El fondo es decorativo.
 export function AuthLayout() {
+  const { pathname } = useLocation();
+  const primaryAccess =
+    pathname === ROUTES.signIn || pathname === ROUTES.signUp;
   const {
     panel: cookiePanel,
     openPanel: openCookies,
@@ -78,28 +78,31 @@ export function AuthLayout() {
         Saltar al contenido
       </a>
       {cookiePanel}
-      <AuthScene />
 
       <header className={styles.header}>
         <Link to={ROUTES.home} className={styles.brand}>
-          {SITE_NAME}
+          <span aria-hidden="true">‹</span> Inicio
           <span className="visually-hidden">, ir al inicio</span>
         </Link>
       </header>
 
       <main id="contenido" className={styles.main} tabIndex={-1}>
-        <Outlet />
-        {authSwitch && (
+        <img
+          className={styles.symbol}
+          src={logoUrl}
+          alt=""
+          width={48}
+          height={48}
+        />
+        <div className={styles.panel}>
+          <Outlet />
+        </div>
+        {authSwitch && !primaryAccess && (
           <nav className={styles.switch} aria-label="Otra opción de acceso">
-            <p>{authSwitch.question}</p>
-            <ButtonLink
-              to={authSwitch.to}
-              variant="secondary"
-              surface="dark"
-              shape="pill"
-            >
-              {authSwitch.label}
-            </ButtonLink>
+            <p>
+              {authSwitch.question}{" "}
+              <Link to={authSwitch.to}>{authSwitch.label}</Link>
+            </p>
           </nav>
         )}
       </main>

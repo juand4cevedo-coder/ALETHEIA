@@ -18,10 +18,12 @@ export async function sha256Hex(text: string): Promise<string> {
 export function useSha256(
   text: string,
   fallback: string,
-): { hash: string; supported: boolean } {
+): { hash: string; supported: boolean; computed: boolean } {
   const [failed, setFailed] = useState(false);
   const supported = Boolean(globalThis.crypto?.subtle) && !failed;
-  const [hash, setHash] = useState(fallback);
+  const [result, setResult] = useState<{ text: string; hash: string } | null>(
+    null,
+  );
   const requestId = useRef(0);
 
   useEffect(() => {
@@ -31,12 +33,22 @@ export function useSha256(
     const id = ++requestId.current;
     sha256Hex(text)
       .then((value) => {
-        if (id === requestId.current) setHash(value);
+        if (id === requestId.current) {
+          setResult({ text, hash: value });
+        }
       })
       .catch(() => {
         if (id === requestId.current) setFailed(true);
       });
+    return () => {
+      requestId.current += 1;
+    };
   }, [text, supported]);
 
-  return { hash, supported };
+  // Un resultado anterior no verifica el texto recién editado mientras llega el cálculo.
+  return {
+    hash: result?.hash ?? fallback,
+    supported,
+    computed: supported && result?.text === text,
+  };
 }

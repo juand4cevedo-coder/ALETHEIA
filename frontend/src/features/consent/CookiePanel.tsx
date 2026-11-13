@@ -1,4 +1,3 @@
-import { Cookie, X } from "lucide-react";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 
@@ -6,6 +5,7 @@ import { buttonClassName } from "../../components/ui/buttonStyles.ts";
 import { legalRoute } from "../../config/routes.ts";
 import { type CookieChoice, saveCookieChoice } from "./cookieConsent.ts";
 import styles from "./CookiePanel.module.css";
+import { CerrarIcon, GalletaIcon } from "../../components/ui/icons.tsx";
 
 type CookiePanelProps = {
   /** La elección guardada, o null en la primera visita. */
@@ -19,7 +19,6 @@ type CookiePanelProps = {
 // Mismo peso visual para aceptar y rechazar (UI-004): ninguna opción se destaca sobre la otra.
 const choiceButton = buttonClassName({
   variant: "secondary",
-  surface: "dark",
   size: "sm",
 });
 
@@ -81,7 +80,7 @@ export function CookiePanel({
           tabIndex={-1}
           className={styles.title}
         >
-          <Cookie size={18} />
+          <GalletaIcon size={16} />
           Cookies en ALETHEIA
         </p>
         <button
@@ -90,16 +89,16 @@ export function CookiePanel({
           aria-label="Cerrar"
           onClick={dismiss}
         >
-          <X size={18} />
+          <CerrarIcon size={16} />
         </button>
       </div>
 
       {view === "summary" ? (
         <>
           <p className={styles.text}>
-            Solo usamos las cookies necesarias para que usted inicie sesión de
-            forma segura. No usamos analítica ni publicidad, y cualquier cookie
-            opcional queda apagada hasta que usted la acepte.{" "}
+            Solo usamos las cookies necesarias para mantener su sesión. No
+            usamos analítica ni publicidad. Las opcionales quedan apagadas hasta
+            que usted las acepte.{" "}
             <Link to={legalRoute("cookies")}>Política de cookies</Link>
           </p>
           <div className={styles.actions}>
@@ -123,7 +122,7 @@ export function CookiePanel({
             className={styles.configure}
             onClick={openSettings}
           >
-            Configurar
+            Elegir por categoría
           </button>
         </>
       ) : (
@@ -153,7 +152,7 @@ export function CookiePanel({
                 >
                   Medirían de forma anónima cómo se usa el sitio. Hoy no usamos
                   ninguna herramienta de este tipo, así que esta opción no
-                  activa nada; si algún día la agregamos, le volveremos a
+                  activa nada. Si algún día la agregamos, le volveremos a
                   preguntar.
                 </p>
               </div>

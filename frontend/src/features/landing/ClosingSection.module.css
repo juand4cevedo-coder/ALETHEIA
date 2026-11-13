@@ -1,75 +1,42 @@
-/* Panel final, amplio, con la luz de marca más intensa del panel desde abajo, justo donde está
-   la acción principal: el recorrido termina en un punto claro. */
-.panel {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: var(--space-6);
-  overflow: hidden;
-  padding: var(--space-24) var(--space-8);
-  border: 1px solid transparent;
-  border-radius: 28px;
-  background:
-    radial-gradient(
-        ellipse 80% 100% at 50% 115%,
-        color-mix(in srgb, var(--color-brand-blue) 44%, transparent),
-        transparent 72%
-      )
-      padding-box,
-    linear-gradient(180deg, var(--color-ink-900), var(--color-ink-800))
-      padding-box,
-    linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--color-text-inverse) 10%, transparent),
-        color-mix(in srgb, var(--color-primary-300) 20%, transparent)
-      )
-      border-box;
-  text-align: center;
+/* El título y la frase a la izquierda y la única acción a la derecha, sin panel ni luz. */
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-8);
 }
 
-/* Misma voz serif de los H2 (font.display); sin folio: el cierre no es una sección del
-   expediente sino la invitación final. */
-.title {
-  max-width: 680px;
-  font-family: var(--font-display);
-  font-size: 52px;
-  font-weight: 560;
-  line-height: 58px;
-  letter-spacing: -0.02em;
+.copy {
+  display: grid;
+  gap: var(--space-3);
+  max-width: var(--measure);
 }
 
 .text {
-  max-width: 600px;
-  color: var(--color-text-inverse-muted);
-  font-size: 18px;
-  line-height: 28px;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-3);
-  margin-top: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--font-size-subtitle);
+  line-height: var(--line-height-subtitle);
 }
 
 @media (max-width: 760px) {
-  .panel {
-    padding: var(--space-12) var(--space-6);
-  }
-
-  .title {
-    font-size: 34px;
-    line-height: 40px;
+  .layout {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-6);
   }
 
   .text {
-    font-size: 17px;
-    line-height: 26px;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
   }
+}
 
-  .actions {
-    flex-direction: column;
-    justify-self: stretch;
-  }
+.layout {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.copy {
+  margin: auto;
 }

@@ -1,8 +1,7 @@
-import { MonitorSmartphone } from "lucide-react";
-
 import { Button } from "../../components/ui/Button.tsx";
 import { Dialog } from "../../components/ui/Dialog.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
+import { DispositivosIcon } from "../../components/ui/icons.tsx";
 
 type Props = {
   open: boolean;
@@ -27,38 +26,29 @@ export function SignOutEverywhereDialog({
       onClose={onClose}
       busy={busy}
       title="¿Cerrar todas las sesiones?"
-      icon={<MonitorSmartphone size={22} />}
+      icon={<DispositivosIcon size={20} />}
       actions={
         <>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
-            shape="pill"
             data-autofocus
             onClick={onClose}
             disabled={busy}
           >
             Cancelar
           </Button>
-          <Button
-            variant="bright"
-            size="sm"
-            shape="pill"
-            busy={busy}
-            onClick={onConfirm}
-          >
-            {busy ? "Cerrando sesiones…" : "Cerrar todas"}
+          <Button size="sm" busy={busy} onClick={onConfirm}>
+            {busy ? "Cerrando las sesiones" : "Cerrar todas las sesiones"}
           </Button>
         </>
       }
     >
       <p>
-        Cerraremos la sesión en todos los equipos y navegadores donde haya
-        ingresado, también en este, y quien la tenga abierta quedará fuera en su
-        siguiente acción. Úselo si perdió un equipo o cree que alguien más entró
-        a su cuenta.
+        Se cerrará la sesión en todos los equipos y navegadores donde haya
+        ingresado, también en este.
       </p>
+      <p>Úselo si perdió un equipo o cree que alguien más entró a su cuenta.</p>
       <p>Después tendrá que ingresar de nuevo con su contraseña.</p>
       {failed && (
         <Notice tone="error">

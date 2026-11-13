@@ -1,7 +1,10 @@
-/* Piezas comunes de las secciones del inicio. */
 .section {
   position: relative;
-  padding: 112px 0;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 96px 0;
+  border-top: 1px solid rgb(214 235 253 / 19%);
+  border-radius: 24px 24px 0 0;
 }
 
 .inner {
@@ -10,175 +13,71 @@
   padding: 0 var(--space-6);
 }
 
-/* Encabezado foliado: columna del folio a la izquierda, título y entrada a la derecha. */
 .heading {
   display: grid;
-  grid-template-columns: minmax(160px, 0.32fr) 1fr;
-  gap: var(--space-8);
-  align-items: start;
-  margin: 0 0 var(--space-16);
-}
-
-/* Encabezado apilado: cuando ocupa una columna lateral (Problema, Preguntas), el folio va
-   encima del título y no a su lado. */
-.headingStacked {
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-6);
-  margin: 0;
-}
-
-.headingStacked .title {
-  font-size: 44px;
-  line-height: 50px;
-}
-
-.folioBlock {
-  display: grid;
   gap: var(--space-3);
-  justify-items: start;
+  justify-items: center;
+  text-align: center;
+  max-width: var(--measure);
+  margin: 0 auto var(--space-12);
 }
 
-/* Folio en mono pequeño. La regla es el ::after: sin animación por desplazamiento queda
-   trazada por completo. */
-.folio {
-  position: relative;
-  width: 100%;
-  padding-bottom: var(--space-3);
-  color: var(--color-text-inverse-muted);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 0.08em;
-}
-
-.folio::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 1px;
-  background: color-mix(in srgb, var(--color-text-inverse) 28%, transparent);
-  transform-origin: left center;
-}
-
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .folio::after {
-      animation: folio-rule linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 70%;
-    }
-
-    @keyframes folio-rule {
-      from {
-        transform: scaleX(0);
-      }
-    }
-  }
-}
-
-.headingBody {
-  display: grid;
-  gap: var(--space-4);
-  max-width: 760px;
+.headingStacked {
+  margin: 0 auto;
 }
 
 .kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--color-primary-300);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
   text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  font-weight: 500;
+  line-height: var(--line-height-support);
 }
 
-.kicker::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-pill);
-  background: var(--color-primary-400);
-  box-shadow: 0 0 12px var(--color-primary-400);
-}
-
-/* Voz serif de los H2 (font.display). */
 .title {
-  font-family: var(--font-display);
-  font-size: 52px;
-  font-weight: 560;
-  line-height: 58px;
-  letter-spacing: -0.02em;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-section);
+  font-weight: 400;
+  line-height: var(--line-height-section);
+  letter-spacing: var(--tracking-section);
+  background: linear-gradient(135deg, #fff 30%, #ffffff80);
+  background-clip: text;
+  color: transparent;
 }
 
 .lead {
-  max-width: 660px;
-  color: var(--color-text-inverse-muted);
-  font-size: 18px;
-  line-height: 28px;
+  margin-top: var(--space-1);
+  color: var(--text-2);
+  font-size: var(--font-size-subtitle);
+  font-weight: 400;
+  line-height: var(--line-height-subtitle);
 }
 
-/* Tarjeta translúcida de las secciones. La luz que sigue al puntero (useSpotlight) se dibuja
-   con el ::before y solo aparece al pasar por encima. */
 .card {
   position: relative;
-  overflow: hidden;
-  border: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 8%, transparent);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-ink-800) 70%, transparent),
-    color-mix(in srgb, var(--color-ink-900) 55%, transparent)
-  );
-  box-shadow: inset 0 1px 0
-    color-mix(in srgb, var(--color-text-inverse) 6%, transparent);
-  transition:
-    border-color var(--motion-base) var(--ease-standard),
-    transform var(--motion-base) var(--ease-standard);
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    360px circle at var(--spot-x, 50%) var(--spot-y, 0%),
-    color-mix(in srgb, var(--color-primary-400) 12%, transparent),
-    transparent 65%
-  );
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--motion-base) var(--ease-standard);
-}
-
-@media (hover: hover) {
-  .card:hover {
-    border-color: color-mix(in srgb, var(--color-primary-300) 22%, transparent);
-  }
-
-  .card:hover::before {
-    opacity: 1;
-  }
+  border: 1px solid rgb(214 235 253 / 19%);
+  border-radius: 24px;
+  background:
+    radial-gradient(41% 12% at 50% 0%, #ffffff0d, transparent),
+    linear-gradient(#101010, #000c);
 }
 
 .cardTitle {
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 26px;
-  letter-spacing: -0.01em;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  line-height: var(--line-height-body);
 }
 
 .cardText {
-  color: var(--color-text-inverse-muted);
-  font-size: 15px;
-  line-height: 24px;
+  color: var(--text-2);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
 }
 
 @media (max-width: 760px) {
   .section {
-    padding: 88px 0;
+    padding: var(--space-16) 0;
   }
 
   .inner {
@@ -186,24 +85,21 @@
   }
 
   .heading {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
-    margin-bottom: var(--space-12);
+    margin-bottom: var(--space-8);
   }
 
-  /* El encabezado apilado ya deja su propio espacio: sin esto se sumaría el del .heading. */
   .headingStacked {
     margin-bottom: 0;
   }
 
-  .title,
-  .headingStacked .title {
-    font-size: 34px;
-    line-height: 40px;
+  .title {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-section-sm);
+    line-height: var(--line-height-section-sm);
   }
 
   .lead {
-    font-size: 17px;
-    line-height: 26px;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
   }
 }

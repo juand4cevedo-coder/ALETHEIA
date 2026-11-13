@@ -1,7 +1,10 @@
+import { matchRoutes } from "react-router";
+import { routes } from "../routes/router.tsx";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { SIGN_UP_LABEL } from "../config/site.ts";
 import { seriousAxeViolations } from "../test/axe.ts";
 import { CATALOG } from "../test/plans.ts";
 import { jsonResponse, renderRoute } from "../test/render.tsx";
@@ -21,27 +24,27 @@ describe("Página de inicio (HU-001)", () => {
     const main = screen.getByRole("main");
     expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(within(main).getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Preserve la evidencia digital tal como la recibió.",
+      /Su trabajo\.\s*Con claridad\./,
     );
     expect(
       within(main).getByRole("heading", {
         level: 2,
-        name: "De la recepción del archivo al expediente, en cuatro pasos",
+        name: "Un poco de orden. Mucho más espacio para pensar.",
       }),
     ).toBeInTheDocument();
     expect(
       within(main).getByRole("heading", {
         level: 2,
-        name: "Preservamos y documentamos. La valoración es del juez.",
+        name: "Una herramienta precisa. Un alcance claro.",
       }),
     ).toBeInTheDocument();
     expect(
       within(main).getByText(
-        "No certificamos pruebas ni determinamos su validez.",
+        "No certifica pruebas ni decide sobre su validez.",
       ),
     ).toBeInTheDocument();
     expect(
-      within(main).getAllByRole("link", { name: "Crear cuenta gratis" })[0],
+      within(main).getAllByRole("link", { name: "Crear una cuenta" })[0],
     ).toHaveAttribute("href", "/registro");
   });
 
@@ -52,10 +55,10 @@ describe("Página de inicio (HU-001)", () => {
     expect(await screen.findByText(/^\$59\.900/)).toBeInTheDocument();
     expect(screen.getByText("Recomendado")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /Solicitar cotización/ }),
+      screen.getByRole("link", { name: /Pedir una cotización/ }),
     ).toHaveAttribute("href", expect.stringContaining("mailto:"));
     expect(
-      screen.getByText("14 días de prueba gratuita · Sin tarjeta de crédito"),
+      screen.getByText(/La prueba dura 14 días y no pide tarjeta de crédito/),
     ).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -80,7 +83,11 @@ describe("Página de inicio (HU-001)", () => {
     expect(alert).toHaveTextContent(
       "No pudimos cargar los precios en este momento.",
     );
-    await user.click(within(alert).getByRole("button", { name: "Reintentar" }));
+    await user.click(
+      within(alert).getByRole("button", {
+        name: "Cargar los precios de nuevo",
+      }),
+    );
 
     expect(await screen.findByText(/^\$59\.900/)).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -92,27 +99,36 @@ describe("Página de inicio (HU-001)", () => {
     const { container } = await renderRoute("/");
     await screen.findByText(/^\$59\.900/);
 
-    // Todo lo que se puede activar o editar fuera del menú móvil cerrado (incluido el texto de la
-    // demostración de la huella), en orden del documento.
-    const menu = container.querySelector("dialog");
-    const interactive = Array.from(
-      container.querySelectorAll<HTMLElement>(
-        "a[href], button:not([disabled]), summary, textarea",
-      ),
-    ).filter((element) => !menu?.contains(element));
-
-    const reached: Element[] = [];
-    for (let step = 0; step < interactive.length; step += 1) {
-      await user.tab();
-      reached.push(document.activeElement!);
-    }
-    expect(reached[0]).toHaveTextContent("Saltar al contenido");
-    expect(reached).toEqual(interactive);
-
+    await user.tab();
+    expect(document.activeElement).toHaveTextContent("Saltar al contenido");
+    const trigger = within(
+      screen.getByRole("navigation", { name: "Principal" }),
+    ).getByRole("button", { name: "Producto" });
+    trigger.focus();
+    await user.keyboard("{Enter}");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.keyboard("{Escape}");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
-  it("los H2 de la landing siguen el orden de los folios", async () => {
+  it("muestra la demostración técnica solo al solicitarla", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    const user = userEvent.setup();
+    await renderRoute("/");
+    const question = await screen.findByText(
+      "¿Cómo se detecta un cambio en un archivo?",
+    );
+    const field = screen.getByLabelText("Texto de ejemplo");
+    expect(field).not.toBeVisible();
+    await user.click(question);
+    expect(field).toBeVisible();
+    await user.click(question);
+    expect(field).not.toBeVisible();
+  });
+
+  it("los H2 presentan contexto, organización, integridad, alcance y condiciones", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     await renderRoute("/");
 
@@ -120,15 +136,60 @@ describe("Página de inicio (HU-001)", () => {
       level: 2,
     });
     expect(headings.map((heading) => heading.textContent)).toEqual([
-      "Una captura de pantalla no es el archivo original",
-      "De la recepción del archivo al expediente, en cuatro pasos",
-      "Garantías que cualquier perito puede comprobar",
-      "Preservamos y documentamos. La valoración es del juez.",
-      "¿Recibió un paquete de preservación?",
-      "Las mismas garantías en todos los planes",
-      "Lo que más nos preguntan",
-      "Empiece a preservar su evidencia hoy",
+      "Todo tiene su lugar.",
+      "Un poco de orden. Mucho más espacio para pensar.",
+      "Saber qué ocurre. Decidir quién participa.",
+      "Una herramienta precisa. Un alcance claro.",
+      "La confianza también se comprueba.",
+      "Un espacio a la medida de su práctica.",
+      "Antes de empezar",
+      "Pruebe ALETHEIA con uno de sus casos",
     ]);
+  });
+
+  it("el comprobador funciona en la portada y el cierre tiene una sola acción", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    const { container } = await renderRoute("/");
+
+    // La comprobación local se abre en la sección, sin navegación a una ruta vacía.
+    expect(container.querySelector("a[href='/verificador']")).toBeNull();
+    const verifier = container.querySelector("#verificador")!;
+    expect(within(verifier as HTMLElement).queryAllByRole("link")).toEqual([]);
+    expect(verifier).toHaveTextContent(
+      "El archivo permanece en su dispositivo.",
+    );
+
+    const closing = container.querySelector(
+      "[aria-labelledby='titulo-cierre']",
+    ) as HTMLElement;
+    const actions = within(closing).getAllByRole("link");
+    expect(actions).toHaveLength(1);
+    expect(actions[0]).toHaveTextContent(SIGN_UP_LABEL);
+    expect(actions[0]).toHaveAttribute("href", "/registro");
+    expect(
+      await within(closing).findByText(
+        "Cree su cuenta y abra su primer caso. La prueba dura 14 días y no pide tarjeta de crédito.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("cada enlace de la navegación lleva a una sección o página que existe", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    await renderRoute("/");
+
+    const nav = screen.getByRole("navigation", { name: "Principal" });
+    const user = userEvent.setup();
+    for (const trigger of within(nav).getAllByRole("button")) {
+      await user.hover(trigger);
+      for (const link of within(nav).getAllByRole("link")) {
+        const href = link.getAttribute("href")!;
+        const [path, hash] = href.split("#");
+        const matches = matchRoutes(routes, path!);
+        expect(matches, href).not.toBeNull();
+        expect(matches?.at(-1)?.route.path, href).not.toBe("*");
+        if (hash) expect(document.getElementById(hash), href).not.toBeNull();
+      }
+    }
   });
 
   it("abre y cierra las preguntas frecuentes", async () => {
@@ -159,10 +220,15 @@ describe("Página de inicio (HU-001)", () => {
     await user.click(within(dialog).getByRole("link", { name: "Precios" }));
     await waitFor(() => expect(dialog).not.toHaveAttribute("open"));
     expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name: "Planes y precios",
-      }),
+      // El chunk de la página se carga aparte: en jsdom tarda más del 1 s predeterminado.
+      await screen.findByRole(
+        "heading",
+        {
+          level: 1,
+          name: "Planes y precios",
+        },
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument();
   });
 });
@@ -172,7 +238,9 @@ describe("Encabezado con sesión abierta (Diseño UX/UI, 4.2)", () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     await renderRoute("/");
 
-    const header = screen.getByRole("banner");
+    // El primero es el del sitio. jsdom también cuenta como encabezado el de cada tarjeta de
+    // plan, que llega con el catálogo.
+    const [header] = screen.getAllByRole("banner");
     expect(
       within(header).getByRole("link", { name: "Ingresar" }),
     ).toHaveAttribute("href", "/ingresar");
@@ -183,7 +251,9 @@ describe("Encabezado con sesión abierta (Diseño UX/UI, 4.2)", () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     await renderRoute("/");
 
-    const header = screen.getByRole("banner");
+    // El primero es el del sitio. jsdom también cuenta como encabezado el de cada tarjeta de
+    // plan, que llega con el catálogo.
+    const [header] = screen.getAllByRole("banner");
     expect(
       within(header).getByRole("link", { name: "Ir a mis casos" }),
     ).toHaveAttribute("href", "/app");

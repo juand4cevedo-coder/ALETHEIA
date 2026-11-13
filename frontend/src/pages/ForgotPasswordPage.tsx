@@ -1,15 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
-import { MailCheck } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import { forgotPasswordMutation } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME, SITE_URL } from "../config/site.ts";
+import { SITE_URL, pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { apiProblem } from "../features/auth/apiProblem.ts";
-import { Emblem } from "../components/ui/Emblem.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import {
@@ -17,6 +15,7 @@ import {
   EMAIL_PATTERN,
   SIGN_UP_MESSAGES,
 } from "../features/auth/signUp.ts";
+import { CorreoIcon } from "../components/ui/icons.tsx";
 
 const TITLE_ID = "titulo-recuperar";
 
@@ -71,7 +70,7 @@ export function ForgotPasswordPage() {
 
   return (
     <>
-      <title>{`Recuperar la contraseña · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Recuperar la contraseña")}</title>
       <meta
         name="description"
         content="Pida un enlace para elegir una contraseña nueva en ALETHEIA."
@@ -80,7 +79,6 @@ export function ForgotPasswordPage() {
 
       <div className={styles.screen}>
         <header className={styles.intro}>
-          <Emblem state={request.isPending ? "working" : "idle"} />
           <h1 id={TITLE_ID} className={styles.title}>
             ¿Olvidó su contraseña?
           </h1>
@@ -92,7 +90,7 @@ export function ForgotPasswordPage() {
 
         {sentTo ? (
           <section className={styles.notice} aria-labelledby="titulo-enviado">
-            <MailCheck size={28} aria-hidden="true" />
+            <CorreoIcon size={20} aria-hidden="true" />
             <h2
               id="titulo-enviado"
               className={styles.noticeTitle}
@@ -105,7 +103,7 @@ export function ForgotPasswordPage() {
             <p>{MESSAGES.recoveryRequested}</p>
             <p>
               Lo pidió para <strong translate="no">{sentTo}</strong>. El enlace
-              vence en una hora y sirve una sola vez; si no le llega en unos
+              vence en una hora y sirve una sola vez. Si no le llega en unos
               minutos, revise la carpeta de spam.
             </p>
           </section>
@@ -151,14 +149,10 @@ export function ForgotPasswordPage() {
             </fieldset>
 
             <div className={styles.submit}>
-              <Button
-                type="submit"
-                variant="bright"
-                shape="pill"
-                block
-                busy={request.isPending}
-              >
-                {request.isPending ? "Enviando…" : "Enviarme el enlace"}
+              <Button type="submit" block busy={request.isPending}>
+                {request.isPending
+                  ? "Enviando el enlace"
+                  : "Enviarme el enlace"}
               </Button>
             </div>
           </form>

@@ -3,7 +3,6 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Clock, MailPlus, UsersRound } from "lucide-react";
 import { type ReactNode, useId, useState } from "react";
 import { Link, useOutletContext } from "react-router";
 
@@ -18,9 +17,10 @@ import {
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
+import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { dateTime, shortDate } from "../features/members/format.ts";
 import { ChangeRoleDialog } from "../features/members/ChangeRoleDialog.tsx";
@@ -29,6 +29,7 @@ import { RemoveMemberDialog } from "../features/members/RemoveMemberDialog.tsx";
 import { RevokeInvitationDialog } from "../features/members/RevokeInvitationDialog.tsx";
 import { managesTeam, ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./MembersPage.module.css";
+import { CorreoIcon } from "../components/ui/icons.tsx";
 
 // MSG-010 del catálogo de mensajes.
 const NOT_ALLOWED =
@@ -47,29 +48,31 @@ export function MembersPage() {
   const me = useOutletContext<Me>();
 
   return (
-    <section className={styles.screen} aria-labelledby="titulo-miembros">
-      <title>{`Miembros · ${SITE_NAME}`}</title>
+    <div className={styles.screen}>
+      <title>{pageTitle("Miembros")}</title>
       <meta name="robots" content="noindex" />
-
-      <header className={styles.intro}>
-        <p className={styles.eyebrow}>Su equipo</p>
-        <h1 id="titulo-miembros" className={styles.title}>
-          Miembros
-        </h1>
-        <p className={styles.lead}>
-          Invite a cada persona con su propio acceso y el rol justo: cada una ve
-          solo lo que su rol permite.
-        </p>
-      </header>
 
       {managesTeam(me.organization?.role) ? (
         <Team currentUserId={me.id} />
       ) : (
-        <Notice tone="error">
-          <p>{NOT_ALLOWED}</p>
-        </Notice>
+        <>
+          <Header />
+          <Notice tone="error">
+            <p>{NOT_ALLOWED}</p>
+          </Notice>
+        </>
       )}
-    </section>
+    </div>
+  );
+}
+
+function Header({ action }: { action?: ReactNode }) {
+  return (
+    <PageHeader
+      title="Miembros"
+      description="Cada persona entra con su propio acceso. Lo que ve depende de su rol."
+      actions={action}
+    />
   );
 }
 
@@ -141,8 +144,27 @@ function Team({ currentUserId }: { currentUserId: string }) {
   const invitationRows =
     invitations.data?.pages.flatMap((page) => page.items) ?? [];
 
+  // Invitar es la acción que se espera aquí: va arriba, como «Abrir un caso» en Casos. Mientras
+  // carga el cupo o con el plan lleno no se ofrece; el aviso del cupo dice cómo seguir.
+  const invite =
+    seats && !seats.full ? (
+      <Button
+        size="sm"
+        onClick={() => {
+          setSent(null);
+          setRemoved(null);
+          setInviting(true);
+        }}
+      >
+        <CorreoIcon size={16} aria-hidden="true" />
+        Invitar a una persona
+      </Button>
+    ) : undefined;
+
   return (
     <>
+      <Header action={invite} />
+
       {sent && (
         <Notice tone="success">
           Enviamos la invitación a <strong translate="no">{sent.email}</strong>.
@@ -157,28 +179,16 @@ function Team({ currentUserId }: { currentUserId: string }) {
         </Notice>
       )}
 
-      <SeatsBar
-        seats={seats}
-        loading={members.isPending}
-        onInvite={() => {
-          setSent(null);
-          setRemoved(null);
-          setInviting(true);
-        }}
-      />
+      <SeatsBar seats={seats} loading={members.isPending} />
 
-      <Card
-        icon={<UsersRound size={20} />}
-        title="Personas"
-        description="Quienes ya ingresan a la organización, en el orden en que llegaron."
-      >
+      <Card title="Personas">
         {members.isError ? (
           <LoadError
             error={members.error}
             onRetry={() => void members.refetch()}
           />
         ) : members.isPending ? (
-          <p className={styles.loading}>Cargando miembros…</p>
+          <p className={styles.loading}>Cargando las personas</p>
         ) : (
           <ul className={styles.rows}>
             {memberRows.map((member) => (
@@ -205,23 +215,19 @@ function Team({ currentUserId }: { currentUserId: string }) {
                 {isManageable(member, currentUserId) && (
                   <span className={styles.rowActions}>
                     <Button
-                      surface="dark"
                       variant="secondary"
                       size="sm"
-                      shape="pill"
                       aria-label={`Cambiar el rol de ${member.full_name}`}
                       onClick={() => {
                         setRemoved(null);
                         setChanging(member);
                       }}
                     >
-                      Cambiar rol
+                      Cambiar el rol
                     </Button>
                     <Button
-                      surface="dark"
                       variant="secondary"
                       size="sm"
-                      shape="pill"
                       aria-label={`Retirar a ${member.full_name}`}
                       onClick={() => {
                         remove.reset();
@@ -239,31 +245,28 @@ function Team({ currentUserId }: { currentUserId: string }) {
         )}
         {members.hasNextPage && (
           <MoreButton
+            label="Cargar más personas"
             busy={members.isFetchingNextPage}
             onClick={() => void members.fetchNextPage()}
           />
         )}
       </Card>
 
-      <Card
-        icon={<Clock size={20} />}
-        title="Invitaciones pendientes"
-        description="Cada invitación ocupa un cupo hasta que la aceptan, vence a las 72 horas o la revoca."
-      >
+      <Card title="Invitaciones pendientes">
         {invitations.isError ? (
           <LoadError
             error={invitations.error}
             onRetry={() => void invitations.refetch()}
           />
         ) : invitations.isPending ? (
-          <p className={styles.loading}>Cargando invitaciones…</p>
+          <p className={styles.loading}>Cargando las invitaciones</p>
         ) : invitationRows.length === 0 ? (
           <p className={styles.empty}>
             No hay invitaciones pendientes. Cuando invite a alguien, aparecerá
             aquí hasta que acepte.
           </p>
         ) : (
-          <ul className={styles.rows}>
+          <ul className={styles.rows} data-kind="invitations">
             {invitationRows.map((invitation) => (
               <li key={invitation.id} className={styles.row}>
                 <span className={styles.who}>
@@ -285,10 +288,8 @@ function Team({ currentUserId }: { currentUserId: string }) {
                 </span>
                 <span className={styles.rowAction}>
                   <Button
-                    surface="dark"
                     variant="secondary"
                     size="sm"
-                    shape="pill"
                     aria-label={`Revocar la invitación de ${invitation.email}`}
                     onClick={() => {
                       revoke.reset();
@@ -304,6 +305,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
         )}
         {invitations.hasNextPage && (
           <MoreButton
+            label="Cargar más invitaciones"
             busy={invitations.isFetchingNextPage}
             onClick={() => void invitations.fetchNextPage()}
           />
@@ -362,19 +364,18 @@ function isManageable(member: MemberOut, currentUserId: string): boolean {
   return member.role !== "owner" && member.user_id !== currentUserId;
 }
 
-// Cupo del plan (RN-012): cuántas personas e invitaciones caben y el botón para invitar. Con el
-// plan lleno, el botón no se muestra y el aviso dice cómo seguir (FLU-003, E1).
+// Cupo del plan (RN-012): cuántas personas e invitaciones caben. Con el plan lleno, el botón de
+// invitar no se muestra y el aviso, debajo del cupo, dice cómo seguir (FLU-003, E1).
 function SeatsBar({
   seats,
   loading,
-  onInvite,
 }: {
   seats: SeatsOut | undefined;
   loading: boolean;
-  onInvite: () => void;
 }) {
   const meterId = useId();
   if (loading || !seats) {
+    // Reserva el alto del cupo para que la página no salte cuando llega.
     return <div className={styles.seats} aria-hidden="true" />;
   }
   const unlimited = seats.extra_user_price_cop !== null;
@@ -382,16 +383,20 @@ function SeatsBar({
   const users = seats.included === 1 ? "usuario" : "usuarios";
 
   return (
-    <div className={styles.seats}>
-      <div className={styles.seatsText}>
-        <p id={meterId} className={styles.seatsCount}>
-          <strong>{seats.used}</strong> de {seats.included} {users} en uso
-        </p>
-        <p className={styles.seatsHint}>
-          {unlimited
-            ? "Su plan admite usuarios adicionales con cobro mensual."
-            : "Cuentan los miembros y las invitaciones que siguen abiertas."}
-        </p>
+    <>
+      <div className={styles.seats}>
+        <div className={styles.seatsText}>
+          <p id={meterId} className={styles.seatsCount}>
+            <strong>{seats.used}</strong> de {seats.included} {users} en uso
+          </p>
+          {/* En los dos tipos de plan una invitación pendiente ocupa un cupo; con usuarios
+              adicionales, ese cupo puede cobrarse. */}
+          <p className={styles.seatsHint}>
+            Cuentan los miembros y las invitaciones que siguen abiertas.
+            {unlimited &&
+              " Por encima del cupo, cada usuario adicional tiene cobro mensual."}
+          </p>
+        </div>
         <span
           className={styles.meter}
           role="meter"
@@ -404,7 +409,7 @@ function SeatsBar({
           <span style={{ inlineSize: `${ratio * 100}%` }} />
         </span>
       </div>
-      {seats.full ? (
+      {seats.full && (
         <Notice tone="warning">
           <p>
             Su plan ya no tiene cupo. Para invitar a alguien más,{" "}
@@ -412,41 +417,19 @@ function SeatsBar({
             invitación pendiente.
           </p>
         </Notice>
-      ) : (
-        <Button variant="bright" shape="pill" onClick={onInvite}>
-          <MailPlus size={18} aria-hidden="true" />
-          Invitar
-        </Button>
       )}
-    </div>
+    </>
   );
 }
 
-function Card({
-  icon,
-  title,
-  description,
-  children,
-}: {
-  icon: ReactNode;
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
+// Un panel por lista: el título arriba y las filas de borde a borde, como el libro de casos.
+function Card({ title, children }: { title: string; children: ReactNode }) {
   const titleId = useId();
   return (
     <section className={styles.card} aria-labelledby={titleId}>
-      <div className={styles.cardHead}>
-        <span className={styles.cardIcon} aria-hidden="true">
-          {icon}
-        </span>
-        <div>
-          <h2 id={titleId} className={styles.cardTitle}>
-            {title}
-          </h2>
-          <p className={styles.cardText}>{description}</p>
-        </div>
-      </div>
+      <h2 id={titleId} className={styles.cardTitle}>
+        {title}
+      </h2>
       {children}
     </section>
   );
@@ -464,31 +447,26 @@ function LoadError({
       <Notice tone="error">
         <SystemError requestId={apiProblem(error).requestId} />
       </Notice>
-      <Button
-        surface="dark"
-        variant="secondary"
-        size="sm"
-        shape="pill"
-        onClick={onRetry}
-      >
+      <Button variant="secondary" size="sm" onClick={onRetry}>
         Intentar de nuevo
       </Button>
     </div>
   );
 }
 
-function MoreButton({ busy, onClick }: { busy: boolean; onClick: () => void }) {
+function MoreButton({
+  label,
+  busy,
+  onClick,
+}: {
+  label: string;
+  busy: boolean;
+  onClick: () => void;
+}) {
   return (
     <div className={styles.more}>
-      <Button
-        surface="dark"
-        variant="secondary"
-        size="sm"
-        shape="pill"
-        busy={busy}
-        onClick={onClick}
-      >
-        {busy ? "Cargando…" : "Cargar más"}
+      <Button variant="secondary" size="sm" busy={busy} onClick={onClick}>
+        {busy ? "Cargando" : label}
       </Button>
     </div>
   );

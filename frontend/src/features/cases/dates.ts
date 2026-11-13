@@ -1,7 +1,9 @@
 const TIME_ZONE = "America/Bogota";
 
-/** Fecha y hora de Colombia. Con `seconds` agrega los segundos y el sufijo "(UTC−5)", para la
- * hora exacta de un evento de la cadena de custodia. */
+// Fechas y horas como se escriben en Colombia: «10 de noviembre de 2026», «10:32 a. m.».
+
+/** Fecha y hora de Colombia. Con `seconds` agrega los segundos y aclara «hora de Colombia», para
+ * la hora exacta de un evento de la cadena de custodia. */
 export function formatColombiaTime(
   iso: string,
   opts: { seconds?: boolean } = {},
@@ -9,14 +11,14 @@ export function formatColombiaTime(
   const formatted = new Intl.DateTimeFormat("es-CO", {
     timeZone: TIME_ZONE,
     day: "numeric",
-    month: "short",
+    month: "long",
     year: "numeric",
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
     second: opts.seconds ? "2-digit" : undefined,
-    hourCycle: "h23",
+    hour12: true,
   }).format(new Date(iso));
-  return opts.seconds ? `${formatted} (UTC−5)` : formatted;
+  return opts.seconds ? `${formatted} (hora de Colombia)` : formatted;
 }
 
 function colombiaDay(date: Date): string {
@@ -24,7 +26,8 @@ function colombiaDay(date: Date): string {
 }
 
 /** Cuándo fue la última actividad de un caso, para leerla de un vistazo: «hace un momento»,
- * «hace 7 min», «hoy, 09:12» o la fecha, con el año solo si no es el actual, siempre en hora de Colombia. */
+ * «hace 7 min», «hoy a las 9:12 a. m.» o la fecha, con el año solo si no es el actual, siempre en
+ * hora de Colombia. */
 export function formatRecentActivity(iso: string, now = new Date()): string {
   const then = new Date(iso);
   const minutes = Math.floor((now.getTime() - then.getTime()) / 60_000);
@@ -33,11 +36,11 @@ export function formatRecentActivity(iso: string, now = new Date()): string {
   if (colombiaDay(then) === colombiaDay(now)) {
     const time = new Intl.DateTimeFormat("es-CO", {
       timeZone: TIME_ZONE,
-      hour: "2-digit",
+      hour: "numeric",
       minute: "2-digit",
-      hourCycle: "h23",
+      hour12: true,
     }).format(then);
-    return `hoy, ${time}`;
+    return `hoy a las ${time}`;
   }
   // El año solo se escribe si no es el actual.
   const sameYear =
@@ -45,7 +48,7 @@ export function formatRecentActivity(iso: string, now = new Date()): string {
   return new Intl.DateTimeFormat("es-CO", {
     timeZone: TIME_ZONE,
     day: "numeric",
-    month: "short",
+    month: "long",
     year: sameYear ? undefined : "numeric",
   }).format(then);
 }

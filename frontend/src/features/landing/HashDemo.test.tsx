@@ -24,6 +24,35 @@ describe("Demostración de la huella", () => {
     expect(await screen.findByText("Coincide")).toBeInTheDocument();
   });
 
+  it("no dice «Coincide» en verde antes de que el navegador calcule la huella", async () => {
+    // El cálculo queda pendiente: la huella mostrada es la registrada, pero nadie la comprobó.
+    vi.spyOn(crypto.subtle, "digest").mockReturnValue(new Promise(() => {}));
+    render(<HashDemo />);
+
+    const status = screen.getByRole("status");
+    expect(status).toHaveTextContent("Calculando la huella");
+    expect(status).toHaveAttribute("data-state", "pending");
+    expect(screen.queryByText("Coincide")).not.toBeInTheDocument();
+  });
+
+  it("retira la coincidencia anterior mientras calcula el texto editado", async () => {
+    const user = userEvent.setup();
+    render(<HashDemo />);
+    expect(await screen.findByText("Coincide")).toBeInTheDocument();
+    vi.spyOn(crypto.subtle, "digest").mockReturnValue(new Promise(() => {}));
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Texto de ejemplo" }),
+      "x",
+    );
+
+    expect(screen.getByRole("status")).toHaveAttribute("data-state", "pending");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Calculando la huella",
+    );
+    expect(screen.queryByText("Coincide")).not.toBeInTheDocument();
+  });
+
   it("al cambiar una palabra avisa que no coincide", async () => {
     const user = userEvent.setup();
     render(<HashDemo />);

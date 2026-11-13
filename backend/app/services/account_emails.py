@@ -73,6 +73,7 @@ def verification_email(
             ("Verificar mi correo", link),
             f"El enlace vence en {_HOURS} horas y sirve una sola vez. Si usted no creó esta "
             "cuenta, ignore este mensaje.",
+            site_url=settings.public_url,
         ),
     )
 
@@ -105,6 +106,7 @@ def account_exists_email(
             ],
             ("Ingresar a ALETHEIA", sign_in),
             "Si no fue usted, no tiene que hacer nada: su cuenta no cambió.",
+            site_url=settings.public_url,
         ),
     )
 
@@ -125,7 +127,7 @@ def password_reset_email(
         subject="Restablezca su contraseña de ALETHEIA",
         text=(
             f"Hola, {name}:\n\n"
-            "Recibimos una solicitud para restablecer la contraseña de su cuenta. Para elegir "
+            "Recibimos una solicitud para restablecer la contraseña de su cuenta. Para crear "
             f"una nueva, abra este enlace:\n{link}\n\n"
             f"El enlace vence en {_RESET_MINUTES} minutos y sirve una sola vez. Al cambiar la "
             "contraseña cerraremos las sesiones abiertas en todos sus dispositivos.\n\n"
@@ -136,12 +138,13 @@ def password_reset_email(
             f"Hola, {html.escape(name)}:",
             [
                 "Recibimos una solicitud para restablecer la contraseña de su cuenta. Para "
-                "elegir una nueva, use este botón.",
+                "crear una nueva, use este botón.",
                 "Al cambiarla cerraremos las sesiones abiertas en todos sus dispositivos.",
             ],
-            ("Elegir una contraseña nueva", link),
+            ("Crear una contraseña nueva", link),
             f"El enlace vence en {_RESET_MINUTES} minutos y sirve una sola vez. Si usted no "
             "lo pidió, ignore este mensaje: su contraseña no cambia.",
+            site_url=settings.public_url,
         ),
     )
 
@@ -174,8 +177,9 @@ def password_changed_email(
                 "Le confirmamos que la contraseña de su cuenta en ALETHEIA acaba de cambiar y "
                 "que cerramos las sesiones abiertas en sus otros dispositivos."
             ],
-            ("No fui yo: restablecer la contraseña", recover),
+            ("Restablecer mi contraseña", recover),
             f"Si fue usted, no tiene que hacer nada. Si no, restablézcala de inmediato y "
             f"escríbanos a {html.escape(REPLY_TO)}.",
+            site_url=settings.public_url,
         ),
     )
