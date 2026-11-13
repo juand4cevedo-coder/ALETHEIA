@@ -30,6 +30,6 @@ La base anterior pasó 291 pruebas. Se añadieron comprobaciones de navegación 
 
 Tras el ajuste pasaron 295 pruebas de interfaz en 35 archivos, compilación, lint y formato. La entrada pública mide 115,56 kB de JavaScript y 6,88 kB de CSS comprimidos, bajo los límites de 120 y 30 kB. La escena actual elimina la dependencia de Three.js. Ruff, formato, mypy y 23 pruebas independientes de PostgreSQL del backend también pasaron; la suite de integración completa requiere la base temporal de CI.
 
-La portada y las tarjetas se revisaron en el navegador local a 1260 px de ancho. En ese navegador la preferencia de movimiento reducido estaba activa: se comprobó la composición estática, no el movimiento efectivo de los ciclos. La revisión móvil y la medición de experiencia real siguen pendientes.
+La portada y las tarjetas se revisaron en el navegador local a 1260 y 390 px de ancho. En ese navegador la preferencia de movimiento reducido estaba activa: se comprobó la composición estática, no el movimiento efectivo de los ciclos. La medición de experiencia real sigue pendiente.
 
 El servidor de desarrollo de revisión escucha únicamente en `127.0.0.1:5174`. Las pantallas que consultan datos reales necesitan la API local habitual en el puerto 8000. No se añadieron datos de precios ficticios para ocultar una desconexión del backend.
