@@ -1,6 +1,12 @@
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
-import { ChevronRight, LoaderCircle, Plus, Search } from "lucide-react";
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import {
+  Fragment,
+  type ReactNode,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { Link, useOutletContext, useSearchParams } from "react-router";
 
 import type { CaseSummaryOut, CaseTotalsOut, Me } from "../api/generated";
@@ -17,7 +23,7 @@ import { StatusBadge } from "../components/ui/StatusBadge.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { useMediaQuery } from "../components/ui/useMediaQuery.ts";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { custodyActionLabel } from "../features/cases/custodyActions.ts";
 import { CustodyStrip } from "../features/cases/CustodyStrip.tsx";
@@ -28,6 +34,12 @@ import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { canOpenCases } from "../features/cases/roles.ts";
 import { VerifyEmailDialog } from "../features/cases/VerifyEmailDialog.tsx";
 import styles from "./CasesPage.module.css";
+import {
+  BuscarIcon,
+  CargandoIcon,
+  ChevronDerechaIcon,
+  MasIcon,
+} from "../components/ui/icons.tsx";
 
 type Status = "open" | "closed" | "all";
 
@@ -176,39 +188,37 @@ export function CasesPage() {
   const mayOpen = canOpenCases(me.organization?.role);
   const openCase = (label: string) =>
     me.email_verified ? (
-      <ButtonLink to={ROUTES.newCase} variant="bright" size="sm" shape="pill">
-        <Plus size={16} aria-hidden="true" />
+      <ButtonLink to={ROUTES.newCase} size="sm">
+        <MasIcon size={16} aria-hidden="true" />
         {label}
       </ButtonLink>
     ) : (
       // Con el correo sin verificar el botón no se oculta: abre el aviso que explica por qué.
-      <Button
-        variant="bright"
-        size="sm"
-        shape="pill"
-        onClick={() => setVerifying(true)}
-      >
-        <Plus size={16} aria-hidden="true" />
+      <Button size="sm" onClick={() => setVerifying(true)}>
+        <MasIcon size={16} aria-hidden="true" />
         {label}
       </Button>
     );
 
   const head = (
     <>
-      <title>{`Casos · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Casos")}</title>
       <meta name="robots" content="noindex" />
     </>
   );
   const header = (actions?: ReactNode) => (
     <PageHeader
-      eyebrow="Expedientes"
       title="Casos"
-      description="Los casos en los que usted es miembro. Cada acción sobre ellos queda en su cadena de custodia."
+      description="Los casos en los que usted es miembro."
       actions={actions}
     />
   );
   const dialog = (
-    <VerifyEmailDialog open={verifying} onClose={() => setVerifying(false)} />
+    <VerifyEmailDialog
+      email={me.email}
+      open={verifying}
+      onClose={() => setVerifying(false)}
+    />
   );
 
   if (book.isPending) {
@@ -217,12 +227,12 @@ export function CasesPage() {
         {head}
         {header()}
         <p className={styles.loading} role="status">
-          <LoaderCircle
+          <CargandoIcon
             className={styles.spinner}
-            size={20}
+            size={16}
             aria-hidden="true"
           />
-          Cargando sus casos…
+          Cargando sus casos
         </p>
       </div>
     );
@@ -240,10 +250,8 @@ export function CasesPage() {
           </Notice>
           <div>
             <Button
-              surface="dark"
               variant="secondary"
               size="sm"
-              shape="pill"
               onClick={() => void book.refetch()}
             >
               Intentar de nuevo
@@ -266,12 +274,12 @@ export function CasesPage() {
         <EmptyState
           title={
             mayOpen
-              ? "Abra un caso y su cadena de custodia empieza a contar."
-              : "Todavía no tiene casos asignados."
+              ? "Todavía no tiene casos"
+              : "Todavía no tiene casos asignados"
           }
           description={
             mayOpen
-              ? "Desde ese momento, cada acción de su equipo sobre el caso queda registrada, y la evidencia que suba se guardará tal como llegó."
+              ? "Al abrir un caso empieza su cadena de custodia. Desde ahí, cada acción de su equipo sobre él queda registrada."
               : `${ASSISTANT_EMPTY}.`
           }
           actions={mayOpen ? openCase("Abrir mi primer caso") : undefined}
@@ -303,7 +311,7 @@ export function CasesPage() {
   return (
     <div className={styles.screen}>
       {head}
-      {header(mayOpen ? openCase("Abrir caso") : undefined)}
+      {header(mayOpen ? openCase("Abrir un caso") : undefined)}
 
       <CustodyStrip totals={totals} />
 
@@ -350,7 +358,11 @@ export function CasesPage() {
           <label htmlFor={filterId} className="visually-hidden">
             Filtrar los casos cargados por título, radicado o despacho
           </label>
-          <Search className={styles.filterIcon} size={15} aria-hidden="true" />
+          <BuscarIcon
+            className={styles.filterIcon}
+            size={16}
+            aria-hidden="true"
+          />
           <input
             id={filterId}
             type="search"
@@ -379,12 +391,12 @@ export function CasesPage() {
       >
         {loadingSegment ? (
           <p className={styles.loading} role="status">
-            <LoaderCircle
+            <CargandoIcon
               className={styles.spinner}
-              size={20}
+              size={16}
               aria-hidden="true"
             />
-            Cargando sus casos…
+            Cargando sus casos
           </p>
         ) : loaded.length === 0 ? (
           <p className={styles.none}>{NONE_IN_SEGMENT[status]}</p>
@@ -416,10 +428,8 @@ export function CasesPage() {
       {book.hasNextPage && !loadingSegment && (
         <div className={styles.more}>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
-            shape="pill"
             busy={book.isFetchingNextPage}
             onClick={() => void loadMore()}
           >
@@ -439,46 +449,31 @@ export function CasesPage() {
 }
 
 /** Lo que hace un caso desde que se abre y lo que hará con la evidencia (maqueta 04). Solo se
- * dice en presente lo que ya ocurre: la evidencia todavía no se puede subir. */
+ * dice en presente lo que ya ocurre: la evidencia todavía no se puede subir. La lista numerada
+ * ya dice el orden; no hacen falta cifras dibujadas. */
 function Principles() {
   return (
     <ol className={styles.principles}>
       <li>
-        <span className={styles.principleNumber} aria-hidden="true">
-          01
-        </span>
-        <div>
-          <p className={styles.principleTitle}>Una llave por caso</p>
-          <p className={styles.principleText}>
-            Cada caso recibe su propia llave de cifrado en el momento en que se
-            abre.
-          </p>
-        </div>
+        <p className={styles.principleTitle}>Una llave por caso</p>
+        <p className={styles.principleText}>
+          Cada caso recibe su propia llave de cifrado al abrirse.
+        </p>
       </li>
       <li>
-        <span className={styles.principleNumber} aria-hidden="true">
-          02
-        </span>
-        <div>
-          <p className={styles.principleTitle}>El original, intacto</p>
-          <p className={styles.principleText}>
-            La evidencia que suba se guardará tal como llegó, cifrada con la
-            llave del caso. No se convertirá ni se comprimirá.
-          </p>
-        </div>
+        <p className={styles.principleTitle}>El original, intacto</p>
+        <p className={styles.principleText}>
+          La evidencia que suba se guardará tal como llegó, cifrada con la llave
+          del caso. No se convertirá ni se comprimirá.
+        </p>
       </li>
       <li>
-        <span className={styles.principleNumber} aria-hidden="true">
-          03
-        </span>
-        <div>
-          <p className={styles.principleTitle}>Un historial que no se edita</p>
-          <p className={styles.principleText}>
-            Cada acción sobre el caso queda en su cadena de custodia, y cada
-            evento lleva el hash del anterior: si alguien alterara uno, la
-            cadena dejaría de cuadrar.
-          </p>
-        </div>
+        <p className={styles.principleTitle}>Un historial que no se edita</p>
+        <p className={styles.principleText}>
+          Cada acción sobre el caso queda en su cadena de custodia. Cada evento
+          lleva la huella del anterior. Si alguien alterara uno, la cadena
+          dejaría de cuadrar.
+        </p>
       </li>
     </ol>
   );
@@ -525,7 +520,7 @@ function CaseTable({ items, caption }: ListProps) {
             <td className={styles.integrityCell}>
               <span className={styles.integrity}>
                 <StatusBadge tone="muted">Sin verificar</StatusBadge>
-                <ChevronRight
+                <ChevronDerechaIcon
                   className={styles.chevron}
                   size={16}
                   aria-hidden="true"
@@ -634,7 +629,7 @@ function CaseIdentity({
             Sin radicado
             {item.internal_reference && (
               <>
-                {" · ref. interna "}
+                {", referencia interna "}
                 <b translate="no">{item.internal_reference}</b>
               </>
             )}
@@ -649,8 +644,7 @@ function CourtCell({ item }: { item: CaseSummaryOut }) {
   return (
     <>
       {item.practice_area && (
-        <span className={styles.area} data-area={item.practice_area}>
-          <i aria-hidden="true" />
+        <span className={styles.area}>
           {PRACTICE_AREA_LABELS[item.practice_area]}
         </span>
       )}
@@ -662,18 +656,20 @@ function CourtCell({ item }: { item: CaseSummaryOut }) {
 }
 
 function EvidenceCell({ item }: { item: CaseSummaryOut }) {
-  const parts = describeEvidenceByType(item.evidence_by_type).split(" · ");
+  const parts = describeEvidenceByType(item.evidence_by_type).split(", ");
   return (
     <span className={styles.evidence}>
       <span className={styles.evidenceCount}>{item.evidence_count}</span>
       <span className={styles.evidenceTypes}>
         {item.evidence_count === 0
-          ? "Sin evidencias aún"
-          : parts.map((part, index) => (
-              <span key={part}>
-                {index > 0 && " · "}
-                {part}
-              </span>
+          ? "Sin evidencias"
+          : // La coma y el espacio quedan fuera del tramo que no se parte: ahí puede
+            // saltar la línea, y «9 chats» sigue entero.
+            parts.map((part, index) => (
+              <Fragment key={part}>
+                {index > 0 && ", "}
+                <span>{part}</span>
+              </Fragment>
             ))}
       </span>
     </span>
@@ -688,8 +684,11 @@ function ChainCell({ item }: { item: CaseSummaryOut }) {
       <span className={styles.when}>
         {event ? (
           <>
-            {custodyActionLabel(event.action)}
-            {` · ${event.actor_name ?? "Sistema"} · `}
+            {/* Qué pasó en un renglón; quién y cuándo, en el siguiente. */}
+            <span className={styles.whenAction}>
+              {custodyActionLabel(event.action)}
+            </span>
+            {`${event.actor_name ?? "Sistema"}, `}
             <time dateTime={event.occurred_at}>
               {formatRecentActivity(event.occurred_at)}
             </time>

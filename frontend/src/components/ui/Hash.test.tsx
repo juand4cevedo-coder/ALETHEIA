@@ -21,10 +21,11 @@ describe("Huella SHA-256 (CMP-UI-007)", () => {
 
   it("la versión abreviada conserva la huella completa para lectores de pantalla", () => {
     render(<Hash value={VALUE} variant="short" copyable={false} />);
-    expect(screen.getByText("52a910d4 4b570bc5 …")).toHaveAttribute(
-      "aria-hidden",
-      "true",
-    );
+    const shown = screen.getByText(/^52a910d4 4b570bc5/);
+    expect(shown).toHaveAttribute("aria-hidden", "true");
+    // Primeros dos bloques y el último, sin puntos suspensivos.
+    // Un solo espacio entre bloques: así se ve y así se copia.
+    expect(shown.textContent).toBe("52a910d4 4b570bc5 b5b9a6f5");
     expect(screen.getByText(LOWER)).toHaveClass("visually-hidden");
   });
 

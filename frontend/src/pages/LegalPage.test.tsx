@@ -60,6 +60,39 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     },
   );
 
+  // Regla 11 de la identidad: el texto de las políticas no cambia con un rediseño. Su huella
+  // depende solo del texto que se lee, no de la presentación; si una de estas cambia, cambió el
+  // texto vigente y eso exige una versión legal nueva con su propio proceso (RN-029), no un
+  // ajuste de estilo. Las huellas son las de la versión del 6 de noviembre de 2026.
+  it.each([
+    [
+      "privacidad",
+      "25d7fbe978a96ad9d5355bf5e16c3847fea6ed2de1572fff146a1e1dd36fdc0b",
+    ],
+    [
+      "terminos",
+      "753e9d2945e9666089357cbc4ba5e72b08631057b4d99400cb8051b67cf0760e",
+    ],
+    [
+      "cookies",
+      "b7e6feb1d7472d45bbd44b4c05985f866297d205d9067be23666fa364a695558",
+    ],
+    [
+      "reembolsos",
+      "6efa3998739d8cefd14dcff7260f64634041f4175657c22aae199e3fc0e8e52e",
+    ],
+  ] as const)(
+    "la huella de %s es la de la versión vigente",
+    async (slug, expected) => {
+      expect(LEGAL_EFFECTIVE_DATE).toBe("2026-11-06");
+      await renderRoute(legalRoute(slug));
+      expect(
+        (await screen.findByText(/^[0-9a-f]{64}$/, {}, { timeout: 5000 }))
+          .textContent,
+      ).toBe(expected);
+    },
+  );
+
   it("se abren desde el pie de la página de inicio y de cada política (CA-HU-003-02)", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const user = userEvent.setup();
@@ -68,7 +101,11 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     // El pie identifica a quien vende y enlaza a la autoridad de protección al consumidor
     // (Ley 1480 de 2011, art. 50, literal a y parágrafo).
     const footer = screen.getByRole("contentinfo");
-    expect(footer).toHaveTextContent(`NIT ${DATA_CONTROLLER.nit}`);
+    expect(
+      within(footer).getByRole("link", {
+        name: "Identificación y contacto del proveedor",
+      }),
+    ).toHaveAttribute("href", "/legal/terminos");
     expect(
       within(footer).getByRole("link", { name: CONSUMER_AUTHORITY.name }),
     ).toHaveAttribute("href", CONSUMER_AUTHORITY.url);
@@ -79,10 +116,15 @@ describe("Páginas legales (HU-003, CP-003)", () => {
         within(footerLegal).getByRole("link", { name: page.label }),
       );
       expect(
-        await screen.findByRole("heading", {
-          level: 1,
-          name: LEGAL_DOCUMENTS[page.slug].title,
-        }),
+        // El chunk de la página se carga aparte: en jsdom tarda más del 1 s predeterminado.
+        await screen.findByRole(
+          "heading",
+          {
+            level: 1,
+            name: LEGAL_DOCUMENTS[page.slug].title,
+          },
+          { timeout: 5000 },
+        ),
       ).toBeInTheDocument();
     }
   });
@@ -100,10 +142,15 @@ describe("Páginas legales (HU-003, CP-003)", () => {
       within(switcher).getByRole("link", { name: "Reembolsos" }),
     );
     expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name: "Política de reembolsos y cancelación",
-      }),
+      // El chunk de la página se carga aparte: en jsdom tarda más del 1 s predeterminado.
+      await screen.findByRole(
+        "heading",
+        {
+          level: 1,
+          name: "Política de reembolsos y cancelación",
+        },
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument();
     // La política nueva monta su propio selector: se vuelve a buscar.
     const current = screen.getByRole("navigation", { name: "Políticas" });
@@ -144,7 +191,9 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     await renderRoute(legalRoute("terminos"));
 
     const hash = (await screen.findByText(/^[0-9a-f]{64}$/)).textContent;
-    await user.click(screen.getByRole("button", { name: "Descargar" }));
+    await user.click(
+      screen.getByRole("button", { name: "Descargar el texto" }),
+    );
 
     expect(click).toHaveBeenCalledTimes(1);
     const blob = createObjectURL.mock.calls[0]![0];

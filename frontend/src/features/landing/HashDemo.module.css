@@ -1,74 +1,99 @@
-/* Panel de la demostración de la huella; se parece a la tarjeta de las secciones. */
+/* Panel de la demostración de la huella: la primera superficie y la línea. */
 .panel {
   composes: card from "./Section.module.css";
-}
-
-.demo {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-6);
   padding: var(--space-6);
 }
 
-.label {
-  font-weight: 600;
+.field {
+  display: grid;
+  gap: var(--space-2);
 }
 
-.helper {
-  color: var(--color-text-inverse-muted);
-  font-size: 15px;
+.label {
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
 }
 
 .textarea {
   width: 100%;
-  padding: var(--space-3);
-  border: 1px solid
-    color-mix(in srgb, var(--color-text-inverse) 16%, transparent);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-control);
   border-radius: var(--radius-md);
-  background: var(--color-ink-950);
-  color: var(--color-text-inverse);
+  background: var(--bg);
+  color: var(--text);
   font: inherit;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
   resize: vertical;
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+
+.textarea:hover {
+  border-color: var(--text-3);
+}
+
+.textarea:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+.helper {
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 .rows {
   display: grid;
-  gap: var(--space-4);
   margin: 0;
 }
 
+.row {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+}
+
 .row dt {
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
 .row dd {
-  margin: var(--space-1) 0 0;
+  margin: 0;
 }
 
 .blocks {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-3);
+  color: var(--text-2);
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-mono);
 }
 
-/* Los caracteres distintos quedan en rojo aunque no haya animación: el significado no depende
-   del destello. */
+/* Los caracteres distintos quedan en rojo; el aviso de abajo dice lo mismo con texto. */
 .changed {
-  color: var(--color-error-400);
+  color: var(--err);
 }
 
+/* Responde a lo que se escribe: el carácter que cambió aparece, y nada más se mueve. */
 @media (prefers-reduced-motion: no-preference) {
   .changed {
-    animation: hash-flash var(--motion-flash) var(--ease-out);
+    animation: hash-changed var(--motion-base) var(--ease-standard);
   }
 
-  @keyframes hash-flash {
+  @keyframes hash-changed {
     from {
-      opacity: 0.2;
+      opacity: 0.3;
     }
   }
 }
@@ -79,29 +104,51 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
 }
 
-.match {
-  color: var(--color-success-400);
-  font-weight: 600;
+/* Resultado con punto y texto, como las insignias de estado. El verde es legítimo aquí: el
+   navegador acaba de calcular la huella. */
+.status {
+  --tone: var(--text-3);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
 }
 
-.mismatch {
-  color: var(--color-error-400);
-  font-weight: 600;
+.status[data-state="match"] {
+  --tone: var(--ok);
 }
 
-.notice {
-  color: var(--color-text-inverse-muted);
+.status[data-state="mismatch"] {
+  --tone: var(--err);
 }
 
-.restore {
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid
-    color-mix(in srgb, var(--color-primary-300) 40%, transparent);
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-primary-300);
-  font: inherit;
-  cursor: pointer;
+.status[data-state="unsupported"] {
+  color: var(--text-2);
+  font-weight: 400;
+}
+
+.dot {
+  flex: none;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: 50%;
+  background: var(--tone);
+}
+
+@media (max-width: 480px) {
+  .panel {
+    padding: var(--space-4);
+  }
+
+  .textarea {
+    font-size: var(--font-size-control-touch);
+  }
 }

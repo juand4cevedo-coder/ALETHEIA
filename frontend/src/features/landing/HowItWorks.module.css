@@ -1,7 +1,53 @@
-/* El número del paso en mono, sobre el título: se lee como el folio de cada hito. */
-.number {
-  color: var(--color-primary-300);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.06em;
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.step {
+  text-align: center;
+  padding: 16px 48px 24px;
+  border-right: 1px solid var(--line);
+}
+.step:last-child {
+  border: 0;
+}
+.marker {
+  display: block;
+  color: var(--bronze);
+  font-family: var(--font-editorial);
+  font-size: 40px;
+  margin-bottom: 24px;
+}
+.step h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.step p {
+  max-width: 290px;
+  margin: auto;
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.8;
+}
+.action {
+  display: flex;
+  justify-content: center;
+  margin-top: 48px;
+}
+@media (max-width: 760px) {
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .step {
+    padding: 0 16px 32px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .marker {
+    margin-bottom: 12px;
+  }
 }

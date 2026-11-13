@@ -1,13 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowUpRight,
-  Cookie,
-  LogOut,
-  ReceiptText,
-  Scale,
-  ShieldCheck,
-  type LucideIcon,
-} from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import type { Me } from "../../api/generated";
@@ -23,24 +14,30 @@ import {
   legalRoute,
   type LegalSlug,
 } from "../../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME } from "../../config/site.ts";
-import { AuthScene } from "../../components/ui/AuthScene.tsx";
-import { Emblem } from "../../components/ui/Emblem.tsx";
+import logoUrl from "../../assets/simbolo.svg";
+import { CONTACT_EMAIL, WORDMARK, pageTitle } from "../../config/site.ts";
 import { useSignOut } from "../session/useSignOut.ts";
 import { currentLegalChanges } from "./changes.ts";
 import { formatEffectiveDate } from "./format.ts";
 import styles from "./LegalRenewal.module.css";
+import {
+  BalanzaIcon,
+  EscudoVistoIcon,
+  FlechaDiagonalIcon,
+  GalletaIcon,
+  ReciboIcon,
+  SalirIcon,
+  type IconComponent,
+} from "../../components/ui/icons.tsx";
 
 const TITLE_ID = "titulo-textos-nuevos";
 const CHANGES_ID = "titulo-cambios";
-// Lo que tarda el anillo del emblema en cerrarse antes de abrir el espacio de trabajo.
-const SEAL_MS = 520;
 
-const POLICY_ICONS: Record<LegalSlug, LucideIcon> = {
-  privacidad: ShieldCheck,
-  terminos: Scale,
-  cookies: Cookie,
-  reembolsos: ReceiptText,
+const POLICY_ICONS: Record<LegalSlug, IconComponent> = {
+  privacidad: EscudoVistoIcon,
+  terminos: BalanzaIcon,
+  cookies: GalletaIcon,
+  reembolsos: ReciboIcon,
 };
 
 type Problem =
@@ -56,12 +53,6 @@ function problemFrom(error: unknown): Problem {
     return { kind: "unexpected", requestId };
   }
   return { kind: "unexpected" };
-}
-
-function prefersReducedMotion(): boolean {
-  return (
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? true
-  );
 }
 
 /**
@@ -90,9 +81,6 @@ export function LegalRenewal({ me }: { me: Me }) {
     ...acceptLegalTermsMutation(),
     onSuccess: async () => {
       setDone(true);
-      if (!prefersReducedMotion()) {
-        await new Promise((resolve) => window.setTimeout(resolve, SEAL_MS));
-      }
       await queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
     },
     onError: (error) => {
@@ -115,20 +103,19 @@ export function LegalRenewal({ me }: { me: Me }) {
     });
   }
 
-  const emblemState = done ? "done" : accept.isPending ? "working" : "idle";
-
   return (
     <div className={styles.shell}>
-      <title>{`Textos legales actualizados · ${SITE_NAME}`}</title>
-      <AuthScene />
+      <title>{pageTitle("Textos legales actualizados")}</title>
 
       <header className={styles.header}>
-        <p className={styles.brand}>{SITE_NAME}</p>
+        <p className={styles.brand}>
+          <img src={logoUrl} alt="" width={24} height={24} />
+          {WORDMARK}
+        </p>
       </header>
 
       <main id="contenido" className={styles.main} tabIndex={-1}>
         <header className={styles.intro}>
-          <Emblem state={emblemState} />
           <p className={styles.eyebrow}>
             Vigentes desde el{" "}
             <time dateTime={LEGAL_EFFECTIVE_DATE}>{formatEffectiveDate()}</time>
@@ -143,7 +130,7 @@ export function LegalRenewal({ me }: { me: Me }) {
           </h1>
           <p className={styles.lead}>
             {firstName}, antes de seguir revise qué cambió y acepte la versión
-            vigente. Su cuenta, sus casos y su sesión siguen intactos.
+            vigente. Su cuenta y sus casos siguen como estaban.
           </p>
         </header>
 
@@ -174,9 +161,9 @@ export function LegalRenewal({ me }: { me: Me }) {
                 target="_blank"
                 rel="noopener"
               >
-                <Icon size={18} aria-hidden="true" />
+                <Icon size={16} aria-hidden="true" />
                 <span>{page.label}</span>
-                <ArrowUpRight
+                <FlechaDiagonalIcon
                   className={styles.documentArrow}
                   size={16}
                   aria-hidden="true"
@@ -210,18 +197,17 @@ export function LegalRenewal({ me }: { me: Me }) {
                     para ver la versión vigente.
                   </p>
                   <Button
-                    surface="dark"
                     variant="secondary"
                     size="sm"
                     onClick={() => window.location.reload()}
                   >
-                    Recargar
+                    Recargar la página
                   </Button>
                 </>
               ) : (
                 <p>
-                  No pudimos registrar su aceptación. Inténtelo de nuevo; si
-                  continúa, escríbanos a{" "}
+                  No pudimos registrar su aceptación. Inténtelo de nuevo. Si
+                  vuelve a pasar, escríbanos a{" "}
                   <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
                   {problem.requestId && (
                     <>
@@ -255,26 +241,20 @@ export function LegalRenewal({ me }: { me: Me }) {
             </Checkbox>
           </div>
 
-          <Button
-            type="submit"
-            variant="bright"
-            shape="pill"
-            block
-            busy={accept.isPending || done}
-          >
+          <Button type="submit" block busy={accept.isPending || done}>
             {done
-              ? "Abriendo su espacio de trabajo…"
+              ? "Abriendo su espacio de trabajo"
               : accept.isPending
-                ? "Registrando…"
-                : "Aceptar y continuar"}
+                ? "Registrando su aceptación"
+                : "Aceptar los textos vigentes"}
           </Button>
         </form>
 
         <p className={styles.decline}>
           Si no está de acuerdo, no tiene que aceptar. Escríbanos a{" "}
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> y cancelamos
-          su suscripción sin ningún costo; tendrá 30 días para exportar sus
-          casos, como dicen los términos.
+          su suscripción sin costo. Como dicen los términos, la cuenta queda 30
+          días en solo lectura.
         </p>
         <SignOutLater />
       </main>
@@ -294,10 +274,10 @@ function SignOutLater() {
         disabled={session.pending !== null}
         aria-busy={session.pending === "device" || undefined}
       >
-        <LogOut size={16} aria-hidden="true" />
+        <SalirIcon size={16} aria-hidden="true" />
         {session.pending === "device"
-          ? "Cerrando sesión…"
-          : "Revisarlos más tarde y cerrar sesión"}
+          ? "Cerrando la sesión"
+          : "Cerrar la sesión y revisarlos después"}
       </button>
       {session.failed && (
         <p className={styles.leaveFailure} role="alert">

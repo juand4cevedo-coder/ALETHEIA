@@ -99,7 +99,9 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
     const user = userEvent.setup();
     await renderRoute(PAGE);
 
-    await user.click(screen.getByRole("button", { name: "Configurar" }));
+    await user.click(
+      screen.getByRole("button", { name: "Elegir por categoría" }),
+    );
 
     const panel = cookiePanel()!;
     expect(within(panel).getByText("Cookies en ALETHEIA")).toHaveFocus();

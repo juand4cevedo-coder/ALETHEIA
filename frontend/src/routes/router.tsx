@@ -17,6 +17,7 @@ import {
   loadMembersPage,
   loadNewCasePage,
   loadPricingPage,
+  loadQueryRoot,
   loadResetPasswordPage,
   loadSignInPage,
   loadSignUpPage,
@@ -39,109 +40,173 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <HomePage /> },
       { path: "precios", lazy: { Component: loadPricingPage } },
+      {
+        path: "docs/:slug?",
+        lazy: {
+          Component: () =>
+            import("../pages/DocumentationPage.tsx").then(
+              (m) => m.DocumentationPage,
+            ),
+        },
+      },
+      {
+        path: "blog",
+        lazy: {
+          Component: () =>
+            import("../pages/JournalPage.tsx").then((m) => m.JournalPage),
+        },
+      },
+      {
+        path: "blog/:slug",
+        lazy: {
+          Component: () =>
+            import("../pages/JournalPage.tsx").then((m) => m.JournalPage),
+        },
+      },
+      {
+        path: "ayuda",
+        lazy: {
+          Component: () =>
+            import("../pages/InformationPage.tsx").then((m) => m.KnowledgePage),
+        },
+      },
+      {
+        path: "ayuda/:slug",
+        lazy: {
+          Component: () =>
+            import("../pages/InformationPage.tsx").then((m) => m.KnowledgePage),
+        },
+      },
+      ...[
+        "filosofia",
+        "nosotros",
+        "seguridad",
+        "soporte",
+        "empresa",
+        "legal",
+        "marca",
+        "estado",
+      ].map((path) => ({
+        path,
+        lazy: {
+          Component: () =>
+            import("../pages/InformationPage.tsx").then(
+              (m) => m.InformationPage,
+            ),
+        },
+      })),
       { path: "legal/:pagina", lazy: { Component: loadLegalPage } },
       { path: "*", element: <NotFoundPage /> },
     ],
   },
   {
-    // Pantallas de acceso, con su propio marco (UI-006 a UI-011).
-    lazy: { Component: loadAuthLayout },
+    // El acceso y el espacio de trabajo consultan la API con TanStack Query. Su proveedor llega
+    // en un archivo aparte, junto con ellos, y la landing no lo descarga.
+    lazy: { Component: loadQueryRoot },
     hydrateFallbackElement: loading,
     errorElement: <NotFoundPage />,
     children: [
       {
-        path: ROUTES.signIn.slice(1),
-        lazy: { Component: loadSignInPage },
-        handle: {
-          redirectSignedIn: true,
-          authSwitch: {
-            question: "¿Todavía no tiene cuenta?",
-            label: "Crear cuenta gratis",
-            to: ROUTES.signUp,
-          } satisfies AuthSwitch,
-        },
+        // Pantallas de acceso, con su propio marco (UI-006 a UI-011).
+        lazy: { Component: loadAuthLayout },
+        hydrateFallbackElement: loading,
+        errorElement: <NotFoundPage />,
+        children: [
+          {
+            path: ROUTES.signIn.slice(1),
+            lazy: { Component: loadSignInPage },
+            handle: {
+              redirectSignedIn: true,
+              authSwitch: {
+                question: "¿Todavía no tiene cuenta?",
+                label: "Crear una cuenta",
+                to: ROUTES.signUp,
+              } satisfies AuthSwitch,
+            },
+          },
+          {
+            path: ROUTES.signUp.slice(1),
+            lazy: { Component: loadSignUpPage },
+            handle: {
+              redirectSignedIn: true,
+              authSwitch: {
+                question: "¿Ya tiene cuenta?",
+                label: "Ingresar",
+                to: ROUTES.signIn,
+              } satisfies AuthSwitch,
+            },
+          },
+          {
+            path: ROUTES.forgotPassword.slice(1),
+            lazy: { Component: loadForgotPasswordPage },
+            handle: {
+              redirectSignedIn: true,
+              authSwitch: {
+                question: "¿Recordó su contraseña?",
+                label: "Volver a ingresar",
+                to: ROUTES.signIn,
+              } satisfies AuthSwitch,
+            },
+          },
+          {
+            path: ROUTES.resetPassword.slice(1),
+            lazy: { Component: loadResetPasswordPage },
+            handle: {
+              authSwitch: {
+                question: "¿Recordó su contraseña?",
+                label: "Volver a ingresar",
+                to: ROUTES.signIn,
+              } satisfies AuthSwitch,
+            },
+          },
+          {
+            // Se abre desde el correo de invitación: nunca redirige, haya o no sesión.
+            path: ROUTES.acceptInvitation.slice(1),
+            lazy: { Component: loadAcceptInvitationPage },
+          },
+          {
+            path: ROUTES.verifyEmail.slice(1),
+            lazy: { Component: loadVerifyEmailPage },
+            handle: {
+              authSwitch: {
+                question: "¿Ya verificó su correo?",
+                label: "Ingresar",
+                to: ROUTES.signIn,
+              } satisfies AuthSwitch,
+            },
+          },
+        ],
       },
       {
-        path: ROUTES.signUp.slice(1),
-        lazy: { Component: loadSignUpPage },
-        handle: {
-          redirectSignedIn: true,
-          authSwitch: {
-            question: "¿Ya tiene cuenta?",
-            label: "Volver a ingresar",
-            to: ROUTES.signIn,
-          } satisfies AuthSwitch,
-        },
-      },
-      {
-        path: ROUTES.forgotPassword.slice(1),
-        lazy: { Component: loadForgotPasswordPage },
-        handle: {
-          redirectSignedIn: true,
-          authSwitch: {
-            question: "¿Recordó su contraseña?",
-            label: "Volver a ingresar",
-            to: ROUTES.signIn,
-          } satisfies AuthSwitch,
-        },
-      },
-      {
-        path: ROUTES.resetPassword.slice(1),
-        lazy: { Component: loadResetPasswordPage },
-        handle: {
-          authSwitch: {
-            question: "¿Recordó su contraseña?",
-            label: "Volver a ingresar",
-            to: ROUTES.signIn,
-          } satisfies AuthSwitch,
-        },
-      },
-      {
-        // Se abre desde el correo de invitación: nunca redirige, haya o no sesión.
-        path: ROUTES.acceptInvitation.slice(1),
-        lazy: { Component: loadAcceptInvitationPage },
-      },
-      {
-        path: ROUTES.verifyEmail.slice(1),
-        lazy: { Component: loadVerifyEmailPage },
-        handle: {
-          authSwitch: {
-            question: "¿Ya verificó su correo?",
-            label: "Volver a ingresar",
-            to: ROUTES.signIn,
-          } satisfies AuthSwitch,
-        },
-      },
-    ],
-  },
-  {
-    // Espacio de trabajo: exige sesión. El marco consulta /api/v1/me antes de mostrar nada.
-    path: ROUTES.app.slice(1),
-    lazy: { Component: loadAppShell },
-    hydrateFallbackElement: loading,
-    errorElement: <NotFoundPage />,
-    children: [
-      { index: true, lazy: { Component: loadWorkspacePage } },
-      {
-        path: ROUTES.account.slice(ROUTES.app.length + 1),
-        lazy: { Component: loadAccountPage },
-      },
-      {
-        path: ROUTES.members.slice(ROUTES.app.length + 1),
-        lazy: { Component: loadMembersPage },
-      },
-      {
-        path: ROUTES.cases.slice(ROUTES.app.length + 1),
-        lazy: { Component: loadCasesPage },
-      },
-      {
-        path: ROUTES.newCase.slice(ROUTES.app.length + 1),
-        lazy: { Component: loadNewCasePage },
-      },
-      {
-        // El segmento fijo «nuevo» gana sobre :caseId, así que el orden no importa.
-        path: "casos/:caseId",
-        lazy: { Component: loadCasePage },
+        // Espacio de trabajo: exige sesión. El marco consulta /api/v1/me antes de mostrar nada.
+        path: ROUTES.app.slice(1),
+        lazy: { Component: loadAppShell },
+        hydrateFallbackElement: loading,
+        errorElement: <NotFoundPage />,
+        children: [
+          { index: true, lazy: { Component: loadWorkspacePage } },
+          {
+            path: ROUTES.account.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadAccountPage },
+          },
+          {
+            path: ROUTES.members.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadMembersPage },
+          },
+          {
+            path: ROUTES.cases.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadCasesPage },
+          },
+          {
+            path: ROUTES.newCase.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadNewCasePage },
+          },
+          {
+            // El segmento fijo «nuevo» gana sobre :caseId, así que el orden no importa.
+            path: "casos/:caseId",
+            lazy: { Component: loadCasePage },
+          },
+        ],
       },
     ],
   },

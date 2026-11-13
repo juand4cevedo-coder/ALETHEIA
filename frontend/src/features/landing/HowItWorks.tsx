@@ -1,40 +1,29 @@
-import { Fingerprint, History, PackageCheck, Upload } from "lucide-react";
-
-import { Reveal } from "../../components/ui/Reveal.tsx";
+import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
+import { ROUTES } from "../../config/routes.ts";
+import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 import styles from "./HowItWorks.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
-import timeline from "./Timeline.module.css";
 
 const STEPS = [
   {
-    icon: Upload,
-    title: "Suba el original",
-    text: "Cargue dentro de un caso el chat exportado, el correo, el audio, la fotografía o el PDF, tal como lo recibió. Lo guardamos cifrado y sin modificarlo.",
+    title: "Reúna a su equipo",
+    text: "Invite a las personas con las que trabaja y asigne un rol a cada una.",
   },
   {
-    icon: Fingerprint,
-    title: "Huella y sello de tiempo",
-    text: "Al recibirlo calculamos su huella SHA‑256 y una autoridad externa la sella con fecha y hora. Desde ese momento, cualquier cambio en el archivo queda en evidencia.",
+    title: "Dé un lugar a cada caso",
+    text: "Guarde su radicado, especialidad y despacho. Retome el contexto sin empezar de nuevo.",
   },
   {
-    icon: History,
-    title: "Cadena de custodia",
-    text: "Cada vez que alguien de su equipo sube, consulta, descarga o exporta la evidencia, queda registrado quién lo hizo y cuándo, en un historial que no se puede editar.",
-  },
-  {
-    icon: PackageCheck,
-    title: "Paquete verificable",
-    text: "Exporte los originales con sus huellas, los sellos de tiempo y un informe de custodia en PDF, listo para aportar y para que cualquiera lo compruebe.",
+    title: "Trabajen con claridad",
+    text: "Consulte los casos a los que pertenece y encuentre a las personas responsables.",
   },
 ] as const;
 
-// Los cuatro pasos del servicio, en el lenguaje del abogado, como una línea de tiempo: en
-// pantallas anchas va en fila y en las angostas baja en vertical. SHA‑256 lleva un guion que no
-// parte la línea (U+2011).
 export function HowItWorks() {
   return (
     <section
+      data-reveal
       id="como-funciona"
       className={section.section}
       aria-labelledby="titulo-como-funciona"
@@ -42,28 +31,27 @@ export function HowItWorks() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-como-funciona"
-          index={2}
-          kicker="Cómo funciona"
-          title="De la recepción del archivo al expediente, en cuatro pasos"
-          lead="No necesita instalar nada ni cambiar la forma en que su oficina recibe la información. Nosotros nos encargamos de preservarla desde el primer momento."
+          kicker="Así empieza todo"
+          title="Un poco de orden. Mucho más espacio para pensar."
+          lead="Lo esencial, a mano. Sin tener que aprender una forma distinta de trabajar."
         />
-
-        <ol className={`${timeline.timeline} ${timeline.horizontal}`}>
+        <ol className={styles.steps}>
           {STEPS.map((step, index) => (
-            <Reveal as="li" key={step.title} className={timeline.step}>
-              <span className={timeline.node}>
-                <step.icon size={20} />
+            <li key={step.title} className={styles.step}>
+              <span className={styles.marker} aria-hidden="true">
+                0{index + 1}
               </span>
-              <div className={timeline.content}>
-                <p className={styles.number}>
-                  Paso {String(index + 1).padStart(2, "0")}
-                </p>
-                <h3 className={section.cardTitle}>{step.title}</h3>
-                <p className={section.cardText}>{step.text}</p>
-              </div>
-            </Reveal>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </li>
           ))}
         </ol>
+        <div className={styles.action}>
+          <ButtonLink to={ROUTES.signUp} variant="secondary">
+            Organizar mi espacio
+            <FlechaDerechaIcon size={18} aria-hidden="true" />
+          </ButtonLink>
+        </div>
       </div>
     </section>
   );

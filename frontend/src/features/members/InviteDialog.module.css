@@ -9,7 +9,7 @@
 
 .hint {
   padding: 0 var(--space-6);
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-  line-height: 18px;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }

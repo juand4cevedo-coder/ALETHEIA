@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { CircleCheck, LinkIcon } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -7,17 +6,17 @@ import { resetPasswordMutation } from "../api/generated/@tanstack/react-query.ge
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { apiProblem } from "../features/auth/apiProblem.ts";
-import { Emblem } from "../components/ui/Emblem.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { tokenFromHash } from "../features/auth/linkToken.ts";
 import { newPasswordError } from "../features/auth/newPassword.ts";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import { PASSWORD_MAX_LENGTH } from "../features/auth/signUp.ts";
+import { CirculoVistoIcon, VinculoIcon } from "../components/ui/icons.tsx";
 
 const TITLE_ID = "titulo-restablecer";
 const METER_ID = "medidor-restablecer";
@@ -87,14 +86,13 @@ export function ResetPasswordPage() {
 
   return (
     <>
-      <title>{`Elegir una contraseña nueva · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Elegir una contraseña nueva")}</title>
       <meta name="robots" content="noindex" />
 
       <div className={styles.screen}>
         {stage === "form" && (
           <>
             <header className={styles.intro}>
-              <Emblem state={reset.isPending ? "working" : "idle"} />
               <h1 id={TITLE_ID} className={styles.title}>
                 Elija una contraseña nueva
               </h1>
@@ -140,14 +138,10 @@ export function ResetPasswordPage() {
               </fieldset>
 
               <div className={styles.submit}>
-                <Button
-                  type="submit"
-                  variant="bright"
-                  shape="pill"
-                  block
-                  busy={reset.isPending}
-                >
-                  {reset.isPending ? "Guardando…" : "Guardar la contraseña"}
+                <Button type="submit" block busy={reset.isPending}>
+                  {reset.isPending
+                    ? "Guardando la contraseña"
+                    : "Guardar la contraseña"}
                 </Button>
               </div>
             </form>
@@ -156,7 +150,7 @@ export function ResetPasswordPage() {
 
         {stage === "done" && (
           <section className={styles.notice} aria-labelledby={TITLE_ID}>
-            <CircleCheck size={28} aria-hidden="true" />
+            <CirculoVistoIcon size={20} aria-hidden="true" />
             <h1
               id={TITLE_ID}
               className={styles.noticeTitle}
@@ -169,15 +163,13 @@ export function ResetPasswordPage() {
               Cerramos la sesión en todos sus dispositivos y le enviamos un
               aviso por correo. Ingrese con su contraseña nueva.
             </p>
-            <ButtonLink to={ROUTES.signIn} variant="bright" shape="pill">
-              Ingresar
-            </ButtonLink>
+            <ButtonLink to={ROUTES.signIn}>Ingresar</ButtonLink>
           </section>
         )}
 
         {stage === "invalid" && (
           <section className={styles.notice} aria-labelledby={TITLE_ID}>
-            <LinkIcon size={28} aria-hidden="true" />
+            <VinculoIcon size={20} aria-hidden="true" />
             <h1
               id={TITLE_ID}
               className={styles.noticeTitle}
@@ -191,11 +183,7 @@ export function ResetPasswordPage() {
               sirven una sola vez. Pida uno nuevo y ábralo desde el último
               correo que le enviemos.
             </p>
-            <ButtonLink
-              to={ROUTES.forgotPassword}
-              variant="bright"
-              shape="pill"
-            >
+            <ButtonLink to={ROUTES.forgotPassword}>
               Pedir un enlace nuevo
             </ButtonLink>
           </section>

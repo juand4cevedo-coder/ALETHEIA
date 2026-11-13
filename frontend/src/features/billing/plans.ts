@@ -8,7 +8,7 @@ export const RECOMMENDED_PLAN = "professional";
 // Para quién es cada plan (sección 6 de la especificación). Un plan nuevo sin texto aquí
 // se muestra igual, solo que sin esta línea.
 export const PLAN_TAGLINES: Readonly<Record<string, string>> = {
-  trial: "Para que conozca el ciclo completo con sus propios archivos.",
+  trial: "Para probar ALETHEIA con sus casos antes de elegir un plan.",
   essential: "Si ejerce por su cuenta y está empezando.",
   professional: "Si ya tiene clientela estable y trabaja con un asistente.",
   firm: "Si trabaja en una firma pequeña o mediana.",

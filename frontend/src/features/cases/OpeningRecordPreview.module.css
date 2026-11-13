@@ -1,5 +1,6 @@
-/* Vista previa del registro de apertura: un acta sobre la sala oscura, con el primer eslabón de
-   la cadena encendido cuando el caso ya se puede abrir. */
+/* Vista previa del registro de apertura: un panel con el acta, y el primer eslabón de la cadena
+   marcado cuando el caso ya se puede abrir. Dentro del acta no hay más recuadros: las partes se
+   separan con una línea. */
 .preview {
   display: grid;
   align-content: start;
@@ -8,123 +9,97 @@
 
 .label {
   margin: 0;
-  color: var(--color-text-inverse-muted);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
 .record {
   position: relative;
   overflow: hidden;
-  padding: var(--space-6) var(--space-6) var(--space-6);
-  border: 1px solid var(--color-ink-700);
-  border-radius: var(--radius-xl);
-  background: linear-gradient(
-    180deg,
-    var(--color-ink-850),
-    var(--color-ink-925)
-  );
-  box-shadow:
-    var(--shadow-panel),
-    inset 0 1px 0 color-mix(in srgb, var(--color-text-inverse) 5%, transparent);
-}
-
-/* Anillos de sello en la esquina: decoración, sin contenido. */
-.record::after {
-  content: "";
-  position: absolute;
-  top: -60px;
-  right: -60px;
-  width: 220px;
-  height: 220px;
-  border: 1px solid
-    color-mix(in srgb, var(--color-primary-300) 10%, transparent);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 18px color-mix(in srgb, var(--color-primary-300) 3%, transparent),
-    0 0 0 40px color-mix(in srgb, var(--color-primary-300) 2%, transparent);
-  pointer-events: none;
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
 }
 
 .reference {
   position: relative;
   margin: 0 0 var(--space-1);
-  color: var(--color-primary-300);
+  color: var(--text-2);
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.02em;
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-mono);
   overflow-wrap: anywhere;
 }
 
 .title {
   position: relative;
   margin: 0;
-  color: var(--color-text-inverse);
-  font-size: 19px;
-  font-weight: 650;
-  letter-spacing: -0.015em;
-  line-height: 1.3;
+  color: var(--text);
+  font-size: var(--font-size-subtitle);
+  font-weight: 500;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-subtitle);
   overflow-wrap: anywhere;
 }
 
 .title[data-empty] {
-  color: var(--color-text-inverse-muted);
-  font-weight: 500;
+  color: var(--text-3);
 }
 
 .facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4) var(--space-4);
+  gap: var(--space-4);
   margin: var(--space-6) 0;
   padding: var(--space-4) 0;
-  border-top: 1px solid var(--color-ink-700);
-  border-bottom: 1px solid var(--color-ink-700);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .facts dt {
   margin-bottom: var(--space-1);
-  color: var(--color-text-inverse-muted);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
 .facts dd {
   margin: 0;
-  color: var(--color-text-inverse);
-  font-size: 14px;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
   overflow-wrap: anywhere;
 }
 
+/* El rombo y su columna tienen las medidas de la cadena del caso. */
 .genesis {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
+  grid-template-columns: var(--space-6) minmax(0, 1fr);
   gap: var(--space-3);
 }
 
 /* El primer eslabón: un rombo que se enciende cuando el caso está listo para abrirse. */
 .node {
-  width: 22px;
-  height: 22px;
-  margin: var(--space-1) 0 0 2px;
-  border: 1px solid var(--color-ink-650);
-  border-radius: var(--radius-sm);
-  background: var(--color-ink-900);
+  width: var(--space-4);
+  height: var(--space-4);
+  margin: var(--space-1) 0 0 var(--space-1);
+  border: 1px solid var(--line-control);
+  /* Medio radio: con el de 6 px un rombo de 16 px se lee como un círculo. */
+  border-radius: calc(var(--radius-sm) / 2);
+  background: var(--surface-1);
   transform: rotate(45deg);
   transition:
-    border-color var(--motion-slow) var(--ease-out),
-    background-color var(--motion-slow) var(--ease-out),
-    box-shadow var(--motion-slow) var(--ease-out);
+    border-color var(--motion-base) var(--ease-standard),
+    background-color var(--motion-base) var(--ease-standard);
 }
 
 .record[data-ready] .node {
-  border-color: var(--color-primary-400);
-  background: color-mix(in srgb, var(--color-primary-400) 14%, transparent);
-  box-shadow: 0 0 22px
-    color-mix(in srgb, var(--color-primary-400) 35%, transparent);
+  border-color: var(--text-2);
+  background: var(--surface-2);
 }
 
 .event {
@@ -133,37 +108,42 @@
 
 .eventName {
   margin: 0 0 var(--space-1);
-  color: var(--color-text-inverse);
-  font-size: 14px;
-  font-weight: 600;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
 }
 
 .eventNote {
   margin: 0;
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
+/* Los rótulos toman el ancho del más largo y los valores se alinean en la segunda columna. */
 .hashes {
   display: grid;
-  gap: var(--space-2);
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-2) var(--space-3);
   margin: var(--space-4) 0 0;
 }
 
 .hashes div {
   display: grid;
-  grid-template-columns: 110px minmax(0, 1fr);
-  gap: var(--space-3);
-  font-size: 12px;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
 .hashes dt {
-  color: var(--color-text-inverse-muted);
+  color: var(--text-3);
 }
 
 .hashes dd {
   margin: 0;
-  color: var(--color-text-inverse);
+  color: var(--text);
   overflow-wrap: anywhere;
 }
 
@@ -173,34 +153,29 @@
 
 .key {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-3);
   margin: var(--space-6) 0 0;
-  padding: var(--space-3);
-  border: 1px solid var(--color-ink-800);
-  border-radius: var(--radius-md);
-  background: var(--color-ink-950);
-  color: var(--color-text-inverse);
-  font-size: 13px;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 .key svg {
   flex: none;
-  color: var(--color-primary-300);
-}
-
-.key code {
-  margin-left: auto;
-  color: var(--color-text-inverse-muted);
-  font-family: var(--font-mono);
-  font-size: 11px;
+  /* Centrado con la primera línea del texto. */
+  margin-top: calc((var(--line-height-support) - var(--space-4)) / 2);
+  color: var(--text-2);
 }
 
 .footnote {
+  max-width: var(--measure);
   margin: 0;
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-  line-height: 1.6;
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 @media (max-width: 560px) {
@@ -212,9 +187,12 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .hashes div {
+  .hashes {
     grid-template-columns: minmax(0, 1fr);
-    gap: 0;
+  }
+
+  .hashes div {
+    row-gap: 0;
   }
 }
 

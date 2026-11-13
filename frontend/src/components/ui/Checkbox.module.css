@@ -1,31 +1,30 @@
-/* Casilla de consentimiento sobre el fondo oscuro del acceso. */
 .check {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: var(--space-3);
   align-items: start;
-  color: var(--color-text-inverse-muted);
-  font-size: 14px;
-  line-height: 22px;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .check input {
-  width: 20px;
-  height: 20px;
-  margin: 1px 0 0;
-  accent-color: var(--color-primary-400);
+  width: var(--space-4);
+  height: var(--space-4);
+  /* Centrada con la primera línea del texto. */
+  margin: calc((var(--line-height-ui) - var(--space-4)) / 2) 0 0;
+  accent-color: var(--accent);
   cursor: pointer;
 }
 
-.check input[aria-invalid="true"] {
-  outline: 2px solid var(--color-error-400);
+.check input[aria-invalid="true"]:not(:focus-visible) {
+  outline: 1px solid var(--err);
   outline-offset: 2px;
 }
 
 .error {
   grid-column: 2;
-  color: var(--color-error-400);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 18px;
+  color: var(--err);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }

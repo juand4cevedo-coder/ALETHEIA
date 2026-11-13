@@ -1,5 +1,5 @@
 /* Libro de casos (maquetas 01 y 04): la franja de la custodia, las herramientas de la lista y el
-   libro, una tabla sobria con filas que se iluminan desde la izquierda al pasar. */
+   libro, una tabla sobria cuya fila se resalta al pasar. */
 .screen {
   display: grid;
   gap: var(--space-6);
@@ -9,9 +9,11 @@
 .loading {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   margin: 0;
-  color: var(--color-text-inverse-muted);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .book > .loading {
@@ -19,7 +21,7 @@
 }
 
 .spinner {
-  animation: spin 900ms linear infinite;
+  animation: spin var(--motion-spin) linear infinite;
 }
 
 @keyframes spin {
@@ -37,7 +39,7 @@
 .failure {
   display: grid;
   gap: var(--space-4);
-  max-width: 720px;
+  max-width: var(--screen-narrow-width);
 }
 
 /* ---------- Herramientas de la lista ---------- */
@@ -51,10 +53,10 @@
 
 .segments {
   display: inline-flex;
-  padding: 3px;
-  border: 1px solid var(--color-ink-800);
+  padding: calc(var(--space-1) - 1px);
+  border: 1px solid var(--line-control);
   border-radius: var(--radius-md);
-  background: var(--color-ink-925);
+  background: var(--surface-1);
 }
 
 .segment {
@@ -62,11 +64,12 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 36px;
+  min-height: var(--control-height-sm);
   padding: 0 var(--space-3);
-  border-radius: calc(var(--radius-md) - 3px);
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
   cursor: pointer;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
@@ -74,7 +77,7 @@
 }
 
 .segment:hover {
-  color: var(--color-text-inverse);
+  color: var(--text);
 }
 
 /* El radio nativo da el teclado (flechas) y la semántica; se ve el segmento. */
@@ -86,84 +89,86 @@
   cursor: pointer;
 }
 
+/* El segmento elegido lleva borde --line-control (3,5:1 sobre --surface-1, 3,3:1 sobre
+   --surface-2): la superficie sola no se distingue. */
 .segment:has(.segmentInput:checked) {
-  background: var(--color-ink-800);
-  box-shadow: 0 1px 0
-    color-mix(in srgb, var(--color-text-inverse) 4%, transparent) inset;
-  color: var(--color-text-inverse);
+  border-color: var(--line-control);
+  background: var(--surface-2);
+  color: var(--text);
 }
 
 .segment:has(.segmentInput:focus-visible) {
-  outline: 2px solid var(--color-primary-300);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
 .segmentCount {
-  color: var(--color-text-inverse-muted);
-  font-family: var(--font-mono);
-  font-size: 11px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
   font-variant-numeric: tabular-nums;
+  line-height: var(--line-height-label);
 }
 
 .filter {
   position: relative;
   display: flex;
   align-items: center;
-  flex: 0 1 300px;
+  flex: 0 1 calc(var(--space-24) * 3);
   min-width: 0;
 }
 
 .filterIcon {
   position: absolute;
   left: var(--space-3);
-  color: var(--color-text-inverse-muted);
+  color: var(--text-3);
   pointer-events: none;
 }
 
 .filterInput {
   width: 100%;
-  min-height: 40px;
-  padding: 0 var(--space-3) 0 calc(var(--space-3) + 15px + var(--space-2));
-  border: 1px solid var(--color-ink-700);
+  min-height: var(--control-height);
+  /* El texto empieza después del ícono de 16 px. */
+  padding: 0 var(--space-3) 0
+    calc(var(--space-3) + var(--space-4) + var(--space-2));
+  border: 1px solid var(--line-control);
   border-radius: var(--radius-md);
-  background: var(--color-ink-925);
-  color: var(--color-text-inverse);
+  background: var(--surface-1);
+  color: var(--text);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--font-size-ui);
   transition:
     border-color var(--motion-fast) var(--ease-standard),
     box-shadow var(--motion-fast) var(--ease-standard);
 }
 
 .filterInput::placeholder {
-  color: var(--color-text-inverse-muted);
+  color: var(--text-3);
 }
 
 .filterInput:focus-visible {
-  border-color: var(--color-primary-400);
+  border-color: var(--accent);
   outline: none;
-  box-shadow: 0 0 0 4px
-    color-mix(in srgb, var(--color-primary-400) 18%, transparent);
+  box-shadow: var(--ring-focus);
 }
 
 .order {
   margin: 0 0 0 auto;
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
 .order b {
-  color: var(--color-text-inverse);
+  color: var(--text-2);
   font-weight: 500;
 }
 
 /* ---------- El libro ---------- */
 .book {
   overflow: hidden;
-  border: 1px solid var(--color-ink-800);
+  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background: var(--color-ink-950);
-  box-shadow: var(--shadow-raised);
+  background: var(--surface-1);
 }
 
 .book[aria-busy="true"] {
@@ -178,8 +183,9 @@
 .none {
   margin: 0;
   padding: var(--space-8) var(--space-6);
-  color: var(--color-text-inverse-muted);
-  font-size: 14px;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
   text-align: center;
 }
 
@@ -189,15 +195,15 @@
   table-layout: fixed;
 }
 
+/* Encabezado de la tabla (especificación de identidad, sección 7): --text-3 a 12 px. */
 .table thead th {
-  padding: 11px var(--space-3);
-  background: var(--color-ink-925);
-  color: var(--color-text-inverse-muted);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line);
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
   text-align: left;
-  text-transform: uppercase;
 }
 
 /* Proporciones de la maqueta: el caso manda, la integridad cierra la fila. El caso no lleva
@@ -221,28 +227,30 @@
 .table thead th:nth-child(5) {
   /* Fijo, para que la insignia «Sin verificar» y el chevron quepan siempre, uno al lado del
      otro, a cualquier ancho de escritorio: un porcentaje los cortaba o los encimaba. */
-  width: calc(var(--space-3) + 7.5rem + var(--space-2) + 16px + var(--space-4));
+  width: var(--status-column);
 }
 
 /* Toda la fila lleva al caso: el enlace del título se extiende sobre ella (ver .title::after). */
+/* Filas de 52 px como mínimo; las que llevan radicado debajo del título crecen. */
 .row {
   position: relative;
-  border-top: 1px solid var(--color-ink-900);
+  height: var(--row-height);
+  border-top: 1px solid var(--line);
   transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.table tbody .row:first-child {
+  border-top: 0;
 }
 
 .row:hover,
 .row:focus-within {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--color-primary-400) 7%, transparent),
-    transparent 60%
-  );
+  background: var(--surface-2);
 }
 
 .row > th,
 .row > td {
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-3);
   font-weight: 400;
   text-align: left;
   vertical-align: middle;
@@ -266,13 +274,12 @@
 
 .chevron {
   flex: none;
-  color: var(--color-text-inverse-muted);
-  transition: transform var(--motion-fast) var(--ease-standard);
+  color: var(--text-3);
+  transition: color var(--motion-fast) var(--ease-standard);
 }
 
 .row:hover .chevron {
-  color: var(--color-text-inverse);
-  transform: translateX(3px);
+  color: var(--text);
 }
 
 .titleLine {
@@ -281,16 +288,15 @@
   align-items: center;
   gap: var(--space-1) var(--space-2);
   min-width: 0;
-  margin-bottom: 6px;
+  margin-bottom: var(--space-1);
 }
 
 .title {
   min-width: 0;
-  color: var(--color-text-inverse);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  line-height: 1.35;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
   text-decoration: none;
   overflow-wrap: anywhere;
 }
@@ -307,7 +313,7 @@
 
 .title:hover {
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: var(--underline-offset);
 }
 
 .title:focus-visible {
@@ -317,7 +323,7 @@
 /* El foco se ve en toda la fila, que es lo que lleva al caso. */
 .title:focus-visible::after {
   border-radius: var(--radius-sm);
-  outline: 2px solid var(--color-primary-300);
+  outline: 2px solid var(--accent);
   outline-offset: -3px;
 }
 
@@ -339,69 +345,60 @@
 }
 
 .noFiling {
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
 .noFiling b {
-  color: var(--color-text-inverse);
+  color: var(--text-2);
   font-family: var(--font-mono);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .area {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-  padding: 2px var(--space-2);
-  border: 1px solid var(--color-ink-700);
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--color-text-inverse) 2%, transparent);
-  color: var(--color-text-inverse);
-  font-size: 12px;
-}
-
-.area i {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-primary-300);
-}
-
-.area[data-area="family"] i {
-  background: var(--color-gold-400);
+  margin-bottom: var(--space-1);
+  padding: calc(var(--space-1) / 2) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
 .court,
 .noCourt {
   display: block;
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
-  line-height: 1.4;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
   overflow-wrap: anywhere;
 }
 
+/* Lo que aún falta se lee más tenue que un dato. */
 .noCourt {
-  font-style: italic;
+  color: var(--text-3);
 }
 
 .evidence {
   display: grid;
-  gap: 3px;
+  gap: var(--space-1);
 }
 
 .evidenceCount {
-  color: var(--color-text-inverse);
-  font-size: 15px;
+  color: var(--text);
+  font-size: var(--font-size-ui);
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: var(--line-height-ui);
 }
 
 .evidenceTypes {
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
-  line-height: 1.4;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
 /* Cada tipo se queda entero en su renglón: «9 chats», nunca «9» y «chats» separados. */
@@ -411,18 +408,22 @@
 
 .chain {
   display: grid;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .when {
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
-  line-height: 1.4;
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.whenAction {
+  display: block;
+  color: var(--text);
 }
 
 .when time {
-  color: var(--color-text-inverse);
-  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -437,8 +438,9 @@
 
 .moreNote {
   margin: 0;
-  color: var(--color-text-inverse-muted);
-  font-size: 12px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
 /* ---------- Antes del primer caso ---------- */
@@ -451,41 +453,33 @@
 
 .principles li {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: var(--space-4);
-  padding: var(--space-3) 0;
-  border-top: 1px solid var(--color-ink-800);
+  gap: var(--space-1);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
 }
 
 .principles li:first-child {
+  padding-top: 0;
   border-top: 0;
 }
 
-.principleNumber {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--color-ink-700);
-  border-radius: var(--radius-md);
-  background: var(--color-ink-850);
-  color: var(--color-primary-300);
-  font-family: var(--font-mono);
-  font-size: 12px;
+.principles li:last-child {
+  padding-bottom: 0;
 }
 
 .principleTitle {
-  margin: 0 0 3px;
-  color: var(--color-text-inverse);
-  font-size: 14px;
-  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
 }
 
 .principleText {
   margin: 0;
-  color: var(--color-text-inverse-muted);
-  font-size: 13px;
-  line-height: 1.5;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 /* ---------- Tarjetas (900 px o menos) ---------- */
@@ -497,7 +491,7 @@
 }
 
 .cards > li + li {
-  border-top: 1px solid var(--color-ink-800);
+  border-top: 1px solid var(--line);
 }
 
 .card {
@@ -510,11 +504,7 @@
 
 .card:hover,
 .card:focus-within {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--color-primary-400) 7%, transparent),
-    transparent 70%
-  );
+  background: var(--surface-2);
 }
 
 .cardFacts {
@@ -526,11 +516,10 @@
 
 .cardFacts dt {
   margin-bottom: var(--space-1);
-  color: var(--color-text-inverse-muted);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
 }
 
 .cardFacts dd {
@@ -579,9 +568,5 @@
   .chevron,
   .card {
     transition: none;
-  }
-
-  .row:hover .chevron {
-    transform: none;
   }
 }

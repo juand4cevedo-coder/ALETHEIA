@@ -1,85 +1,81 @@
-import { Check, CircleSlash, Scale, ShieldCheck, X } from "lucide-react";
-
-import { Reveal } from "../../components/ui/Reveal.tsx";
 import styles from "./ScopeSection.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
+import {
+  BalanzaIcon,
+  CerrarIcon,
+  VistoIcon,
+  type IconComponent,
+} from "../../components/ui/icons.tsx";
 
+// Lo que la cadena de custodia anota sale de su lista cerrada de acciones (custodyActions.ts):
+// cargas, descargas y paquetes. No hay un evento de apertura ni de consulta.
 const DOES = [
-  "Conservamos el archivo original, cifrado y sin modificaciones.",
-  "Registramos su huella y un sello de tiempo emitido por un tercero.",
-  "Documentamos quién subió, consultó, descargó o exportó cada evidencia.",
-  "Le entregamos un paquete que cualquier persona puede verificar.",
+  "Organiza casos con su radicado, especialidad y despacho.",
+  "Relaciona cada caso con los integrantes responsables de su organización.",
+  "Registra la apertura del caso con su fecha y responsable.",
+  "Permite calcular y comparar huellas SHA-256 en el navegador.",
 ] as const;
 
 const DOES_NOT = [
-  "No certificamos pruebas ni determinamos su validez.",
-  "No calificamos un archivo como auténtico, veraz o admisible.",
-  "No extraemos información de celulares ni entramos a cuentas de terceros: solo recibimos lo que usted sube.",
+  "No certifica pruebas ni decide sobre su validez.",
+  "No califica un archivo como auténtico, veraz o admisible.",
+  "No extrae información de celulares ni entra a cuentas de terceros.",
 ] as const;
 
-// Regla de oro (RN-001): qué hace ALETHEIA y qué no hace, dicho sin ambigüedad. Va en una hoja
-// de expediente, la única superficie clara de la página, con la nota judicial al pie. El folio
-// es decorativo (aria-hidden).
+type Column = {
+  title: string;
+  items: readonly string[];
+  icon: IconComponent;
+};
+
+const COLUMNS: readonly Column[] = [
+  { title: "Lo que hace", items: DOES, icon: VistoIcon },
+  { title: "Lo que no hace", items: DOES_NOT, icon: CerrarIcon },
+];
+
+// Alcance (RN-001): qué hace ALETHEIA y qué no, sin ambigüedad. Dos paneles iguales; ninguno se
+// destaca con otro color, porque ninguno es un estado de una evidencia.
 export function ScopeSection() {
   return (
-    <section className={section.section} aria-labelledby="titulo-alcance">
+    <section
+      data-reveal
+      className={section.section}
+      aria-labelledby="titulo-alcance"
+    >
       <div className={section.inner}>
         <SectionHeading
           id="titulo-alcance"
-          index={4}
-          kicker="Alcance del servicio"
-          title="Preservamos y documentamos. La valoración es del juez."
-          lead="Somos una herramienta técnica de preservación. Le damos elementos sólidos para sustentar la integridad de su evidencia, sin reemplazar el criterio de nadie."
+          kicker="Alcance"
+          title="Una herramienta precisa. Un alcance claro."
+          lead="Aletheia acompaña la organización de su trabajo y la comprensión técnica de la evidencia. La valoración de la prueba corresponde a la autoridad judicial."
         />
 
-        <Reveal className={styles.sheet}>
-          <p className={styles.folio} aria-hidden="true">
-            Fol. 04
-          </p>
-
-          <div className={styles.columns}>
-            <div className={styles.column}>
-              <h3 className={styles.columnTitle}>
-                <ShieldCheck size={20} className={styles.yesIcon} />
-                Lo que hacemos
-              </h3>
+        <div className={styles.columns}>
+          {COLUMNS.map((column) => (
+            <div key={column.title} className={styles.panel}>
+              <h3 className={styles.panelTitle}>{column.title}</h3>
               <ul className={styles.list}>
-                {DOES.map((item) => (
+                {column.items.map((item) => (
                   <li key={item}>
-                    <span className={`${styles.mark} ${styles.yes}`}>
-                      <Check size={14} strokeWidth={3} />
-                    </span>
+                    <column.icon
+                      size={16}
+                      className={styles.mark}
+                      aria-hidden="true"
+                    />
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
+          ))}
+        </div>
 
-            <div className={styles.column}>
-              <h3 className={styles.columnTitle}>
-                <CircleSlash size={20} className={styles.noIcon} />
-                Lo que no hacemos
-              </h3>
-              <ul className={styles.list}>
-                {DOES_NOT.map((item) => (
-                  <li key={item}>
-                    <span className={`${styles.mark} ${styles.no}`}>
-                      <X size={14} strokeWidth={3} />
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <p className={styles.note}>
-            <Scale size={18} />
-            Determinar si una prueba es auténtica, veraz o admisible, y qué
-            valor tiene, corresponde siempre a la autoridad judicial.
-          </p>
-        </Reveal>
+        <p className={styles.note}>
+          <BalanzaIcon size={16} aria-hidden="true" />
+          Si una prueba es auténtica, veraz o admisible, y qué valor tiene, lo
+          decide siempre la autoridad judicial.
+        </p>
       </div>
     </section>
   );

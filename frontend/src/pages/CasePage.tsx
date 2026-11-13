@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { LoaderCircle } from "lucide-react";
 import { type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
@@ -13,14 +12,16 @@ import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { StatusBadge } from "../components/ui/StatusBadge.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { CustodyTimeline } from "../features/cases/CustodyTimeline.tsx";
 import { formatColombiaTime } from "../features/cases/dates.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
+import { initialsOf } from "../features/session/initials.ts";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./CasePage.module.css";
+import { CargandoIcon } from "../components/ui/icons.tsx";
 
 type TabKey = "chain" | "team";
 const TAB_ORDER: readonly TabKey[] = ["chain", "team"];
@@ -59,15 +60,15 @@ export function CasePage() {
   if (detail.isPending) {
     return (
       <div className={styles.screen}>
-        <title>{`Caso · ${SITE_NAME}`}</title>
+        <title>{pageTitle("Caso")}</title>
         <meta name="robots" content="noindex" />
         <p className={styles.loading} role="status">
-          <LoaderCircle
+          <CargandoIcon
             className={styles.spinner}
-            size={20}
+            size={16}
             aria-hidden="true"
           />
-          Abriendo el caso…
+          Abriendo el caso
         </p>
       </div>
     );
@@ -78,10 +79,10 @@ export function CasePage() {
     const { requestId } = apiProblem(detail.error);
     return (
       <div className={styles.screen}>
-        <title>{`Caso no disponible · ${SITE_NAME}`}</title>
+        <title>{pageTitle("Caso no disponible")}</title>
         <meta name="robots" content="noindex" />
         <div className={styles.unavailable}>
-          <PageHeader eyebrow="Caso" title="Caso no disponible" />
+          <PageHeader title="Caso no disponible" />
           <Notice tone={missing ? "info" : "error"}>
             {missing ? (
               <p>{MESSAGES.notFound}</p>
@@ -92,22 +93,14 @@ export function CasePage() {
           <div className={styles.unavailableActions}>
             {!missing && (
               <Button
-                surface="dark"
                 variant="secondary"
                 size="sm"
-                shape="pill"
                 onClick={() => void detail.refetch()}
               >
                 Intentar de nuevo
               </Button>
             )}
-            <ButtonLink
-              to={ROUTES.cases}
-              variant="secondary"
-              surface="dark"
-              size="sm"
-              shape="pill"
-            >
+            <ButtonLink to={ROUTES.cases} variant="secondary" size="sm">
               Volver a los casos
             </ButtonLink>
           </div>
@@ -126,7 +119,7 @@ function referenceLine(detail: CaseDetail) {
   if (!detail.internal_reference) return "Sin radicado";
   return (
     <>
-      {"Sin radicado · ref. interna "}
+      {"Sin radicado, referencia interna "}
       <code translate="no">{detail.internal_reference}</code>
     </>
   );
@@ -187,7 +180,7 @@ function CaseView({
 
   return (
     <div className={styles.screen}>
-      <title>{`${detail.title} · ${SITE_NAME}`}</title>
+      <title>{pageTitle(detail.title)}</title>
       <meta name="robots" content="noindex" />
 
       {justOpened && (
@@ -203,7 +196,6 @@ function CaseView({
           <ul className={styles.chips} aria-label="Datos del caso">
             {detail.practice_area && (
               <li className={styles.chip}>
-                <i className={styles.areaDot} aria-hidden="true" />
                 {PRACTICE_AREA_LABELS[detail.practice_area]}
               </li>
             )}
@@ -250,20 +242,20 @@ function CaseView({
           tabIndex={0}
           hidden={tab !== "chain"}
         >
+          {/* La pestaña ya nombra el panel: el título de la cadena solo lo oye el lector de
+              pantalla, para que la navegación por encabezados la encuentre. */}
           <div className={styles.chainLayout}>
-            <section className={styles.card} aria-labelledby={ids.chain}>
-              <h2 id={ids.chain} className={styles.cardTitle}>
-                Cadena de custodia
-              </h2>
+            <div>
+              <h2 className="visually-hidden">Cadena de custodia</h2>
               <p className={styles.caption}>
-                Cada evento lleva el hash del anterior. Si alguien alterara uno,
-                la cadena dejaría de cerrar.
+                Cada evento lleva la huella del anterior. Si alguien alterara
+                uno, la cadena dejaría de cuadrar.
               </p>
               <CustodyTimeline
                 events={detail.recent_events}
                 justOpened={justOpened}
               />
-            </section>
+            </div>
             <CaseFacts detail={detail} />
           </div>
         </div>
@@ -276,15 +268,10 @@ function CaseView({
           tabIndex={0}
           hidden={tab !== "team"}
         >
-          <section className={styles.card} aria-labelledby={ids.team}>
-            <h2 id={ids.team} className={styles.cardTitle}>
-              Equipo del caso
-            </h2>
-            <p className={styles.caption}>
-              Quienes trabajan en este caso y ven sus datos.
-            </p>
-            <TeamList detail={detail} />
-          </section>
+          <p className={styles.caption}>
+            Quienes trabajan en este caso y ven sus datos.
+          </p>
+          <TeamList detail={detail} />
         </div>
       </div>
     </div>
@@ -294,11 +281,11 @@ function CaseView({
 function CaseFacts({ detail }: { detail: CaseDetail }) {
   const headingId = useId();
   return (
-    <section className={styles.card} aria-labelledby={headingId}>
-      <h2 id={headingId} className={styles.cardTitle}>
+    <section className={styles.facts} aria-labelledby={headingId}>
+      <h2 id={headingId} className={styles.factsTitle}>
         Datos procesales
       </h2>
-      <dl className={styles.facts}>
+      <dl className={styles.factList}>
         <div>
           <dt>Número de radicación</dt>
           <dd className={styles.filingParts}>
@@ -332,15 +319,6 @@ function CaseFacts({ detail }: { detail: CaseDetail }) {
   );
 }
 
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]!.toUpperCase())
-    .join("");
-}
-
 /** Quien abrió el caso quedó como su primer miembro, con su nombre. */
 function creatorOf(detail: CaseDetail): CaseMemberOut | undefined {
   return detail.members
@@ -355,16 +333,17 @@ function TeamList({ detail }: { detail: CaseDetail }) {
       {detail.members.map((member) => (
         <li key={member.user_id} className={styles.member}>
           <span className={styles.avatar} aria-hidden="true">
-            {initials(member.full_name)}
+            {initialsOf(member.full_name)}
           </span>
           <span className={styles.who}>
             <span className={styles.memberName}>{member.full_name}</span>
             <span className={styles.memberEmail}>{member.email}</span>
           </span>
           <span className={styles.role}>
-            {member === creator
-              ? `${ROLE_LABELS[member.role]} · abrió el caso`
-              : ROLE_LABELS[member.role]}
+            {ROLE_LABELS[member.role]}
+            {member === creator && (
+              <span className={styles.roleNote}>Abrió el caso</span>
+            )}
           </span>
         </li>
       ))}

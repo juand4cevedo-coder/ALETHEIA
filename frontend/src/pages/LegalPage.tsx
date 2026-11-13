@@ -1,25 +1,4 @@
-import {
-  Check,
-  Cookie,
-  Copy,
-  Download,
-  Fingerprint,
-  Landmark,
-  List,
-  Printer,
-  ReceiptText,
-  Scale,
-  ShieldCheck,
-  type LucideIcon,
-} from "lucide-react";
-import {
-  type CSSProperties,
-  type RefObject,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useParams } from "react-router";
 
 import { buttonClassName } from "../components/ui/buttonStyles.ts";
@@ -29,7 +8,12 @@ import {
   LEGAL_EFFECTIVE_DATE,
 } from "../config/legal.ts";
 import { LEGAL_PAGES, legalRoute, type LegalSlug } from "../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
+import {
+  CONTACT_EMAIL,
+  SITE_NAME,
+  SITE_URL,
+  pageTitle,
+} from "../config/site.ts";
 import { findLegalDocument } from "../features/legal/documents.ts";
 import { formatEffectiveDate } from "../features/legal/format.ts";
 import { extractPlainText, sha256Hex } from "../features/legal/plainText.ts";
@@ -37,6 +21,20 @@ import type { LegalDocument } from "../features/legal/types.ts";
 import { useActiveSection } from "../features/legal/useActiveSection.ts";
 import { NotFoundPage } from "./NotFoundPage.tsx";
 import styles from "./LegalPage.module.css";
+import {
+  BalanzaIcon,
+  CopiarIcon,
+  DescargarIcon,
+  EscudoVistoIcon,
+  GalletaIcon,
+  HuellaIcon,
+  ImprimirIcon,
+  InstitucionIcon,
+  MenuIcon,
+  ReciboIcon,
+  VistoIcon,
+  type IconComponent,
+} from "../components/ui/icons.tsx";
 
 // Destino del índice para el bloque de contacto que cierra cada política.
 const CONTACT_ID = "contacto";
@@ -47,11 +45,11 @@ const WORDS_PER_MINUTE = 200;
 // Cuánto se muestra el aviso de huella copiada.
 const COPIED_FOR_MS = 2000;
 
-const POLICY_ICONS: Record<LegalSlug, LucideIcon> = {
-  privacidad: ShieldCheck,
-  terminos: Scale,
-  cookies: Cookie,
-  reembolsos: ReceiptText,
+const POLICY_ICONS: Record<LegalSlug, IconComponent> = {
+  privacidad: EscudoVistoIcon,
+  terminos: BalanzaIcon,
+  cookies: GalletaIcon,
+  reembolsos: ReciboIcon,
 };
 
 // Páginas legales (UI-003, HU-003): una sola plantilla de lectura para las cuatro políticas.
@@ -112,8 +110,6 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
     [doc],
   );
   const active = useActiveSection(sectionIds);
-  const activeIndex = active ? sectionIds.indexOf(active) : -1;
-  const progress = (activeIndex + 1) / sectionIds.length;
 
   useEffect(() => {
     if (!copied) return;
@@ -148,7 +144,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
 
   return (
     <>
-      <title>{`${doc.title} · ${SITE_NAME}`}</title>
+      <title>{pageTitle(doc.title)}</title>
       <meta name="description" content={doc.description} />
       <link rel="canonical" href={`${SITE_URL}${legalRoute(doc.slug)}`} />
 
@@ -198,53 +194,48 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
               </dl>
             </div>
 
-            <section
-              className={styles.seal}
-              aria-labelledby="huella-titulo"
-              data-ready={fingerprint ? "true" : "false"}
-            >
+            <section className={styles.seal} aria-labelledby="huella-titulo">
               <p id="huella-titulo" className={styles.sealLabel}>
-                <Fingerprint size={16} aria-hidden="true" />
+                <HuellaIcon size={16} aria-hidden="true" />
                 Huella SHA-256 de este texto
               </p>
               <p className={styles.sealHash} aria-live="polite">
                 {fingerprint === null
-                  ? "Calculando la huella…"
+                  ? "Calculando la huella"
                   : (fingerprint.hash ??
                     "Su navegador no permite calcular la huella.")}
               </p>
               <p className={styles.sealNote}>
-                Se calcula en su navegador sobre el texto que está leyendo.
-                Descárguelo y compruebe que su huella es esta misma: así sabrá
-                que guardó exactamente la versión vigente.
+                Se calcula en su navegador sobre el texto que está leyendo. Si
+                descarga el texto y su huella coincide con esta, guardó
+                exactamente la versión vigente.
               </p>
               <div className={styles.sealActions}>
                 <button
                   type="button"
                   className={buttonClassName({
-                    surface: "dark",
+                    variant: "secondary",
                     size: "sm",
                   })}
                   onClick={download}
                   disabled={!fingerprint}
                 >
-                  <Download size={16} aria-hidden="true" />
-                  Descargar
+                  <DescargarIcon size={16} aria-hidden="true" />
+                  Descargar el texto
                 </button>
                 <button
                   type="button"
                   className={buttonClassName({
                     variant: "secondary",
-                    surface: "dark",
                     size: "sm",
                   })}
                   onClick={copyHash}
                   disabled={!fingerprint?.hash}
                 >
                   {copied ? (
-                    <Check size={16} aria-hidden="true" />
+                    <VistoIcon size={16} aria-hidden="true" />
                   ) : (
-                    <Copy size={16} aria-hidden="true" />
+                    <CopiarIcon size={16} aria-hidden="true" />
                   )}
                   {copied ? "Huella copiada" : "Copiar huella"}
                 </button>
@@ -252,12 +243,11 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
                   type="button"
                   className={buttonClassName({
                     variant: "secondary",
-                    surface: "dark",
                     size: "sm",
                   })}
                   onClick={() => window.print()}
                 >
-                  <Printer size={16} aria-hidden="true" />
+                  <ImprimirIcon size={16} aria-hidden="true" />
                   Imprimir
                 </button>
               </div>
@@ -292,7 +282,6 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
             aria-labelledby="indice-titulo"
             className={styles.index}
             data-open={indexOpen ? "true" : "false"}
-            style={{ "--progress": progress } as CSSProperties}
           >
             <p id="indice-titulo" className={styles.indexTitle}>
               En esta página
@@ -305,7 +294,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
               aria-controls="indice-lista"
               onClick={() => setIndexOpen((open) => !open)}
             >
-              <List size={16} aria-hidden="true" />
+              <MenuIcon size={16} aria-hidden="true" />
               {indexOpen ? "Ocultar el índice" : "Ver el índice"}
             </button>
             <ol id="indice-lista" className={styles.indexList}>
@@ -357,7 +346,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
               </h2>
               {section.basis && (
                 <p className={styles.basis}>
-                  <Landmark size={14} aria-hidden="true" />
+                  <InstitucionIcon size={16} aria-hidden="true" />
                   <span>Fundamento: {section.basis.join("; ")}</span>
                 </p>
               )}

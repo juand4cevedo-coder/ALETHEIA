@@ -1,4 +1,5 @@
-/* Cadena de custodia: rombos unidos por un hilo que se apaga hacia el siguiente eslabón. */
+/* Cadena de custodia: rombos unidos por un hilo que se apaga hacia el siguiente eslabón. El rombo
+   mide 16 px y su columna 24 px, de modo que el hilo pasa por el centro de ambos. */
 .timeline {
   display: grid;
 }
@@ -14,56 +15,51 @@
 .next {
   position: relative;
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr);
+  grid-template-columns: var(--space-6) minmax(0, 1fr);
   gap: var(--space-3);
   padding-bottom: var(--space-4);
 }
 
-/* El hilo que une un evento con el siguiente; el último evento lo tiende hacia el hueco. */
+/* El hilo que une un evento con el siguiente; el último evento lo tiende hacia el hueco. Nace
+   bajo la punta del rombo. */
 .event::before {
   content: "";
   position: absolute;
-  top: 26px;
+  top: var(--space-6);
   bottom: 0;
-  left: 10px;
+  left: calc(var(--space-6) / 2);
   width: 1px;
-  background: linear-gradient(
-    180deg,
-    var(--color-ink-600),
-    color-mix(in srgb, var(--color-ink-600) 20%, transparent)
-  );
+  background: var(--line-control);
 }
 
 .node,
 .ghost {
-  width: 18px;
-  height: 18px;
-  margin: var(--space-1) 0 0 2px;
-  border-radius: var(--radius-sm);
+  width: var(--space-4);
+  height: var(--space-4);
+  margin: var(--space-1) 0 0 var(--space-1);
+  /* Medio radio: con el de 6 px un rombo de 16 px se lee como un círculo. */
+  border-radius: calc(var(--radius-sm) / 2);
   transform: rotate(45deg);
 }
 
 .node {
-  border: 1px solid var(--color-primary-400);
-  background: color-mix(in srgb, var(--color-primary-400) 14%, transparent);
-  box-shadow: 0 0 16px
-    color-mix(in srgb, var(--color-primary-400) 25%, transparent);
+  border: 1px solid var(--text-2);
+  background: var(--surface-2);
 }
 
 .ghost {
-  border: 1px dashed var(--color-ink-600);
+  border: 1px dashed var(--text-3);
 }
 
-/* Al llegar recién abierto, el primer eslabón se enciende una vez. */
+/* Al llegar recién abierto, el primer eslabón se marca una vez: responde a abrir el caso. */
 .timeline[data-just-opened] .event:first-child .node {
-  animation: seal var(--motion-slow) var(--ease-out) both;
+  animation: seal var(--motion-base) var(--ease-standard) both;
 }
 
 @keyframes seal {
   from {
-    border-color: var(--color-ink-650);
-    background: var(--color-ink-900);
-    box-shadow: none;
+    border-color: var(--line-control);
+    background: var(--surface-1);
   }
 }
 
@@ -74,21 +70,21 @@
 .name,
 .nextName {
   margin: 0 0 var(--space-1);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text-inverse);
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
 }
 
 .nextName {
-  font-weight: 500;
-  color: var(--color-text-inverse-muted);
+  color: var(--text-2);
 }
 
 .meta {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--color-text-inverse-muted);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 .meta time {
@@ -97,40 +93,53 @@
 
 .hash {
   margin: var(--space-2) 0 0;
+  color: var(--text-3);
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.02em;
-  color: var(--color-text-inverse-muted);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
 }
 
+/* La huella va en mono y en el texto secundario: es un dato para cotejar, no un enlace. */
 .hash code {
+  color: var(--text-2);
   font-family: inherit;
-  color: var(--color-primary-300);
 }
 
-/* Sin verificación independiente todavía: un estado gris, nunca un sello verde por defecto. */
+/* Sin verificación independiente todavía: un estado gris, nunca un sello verde por defecto. Va
+   en una línea bajo la cadena, sin recuadro propio. */
 .verification {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
   margin-top: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-ink-800);
-  border-radius: var(--radius-md);
-  background: var(--color-ink-950);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
 }
 
 .verification p {
-  flex: 1 1 220px;
+  flex: 1 1 calc(var(--space-24) * 2);
   margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--color-text-inverse-muted);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .timeline[data-just-opened] .event:first-child .node {
     animation: none;
   }
+}
+
+.hashLabel {
+  margin-right: var(--space-2);
+}
+
+/* Lo que se omite de la huella abreviada: un trazo punteado, no puntos suspensivos. */
+.elision {
+  display: inline-block;
+  width: var(--space-4);
+  margin-right: var(--space-1);
+  border-bottom: 1px dotted currentColor;
+  vertical-align: middle;
 }

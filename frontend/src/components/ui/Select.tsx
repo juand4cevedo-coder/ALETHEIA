@@ -1,4 +1,3 @@
-import { ChevronDown } from "lucide-react";
 import {
   type ReactNode,
   type Ref,
@@ -6,29 +5,34 @@ import {
   useId,
 } from "react";
 
+import fieldStyles from "./Field.module.css";
 import styles from "./Select.module.css";
+import { ChevronAbajoIcon } from "./icons.tsx";
 
 type SelectProps = Omit<
   SelectHTMLAttributes<HTMLSelectElement>,
   "className" | "id" | "multiple"
 > & {
-  /** Rótulo del selector; siempre arriba, porque siempre hay una opción elegida. */
+  /** Etiqueta del selector, encima de él como en los campos de texto. */
   label: string;
   options: readonly { value: string; label: string }[];
+  /** Ayuda fija bajo el selector. El error la reemplaza mientras exista. */
+  help?: string;
   error?: string;
   ref?: Ref<HTMLSelectElement>;
-  /** Ayuda bajo el selector, como lo que permite la opción elegida. */
+  /** Ayuda dinámica bajo el selector, como lo que permite la opción elegida. */
   children?: ReactNode;
   /** Identificador de esa ayuda, para leerla junto con el selector. */
   describedBy?: string;
 };
 
-// Selector (CMP-UI-003): un select nativo con la cápsula de vidrio de los campos (CMP-UI-018).
-// El nativo da gratis el teclado, el lector de pantalla y la lista del sistema en el celular;
-// sirve para pocas opciones fijas, como el rol de una invitación.
+// Selector (CMP-UI-003): un select nativo con la misma forma de Field. El nativo da gratis el
+// teclado, el lector de pantalla y la lista del sistema en el celular; sirve para pocas opciones
+// fijas, como el rol de una invitación.
 export function Select({
   label,
   options,
+  help,
   error,
   ref,
   children,
@@ -36,18 +40,25 @@ export function Select({
   ...selectProps
 }: SelectProps) {
   const id = useId();
+  const helpId = help && !error ? `${id}-help` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy =
-    [extraDescription, errorId].filter(Boolean).join(" ") || undefined;
+    [extraDescription, helpId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className={styles.field}>
-      <div className={styles.capsule} data-invalid={error ? "true" : undefined}>
+    <div className={fieldStyles.field}>
+      <label htmlFor={id} className={fieldStyles.label}>
+        {label}
+      </label>
+      <div
+        className={fieldStyles.control}
+        data-invalid={error ? "true" : undefined}
+      >
         <select
           {...selectProps}
           ref={ref}
           id={id}
-          className={styles.select}
+          className={`${fieldStyles.input} ${styles.select}`}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
         >
@@ -57,16 +68,23 @@ export function Select({
             </option>
           ))}
         </select>
-        <label htmlFor={id} className={styles.label}>
-          {label}
-        </label>
-        <ChevronDown className={styles.chevron} size={18} aria-hidden="true" />
+        <ChevronAbajoIcon
+          className={styles.chevron}
+          size={16}
+          aria-hidden="true"
+        />
       </div>
       {children}
-      {error && (
-        <span id={errorId} className={styles.error}>
+      {error ? (
+        <p id={errorId} className={fieldStyles.error}>
           {error}
-        </span>
+        </p>
+      ) : (
+        help && (
+          <p id={helpId} className={fieldStyles.help}>
+            {help}
+          </p>
+        )
       )}
     </div>
   );

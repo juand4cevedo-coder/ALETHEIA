@@ -1,9 +1,8 @@
-import { MailX } from "lucide-react";
-
 import type { InvitationOut } from "../../api/generated";
 import { Button } from "../../components/ui/Button.tsx";
 import { Dialog } from "../../components/ui/Dialog.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
+import { CorreoIcon } from "../../components/ui/icons.tsx";
 
 type Props = {
   invitation: InvitationOut | null;
@@ -28,14 +27,12 @@ export function RevokeInvitationDialog({
       onClose={onClose}
       busy={busy}
       title="¿Revocar la invitación?"
-      icon={<MailX size={22} />}
+      icon={<CorreoIcon size={20} />}
       actions={
         <>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
-            shape="pill"
             data-autofocus
             onClick={onClose}
             disabled={busy}
@@ -43,13 +40,11 @@ export function RevokeInvitationDialog({
             Cancelar
           </Button>
           <Button
-            variant="bright"
             size="sm"
-            shape="pill"
             busy={busy}
             onClick={() => invitation && onConfirm(invitation)}
           >
-            {busy ? "Revocando…" : "Revocar"}
+            {busy ? "Revocando la invitación" : "Revocar la invitación"}
           </Button>
         </>
       }
@@ -57,8 +52,7 @@ export function RevokeInvitationDialog({
       <p>
         El enlace que enviamos a{" "}
         <strong translate="no">{invitation?.email}</strong> dejará de servir y
-        el cupo quedará libre. Si cambia de opinión, puede enviar una invitación
-        nueva.
+        el cupo quedará libre. Si cambia de opinión, puede enviar otra.
       </p>
       {failed && (
         <Notice tone="error">

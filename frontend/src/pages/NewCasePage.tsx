@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CircleCheck, ShieldAlert } from "lucide-react";
 import {
   type FormEvent,
   type RefObject,
@@ -24,7 +23,7 @@ import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Select } from "../components/ui/Select.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import {
   CASE_MESSAGES,
@@ -45,6 +44,7 @@ import { canOpenCases } from "../features/cases/roles.ts";
 import { VerifyEmailDialog } from "../features/cases/VerifyEmailDialog.tsx";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./NewCasePage.module.css";
+import { CirculoVistoIcon, EscudoAlertaIcon } from "../components/ui/icons.tsx";
 
 // Mismos límites que la API (CaseCreate).
 const TITLE_MAX_LENGTH = 160;
@@ -120,7 +120,7 @@ function filingHelp(digits: string): string {
   if (isValidFilingNumber(digits)) return `23 dígitos. ${NO_PROCESS_YET}`;
   const count = digits.replace(/\D/g, "").length;
   if (count > FILING_LENGTH) {
-    return `Tiene ${count} dígitos: sobran ${count - FILING_LENGTH}.`;
+    return `Tiene ${count} dígitos. Sobran ${count - FILING_LENGTH}.`;
   }
   return `Lleva ${count} de ${FILING_LENGTH} dígitos.`;
 }
@@ -133,24 +133,18 @@ export function NewCasePage() {
 
   return (
     <div className={styles.screen}>
-      <title>{`Abrir un caso · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Abrir un caso")}</title>
       <meta name="robots" content="noindex" />
       {canOpenCases(me.organization?.role) ? (
         <NewCaseForm me={me} />
       ) : (
         <div className={styles.denied}>
-          <PageHeader eyebrow="Nuevo expediente" title="Abrir un caso" />
+          <PageHeader title="Abrir un caso" />
           <Notice tone="error">
             <p>{NOT_ALLOWED}</p>
           </Notice>
           <div>
-            <ButtonLink
-              to={ROUTES.app}
-              variant="secondary"
-              surface="dark"
-              size="sm"
-              shape="pill"
-            >
+            <ButtonLink to={ROUTES.app} variant="secondary" size="sm">
               Volver al inicio
             </ButtonLink>
           </div>
@@ -194,8 +188,6 @@ function NewCaseForm({ me }: { me: Me }) {
 
   const titleHelpId = useId();
   const filingHelpId = useId();
-  const referenceHelpId = useId();
-  const courtHelpId = useId();
 
   const digits = normalizeFilingNumber(filing);
   const filingValid = isValidFilingNumber(digits);
@@ -310,14 +302,14 @@ function NewCaseForm({ me }: { me: Me }) {
 
   const role = me.organization?.role;
   const openedBy = role
-    ? `${me.full_name} · ${ROLE_LABELS[role]}`
+    ? `${me.full_name} (${ROLE_LABELS[role]})`
     : me.full_name;
 
   return (
     <>
       <div className={styles.compose}>
         <div className={styles.formPanel}>
-          <PageHeader eyebrow="Nuevo expediente" title="Abrir un caso" />
+          <PageHeader title="Abrir un caso" />
           <form
             className={styles.form}
             aria-label="Abrir un caso"
@@ -333,21 +325,21 @@ function NewCaseForm({ me }: { me: Me }) {
               maxLength={TITLE_MAX_LENGTH}
               value={title}
               error={errors.title}
-              describedBy={titleHelpId}
+              // El error reemplaza la ayuda (especificación de identidad, sección 7).
+              describedBy={errors.title ? undefined : titleHelpId}
               onChange={(event) => {
                 setTitle(event.target.value);
                 clearError("title");
               }}
             >
-              <p id={titleHelpId} className={styles.help}>
-                <span>
-                  Así lo verá su equipo y así aparecerá en el informe de
-                  custodia.
-                </span>
-                <span className={styles.counter}>
-                  {`${title.length} de ${TITLE_MAX_LENGTH}`}
-                </span>
-              </p>
+              {!errors.title && (
+                <p id={titleHelpId} className={styles.help}>
+                  <span>Así lo verá su equipo en la lista de casos.</span>
+                  <span className={styles.counter}>
+                    {`${title.length} de ${TITLE_MAX_LENGTH}`}
+                  </span>
+                </p>
+              )}
             </Field>
 
             <Field
@@ -360,7 +352,7 @@ function NewCaseForm({ me }: { me: Me }) {
               maxLength={FILING_INPUT_MAX_LENGTH}
               value={filing}
               error={errors.filingNumber}
-              describedBy={filingHelpId}
+              describedBy={errors.filingNumber ? undefined : filingHelpId}
               onChange={(event) => {
                 const next = event.target.value;
                 setFiling(next);
@@ -396,14 +388,18 @@ function NewCaseForm({ me }: { me: Me }) {
                   />
                 </div>
               )}
-              <p
-                id={filingHelpId}
-                className={styles.help}
-                data-tone={filingOk ? "ok" : undefined}
-              >
-                {filingOk && <CircleCheck size={14} aria-hidden="true" />}
-                <span>{filingHelp(digits)}</span>
-              </p>
+              {!errors.filingNumber && (
+                <p
+                  id={filingHelpId}
+                  className={styles.help}
+                  data-tone={filingOk ? "ok" : undefined}
+                >
+                  {filingOk && (
+                    <CirculoVistoIcon size={16} aria-hidden="true" />
+                  )}
+                  <span>{filingHelp(digits)}</span>
+                </p>
+              )}
             </Field>
 
             <div className={styles.pair}>
@@ -428,16 +424,12 @@ function NewCaseForm({ me }: { me: Me }) {
                 maxLength={REFERENCE_MAX_LENGTH}
                 value={internalReference}
                 error={errors.internalReference}
-                describedBy={referenceHelpId}
+                help="Su código, por ejemplo RA-2026-031."
                 onChange={(event) => {
                   setInternalReference(event.target.value);
                   clearError("internalReference");
                 }}
-              >
-                <p id={referenceHelpId} className={styles.help}>
-                  Su código, por ejemplo RA-2026-031.
-                </p>
-              </Field>
+              />
             </div>
 
             <Field
@@ -448,23 +440,18 @@ function NewCaseForm({ me }: { me: Me }) {
               maxLength={COURT_MAX_LENGTH}
               value={court}
               error={errors.court}
-              describedBy={courtHelpId}
+              help="Por ejemplo, Juzgado 3 Laboral del Circuito de Bogotá."
               onChange={(event) => {
                 setCourt(event.target.value);
                 clearError("court");
               }}
-            >
-              <p id={courtHelpId} className={styles.help}>
-                Por ejemplo, Juzgado 3 Laboral del Circuito de Bogotá.
-              </p>
-            </Field>
+            />
 
             <p className={styles.privacy}>
-              <ShieldAlert size={18} aria-hidden="true" />
+              <EscudoAlertaIcon size={16} aria-hidden="true" />
               <span>
                 No escriba aquí datos sensibles ni más nombres de los
-                necesarios: estos campos los ve todo el equipo del caso. La
-                evidencia que suba irá cifrada con la llave propia del caso.
+                necesarios. Estos campos los ve todo el equipo del caso.
               </span>
             </p>
 
@@ -483,23 +470,11 @@ function NewCaseForm({ me }: { me: Me }) {
                 Usted quedará como miembro del caso.
               </p>
               <div className={styles.buttons}>
-                <ButtonLink
-                  to={ROUTES.cases}
-                  variant="secondary"
-                  surface="dark"
-                  size="sm"
-                  shape="pill"
-                >
+                <ButtonLink to={ROUTES.cases} variant="secondary" size="sm">
                   Cancelar
                 </ButtonLink>
-                <Button
-                  type="submit"
-                  variant="bright"
-                  size="sm"
-                  shape="pill"
-                  busy={create.isPending}
-                >
-                  {create.isPending ? "Abriendo el caso…" : "Abrir caso"}
+                <Button type="submit" size="sm" busy={create.isPending}>
+                  {create.isPending ? "Abriendo el caso" : "Abrir el caso"}
                 </Button>
               </div>
             </div>
@@ -522,7 +497,11 @@ function NewCaseForm({ me }: { me: Me }) {
         </div>
       </div>
 
-      <VerifyEmailDialog open={verifying} onClose={() => setVerifying(false)} />
+      <VerifyEmailDialog
+        email={me.email}
+        open={verifying}
+        onClose={() => setVerifying(false)}
+      />
     </>
   );
 }

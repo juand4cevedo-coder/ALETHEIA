@@ -60,16 +60,53 @@ describe("Espacio de trabajo protegido (API-014)", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" }),
     ).toBeInTheDocument();
+    // La organización va en el botón; el rol, en su propia línea dentro del panel.
     expect(
       within(
         screen.getByRole("button", { name: /Opciones de la cuenta/ }),
-      ).getByText("Restrepo Abogados · Abogado"),
+      ).getByText("Restrepo Abogados"),
     ).toBeInTheDocument();
-    expect(screen.getByText("Sin verificar")).toBeInTheDocument();
+    expect(screen.getByText("Rol: Abogado")).toBeInTheDocument();
+    // El correo pendiente no usa «Sin verificar», que es el estado de integridad de una cadena.
+    expect(screen.getByText("Pendiente de verificar")).toBeInTheDocument();
+    expect(screen.queryByText("Sin verificar")).not.toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Verifique su correo" }),
     ).toBeInTheDocument();
     expect(await seriousAxeViolations(container)).toEqual([]);
+  });
+
+  it("pide el enlace nuevo al correo de la sesión, sin volver a preguntarlo", async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const { pathname } = new URL((input as Request).url);
+      return pathname.endsWith("/verify-email/resend")
+        ? jsonResponse({ detail: "ok" }, 202)
+        : jsonResponse(ME);
+    });
+    const user = userEvent.setup();
+    await renderRoute("/app");
+
+    const notice = (
+      await screen.findByRole("heading", { name: "Verifique su correo" })
+    ).closest("section")!;
+    // El aviso tiene su propio título: el formulario no agrega otro ni un campo de correo.
+    expect(within(notice).getAllByRole("heading")).toHaveLength(1);
+    expect(
+      within(notice).queryByLabelText("Correo electrónico"),
+    ).not.toBeInTheDocument();
+    expect(notice).toHaveTextContent(`Llegará a ${ME.email}.`);
+
+    await user.click(
+      within(notice).getByRole("button", { name: "Enviarme un enlace nuevo" }),
+    );
+
+    expect(await within(notice).findByRole("status")).toHaveTextContent(
+      `Le enviamos un enlace nuevo a ${ME.email}.`,
+    );
+    const resend = fetchMock.mock.calls
+      .map(([input]) => input as Request)
+      .find((request) => request.url.endsWith("/verify-email/resend"))!;
+    expect(await resend.json()).toEqual({ email: ME.email });
   });
 
   it("si el servidor falla, lo dice y deja reintentar", async () => {
@@ -86,7 +123,10 @@ describe("Espacio de trabajo protegido (API-014)", () => {
     });
     reintentar.click();
 
-    expect(await screen.findByText("Verificado")).toBeInTheDocument();
+    const verified = await screen.findByText("Verificado");
+    // Un correo confirmado no es una evidencia verificada: la insignia no usa el tono verde.
+    expect(verified.closest("[data-tone]")).toBeNull();
+    expect(document.querySelector("[data-tone='ok']")).toBeNull();
   });
 });
 
@@ -215,7 +255,9 @@ describe("Sesión del espacio de trabajo (HU-009)", () => {
     expect(dialog).toHaveAttribute("open");
     expect(requests("/api/v1/auth/logout-all")).toHaveLength(0);
 
-    await user.click(screen.getByRole("button", { name: "Cerrar todas" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Cerrar todas las sesiones" }),
+    );
 
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/ingresar"),

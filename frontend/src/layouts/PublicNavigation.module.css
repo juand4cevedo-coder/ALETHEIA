@@ -1,0 +1,235 @@
+.nav {
+  position: relative;
+}
+.list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.list button,
+.list > li > a {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 8px;
+  color: #a6a6a6;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 180ms,
+    background 180ms;
+  white-space: nowrap;
+}
+.list button:hover,
+.list button[aria-expanded="true"],
+.list a:hover,
+.list a[aria-current] {
+  color: #f5f5f5;
+}
+.list button svg {
+  opacity: 0.65;
+  transition: transform 220ms;
+}
+.list button[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+.panel {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 50%;
+  width: 660px;
+  transform: translateX(-50%);
+  border: 1px solid #ffffff12;
+  border-radius: 24px;
+  padding: 16px;
+  background: #080808f5;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 24px 60px #0008;
+  animation: panelIn 180ms ease-out;
+}
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: -15px 0 auto;
+  height: 15px;
+}
+.panelContent {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 12px;
+  min-height: 196px;
+  animation: contentIn 180ms ease-out;
+}
+.links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  align-content: start;
+}
+.links a {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-height: 90px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  color: #b4b4b4;
+  text-decoration: none;
+  transition:
+    color 180ms,
+    background 180ms;
+}
+.links a:hover {
+  color: #fff;
+  background: #ffffff07;
+}
+.links a > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.links svg {
+  flex: none;
+  margin-top: 3px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 180ms,
+    transform 180ms;
+}
+.links a:hover svg,
+.links a:focus-visible svg {
+  opacity: 1;
+  transform: none;
+}
+.links small,
+.feature small {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #969696;
+}
+.feature {
+  position: relative;
+  overflow: hidden;
+  min-height: 196px;
+  border: 1px solid #ffffff08;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #1d1d1d, #0e0e0e);
+  color: #eee;
+  text-decoration: none;
+  padding: 16px;
+}
+.featureTitle {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.featureTitle svg {
+  flex: none;
+}
+.feature small {
+  display: block;
+  position: relative;
+  z-index: 1;
+  margin-top: 7px;
+}
+.illustration {
+  position: absolute;
+  inset: 70px 0 0;
+  perspective: 500px;
+  mask-image: linear-gradient(#000 65%, transparent);
+}
+.illustration i {
+  position: absolute;
+  width: 105px;
+  height: 100px;
+  left: 58px;
+  top: 23px;
+  border: 1px solid #ffffff24;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ffffff06, #ffffff01);
+  transform: rotate(-18deg) skewY(8deg);
+  transition: transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.illustration i:nth-child(2) {
+  transform: translate(14px, 12px) rotate(-18deg) skewY(8deg);
+}
+.illustration i:nth-child(3) {
+  transform: translate(28px, 24px) rotate(-18deg) skewY(8deg);
+}
+.feature:hover i:nth-child(1) {
+  transform: translate(-8px, -5px) rotate(-24deg);
+}
+.feature:hover i:nth-child(3) {
+  transform: translate(36px, 28px) rotate(-10deg);
+}
+.illustration[data-art="team"] i {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+}
+.illustration[data-art="help"] i {
+  border-radius: 50%;
+  width: 95px;
+  height: 95px;
+}
+.illustration[data-art="workspace"] i {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 17px, #ffffff0a 18px 19px),
+    #171717;
+}
+.illustration[data-art="brand"] i,
+.illustration[data-art="journal"] i {
+  opacity: 0.35;
+}
+.illustration > span {
+  position: absolute;
+  left: 70px;
+  top: -20px;
+  font: 100px/1.3 var(--font-editorial);
+  color: #ffffff90;
+}
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -5px) scale(0.98);
+  }
+}
+@keyframes contentIn {
+  from {
+    opacity: 0.3;
+    transform: translateY(3px);
+  }
+}
+@media (max-width: 1090px) {
+  .nav {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .panelContent {
+    animation: none;
+  }
+  .illustration i,
+  .list button svg,
+  .links svg {
+    transition: none;
+  }
+}

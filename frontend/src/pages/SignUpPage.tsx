@@ -1,5 +1,6 @@
+import { Link } from "react-router";
+import { SocialAccess } from "../features/auth/SocialAccess.tsx";
 import { useMutation } from "@tanstack/react-query";
-import { MailCheck } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import type { RegisterAccountError } from "../api/generated";
@@ -7,10 +8,9 @@ import { registerAccountMutation } from "../api/generated/@tanstack/react-query.
 import { Button } from "../components/ui/Button.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME, SITE_URL } from "../config/site.ts";
+import { SITE_URL, pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { AccountTypeChoice } from "../features/auth/AccountTypeChoice.tsx";
-import { Emblem } from "../components/ui/Emblem.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import {
@@ -25,6 +25,7 @@ import {
 } from "../features/auth/signUp.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { LegalConsent } from "../features/auth/LegalConsent.tsx";
+import { CorreoIcon } from "../components/ui/icons.tsx";
 
 // Por defecto, la cuenta personal: es el caso del perfil principal (PER-001).
 const EMPTY: SignUpValues = {
@@ -57,9 +58,9 @@ function problemFrom(error: unknown): FormProblem | null {
   return { kind: "unexpected" };
 }
 
-// Crear cuenta (UI-006, HU-005): una columna sobre la escena del alba (ADR-029). Mientras la
-// API responde, el anillo del emblema gira; al crearse la cuenta se cierra y el formulario da
-// paso al aviso de revisar el correo (NAV-002), que es el mismo exista o no el correo.
+// Crear cuenta (UI-006, HU-005): un panel en la columna de acceso (ADR-029). Mientras la API
+// responde, el botón dice que trabaja; al crearse la cuenta el formulario da paso al aviso de
+// revisar el correo (NAV-002), que es el mismo exista o no el correo.
 export function SignUpPage() {
   const [values, setValues] = useState<SignUpValues>(EMPTY);
   const [errors, setErrors] = useState<SignUpErrors>({});
@@ -129,29 +130,30 @@ export function SignUpPage() {
   }
 
   const firm = values.accountType === "firm";
-  const emblemState = sentTo ? "done" : register.isPending ? "working" : "idle";
 
   return (
     <>
-      <title>{`Crear cuenta · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Crear cuenta")}</title>
       <meta
         name="description"
-        content="Abra su cuenta de ALETHEIA y empiece la prueba gratis para preservar evidencia digital con huella, sello de tiempo y cadena de custodia."
+        content="Cree su cuenta de ALETHEIA y empiece la prueba gratuita, sin tarjeta de crédito."
       />
       <link rel="canonical" href={`${SITE_URL}${ROUTES.signUp}`} />
 
       <div className={styles.screen}>
         <header className={styles.intro}>
-          <Emblem state={emblemState} />
           <h1 id={TITLE_ID} className={styles.title}>
             Cree su cuenta
           </h1>
-          <p className={styles.lead}>Prueba gratis, sin tarjeta de crédito.</p>
+          <p className={styles.lead}>
+            ¿Ya tiene cuenta? <Link to={ROUTES.signIn}>Ingresar</Link>
+          </p>
         </header>
+        {!sentTo && <SocialAccess />}
 
         {sentTo ? (
           <section className={styles.notice} aria-labelledby="titulo-aviso">
-            <MailCheck size={28} aria-hidden="true" />
+            <CorreoIcon size={20} aria-hidden="true" />
             <h2
               id="titulo-aviso"
               className={styles.noticeTitle}
@@ -163,8 +165,9 @@ export function SignUpPage() {
             <p>
               Si <strong>{sentTo}</strong> puede usarse, le enviamos un enlace
               para verificarlo. Ábralo para activar la cuenta y empezar la
-              prueba. Si no le llega en unos minutos, revise la carpeta de spam.
+              prueba.
             </p>
+            <p>Si no le llega en unos minutos, revise la carpeta de spam.</p>
           </section>
         ) : (
           <form
@@ -257,14 +260,8 @@ export function SignUpPage() {
             </div>
 
             <div className={styles.submit}>
-              <Button
-                type="submit"
-                variant="bright"
-                shape="pill"
-                block
-                busy={register.isPending}
-              >
-                {register.isPending ? "Creando la cuenta…" : "Crear cuenta"}
+              <Button type="submit" block busy={register.isPending}>
+                {register.isPending ? "Creando la cuenta" : "Crear la cuenta"}
               </Button>
             </div>
           </form>
@@ -280,11 +277,10 @@ function ProblemMessage({ problem }: { problem: FormProblem }) {
       return (
         <>
           <p>
-            Los términos o la política de privacidad cambiaron. Recargue la
-            página para ver la versión vigente antes de abrir la cuenta.
+            Los términos o la política de privacidad cambiaron mientras llenaba
+            el formulario. Recargue la página para ver la versión vigente.
           </p>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
             onClick={() => window.location.reload()}

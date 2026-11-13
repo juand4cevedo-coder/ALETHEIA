@@ -1,4 +1,3 @@
-import { Eye, EyeOff } from "lucide-react";
 import {
   type InputHTMLAttributes,
   type ReactNode,
@@ -8,28 +7,33 @@ import {
 } from "react";
 
 import styles from "./Field.module.css";
+import { OjoIcon, OjoTachadoIcon } from "./icons.tsx";
 
 type FieldProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
   "className" | "id" | "type" | "placeholder"
 > & {
-  /** Rótulo del campo. Se ve siempre: dentro del campo vacío y arriba al escribir. */
+  /** Etiqueta del campo, siempre visible encima de él. */
   label: string;
   type?: "text" | "email" | "password";
+  /** Ayuda fija bajo el campo. El error la reemplaza mientras exista. */
+  help?: string;
+  /** Qué pasó y cómo corregirlo. */
   error?: string;
   ref?: Ref<HTMLInputElement>;
-  /** Ayuda dinámica bajo el campo, como el medidor de la contraseña. */
+  /** Ayuda dinámica bajo el campo, como el medidor de la contraseña o un contador. */
   children?: ReactNode;
-  /** Identificador de esa ayuda, para leerla junto con el campo. */
+  /** Identificador de esa ayuda dinámica, para leerla junto con el campo. */
   describedBy?: string;
 };
 
-// Campo de las pantallas de acceso (CMP-UI-002): una cápsula de vidrio sobre la escena. El
-// rótulo nunca desaparece, a diferencia de un texto de ejemplo: está dentro del campo vacío y
-// sube cuando la persona escribe. El error y la ayuda quedan asociados al campo.
+// Campo de texto (CMP-UI-002, especificación de identidad, sección 7): la etiqueta va encima y
+// nunca dentro del campo, la ayuda debajo, y el error ocupa el lugar de la ayuda para decir
+// cómo corregir. El lector de pantalla recibe la ayuda o el error junto con el campo.
 export function Field({
   label,
   type = "text",
+  help,
   error,
   ref,
   children,
@@ -39,28 +43,26 @@ export function Field({
   const id = useId();
   const [revealed, setRevealed] = useState(false);
   const isPassword = type === "password";
+  const helpId = help && !error ? `${id}-help` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy =
-    [extraDescription, errorId].filter(Boolean).join(" ") || undefined;
+    [extraDescription, helpId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
     <div className={styles.field}>
-      <div className={styles.capsule} data-invalid={error ? "true" : undefined}>
+      <label htmlFor={id} className={styles.label}>
+        {label}
+      </label>
+      <div className={styles.control} data-invalid={error ? "true" : undefined}>
         <input
           {...inputProps}
           ref={ref}
           id={id}
           type={isPassword && revealed ? "text" : type}
-          // Un espacio como texto de ejemplo: así :placeholder-shown dice si el campo está
-          // vacío y el rótulo sabe cuándo subir, sin repetir el rótulo como ejemplo.
-          placeholder=" "
           className={styles.input}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
         />
-        <label htmlFor={id} className={styles.label}>
-          {label}
-        </label>
         {isPassword && (
           <button
             type="button"
@@ -71,18 +73,24 @@ export function Field({
             onClick={() => setRevealed((value) => !value)}
           >
             {revealed ? (
-              <EyeOff size={18} aria-hidden="true" />
+              <OjoTachadoIcon size={16} aria-hidden="true" />
             ) : (
-              <Eye size={18} aria-hidden="true" />
+              <OjoIcon size={16} aria-hidden="true" />
             )}
           </button>
         )}
       </div>
       {children}
-      {error && (
-        <span id={errorId} className={styles.error}>
+      {error ? (
+        <p id={errorId} className={styles.error}>
           {error}
-        </span>
+        </p>
+      ) : (
+        help && (
+          <p id={helpId} className={styles.help}>
+            {help}
+          </p>
+        )
       )}
     </div>
   );

@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { UserCog } from "lucide-react";
 import { type FormEvent, useId, useState } from "react";
 
 import type { MemberOut } from "../../api/generated";
@@ -12,6 +11,7 @@ import { SystemError } from "../../components/ui/SystemError.tsx";
 import { apiProblem } from "../auth/apiProblem.ts";
 import { INVITABLE_ROLES, type InvitableRole } from "../workspace/roles.ts";
 import styles from "./InviteDialog.module.css";
+import { UsuarioAjustesIcon } from "../../components/ui/icons.tsx";
 
 type Props = {
   member: MemberOut | null;
@@ -80,35 +80,26 @@ export function ChangeRoleDialog({ member, onClose, onChanged }: Props) {
       onClose={close}
       busy={change.isPending}
       title="Cambiar el rol"
-      icon={<UserCog size={22} />}
+      icon={<UsuarioAjustesIcon size={20} />}
       actions={
         <>
           <Button
-            surface="dark"
             variant="secondary"
             size="sm"
-            shape="pill"
             onClick={close}
             disabled={change.isPending}
           >
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            form={formId}
-            variant="bright"
-            size="sm"
-            shape="pill"
-            busy={change.isPending}
-          >
-            {change.isPending ? "Guardando…" : "Guardar el rol"}
+          <Button type="submit" form={formId} size="sm" busy={change.isPending}>
+            {change.isPending ? "Guardando el rol" : "Guardar el rol"}
           </Button>
         </>
       }
     >
       <p>
-        El nuevo rol de <strong translate="no">{member?.full_name}</strong> rige
-        desde su próxima petición, sin que tenga que volver a ingresar.
+        El nuevo rol de <strong translate="no">{member?.full_name}</strong> se
+        aplica desde su siguiente acción. No tendrá que volver a ingresar.
       </p>
       <form id={formId} noValidate onSubmit={handleSubmit}>
         <fieldset className={styles.fields}>

@@ -1,3 +1,4 @@
+/* Encabezado de pantalla: título de pantalla (28/34) y descripción. */
 .header {
   display: flex;
   flex-wrap: wrap;
@@ -10,42 +11,29 @@
   min-width: 0;
 }
 
-.eyebrow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0 0 var(--space-3);
-  color: var(--color-primary-300);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.eyebrow::before {
-  content: "";
-  width: 14px;
-  height: 1px;
-  background: currentcolor;
-}
-
 .title {
+  font-family: var(--font-sans);
   margin: 0;
-  color: var(--color-text-inverse);
-  font-size: 34px;
-  font-weight: 650;
-  letter-spacing: -0.025em;
-  line-height: 1.05;
+  color: var(--text);
+  font-size: var(--font-size-title);
+  font-weight: 500;
+  letter-spacing: var(--tracking-title);
+  line-height: var(--line-height-title);
+  /* Nombres de personas y títulos de casos los escribe el usuario: una palabra larga baja de
+     línea en vez de desbordar. */
+  overflow-wrap: anywhere;
 }
 
 .description {
+  max-width: 64ch;
   margin: var(--space-2) 0 0;
-  color: var(--color-text-inverse-muted);
-  font-size: 14px;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }

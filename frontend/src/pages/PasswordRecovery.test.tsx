@@ -64,7 +64,9 @@ describe("Pedir el enlace (HU-010, API-011)", () => {
     const user = userEvent.setup();
     const { router } = await renderRoute("/ingresar");
 
-    await user.click(await screen.findByRole("link", { name: "¿La olvidó?" }));
+    await user.click(
+      await screen.findByRole("link", { name: "¿Olvidó su contraseña?" }),
+    );
 
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/recuperar"),
@@ -240,6 +242,9 @@ describe("Cambiar la contraseña con sesión (HU-010, API-013)", () => {
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/app/cuenta"),
     );
+    // El perfil dice con qué se ingresa (UI-020).
+    expect(await screen.findByText("Método de ingreso")).toBeInTheDocument();
+    expect(screen.getByText("Correo y contraseña")).toBeInTheDocument();
     await fill(user, "la contraseña de antes", NUEVA);
 
     expect(await screen.findByRole("status")).toHaveTextContent(

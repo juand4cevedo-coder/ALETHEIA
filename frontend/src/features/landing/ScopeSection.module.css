@@ -1,170 +1,73 @@
-/* Hoja de expediente: la única superficie clara del sitio público (ADR-023). Se lee como un
-   folio impreso sobre la mesa oscura: márgenes amplios, una regla entre columnas y la marca como
-   filigrana casi invisible. Todo el texto usa la tinta del papel. */
-.sheet {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  padding: var(--space-16);
-  border-radius: var(--radius-sm);
-  background: var(--color-paper);
-  box-shadow: var(--shadow-raised);
-  color: var(--color-paper-ink);
-}
-
-/* Filigrana: la marca del logotipo al 4 %, detrás del texto (z-index negativo dentro del
-   contexto que abre isolation). Un seudoelemento no llega a los lectores de pantalla. */
-.sheet::after {
-  content: "";
-  position: absolute;
-  right: calc(-1 * var(--space-12));
-  bottom: calc(-1 * var(--space-12));
-  z-index: -1;
-  width: 420px;
-  aspect-ratio: 1;
-  background: url("../../assets/aletheia-mark.png") center / contain no-repeat;
-  opacity: 0.04;
-  pointer-events: none;
-}
-
-/* El sitio pinta los enlaces y el foco en claros para la banda oscura; sobre el papel se
-   necesitan oscuros. La clase va doble para ganarle a la regla del contenedor público. */
-.sheet a {
-  color: var(--color-paper-ink);
-}
-
-.sheet.sheet :focus-visible {
-  outline-color: var(--color-primary-700);
-}
-
-.folio {
-  position: absolute;
-  top: var(--space-6);
-  right: var(--space-8);
-  color: var(--color-paper-muted);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-}
-
+/* Dos paneles del mismo estilo, lado a lado: la primera superficie y la línea. */
 .columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
 }
 
-.column:first-child {
-  padding-right: var(--space-12);
+.panel {
+  composes: card from "./Section.module.css";
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  padding: var(--space-6);
 }
 
-/* Regla vertical entre «Lo que hacemos» y «Lo que no hacemos». */
-.column + .column {
-  padding-left: var(--space-12);
-  border-left: 1px solid var(--color-paper-rule);
-}
-
-.columnTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 560;
-  line-height: 30px;
-}
-
-.yesIcon {
-  flex: none;
-  color: var(--color-success-600);
-}
-
-.noIcon {
-  flex: none;
-  color: var(--color-paper-error);
+.panelTitle {
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  line-height: var(--line-height-body);
 }
 
 .list {
   display: grid;
-  gap: var(--space-4);
-  margin: var(--space-6) 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .list li {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-3);
-  font-size: 16px;
-  line-height: 25px;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
 }
 
+.list li:last-child {
+  padding-bottom: 0;
+}
+
+/* El ícono va a la altura de la primera línea. Grafito: no es un estado. */
 .mark {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  margin-top: 2px;
-  border: 1px solid currentcolor;
-  border-radius: var(--radius-pill);
+  margin-top: var(--space-1);
+  color: var(--text-2);
 }
 
-.yes {
-  color: var(--color-success-600);
-}
-
-.no {
-  color: var(--color-paper-error);
-}
-
-/* La nota de la autoridad judicial va al pie de la hoja, bajo una regla. */
 .note {
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  margin-top: var(--space-12);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--color-paper-rule);
-  font-size: 15px;
-  line-height: 24px;
+  max-width: var(--measure);
+  margin-top: var(--space-6);
+  color: var(--text-2);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
 }
 
 .note svg {
   flex: none;
-  margin-top: 3px;
-  color: var(--color-paper-muted);
+  margin-top: var(--space-1);
 }
 
 @media (max-width: 760px) {
-  .sheet {
-    padding: var(--space-6);
-  }
-
-  .sheet::after {
-    width: 260px;
-  }
-
-  /* Con márgenes angostos el folio entra en el flujo para no pisar el primer título. */
-  .folio {
-    position: static;
-    margin-bottom: var(--space-4);
-    text-align: right;
-  }
-
   .columns {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .column:first-child {
-    padding: 0 0 var(--space-8);
-  }
-
-  .column + .column {
-    padding: var(--space-8) 0 0;
-    border-top: 1px solid var(--color-paper-rule);
-    border-left: 0;
-  }
-
-  .note {
-    margin-top: var(--space-8);
+  .panel {
+    padding: var(--space-4);
   }
 }

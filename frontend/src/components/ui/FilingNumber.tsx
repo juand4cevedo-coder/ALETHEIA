@@ -24,11 +24,17 @@ export function FilingNumber({ digits, breakdown = false }: FilingNumberProps) {
   const parts = splitFilingNumber(digits);
   return (
     <dl className={styles.breakdown}>
-      {FILING_PARTS.map(({ label }, index) => (
+      {FILING_PARTS.map(({ label, length }, index) => (
         <div key={label} className={styles.part}>
           <dt className={styles.label}>{label}</dt>
           <dd className={styles.digits} translate="no">
-            {parts[index] || "·"}
+            {parts[index] || (
+              // Una parte sin escribir muestra sus casillas vacías, como un formulario en papel.
+              <>
+                <span aria-hidden="true">{"_".repeat(length)}</span>
+                <span className="visually-hidden">sin escribir</span>
+              </>
+            )}
           </dd>
         </div>
       ))}

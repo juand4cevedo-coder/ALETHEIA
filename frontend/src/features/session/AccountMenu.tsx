@@ -1,9 +1,3 @@
-import {
-  ChevronDown,
-  LogOut,
-  MonitorSmartphone,
-  UserRound,
-} from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router";
 
@@ -14,6 +8,12 @@ import styles from "./AccountMenu.module.css";
 import { initialsOf } from "./initials.ts";
 import { SignOutEverywhereDialog } from "./SignOutEverywhereDialog.tsx";
 import { useSignOut } from "./useSignOut.ts";
+import {
+  ChevronAbajoIcon,
+  DispositivosIcon,
+  SalirIcon,
+  UsuarioIcon,
+} from "../../components/ui/icons.tsx";
 
 // Menú de la cuenta en el encabezado del espacio de trabajo (HU-009). Es un botón que despliega
 // un panel, no un menú de aplicación: se recorre con Tab, se cierra con Escape o con un clic
@@ -48,9 +48,9 @@ export function AccountMenu({ me }: { me: Me }) {
     };
   }, [open]);
 
-  const membership = me.organization
-    ? `${me.organization.name} · ${ROLE_LABELS[me.organization.role]}`
-    : null;
+  // La organización y el rol van en líneas separadas, no unidos por un separador.
+  const organization = me.organization?.name ?? null;
+  const role = me.organization ? ROLE_LABELS[me.organization.role] : null;
 
   return (
     <div ref={rootRef} className={styles.root}>
@@ -63,15 +63,19 @@ export function AccountMenu({ me }: { me: Me }) {
         onClick={() => setOpen((current) => !current)}
       >
         <span className={styles.seal} aria-hidden="true">
-          {initialsOf(me.full_name)}
+          {initialsOf(me.full_name) || <UsuarioIcon size={16} />}
         </span>
         <span className={styles.who}>
           <span className={styles.person}>{me.full_name}</span>
-          {membership && (
-            <span className={styles.organization}>{membership}</span>
+          {organization && (
+            <span className={styles.organization}>{organization}</span>
           )}
         </span>
-        <ChevronDown className={styles.chevron} size={16} aria-hidden="true" />
+        <ChevronAbajoIcon
+          className={styles.chevron}
+          size={16}
+          aria-hidden="true"
+        />
         <span className="visually-hidden">Opciones de la cuenta</span>
       </button>
 
@@ -81,7 +85,8 @@ export function AccountMenu({ me }: { me: Me }) {
           <p className={styles.panelEmail} translate="no">
             {me.email}
           </p>
-          {membership && <p className={styles.panelRole}>{membership}</p>}
+          {organization && <p className={styles.panelRole}>{organization}</p>}
+          {role && <p className={styles.panelRole}>{`Rol: ${role}`}</p>}
         </div>
         <ul className={styles.actions}>
           <li>
@@ -90,7 +95,7 @@ export function AccountMenu({ me }: { me: Me }) {
               className={styles.action}
               onClick={() => setOpen(false)}
             >
-              <UserRound size={18} aria-hidden="true" />
+              <UsuarioIcon size={16} aria-hidden="true" />
               <span className={styles.actionText}>
                 <span className={styles.actionLabel}>Mi cuenta</span>
                 <span className={styles.actionHint}>
@@ -107,11 +112,11 @@ export function AccountMenu({ me }: { me: Me }) {
               disabled={session.pending !== null}
               aria-busy={session.pending === "device" || undefined}
             >
-              <LogOut size={18} aria-hidden="true" />
+              <SalirIcon size={16} aria-hidden="true" />
               <span className={styles.actionText}>
                 <span className={styles.actionLabel}>
                   {session.pending === "device"
-                    ? "Cerrando sesión…"
+                    ? "Cerrando la sesión"
                     : "Cerrar sesión"}
                 </span>
                 <span className={styles.actionHint}>
@@ -130,7 +135,7 @@ export function AccountMenu({ me }: { me: Me }) {
               }}
               disabled={session.pending !== null}
             >
-              <MonitorSmartphone size={18} aria-hidden="true" />
+              <DispositivosIcon size={16} aria-hidden="true" />
               <span className={styles.actionText}>
                 <span className={styles.actionLabel}>
                   Cerrar todas las sesiones

@@ -37,14 +37,17 @@ export async function renderRoute(path: InitialEntry) {
       <RouterProvider router={router} />
     </QueryClientProvider>,
   );
-  await waitFor(() => {
-    if (
-      !router.state.initialized ||
-      rendered.container.querySelector("[data-route-loading]")
-    ) {
-      throw new Error("La pantalla todavía se está descargando");
-    }
-  });
+  await waitFor(
+    () => {
+      if (
+        !router.state.initialized ||
+        rendered.container.querySelector("[data-route-loading]")
+      ) {
+        throw new Error("La pantalla todavía se está descargando");
+      }
+    },
+    { timeout: 5000 },
+  );
   return { router, ...rendered };
 }
 

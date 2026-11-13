@@ -11,7 +11,7 @@ const EVIDENCE_TYPE_NAMES: Record<string, [string, string]> = {
 
 const ORDER = Object.keys(EVIDENCE_TYPE_NAMES);
 
-/** "9 chats · 2 audios · 1 documento": del tipo con más evidencias al que menos tiene. La API
+/** "9 chats, 2 audios, 1 documento": del tipo con más evidencias al que menos tiene. La API
  * omite los tipos sin evidencias: un tipo que no llega cuenta cero y no se muestra. Un tipo que
  * la interfaz todavía no nombra se cuenta igual, con su código. */
 export function describeEvidenceByType(
@@ -29,5 +29,5 @@ export function describeEvidenceByType(
       const name = names ? names[count === 1 ? 0 : 1] : type;
       return `${count} ${name}`;
     })
-    .join(" · ");
+    .join(", ");
 }
