@@ -87,6 +87,9 @@ export function AccountMenu({ me }: { me: Me }) {
           </p>
           {organization && <p className={styles.panelRole}>{organization}</p>}
           {role && <p className={styles.panelRole}>{`Rol: ${role}`}</p>}
+          {me.platform_admin && (
+            <p className={styles.panelRole}>Administración de Aletheia</p>
+          )}
         </div>
         <ul className={styles.actions}>
           <li>
