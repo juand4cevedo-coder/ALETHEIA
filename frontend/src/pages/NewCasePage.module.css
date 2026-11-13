@@ -1,0 +1,159 @@
+/* Abrir un caso (maqueta 02): el formulario en un panel y, a su lado, la vista previa del
+   registro de apertura. */
+.screen {
+  display: grid;
+}
+
+.denied {
+  display: grid;
+  gap: var(--space-6);
+  max-width: var(--screen-narrow-width);
+}
+
+.compose {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.formPanel {
+  display: grid;
+  align-content: start;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-8) var(--space-6);
+  border-right: 1px solid var(--line);
+  background: var(--surface-1);
+}
+
+.previewPanel {
+  padding: var(--space-8);
+  background: var(--bg);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-6);
+  container-type: inline-size;
+}
+
+.help {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.help[data-tone="ok"] {
+  /* Un radicado bien escrito no es una verificación: el visto va en el color del texto. */
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  color: var(--text);
+}
+
+.help svg {
+  flex: none;
+  margin-top: calc((var(--line-height-support) - var(--space-4)) / 2);
+}
+
+.counter {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdown {
+  padding: 0;
+}
+
+/* Especialidad y referencia van juntas cuando el formulario tiene ancho para las dos; los
+   campos no caben en media columna más angosta. */
+.pair {
+  display: grid;
+  gap: var(--space-6);
+}
+
+@container (min-width: 640px) {
+  .pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+    align-items: start;
+  }
+}
+
+/* El aviso de privacidad va como una línea con su ícono, no como otro recuadro dentro del panel
+   del formulario. */
+.privacy {
+  display: flex;
+  gap: var(--space-3);
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.privacy svg {
+  flex: none;
+  /* Centrado con la primera línea del texto. */
+  margin-top: calc((var(--line-height-support) - var(--space-4)) / 2);
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--line);
+}
+
+.note {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Por debajo de 900 px la vista previa queda debajo del formulario. */
+@media (max-width: 900px) {
+  .compose {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .formPanel {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 560px) {
+  .formPanel,
+  .previewPanel {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .buttons {
+    flex-direction: column-reverse;
+  }
+
+  .buttons > * {
+    width: 100%;
+  }
+}

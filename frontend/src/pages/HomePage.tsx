@@ -1,37 +1,43 @@
-import { SITE_NAME, SITE_URL } from "../config/site.ts";
-import { ClosingSection } from "../features/landing/ClosingSection.tsx";
-import { FaqSection } from "../features/landing/FaqSection.tsx";
+import { lazy, Suspense } from "react";
+
+import { pageTitle, SITE_URL } from "../config/site.ts";
+import { PlanCatalogProvider } from "../features/billing/catalog.tsx";
 import { Hero } from "../features/landing/Hero.tsx";
-import { HowItWorks } from "../features/landing/HowItWorks.tsx";
-import { PlansSection } from "../features/landing/PlansSection.tsx";
-import { ProblemSection } from "../features/landing/ProblemSection.tsx";
-import { ScopeSection } from "../features/landing/ScopeSection.tsx";
-import { StandardsSection } from "../features/landing/StandardsSection.tsx";
-import { VerifierSection } from "../features/landing/VerifierSection.tsx";
 import styles from "./HomePage.module.css";
 
-// Página de inicio (UI-001, HU-001). El orden sigue la decisión del visitante: qué es, por qué
-// importa, cómo funciona, por qué confiar, qué no hace, quién más lo usa, cuánto cuesta y
-// las dudas que quedan.
+// Lo que queda debajo del primer pantallazo llega aparte (BelowFold.tsx).
+const BelowFold = lazy(() =>
+  import("../features/landing/BelowFold.tsx").then((module) => ({
+    default: module.BelowFold,
+  })),
+);
+
+// Página de inicio (UI-001, HU-001). Cada sección responde una pregunta del abogado, en el
+// orden en que se la hace (especificación de identidad, sección 11). El titular, los planes y
+// el cierre leen el mismo catálogo, pedido una sola vez.
 export function HomePage() {
   return (
-    <div className={styles.page}>
-      <title>{`${SITE_NAME} · Preservación de evidencia digital para abogados`}</title>
+    <PlanCatalogProvider>
+      <title>{pageTitle("Un espacio para sus casos y su equipo")}</title>
       <meta
         name="description"
-        content="Conserve el archivo original de cada evidencia digital con su huella SHA-256, un sello de tiempo de un tercero y una cadena de custodia que no se puede editar. Para abogados y firmas en Colombia."
+        content="Organice sus casos y su equipo jurídico. Compruebe huellas SHA-256 en su navegador y explore los fundamentos de la evidencia digital."
       />
       <link rel="canonical" href={`${SITE_URL}/`} />
 
       <Hero />
-      <ProblemSection />
-      <HowItWorks />
-      <StandardsSection />
-      <ScopeSection />
-      <VerifierSection />
-      <PlansSection />
-      <FaqSection />
-      <ClosingSection />
-    </div>
+      {/* Mientras llega, el espacio reservado mantiene el pie fuera de la vista. */}
+      <Suspense
+        fallback={
+          <div
+            className={styles.pending}
+            aria-busy="true"
+            data-route-loading=""
+          />
+        }
+      >
+        <BelowFold />
+      </Suspense>
+    </PlanCatalogProvider>
   );
 }

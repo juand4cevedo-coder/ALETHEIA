@@ -41,7 +41,7 @@ beforeEach(() => {
 
 describe("Panel de cookies (HU-004, CP-004)", () => {
   it("en la primera visita avisa sin instalar ninguna cookie ni quitar el foco (CA-HU-004-01)", async () => {
-    const { container } = renderRoute(PAGE);
+    const { container } = await renderRoute(PAGE);
 
     const panel = cookiePanel();
     expect(panel).toBeInTheDocument();
@@ -60,7 +60,7 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
 
   it("recuerda el rechazo en la siguiente visita sin instalar cookies (CA-HU-004-02)", async () => {
     const user = userEvent.setup();
-    const { unmount } = renderRoute(PAGE);
+    const { unmount } = await renderRoute(PAGE);
 
     await user.click(
       screen.getByRole("button", { name: "Rechazar opcionales" }),
@@ -78,13 +78,13 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
     expect(hasCookieConsent("analytics")).toBe(false);
 
     unmount();
-    renderRoute(PAGE);
+    await renderRoute(PAGE);
     expect(cookiePanel()).not.toBeInTheDocument();
   });
 
   it("acepta las opcionales con el mismo peso visual que el rechazo", async () => {
     const user = userEvent.setup();
-    renderRoute(PAGE);
+    await renderRoute(PAGE);
 
     const reject = screen.getByRole("button", { name: "Rechazar opcionales" });
     const accept = screen.getByRole("button", { name: "Aceptar opcionales" });
@@ -97,9 +97,11 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
 
   it("configura cada categoría con las necesarias siempre activas", async () => {
     const user = userEvent.setup();
-    renderRoute(PAGE);
+    await renderRoute(PAGE);
 
-    await user.click(screen.getByRole("button", { name: "Configurar" }));
+    await user.click(
+      screen.getByRole("button", { name: "Elegir por categoría" }),
+    );
 
     const panel = cookiePanel()!;
     expect(within(panel).getByText("Cookies en ALETHEIA")).toHaveFocus();
@@ -118,7 +120,7 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
   it("se reabre desde el pie para cambiar la elección y devuelve el foco (CA-HU-004-02)", async () => {
     rememberChoice(true);
     const user = userEvent.setup();
-    const { container } = renderRoute(PAGE);
+    const { container } = await renderRoute(PAGE);
     expect(cookiePanel()).not.toBeInTheDocument();
 
     const footerButton = screen.getByRole("button", {
@@ -150,7 +152,7 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
 
   it("cerrar el aviso sin elegir cuenta como rechazo", async () => {
     const user = userEvent.setup();
-    renderRoute(PAGE);
+    await renderRoute(PAGE);
 
     await user.click(screen.getByRole("button", { name: "Cerrar" }));
 
@@ -158,9 +160,9 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
     expect(storedChoice()).toMatchObject({ analytics: false });
   });
 
-  it("vuelve a preguntar si la elección es de una versión anterior del consentimiento", () => {
+  it("vuelve a preguntar si la elección es de una versión anterior del consentimiento", async () => {
     rememberChoice(true, CONSENT_VERSION - 1);
-    renderRoute(PAGE);
+    await renderRoute(PAGE);
 
     expect(cookiePanel()).toBeInTheDocument();
     expect(hasCookieConsent("analytics")).toBe(false);
@@ -177,7 +179,7 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
       .spyOn(Storage.prototype, "setItem")
       .mockImplementation(blocked);
     const user = userEvent.setup();
-    renderRoute(PAGE);
+    await renderRoute(PAGE);
 
     await user.click(
       screen.getByRole("button", { name: "Rechazar opcionales" }),

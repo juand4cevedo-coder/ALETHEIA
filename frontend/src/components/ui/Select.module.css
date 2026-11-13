@@ -1,0 +1,21 @@
+/* Selector (CMP-UI-003). La etiqueta, el borde, el foco y la ayuda vienen de Field.module.css;
+   aquí solo va lo propio del select nativo. */
+.select {
+  padding-right: calc(var(--space-3) + var(--space-6));
+  cursor: pointer;
+  appearance: none;
+}
+
+/* La lista que abre el sistema usa estos colores en Windows y Linux; en el celular es la del
+   propio sistema. */
+.select option {
+  background: var(--surface-1);
+  color: var(--text);
+}
+
+.chevron {
+  position: absolute;
+  right: var(--space-3);
+  color: var(--text-2);
+  pointer-events: none;
+}

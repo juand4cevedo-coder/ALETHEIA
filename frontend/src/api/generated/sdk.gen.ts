@@ -9,12 +9,81 @@ import type {
 } from "./client";
 import { client } from "./client.gen";
 import type {
+  AcceptInvitationData,
+  AcceptInvitationErrors,
+  AcceptInvitationResponses,
+  AcceptLegalTermsData,
+  AcceptLegalTermsErrors,
+  AcceptLegalTermsResponses,
+  ChangeMemberRoleData,
+  ChangeMemberRoleErrors,
+  ChangeMemberRoleResponses,
+  ChangePasswordData,
+  ChangePasswordErrors,
+  ChangePasswordResponses,
+  CreateCaseData,
+  CreateCaseErrors,
+  CreateCaseResponses,
+  CreateInvitationData,
+  CreateInvitationErrors,
+  CreateInvitationResponses,
+  ForgotPasswordData,
+  ForgotPasswordErrors,
+  ForgotPasswordResponses,
   HealthData,
   HealthErrors,
   HealthResponses,
+  ListCasesData,
+  ListCasesErrors,
+  ListCasesResponses,
+  ListInvitationsData,
+  ListInvitationsErrors,
+  ListInvitationsResponses,
+  ListMembersData,
+  ListMembersErrors,
+  ListMembersResponses,
   ListPlansData,
   ListPlansErrors,
   ListPlansResponses,
+  PreviewInvitationData,
+  PreviewInvitationErrors,
+  PreviewInvitationResponses,
+  ReadCaseData,
+  ReadCaseErrors,
+  ReadCaseResponses,
+  ReadMeData,
+  ReadMeErrors,
+  ReadMeResponses,
+  RefreshSessionData,
+  RefreshSessionErrors,
+  RefreshSessionResponses,
+  RegisterAccountData,
+  RegisterAccountErrors,
+  RegisterAccountResponses,
+  RemoveMemberData,
+  RemoveMemberErrors,
+  RemoveMemberResponses,
+  ResendVerificationData,
+  ResendVerificationErrors,
+  ResendVerificationResponses,
+  ResetPasswordData,
+  ResetPasswordErrors,
+  ResetPasswordResponses,
+  RevokeInvitationData,
+  RevokeInvitationErrors,
+  RevokeInvitationResponses,
+  SignInData,
+  SignInErrors,
+  SignInResponses,
+  SignOutData,
+  SignOutErrors,
+  SignOutEverywhereData,
+  SignOutEverywhereErrors,
+  SignOutEverywhereResponses,
+  SignOutResponses,
+  VerifyEmailData,
+  VerifyEmailErrors,
+  VerifyEmailResponses,
 } from "./types.gen";
 
 export type Options<
@@ -57,3 +126,537 @@ export const listPlans = <ThrowOnError extends boolean = false>(
     ListPlansErrors,
     ThrowOnError
   >({ url: "/api/v1/plans", ...options });
+
+/**
+ * Crear una cuenta con su organización y la prueba gratis
+ */
+export const registerAccount = <ThrowOnError extends boolean = false>(
+  options: Options<RegisterAccountData, ThrowOnError>,
+): RequestResult<
+  RegisterAccountResponses,
+  RegisterAccountErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    RegisterAccountResponses,
+    RegisterAccountErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/register",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Reenviar el enlace para verificar el correo
+ */
+export const resendVerification = <ThrowOnError extends boolean = false>(
+  options: Options<ResendVerificationData, ThrowOnError>,
+): RequestResult<
+  ResendVerificationResponses,
+  ResendVerificationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    ResendVerificationResponses,
+    ResendVerificationErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/verify-email/resend",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Verificar el correo con el enlace recibido
+ */
+export const verifyEmail = <ThrowOnError extends boolean = false>(
+  options: Options<VerifyEmailData, ThrowOnError>,
+): RequestResult<VerifyEmailResponses, VerifyEmailErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    VerifyEmailResponses,
+    VerifyEmailErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/verify-email",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Ingresar con correo y contraseña
+ */
+export const signIn = <ThrowOnError extends boolean = false>(
+  options: Options<SignInData, ThrowOnError>,
+): RequestResult<SignInResponses, SignInErrors, ThrowOnError> =>
+  (options.client ?? client).post<SignInResponses, SignInErrors, ThrowOnError>({
+    url: "/api/v1/auth/login",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Renovar la sesión y rotar el token de renovación
+ */
+export const refreshSession = <ThrowOnError extends boolean = false>(
+  options?: Options<RefreshSessionData, ThrowOnError>,
+): RequestResult<RefreshSessionResponses, RefreshSessionErrors, ThrowOnError> =>
+  (options?.client ?? client).post<
+    RefreshSessionResponses,
+    RefreshSessionErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Secure-aletheia_refresh",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/auth/refresh",
+    ...options,
+  });
+
+/**
+ * Cerrar la sesión de este dispositivo
+ */
+export const signOut = <ThrowOnError extends boolean = false>(
+  options?: Options<SignOutData, ThrowOnError>,
+): RequestResult<SignOutResponses, SignOutErrors, ThrowOnError> =>
+  (options?.client ?? client).post<
+    SignOutResponses,
+    SignOutErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/auth/logout",
+    ...options,
+  });
+
+/**
+ * Cerrar todas las sesiones, en todos los dispositivos
+ */
+export const signOutEverywhere = <ThrowOnError extends boolean = false>(
+  options?: Options<SignOutEverywhereData, ThrowOnError>,
+): RequestResult<
+  SignOutEverywhereResponses,
+  SignOutEverywhereErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).post<
+    SignOutEverywhereResponses,
+    SignOutEverywhereErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/auth/logout-all",
+    ...options,
+  });
+
+/**
+ * Pedir el enlace para restablecer la contraseña
+ */
+export const forgotPassword = <ThrowOnError extends boolean = false>(
+  options: Options<ForgotPasswordData, ThrowOnError>,
+): RequestResult<ForgotPasswordResponses, ForgotPasswordErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    ForgotPasswordResponses,
+    ForgotPasswordErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/password/forgot",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Elegir una contraseña nueva con el enlace recibido
+ */
+export const resetPassword = <ThrowOnError extends boolean = false>(
+  options: Options<ResetPasswordData, ThrowOnError>,
+): RequestResult<ResetPasswordResponses, ResetPasswordErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    ResetPasswordResponses,
+    ResetPasswordErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/password/reset",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Perfil, organización, rol y aceptación legal de quien tiene la sesión
+ */
+export const readMe = <ThrowOnError extends boolean = false>(
+  options?: Options<ReadMeData, ThrowOnError>,
+): RequestResult<ReadMeResponses, ReadMeErrors, ThrowOnError> =>
+  (options?.client ?? client).get<ReadMeResponses, ReadMeErrors, ThrowOnError>({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/me",
+    ...options,
+  });
+
+/**
+ * Aceptar los textos legales vigentes
+ */
+export const acceptLegalTerms = <ThrowOnError extends boolean = false>(
+  options: Options<AcceptLegalTermsData, ThrowOnError>,
+): RequestResult<
+  AcceptLegalTermsResponses,
+  AcceptLegalTermsErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    AcceptLegalTermsResponses,
+    AcceptLegalTermsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/me/legal-acceptance",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Cambiar la contraseña
+ */
+export const changePassword = <ThrowOnError extends boolean = false>(
+  options: Options<ChangePasswordData, ThrowOnError>,
+): RequestResult<ChangePasswordResponses, ChangePasswordErrors, ThrowOnError> =>
+  (options.client ?? client).put<
+    ChangePasswordResponses,
+    ChangePasswordErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/me/password",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Miembros de la organización y cupo del plan
+ */
+export const listMembers = <ThrowOnError extends boolean = false>(
+  options?: Options<ListMembersData, ThrowOnError>,
+): RequestResult<ListMembersResponses, ListMembersErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    ListMembersResponses,
+    ListMembersErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/members",
+    ...options,
+  });
+
+/**
+ * Retirar a un miembro
+ */
+export const removeMember = <ThrowOnError extends boolean = false>(
+  options: Options<RemoveMemberData, ThrowOnError>,
+): RequestResult<RemoveMemberResponses, RemoveMemberErrors, ThrowOnError> =>
+  (options.client ?? client).delete<
+    RemoveMemberResponses,
+    RemoveMemberErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/members/{user_id}",
+    ...options,
+  });
+
+/**
+ * Cambiar el rol de un miembro
+ */
+export const changeMemberRole = <ThrowOnError extends boolean = false>(
+  options: Options<ChangeMemberRoleData, ThrowOnError>,
+): RequestResult<
+  ChangeMemberRoleResponses,
+  ChangeMemberRoleErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).patch<
+    ChangeMemberRoleResponses,
+    ChangeMemberRoleErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/members/{user_id}",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Invitaciones pendientes
+ */
+export const listInvitations = <ThrowOnError extends boolean = false>(
+  options?: Options<ListInvitationsData, ThrowOnError>,
+): RequestResult<
+  ListInvitationsResponses,
+  ListInvitationsErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    ListInvitationsResponses,
+    ListInvitationsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/invitations",
+    ...options,
+  });
+
+/**
+ * Invitar a una persona con un rol
+ */
+export const createInvitation = <ThrowOnError extends boolean = false>(
+  options: Options<CreateInvitationData, ThrowOnError>,
+): RequestResult<
+  CreateInvitationResponses,
+  CreateInvitationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    CreateInvitationResponses,
+    CreateInvitationErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/invitations",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Revocar una invitación pendiente
+ */
+export const revokeInvitation = <ThrowOnError extends boolean = false>(
+  options: Options<RevokeInvitationData, ThrowOnError>,
+): RequestResult<
+  RevokeInvitationResponses,
+  RevokeInvitationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).delete<
+    RevokeInvitationResponses,
+    RevokeInvitationErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/invitations/{invitation_id}",
+    ...options,
+  });
+
+/**
+ * Ver una invitación antes de aceptarla
+ */
+export const previewInvitation = <ThrowOnError extends boolean = false>(
+  options: Options<PreviewInvitationData, ThrowOnError>,
+): RequestResult<
+  PreviewInvitationResponses,
+  PreviewInvitationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PreviewInvitationResponses,
+    PreviewInvitationErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/invitations/preview",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Aceptar una invitación
+ */
+export const acceptInvitation = <ThrowOnError extends boolean = false>(
+  options: Options<AcceptInvitationData, ThrowOnError>,
+): RequestResult<
+  AcceptInvitationResponses,
+  AcceptInvitationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    AcceptInvitationResponses,
+    AcceptInvitationErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/invitations/accept",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Listar los casos donde la persona es miembro, con su actividad
+ */
+export const listCases = <ThrowOnError extends boolean = false>(
+  options?: Options<ListCasesData, ThrowOnError>,
+): RequestResult<ListCasesResponses, ListCasesErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    ListCasesResponses,
+    ListCasesErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases",
+    ...options,
+  });
+
+/**
+ * Abrir un caso
+ */
+export const createCase = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCaseData, ThrowOnError>,
+): RequestResult<CreateCaseResponses, CreateCaseErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CreateCaseResponses,
+    CreateCaseErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Ver un caso con su equipo y su cadena de custodia
+ */
+export const readCase = <ThrowOnError extends boolean = false>(
+  options: Options<ReadCaseData, ThrowOnError>,
+): RequestResult<ReadCaseResponses, ReadCaseErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    ReadCaseResponses,
+    ReadCaseErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}",
+    ...options,
+  });

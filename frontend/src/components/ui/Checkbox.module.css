@@ -1,0 +1,30 @@
+.check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: start;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+.check input {
+  width: var(--space-4);
+  height: var(--space-4);
+  /* Centrada con la primera línea del texto. */
+  margin: calc((var(--line-height-ui) - var(--space-4)) / 2) 0 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.check input[aria-invalid="true"]:not(:focus-visible) {
+  outline: 1px solid var(--err);
+  outline-offset: 2px;
+}
+
+.error {
+  grid-column: 2;
+  color: var(--err);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}

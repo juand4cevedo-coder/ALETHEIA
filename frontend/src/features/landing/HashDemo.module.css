@@ -1,0 +1,154 @@
+/* Panel de la demostración de la huella: la primera superficie y la línea. */
+.panel {
+  composes: card from "./Section.module.css";
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-6);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+}
+
+.textarea {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  resize: vertical;
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+
+.textarea:hover {
+  border-color: var(--text-3);
+}
+
+.textarea:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+.helper {
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.rows {
+  display: grid;
+  margin: 0;
+}
+
+.row {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+}
+
+.row dt {
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  line-height: var(--line-height-label);
+}
+
+.row dd {
+  margin: 0;
+}
+
+.blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-mono);
+}
+
+/* Los caracteres distintos quedan en rojo; el aviso de abajo dice lo mismo con texto. */
+.changed {
+  color: var(--err);
+}
+
+/* Responde a lo que se escribe: el carácter que cambió aparece, y nada más se mueve. */
+@media (prefers-reduced-motion: no-preference) {
+  .changed {
+    animation: hash-changed var(--motion-base) var(--ease-standard);
+  }
+
+  @keyframes hash-changed {
+    from {
+      opacity: 0.3;
+    }
+  }
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+/* Resultado con punto y texto, como las insignias de estado. El verde es legítimo aquí: el
+   navegador acaba de calcular la huella. */
+.status {
+  --tone: var(--text-3);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 500;
+  line-height: var(--line-height-ui);
+}
+
+.status[data-state="match"] {
+  --tone: var(--ok);
+}
+
+.status[data-state="mismatch"] {
+  --tone: var(--err);
+}
+
+.status[data-state="unsupported"] {
+  color: var(--text-2);
+  font-weight: 400;
+}
+
+.dot {
+  flex: none;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: 50%;
+  background: var(--tone);
+}
+
+@media (max-width: 480px) {
+  .panel {
+    padding: var(--space-4);
+  }
+
+  .textarea {
+    font-size: var(--font-size-control-touch);
+  }
+}

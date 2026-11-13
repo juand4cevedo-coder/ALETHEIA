@@ -3,10 +3,26 @@
 export const ROUTES = {
   home: "/",
   howItWorks: "/#como-funciona",
+  // Las garantías técnicas y su demostración, en el inicio.
+  security: "/#seguridad",
   pricing: "/precios",
   verifier: "/verificador",
+  // La comprobación de una huella vive en la portada. La verificación de paquetes tiene
+  // su propio alcance funcional (HU-026).
+  verifierSection: "/#verificador",
   signIn: "/ingresar",
   signUp: "/registro",
+  verifyEmail: "/verificar-correo",
+  forgotPassword: "/recuperar",
+  resetPassword: "/restablecer-contrasena",
+  acceptInvitation: "/invitacion",
+  // Espacio de trabajo: todo lo que exige sesión vive bajo /app.
+  app: "/app",
+  account: "/app/cuenta",
+  members: "/app/miembros",
+  cases: "/app/casos",
+  newCase: "/app/casos/nuevo",
+  caseDetail: (id: string) => `/app/casos/${id}`,
 } as const;
 
 export const LEGAL_PAGES = [
