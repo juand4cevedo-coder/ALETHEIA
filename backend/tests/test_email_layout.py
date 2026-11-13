@@ -25,10 +25,10 @@ def test_el_boton_escapa_la_etiqueta_y_el_enlace() -> None:
     assert "&amp;b=&quot;2&quot;" in correo
 
 
-def test_el_correo_es_claro_con_fuentes_del_sistema_y_sin_adornos() -> None:
+def test_el_correo_usa_fuentes_del_sistema_y_colores_de_la_marca() -> None:
     correo = _correo()
 
-    assert "background:#5544D8" in correo
+    assert "background:#F0F0F0" in correo
     assert "Segoe UI" in correo
     assert "gradient" not in correo
     assert "shadow" not in correo
