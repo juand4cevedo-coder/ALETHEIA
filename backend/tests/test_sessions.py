@@ -12,6 +12,7 @@ from http.cookies import SimpleCookie
 import httpx2
 import pytest
 from argon2 import PasswordHasher, Type
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -486,7 +487,7 @@ def test_los_roles_del_perfil_son_los_de_la_base() -> None:
 def test_el_perfil_distingue_administracion_de_plataforma_y_despacho(
     client: TestClient, owner_db: Session
 ) -> None:
-    client.app.dependency_overrides[get_session] = lambda: owner_db
+    typing.cast(FastAPI, client.app).dependency_overrides[get_session] = lambda: owner_db
     user = _cuenta(owner_db, is_platform_admin=True, role="assistant")
     assert _ingresar(client).status_code == 204
 
