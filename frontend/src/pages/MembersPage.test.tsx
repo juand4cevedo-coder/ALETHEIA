@@ -181,7 +181,7 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     );
     await user.selectOptions(within(dialog).getByLabelText("Rol"), "admin");
     expect(
-      within(dialog).getByText(/Gestiona el equipo y ve todos los casos/),
+      within(dialog).getByText(/Gestiona el equipo y trabaja en los casos/),
     ).toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("button", { name: "Enviar la invitación" }),

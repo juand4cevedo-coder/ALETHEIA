@@ -483,6 +483,25 @@ def test_los_roles_del_perfil_son_los_de_la_base() -> None:
     assert typing.get_args(MemberRole) == MEMBER_ROLES
 
 
+def test_el_perfil_distingue_administracion_de_plataforma_y_despacho(
+    client: TestClient, owner_db: Session
+) -> None:
+    client.app.dependency_overrides[get_session] = lambda: owner_db
+    user = _cuenta(owner_db, is_platform_admin=True, role="assistant")
+    assert _ingresar(client).status_code == 204
+
+    perfil = client.get(_PERFIL).json()
+
+    assert perfil["id"] == str(user.id)
+    assert perfil["platform_admin"] is True
+    assert perfil["organization"]["role"] == "assistant"
+    assert perfil["permissions"] == [
+        "cases.read_assigned",
+        "organization.view",
+        "platform.manage",
+    ]
+
+
 # --- Registros sin secretos --------------------------------------------------------------
 
 
