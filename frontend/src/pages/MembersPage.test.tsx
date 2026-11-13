@@ -144,6 +144,12 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     expect(screen.getByText("laura@example.com")).toBeInTheDocument();
     expect(screen.getByRole("meter")).toHaveAttribute("aria-valuenow", "3");
     expect(screen.getByText(/de 8 usuarios en uso/)).toBeInTheDocument();
+    // Una invitación pendiente ocupa un cupo, en cualquier plan.
+    expect(
+      screen.getByText(
+        "Cuentan los miembros y las invitaciones que siguen abiertas.",
+      ),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
         name: "Revocar la invitación de laura@example.com",
@@ -163,7 +169,9 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     const user = userEvent.setup();
     await renderRoute("/app/miembros");
 
-    await user.click(await screen.findByRole("button", { name: "Invitar" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Invitar a una persona" }),
+    );
     const dialog = screen.getByRole("dialog", {
       name: "Invitar a una persona",
     });
@@ -173,10 +181,10 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     );
     await user.selectOptions(within(dialog).getByLabelText("Rol"), "admin");
     expect(
-      within(dialog).getByText(/Gestiona el equipo, ve todos los casos/),
+      within(dialog).getByText(/Gestiona el equipo y ve todos los casos/),
     ).toBeInTheDocument();
     await user.click(
-      within(dialog).getByRole("button", { name: "Enviar invitación" }),
+      within(dialog).getByRole("button", { name: "Enviar la invitación" }),
     );
 
     expect(await screen.findByRole("status")).toHaveTextContent(
@@ -194,9 +202,13 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     const user = userEvent.setup();
     await renderRoute("/app/miembros");
 
-    await user.click(await screen.findByRole("button", { name: "Invitar" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Invitar a una persona" }),
+    );
     await user.type(screen.getByLabelText("Correo electrónico"), "marta");
-    await user.click(screen.getByRole("button", { name: "Enviar invitación" }));
+    await user.click(
+      screen.getByRole("button", { name: "Enviar la invitación" }),
+    );
 
     expect(screen.getByLabelText("Correo electrónico")).toHaveAttribute(
       "aria-invalid",
@@ -215,10 +227,14 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     const user = userEvent.setup();
     await renderRoute("/app/miembros");
 
-    await user.click(await screen.findByRole("button", { name: "Invitar" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Invitar a una persona" }),
+    );
     const email = screen.getByLabelText("Correo electrónico");
     await user.type(email, "carlos@example.com");
-    await user.click(screen.getByRole("button", { name: "Enviar invitación" }));
+    await user.click(
+      screen.getByRole("button", { name: "Enviar la invitación" }),
+    );
 
     expect(
       await screen.findByText("Esta persona ya es miembro de su organización."),
@@ -249,7 +265,7 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
       screen.getByRole("link", { name: "cambie de plan" }),
     ).toHaveAttribute("href", "/precios");
     expect(
-      screen.queryByRole("button", { name: "Invitar" }),
+      screen.queryByRole("button", { name: "Invitar a una persona" }),
     ).not.toBeInTheDocument();
   });
 
@@ -277,7 +293,9 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     expect(
       within(dialog).getByRole("button", { name: "Cancelar" }),
     ).toHaveFocus();
-    await user.click(within(dialog).getByRole("button", { name: "Revocar" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Revocar la invitación" }),
+    );
 
     expect(
       await screen.findByText(/No hay invitaciones pendientes/),
@@ -360,7 +378,7 @@ describe("Cambiar el rol y retirar (UI-021, HU-013)", () => {
     expect(select).toHaveValue("lawyer");
     await user.selectOptions(select, "assistant");
     expect(
-      within(dialog).getByText(/Sube evidencias en los casos que le asignan/),
+      within(dialog).getByText(/Trabaja en los casos que le asignen/),
     ).toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("button", { name: "Guardar el rol" }),
@@ -445,12 +463,16 @@ describe("Cambiar el rol y retirar (UI-021, HU-013)", () => {
       name: "¿Retirar a esta persona?",
     });
     expect(
-      within(dialog).getByText(/se cerrarán sus sesiones/),
+      within(dialog).getByText(/Sus sesiones se cierran en este momento/),
     ).toBeInTheDocument();
     expect(
       within(dialog).getByRole("button", { name: "Cancelar" }),
     ).toHaveFocus();
-    await user.click(within(dialog).getByRole("button", { name: "Retirar" }));
+    await user.click(
+      within(dialog).getByRole("button", {
+        name: "Retirar de la organización",
+      }),
+    );
 
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Carlos Gómez ya no pertenece a la organización",

@@ -1,19 +1,15 @@
-/* Marco del espacio de trabajo: el mismo fondo oscuro del acceso (ADR-023), sin el foco de
-   luz del acta. Aquí la atención va al trabajo, no a la marca. */
+/* Marco del espacio de trabajo: encabezado de una línea, menú lateral en --surface-1 y el
+   contenido sobre el fondo. Aquí la atención va al trabajo, no a la marca. */
 .shell {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--color-ink-950);
-  color: var(--color-text-inverse);
+  background: var(--bg);
+  color: var(--text);
 }
 
 .shell :where(a:not([class])) {
-  color: var(--color-primary-300);
-}
-
-.shell :focus-visible {
-  outline-color: var(--color-primary-300);
+  color: var(--accent-strong);
 }
 
 .skipLink {
@@ -23,8 +19,8 @@
   z-index: 30;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
-  background: var(--color-ink-800);
-  color: var(--color-text-inverse);
+  background: var(--surface-2);
+  color: var(--text);
   transform: translateY(-200%);
 }
 
@@ -37,82 +33,82 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-4) var(--space-6);
-  border-bottom: 1px solid var(--color-ink-800);
-  background: var(--color-ink-900);
+  min-height: var(--header-height);
+  padding: 0 var(--space-6);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-1);
 }
 
 .brand {
+  font-family: var(--font-sans);
+  font-size: 23px;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--color-text-inverse);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-ui);
   text-decoration: none;
 }
 
-.main {
+/* Menú lateral a la izquierda y contenido a la derecha. En pantallas angostas el menú pasa
+   arriba, como una franja (WorkspaceNav.module.css). */
+.body {
   flex: 1;
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+}
+
+/* Sin menú (mientras carga o si falla) el contenido ocupa todo el ancho. */
+.body > .main:only-child {
+  grid-column: 1 / -1;
+}
+
+.main {
   width: 100%;
+  min-width: 0;
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: var(--space-12) var(--space-6) var(--space-16);
+  padding: var(--space-12) var(--space-12) var(--space-16);
 }
 
 .main:focus {
   outline: none;
 }
 
-/* Menú lateral y contenido. En pantallas anchas el menú es una columna; en las angostas pasa
-   arriba, como una franja (WorkspaceNav.module.css). */
-.workspace {
-  display: grid;
-  grid-template-columns: 208px minmax(0, 1fr);
-  gap: var(--space-12);
-  align-items: start;
-}
-
-.content {
-  min-width: 0;
-}
-
 @media (max-width: 900px) {
-  .main {
-    padding-top: 0;
-  }
-
-  .status,
-  .failure {
-    margin-top: var(--space-8);
-  }
-
-  .workspace {
+  .body {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-8);
+    align-content: start;
+  }
+
+  .main {
+    padding: var(--space-6) var(--space-6) var(--space-12);
   }
 }
 
 @media (max-width: 560px) {
   .main {
-    padding: 0 var(--space-4) var(--space-12);
+    padding: var(--space-6) var(--space-4) var(--space-12);
   }
 
   .header {
-    padding: var(--space-3) var(--space-4);
+    padding: 0 var(--space-4);
   }
 }
 
 .status {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
-  color: var(--color-text-inverse-muted);
+  gap: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .spinner {
-  animation: spin 900ms linear infinite;
+  animation: spin var(--motion-spin) linear infinite;
 }
 
 @keyframes spin {
@@ -131,8 +127,11 @@
   display: grid;
   gap: var(--space-3);
   justify-items: start;
-  max-width: 640px;
+  max-width: 64ch;
   padding: var(--space-4);
-  border-left: 2px solid var(--color-error-400);
-  background: color-mix(in srgb, var(--color-error-400) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--err) 40%, var(--line));
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }

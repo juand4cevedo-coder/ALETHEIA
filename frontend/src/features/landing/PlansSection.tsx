@@ -1,34 +1,35 @@
-import { ArrowRight } from "lucide-react";
 import { Link } from "react-router";
 
-import { Reveal } from "../../components/ui/Reveal.tsx";
 import { ROUTES } from "../../config/routes.ts";
 import { PlanSummary } from "../billing/PlanSummary.tsx";
 import styles from "./PlansSection.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
+import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 
-// Planes desde el catálogo, con enlace a la comparación completa (UI-002).
+// Precios: ¿cuánto cuesta? Precios, límites y días de prueba salen del catálogo (RN-019), nunca
+// de este archivo; el enlace lleva a la comparación completa (UI-002).
 export function PlansSection() {
   return (
-    <section className={section.section} aria-labelledby="titulo-planes">
+    <section
+      data-reveal
+      className={section.section}
+      aria-labelledby="titulo-planes"
+    >
       <div className={section.inner}>
         <SectionHeading
           id="titulo-planes"
-          index={6}
-          kicker="Planes"
-          title="Las mismas garantías en todos los planes"
-          lead="Todos los planes preservan igual: huella, sello de tiempo, cadena de custodia, exportación y verificador. Lo que cambia es la capacidad, el número de usuarios y el soporte."
+          kicker="Precios"
+          title="Un espacio a la medida de su práctica."
+          lead="Compare la capacidad, los integrantes y las condiciones de cada plan. Todos los valores se muestran en pesos colombianos."
         />
-        <Reveal>
-          <PlanSummary />
-        </Reveal>
-        <Reveal className={styles.more}>
+        <PlanSummary />
+        <p className={styles.more}>
           <Link to={ROUTES.pricing} className={styles.link}>
-            Comparar los planes en detalle y ver el pago anual
-            <ArrowRight size={16} />
+            Comparar los planes y ver el pago anual
+            <FlechaDerechaIcon size={16} aria-hidden="true" />
           </Link>
-        </Reveal>
+        </p>
       </div>
     </section>
   );

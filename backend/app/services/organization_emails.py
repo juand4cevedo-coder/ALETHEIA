@@ -107,8 +107,8 @@ def invitation_email(
             "de sus casos.\n\n"
             f"Para aceptarla, abra este enlace:\n{link}\n\n"
             f"La invitación vence el {expires} (hora de Colombia) y sirve una sola vez.\n\n"
-            "Si no esperaba esta invitación, ignore este mensaje: nadie tendrá acceso a nada "
-            "con su correo.\n\n"
+            "Si no esperaba esta invitación, ignore este mensaje. "
+            "No pasa nada si no la acepta.\n\n"
             "ALETHEIA"
         ),
         html=email_layout(
@@ -122,5 +122,6 @@ def invitation_email(
             ("Aceptar la invitación", link),
             f"La invitación vence el {expires} (hora de Colombia) y sirve una sola vez. Si "
             "no esperaba esta invitación, ignore este mensaje.",
+            site_url=settings.public_url,
         ),
     )

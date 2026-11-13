@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { CircleCheck, LinkIcon, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -7,17 +6,21 @@ import type { VerifyEmailError } from "../api/generated";
 import { verifyEmailMutation } from "../api/generated/@tanstack/react-query.gen.ts";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { CONTACT_EMAIL, SITE_NAME } from "../config/site.ts";
-import { Emblem } from "../components/ui/Emblem.tsx";
+import { CONTACT_EMAIL, pageTitle } from "../config/site.ts";
 import { tokenFromHash } from "../features/auth/linkToken.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import styles from "./VerifyEmailPage.module.css";
 
-const DATE = new Intl.DateTimeFormat("es-CO", { dateStyle: "long" });
+// «10 de noviembre de 2026, 10:39 a. m.», en hora de Colombia como el resto de la plataforma.
+const DATE = new Intl.DateTimeFormat("es-CO", {
+  dateStyle: "long",
+  timeZone: "America/Bogota",
+});
 const TIME = new Intl.DateTimeFormat("es-CO", {
-  hour: "2-digit",
+  hour: "numeric",
   minute: "2-digit",
-  hourCycle: "h23",
+  hour12: true,
+  timeZone: "America/Bogota",
 });
 
 type Outcome =
@@ -77,21 +80,12 @@ export function VerifyEmailPage() {
 
   return (
     <section className={styles.screen} aria-labelledby="titulo-verificacion">
-      <title>{`Verificar el correo · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Verificar el correo")}</title>
       <meta name="robots" content="noindex" />
-      <Emblem
-        state={
-          outcome.kind === "verifying"
-            ? "working"
-            : outcome.kind === "verified"
-              ? "done"
-              : "idle"
-        }
-      />
       {outcome.kind === "verifying" && (
         <div className={styles.status} role="status">
           <h1 id="titulo-verificacion" className={styles.title}>
-            Verificando su correo…
+            Verificando su correo
           </h1>
         </div>
       )}
@@ -106,42 +100,24 @@ export function VerifyEmailPage() {
           >
             Correo verificado
           </h1>
-          <figure className={styles.record}>
-            <figcaption className={styles.recordTitle}>
-              Constancia de verificación
-            </figcaption>
-            <dl className={styles.rows}>
-              <div className={styles.row}>
-                <dt>
-                  <CircleCheck size={16} aria-hidden="true" />
-                  Estado
-                </dt>
-                <dd>Verificado</dd>
-              </div>
-              <div className={styles.row}>
-                <dt>
-                  <ShieldCheck size={16} aria-hidden="true" />
-                  Fecha y hora
-                </dt>
-                <dd>
-                  {DATE.format(outcome.at)}, {TIME.format(outcome.at)}
-                </dd>
-              </div>
-              <div className={styles.row}>
-                <dt>
-                  <LinkIcon size={16} aria-hidden="true" />
-                  Enlace
-                </dt>
-                <dd>Usado. No vuelve a servir.</dd>
-              </div>
-            </dl>
-          </figure>
           <p className={styles.lead}>
             Ya puede ingresar con su correo y su contraseña.
           </p>
-          <ButtonLink to={ROUTES.signIn} variant="bright" shape="pill">
-            Ingresar
-          </ButtonLink>
+          {/* El título ya dice el estado: la constancia guarda solo cuándo pasó y qué fue del
+              enlace. Sin íconos ni recuadro, porque ya está dentro del panel de acceso. */}
+          <dl className={styles.record}>
+            <div className={styles.row}>
+              <dt>Fecha y hora</dt>
+              <dd>
+                {`${DATE.format(outcome.at)}, ${TIME.format(outcome.at)} (hora de Colombia)`}
+              </dd>
+            </div>
+            <div className={styles.row}>
+              <dt>Enlace</dt>
+              <dd>Usado. No vuelve a servir.</dd>
+            </div>
+          </dl>
+          <ButtonLink to={ROUTES.signIn}>Ingresar a mi cuenta</ButtonLink>
         </>
       )}
 
@@ -158,7 +134,7 @@ export function VerifyEmailPage() {
           <p className={styles.lead}>
             {outcome.kind === "missing"
               ? "El enlace llegó incompleto. Ábralo desde el botón del correo o pida uno nuevo."
-              : "Puede que haya vencido, que ya se haya usado o que el correo de la cuenta haya cambiado. Pida uno nuevo con su correo."}
+              : "Es posible que haya vencido o que ya se haya usado. También deja de servir si cambió el correo de la cuenta. Pida uno nuevo."}
           </p>
           <ResendVerification />
         </>
@@ -180,7 +156,7 @@ export function VerifyEmailPage() {
               "Hizo varios intentos seguidos. Espere 15 minutos y abra de nuevo el enlace del correo."
             ) : (
               <>
-                Inténtelo de nuevo abriendo el enlace del correo; si continúa,
+                Abra de nuevo el enlace del correo. Si vuelve a pasar,
                 escríbanos a{" "}
                 <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
               </>

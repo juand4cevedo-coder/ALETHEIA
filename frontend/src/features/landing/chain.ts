@@ -4,33 +4,40 @@
 /** Huella "anterior" del primer evento: no hay nada antes de él. */
 export const GENESIS = "0".repeat(64);
 
+// La alteración que se demuestra: adelantar la hora de la descarga, el tipo de cambio que le
+// interesaría a quien quiere mover la hora de un hecho.
+export const ALTERED_INDEX = 2;
+export const ALTERED_TIME = "09:02:41 a. m.";
+
 /** Lo que se resume en cada huella: la del evento anterior, la hora y lo que pasó. */
 export function chainRecord(prev: string, time: string, text: string): string {
   return `${prev}|${time}|${text}`;
 }
 
-// Los mismos cuatro eventos de la vista del hero (EvidencePreview). Cada huella es la SHA-256
-// real de chainRecord(huella anterior, hora, texto); la prueba la recalcula para que nadie
-// pueda cambiar un texto sin cambiar también su huella.
+// Cuatro eventos ilustrativos de una evidencia. Cada uno es una
+// acción de la lista cerrada de custodia (custodyActions.ts): evidence_uploaded,
+// evidence_stamped, evidence_downloaded y export_requested. Cada huella es la SHA-256 real de
+// chainRecord(huella anterior, hora, texto); la prueba la recalcula para que nadie pueda cambiar
+// un texto sin cambiar también su huella.
 export const CHAIN_EVENTS: { time: string; text: string; hash: string }[] = [
   {
-    time: "10:39:04",
-    text: "Laura Gómez subió el archivo original",
-    hash: "1e9b138ee241f892cf989405079bbe3f1e0d9fd75a1ca34b0202b46ddf3497ab",
+    time: "10:39:04 a. m.",
+    text: "Laura Gómez subió el original con su huella SHA-256",
+    hash: "d431f2552071fe26cc9d2c905adbb7f565d12855ec32998833a1c7be6c51fa8d",
   },
   {
-    time: "10:39:05",
-    text: "Se registró la huella SHA-256",
-    hash: "aef766335d2081901260b7da3eeb441bddf533faba9e1c441ae8ca400e9cc186",
-  },
-  {
-    time: "10:39:07",
+    time: "10:39:07 a. m.",
     text: "La autoridad externa emitió el sello de tiempo",
-    hash: "1f03bd6ec2b0d8c56c266910b1072e9b3ddecbc4ec36f5e4dbda790516892391",
+    hash: "369d651391c0ed6199699f9c3a5b19910e85a933ed149637c02ba8ad5e2c8f09",
   },
   {
-    time: "11:02:41",
-    text: "Andrés Ruiz consultó la evidencia",
-    hash: "1d6b111b56915382a66ae14b941eca6dd4a48bf80b06d3386328126f7bcf0b27",
+    time: "11:02:41 a. m.",
+    text: "Andrés Ruiz descargó el original",
+    hash: "8f90e2620bbe0694d6dceead008c3ca891880f986f6496af424bea88a023345d",
+  },
+  {
+    time: "11:15:20 a. m.",
+    text: "Laura Gómez solicitó el paquete de preservación",
+    hash: "e87fa0d0ea481d3e5f9decfde7aab062df12e53abc190f7bafe2de765eb1c973",
   },
 ];

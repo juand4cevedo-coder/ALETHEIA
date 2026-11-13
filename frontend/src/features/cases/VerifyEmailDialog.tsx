@@ -1,38 +1,37 @@
-import { MailCheck } from "lucide-react";
-
 import { Button } from "../../components/ui/Button.tsx";
 import { Dialog } from "../../components/ui/Dialog.tsx";
 import { ResendVerification } from "../auth/ResendVerification.tsx";
 import { CASE_MESSAGES } from "./messages.ts";
+import { CorreoIcon } from "../../components/ui/icons.tsx";
 
 type VerifyEmailDialogProps = {
+  /** Correo de la sesión: el enlace nuevo se envía ahí sin volver a pedirlo. */
+  email: string;
   open: boolean;
   onClose: () => void;
 };
 
 // Con el correo sin verificar, «Abrir caso» no se oculta: abre este aviso, que explica por qué
 // todavía no puede abrir casos y ofrece reenviar el enlace (especificación, 5.2).
-export function VerifyEmailDialog({ open, onClose }: VerifyEmailDialogProps) {
+export function VerifyEmailDialog({
+  email,
+  open,
+  onClose,
+}: VerifyEmailDialogProps) {
   return (
     <Dialog
       open={open}
       onClose={onClose}
       title="Verifique su correo"
-      icon={<MailCheck size={22} />}
+      icon={<CorreoIcon size={20} />}
       actions={
-        <Button
-          surface="dark"
-          variant="secondary"
-          size="sm"
-          shape="pill"
-          onClick={onClose}
-        >
+        <Button variant="secondary" size="sm" onClick={onClose}>
           Cerrar
         </Button>
       }
     >
       <p>{`${CASE_MESSAGES.emailNotVerified}.`}</p>
-      <ResendVerification />
+      <ResendVerification email={email} />
     </Dialog>
   );
 }

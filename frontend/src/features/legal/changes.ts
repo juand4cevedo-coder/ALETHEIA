@@ -6,10 +6,10 @@ import { LEGAL_VERSION } from "../../config/legal.ts";
 // texto completo de cada política.
 export const LEGAL_CHANGES: Readonly<Record<string, readonly string[]>> = {
   "2026-11-06": [
-    "Identificamos a quien opera ALETHEIA con su NIT y su dirección, y aclaramos que no cobra IVA: los precios publicados son el valor final.",
+    "Identificamos a quien opera ALETHEIA con su NIT y su dirección. Los precios publicados son el valor final: no se cobra IVA.",
     "Explicamos cómo se contrata un plan, que no hay permanencia mínima y qué comprobante recibe con cada pago.",
-    "Precisamos que sus datos viajan a nuestros proveedores en Estados Unidos para que los traten por cuenta nuestra y con las mismas reglas de la política.",
-    "Mantenemos la devolución completa si se arrepiente dentro de cinco días hábiles, y el dinero vuelve en máximo quince días calendario.",
+    "Sus datos viajan a proveedores en Estados Unidos. Ellos los tratan por cuenta nuestra y con las reglas de la política.",
+    "Si se arrepiente dentro de los cinco días hábiles siguientes a un pago, le devolvemos todo. El dinero vuelve en máximo quince días calendario.",
     "Cada política puede descargarse con su huella, para comprobar que guardó la versión vigente.",
   ],
 };

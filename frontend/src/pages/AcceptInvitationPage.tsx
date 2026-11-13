@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LinkIcon, UsersRound } from "lucide-react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 
@@ -11,13 +10,12 @@ import {
 import type { InvitationPreview } from "../api/generated";
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
-import { Emblem } from "../components/ui/Emblem.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { LEGAL_VERSION } from "../config/legal.ts";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { apiProblem } from "../features/auth/apiProblem.ts";
@@ -32,6 +30,7 @@ import {
 import { dateTime } from "../features/members/format.ts";
 import { rememberSession } from "../features/session/sessionHint.ts";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
+import { UsuariosIcon, VinculoIcon } from "../components/ui/icons.tsx";
 
 const TITLE_ID = "titulo-invitacion";
 const METER_ID = "medidor-invitacion";
@@ -78,7 +77,7 @@ export function AcceptInvitationPage() {
 
   return (
     <>
-      <title>{`Aceptar la invitación · ${SITE_NAME}`}</title>
+      <title>{pageTitle("Aceptar la invitación")}</title>
       <meta name="robots" content="noindex" />
 
       <div className={styles.screen}>
@@ -86,9 +85,8 @@ export function AcceptInvitationPage() {
           <Unusable />
         ) : invitation.isPending ? (
           <header className={styles.intro}>
-            <Emblem state="working" />
             <p className={styles.lead} role="status">
-              Abriendo su invitación…
+              Abriendo su invitación
             </p>
           </header>
         ) : invitation.isError ? (
@@ -112,7 +110,6 @@ export function AcceptInvitationPage() {
 function Intro({ invitation }: { invitation: InvitationPreview }) {
   return (
     <header className={styles.intro}>
-      <Emblem state="idle" />
       <h1 id={TITLE_ID} className={styles.title}>
         Únase a {invitation.organization_name}
       </h1>
@@ -296,20 +293,14 @@ function AcceptForm({
           </div>
         ) : (
           <Link to={ROUTES.forgotPassword} className={styles.forgot}>
-            ¿La olvidó?
+            ¿Olvidó su contraseña?
           </Link>
         )}
 
         <div className={styles.submit}>
-          <Button
-            type="submit"
-            variant="bright"
-            shape="pill"
-            block
-            busy={accept.isPending}
-          >
+          <Button type="submit" block busy={accept.isPending}>
             {accept.isPending
-              ? "Entrando…"
+              ? "Ingresando"
               : isNew
                 ? "Crear mi cuenta y entrar"
                 : "Aceptar la invitación"}
@@ -323,18 +314,17 @@ function AcceptForm({
 function MemberElsewhere({ invitation }: { invitation: InvitationPreview }) {
   return (
     <section className={styles.notice} aria-labelledby={TITLE_ID}>
-      <UsersRound size={28} aria-hidden="true" />
+      <UsuariosIcon size={20} aria-hidden="true" />
       <h1 id={TITLE_ID} className={styles.noticeTitle}>
         Su correo ya está en otra organización
       </h1>
       <p>
         <strong translate="no">{invitation.email}</strong> ya pertenece a una
-        organización en ALETHEIA. Por ahora cada persona puede estar en una sola
-        organización, así que no puede unirse a {invitation.organization_name}.
+        organización en ALETHEIA. Por ahora, cada persona puede estar en una
+        sola organización. Por eso no puede unirse a{" "}
+        {invitation.organization_name}.
       </p>
-      <ButtonLink to={ROUTES.signIn} variant="bright" shape="pill">
-        Ingresar a mi cuenta
-      </ButtonLink>
+      <ButtonLink to={ROUTES.signIn}>Ingresar a mi cuenta</ButtonLink>
     </section>
   );
 }
@@ -342,7 +332,7 @@ function MemberElsewhere({ invitation }: { invitation: InvitationPreview }) {
 function Unusable() {
   return (
     <section className={styles.notice} aria-labelledby={TITLE_ID}>
-      <LinkIcon size={28} aria-hidden="true" />
+      <VinculoIcon size={20} aria-hidden="true" />
       <h1 id={TITLE_ID} className={styles.noticeTitle}>
         Esta invitación ya no sirve
       </h1>
@@ -351,9 +341,7 @@ function Unusable() {
         que ya la haya aceptado o que la hayan revocado. Pida una nueva a quien
         le envió la invitación.
       </p>
-      <ButtonLink to={ROUTES.signIn} variant="bright" shape="pill">
-        Ingresar
-      </ButtonLink>
+      <ButtonLink to={ROUTES.signIn}>Ingresar</ButtonLink>
     </section>
   );
 }

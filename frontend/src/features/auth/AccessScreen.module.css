@@ -1,24 +1,21 @@
-/* Pantallas de acceso (ADR-029): emblema, título y formulario en una sola columna centrada
-   sobre la escena del alba. */
+/* Pantallas de acceso (ADR-029): título y formulario dentro del panel de AuthLayout. */
 .screen {
   display: grid;
-  gap: var(--space-8);
+  gap: var(--space-6);
 }
 
 .intro {
   display: grid;
-  justify-items: center;
-  gap: var(--space-4);
+  gap: var(--space-2);
   text-align: center;
 }
 
 .title {
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 38px;
-  letter-spacing: -0.024em;
-  text-shadow: 0 2px 24px
-    color-mix(in srgb, var(--color-ink-950) 60%, transparent);
+  font-family: var(--font-sans);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  line-height: 1.25;
 }
 
 .title:focus {
@@ -26,42 +23,39 @@
 }
 
 .lead {
-  max-width: 42ch;
-  color: color-mix(in srgb, var(--color-text-inverse) 78%, transparent);
-  font-size: 16px;
-  line-height: 24px;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .form {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-6);
 }
 
 .fields {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-6);
   min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
 }
 
-/* El campo de la oficina entra al elegir una firma, sin saltar de golpe. */
+/* El campo de la oficina entra al elegir una firma: responde a esa elección, sin desplazarse. */
 .appear {
-  animation: appear var(--motion-base) var(--ease-out);
+  animation: appear var(--motion-base) var(--ease-standard);
 }
 
 @keyframes appear {
   from {
     opacity: 0;
-    transform: translateY(-6px);
   }
 }
 
 .terms {
-  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
-  font-size: 14px;
-  line-height: 21px;
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 .submit {
@@ -73,12 +67,11 @@
   gap: var(--space-3);
   justify-items: start;
   padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--color-error-400) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--err) 40%, var(--line));
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-error-400) 14%, transparent);
-  backdrop-filter: blur(14px);
-  font-size: 14px;
-  line-height: 21px;
+  background: var(--surface-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
 }
 
 .alert:focus {
@@ -90,41 +83,37 @@
   justify-self: end;
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
-  margin-top: calc(-1 * var(--space-1));
-  color: var(--color-primary-300);
-  font-size: 14px;
+  min-height: var(--control-height-sm);
+  margin-top: calc(-1 * var(--space-2));
+  color: var(--accent-strong);
+  font-size: var(--font-size-support);
   font-weight: 500;
   text-decoration: none;
 }
 
 .forgot:hover {
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: var(--underline-offset);
 }
 
-/* Aviso de éxito: reemplaza al formulario cuando la cuenta queda creada. */
+/* Aviso que reemplaza al formulario cuando la acción terminó. Ya está dentro del panel, así que
+   no lleva recuadro propio. Que el correo salió no es una verificación, así que el visto va en
+   el color del texto y no en verde. */
 .notice {
   display: grid;
-  justify-items: center;
+  justify-items: start;
   gap: var(--space-3);
-  padding: var(--space-6);
-  border: 1px solid
-    color-mix(in srgb, var(--color-success-400) 40%, transparent);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-ink-950) 45%, transparent);
-  backdrop-filter: blur(14px);
-  text-align: center;
-  animation: appear var(--motion-slow) var(--ease-out);
 }
 
 .notice svg {
-  color: var(--color-success-400);
+  color: var(--text);
 }
 
 .noticeTitle {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: var(--font-size-subtitle);
+  font-weight: 500;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: var(--line-height-subtitle);
 }
 
 .noticeTitle:focus {
@@ -132,22 +121,23 @@
 }
 
 .notice p {
-  color: color-mix(in srgb, var(--color-text-inverse) 78%, transparent);
-  font-size: 15px;
-  line-height: 23px;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 560px) {
-  .title {
-    font-size: 28px;
-    line-height: 34px;
+@media (prefers-reduced-motion: reduce) {
+  .appear {
+    animation: none;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .appear,
-  .notice {
-    animation: none;
-  }
+.intro a {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+}
+.intro a:hover {
+  text-decoration: underline;
 }

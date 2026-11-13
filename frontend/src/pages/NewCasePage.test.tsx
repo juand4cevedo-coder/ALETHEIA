@@ -39,7 +39,7 @@ function me(role: Role, emailVerified = true) {
 
 const CREATED = {
   id: CASE_ID,
-  title: "Despido sin justa causa · Torres",
+  title: "Despido sin justa causa, Torres",
   filing_number: RADICADO,
   court: null,
   practice_area: "labor",
@@ -94,14 +94,14 @@ describe("Abrir un caso (HU-015)", () => {
 
     await user.type(
       await screen.findByLabelText("Título del caso"),
-      "  Despido sin justa causa · Torres ",
+      "  Despido sin justa causa, Torres ",
     );
     await user.type(
       screen.getByLabelText(/Número de radicación/),
       "11001-31-05-003-2026-00143-00",
     );
     await user.selectOptions(screen.getByLabelText(/Especialidad/), "labor");
-    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+    await user.click(screen.getByRole("button", { name: "Abrir el caso" }));
 
     await waitFor(() =>
       expect(router.state.location.pathname).toBe(`/app/casos/${CASE_ID}`),
@@ -112,7 +112,7 @@ describe("Abrir un caso (HU-015)", () => {
     ).toBeInTheDocument();
     const [request] = posts();
     expect(await request!.json()).toEqual({
-      title: "Despido sin justa causa · Torres",
+      title: "Despido sin justa causa, Torres",
       filing_number: RADICADO,
       practice_area: "labor",
     });
@@ -148,9 +148,9 @@ describe("Abrir un caso (HU-015)", () => {
 
     await user.type(
       await screen.findByLabelText("Título del caso"),
-      "Despido sin justa causa · Torres",
+      "Despido sin justa causa, Torres",
     );
-    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+    await user.click(screen.getByRole("button", { name: "Abrir el caso" }));
     await waitFor(() =>
       expect(router.state.location.pathname).toBe(`/app/casos/${CASE_ID}`),
     );
@@ -191,7 +191,7 @@ describe("Abrir un caso (HU-015)", () => {
     expect(screen.getByText(/^23 dígitos\./)).toBeInTheDocument();
   });
 
-  it("la vista previa muestra el título, el radicado y «Evento 1 · Caso creado»", async () => {
+  it("la vista previa muestra el título, el radicado y «Caso creado»", async () => {
     serve("lawyer");
     const user = userEvent.setup();
     await renderRoute("/app/casos/nuevo");
@@ -213,18 +213,16 @@ describe("Abrir un caso (HU-015)", () => {
       within(preview).getByRole("heading", { name: "Sucesión Gómez Pardo" }),
     ).toBeInTheDocument();
     expect(
-      within(preview).getByText("CASO · 11001 31 05 003 2026 00143 00"),
+      within(preview).getByText("11001 31 05 003 2026 00143 00"),
     ).toBeInTheDocument();
     expect(
       within(preview).getByText("Juzgado 3 Laboral del Circuito de Bogotá"),
     ).toBeInTheDocument();
     expect(
-      within(preview).getByText("Laura Gómez · Abogado"),
+      within(preview).getByText("Laura Gómez (Abogado)"),
     ).toBeInTheDocument();
     expect(within(preview).getByText("Ruiz & Asociados")).toBeInTheDocument();
-    expect(
-      within(preview).getByText("Evento 1 · Caso creado"),
-    ).toBeInTheDocument();
+    expect(within(preview).getByText("Caso creado")).toBeInTheDocument();
     expect(preview).not.toHaveTextContent(/certific|valida la prueba/i);
   });
 
@@ -243,11 +241,11 @@ describe("Abrir un caso (HU-015)", () => {
       await screen.findByLabelText("Título del caso"),
       "Sucesión Gómez Pardo",
     );
-    const button = screen.getByRole("button", { name: "Abrir caso" });
+    const button = screen.getByRole("button", { name: "Abrir el caso" });
     await user.dblClick(button);
 
     const busy = await screen.findByRole("button", {
-      name: "Abriendo el caso…",
+      name: "Abriendo el caso",
     });
     expect(busy).toBeDisabled();
     await user.click(busy);
@@ -275,7 +273,7 @@ describe("Abrir un caso (HU-015)", () => {
     await user.type(title, "Sucesión Gómez Pardo");
     const filing = screen.getByLabelText(/Número de radicación/);
     await user.type(filing, RADICADO);
-    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+    await user.click(screen.getByRole("button", { name: "Abrir el caso" }));
 
     await waitFor(() => expect(filing).toHaveFocus());
     expect(filing).toHaveAttribute("aria-invalid", "true");
@@ -307,7 +305,7 @@ describe("Abrir un caso (HU-015)", () => {
     );
     const filing = screen.getByLabelText(/Número de radicación/);
     await user.type(filing, RADICADO);
-    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+    await user.click(screen.getByRole("button", { name: "Abrir el caso" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(readOnly);
     expect(filing).not.toHaveAttribute("aria-invalid");
@@ -328,7 +326,7 @@ describe("Abrir un caso (HU-015)", () => {
       await screen.findByLabelText("Título del caso"),
       "Sucesión Gómez Pardo",
     );
-    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+    await user.click(screen.getByRole("button", { name: "Abrir el caso" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       KEYS_UNAVAILABLE,
@@ -351,7 +349,7 @@ describe("Abrir un caso (HU-015)", () => {
       await screen.findByLabelText("Título del caso"),
       "Sucesión Gómez Pardo",
     );
-    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+    await user.click(screen.getByRole("button", { name: "Abrir el caso" }));
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(unavailable);
@@ -369,24 +367,24 @@ describe("Abrir un caso (HU-015)", () => {
       await screen.findByLabelText("Título del caso"),
       "Sucesión Gómez Pardo",
     );
-    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+    await user.click(screen.getByRole("button", { name: "Abrir el caso" }));
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(SYSTEM_ERROR_LEAD);
     expect(alert).not.toHaveTextContent(KEYS_UNAVAILABLE);
   });
 
-  it("el aviso de privacidad dice que la evidencia irá cifrada, en futuro", async () => {
+  it("el aviso de privacidad dice quién ve los datos y no promete nada sobre evidencias", async () => {
     serve("owner");
     await renderRoute("/app/casos/nuevo");
 
     await screen.findByLabelText("Título del caso");
-    expect(
-      screen.getByText(
-        /La evidencia que suba irá cifrada con la llave propia del caso\./,
-      ),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/sí va cifrada/)).not.toBeInTheDocument();
+    const notice = screen.getByText(
+      /Estos campos los ve todo el equipo del caso\./,
+    );
+    expect(notice).toHaveTextContent(/^No escriba aquí datos sensibles/);
+    // La carga de evidencias aún no existe: el aviso no habla de ellas.
+    expect(notice).not.toHaveTextContent(/evidencia|cifrad/i);
   });
 
   it("sin título no envía y enfoca el campo", async () => {
@@ -396,7 +394,7 @@ describe("Abrir un caso (HU-015)", () => {
 
     const title = await screen.findByLabelText("Título del caso");
     await user.type(title, "   ");
-    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+    await user.click(screen.getByRole("button", { name: "Abrir el caso" }));
 
     expect(title).toHaveFocus();
     expect(title).toHaveAttribute("aria-invalid", "true");
@@ -412,7 +410,7 @@ describe("Abrir un caso (HU-015)", () => {
       await screen.findByLabelText("Título del caso"),
       "Sucesión Gómez Pardo",
     );
-    await user.click(screen.getByRole("button", { name: "Abrir caso" }));
+    await user.click(screen.getByRole("button", { name: "Abrir el caso" }));
 
     const dialog = screen.getByRole("dialog", { name: "Verifique su correo" });
     expect(dialog).toHaveTextContent(
@@ -421,6 +419,13 @@ describe("Abrir un caso (HU-015)", () => {
     expect(
       within(dialog).getByRole("button", { name: "Enviarme un enlace nuevo" }),
     ).toBeInTheDocument();
+    // La sesión ya conoce el correo: el diálogo lo muestra y no lo vuelve a pedir.
+    expect(
+      within(dialog).queryByLabelText("Correo electrónico"),
+    ).not.toBeInTheDocument();
+    expect(within(dialog).getByText(/^Llegará a/)).toHaveTextContent(
+      /^Llegará a \S+@\S+\.$/,
+    );
     expect(posts()).toHaveLength(0);
   });
 
@@ -432,7 +437,7 @@ describe("Abrir un caso (HU-015)", () => {
       "No tiene permiso para esta acción.",
     );
     expect(
-      screen.queryByRole("button", { name: "Abrir caso" }),
+      screen.queryByRole("button", { name: "Abrir el caso" }),
     ).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Título del caso")).not.toBeInTheDocument();
   });
@@ -453,16 +458,22 @@ describe("Abrir un caso (HU-015)", () => {
 
 describe("Inicio del espacio de trabajo", () => {
   it.each(["owner", "admin", "lawyer", "assistant"] as const)(
-    "un %s no ve «Abrir caso» y llega al libro de casos",
+    "un %s tiene las acciones de su rol y llega al libro de casos",
     async (role) => {
       serve(role);
       const user = userEvent.setup();
       const { router } = await renderRoute("/app");
 
       await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
-      expect(
-        screen.queryByRole("link", { name: "Abrir caso" }),
-      ).not.toBeInTheDocument();
+      if (role === "assistant") {
+        expect(
+          screen.queryByRole("link", { name: "Abrir un caso" }),
+        ).not.toBeInTheDocument();
+      } else {
+        expect(
+          screen.getByRole("link", { name: "Abrir un caso" }),
+        ).toHaveAttribute("href", "/app/casos/nuevo");
+      }
       await user.click(screen.getByRole("link", { name: "Ver mis casos" }));
       await waitFor(() =>
         expect(router.state.location.pathname).toBe("/app/casos"),

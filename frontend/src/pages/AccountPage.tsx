@@ -1,11 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import {
-  CircleAlert,
-  CircleCheck,
-  KeyRound,
-  MonitorSmartphone,
-  UserRound,
-} from "lucide-react";
 import { type FormEvent, type ReactNode, useId, useRef, useState } from "react";
 import { useOutletContext } from "react-router";
 
@@ -14,13 +7,15 @@ import { changePasswordMutation } from "../api/generated/@tanstack/react-query.g
 import { Button } from "../components/ui/Button.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
+import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
-import { SITE_NAME } from "../config/site.ts";
+import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { newPasswordError } from "../features/auth/newPassword.ts";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import { PASSWORD_MAX_LENGTH } from "../features/auth/signUp.ts";
+import { EmailStatus } from "../features/session/EmailStatus.tsx";
 import { SignOutEverywhereDialog } from "../features/session/SignOutEverywhereDialog.tsx";
 import { useSignOut } from "../features/session/useSignOut.ts";
 import styles from "./AccountPage.module.css";
@@ -44,22 +39,13 @@ export function AccountPage() {
   const me = useOutletContext<Me>();
 
   return (
-    <section className={styles.screen} aria-labelledby="titulo-cuenta">
-      <title>{`Mi cuenta · ${SITE_NAME}`}</title>
+    <div className={styles.screen}>
+      <title>{pageTitle("Mi cuenta")}</title>
       <meta name="robots" content="noindex" />
 
-      <header className={styles.intro}>
-        <p className={styles.eyebrow}>Perfil y seguridad</p>
-        <h1 id="titulo-cuenta" className={styles.title}>
-          Mi cuenta
-        </h1>
-      </header>
+      <PageHeader title="Mi cuenta" />
 
-      <Card
-        icon={<UserRound size={20} />}
-        title="Perfil"
-        description="Los datos con los que ingresa a ALETHEIA."
-      >
+      <Card title="Perfil">
         <dl className={styles.record}>
           <div className={styles.row}>
             <dt>Nombre</dt>
@@ -69,17 +55,7 @@ export function AccountPage() {
             <dt>Correo</dt>
             <dd className={styles.email}>
               <span translate="no">{me.email}</span>
-              {me.email_verified ? (
-                <span className={styles.verified}>
-                  <CircleCheck size={16} aria-hidden="true" />
-                  Verificado
-                </span>
-              ) : (
-                <span className={styles.pending}>
-                  <CircleAlert size={16} aria-hidden="true" />
-                  Sin verificar
-                </span>
-              )}
+              <EmailStatus verified={me.email_verified} />
             </dd>
           </div>
           <div className={styles.row}>
@@ -91,34 +67,28 @@ export function AccountPage() {
 
       <PasswordCard />
       <SessionsCard />
-    </section>
+    </div>
   );
 }
 
+// Un panel por tema: el título y, si hace falta, lo que pasa al usar lo que contiene.
 function Card({
-  icon,
   title,
   description,
   children,
 }: {
-  icon: ReactNode;
   title: string;
-  description: string;
+  description?: string;
   children: ReactNode;
 }) {
   const titleId = useId();
   return (
     <section className={styles.card} aria-labelledby={titleId}>
       <div className={styles.cardHead}>
-        <span className={styles.cardIcon} aria-hidden="true">
-          {icon}
-        </span>
-        <div>
-          <h2 id={titleId} className={styles.cardTitle}>
-            {title}
-          </h2>
-          <p className={styles.cardText}>{description}</p>
-        </div>
+        <h2 id={titleId} className={styles.cardTitle}>
+          {title}
+        </h2>
+        {description && <p className={styles.cardText}>{description}</p>}
       </div>
       {children}
     </section>
@@ -184,9 +154,8 @@ function PasswordCard() {
 
   return (
     <Card
-      icon={<KeyRound size={20} />}
       title="Contraseña"
-      description="Al cambiarla cerraremos la sesión en sus otros dispositivos; en este seguirá trabajando."
+      description="Al cambiarla se cierran sus sesiones en otros dispositivos. En este puede seguir trabajando."
     >
       {changed && (
         <Notice tone="success">
@@ -238,13 +207,10 @@ function PasswordCard() {
           <PasswordMeter id={METER_ID} password={values.next} />
         </Field>
         <div className={styles.actions}>
-          <Button
-            type="submit"
-            variant="bright"
-            shape="pill"
-            busy={change.isPending}
-          >
-            {change.isPending ? "Guardando…" : "Cambiar la contraseña"}
+          <Button type="submit" busy={change.isPending}>
+            {change.isPending
+              ? "Cambiando la contraseña"
+              : "Cambiar la contraseña"}
           </Button>
         </div>
       </form>
@@ -258,7 +224,6 @@ function SessionsCard() {
 
   return (
     <Card
-      icon={<MonitorSmartphone size={20} />}
       title="Sesiones"
       description="Si perdió un equipo o cree que alguien más entró a su cuenta, cierre todas las sesiones."
     >
@@ -269,21 +234,17 @@ function SessionsCard() {
       )}
       <div className={styles.sessionActions}>
         <Button
-          surface="dark"
           variant="secondary"
-          shape="pill"
           busy={session.pending === "device"}
           disabled={session.pending !== null}
           onClick={session.signOut}
         >
           {session.pending === "device"
-            ? "Cerrando sesión…"
+            ? "Cerrando la sesión"
             : "Cerrar esta sesión"}
         </Button>
         <Button
-          surface="dark"
           variant="secondary"
-          shape="pill"
           disabled={session.pending !== null}
           onClick={() => setConfirming(true)}
         >
