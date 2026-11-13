@@ -1,5 +1,3 @@
-/* Aviso en línea (CMP-UI-010): panel grafito con el ícono en el color de su estado. El
-   violeta queda para la acción, así que el aviso informativo es gris. */
 .notice {
   --tone: var(--text-2);
 

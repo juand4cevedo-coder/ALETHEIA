@@ -1,453 +1,290 @@
-/* Sitio público: el mismo grafito del espacio de trabajo, de principio a fin. La profundidad
-   sale de las superficies y la línea; no hay luces ni degradados. */
 .shell {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
 }
-
 .skipLink {
   position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
-  z-index: 30;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
+  top: 8px;
+  left: 8px;
+  z-index: 50;
+  padding: 8px 16px;
+  border-radius: 8px;
   background: var(--surface-2);
   color: var(--text);
   transform: translateY(-200%);
 }
-
 .skipLink:focus {
   transform: none;
 }
-
-/* Encabezado fijo sobre el fondo de la página. Es opaco: el contenido que pasa por debajo no
-   se transparenta ni se desenfoca. */
 .header {
   position: sticky;
   top: 0;
   z-index: 20;
-  border-bottom: 1px solid var(--line);
-  background: var(--bg);
+  background: rgb(0 0 0 / 80%);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid #ffffff09;
 }
-
 .bar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
-  gap: var(--space-8);
-  max-width: var(--content-width);
-  min-height: var(--header-height);
-  margin: 0 auto;
-  padding: 0 var(--space-6);
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1440px;
+  min-height: 64px;
+  margin: auto;
+  padding: 0 24px;
 }
-
-/* Nombre junto al logo en Geist 600 (especificación de identidad, sección 2). */
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  justify-self: start;
+  gap: 5px;
   color: var(--text);
-  font-size: var(--font-size-body);
-  font-weight: 600;
-  letter-spacing: var(--tracking-subtitle);
-  line-height: var(--line-height-ui);
+  font-size: 25px;
+  font-weight: 760;
+  letter-spacing: -0.065em;
   text-decoration: none;
+  line-height: 1;
 }
-
-.navList {
-  display: flex;
-  gap: var(--space-1);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.brand img {
+  width: 25px;
+  height: 25px;
 }
-
-.navLink {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--control-height-sm);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  font-size: var(--font-size-ui);
-  font-weight: 500;
-  line-height: var(--line-height-ui);
-  text-decoration: none;
-  transition:
-    color var(--motion-fast) var(--ease-standard),
-    background-color var(--motion-fast) var(--ease-standard);
-}
-
-.navLink:hover {
-  color: var(--text);
-}
-
-/* La página activa: superficie y texto principal, como en el menú del espacio de trabajo. */
-.navLinkActive,
-.navLinkActive:hover {
-  background: var(--surface-2);
-  color: var(--text);
-}
-
 .actions {
   display: flex;
   align-items: center;
-  justify-self: end;
-  gap: var(--space-2);
+  gap: 24px;
 }
-
+.signIn {
+  color: var(--text-2);
+  text-decoration: none;
+  font-size: 13px;
+}
+.signIn:hover {
+  color: var(--text);
+}
 .menuButton {
   display: none;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--control-height-sm);
-  padding: 0 var(--space-3);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--surface-2);
   color: var(--text);
-  font: inherit;
-  font-size: var(--font-size-ui);
-  font-weight: 500;
-  line-height: var(--line-height-ui);
-  cursor: pointer;
-}
-
-/* Hoja inferior del menú en móvil: flota sobre la página, así que lleva la única sombra. */
-.sheet {
-  width: 100%;
-  max-width: 100%;
-  margin: auto 0 0;
-  padding: var(--space-4) var(--space-4) var(--space-8);
   border: 0;
-  border-top: 1px solid var(--line);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  background: var(--surface-1);
-  box-shadow: var(--shadow-float);
-  color: var(--text);
-}
-
-/* Responde a la acción de abrir el menú; con movimiento reducido simplemente aparece. */
-@media (prefers-reduced-motion: no-preference) {
-  .sheet[open] {
-    animation: rise var(--motion-base) var(--ease-standard);
-  }
-}
-
-@keyframes rise {
-  from {
-    transform: translateY(var(--space-8));
-  }
-}
-
-.sheet::backdrop {
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
-}
-
-.sheetHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-2);
-}
-
-.sheetTitle {
-  color: var(--text-3);
-  font-size: var(--font-size-label);
-  font-weight: 500;
-  line-height: var(--line-height-label);
-}
-
-.sheetClose {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--control-height);
-  padding: 0 var(--space-2);
-  border: 0;
-  border-radius: var(--radius-sm);
   background: none;
-  color: var(--text);
-  font: inherit;
-  font-size: var(--font-size-ui);
-  font-weight: 500;
+  padding: 12px;
   cursor: pointer;
 }
-
-.sheetList {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sheetLink {
-  display: block;
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--line);
-  color: var(--text);
-  font-size: var(--font-size-subtitle);
-  font-weight: 500;
-  line-height: var(--line-height-subtitle);
-  text-decoration: none;
-}
-
-.sheetCta {
-  display: grid;
-  margin-top: var(--space-6);
-}
-
 .main {
   flex: 1;
+  min-width: 0;
 }
-
 .main:focus {
   outline: none;
 }
-
-/* Pie: el mismo fondo, separado por la línea. */
-.footer {
-  padding: var(--space-16) var(--space-6) var(--space-8);
-  border-top: 1px solid var(--line);
-  color: var(--text-2);
-  font-size: var(--font-size-ui);
-  line-height: var(--line-height-ui);
-}
-
-.footerInner {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: var(--space-12);
-  max-width: calc(var(--content-width) - 2 * var(--space-6));
-  margin: 0 auto;
-}
-
-.footerBrand {
-  display: grid;
-  align-content: start;
-  justify-items: start;
-  gap: var(--space-4);
-}
-
-.footerText {
-  max-width: var(--measure-narrow);
-  color: var(--text-2);
-}
-
-.footerMail {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--control-height-sm);
-  color: var(--text);
-  font-weight: 500;
-  text-decoration: underline;
-  text-decoration-color: var(--line-control);
-  text-underline-offset: var(--underline-offset);
-}
-
-.footerMail svg {
-  color: var(--text-2);
-}
-
-.footerMail:hover {
-  text-decoration-color: currentColor;
-}
-
-.footerNav {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-8);
-}
-
-.footerTitle {
-  margin-bottom: var(--space-3);
-  color: var(--text-3);
-  font-size: var(--font-size-label);
-  font-weight: 500;
-  line-height: var(--line-height-label);
-}
-
-.footerList {
-  display: grid;
-  gap: var(--space-1);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.footerLink {
-  display: inline-flex;
-  align-items: center;
-  /* Área táctil cómoda sin separar de más las filas en escritorio. */
-  min-height: var(--control-height-sm);
-  color: var(--text-2);
-  text-decoration: none;
-  transition: color var(--motion-fast) var(--ease-standard);
-}
-
-.footerLink:hover {
+.sheet {
+  width: 100%;
+  max-width: 100%;
+  max-height: 90dvh;
+  margin: auto 0 0;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 24px 24px 0 0;
+  background: #08090b;
   color: var(--text);
 }
-
-/* «Configurar cookies» abre un panel, así que es un botón, pero se ve como los enlaces. */
-.footerButton {
-  padding: 0;
+.sheet::backdrop {
+  background: #000b;
+  backdrop-filter: blur(8px);
+}
+.sheetHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.sheetHead button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   border: 0;
   background: none;
+  color: var(--text);
   font: inherit;
-  text-align: left;
+  padding: 12px;
   cursor: pointer;
 }
-
-/* Quién opera el servicio y la autoridad del consumidor. Los datos se separan con un filete
-   vertical, que desaparece cuando cada dato baja a su propia línea. */
-.footerLegal {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3) var(--space-6);
-  max-width: calc(var(--content-width) - 2 * var(--space-6));
-  margin: var(--space-12) auto 0;
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--line);
-  font-size: var(--font-size-support);
-  line-height: var(--line-height-support);
+.sheet nav {
+  display: grid;
+  gap: 24px;
 }
-
-.operator {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) 0;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.operator li + li {
-  margin-left: var(--space-3);
-  padding-left: var(--space-3);
-  border-left: 1px solid var(--line-control);
-}
-
-.footerAuthority {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--control-height-sm);
-  color: var(--text);
-  font-weight: 500;
+.sheet nav > a {
   text-decoration: none;
 }
-
-.footerAuthority svg {
+.mobileGroup {
+  border-bottom: 1px solid #ffffff12;
+  padding-bottom: 16px;
+}
+.mobileGroup summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style: none;
+  cursor: pointer;
+  padding: 8px 0;
+  font-size: 16px;
+}
+.mobileGroup summary::-webkit-details-marker {
+  display: none;
+}
+.mobileGroup summary svg {
+  transition: transform 180ms;
+}
+.mobileGroup[open] summary svg {
+  transform: rotate(180deg);
+}
+.mobileLinks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  font-size: 14px;
+  padding-top: 18px;
+}
+.mobileGroup a {
+  text-decoration: none;
+}
+.sheetCta {
+  display: grid;
+  margin-top: 32px;
+}
+.footer {
+  position: relative;
+  padding: 120px 24px 32px;
+  border-top: 1px solid #191b1c;
+  background:
+    radial-gradient(ellipse 60% 120px at 50% 0%, #ffffff05, transparent), #000;
   color: var(--text-2);
+  font-size: 13px;
 }
-
-.footerAuthority:hover {
-  text-decoration: underline;
-  text-underline-offset: var(--underline-offset);
+.footerInner {
+  max-width: 1232px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 64px;
 }
-
+.footerBrand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+.footerBrand .brand {
+  font-size: 22px;
+}
+.footerBrand > a:not(.brand) {
+  font-size: 12px;
+  color: var(--text-2);
+  text-decoration: none;
+}
+.statusLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: linear-gradient(#171717, #090909);
+}
+.footerNav {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 24px;
+}
+.footerTitle {
+  font-weight: 500;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+.footerNav ul {
+  list-style: none;
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+}
+.footerNav a,
+.footerNav button {
+  display: inline-block;
+  color: var(--text-2);
+  text-decoration: none;
+  line-height: 1.6;
+}
+.footerNav button {
+  font: inherit;
+  text-align: left;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+.footerNav a:hover,
+.footerNav button:hover,
+.footerBottom a:hover {
+  color: var(--text);
+}
 .footerBottom {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: var(--space-2) var(--space-6);
-  max-width: calc(var(--content-width) - 2 * var(--space-6));
-  margin: var(--space-4) auto 0;
+  gap: 16px;
+  max-width: 1232px;
+  margin: 100px auto 0;
+  font-size: 11px;
   color: var(--text-3);
-  font-size: var(--font-size-support);
-  line-height: var(--line-height-support);
 }
-
-@media (max-width: 900px) {
-  .bar {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 var(--space-4);
-  }
-
-  .desktopNav,
+.footerBottom a {
+  color: inherit;
+  text-decoration: none;
+}
+@media (max-width: 1090px) {
   .signIn {
     display: none;
   }
-
   .menuButton {
-    display: inline-flex;
+    display: block;
   }
-
   .footerInner {
     grid-template-columns: 1fr;
-    gap: var(--space-8);
+    gap: 48px;
   }
 }
-
-/* En pantallas muy angostas la invitación a crear la cuenta vive dentro del menú. */
-@media (max-width: 420px) {
+@media (max-width: 600px) {
   .headerCta {
     display: none;
   }
-}
-
-@media (max-width: 560px) {
+  .bar {
+    padding: 0 20px;
+  }
   .footer {
-    padding: var(--space-12) var(--space-4) var(--space-8);
+    padding: 56px 24px 32px;
   }
-
   .footerNav {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-6) var(--space-4);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 40px 24px;
   }
-
-  /* Legal tiene cinco enlaces: ocupa todo el ancho y los reparte en dos columnas. */
-  .footerGroup[data-group="legal"] {
-    grid-column: 1 / -1;
-  }
-
-  .footerGroup[data-group="legal"] .footerList {
-    grid-template-columns: 1fr 1fr;
-    column-gap: var(--space-4);
-  }
-
-  .footerLink {
-    min-height: var(--control-height);
-  }
-
-  .operator {
-    flex-direction: column;
-  }
-
-  .operator li + li {
-    margin-left: 0;
-    padding-left: 0;
-    border-left: 0;
-  }
-
   .footerBottom {
     flex-direction: column;
+    margin-top: 56px;
+  }
+  .footerNav a,
+  .footerNav button {
+    padding: 4px 0;
   }
 }
-
-/* Al imprimir una página (por ejemplo, una política legal) solo queda el contenido. */
 @media print {
-  .shell {
-    background: none;
-    color: var(--text);
-  }
-
-  .skipLink,
   .header,
   .sheet,
-  .footer {
+  .footer,
+  .skipLink {
     display: none;
   }
 }

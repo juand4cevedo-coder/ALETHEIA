@@ -1,0 +1,512 @@
+.page {
+  max-width: 1280px;
+  margin: auto;
+  padding: 96px 24px 120px;
+}
+.centerHead {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 80px;
+}
+.centerHead h1,
+.blogHead h1,
+.articleHead h1 {
+  font: 400 clamp(3.5rem, 6.2vw, 5rem)/1.05 var(--font-editorial);
+  letter-spacing: -0.02em;
+}
+.centerHead > p,
+.articleHead > p {
+  color: var(--text-2);
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 24px auto 0;
+}
+.brandTile {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border: 1px solid #32353a;
+  border-radius: 24px;
+  margin: 0 auto 32px;
+  background: linear-gradient(145deg, #303238, #0b0c0e 65%);
+  box-shadow:
+    inset 0 1px 1px #ffffff30,
+    0 12px 50px #ffffff08;
+  transform: rotate(-8deg);
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.cards > a {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 180px;
+  padding: 32px;
+  background: linear-gradient(145deg, #151618, #050506);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.cards > a:hover {
+  border-color: var(--line-control);
+  background: linear-gradient(145deg, #222429, #08090b);
+}
+.cards h2 {
+  font-size: 20px;
+  font-weight: 500;
+}
+.cards p {
+  color: var(--text-2);
+  font-size: 14px;
+}
+.cards svg {
+  margin-top: auto;
+}
+.principles {
+  max-width: 920px;
+  margin: auto;
+}
+.principles section {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 48px;
+  padding: 56px 0;
+  border-top: 1px solid var(--line);
+}
+.principles section > span {
+  font: 400 80px/1 var(--font-editorial);
+  color: #777b82;
+}
+.principles h2 {
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.3;
+  margin-bottom: 20px;
+  letter-spacing: -0.03em;
+}
+.principles p {
+  color: var(--text-2);
+  line-height: 1.8;
+}
+.centerActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  margin-top: 64px;
+}
+.centerActions > a {
+  font-size: 14px;
+}
+.kicker {
+  color: var(--text-3);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.blogHead {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  padding: 12px 0 24px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 48px;
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-1);
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: var(--text-3);
+}
+.search input,
+.docsNav input {
+  width: 100%;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  min-width: 0;
+}
+.search:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.search input:focus {
+  outline: none;
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 48px;
+}
+.filters button {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  min-height: 40px;
+  background: none;
+  color: var(--text-2);
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.filters button[aria-pressed="true"] {
+  color: var(--text);
+  border-color: var(--line);
+  background: var(--surface-2);
+}
+.blogGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 56px 32px;
+}
+.blogCard {
+  text-decoration: none;
+  color: var(--text);
+}
+.blogCard h2 {
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  margin: 12px 0;
+}
+.blogCard > p:not(.kicker) {
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.articleVisual {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 1.8;
+  border: 1px solid #31343a;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  background:
+    radial-gradient(ellipse at 50% 0%, #383c4266, transparent 60%), #08090b;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.articleVisual span {
+  position: relative;
+  z-index: 1;
+  font: 400 clamp(40px, 4.5vw, 62px)/1 var(--font-editorial);
+  letter-spacing: -0.03em;
+  background: linear-gradient(#fff, #777);
+  color: transparent;
+  background-clip: text;
+}
+.articleVisual small {
+  position: relative;
+  z-index: 1;
+  font: 12px var(--font-mono);
+  color: var(--text-3);
+  margin-top: 24px;
+}
+.articleVisual[data-kind="Integridad"] {
+  background:
+    radial-gradient(ellipse at 75% 20%, #66351f66, transparent 70%), #090808;
+}
+.articleVisual[data-kind="Seguridad"] {
+  background:
+    radial-gradient(ellipse at 30% 10%, #163a3166, transparent 70%), #080a09;
+}
+.blogCard:hover .articleVisual {
+  border-color: var(--line-control);
+}
+.articleVisual::before {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  top: 15%;
+  left: 35%;
+  background: repeating-radial-gradient(
+    ellipse at center,
+    transparent 0 11px,
+    #ffffff14 12px 13px,
+    transparent 14px 20px
+  );
+  transform: rotate(-25deg) scaleX(0.8);
+  mask-image: linear-gradient(#000, transparent);
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.articleVisual[data-kind="Seguridad"]::before {
+  border-radius: 28px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 19px, #ffffff12 20px 21px),
+    repeating-linear-gradient(0deg, transparent 0 19px, #ffffff12 20px 21px);
+  transform: perspective(500px) rotateY(-30deg) rotateZ(20deg);
+}
+.articleVisual[data-kind="Práctica"]::before {
+  border-radius: 12px;
+  border: 1px solid #ffffff24;
+  box-shadow:
+    20px 20px 0 -1px #161616,
+    20px 20px 0 #ffffff20,
+    40px 40px 0 -1px #161616,
+    40px 40px 0 #ffffff12;
+  background: linear-gradient(135deg, #ffffff0e, transparent);
+  transform: rotate(-28deg);
+}
+.blogCard:hover .articleVisual::before {
+  transform: translateY(-8px) rotate(-15deg);
+}
+.articleHero {
+  aspect-ratio: 2.2;
+  max-width: 760px;
+  margin: 0 auto 64px;
+}
+.blogHead h1 {
+  font-size: clamp(72px, 9vw, 112px);
+}
+.read {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  margin-top: 20px;
+}
+.article {
+  max-width: 900px;
+  margin: auto;
+  padding: 72px 24px 120px;
+}
+.back {
+  display: inline-block;
+  color: var(--text-2);
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 40px;
+}
+.articleHead {
+  text-align: center;
+  margin-bottom: 64px;
+}
+.articleHead small {
+  display: block;
+  margin-top: 24px;
+  color: var(--text-3);
+}
+.prose {
+  max-width: 680px;
+  margin: auto;
+}
+.prose h2 {
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 500;
+  margin: 48px 0 20px;
+}
+.prose p {
+  margin: 20px 0;
+  color: var(--text-2);
+  font-size: 17px;
+  line-height: 1.85;
+}
+.related {
+  border-top: 1px solid var(--line);
+  margin-top: 64px;
+  padding-top: 32px;
+  display: grid;
+  gap: 24px;
+}
+.related p {
+  color: var(--text-3);
+}
+.related a {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  text-decoration: none;
+}
+.wordmarkSample {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 64px 24px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: radial-gradient(ellipse at top, #ffffff0d, transparent 60%);
+}
+.wordmarkSample span {
+  font-size: clamp(44px, 8vw, 100px);
+  font-weight: 750;
+  letter-spacing: -0.065em;
+}
+.wordmarkSample img {
+  width: clamp(40px, 7vw, 80px);
+  height: auto;
+}
+.statusPanel {
+  max-width: 720px;
+  margin: auto;
+  padding: 40px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-1);
+  display: grid;
+  gap: 24px;
+}
+.statusPanel h2 {
+  font-size: 24px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.statusPanel p {
+  color: var(--text-2);
+  font-size: 14px;
+}
+.statusPanel button,
+.empty button {
+  padding: 12px 20px;
+  border: 1px solid var(--line-control);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  justify-self: start;
+}
+.statusPanel button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.docs {
+  max-width: 1280px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 64px;
+  padding: 48px 24px 120px;
+  min-height: 70vh;
+}
+.docsNav {
+  display: grid;
+  align-content: start;
+  gap: 24px;
+  border-right: 1px solid var(--line);
+  padding-right: 24px;
+  font-size: 14px;
+}
+.docsNav > a {
+  text-decoration: none;
+  font-weight: 600;
+}
+.docsNav label {
+  padding: 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.docsNav nav {
+  display: grid;
+  gap: 8px;
+}
+.docsNav nav a {
+  padding: 12px;
+  text-decoration: none;
+  color: var(--text-2);
+  border-radius: 8px;
+}
+.docsNav nav a:hover,
+.docsNav nav a[aria-current] {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.docsBody {
+  max-width: 760px;
+  display: grid;
+  align-content: start;
+  gap: 24px;
+}
+.docsBody h1 {
+  font-size: 36px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+.docsBody > p {
+  color: var(--text-2);
+}
+.docsBody > a {
+  justify-self: start;
+}
+.empty {
+  text-align: center;
+  padding: 64px 24px;
+  display: grid;
+  gap: 20px;
+}
+.empty button {
+  justify-self: center;
+}
+@media (max-width: 760px) {
+  .page {
+    padding: 56px 24px 80px;
+  }
+  .centerHead {
+    margin-bottom: 48px;
+  }
+  .centerHead h1,
+  .blogHead h1,
+  .articleHead h1 {
+    font-size: 54px;
+  }
+  .blogHead {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cards,
+  .blogGrid {
+    grid-template-columns: 1fr;
+  }
+  .principles section {
+    grid-template-columns: 48px 1fr;
+    gap: 24px;
+    padding: 32px 0;
+  }
+  .principles section > span {
+    font-size: 40px;
+  }
+  .principles h2 {
+    font-size: 22px;
+  }
+  .docs {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-top: 32px;
+  }
+  .docsNav {
+    border-right: 0;
+    padding-right: 0;
+  }
+  .docsNav nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .statusPanel {
+    padding: 24px;
+  }
+}

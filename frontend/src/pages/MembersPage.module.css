@@ -58,8 +58,6 @@
   line-height: var(--line-height-support);
 }
 
-/* El medidor va en grafito: el violeta es para la acción y el ámbar para la evidencia. Con el
-   plan lleno, el aviso de abajo dice lo que pasa. */
 .meter {
   display: block;
   height: var(--meter-height);
@@ -169,7 +167,6 @@
   font-weight: 500;
 }
 
-/* El rol es una etiqueta, no un estado: grafito para todos, también para el propietario. */
 .role {
   justify-self: start;
   padding: calc(var(--space-1) / 2) var(--space-2);

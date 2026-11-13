@@ -11,32 +11,32 @@ const QUESTIONS = [
   {
     question: "¿ALETHEIA certifica que una prueba es auténtica?",
     answer:
-      "No. Preserva el archivo y documenta que no cambió. Si la prueba es auténtica, veraz o admisible lo decide la autoridad judicial.",
+      "No. Una coincidencia de huellas indica que dos contenidos coinciden; no determina si son verdaderos o si constituyen una prueba admisible. La valoración corresponde a la autoridad judicial.",
   },
   {
     question: "¿Qué es una huella SHA-256?",
     answer:
-      "Un código de 64 caracteres que se calcula a partir del contenido del archivo. Si el archivo cambia en un solo byte, la huella es otra.",
+      "Un código de 64 caracteres calculado a partir de un contenido. El mismo contenido produce la misma huella. Es una herramienta para detectar cambios, no para determinar la autoría.",
   },
   {
-    question: "¿Quién emite el sello de tiempo?",
+    question: "¿El comprobador envía mis archivos?",
     answer:
-      "Una autoridad de sellado de tiempo externa, con la norma RFC 3161. El sello se comprueba con OpenSSL, sin depender de ALETHEIA.",
+      "No. El cálculo se hace en su navegador. Puede elegir un archivo de hasta 32 MB y compararlo con una huella de referencia, sin crear una cuenta.",
   },
   {
-    question: "¿Cómo comprueba la contraparte el paquete?",
+    question: "¿Quién puede ver mis casos?",
     answer:
-      "Con el verificador público, que llega con la versión 1.0 y no pide una cuenta. La huella se calcula en su navegador y el archivo no se envía a ningún servidor.",
+      "Las personas de su organización que son miembros del caso. Ser administrador de la organización no otorga por sí solo acceso a todos los casos.",
   },
   {
-    question: "¿Quién puede ver mis archivos?",
+    question: "¿Puedo trabajar con mi equipo?",
     answer:
-      "Solo las personas de su organización que son miembros del caso. Los archivos se guardan cifrados con la llave del caso y se descifran cuando un miembro descarga un original o pide un paquete. ALETHEIA no los analiza ni los usa para fines propios.",
+      "Sí. El propietario y los administradores pueden invitar integrantes y gestionar sus roles. Cada invitación llega al correo de la persona invitada.",
   },
   {
-    question: "¿Qué pasa con mi evidencia si cancelo el plan?",
+    question: "¿Dónde encuentro las condiciones del servicio?",
     answer:
-      "Al terminar el periodo pagado, la cuenta queda 30 días en solo lectura para que exporte sus casos. Después se destruyen las llaves de cifrado y le enviamos por correo una constancia de eliminación.",
+      "En el pie de cada página están los términos, la política de privacidad, las cookies y los reembolsos. Cada documento incluye su fecha de vigencia y una copia que puede descargar.",
   },
 ] as const;
 
@@ -44,7 +44,11 @@ const QUESTIONS = [
 // encabezado queda fijo (sticky) mientras se leen las preguntas.
 export function FaqSection() {
   return (
-    <section className={section.section} aria-labelledby="titulo-preguntas">
+    <section
+      data-reveal
+      className={section.section}
+      aria-labelledby="titulo-preguntas"
+    >
       <div className={`${section.inner} ${styles.layout}`}>
         <SectionHeading
           id="titulo-preguntas"

@@ -15,16 +15,19 @@
 
 .intro {
   display: grid;
-  justify-items: start;
+  justify-items: center;
+  text-align: center;
+  margin: 0 auto;
   gap: var(--space-3);
   max-width: var(--measure);
 }
 
 .title {
-  font-size: var(--font-size-section);
-  font-weight: 600;
+  font-family: var(--font-editorial);
+  font-size: 80px;
+  font-weight: 400;
   letter-spacing: var(--tracking-section);
-  line-height: var(--line-height-section);
+  line-height: 1.05;
 }
 
 .lead {
@@ -133,7 +136,8 @@
   }
 
   .title {
-    font-size: var(--font-size-section-sm);
+    font-family: var(--font-editorial);
+    font-size: 56px;
     line-height: var(--line-height-section-sm);
   }
 

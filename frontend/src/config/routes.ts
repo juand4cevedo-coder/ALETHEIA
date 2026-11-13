@@ -7,8 +7,8 @@ export const ROUTES = {
   security: "/#seguridad",
   pricing: "/precios",
   verifier: "/verificador",
-  // Mientras el verificador público no existe (HU-026), la navegación lleva a la sección de la
-  // portada que lo explica, nunca a una página vacía.
+  // La comprobación de una huella vive en la portada. La verificación de paquetes tiene
+  // su propio alcance funcional (HU-026).
   verifierSection: "/#verificador",
   signIn: "/ingresar",
   signUp: "/registro",

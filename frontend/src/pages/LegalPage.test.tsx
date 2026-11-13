@@ -101,7 +101,11 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     // El pie identifica a quien vende y enlaza a la autoridad de protección al consumidor
     // (Ley 1480 de 2011, art. 50, literal a y parágrafo).
     const footer = screen.getByRole("contentinfo");
-    expect(footer).toHaveTextContent(`NIT ${DATA_CONTROLLER.nit}`);
+    expect(
+      within(footer).getByRole("link", {
+        name: "Identificación y contacto del proveedor",
+      }),
+    ).toHaveAttribute("href", "/legal/terminos");
     expect(
       within(footer).getByRole("link", { name: CONSUMER_AUTHORITY.name }),
     ).toHaveAttribute("href", CONSUMER_AUTHORITY.url);

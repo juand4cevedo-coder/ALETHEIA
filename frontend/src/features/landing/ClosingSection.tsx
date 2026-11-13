@@ -13,7 +13,11 @@ export function ClosingSection() {
   const days = plans ? trialDays(plans) : null;
 
   return (
-    <section className={section.section} aria-labelledby="titulo-cierre">
+    <section
+      data-reveal
+      className={section.section}
+      aria-labelledby="titulo-cierre"
+    >
       <div className={`${section.inner} ${styles.layout}`}>
         <div className={styles.copy}>
           <h2 id="titulo-cierre" className={section.title}>

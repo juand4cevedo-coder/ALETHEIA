@@ -104,3 +104,17 @@
     padding-right: 0;
   }
 }
+
+/* Una sola columna mantiene el ritmo de lectura del sitio público. */
+.layout {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+}
+.heading {
+  position: static;
+}
+.list {
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
+}

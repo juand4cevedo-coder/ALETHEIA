@@ -3,7 +3,6 @@ import { lazy, Suspense } from "react";
 import { pageTitle, SITE_URL } from "../config/site.ts";
 import { PlanCatalogProvider } from "../features/billing/catalog.tsx";
 import { Hero } from "../features/landing/Hero.tsx";
-import { ProblemSection } from "../features/landing/ProblemSection.tsx";
 import styles from "./HomePage.module.css";
 
 // Lo que queda debajo del primer pantallazo llega aparte (BelowFold.tsx).
@@ -19,17 +18,14 @@ const BelowFold = lazy(() =>
 export function HomePage() {
   return (
     <PlanCatalogProvider>
-      <title>
-        {pageTitle("Preservación de evidencia digital para abogados")}
-      </title>
+      <title>{pageTitle("Un espacio para sus casos y su equipo")}</title>
       <meta
         name="description"
-        content="Conserve el archivo original de su evidencia digital con su huella SHA-256 y un sello de tiempo de un tercero. Para abogados en Colombia."
+        content="Organice sus casos y su equipo jurídico. Compruebe huellas SHA-256 en su navegador y explore los fundamentos de la evidencia digital."
       />
       <link rel="canonical" href={`${SITE_URL}/`} />
 
       <Hero />
-      <ProblemSection />
       {/* Mientras llega, el espacio reservado mantiene el pie fuera de la vista. */}
       <Suspense
         fallback={

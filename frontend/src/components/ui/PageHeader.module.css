@@ -12,10 +12,11 @@
 }
 
 .title {
+  font-family: var(--font-sans);
   margin: 0;
   color: var(--text);
   font-size: var(--font-size-title);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: var(--tracking-title);
   line-height: var(--line-height-title);
   /* Nombres de personas y títulos de casos los escribe el usuario: una palabra larga baja de

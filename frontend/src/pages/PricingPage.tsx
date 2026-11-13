@@ -49,9 +49,8 @@ function Pricing() {
               Planes y precios
             </h1>
             <p className={styles.lead}>
-              Todos los planes preservan la evidencia de la misma forma. Cambian
-              los usuarios incluidos, el almacenamiento y el tamaño máximo de
-              cada archivo.
+              Elija la capacidad que necesita su práctica. Compare los usuarios
+              incluidos, el almacenamiento y los límites de cada plan.
             </p>
             <div className={styles.start}>
               <ButtonLink to={ROUTES.signUp}>{SIGN_UP_LABEL}</ButtonLink>

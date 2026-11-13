@@ -40,6 +40,61 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <HomePage /> },
       { path: "precios", lazy: { Component: loadPricingPage } },
+      {
+        path: "docs/:slug?",
+        lazy: {
+          Component: () =>
+            import("../pages/DocumentationPage.tsx").then(
+              (m) => m.DocumentationPage,
+            ),
+        },
+      },
+      {
+        path: "blog",
+        lazy: {
+          Component: () =>
+            import("../pages/JournalPage.tsx").then((m) => m.JournalPage),
+        },
+      },
+      {
+        path: "blog/:slug",
+        lazy: {
+          Component: () =>
+            import("../pages/JournalPage.tsx").then((m) => m.JournalPage),
+        },
+      },
+      {
+        path: "ayuda",
+        lazy: {
+          Component: () =>
+            import("../pages/InformationPage.tsx").then((m) => m.KnowledgePage),
+        },
+      },
+      {
+        path: "ayuda/:slug",
+        lazy: {
+          Component: () =>
+            import("../pages/InformationPage.tsx").then((m) => m.KnowledgePage),
+        },
+      },
+      ...[
+        "filosofia",
+        "nosotros",
+        "seguridad",
+        "soporte",
+        "empresa",
+        "legal",
+        "marca",
+        "estado",
+      ].map((path) => ({
+        path,
+        lazy: {
+          Component: () =>
+            import("../pages/InformationPage.tsx").then(
+              (m) => m.InformationPage,
+            ),
+        },
+      })),
       { path: "legal/:pagina", lazy: { Component: loadLegalPage } },
       { path: "*", element: <NotFoundPage /> },
     ],

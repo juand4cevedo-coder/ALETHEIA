@@ -1,47 +1,52 @@
-/* Tokens del sistema de diseño (especificación de identidad y documento de Diseño UX/UI,
-   sección 12). Los componentes usan estas variables; ningún color, tamaño ni duración se escribe
-   suelto en otro archivo. */
+/* Superficies neutras; el color identifica estados, no decoración. */
 :root {
-  /* Color (especificación de identidad, sección 3). Grafito para todo; el violeta solo marca la
-     acción y el foco, y el verde, el ámbar y el rojo solo dicen el estado de una evidencia. */
-  --bg: #0d0f13;
-  --surface-1: #13161c;
-  --surface-2: #191d25;
-  /* Divisores y bordes de panel: decorativos, no necesitan contraste. */
-  --line: #232834;
-  /* Borde de campos y controles: 3:1 o más sobre las tres superficies. */
-  --line-control: #646d80;
-  --text: #eef1f6;
-  --text-2: #9aa3b2;
-  /* Texto de apoyo: el más tenue que aún pasa 4,5:1 sobre --surface-2. */
-  --text-3: #7d8799;
-  --accent: #8b7cf6;
-  /* Enlaces dentro de un texto y acento sobre --surface-2. */
-  --accent-strong: #b4a9ff;
-  /* Texto sobre el botón principal. */
-  --on-accent: #0d0b1d;
-  /* Verde solo para lo que el sistema comprobó. */
-  --ok: #3ecf8e;
-  --warn: #f2b33d;
-  --err: #f2665a;
+  color-scheme: dark;
+  --font-editorial: "Instrument Serif", Georgia, serif;
+  --brand-dark: #08090b;
+  --gold: #f0f0f0;
+  --gold-hover: #ffffff;
+  --on-brand: #f0f0f0;
+  --brand-muted: #a1a4a5;
+  --brand-line: #282a2d;
+  --bronze: #c5ae8b;
 
-  /* Geist para todo y Geist Mono para huellas, radicados, horas exactas y códigos. */
+  --bg: #000000;
+  --surface-1: #0e0f11;
+  --surface-2: #1a1b1e;
+
+  --line: #252629;
+
+  --line-control: #686b70;
+  --text: #f0f0f0;
+  --text-2: #a1a4a5;
+
+  --text-3: #999da3;
+  --accent: #f0f0f0;
+
+  --accent-strong: #ffffff;
+
+  --on-accent: #08090b;
+
+  --ok: #63d4a1;
+  --warn: #e8ba75;
+  --err: #ff9999;
+
   --font-sans:
-    "Geist Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono:
     "Geist Mono Variable", ui-monospace, "Cascadia Mono", Consolas, monospace;
 
-  /* Tipografía (especificación de identidad, sección 4): tamaño, interlineado y espaciado de
-     cada rol. El sufijo -sm es la versión para celular. */
   --font-size-display: 56px;
+  --font-size-hero: clamp(4.5rem, 7.5vw, 6.5rem);
+  --line-height-hero: 0.98;
   --line-height-display: 60px;
   --font-size-display-sm: 38px;
   --line-height-display-sm: 42px;
   --tracking-display: -0.035em;
-  --font-size-section: 36px;
-  --line-height-section: 42px;
-  --font-size-section-sm: 28px;
-  --line-height-section-sm: 34px;
+  --font-size-section: 48px;
+  --line-height-section: 52px;
+  --font-size-section-sm: 36px;
+  --line-height-section-sm: 40px;
   --tracking-section: -0.025em;
   --font-size-title: 28px;
   --line-height-title: 34px;
@@ -53,8 +58,7 @@
   --line-height-body: 24px;
   --font-size-ui: 14px;
   --line-height-ui: 20px;
-  /* Texto de los campos en pantallas táctiles: con menos de 16 px, Safari en el iPhone acerca
-     la página al enfocar el campo. */
+
   --font-size-control-touch: 16px;
   --font-size-support: 13px;
   --line-height-support: 18px;
@@ -73,89 +77,73 @@
   --space-16: 64px;
   --space-24: 96px;
 
-  /* Forma (especificación de identidad, sección 5): 6 px para controles pequeños y etiquetas,
-     8 px para botones y campos, 12 px para paneles y 999 px para insignias. */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
   --radius-pill: 999px;
 
-  /* Alto de los controles: botones, campos y selectores se alinean en una misma fila. */
-  --control-height: 40px;
-  --control-height-sm: 32px;
-  /* Punto de las insignias de estado y rombo de la cadena de custodia. */
+  --control-height: 48px;
+  --control-height-sm: 40px;
+
   --dot-size: 6px;
-  /* Foco de los campos: el borde violeta se engrosa a 2 px (5,4:1 sobre --surface-1 y 5,8:1
-     sobre --bg) y lo rodea el anillo de 3 px de violeta al 18 %. */
+
   --ring-focus:
     0 0 0 1px var(--accent),
     0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
 
-  /* La única sombra del sistema, solo para menús y diálogos que flotan sobre la página. */
-  --shadow-float: 0 12px 32px rgb(0 0 0 / 45%);
+  --shadow-float: 0 16px 48px rgb(0 0 0 / 40%);
 
   --motion-fast: 120ms;
   --motion-base: 200ms;
-  /* Una vuelta de la rueda que dice que una acción está en curso. */
+  --motion-enter: 600ms;
+
   --motion-spin: 900ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  /* Para entradas: arranca rápido y frena suave, sin rebote. */
+
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-  --content-width: 1200px;
-  /* Texto corrido: 64 caracteres como máximo (especificación de identidad, sección 5). */
+  --content-width: 1120px;
+
   --measure: 64ch;
-  /* Párrafos breves junto a otra columna, como el del pie. */
+
   --measure-narrow: 40ch;
-  /* Titulares grandes: líneas cortas que se leen de un vistazo. */
+
   --measure-display: 30ch;
-  /* Ancho de los paneles de una columna: el acceso y los diálogos. */
+
   --panel-width: 448px;
-  /* Pantallas de una columna del espacio de trabajo: el inicio, Mi cuenta y los avisos
-     de error. Una ficha más ancha separa demasiado el rótulo de su valor. */
+
   --screen-narrow-width: 720px;
-  /* Columna de los rótulos de una ficha: el dato a la izquierda y su valor a la derecha. */
+
   --label-column: 160px;
-  /* Columna de integridad del libro de casos: la insignia «Sin verificar» y el chevron, uno al
-     lado del otro. En rem para que crezca con el texto si se agranda la letra. */
+
   --status-column: 10.75rem;
-  /* Botón de la cuenta en el encabezado: el nombre de la organización cabe sin cortarse
-     antes de tiempo. */
+
   --measure-menu: 46ch;
-  /* Ancho del panel flotante del menú de la cuenta. */
+
   --menu-width: 320px;
-  /* Blanco táctil mínimo de una opción de menú (WCAG 2.5.5). */
+
   --touch-target: 44px;
-  /* Alto de la barra de un medidor, como el del cupo del plan. */
+
   --meter-height: 6px;
-  /* Ancho del menú lateral del espacio de trabajo. */
-  --sidebar-width: 224px;
+
+  --sidebar-width: 240px;
   --header-height: 64px;
-  /* Alto mínimo de las filas de tabla (especificación de identidad, sección 7). */
-  --row-height: 52px;
-  /* Alto de una pantalla completa, para reservar el sitio de lo que aún se descarga. */
+
+  --row-height: 64px;
+
   --viewport-fill: 100vh;
-  /* Distancia del subrayado de los enlaces al texto. */
+
   --underline-offset: 3px;
 }
 
-/* Al imprimir, tinta oscura sobre papel blanco. Los roles de texto y los enlaces pasan a los
-   tonos más oscuros del sistema (19:1, 17:1 y 5,2:1 sobre blanco) y las superficies, a blanco,
-   por si el navegador imprime los fondos. Los estados también pasan a tinta: en papel el verde,
-   el ámbar y el rojo no llegan a 4,5:1, y cada estado ya lleva la palabra que lo dice. El
-   violeta de la acción y su texto no cambian: un botón impreso se sigue leyendo. */
 @media print {
   :root {
     --bg: #ffffff;
     --surface-1: #ffffff;
     --surface-2: #ffffff;
-    --line: #646d80;
-    --text: #0d0f13;
-    --text-2: #191d25;
-    --text-3: #646d80;
-    --accent-strong: #0d0f13;
-    --ok: #0d0f13;
-    --warn: #0d0f13;
-    --err: #0d0f13;
+    --text: #202e29;
+    --text-2: #202e29;
+    --text-3: #526159;
+    --line: #7a857b;
   }
 }

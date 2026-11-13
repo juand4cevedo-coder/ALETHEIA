@@ -14,7 +14,7 @@ import {
   legalRoute,
   type LegalSlug,
 } from "../../config/routes.ts";
-import logoUrl from "../../assets/logo.svg";
+import logoUrl from "../../assets/simbolo.svg";
 import { CONTACT_EMAIL, WORDMARK, pageTitle } from "../../config/site.ts";
 import { useSignOut } from "../session/useSignOut.ts";
 import { currentLegalChanges } from "./changes.ts";

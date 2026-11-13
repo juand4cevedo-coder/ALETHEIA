@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+import { SocialAccess } from "../features/auth/SocialAccess.tsx";
 import { useMutation } from "@tanstack/react-query";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
@@ -143,8 +145,11 @@ export function SignUpPage() {
           <h1 id={TITLE_ID} className={styles.title}>
             Cree su cuenta
           </h1>
-          <p className={styles.lead}>Prueba gratis, sin tarjeta de crédito.</p>
+          <p className={styles.lead}>
+            ¿Ya tiene cuenta? <Link to={ROUTES.signIn}>Ingresar</Link>
+          </p>
         </header>
+        {!sentTo && <SocialAccess />}
 
         {sentTo ? (
           <section className={styles.notice} aria-labelledby="titulo-aviso">

@@ -42,7 +42,6 @@
   transform: rotate(45deg);
 }
 
-/* Eslabón de la cadena en grafito: el violeta queda para la acción y el foco. */
 .node {
   border: 1px solid var(--text-2);
   background: var(--surface-2);

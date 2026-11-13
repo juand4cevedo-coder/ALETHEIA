@@ -1,18 +1,15 @@
-/* Botón (CMP-UI-001, especificación de identidad, sección 7). Los enlaces que llevan a otra
-   página usan estas mismas clases: se ven como botón pero siguen siendo enlaces, que es lo que
-   anuncia un lector de pantalla. La jerarquía la dan el color y el borde, sin sombras ni luz. */
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
   min-height: var(--control-height);
-  padding: 0 var(--space-4);
+  padding: var(--space-2) var(--space-6);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: 16px;
   font: inherit;
   font-size: var(--font-size-ui);
-  font-weight: 500;
+  font-weight: 650;
   line-height: var(--line-height-ui);
   text-decoration: none;
   white-space: nowrap;
@@ -32,19 +29,26 @@
   padding: 0 var(--space-3);
 }
 
-/* Principal: violeta con texto oscuro (5,8:1). Al pasar el puntero se aclara. */
 .primary {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: linear-gradient(
+    104deg,
+    rgb(253 253 253 / 5%) 5%,
+    rgb(240 240 228 / 10%) 100%
+  );
+  border: 2px solid rgb(255 255 255 / 5%);
+  color: #f0f0f0;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
 }
 
 .primary:hover {
-  background: var(--accent-strong);
+  background: rgb(255 255 255 / 90%);
+  color: #000;
+  box-shadow: 0 0 24px rgb(255 255 255 / 12%);
 }
 
 .secondary {
   border-color: var(--line);
-  background: var(--surface-2);
+  background: transparent;
   color: var(--text);
 }
 
@@ -52,14 +56,13 @@
   border-color: var(--line-control);
 }
 
-/* Texto: para acciones terciarias. El fondo solo aparece al pasar el puntero. */
 .text {
   background: transparent;
   color: var(--text-2);
 }
 
 .text:hover {
-  background: var(--surface-2);
+  background: transparent;
   color: var(--text);
 }
 
@@ -72,7 +75,6 @@
   opacity: 0.5;
 }
 
-/* Mientras trabaja, el botón sigue legible: la rueda dice que espera, no que está apagado. */
 .button[aria-busy="true"] {
   cursor: progress;
   opacity: 1;
@@ -96,4 +98,15 @@
   .spinner {
     animation: none;
   }
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.secondary {
+  border-color: var(--line-control);
+}
+.secondary:hover,
+.text:hover {
+  background: var(--surface-2);
 }

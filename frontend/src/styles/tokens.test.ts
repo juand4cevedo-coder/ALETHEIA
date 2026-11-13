@@ -10,20 +10,20 @@ const tokensCss = readFileSync(join(import.meta.dirname, "tokens.css"), "utf8");
 // Colores semánticos de la identidad (especificación de identidad, sección 3). Un cambio de
 // valor aquí es un cambio de identidad y debe pasar antes por la especificación.
 const SEMANTIC_COLORS: Record<string, string> = {
-  "--bg": "#0D0F13",
-  "--surface-1": "#13161C",
-  "--surface-2": "#191D25",
-  "--line": "#232834",
-  "--line-control": "#646D80",
-  "--text": "#EEF1F6",
-  "--text-2": "#9AA3B2",
-  "--text-3": "#7D8799",
-  "--accent": "#8B7CF6",
-  "--accent-strong": "#B4A9FF",
-  "--on-accent": "#0D0B1D",
-  "--ok": "#3ECF8E",
-  "--warn": "#F2B33D",
-  "--err": "#F2665A",
+  "--bg": "#000000",
+  "--surface-1": "#0E0F11",
+  "--surface-2": "#1A1B1E",
+  "--line": "#252629",
+  "--line-control": "#686B70",
+  "--text": "#F0F0F0",
+  "--text-2": "#A1A4A5",
+  "--text-3": "#999DA3",
+  "--accent": "#F0F0F0",
+  "--accent-strong": "#FFFFFF",
+  "--on-accent": "#08090B",
+  "--ok": "#63D4A1",
+  "--warn": "#E8BA75",
+  "--err": "#FF9999",
 };
 
 function declaredValue(name: string): string | undefined {
@@ -41,6 +41,61 @@ describe("tokens.css", () => {
       expect(declaredValue(name)?.toLowerCase()).toBe(value.toLowerCase());
     },
   );
+});
+
+function luminance(token: string): number {
+  const color = declaredValue(token)!;
+  const channels = [1, 3, 5].map((offset) => {
+    const value = parseInt(color.slice(offset, offset + 2), 16) / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722;
+}
+
+function contrast(a: string, b: string): number {
+  const values = [luminance(a), luminance(b)].sort(
+    (left, right) => right - left,
+  );
+  return (values[0]! + 0.05) / (values[1]! + 0.05);
+}
+
+describe("legibilidad de la identidad", () => {
+  it.each(["--bg", "--surface-1", "--surface-2"])(
+    "el texto y los estados alcanzan AA sobre %s",
+    (surface) => {
+      for (const foreground of [
+        "--text",
+        "--text-2",
+        "--text-3",
+        "--accent",
+        "--accent-strong",
+        "--ok",
+        "--warn",
+        "--err",
+        "--bronze",
+      ]) {
+        expect(
+          contrast(foreground, surface),
+          foreground,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+      expect(contrast("--line-control", surface)).toBeGreaterThanOrEqual(3);
+    },
+  );
+  it("mantiene contraste en botones y superficies oscuras", () => {
+    expect(contrast("--gold", "--brand-dark")).toBeGreaterThanOrEqual(4.5);
+    expect(contrast("--gold-hover", "--brand-dark")).toBeGreaterThanOrEqual(
+      4.5,
+    );
+    expect(contrast("--on-accent", "--accent")).toBeGreaterThanOrEqual(4.5);
+    expect(contrast("--on-accent", "--accent-strong")).toBeGreaterThanOrEqual(
+      4.5,
+    );
+    expect(contrast("--on-brand", "--brand-dark")).toBeGreaterThanOrEqual(4.5);
+    expect(contrast("--brand-muted", "--brand-dark")).toBeGreaterThanOrEqual(
+      4.5,
+    );
+  });
 });
 
 // Nombres del sistema anterior que el puente traducía a los tokens nuevos. Ya no existen: un

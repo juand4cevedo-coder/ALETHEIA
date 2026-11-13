@@ -1,0 +1,122 @@
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+.tabs button {
+  position: relative;
+  overflow: hidden;
+  min-height: 90px;
+  padding: 1px;
+  border: 0;
+  border-radius: 16px;
+  color: var(--text);
+  background: rgb(214 235 253 / 19%);
+  cursor: pointer;
+  font: 500 15px var(--font-sans);
+  text-align: left;
+}
+@property --tour-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.tabs button[aria-selected="true"] {
+  background: conic-gradient(
+    from var(--tour-angle),
+    #2a3a36 0deg,
+    #2a3a36 230deg,
+    #22c55e 280deg,
+    #a5f3c0 310deg,
+    #2a3a36 350deg
+  );
+  box-shadow: 0 0 18px #22c55e1b;
+  animation: tourBorder 5s linear infinite;
+}
+.tabInner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+  border-radius: 15px;
+  background: #000;
+  padding: 24px;
+}
+.tabs button[aria-selected="true"] .tabInner {
+  background: linear-gradient(#080808, #030303 50%, #000);
+}
+.icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgb(214 235 253 / 19%);
+  background: linear-gradient(225deg, #ffffff1a, transparent);
+}
+.tabs button[aria-selected="true"] .icon {
+  color: #22c55e;
+}
+.panel {
+  border: 1px solid rgb(214 235 253 / 19%);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #08090b;
+}
+.panel img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1260/720;
+  object-fit: cover;
+  object-position: top;
+}
+.panel p {
+  padding: 24px;
+  border-top: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: 14px;
+  text-align: center;
+}
+.caption {
+  margin-top: 16px;
+  color: var(--text-3);
+  font-size: 12px;
+  text-align: center;
+}
+@keyframes tourBorder {
+  to {
+    --tour-angle: 360deg;
+  }
+}
+@media (max-width: 760px) {
+  .tabs {
+    gap: 8px;
+  }
+  .tabs button {
+    font-size: 12px;
+    min-height: 80px;
+  }
+  .tabInner {
+    padding: 12px 6px;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+  .icon {
+    width: 28px;
+    height: 28px;
+  }
+  .panel p {
+    font-size: 13px;
+    padding: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabs button[aria-selected="true"] {
+    animation: none;
+  }
+}

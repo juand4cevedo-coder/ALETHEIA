@@ -25,6 +25,12 @@
 
 /* El borde del recomendado es el de los controles: 3:1 o más sobre el fondo. */
 .card[data-recommended] {
+  --text: var(--on-brand);
+  --text-2: var(--brand-muted);
+  --text-3: var(--brand-muted);
+  --line: var(--brand-line);
+  --line-control: var(--brand-muted);
+  background: var(--brand-dark);
   border-color: var(--line-control);
 }
 

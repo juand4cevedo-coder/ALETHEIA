@@ -1,144 +1,130 @@
-/* Marco de acceso: el logo, un panel centrado en --surface-1 y, debajo, el cambio de pantalla y
-   los enlaces legales. La profundidad la dan la superficie y la línea, sin luz ni sombra. */
 .shell {
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background: var(--bg);
-  color: var(--text);
+  background: #000 url("/media/auth-1920.webp") center / cover fixed;
 }
-
-.shell :where(a:not([class])) {
-  color: var(--accent-strong);
-}
-
 .skipLink {
   position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
+  top: 8px;
+  left: 8px;
   z-index: 30;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
+  transform: translateY(-200%);
   background: var(--surface-2);
   color: var(--text);
-  transform: translateY(-200%);
+  padding: 8px 16px;
 }
-
 .skipLink:focus {
   transform: none;
 }
-
 .header {
-  display: flex;
-  justify-content: center;
-  padding: var(--space-12) var(--space-6) 0;
+  padding: 24px 32px;
 }
-
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  color: var(--text);
-  font-size: var(--font-size-body);
-  font-weight: 600;
-  letter-spacing: var(--tracking-subtitle);
-  line-height: var(--line-height-body);
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 650;
   text-decoration: none;
+  letter-spacing: -0.04em;
 }
-
+.brand img {
+  width: 24px;
+  height: 24px;
+}
+.brand:hover {
+  color: var(--text);
+}
 .main {
-  flex: 1;
-  display: grid;
-  align-content: start;
-  gap: var(--space-6);
   width: 100%;
-  max-width: var(--panel-width);
-  margin: 0 auto;
-  padding: var(--space-8) var(--space-4) var(--space-12);
+  max-width: 560px;
+  padding: 8px 24px 64px;
+  margin: 0 auto auto;
 }
-
 .main:focus {
   outline: none;
 }
-
-.panel {
-  padding: var(--space-8);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface-1);
+.symbol {
+  display: block;
+  margin: 0 auto 24px;
+  width: 48px;
+  height: 48px;
+  padding: 9px;
+  border: 1px solid #ffffff16;
+  border-radius: 12px;
+  background: #0008;
 }
-
+.panel {
+  width: 100%;
+}
 .switch {
+  margin-top: 24px;
   color: var(--text-2);
-  font-size: var(--font-size-ui);
-  line-height: var(--line-height-ui);
+  font-size: 14px;
   text-align: center;
 }
-
-/* El enlace va subrayado: el color solo (1,2:1 frente al texto que lo rodea) no lo distingue. */
 .switch a {
-  font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: var(--underline-offset);
-}
-
-.switch a:hover {
   color: var(--text);
+  text-underline-offset: 4px;
 }
-
 .footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3) var(--space-6);
-  padding: var(--space-6);
-  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 24px;
+  font-size: 12px;
+  text-align: center;
   color: var(--text-3);
-  font-size: var(--font-size-support);
-  line-height: var(--line-height-support);
 }
-
 .footerList {
+  list-style: none;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--space-2) var(--space-6);
+  gap: 8px 24px;
   margin: 0;
   padding: 0;
-  list-style: none;
 }
-
-.footer a,
+.footerList a,
 .footerButton {
-  color: var(--text-3);
+  color: var(--text-2);
   text-decoration: none;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
 }
-
-.footer a:hover,
-.footerButton:hover {
-  color: var(--text);
-}
-
 .footerButton {
-  padding: 0;
   border: 0;
   background: none;
+  padding: 0;
   font: inherit;
   cursor: pointer;
 }
-
-/* En el celular el panel reduce su relleno para dejarle el ancho al formulario. */
-@media (max-width: 560px) {
+.footerList a:hover,
+.footerButton:hover {
+  color: var(--text);
+}
+@media (max-width: 600px) {
+  .shell {
+    background-image: url("/media/auth-1024.webp");
+    background-attachment: scroll;
+  }
   .header {
-    padding-top: var(--space-8);
+    padding: 20px 24px;
   }
-
   .main {
-    padding: var(--space-6) var(--space-4) var(--space-8);
+    padding-top: 32px;
+    padding-bottom: 48px;
   }
-
-  .panel {
-    padding: var(--space-6) var(--space-4);
+}
+@media print {
+  .shell {
+    background: none;
+  }
+  .header,
+  .footer {
+    display: none;
   }
 }

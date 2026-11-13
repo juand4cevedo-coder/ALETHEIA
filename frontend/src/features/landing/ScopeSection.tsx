@@ -11,16 +11,16 @@ import {
 // Lo que la cadena de custodia anota sale de su lista cerrada de acciones (custodyActions.ts):
 // cargas, descargas y paquetes. No hay un evento de apertura ni de consulta.
 const DOES = [
-  "Conserva el archivo original, cifrado y sin modificarlo.",
-  "Registra su huella SHA-256 y obtiene un sello de tiempo de un tercero.",
-  "Anota en la cadena de custodia quién sube, descarga o exporta cada evidencia, y a qué hora.",
-  "Le entrega un paquete con los originales, sus huellas, los sellos y el informe de custodia.",
+  "Organiza casos con su radicado, especialidad y despacho.",
+  "Relaciona cada caso con los integrantes responsables de su organización.",
+  "Registra la apertura del caso con su fecha y responsable.",
+  "Permite calcular y comparar huellas SHA-256 en el navegador.",
 ] as const;
 
 const DOES_NOT = [
   "No certifica pruebas ni decide sobre su validez.",
   "No califica un archivo como auténtico, veraz o admisible.",
-  "No extrae información de celulares ni entra a cuentas de terceros. Solo recibe lo que usted sube.",
+  "No extrae información de celulares ni entra a cuentas de terceros.",
 ] as const;
 
 type Column = {
@@ -38,13 +38,17 @@ const COLUMNS: readonly Column[] = [
 // destaca con otro color, porque ninguno es un estado de una evidencia.
 export function ScopeSection() {
   return (
-    <section className={section.section} aria-labelledby="titulo-alcance">
+    <section
+      data-reveal
+      className={section.section}
+      aria-labelledby="titulo-alcance"
+    >
       <div className={section.inner}>
         <SectionHeading
           id="titulo-alcance"
           kicker="Alcance"
-          title="ALETHEIA preserva y documenta. La valoración es del juez."
-          lead="Es una herramienta técnica de preservación. Le da elementos para sustentar que su evidencia no cambió."
+          title="Una herramienta precisa. Un alcance claro."
+          lead="Aletheia acompaña la organización de su trabajo y la comprensión técnica de la evidencia. La valoración de la prueba corresponde a la autoridad judicial."
         />
 
         <div className={styles.columns}>

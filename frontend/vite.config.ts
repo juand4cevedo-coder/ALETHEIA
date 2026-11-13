@@ -5,6 +5,8 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [react()],
   build: {
+    // El presupuesto recorre las importaciones estáticas del manifiesto, también las compartidas.
+    manifest: true,
     // Todos los navegadores que soporta el sitio entienden modulepreload: el relleno sobra.
     modulePreload: { polyfill: false },
     rolldownOptions: {
@@ -24,6 +26,9 @@ export default defineConfig({
   },
   // Pruebas de componentes (ADR-022): Vitest con un navegador simulado por jsdom.
   test: {
+    // jsdom consume memoria por proceso; un equipo con muchos núcleos no necesita abrir
+    // un navegador simulado por archivo a la vez.
+    maxWorkers: 2,
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     restoreMocks: true,

@@ -243,7 +243,6 @@
   border-top: 0;
 }
 
-/* Iniciales en grafito, como el sello de la cuenta: el violeta queda para la acción. */
 .avatar {
   display: grid;
   flex: none;

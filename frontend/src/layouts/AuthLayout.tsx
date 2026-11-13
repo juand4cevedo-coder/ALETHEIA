@@ -6,13 +6,13 @@ import {
   Outlet,
   ScrollRestoration,
   useMatches,
+  useLocation,
 } from "react-router";
 
 import { readMeOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 
 import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
-import logoUrl from "../assets/logo.svg";
-import { SITE_NAME, WORDMARK } from "../config/site.ts";
+import { SITE_NAME } from "../config/site.ts";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import styles from "./AuthLayout.module.css";
@@ -37,13 +37,14 @@ function isAuthSwitch(value: unknown): value is AuthSwitch {
   );
 }
 
+const logoUrl = "/brand/symbol-white.svg";
 const CURRENT_YEAR = new Date().getFullYear();
 
-// Marco de las pantallas de acceso: crear cuenta, ingresar, recuperar la contraseña, verificar
-// el correo y aceptar una invitación (ADR-029). El logo y un solo panel centrado, sin la
-// navegación del sitio ni efectos de luz, para que la atención quede en el formulario. Debajo
-// van el cambio a la otra pantalla, los enlaces legales y las cookies.
+// Un formulario centrado para todos los recorridos de acceso. El fondo es decorativo.
 export function AuthLayout() {
+  const { pathname } = useLocation();
+  const primaryAccess =
+    pathname === ROUTES.signIn || pathname === ROUTES.signUp;
   const {
     panel: cookiePanel,
     openPanel: openCookies,
@@ -80,17 +81,23 @@ export function AuthLayout() {
 
       <header className={styles.header}>
         <Link to={ROUTES.home} className={styles.brand}>
-          <img src={logoUrl} alt="" width={24} height={24} />
-          {WORDMARK}
+          <span aria-hidden="true">‹</span> Inicio
           <span className="visually-hidden">, ir al inicio</span>
         </Link>
       </header>
 
       <main id="contenido" className={styles.main} tabIndex={-1}>
+        <img
+          className={styles.symbol}
+          src={logoUrl}
+          alt=""
+          width={48}
+          height={48}
+        />
         <div className={styles.panel}>
           <Outlet />
         </div>
-        {authSwitch && (
+        {authSwitch && !primaryAccess && (
           <nav className={styles.switch} aria-label="Otra opción de acceso">
             <p>
               {authSwitch.question}{" "}
