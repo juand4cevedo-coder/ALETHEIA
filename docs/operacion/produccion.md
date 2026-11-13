@@ -2,7 +2,7 @@
 
 Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su despliegue según ADR-018: qué existe, cómo quedó configurado y cómo se comprobó. Aquí no hay claves, contraseñas ni llaves privadas. Las claves viven en Parameter Store y la llave SSH solo en el equipo del administrador.
 
-Última actualización: 03/11/2026, con TT-010.
+Última actualización: 13/11/2026, con la comprobación de KMS y SES previa al release v0.3.0.
 
 ## Cuenta y costos
 
@@ -93,7 +93,7 @@ El objeto `prueba/tt-007.bin` quedó a propósito en el bucket de respaldos: lo 
 | Envío | Solo el trabajador, con la API v2 y el rol de la máquina. No hay credenciales SMTP |
 | Lista de supresión | La de la cuenta, activa para rebotes y quejas |
 | Plan | Essentials, que cobra 0,16 USD por cada 1.000 correos y se paga con los créditos |
-| Producción | Solicitada el 01/11/2026 como correo transaccional. Mientras siga en sandbox, solo llega a direcciones verificadas y hasta 200 correos al día |
+| Producción | Acceso de producción habilitado y envío activo, comprobados el 13/11/2026 con `sesv2:GetAccount`; cuota actual de 50.000 mensajes al día y 14 por segundo |
 
 En desarrollo y en la CI el correo va a Mailpit y nunca sale a internet; la regla vive en `app/adapters/email.py` y depende solo de `ALETHEIA_ENVIRONMENT`.
 
@@ -105,20 +105,20 @@ El rol `aletheia-prod-instancia` tiene tres políticas: `aletheia-prod-acceso` p
 | --- | --- | --- |
 | S3 | Bucket de evidencias | `GetObject`, `PutObject`, `DeleteObject` y `AbortMultipartUpload`. No puede listar |
 | S3 | Bucket de respaldos | `GetObject`, `PutObject`, `AbortMultipartUpload` y `ListBucket`. No puede borrar |
-| KMS | `alias/aletheia-prod-maestra` (el alias, no el ARN de la llave; ver la comprobación pendiente abajo) | `Encrypt` y `Decrypt`, solo con `RSAES_OAEP_SHA_256` |
+| KMS | ARN de la llave maestra `2bf06d55-cdf0-416f-9283-be72afed8a6d` | `Encrypt` y `Decrypt`, solo con `RSAES_OAEP_SHA_256` |
 | Parameter Store | Parámetros bajo `/aletheia/prod/` | `GetParameter`, `GetParameters` y `GetParametersByPath`. No puede escribir |
 | SES | Identidades de la cuenta en us-east-2 | `SendEmail` con la API v2, solo desde `notificaciones@aletheia.sbs` y con el nombre `ALETHEIA` |
 | Systems Manager | El agente de la máquina | Registrarse, recibir órdenes de Run Command y abrir sesiones de Session Manager (`ec2messages` y `ssmmessages`) |
 
-La política de correo nombra todas las identidades de la cuenta y no solo `aletheia.sbs` porque, en sandbox, SES también exige permiso sobre la identidad del destinatario. Las condiciones `ses:FromAddress`, `ses:FromDisplayName` y `ses:ApiVersion` impiden enviar con cualquier otro remitente.
+La política de correo aún nombra todas las identidades de la cuenta: se configuró así cuando SES estaba en sandbox y exigía autorización sobre la identidad del destinatario. SES ya tiene acceso de producción. Las condiciones `ses:FromAddress`, `ses:FromDisplayName` y `ses:ApiVersion` restringen el remitente; el alcance de `Resource` puede reducirse en una revisión separada, con una prueba de envío después del cambio.
 
 Desde HU-015 la API llama a `Encrypt` de KMS cada vez que se abre un caso y llamará a `Decrypt` para leer su evidencia (HU-018). Si KMS no responde o niega la operación, abrir un caso falla con 503, no deja ninguna fila y la API registra el código de error de KMS.
 
-No está comprobado que la política actual baste. Nombra como recurso `alias/aletheia-prod-maestra`, y un ARN de alias en `Resource` puede no autorizar `Encrypt` ni `Decrypt` sobre la llave: para eso hace falta el ARN de la llave o una condición `kms:RequestAlias` o `kms:ResourceAliases`. Además, `Encrypt` se llama con el alias como `KeyId`, pero `Decrypt` se llamará con el ARN de la llave, que es la versión guardada con cada caso (HU-018).
+La versión `v1` de la política administrada `aletheia-prod-acceso` nombra el ARN de la llave, restringe el algoritmo a `RSAES_OAEP_SHA_256` y autoriza `Encrypt` y `Decrypt`. Se comprobó en AWS el 13/11/2026. `Encrypt` recibe el alias como `KeyId`; `Decrypt` recibe el ARN guardado con cada caso.
 
-### Comprobación obligatoria antes de publicar HU-015
+### Comprobación de KMS para HU-015
 
-**Pendiente: todavía no se ha hecho.** Desde la máquina, en una sesión de Session Manager y con el rol `aletheia-prod-instancia`:
+**Aprobada el 13/11/2026.** La orden SSM `f86925b9-88a5-4cfd-bf7c-ecd906879019` se ejecutó en `aletheia-prod` con su rol de instancia: cifró 32 bytes aleatorios mediante el alias, los descifró mediante el ARN, comparó ambos archivos sin mostrarlos y eliminó los temporales. Terminó con código 0 y `KMS_WRAP_UNWRAP_OK`. Para repetir la comprobación manualmente desde la máquina:
 
 1. Se crea un archivo de 32 bytes aleatorios, por ejemplo `head -c 32 /dev/urandom > /tmp/prueba-kms.bin`, y se cifra:
 
@@ -136,7 +136,7 @@ No está comprobado que la política actual baste. Nombra como recurso `alias/al
 
    Funciona si responde con `KeyId` igual a ese ARN y un `Plaintext` (en base64) que corresponde al archivo original, sin `AccessDeniedException`. Al terminar se borran los dos archivos.
 
-Si alguno de los dos responde `AccessDeniedException`, se corrige la política `aletheia-prod-acceso` para nombrar el ARN de la llave (o agregar la condición de alias) antes de publicar, y se repite la comprobación.
+Si una repetición responde `AccessDeniedException`, se revisa la política `aletheia-prod-acceso` y la política de la llave antes de publicar.
 
 Para leer un `SecureString` cifrado con la llave `aws/ssm`, el rol no necesita permisos adicionales de KMS.
 
