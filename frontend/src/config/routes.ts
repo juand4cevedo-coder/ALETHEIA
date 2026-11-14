@@ -19,6 +19,7 @@ export const ROUTES = {
   // Espacio de trabajo: todo lo que exige sesión vive bajo /app.
   app: "/app",
   account: "/app/cuenta",
+  platform: "/app/plataforma",
   members: "/app/miembros",
   cases: "/app/casos",
   newCase: "/app/casos/nuevo",
