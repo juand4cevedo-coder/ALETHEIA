@@ -26,7 +26,9 @@ y quedan en auditoría. Las pantallas usan las capacidades para orientar, y la A
 autorizar la operación en el servicio; ocultar un botón no otorga ni revoca permisos.
 
 El atributo `is_platform_admin` habilita la sección `/app/plataforma` y las rutas de cuentas
-`/api/v1/platform/users`. La API comprueba ese atributo en la base en cada petición. La consola
+`/api/v1/platform/users`. La API comprueba ese atributo en la base en cada petición. El
+propietario de la plataforma puede invitar miembros a su propio despacho sin el tope de usuarios
+de su plan; el límite de envíos por cuenta y los permisos del despacho siguen vigentes. La consola
 lista cuentas, muestra la verificación del correo y permite bloquearlas o desbloquearlas; bloquear revoca
 sus sesiones y ambos cambios dejan auditoría. También muestra el resumen de planes y estados de
 suscripción, la bandeja de solicitudes de soporte y los eventos de auditoría sin contenido de
