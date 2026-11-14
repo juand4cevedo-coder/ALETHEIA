@@ -5,13 +5,21 @@ import uuid
 from typing import Annotated, Literal, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_client_ip, get_principal, get_session
-from app.models import AuditLog, User
+from app.models import AuditLog, PaymentEvent, Plan, Subscription, User
 from app.repositories.sessions import revoke_user_sessions
-from app.schemas.platform import PlatformUser, PlatformUserPage, UserStatusChange
+from app.schemas.platform import (
+    PlatformAuditEvent,
+    PlatformAuditPage,
+    PlatformBilling,
+    PlatformPlan,
+    PlatformUser,
+    PlatformUserPage,
+    UserStatusChange,
+)
 from app.services.audit import audit_ip
 from app.services.sessions import Principal
 
@@ -100,3 +108,71 @@ def change_platform_user_status(
         )
         session.commit()
     return _public_user(user)
+
+
+@router.get("/billing", summary="Resumen comercial de la plataforma")
+def platform_billing(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_platform_admin)],
+    session: Annotated[Session, Depends(get_session)],
+) -> PlatformBilling:
+    del principal
+    response.headers["Cache-Control"] = "no-store"
+    plans = list(session.scalars(select(Plan).order_by(Plan.name)))
+    counts = session.execute(
+        select(Subscription.status, func.count()).group_by(Subscription.status)
+    ).all()
+    received = session.scalar(select(func.count()).select_from(PaymentEvent)) or 0
+    pending = (
+        session.scalar(
+            select(func.count())
+            .select_from(PaymentEvent)
+            .where(PaymentEvent.processed_at.is_(None))
+        )
+        or 0
+    )
+    return PlatformBilling(
+        plans=[
+            PlatformPlan(
+                code=plan.code,
+                name=plan.name,
+                monthly_price_cop=plan.monthly_price_cop,
+                annual_price_cop=plan.annual_price_cop,
+                included_users=plan.included_users,
+                is_public=plan.is_public,
+            )
+            for plan in plans
+        ],
+        subscription_counts={status: count for status, count in counts},
+        payment_events_received=received,
+        payment_events_pending=pending,
+    )
+
+
+@router.get("/audit", summary="Auditoría transversal de la plataforma")
+def platform_audit(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_platform_admin)],
+    session: Annotated[Session, Depends(get_session)],
+    cursor: uuid.UUID | None = None,
+) -> PlatformAuditPage:
+    del principal
+    response.headers["Cache-Control"] = "no-store"
+    query = select(AuditLog).order_by(AuditLog.id.desc()).limit(51)
+    if cursor is not None:
+        query = query.where(AuditLog.id < cursor)
+    events = list(session.scalars(query))
+    return PlatformAuditPage(
+        items=[
+            PlatformAuditEvent(
+                id=event.id,
+                action=event.action,
+                actor_user_id=event.actor_user_id,
+                organization_id=event.organization_id,
+                target_id=event.target_id,
+                created_at=event.created_at,
+            )
+            for event in events[:50]
+        ],
+        next_cursor=events[49].id if len(events) > 50 else None,
+    )
