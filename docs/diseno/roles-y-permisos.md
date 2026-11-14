@@ -14,7 +14,7 @@ base de datos. Una cuenta pertenece a un solo despacho en la versión actual.
 | Gestionar miembros e invitaciones | Sí | Sí | No | No | No |
 | Abrir casos | Sí | Sí | Sí | No | No |
 | Ver los casos asignados | Sí | Sí | Sí | Sí | No |
-| Administrar la plataforma | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
+| Bloquear y desbloquear cuentas de la plataforma | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
 
 El propietario nace al crear el despacho y no se puede invitar, cambiar ni retirar desde la
 gestión de miembros. El administrador del despacho puede gestionar el equipo, pero no convertirse
@@ -22,9 +22,11 @@ en propietario ni cambiar su propio rol. Los cambios de rol se leen de la base e
 y quedan en auditoría. Las pantallas usan las capacidades para orientar, y la API vuelve a
 autorizar la operación en el servicio; ocultar un botón no otorga ni revoca permisos.
 
-El atributo `is_platform_admin` existe en `users`, pero todavía no hay consola ni operaciones
-de administración de plataforma. Por eso `platform.manage` aparece como capacidad reservada y
-no da acceso adicional a las rutas actuales. Solo puede haber una cuenta con ese atributo. La
+El atributo `is_platform_admin` habilita la sección `/app/plataforma` y las rutas de cuentas
+`/api/v1/platform/users`. La API comprueba ese atributo en la base en cada petición. La primera
+operación de la consola lista cuentas y permite bloquearlas o desbloquearlas; bloquear revoca
+sus sesiones y ambos cambios dejan auditoría. No muestra ni modifica expedientes, miembros ni
+suscripciones de otros despachos. Solo puede haber una cuenta con ese atributo. La
 asignación del usuario propietario se hace desde una operación administrativa con el dueño del
 esquema, después de verificar que la cuenta existe y su correo está confirmado; su dirección
 personal no va en el código ni en una migración. El usuario técnico de la aplicación no puede
