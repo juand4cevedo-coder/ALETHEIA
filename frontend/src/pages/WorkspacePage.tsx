@@ -1,4 +1,4 @@
-import { useOutletContext } from "react-router";
+import { Navigate, useOutletContext } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { listCasesOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 
@@ -25,9 +25,11 @@ export function WorkspacePage() {
   const me = useOutletContext<Me>();
   const summary = useQuery({
     ...listCasesOptions({ query: { status: "open", limit: 1 } }),
-    enabled: me.organization != null,
+    enabled: me.organization != null && !me.platform_admin,
   });
   const totals = summary.data?.totals;
+
+  if (me.platform_admin) return <Navigate to={ROUTES.platform} replace />;
 
   return (
     <div className={styles.screen}>

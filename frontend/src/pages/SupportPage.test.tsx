@@ -67,3 +67,42 @@ it("permite enviar una solicitud y verla en la cuenta", async () => {
     expect(screen.getByText("Consulta de ingreso")).toBeInTheDocument(),
   );
 });
+
+it("dirige al propietario a las solicitudes recibidas y oculta el soporte de cliente", async () => {
+  fetchMock.mockImplementation(async (input) => {
+    const request = input as Request;
+    const path = new URL(request.url).pathname;
+    if (path === "/api/v1/me")
+      return jsonResponse({
+        id: "01890a5d-ac96-774b-bcce-b302099a8057",
+        full_name: "Propietario",
+        email: "owner@example.com",
+        email_verified: true,
+        platform_admin: true,
+        permissions: ["platform.manage"],
+        organization: null,
+        legal: {
+          accepted_version: LEGAL_VERSION,
+          current_version: LEGAL_VERSION,
+          acceptance_required: false,
+        },
+      });
+    if (path === "/api/v1/platform/support/tickets")
+      return jsonResponse({ items: [], next_cursor: null });
+    throw new Error(`Ruta inesperada: ${request.method} ${path}`);
+  });
+  await renderRoute("/app/soporte");
+
+  expect(
+    await screen.findByRole("heading", { name: "Solicitudes de usuarios" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("link", { name: "Pedir soporte" }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("textbox", { name: "Asunto" }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.getByRole("link", { name: "Solicitudes de usuarios" }),
+  ).toBeInTheDocument();
+});
