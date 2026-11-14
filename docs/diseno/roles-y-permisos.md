@@ -1,8 +1,8 @@
 # Roles y permisos vigentes
 
 La identidad de plataforma y la pertenencia a un despacho son ámbitos distintos. El usuario que
-administra Aletheia puede gestionar la operación del servicio cuando exista la consola de
-plataforma; ese atributo no abre los casos, la facturación ni los miembros de otro despacho.
+administra Aletheia puede gestionar las cuentas desde la consola de plataforma; ese atributo
+no abre los casos, la facturación ni los miembros de otro despacho.
 Cada petición de datos de un despacho conserva el contexto de organización y persona en la
 base de datos. Una cuenta pertenece a un solo despacho en la versión actual.
 
@@ -24,7 +24,7 @@ autorizar la operación en el servicio; ocultar un botón no otorga ni revoca pe
 
 El atributo `is_platform_admin` habilita la sección `/app/plataforma` y las rutas de cuentas
 `/api/v1/platform/users`. La API comprueba ese atributo en la base en cada petición. La primera
-operación de la consola lista cuentas y permite bloquearlas o desbloquearlas; bloquear revoca
+operación de la consola lista cuentas, muestra la verificación del correo y permite bloquearlas o desbloquearlas; bloquear revoca
 sus sesiones y ambos cambios dejan auditoría. No muestra ni modifica expedientes, miembros ni
 suscripciones de otros despachos. Solo puede haber una cuenta con ese atributo. La
 asignación del usuario propietario se hace desde una operación administrativa con el dueño del
