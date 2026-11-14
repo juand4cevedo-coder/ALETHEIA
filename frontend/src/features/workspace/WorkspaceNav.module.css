@@ -7,7 +7,7 @@
   --line: var(--brand-line);
   --accent: var(--on-brand);
   border-right: 1px solid var(--line);
-  background: var(--surface-1);
+  background: linear-gradient(180deg, #111216, #0a0b0e 70%);
 }
 
 .list {
@@ -35,17 +35,19 @@
   white-space: nowrap;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard);
+    color var(--motion-fast) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
 .link:hover {
   color: var(--text);
+  background: #ffffff08;
 }
 
 .active,
 .active:hover {
-  background: var(--surface-2);
-  box-shadow: inset 2px 0 0 var(--accent);
+  background: linear-gradient(90deg, #ffffff16, #ffffff09);
+  box-shadow: inset 2px 0 0 #d6c1a4;
   color: var(--text);
 }
 

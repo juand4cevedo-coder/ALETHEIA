@@ -98,7 +98,7 @@ export function SupportPage() {
           <Notice tone="error">No pudimos cargar las solicitudes.</Notice>
         )}
         {tickets.data?.items.length === 0 && (
-          <p>Todavía no ha enviado solicitudes.</p>
+          <p className={styles.empty}>Todavía no ha enviado solicitudes.</p>
         )}
         {tickets.data?.items.map((ticket) => (
           <article className={styles.ticket} key={ticket.id}>
