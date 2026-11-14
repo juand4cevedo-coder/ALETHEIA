@@ -5,10 +5,12 @@ import uuid
 from typing import Any
 
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
+from app.api.deps import get_session
 from app.core.config import Settings
 from app.core.tokens import opaque_token_hash
 from app.db.tenancy import TenantContext, set_tenant
@@ -255,6 +257,27 @@ def test_el_plan_firma_admite_usuarios_adicionales(dispositivo: NuevoCliente, db
     assert cupo["used"] == incluidos + 1
     assert cupo["full"] is False
     assert cupo["extra_user_price_cop"] is not None
+
+
+def test_dueno_de_plataforma_invita_aunque_su_plan_este_lleno(
+    app: FastAPI, dispositivo: NuevoCliente, owner_db: Session
+) -> None:
+    db = owner_db
+    app.dependency_overrides[get_session] = lambda: owner_db
+    oficina = crear_oficina(db, "professional")
+    _contexto(db, oficina)
+    db.execute(update(User).where(User.id == oficina.owner.id).values(is_platform_admin=True))
+    crear_miembro(db, oficina, "segundo@example.com", "lawyer")
+    cliente = _sesion(dispositivo, oficina.owner)
+
+    antes = cliente.get(_MIEMBROS).json()["seats"]
+    assert antes["owner_exempt"] is True
+    assert antes["full"] is False
+    respuesta = _invitar(cliente, "tercero@example.com")
+    assert respuesta.status_code == 201, respuesta.text
+    despues = cliente.get(_MIEMBROS).json()["seats"]
+    assert despues["used"] == 3
+    assert despues["full"] is False
 
 
 def test_el_tope_de_invitaciones_frena_los_envios_en_masa(

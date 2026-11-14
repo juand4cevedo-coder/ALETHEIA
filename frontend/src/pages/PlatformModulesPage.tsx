@@ -168,7 +168,7 @@ export function PlatformSupportPage() {
             </Notice>
           )}
           {tickets.data?.items.length === 0 && (
-            <p>No hay solicitudes en esta página.</p>
+            <p className={styles.empty}>No hay solicitudes en esta página.</p>
           )}
           {tickets.data?.items.map((ticket) => (
             <article className={styles.ticket} key={ticket.id}>
@@ -266,7 +266,7 @@ export function PlatformAuditPage() {
             <Notice tone="error">No pudimos cargar los eventos.</Notice>
           )}
           {audit.data?.items.length === 0 && (
-            <p>No hay eventos en esta página.</p>
+            <p className={styles.empty}>No hay eventos en esta página.</p>
           )}
           {audit.data && audit.data.items.length > 0 && (
             <div className={styles.tableScroll}>

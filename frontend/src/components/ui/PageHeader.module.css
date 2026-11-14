@@ -5,6 +5,8 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-4) var(--space-6);
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
 }
 
 .text {
@@ -15,10 +17,10 @@
   font-family: var(--font-sans);
   margin: 0;
   color: var(--text);
-  font-size: var(--font-size-title);
+  font-size: clamp(28px, 3vw, 34px);
   font-weight: 500;
   letter-spacing: var(--tracking-title);
-  line-height: var(--line-height-title);
+  line-height: 1.16;
   /* Nombres de personas y títulos de casos los escribe el usuario: una palabra larga baja de
      línea en vez de desbordar. */
   overflow-wrap: anywhere;
@@ -26,10 +28,10 @@
 
 .description {
   max-width: 64ch;
-  margin: var(--space-2) 0 0;
+  margin: 10px 0 0;
   color: var(--text-2);
   font-size: var(--font-size-ui);
-  line-height: var(--line-height-ui);
+  line-height: 1.6;
 }
 
 .actions {
