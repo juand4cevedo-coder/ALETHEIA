@@ -379,6 +379,19 @@ function SeatsBar({
     return <div className={styles.seats} aria-hidden="true" />;
   }
   const unlimited = seats.extra_user_price_cop !== null;
+  if (seats.owner_exempt) {
+    return (
+      <div className={styles.seats}>
+        <div className={styles.seatsText}>
+          <p className={styles.seatsCount}>Equipo de la plataforma</p>
+          <p className={styles.seatsHint}>
+            Su cuenta de propietario puede invitar personas sin límite de cupo
+            del plan. Hay {seats.used} miembros e invitaciones abiertas.
+          </p>
+        </div>
+      </div>
+    );
+  }
   const ratio = Math.min(seats.used / seats.included, 1);
   const users = seats.included === 1 ? "usuario" : "usuarios";
 

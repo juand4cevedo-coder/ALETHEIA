@@ -107,148 +107,6 @@
   gap: 12px;
   margin-top: 32px;
 }
-.visual {
-  position: relative;
-  height: 490px;
-  width: 112%;
-  margin-left: -2%;
-  display: grid;
-  place-items: center;
-  background: radial-gradient(ellipse at 50% 50%, #1b38332e, transparent 68%);
-}
-.hashScene {
-  position: relative;
-  width: min(100%, 530px);
-  height: 365px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 44px;
-  isolation: isolate;
-}
-.hashGrid {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(#8eb6ac10 1px, transparent 1px),
-    linear-gradient(90deg, #8eb6ac10 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: radial-gradient(ellipse, black 16%, transparent 70%);
-}
-.fileGlyph {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-  width: 122px;
-  height: 158px;
-  flex: none;
-  padding: 63px 21px 0;
-  border: 1px solid #9ac7b5a3;
-  border-radius: 12px 24px 12px 12px;
-  background: linear-gradient(145deg, #162922, #0a1110 72%);
-  box-shadow:
-    0 24px 54px #000a,
-    inset 0 1px #c2efd12b;
-  transform: rotate(-8deg);
-}
-.fileFold {
-  position: absolute;
-  top: -1px;
-  right: -1px;
-  width: 32px;
-  height: 32px;
-  border-left: 1px solid #9ac7b5a3;
-  border-bottom: 1px solid #9ac7b5a3;
-  border-radius: 0 22px 0 7px;
-  background: #1d342b;
-}
-.fileLine,
-.fileLineShort {
-  height: 2px;
-  border-radius: 2px;
-  background: #9bc2b363;
-}
-.fileLineShort {
-  width: 58%;
-}
-.hashFlow {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 74px;
-  height: 1px;
-  flex: none;
-  background: linear-gradient(90deg, #87ad9b55, #b3e3c4);
-}
-.flowDot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #b3e3c4;
-  box-shadow: 0 0 10px #b3e3c4;
-  animation: hashPulse 2.4s ease-in-out infinite;
-}
-.flowDot:nth-child(2) {
-  animation-delay: 0.35s;
-}
-.flowDot:nth-child(3) {
-  animation-delay: 0.7s;
-}
-.digestCard {
-  display: flex;
-  flex-direction: column;
-  width: 202px;
-  min-height: 176px;
-  flex: none;
-  padding: 22px;
-  border: 1px solid #9ac7b588;
-  border-radius: 14px;
-  background: linear-gradient(145deg, #10221e, #070c0b 70%);
-  box-shadow:
-    0 24px 54px #000a,
-    inset 0 1px #c2efd124;
-  transform: rotate(5deg);
-}
-.digestHeading {
-  color: #d2ecdf;
-  font: 600 15px var(--font-mono);
-  letter-spacing: 0.12em;
-}
-.digestRule {
-  height: 1px;
-  margin: 17px 0;
-  background: linear-gradient(90deg, #b6ebcb9e, transparent);
-}
-.digestBits {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 9px 16px;
-  color: #a3dbb8;
-  font: 15px var(--font-mono);
-  letter-spacing: 0.1em;
-}
-.digestFoot {
-  margin-top: 21px;
-  color: #8ea99a;
-  font: 9px var(--font-mono);
-  letter-spacing: 0.14em;
-}
-.sceneLabel {
-  position: absolute;
-  bottom: 25px;
-  color: #a2bdb0;
-  font: 10px var(--font-mono);
-  letter-spacing: 0.2em;
-}
-@keyframes hashPulse {
-  50% {
-    opacity: 0.3;
-    transform: scale(0.65);
-  }
-}
 .benefits {
   position: relative;
   max-width: var(--content-width);
@@ -293,15 +151,6 @@
     padding: 0 24px 40px;
     min-height: 0;
   }
-  .visual {
-    width: 100%;
-    height: 300px;
-    margin: 0;
-  }
-  .hashScene {
-    transform: scale(0.72);
-    flex: none;
-  }
   .intro {
     text-align: center;
   }
@@ -329,15 +178,9 @@
     font-size: 15px;
   }
 }
-@media (max-width: 440px) {
-  .hashScene {
-    transform: scale(0.59);
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   .eyebrow,
-  .intro,
-  .flowDot {
+  .intro {
     animation: none;
   }
 }
