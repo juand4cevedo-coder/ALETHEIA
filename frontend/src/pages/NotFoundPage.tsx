@@ -20,6 +20,7 @@ export function NotFoundPage() {
     return (
       <section className={styles.page} aria-labelledby="titulo-error">
         <title>{pageTitle("Página no encontrada")}</title>
+        <meta name="robots" content="noindex" />
         <h1 id="titulo-error" className={styles.title}>
           No encontramos esta página
         </h1>
@@ -35,6 +36,7 @@ export function NotFoundPage() {
   return (
     <section className={styles.page} aria-labelledby="titulo-error">
       <title>{pageTitle("No pudimos mostrar la página")}</title>
+      <meta name="robots" content="noindex" />
       <h1 id="titulo-error" className={styles.title}>
         No pudimos mostrar esta página
       </h1>

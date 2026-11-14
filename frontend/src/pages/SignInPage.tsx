@@ -168,6 +168,7 @@ export function SignInPage() {
         name="description"
         content="Ingrese a ALETHEIA con su correo y su contraseña para trabajar en sus casos."
       />
+      <meta name="robots" content="noindex" />
       <link rel="canonical" href={`${SITE_URL}${ROUTES.signIn}`} />
 
       <div className={styles.screen}>

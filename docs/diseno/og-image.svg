@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow"><stop stop-color="#18332b"/><stop offset="1" stop-color="#050706"/></radialGradient>
+    <linearGradient id="line" x1="0" x2="1"><stop stop-color="#283c35" stop-opacity="0"/><stop offset=".5" stop-color="#638176"/><stop offset="1" stop-color="#283c35" stop-opacity="0"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#050706"/>
+  <rect x="580" y="0" width="620" height="630" fill="url(#glow)"/>
+  <g fill="none" stroke="url(#line)" stroke-width="1">
+    <path d="M530 425H1190"/><path d="M580 460H1200"/><path d="M635 500H1200"/>
+  </g>
+  <g fill="none" stroke="#4a7563" opacity=".55">
+    <circle cx="900" cy="310" r="214"/><circle cx="900" cy="310" r="169"/><circle cx="900" cy="310" r="120"/>
+  </g>
+  <g fill="none" stroke="#a5d3b7" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M862 296v-38a38 38 0 0 1 76 0v38"/><rect x="846" y="296" width="108" height="90" rx="13"/><circle cx="900" cy="336" r="6"/><path d="M900 342v18"/>
+  </g>
+  <text x="82" y="105" fill="#e8eee9" font-family="Arial, sans-serif" font-size="25" font-weight="700" letter-spacing="7">ALETHEIA</text>
+  <text x="82" y="303" fill="#f6f7f4" font-family="Georgia, serif" font-size="76">Su trabajo.</text>
+  <text x="82" y="388" fill="#f6f7f4" font-family="Georgia, serif" font-size="76">Con claridad.</text>
+  <text x="86" y="459" fill="#b4c2b9" font-family="Arial, sans-serif" font-size="23">Casos, equipos y contexto en un solo lugar.</text>
+  <text x="82" y="566" fill="#6bb28d" font-family="Arial, sans-serif" font-size="18" letter-spacing="3">ALETHEIA.SBS</text>
+</svg>
