@@ -30,6 +30,7 @@ from dataclasses import dataclass
 from typing import Final, Literal
 
 from psycopg import errors as pg_errors
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -37,9 +38,9 @@ from app.adapters.keys import KeyWrapper
 from app.core.case_keys import new_wrapped_case_key
 from app.core.permissions import has_permission
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, Case, CaseMember, CustodyEvent
+from app.models import AuditLog, Case, CaseMember, CustodyEvent, Membership, Organization, User
 from app.repositories import cases as cases_repository
-from app.repositories.cases import CaseMemberView, CustodyEventView
+from app.repositories.cases import CaseCandidateView, CaseMemberView, CustodyEventView
 from app.services.audit import audit_ip, audit_user_agent
 from app.services.custody_chain import GENESIS_HASH
 from app.services.members import OrganizationNotActiveError
@@ -75,6 +76,22 @@ class FilingNumberTakenError(Exception):
 
 class CaseNotFoundError(Exception):
     """El caso no existe o la persona no es miembro de él (MSG-011)."""
+
+
+class NotAllowedToManageCaseError(Exception):
+    """El rol no puede cambiar el equipo de un caso."""
+
+
+class CaseMemberNotFoundError(Exception):
+    """La persona no pertenece a esta organización o a este caso."""
+
+
+class CaseMemberAlreadyAssignedError(Exception):
+    """La persona ya pertenece al caso."""
+
+
+class SelfRemovalError(Exception):
+    """Quien administra el caso no se retira a sí mismo."""
 
 
 class InvalidCursorError(Exception):
@@ -281,6 +298,115 @@ def get_case(session: Session, principal: Principal, case_id: uuid.UUID) -> Case
         members=cases_repository.case_members(session, organization_id, case.id),
         recent_events=cases_repository.recent_events(session, case.id, RECENT_EVENTS),
     )
+
+
+def _manage_case(session: Session, principal: Principal, case_id: uuid.UUID) -> Case:
+    organization_id = principal.organization_id
+    if organization_id is None:
+        raise CaseNotFoundError
+    set_tenant(session, TenantContext(organization_id=organization_id, user_id=principal.user_id))
+    case = cases_repository.case_for_member_update(session, case_id, principal.user_id)
+    if case is None or case.organization_id != organization_id:
+        raise CaseNotFoundError
+    role = session.scalar(
+        select(Membership.role)
+        .where(
+            Membership.organization_id == organization_id, Membership.user_id == principal.user_id
+        )
+        .with_for_update(read=True)
+    )
+    if not has_permission(role, "cases.manage_members"):
+        raise NotAllowedToManageCaseError
+    return case
+
+
+def available_case_members(
+    session: Session, principal: Principal, case_id: uuid.UUID
+) -> list[CaseCandidateView]:
+    case = _manage_case(session, principal, case_id)
+    return cases_repository.available_case_members(session, case.organization_id, case.id)
+
+
+def _record_member_change(
+    session: Session, case: Case, principal: Principal, user_id: uuid.UUID, action: str
+) -> None:
+    previous = session.scalar(
+        select(CustodyEvent.event_hash).where(
+            CustodyEvent.case_id == case.id, CustodyEvent.seq == case.custody_seq
+        )
+    )
+    if previous is None:
+        msg = "El caso no tiene un último evento de custodia"
+        raise LookupError(msg)
+    session.add(
+        CustodyEvent(
+            organization_id=case.organization_id,
+            case_id=case.id,
+            seq=case.custody_seq + 1,
+            actor_user_id=principal.user_id,
+            action=action,
+            details={"user_id": str(user_id)},
+            occurred_at=datetime.datetime.now(datetime.UTC),
+            prev_hash=previous,
+        )
+    )
+    session.flush()
+
+
+def add_case_member(
+    session: Session, principal: Principal, case_id: uuid.UUID, user_id: uuid.UUID
+) -> None:
+    """Asigna a una persona del mismo despacho y registra el cambio en custodia."""
+    session.commit()  # Cierra la lectura de autenticación antes de la escritura atómica.
+    with session.begin():
+        case = _manage_case(session, principal, case_id)
+        status = session.scalar(
+            select(Organization.status).where(Organization.id == case.organization_id)
+        )
+        if status != "active":
+            raise OrganizationNotActiveError
+        member = session.scalar(
+            select(Membership)
+            .join(User, User.id == Membership.user_id)
+            .where(
+                Membership.organization_id == case.organization_id,
+                Membership.user_id == user_id,
+                User.status == "active",
+                User.is_platform_admin.is_(False),
+            )
+            .with_for_update(read=True, of=Membership)
+        )
+        if member is None:
+            raise CaseMemberNotFoundError
+        if session.get(CaseMember, (case.id, user_id)) is not None:
+            raise CaseMemberAlreadyAssignedError
+        session.add(
+            CaseMember(
+                case_id=case.id,
+                user_id=user_id,
+                organization_id=case.organization_id,
+                added_by=principal.user_id,
+            )
+        )
+        session.flush()
+        _record_member_change(session, case, principal, user_id, "member_added")
+
+
+def remove_case_member(
+    session: Session, principal: Principal, case_id: uuid.UUID, user_id: uuid.UUID
+) -> None:
+    """Quita solo la asignación al caso; la membresía del despacho sigue intacta."""
+    session.commit()
+    with session.begin():
+        case = _manage_case(session, principal, case_id)
+        if user_id == principal.user_id:
+            raise SelfRemovalError
+        member = session.get(CaseMember, (case.id, user_id))
+        if member is None:
+            raise CaseMemberNotFoundError
+        session.delete(member)
+        session.flush()
+        _record_member_change(session, case, principal, user_id, "member_removed")
 
 
 def list_cases(
