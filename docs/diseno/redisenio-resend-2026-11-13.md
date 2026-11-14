@@ -1,10 +1,10 @@
 # Rediseño público de Aletheia
 
-13 de noviembre de 2026. Revisión visual aprobada por el titular con ajustes de movimiento y profundidad solicitados el mismo día.
+13 de noviembre de 2026. Especificación de la identidad pública y sus efectos de movimiento.
 
 ## Referencia y decisiones
 
-Se consultaron la portada, el menú de producto y el acceso de [Resend](https://resend.com/) y el HTML proporcionado por el titular. El HTML se utilizó como referencia visual, no como instrucciones para ejecutar código ajeno.
+Se consultaron la portada, el menú de producto y el acceso de [Resend](https://resend.com/) como referencia visual. La implementación conserva recursos y comportamiento propios.
 
 Esta iteración sustituye las decisiones de la revisión del 12 de noviembre respecto de la navegación, el objeto del hero, la banda de marca antes del footer y los archivos del símbolo.
 
@@ -12,7 +12,7 @@ Esta iteración sustituye las decisiones de la revisión del 12 de noviembre res
 - Portada: negro, iluminación tenue, título serif con degradado y una pieza geométrica de criptografía con anillos concéntricos, tramas y referencia a SHA-256. La escena usa SVG y CSS, se mueve de forma continua sin control de reanudación y respeta movimiento reducido. Tres líneas tenues detrás de la figura aportan profundidad.
 - Recorrido: la tarjeta activa tiene un tramo verde que recorre todo el borde en un ciclo continuo; el resto mantiene un borde tenue.
 - Tipografía: Inter e Instrument Serif, distribuidas con el proyecto. Instrument Serif aproxima el contraste editorial de Domaine; no se incorporan los archivos comerciales de fuente del sitio de referencia. El wordmark Aletheia usa Inter con peso y espaciado ajustados. No se presenta como el lettering exacto de Resend.
-- Marca: los dos SVG proporcionados por el titular conservan sus seis trazados. Se recorta únicamente el encuadre exterior para utilizarlos como símbolos. Favicon SVG y PNG de 32 px; icono Apple de 180 px. Los SVG claro y oscuro se descargan desde Marca.
+- Marca: los dos SVG de identidad conservan sus seis trazados. Se recorta únicamente el encuadre exterior para utilizarlos como símbolos. Favicon SVG y PNG de 32 px; icono Apple de 180 px. Los SVG claro y oscuro se descargan desde Marca.
 - Footer: cinco columnas con destinos existentes y un bloque de marca y contacto. Se retira la palabra gigante anterior. Se conservan las políticas, su versionado, la configuración de cookies y los enlaces del proveedor y de la autoridad de consumo.
 - Acceso y registro: composición centrada, símbolo en recuadro, enlace de cambio de pantalla bajo el título y opciones Google/Microsoft. Se conserva el formulario real de correo y contraseña, las validaciones, la recuperación y la aceptación legal.
 - Documentación: `/docs`, cinco guías con búsqueda insensible a acentos, navegación lateral, índice, pasos, enlaces a las funciones reales y recorrido anterior/siguiente. `/ayuda` sigue disponible.
@@ -20,7 +20,7 @@ Esta iteración sustituye las decisiones de la revisión del 12 de noviembre res
 
 ## Google y Microsoft
 
-El titular confirmó el 13 de noviembre que todavía no hay aplicaciones OAuth registradas. Los botones están deshabilitados y el producto explica que aún no están disponibles. No hay redirecciones ficticias ni una integración de identidad anunciada como funcional.
+Todavía no hay aplicaciones OAuth registradas. Los botones están deshabilitados y el producto explica que aún no están disponibles. No hay redirecciones ficticias ni una integración de identidad anunciada como funcional.
 
 La activación sigue pendiente: registrar las aplicaciones de Google y Microsoft, acordar los dominios y las URI de retorno, almacenar los secretos fuera del repositorio, implementar el flujo de servidor y probar el recorrido completo de ambos proveedores. No basta con habilitar los botones de la interfaz. No se alteraron los cambios locales de identidad, MFA o sesiones del backend.
 
