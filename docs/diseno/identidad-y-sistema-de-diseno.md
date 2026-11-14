@@ -2,7 +2,7 @@
 
 | Campo | Contenido |
 | --- | --- |
-| Estado | Revisión visual aprobada el 13/11/2026 con los ajustes de escena y borde descritos en la revisión de ese día |
+| Estado | Identidad vigente desde el 13/11/2026, con ajustes de escena y borde documentados |
 | Reemplaza | Propuestas anteriores de esta rama. Los ADR se conservan como registro histórico |
 | Referencia | Resend, revisado en escritorio y móvil, con inspección de estilos computados |
 | Decisión | Negro, contraste editorial, superficies con luz discreta y continuidad entre sitio y aplicación |
@@ -135,6 +135,6 @@ Google y Microsoft requieren aplicaciones todavía no registradas. La implementa
 
 ## 12. Documentos que se actualizan
 
-La revisión detallada de la referencia y sus fuentes está en revision-referencia-noviembre.md. Las decisiones aprobadas se trasladarán a Diseño UX/UI, Arquitectura y Manual de Usuario conservando su orden, tablas y paginación. Los documentos formales no presentan una propuesta pendiente como decisión final.
+La revisión detallada de la referencia y sus fuentes está en revision-referencia-noviembre.md. Estas decisiones se trasladan a Diseño UX/UI, Arquitectura y Manual de Usuario conservando su orden, tablas y paginación. Los documentos formales distinguen las funciones implementadas de las pendientes.
 
-Cierre solicitado: 25 de noviembre de 2026. Sustentación: 26 de noviembre de 2026. Todo permanece local hasta aprobación. El historial conserva las fechas reales del trabajo.
+Hito de cierre: 25 de noviembre de 2026. Sustentación: 26 de noviembre de 2026. El historial conserva las fechas reales del trabajo.
