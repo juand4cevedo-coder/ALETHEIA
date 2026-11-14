@@ -8,7 +8,10 @@ import { managesTeam } from "./roles.ts";
 import styles from "./WorkspaceNav.module.css";
 import {
   CarpetaAbiertaIcon,
+  CorreoIcon,
+  HuellaIcon,
   InicioIcon,
+  ReciboIcon,
   UsuarioIcon,
   UsuariosIcon,
   type IconComponent,
@@ -28,46 +31,73 @@ type Item = {
 
 // Secciones del espacio de trabajo en el orden del menú lateral (Diseño UX/UI, 4.2). Cada
 // historia agrega la suya cuando existe: el menú nunca anuncia lo que todavía no funciona.
-const ITEMS: readonly Item[] = [
-  { to: ROUTES.app, label: "Inicio", icon: InicioIcon, end: true },
+const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
   {
-    to: ROUTES.cases,
-    label: "Casos",
-    icon: CarpetaAbiertaIcon,
-    openCount: true,
+    label: "Despacho",
+    items: [
+      {
+        to: ROUTES.app,
+        label: "Inicio",
+        icon: InicioIcon,
+        end: true,
+        visible: (me) => !me.platform_admin,
+      },
+      {
+        to: ROUTES.cases,
+        label: "Casos",
+        icon: CarpetaAbiertaIcon,
+        openCount: true,
+        visible: (me) => me.organization != null && !me.platform_admin,
+      },
+      {
+        to: ROUTES.members,
+        label: "Miembros",
+        icon: UsuariosIcon,
+        visible: (me) => managesTeam(me.organization?.role),
+      },
+    ],
   },
   {
-    to: ROUTES.members,
-    label: "Miembros",
-    icon: UsuariosIcon,
-    visible: (me) => managesTeam(me.organization?.role),
+    label: "Plataforma",
+    items: [
+      {
+        to: ROUTES.platform,
+        label: "Cuentas de plataforma",
+        icon: UsuariosIcon,
+        end: true,
+        visible: (me) => me.platform_admin,
+      },
+      {
+        to: ROUTES.platformBilling,
+        label: "Facturación",
+        icon: ReciboIcon,
+        visible: (me) => me.platform_admin,
+      },
+      {
+        to: ROUTES.platformSupport,
+        label: "Solicitudes de usuarios",
+        icon: CorreoIcon,
+        visible: (me) => me.platform_admin,
+      },
+      {
+        to: ROUTES.platformAudit,
+        label: "Auditoría",
+        icon: HuellaIcon,
+        visible: (me) => me.platform_admin,
+      },
+    ],
   },
-  { to: ROUTES.account, label: "Mi cuenta", icon: UsuarioIcon },
-  { to: ROUTES.support, label: "Soporte", icon: UsuarioIcon },
   {
-    to: ROUTES.platform,
-    label: "Cuentas de plataforma",
-    icon: UsuarioIcon,
-    end: true,
-    visible: (me) => me.platform_admin,
-  },
-  {
-    to: ROUTES.platformBilling,
-    label: "Facturación",
-    icon: UsuarioIcon,
-    visible: (me) => me.platform_admin,
-  },
-  {
-    to: ROUTES.platformSupport,
-    label: "Bandeja de soporte",
-    icon: UsuarioIcon,
-    visible: (me) => me.platform_admin,
-  },
-  {
-    to: ROUTES.platformAudit,
-    label: "Auditoría",
-    icon: UsuarioIcon,
-    visible: (me) => me.platform_admin,
+    label: "Cuenta",
+    items: [
+      { to: ROUTES.account, label: "Mi cuenta", icon: UsuarioIcon },
+      {
+        to: ROUTES.support,
+        label: "Pedir soporte",
+        icon: CorreoIcon,
+        visible: (me) => !me.platform_admin,
+      },
+    ],
   },
 ];
 
@@ -86,36 +116,48 @@ function useOpenCases(enabled: boolean): number | undefined {
 // la izquierda; en tabletas y celulares, una franja bajo el encabezado que se desliza de lado.
 // Cada persona ve solo las secciones de su rol, aunque la API también lo exige.
 export function WorkspaceNav({ me }: { me: Me }) {
-  const items = ITEMS.filter((item) => item.visible?.(me) ?? true);
+  const groups = GROUPS.map((group) => ({
+    ...group,
+    label:
+      group.label === "Despacho" && me.platform_admin ? "Equipo" : group.label,
+    items: group.items.filter((item) => item.visible?.(me) ?? true),
+  })).filter((group) => group.items.length > 0);
   // Sin organización no hay casos que contar.
-  const openCases = useOpenCases(me.organization != null);
+  const openCases = useOpenCases(me.organization != null && !me.platform_admin);
 
   return (
     <nav className={styles.nav} aria-label="Espacio de trabajo">
-      <ul className={styles.list}>
-        {items.map(({ to, label, icon: Icon, end, openCount }) => (
-          <li key={to}>
-            <NavLink
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                isActive ? `${styles.link} ${styles.active}` : styles.link
-              }
-            >
-              <Icon size={16} aria-hidden="true" />
-              {label}
-              {openCount && openCases !== undefined && (
-                <span className={styles.count}>
-                  <span aria-hidden="true">{openCases}</span>
-                  <span className="visually-hidden">
-                    {`, ${openCases} ${openCases === 1 ? "abierto" : "abiertos"}`}
-                  </span>
-                </span>
-              )}
-            </NavLink>
-          </li>
+      <div className={styles.groups}>
+        {groups.map((group) => (
+          <section className={styles.group} key={group.label}>
+            <h2 className={styles.groupLabel}>{group.label}</h2>
+            <ul className={styles.list}>
+              {group.items.map(({ to, label, icon: Icon, end, openCount }) => (
+                <li key={to}>
+                  <NavLink
+                    to={to}
+                    end={end}
+                    className={({ isActive }) =>
+                      isActive ? `${styles.link} ${styles.active}` : styles.link
+                    }
+                  >
+                    <Icon size={16} aria-hidden="true" />
+                    {label}
+                    {openCount && openCases !== undefined && (
+                      <span className={styles.count}>
+                        <span aria-hidden="true">{openCases}</span>
+                        <span className="visually-hidden">
+                          {`, ${openCases} ${openCases === 1 ? "abierto" : "abiertos"}`}
+                        </span>
+                      </span>
+                    )}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </section>
         ))}
-      </ul>
+      </div>
     </nav>
   );
 }
