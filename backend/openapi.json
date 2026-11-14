@@ -1800,6 +1800,16 @@
               }
             }
           },
+          "429": {
+            "description": "Demasiadas solicitudes.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
           "422": {
             "description": "La solicitud tiene datos inválidos.",
             "content": {
