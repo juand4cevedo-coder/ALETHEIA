@@ -12,6 +12,7 @@ from app.api.deps import get_client_ip, get_principal, get_session
 from app.models import AuditLog, User
 from app.repositories.sessions import revoke_user_sessions
 from app.schemas.platform import PlatformUser, PlatformUserPage, UserStatusChange
+from app.services.audit import audit_ip
 from app.services.sessions import Principal
 
 router = APIRouter(prefix="/platform", tags=["plataforma"])
@@ -92,7 +93,7 @@ def change_platform_user_status(
                 actor_user_id=principal.user_id,
                 action="account_blocked" if change.status == "blocked" else "account_unblocked",
                 target_id=user.id,
-                ip=client_ip if client_ip != "desconocida" else None,
+                ip=audit_ip(client_ip),
                 user_agent=None,
                 created_at=now,
             )
