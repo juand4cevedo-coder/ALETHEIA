@@ -42,6 +42,9 @@ AUDIT_ACTIONS: Final = (
     "logout",
     "case_created",
     "platform_admin_granted",
+    "support_ticket_opened",
+    "support_ticket_closed",
+    "support_ticket_reopened",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.
