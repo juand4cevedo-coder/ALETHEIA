@@ -6,6 +6,11 @@ no abre los casos, la facturación ni los miembros de otro despacho.
 Cada petición de datos de un despacho conserva el contexto de organización y persona en la
 base de datos. Una cuenta pertenece a un solo despacho en la versión actual.
 
+La cuenta propietaria de la plataforma administra el servicio aunque también figure como
+propietaria de un despacho. En esa cuenta no se habilitan los casos: no crea expedientes ni
+consulta los asignados. La gestión de miembros de su propio despacho sigue disponible para
+administrar accesos. Los roles jurídicos y su trabajo en casos corresponden a las demás cuentas.
+
 ## Capacidades implementadas
 
 | Capacidad | Propietario del despacho | Administrador | Abogado | Asistente | Administrador de plataforma sin membresía |
@@ -15,7 +20,7 @@ base de datos. Una cuenta pertenece a un solo despacho en la versión actual.
 | Abrir casos | Sí | Sí | Sí | No | No |
 | Ver los casos asignados | Sí | Sí | Sí | Sí | No |
 | Bloquear y desbloquear cuentas de la plataforma | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
-| Abrir y consultar solicitudes propias de soporte | Sí | Sí | Sí | Sí | Sí |
+| Abrir y consultar solicitudes propias de soporte | Sí | Sí | Sí | Sí | No; atiende desde la consola |
 | Resolver solicitudes de soporte | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
 | Ver resumen comercial y auditoría transversal | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
 
@@ -33,7 +38,11 @@ lista cuentas, muestra la verificación del correo y permite bloquearlas o desbl
 sus sesiones y ambos cambios dejan auditoría. También muestra el resumen de planes y estados de
 suscripción, la bandeja de solicitudes de soporte y los eventos de auditoría sin contenido de
 expedientes. Cada cuenta autenticada puede abrir y consultar sus propias solicitudes; solo quien
-administra la plataforma puede resolverlas o reabrirlas. Los datos de organizaciones siguen
+administra la plataforma puede resolverlas o reabrirlas. La cuenta de plataforma no usa el
+formulario de soporte del cliente: su menú muestra las solicitudes recibidas y la API rechaza
+que abra solicitudes propias. El menú separa las tareas del despacho, la consola y la cuenta;
+solo muestra miembros a quienes pueden gestionarlos y casos a quienes trabajan en expedientes. Los datos
+de organizaciones siguen
 protegidos por Row-Level Security y las rutas de plataforma comprueban el cargo en la base.
 Solo puede haber una cuenta con ese atributo. La
 asignación del usuario propietario se hace desde una operación administrativa con el dueño del

@@ -32,6 +32,82 @@ beforeEach(() => {
 });
 
 describe("Espacio de trabajo protegido (API-014)", () => {
+  it("mantiene la cuenta propietaria en la consola administrativa", async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const path = new URL((input as Request).url).pathname;
+      if (path === "/api/v1/me")
+        return jsonResponse({
+          ...ME,
+          email_verified: true,
+          platform_admin: true,
+          organization: { ...ME.organization, role: "owner" },
+        });
+      if (path === "/api/v1/platform/users")
+        return jsonResponse({ items: [], next_cursor: null });
+      throw new Error(`Ruta inesperada: ${path}`);
+    });
+    const { router } = await renderRoute("/app/casos");
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/app/plataforma"),
+    );
+    const nav = screen.getByRole("navigation", { name: "Espacio de trabajo" });
+    expect(
+      within(nav).getByRole("link", { name: "Miembros" }),
+    ).toBeInTheDocument();
+    expect(
+      within(nav).getByRole("link", { name: "Solicitudes de usuarios" }),
+    ).toBeInTheDocument();
+    expect(
+      within(nav).queryByRole("link", { name: "Casos" }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(nav).queryByRole("link", { name: "Pedir soporte" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["owner", true],
+    ["admin", true],
+    ["lawyer", false],
+    ["assistant", false],
+  ] as const)(
+    "muestra las tareas pertinentes al rol %s",
+    async (role, managesMembers) => {
+      fetchMock.mockImplementation(async (input) => {
+        const path = new URL((input as Request).url).pathname;
+        if (path === "/api/v1/me")
+          return jsonResponse({
+            ...ME,
+            platform_admin: false,
+            organization: { ...ME.organization, role },
+          });
+        if (path === "/api/v1/cases")
+          return jsonResponse({
+            items: [],
+            next_cursor: null,
+            totals: { open: 0, closed: 0, custody_events: 0 },
+          });
+        throw new Error(`Ruta inesperada: ${path}`);
+      });
+      await renderRoute("/app");
+      const nav = await screen.findByRole("navigation", {
+        name: "Espacio de trabajo",
+      });
+      expect(
+        within(nav).getByRole("link", { name: "Casos" }),
+      ).toBeInTheDocument();
+      expect(
+        within(nav).getByRole("link", { name: "Pedir soporte" }),
+      ).toBeInTheDocument();
+      expect(
+        Boolean(within(nav).queryByRole("link", { name: "Miembros" })),
+      ).toBe(managesMembers);
+      expect(
+        within(nav).queryByRole("link", { name: "Solicitudes de usuarios" }),
+      ).not.toBeInTheDocument();
+    },
+  );
+
   it("sin sesión lleva a ingresar y recuerda la pantalla pedida", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse(
