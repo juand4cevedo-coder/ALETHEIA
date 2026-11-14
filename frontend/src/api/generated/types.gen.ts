@@ -974,6 +974,54 @@ export type PasswordResetRequested = {
 };
 
 /**
+ * PlatformUser
+ */
+export type PlatformUser = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Full Name
+   */
+  full_name: string;
+  /**
+   * Email
+   */
+  email: string;
+  /**
+   * Status
+   */
+  status: "active" | "blocked";
+  /**
+   * Email Verified
+   */
+  email_verified: boolean;
+  /**
+   * Platform Admin
+   */
+  platform_admin: boolean;
+  /**
+   * Created At
+   */
+  created_at: string;
+};
+
+/**
+ * PlatformUserPage
+ */
+export type PlatformUserPage = {
+  /**
+   * Items
+   */
+  items: Array<PlatformUser>;
+  /**
+   * Next Cursor
+   */
+  next_cursor: string | null;
+};
+
+/**
  * Problem
  *
  * Error en formato Problem Details (RFC 9457).
@@ -1222,6 +1270,18 @@ export type SeatsOut = {
    * Si ya no cabe nadie más sin cambiar de plan.
    */
   full: boolean;
+};
+
+/**
+ * UserStatusChange
+ */
+export type UserStatusChange = {
+  /**
+   * Status
+   *
+   * Estado nuevo de la cuenta. Bloquear cierra todas sus sesiones.
+   */
+  status: "active" | "blocked";
 };
 
 /**
@@ -2245,3 +2305,67 @@ export type ReadCaseResponses = {
 };
 
 export type ReadCaseResponse = ReadCaseResponses[keyof ReadCaseResponses];
+
+export type ListPlatformUsersData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Cursor
+     */
+    cursor?: string | null;
+  };
+  url: "/api/v1/platform/users";
+};
+
+export type ListPlatformUsersErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListPlatformUsersError =
+  ListPlatformUsersErrors[keyof ListPlatformUsersErrors];
+
+export type ListPlatformUsersResponses = {
+  /**
+   * Successful Response
+   */
+  200: PlatformUserPage;
+};
+
+export type ListPlatformUsersResponse =
+  ListPlatformUsersResponses[keyof ListPlatformUsersResponses];
+
+export type ChangePlatformUserStatusData = {
+  body: UserStatusChange;
+  path: {
+    /**
+     * User Id
+     */
+    user_id: string;
+  };
+  query?: never;
+  url: "/api/v1/platform/users/{user_id}/status";
+};
+
+export type ChangePlatformUserStatusErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ChangePlatformUserStatusError =
+  ChangePlatformUserStatusErrors[keyof ChangePlatformUserStatusErrors];
+
+export type ChangePlatformUserStatusResponses = {
+  /**
+   * Successful Response
+   */
+  200: PlatformUser;
+};
+
+export type ChangePlatformUserStatusResponse =
+  ChangePlatformUserStatusResponses[keyof ChangePlatformUserStatusResponses];
