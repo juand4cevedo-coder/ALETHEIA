@@ -61,7 +61,7 @@ export function PlatformPage() {
             <Notice tone="error">No pudimos cargar las cuentas.</Notice>
           )}
           {users.data?.items.length === 0 && (
-            <p>No hay cuentas en esta página.</p>
+            <p className={styles.empty}>No hay cuentas en esta página.</p>
           )}
           {users.data && users.data.items.length > 0 && (
             <div className={styles.tableScroll}>
