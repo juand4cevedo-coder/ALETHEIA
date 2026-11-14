@@ -17,6 +17,10 @@ import {
   loadMembersPage,
   loadNewCasePage,
   loadPlatformPage,
+  loadPlatformBillingPage,
+  loadPlatformSupportPage,
+  loadPlatformAuditPage,
+  loadSupportPage,
   loadPricingPage,
   loadQueryRoot,
   loadResetPasswordPage,
@@ -193,6 +197,22 @@ export const routes: RouteObject[] = [
           {
             path: ROUTES.platform.slice(ROUTES.app.length + 1),
             lazy: { Component: loadPlatformPage },
+          },
+          {
+            path: ROUTES.platformBilling.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadPlatformBillingPage },
+          },
+          {
+            path: ROUTES.platformSupport.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadPlatformSupportPage },
+          },
+          {
+            path: ROUTES.platformAudit.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadPlatformAuditPage },
+          },
+          {
+            path: ROUTES.support.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadSupportPage },
           },
           {
             path: ROUTES.members.slice(ROUTES.app.length + 1),

@@ -974,6 +974,104 @@ export type PasswordResetRequested = {
 };
 
 /**
+ * PlatformAuditEvent
+ */
+export type PlatformAuditEvent = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Action
+   */
+  action: string;
+  /**
+   * Actor User Id
+   */
+  actor_user_id: string | null;
+  /**
+   * Organization Id
+   */
+  organization_id: string | null;
+  /**
+   * Target Id
+   */
+  target_id: string | null;
+  /**
+   * Created At
+   */
+  created_at: string;
+};
+
+/**
+ * PlatformAuditPage
+ */
+export type PlatformAuditPage = {
+  /**
+   * Items
+   */
+  items: Array<PlatformAuditEvent>;
+  /**
+   * Next Cursor
+   */
+  next_cursor: string | null;
+};
+
+/**
+ * PlatformBilling
+ */
+export type PlatformBilling = {
+  /**
+   * Plans
+   */
+  plans: Array<PlatformPlan>;
+  /**
+   * Subscription Counts
+   */
+  subscription_counts: {
+    [key: string]: number;
+  };
+  /**
+   * Payment Events Received
+   */
+  payment_events_received: number;
+  /**
+   * Payment Events Pending
+   */
+  payment_events_pending: number;
+};
+
+/**
+ * PlatformPlan
+ */
+export type PlatformPlan = {
+  /**
+   * Code
+   */
+  code: string;
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Monthly Price Cop
+   */
+  monthly_price_cop: number | null;
+  /**
+   * Annual Price Cop
+   */
+  annual_price_cop: number | null;
+  /**
+   * Included Users
+   */
+  included_users: number;
+  /**
+   * Is Public
+   */
+  is_public: boolean;
+};
+
+/**
  * PlatformUser
  */
 export type PlatformUser = {
@@ -1270,6 +1368,82 @@ export type SeatsOut = {
    * Si ya no cabe nadie más sin cambiar de plan.
    */
   full: boolean;
+};
+
+/**
+ * SupportTicketCreate
+ */
+export type SupportTicketCreate = {
+  /**
+   * Subject
+   */
+  subject: string;
+  /**
+   * Message
+   */
+  message: string;
+};
+
+/**
+ * SupportTicketOut
+ */
+export type SupportTicketOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Subject
+   */
+  subject: string;
+  /**
+   * Message
+   */
+  message: string;
+  /**
+   * Status
+   */
+  status: "open" | "closed";
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Updated At
+   */
+  updated_at: string;
+  /**
+   * Closed At
+   */
+  closed_at: string | null;
+  /**
+   * User Email
+   */
+  user_email?: string | null;
+};
+
+/**
+ * SupportTicketPage
+ */
+export type SupportTicketPage = {
+  /**
+   * Items
+   */
+  items: Array<SupportTicketOut>;
+  /**
+   * Next Cursor
+   */
+  next_cursor: string | null;
+};
+
+/**
+ * SupportTicketStatusChange
+ */
+export type SupportTicketStatusChange = {
+  /**
+   * Status
+   */
+  status: "open" | "closed";
 };
 
 /**
@@ -2369,3 +2543,174 @@ export type ChangePlatformUserStatusResponses = {
 
 export type ChangePlatformUserStatusResponse =
   ChangePlatformUserStatusResponses[keyof ChangePlatformUserStatusResponses];
+
+export type PlatformBillingData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/platform/billing";
+};
+
+export type PlatformBillingResponses = {
+  /**
+   * Successful Response
+   */
+  200: PlatformBilling;
+};
+
+export type PlatformBillingResponse =
+  PlatformBillingResponses[keyof PlatformBillingResponses];
+
+export type PlatformAuditData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Cursor
+     */
+    cursor?: string | null;
+  };
+  url: "/api/v1/platform/audit";
+};
+
+export type PlatformAuditErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type PlatformAuditError = PlatformAuditErrors[keyof PlatformAuditErrors];
+
+export type PlatformAuditResponses = {
+  /**
+   * Successful Response
+   */
+  200: PlatformAuditPage;
+};
+
+export type PlatformAuditResponse =
+  PlatformAuditResponses[keyof PlatformAuditResponses];
+
+export type OwnSupportTicketsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Cursor
+     */
+    cursor?: string | null;
+  };
+  url: "/api/v1/support/tickets";
+};
+
+export type OwnSupportTicketsErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type OwnSupportTicketsError =
+  OwnSupportTicketsErrors[keyof OwnSupportTicketsErrors];
+
+export type OwnSupportTicketsResponses = {
+  /**
+   * Successful Response
+   */
+  200: SupportTicketPage;
+};
+
+export type OwnSupportTicketsResponse =
+  OwnSupportTicketsResponses[keyof OwnSupportTicketsResponses];
+
+export type CreateSupportTicketData = {
+  body: SupportTicketCreate;
+  path?: never;
+  query?: never;
+  url: "/api/v1/support/tickets";
+};
+
+export type CreateSupportTicketErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CreateSupportTicketError =
+  CreateSupportTicketErrors[keyof CreateSupportTicketErrors];
+
+export type CreateSupportTicketResponses = {
+  /**
+   * Successful Response
+   */
+  201: SupportTicketOut;
+};
+
+export type CreateSupportTicketResponse =
+  CreateSupportTicketResponses[keyof CreateSupportTicketResponses];
+
+export type PlatformSupportTicketsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Cursor
+     */
+    cursor?: string | null;
+  };
+  url: "/api/v1/platform/support/tickets";
+};
+
+export type PlatformSupportTicketsErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type PlatformSupportTicketsError =
+  PlatformSupportTicketsErrors[keyof PlatformSupportTicketsErrors];
+
+export type PlatformSupportTicketsResponses = {
+  /**
+   * Successful Response
+   */
+  200: SupportTicketPage;
+};
+
+export type PlatformSupportTicketsResponse =
+  PlatformSupportTicketsResponses[keyof PlatformSupportTicketsResponses];
+
+export type ChangeSupportTicketStatusData = {
+  body: SupportTicketStatusChange;
+  path: {
+    /**
+     * Ticket Id
+     */
+    ticket_id: string;
+  };
+  query?: never;
+  url: "/api/v1/platform/support/tickets/{ticket_id}/status";
+};
+
+export type ChangeSupportTicketStatusErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ChangeSupportTicketStatusError =
+  ChangeSupportTicketStatusErrors[keyof ChangeSupportTicketStatusErrors];
+
+export type ChangeSupportTicketStatusResponses = {
+  /**
+   * Successful Response
+   */
+  200: SupportTicketOut;
+};
+
+export type ChangeSupportTicketStatusResponse =
+  ChangeSupportTicketStatusResponses[keyof ChangeSupportTicketStatusResponses];

@@ -299,7 +299,9 @@ La operación exige `aletheia_owner`, acepta solo una cuenta activa con correo v
 `platform_admin_granted` en la auditoría y es idempotente para la misma cuenta. El usuario de la
 API no tiene permiso SQL para escribir `is_platform_admin`. Ese atributo no concede acceso a
 datos de otros despachos. La primera sección de plataforma permite gestionar el estado de las
-cuentas; la facturación, el soporte y la auditoría transversal requieren módulos propios.
+cuentas. La versión 0.4.1 agrega resumen comercial de solo lectura, solicitudes de soporte y
+auditoría transversal sin contenido de expedientes. Los cobros y la emisión de facturas siguen
+requiriendo integración propia.
 
 ## Pruebas de TT-007
 
