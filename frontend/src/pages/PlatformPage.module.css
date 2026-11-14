@@ -1,0 +1,50 @@
+.screen {
+  display: grid;
+  gap: var(--space-8);
+  max-width: var(--content-width);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.sectionHeading h2 {
+  font-size: var(--font-size-subtitle);
+  font-weight: 500;
+}
+
+.sectionHeading p {
+  color: var(--text-2);
+  margin-top: var(--space-2);
+}
+
+.tableScroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.table thead th {
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  font-weight: 500;
+}
+
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}

@@ -75,6 +75,7 @@ export function ForgotPasswordPage() {
         name="description"
         content="Pida un enlace para elegir una contraseña nueva en ALETHEIA."
       />
+      <meta name="robots" content="noindex" />
       <link rel="canonical" href={`${SITE_URL}${ROUTES.forgotPassword}`} />
 
       <div className={styles.screen}>

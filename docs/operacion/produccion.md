@@ -298,7 +298,8 @@ sudo docker compose --env-file /var/lib/aletheia/despliegue.env -f compose.prod.
 La operación exige `aletheia_owner`, acepta solo una cuenta activa con correo verificado, deja
 `platform_admin_granted` en la auditoría y es idempotente para la misma cuenta. El usuario de la
 API no tiene permiso SQL para escribir `is_platform_admin`. Ese atributo no concede acceso a
-datos de otros despachos; la consola de administración de plataforma aún está pendiente.
+datos de otros despachos. La primera sección de plataforma permite gestionar el estado de las
+cuentas; la facturación, el soporte y la auditoría transversal requieren módulos propios.
 
 ## Pruebas de TT-007
 

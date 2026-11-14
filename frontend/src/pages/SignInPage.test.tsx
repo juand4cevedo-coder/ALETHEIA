@@ -39,6 +39,7 @@ type Api = { login?: () => Response; me?: () => Response };
 // después de un ingreso correcto responde con el perfil.
 function serve({
   login = () => new Response(null, { status: 204 }),
+  me = () => jsonResponse(ME),
 }: Api = {}) {
   let signedIn = false;
   fetchMock.mockImplementation(async (input) => {
@@ -50,8 +51,10 @@ function serve({
       return response;
     }
     if (path === "/api/v1/me") {
-      return signedIn ? jsonResponse(ME) : problem(401);
+      return signedIn ? me() : problem(401);
     }
+    if (path === "/api/v1/platform/users")
+      return jsonResponse({ items: [], next_cursor: null });
     throw new Error(`Ruta inesperada: ${path}`);
   });
 }
@@ -80,6 +83,18 @@ beforeEach(() => {
 });
 
 describe("Ingresar (HU-007, CP-007)", () => {
+  it("lleva a la cuenta administradora a la consola de plataforma", async () => {
+    serve({
+      me: () =>
+        jsonResponse({ ...ME, organization: null, platform_admin: true }),
+    });
+    const user = userEvent.setup();
+    const { router } = await renderRoute("/ingresar");
+    await fillAndSubmit(user);
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/app/plataforma"),
+    );
+  });
   it("tiene etiquetas visibles, autocompletado correcto y no tiene errores graves de accesibilidad", async () => {
     serve();
     const { container } = await renderRoute("/ingresar");
