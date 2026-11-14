@@ -2636,6 +2636,10 @@ export type CreateSupportTicketErrors = {
    * La solicitud tiene datos inválidos.
    */
   422: ValidationProblem;
+  /**
+   * Demasiadas solicitudes.
+   */
+  429: Problem;
 };
 
 export type CreateSupportTicketError =
