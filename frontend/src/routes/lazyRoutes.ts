@@ -33,6 +33,20 @@ export const loadAccountPage = () =>
   import("../pages/AccountPage.tsx").then((module) => module.AccountPage);
 export const loadPlatformPage = () =>
   import("../pages/PlatformPage.tsx").then((module) => module.PlatformPage);
+export const loadPlatformBillingPage = () =>
+  import("../pages/PlatformModulesPage.tsx").then(
+    (module) => module.PlatformBillingPage,
+  );
+export const loadPlatformSupportPage = () =>
+  import("../pages/PlatformModulesPage.tsx").then(
+    (module) => module.PlatformSupportPage,
+  );
+export const loadPlatformAuditPage = () =>
+  import("../pages/PlatformModulesPage.tsx").then(
+    (module) => module.PlatformAuditPage,
+  );
+export const loadSupportPage = () =>
+  import("../pages/SupportPage.tsx").then((module) => module.SupportPage);
 export const loadAcceptInvitationPage = () =>
   import("../pages/AcceptInvitationPage.tsx").then(
     (module) => module.AcceptInvitationPage,
