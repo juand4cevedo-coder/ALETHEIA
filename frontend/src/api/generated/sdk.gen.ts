@@ -15,6 +15,12 @@ import type {
   AcceptLegalTermsData,
   AcceptLegalTermsErrors,
   AcceptLegalTermsResponses,
+  AddCaseMemberData,
+  AddCaseMemberErrors,
+  AddCaseMemberResponses,
+  AvailableCaseMembersData,
+  AvailableCaseMembersErrors,
+  AvailableCaseMembersResponses,
   ChangeMemberRoleData,
   ChangeMemberRoleErrors,
   ChangeMemberRoleResponses,
@@ -83,6 +89,9 @@ import type {
   RegisterAccountData,
   RegisterAccountErrors,
   RegisterAccountResponses,
+  RemoveCaseMemberData,
+  RemoveCaseMemberErrors,
+  RemoveCaseMemberResponses,
   RemoveMemberData,
   RemoveMemberErrors,
   RemoveMemberResponses,
@@ -681,6 +690,84 @@ export const readCase = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/cases/{case_id}",
+    ...options,
+  });
+
+/**
+ * Personas disponibles para el equipo del caso
+ */
+export const availableCaseMembers = <ThrowOnError extends boolean = false>(
+  options: Options<AvailableCaseMembersData, ThrowOnError>,
+): RequestResult<
+  AvailableCaseMembersResponses,
+  AvailableCaseMembersErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    AvailableCaseMembersResponses,
+    AvailableCaseMembersErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/available-members",
+    ...options,
+  });
+
+/**
+ * Asignar una persona al caso
+ */
+export const addCaseMember = <ThrowOnError extends boolean = false>(
+  options: Options<AddCaseMemberData, ThrowOnError>,
+): RequestResult<AddCaseMemberResponses, AddCaseMemberErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    AddCaseMemberResponses,
+    AddCaseMemberErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/members",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Retirar una persona del caso
+ */
+export const removeCaseMember = <ThrowOnError extends boolean = false>(
+  options: Options<RemoveCaseMemberData, ThrowOnError>,
+): RequestResult<
+  RemoveCaseMemberResponses,
+  RemoveCaseMemberErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).delete<
+    RemoveCaseMemberResponses,
+    RemoveCaseMemberErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/members/{user_id}",
     ...options,
   });
 
