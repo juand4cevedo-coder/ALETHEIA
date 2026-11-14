@@ -35,4 +35,6 @@ La portada y las tarjetas se revisaron en el navegador local a 1260 y 390 px de 
 
 En la revisión siguiente, el centro de la escena se cambió por un candado y la referencia SHA-256 quedó visible bajo los anillos. Se aumentó el contraste de las tres líneas de profundidad. El borde verde de la tarjeta seleccionada ahora es un trazo SVG que recorre su perímetro mediante `stroke-dashoffset`, con ciclo infinito y estado fijo para movimiento reducido. La compilación conserva el presupuesto inicial (115,51 kB de JavaScript y 6,88 kB de CSS comprimidos); pasaron las 295 pruebas de interfaz, lint y formato. El navegador de revisión seguía configurado con movimiento reducido, así que el desplazamiento efectivo del trazo debe revisarse también con movimiento normal antes de publicar.
 
+La tarjeta social se exporta a PNG desde `docs/diseno/og-image.svg` y mantiene la portada oscura, el candado y el titular. Mide 1200 × 630 px y 201 kB. La portada pública conserva su ruta de imagen social.
+
 El servidor de desarrollo de revisión escucha únicamente en `127.0.0.1:5174`. Las pantallas que consultan datos reales necesitan la API local habitual en el puerto 8000. No se añadieron datos de precios ficticios para ocultar una desconexión del backend.
