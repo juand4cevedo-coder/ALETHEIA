@@ -21,6 +21,9 @@ import type {
   ChangePasswordData,
   ChangePasswordErrors,
   ChangePasswordResponses,
+  ChangePlatformUserStatusData,
+  ChangePlatformUserStatusErrors,
+  ChangePlatformUserStatusResponses,
   CreateCaseData,
   CreateCaseErrors,
   CreateCaseResponses,
@@ -45,6 +48,9 @@ import type {
   ListPlansData,
   ListPlansErrors,
   ListPlansResponses,
+  ListPlatformUsersData,
+  ListPlatformUsersErrors,
+  ListPlatformUsersResponses,
   PreviewInvitationData,
   PreviewInvitationErrors,
   PreviewInvitationResponses,
@@ -659,4 +665,60 @@ export const readCase = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/cases/{case_id}",
     ...options,
+  });
+
+/**
+ * Cuentas de la plataforma
+ */
+export const listPlatformUsers = <ThrowOnError extends boolean = false>(
+  options?: Options<ListPlatformUsersData, ThrowOnError>,
+): RequestResult<
+  ListPlatformUsersResponses,
+  ListPlatformUsersErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    ListPlatformUsersResponses,
+    ListPlatformUsersErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/users",
+    ...options,
+  });
+
+/**
+ * Bloquear o desbloquear una cuenta
+ */
+export const changePlatformUserStatus = <ThrowOnError extends boolean = false>(
+  options: Options<ChangePlatformUserStatusData, ThrowOnError>,
+): RequestResult<
+  ChangePlatformUserStatusResponses,
+  ChangePlatformUserStatusErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).patch<
+    ChangePlatformUserStatusResponses,
+    ChangePlatformUserStatusErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/users/{user_id}/status",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
