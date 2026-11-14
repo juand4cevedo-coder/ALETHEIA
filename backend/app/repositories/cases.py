@@ -47,6 +47,14 @@ class CaseMemberView:
 
 
 @dataclass(frozen=True, slots=True)
+class CaseCandidateView:
+    user_id: uuid.UUID
+    full_name: str
+    email: str
+    role: str
+
+
+@dataclass(frozen=True, slots=True)
 class CustodyEventView:
     """Un evento de la cadena con el nombre de quien lo hizo."""
 
@@ -112,6 +120,36 @@ def case_for_member(session: Session, case_id: uuid.UUID, user_id: uuid.UUID) ->
         .where(Case.id == case_id, CaseMember.user_id == user_id)
     )
     return session.scalar(statement)
+
+
+def case_for_member_update(session: Session, case_id: uuid.UUID, user_id: uuid.UUID) -> Case | None:
+    """Bloquea el caso: sus cambios de equipo y eventos de custodia quedan en orden."""
+    return session.scalar(
+        select(Case)
+        .join(CaseMember, CaseMember.case_id == Case.id)
+        .where(Case.id == case_id, CaseMember.user_id == user_id)
+        .with_for_update(of=Case)
+    )
+
+
+def available_case_members(
+    session: Session, organization_id: uuid.UUID, case_id: uuid.UUID
+) -> list[CaseCandidateView]:
+    """Miembros activos del despacho que aún no pertenecen al caso."""
+    statement = (
+        select(User.id, User.full_name, User.email, Membership.role)
+        .join(Membership, Membership.user_id == User.id)
+        .where(
+            Membership.organization_id == organization_id,
+            User.status == "active",
+            User.is_platform_admin.is_(False),
+            ~select(CaseMember.user_id)
+            .where(CaseMember.case_id == case_id, CaseMember.user_id == User.id)
+            .exists(),
+        )
+        .order_by(User.full_name, User.id)
+    )
+    return [CaseCandidateView(*row) for row in session.execute(statement)]
 
 
 def user_name(session: Session, user_id: uuid.UUID) -> str:

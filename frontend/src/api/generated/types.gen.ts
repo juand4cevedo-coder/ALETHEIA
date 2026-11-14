@@ -46,6 +46,30 @@ export type AcceptInvitationRequest = {
 };
 
 /**
+ * CaseCandidate
+ *
+ * Persona disponible para asignar a este caso.
+ */
+export type CaseCandidate = {
+  /**
+   * User Id
+   */
+  user_id: string;
+  /**
+   * Full Name
+   */
+  full_name: string;
+  /**
+   * Email
+   */
+  email: string;
+  /**
+   * Role
+   */
+  role: "owner" | "admin" | "lawyer" | "assistant";
+};
+
+/**
  * CaseCreate
  *
  * Datos con que se abre un caso (API-022).
@@ -179,6 +203,18 @@ export type CaseDetail = {
    * Últimos eventos de la cadena, del más reciente al más antiguo.
    */
   recent_events: Array<CustodyEventOut>;
+};
+
+/**
+ * CaseMemberAdd
+ *
+ * Persona de la organización que se asignará al caso.
+ */
+export type CaseMemberAdd = {
+  /**
+   * User Id
+   */
+  user_id: string;
 };
 
 /**
@@ -860,6 +896,7 @@ export type Me = {
     | "team.manage"
     | "cases.read_assigned"
     | "cases.create"
+    | "cases.manage_members"
   >;
   /**
    * Su organización, o null si ya no pertenece a ninguna.
@@ -2485,6 +2522,147 @@ export type ReadCaseResponses = {
 };
 
 export type ReadCaseResponse = ReadCaseResponses[keyof ReadCaseResponses];
+
+export type AvailableCaseMembersData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/available-members";
+};
+
+export type AvailableCaseMembersErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no administra este equipo.
+   */
+  403: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type AvailableCaseMembersError =
+  AvailableCaseMembersErrors[keyof AvailableCaseMembersErrors];
+
+export type AvailableCaseMembersResponses = {
+  /**
+   * Response Available Case Members
+   *
+   * Successful Response
+   */
+  200: Array<CaseCandidate>;
+};
+
+export type AvailableCaseMembersResponse =
+  AvailableCaseMembersResponses[keyof AvailableCaseMembersResponses];
+
+export type AddCaseMemberData = {
+  body: CaseMemberAdd;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/members";
+};
+
+export type AddCaseMemberErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no administra este equipo.
+   */
+  403: Problem;
+  /**
+   * El caso o la persona no pertenecen a este despacho.
+   */
+  404: Problem;
+  /**
+   * La persona ya está asignada o el despacho está en solo lectura.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type AddCaseMemberError = AddCaseMemberErrors[keyof AddCaseMemberErrors];
+
+export type AddCaseMemberResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type AddCaseMemberResponse =
+  AddCaseMemberResponses[keyof AddCaseMemberResponses];
+
+export type RemoveCaseMemberData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * User Id
+     */
+    user_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/members/{user_id}";
+};
+
+export type RemoveCaseMemberErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no administra este equipo o intenta retirarse a sí mismo.
+   */
+  403: Problem;
+  /**
+   * El caso o la asignación no existen para esta persona.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RemoveCaseMemberError =
+  RemoveCaseMemberErrors[keyof RemoveCaseMemberErrors];
+
+export type RemoveCaseMemberResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type RemoveCaseMemberResponse =
+  RemoveCaseMemberResponses[keyof RemoveCaseMemberResponses];
 
 export type ListPlatformUsersData = {
   body?: never;

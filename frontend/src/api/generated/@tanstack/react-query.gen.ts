@@ -12,6 +12,8 @@ import { client } from "../client.gen";
 import {
   acceptInvitation,
   acceptLegalTerms,
+  addCaseMember,
+  availableCaseMembers,
   changeMemberRole,
   changePassword,
   changePlatformUserStatus,
@@ -36,6 +38,7 @@ import {
   readMe,
   refreshSession,
   registerAccount,
+  removeCaseMember,
   removeMember,
   resendVerification,
   resetPassword,
@@ -52,6 +55,12 @@ import type {
   AcceptLegalTermsData,
   AcceptLegalTermsError,
   AcceptLegalTermsResponse,
+  AddCaseMemberData,
+  AddCaseMemberError,
+  AddCaseMemberResponse,
+  AvailableCaseMembersData,
+  AvailableCaseMembersError,
+  AvailableCaseMembersResponse,
   ChangeMemberRoleData,
   ChangeMemberRoleError,
   ChangeMemberRoleResponse,
@@ -120,6 +129,9 @@ import type {
   RegisterAccountData,
   RegisterAccountError,
   RegisterAccountResponse,
+  RemoveCaseMemberData,
+  RemoveCaseMemberError,
+  RemoveCaseMemberResponse,
   RemoveMemberData,
   RemoveMemberError,
   RemoveMemberResponse,
@@ -1032,6 +1044,88 @@ export const readCaseOptions = (options: Options<ReadCaseData>) =>
     },
     queryKey: readCaseQueryKey(options),
   });
+
+export const availableCaseMembersQueryKey = (
+  options: Options<AvailableCaseMembersData>,
+) => createQueryKey("availableCaseMembers", options);
+
+/**
+ * Personas disponibles para el equipo del caso
+ */
+export const availableCaseMembersOptions = (
+  options: Options<AvailableCaseMembersData>,
+) =>
+  queryOptions<
+    AvailableCaseMembersResponse,
+    AvailableCaseMembersError,
+    AvailableCaseMembersResponse,
+    ReturnType<typeof availableCaseMembersQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await availableCaseMembers({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: availableCaseMembersQueryKey(options),
+  });
+
+/**
+ * Asignar una persona al caso
+ */
+export const addCaseMemberMutation = (
+  options?: Partial<Options<AddCaseMemberData>>,
+): UseMutationOptions<
+  AddCaseMemberResponse,
+  AddCaseMemberError,
+  Options<AddCaseMemberData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AddCaseMemberResponse,
+    AddCaseMemberError,
+    Options<AddCaseMemberData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await addCaseMember({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Retirar una persona del caso
+ */
+export const removeCaseMemberMutation = (
+  options?: Partial<Options<RemoveCaseMemberData>>,
+): UseMutationOptions<
+  RemoveCaseMemberResponse,
+  RemoveCaseMemberError,
+  Options<RemoveCaseMemberData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RemoveCaseMemberResponse,
+    RemoveCaseMemberError,
+    Options<RemoveCaseMemberData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await removeCaseMember({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const listPlatformUsersQueryKey = (
   options?: Options<ListPlatformUsersData>,
