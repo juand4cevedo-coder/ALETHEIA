@@ -13,6 +13,7 @@ import {
   acceptLegalTerms,
   changeMemberRole,
   changePassword,
+  changePlatformUserStatus,
   createCase,
   createInvitation,
   forgotPassword,
@@ -21,6 +22,7 @@ import {
   listInvitations,
   listMembers,
   listPlans,
+  listPlatformUsers,
   type Options,
   previewInvitation,
   readCase,
@@ -49,6 +51,9 @@ import type {
   ChangePasswordData,
   ChangePasswordError,
   ChangePasswordResponse,
+  ChangePlatformUserStatusData,
+  ChangePlatformUserStatusError,
+  ChangePlatformUserStatusResponse,
   CreateCaseData,
   CreateCaseError,
   CreateCaseResponse,
@@ -73,6 +78,9 @@ import type {
   ListPlansData,
   ListPlansError,
   ListPlansResponse,
+  ListPlatformUsersData,
+  ListPlatformUsersError,
+  ListPlatformUsersResponse,
   PreviewInvitationData,
   PreviewInvitationError,
   PreviewInvitationResponse,
@@ -1000,3 +1008,111 @@ export const readCaseOptions = (options: Options<ReadCaseData>) =>
     },
     queryKey: readCaseQueryKey(options),
   });
+
+export const listPlatformUsersQueryKey = (
+  options?: Options<ListPlatformUsersData>,
+) => createQueryKey("listPlatformUsers", options);
+
+/**
+ * Cuentas de la plataforma
+ */
+export const listPlatformUsersOptions = (
+  options?: Options<ListPlatformUsersData>,
+) =>
+  queryOptions<
+    ListPlatformUsersResponse,
+    ListPlatformUsersError,
+    ListPlatformUsersResponse,
+    ReturnType<typeof listPlatformUsersQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listPlatformUsers({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listPlatformUsersQueryKey(options),
+  });
+
+export const listPlatformUsersInfiniteQueryKey = (
+  options?: Options<ListPlatformUsersData>,
+): QueryKey<Options<ListPlatformUsersData>> =>
+  createQueryKey("listPlatformUsers", options, true);
+
+/**
+ * Cuentas de la plataforma
+ */
+export const listPlatformUsersInfiniteOptions = (
+  options?: Options<ListPlatformUsersData>,
+) => {
+  const opts = infiniteQueryOptions<
+    ListPlatformUsersResponse,
+    ListPlatformUsersError,
+    InfiniteData<ListPlatformUsersResponse>,
+    QueryKey<Options<ListPlatformUsersData>>,
+    | string
+    | null
+    | Pick<
+        QueryKey<Options<ListPlatformUsersData>>[0],
+        "body" | "headers" | "path" | "query"
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<ListPlatformUsersData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  cursor: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listPlatformUsers({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: listPlatformUsersInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+/**
+ * Bloquear o desbloquear una cuenta
+ */
+export const changePlatformUserStatusMutation = (
+  options?: Partial<Options<ChangePlatformUserStatusData>>,
+): UseMutationOptions<
+  ChangePlatformUserStatusResponse,
+  ChangePlatformUserStatusError,
+  Options<ChangePlatformUserStatusData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ChangePlatformUserStatusResponse,
+    ChangePlatformUserStatusError,
+    Options<ChangePlatformUserStatusData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await changePlatformUserStatus({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};

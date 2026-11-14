@@ -43,6 +43,12 @@ const ITEMS: readonly Item[] = [
     visible: (me) => managesTeam(me.organization?.role),
   },
   { to: ROUTES.account, label: "Mi cuenta", icon: UsuarioIcon },
+  {
+    to: ROUTES.platform,
+    label: "Plataforma",
+    icon: UsuarioIcon,
+    visible: (me) => me.platform_admin,
+  },
 ];
 
 /** Casos abiertos de la persona. Pide una sola fila: el número sale de los totales de la lista,

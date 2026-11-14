@@ -1,6 +1,6 @@
 # Preparación de la versión 0.3.0
 
-13 de noviembre de 2026. Esta versión lleva a producción el trabajo integrado en `develop` desde `v0.2.0`, incluida la revisión visual pública aprobada el mismo día.
+13 de noviembre de 2026. Esta versión lleva a producción el trabajo integrado en `develop` desde `v0.2.0`, incluida la identidad pública vigente desde esa fecha.
 
 ## Alcance
 
