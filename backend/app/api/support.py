@@ -17,6 +17,7 @@ from app.schemas.support import (
     SupportTicketPage,
     SupportTicketStatusChange,
 )
+from app.services import rate_limit
 from app.services.audit import audit_ip
 from app.services.sessions import Principal
 
@@ -37,7 +38,10 @@ def _out(ticket: SupportTicket, *, email: str | None = None) -> SupportTicketOut
 
 
 @router.post(
-    "/support/tickets", status_code=status.HTTP_201_CREATED, summary="Crear solicitud de soporte"
+    "/support/tickets",
+    status_code=status.HTTP_201_CREATED,
+    summary="Crear solicitud de soporte",
+    responses={status.HTTP_429_TOO_MANY_REQUESTS: {"description": "Demasiadas solicitudes."}},
 )
 def create_support_ticket(
     body: SupportTicketCreate,
@@ -47,6 +51,7 @@ def create_support_ticket(
     client_ip: Annotated[str, Depends(get_client_ip)],
 ) -> SupportTicketOut:
     response.headers["Cache-Control"] = "no-store"
+    rate_limit.hit(session, rate_limit.SUPPORT_ACCOUNT, str(principal.user_id))
     ticket = SupportTicket(
         user_id=principal.user_id,
         organization_id=principal.organization_id,
