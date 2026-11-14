@@ -87,6 +87,9 @@ export function AccountMenu({ me }: { me: Me }) {
           </p>
           {organization && <p className={styles.panelRole}>{organization}</p>}
           {role && <p className={styles.panelRole}>{`Rol: ${role}`}</p>}
+          {me.platform_admin && (
+            <p className={styles.panelRole}>Administración de Aletheia</p>
+          )}
         </div>
         <ul className={styles.actions}>
           <li>
@@ -104,6 +107,25 @@ export function AccountMenu({ me }: { me: Me }) {
               </span>
             </Link>
           </li>
+          {me.platform_admin && (
+            <li>
+              <Link
+                to={ROUTES.platform}
+                className={styles.action}
+                onClick={() => setOpen(false)}
+              >
+                <UsuarioIcon size={16} aria-hidden="true" />
+                <span className={styles.actionText}>
+                  <span className={styles.actionLabel}>
+                    Administrar Aletheia
+                  </span>
+                  <span className={styles.actionHint}>
+                    Cuentas de la plataforma
+                  </span>
+                </span>
+              </Link>
+            </li>
+          )}
           <li>
             <button
               type="button"
