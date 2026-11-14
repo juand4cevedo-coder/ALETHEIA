@@ -19,6 +19,7 @@ export function DocumentScene() {
         <div className={styles.aura} />
         <div className={styles.orbit} />
         <div className={styles.seal}>
+          <div className={styles.sealLid} />
           {facets.map((facet, index) => (
             <div className={styles.sealFacet} key={facet}>
               <span className={styles.facetIndex}>0{index + 1} / 08</span>
@@ -27,6 +28,7 @@ export function DocumentScene() {
               <span className={styles.facetLabel}>SHA-256</span>
             </div>
           ))}
+          <div className={styles.sealBase} />
         </div>
         <div className={styles.sealCap} />
         <span className={styles.sceneLabel}>HUELLA DIGITAL SHA-256</span>
