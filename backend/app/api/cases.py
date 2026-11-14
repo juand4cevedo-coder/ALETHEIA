@@ -12,6 +12,7 @@ from typing import Annotated, Any, Final, Literal
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.adapters.keys import KeyWrapper, KeyWrapperError
@@ -19,6 +20,7 @@ from app.api import API_PREFIX
 from app.api.deps import NOT_ALLOWED, get_client_ip, get_key_wrapper, get_principal, get_session
 from app.api.organization import NOT_FOUND
 from app.core.errors import UNEXPECTED_ERROR, problem_response
+from app.models import User
 from app.schemas.cases import (
     INVALID_FILING_NUMBER,
     CaseCreate,
@@ -37,7 +39,22 @@ from app.services.sessions import Principal
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/cases", tags=["casos"])
+
+def get_case_worker(
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> Principal:
+    """La cuenta propietaria de la plataforma administra el servicio, no expedientes."""
+    if session.scalar(select(User.is_platform_admin).where(User.id == principal.user_id)) is True:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="La cuenta propietaria administra la plataforma y no trabaja en casos.",
+            headers={"Cache-Control": "no-store"},
+        )
+    return principal
+
+
+router = APIRouter(prefix="/cases", tags=["casos"], dependencies=[Depends(get_case_worker)])
 
 EMAIL_NOT_VERIFIED: Final = (
     "Verifique su correo para abrir casos. Le enviamos un enlace al crear la cuenta; si "
