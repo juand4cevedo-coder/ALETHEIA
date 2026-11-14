@@ -17,21 +17,30 @@
   font: 500 15px var(--font-sans);
   text-align: left;
 }
-@property --tour-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
 .tabs button[aria-selected="true"] {
-  background: conic-gradient(
-    from var(--tour-angle),
-    #2a3a36 0deg,
-    #2a3a36 230deg,
-    #22c55e 280deg,
-    #a5f3c0 310deg,
-    #2a3a36 350deg
-  );
+  background: #2a3a36;
   box-shadow: 0 0 18px #22c55e1b;
+}
+.travelingBorder {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+  stroke: #a5f3c0;
+  stroke-width: 2;
+  stroke-dasharray: 14 86;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px #22c55e);
+}
+.tabs button[aria-selected="true"] .travelingBorder {
+  opacity: 1;
+}
+.tabs button[aria-selected="true"] .travelingBorder rect {
   animation: tourBorder 5s linear infinite;
 }
 .tabInner {
@@ -89,7 +98,7 @@
 }
 @keyframes tourBorder {
   to {
-    --tour-angle: 360deg;
+    stroke-dashoffset: -100;
   }
 }
 @media (max-width: 760px) {
@@ -116,7 +125,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .tabs button[aria-selected="true"] {
+  .tabs button[aria-selected="true"] .travelingBorder rect {
     animation: none;
   }
 }
