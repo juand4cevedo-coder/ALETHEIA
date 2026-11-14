@@ -56,6 +56,17 @@ def test_los_paneles_de_plataforma_rechazan_cuentas_ordinarias(
         assert client.get(path).status_code == 403
 
 
+def test_dueno_de_plataforma_no_abre_expedientes_desde_la_consola(
+    app: FastAPI, owner_db: Session, dispositivo: NuevoCliente
+) -> None:
+    admin = _user(owner_db, "owner@example.com", platform_admin=True)
+    app.dependency_overrides[get_session] = lambda: owner_db
+    app.dependency_overrides[get_principal] = lambda: _principal(admin)
+    client = dispositivo()
+    assert client.get("/api/v1/cases").status_code == 403
+    assert client.get(f"/api/v1/cases/{uuid.uuid7()}").status_code == 403
+
+
 def test_facturacion_y_auditoria_solo_exponen_el_resumen_y_eventos(
     app: FastAPI, owner_db: Session, dispositivo: NuevoCliente
 ) -> None:
@@ -110,6 +121,14 @@ def test_solicitud_de_soporte_y_resolucion_dejan_auditoria(
     assert [item["id"] for item in own.json()["items"]] == [ticket_id]
     assert client.get("/api/v1/platform/support/tickets").status_code == 403
     app.dependency_overrides[get_principal] = lambda: _principal(admin)
+    assert client.get("/api/v1/support/tickets").status_code == 403
+    assert (
+        client.post(
+            "/api/v1/support/tickets",
+            json={"subject": "Consulta de acceso", "message": "Necesito ayuda con mi cuenta."},
+        ).status_code
+        == 403
+    )
     listed = client.get("/api/v1/platform/support/tickets")
     assert listed.status_code == 200
     assert listed.json()["items"][0]["user_email"] == user.email

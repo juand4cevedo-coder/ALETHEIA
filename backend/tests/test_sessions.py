@@ -497,7 +497,6 @@ def test_el_perfil_distingue_administracion_de_plataforma_y_despacho(
     assert perfil["platform_admin"] is True
     assert perfil["organization"]["role"] == "assistant"
     assert perfil["permissions"] == [
-        "cases.read_assigned",
         "organization.view",
         "platform.manage",
     ]

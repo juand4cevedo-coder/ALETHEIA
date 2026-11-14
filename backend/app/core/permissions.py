@@ -26,7 +26,9 @@ def permissions_for(role: str | None, *, platform_admin: bool = False) -> frozen
     """Da permisos de la membresía actual y, por separado, de la plataforma."""
     organization_permissions = ROLE_PERMISSIONS.get(role, frozenset()) if role else frozenset()
     if platform_admin:
-        return organization_permissions | {"platform.manage"}
+        return (organization_permissions - {"cases.read_assigned", "cases.create"}) | {
+            "platform.manage"
+        }
     return organization_permissions
 
 
