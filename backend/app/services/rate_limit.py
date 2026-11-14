@@ -53,6 +53,7 @@ INVITATION_ACCOUNT: Final = Limit("invitation_account", 20, _WINDOW)
 # Abrir y aceptar enlaces de invitación: el token no se puede adivinar, pero nadie debe poder
 # probar enlaces sin límite.
 INVITATION_LINK_IP: Final = Limit("invitation_link_ip", 20, _WINDOW)
+SUPPORT_ACCOUNT: Final = Limit("support_account", 10, _WINDOW)
 
 LIMITS: Final = (
     LOGIN_ACCOUNT,
@@ -64,6 +65,7 @@ LIMITS: Final = (
     PASSWORD_RESET_IP,
     INVITATION_ACCOUNT,
     INVITATION_LINK_IP,
+    SUPPORT_ACCOUNT,
 )
 # Un intento más viejo que la ventana más larga ya no cuenta para ningún límite.
 RETENTION: Final = max(limit.window for limit in LIMITS)

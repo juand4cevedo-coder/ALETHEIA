@@ -14,6 +14,7 @@ from app.models.identity import AuditLog, LegalAcceptance, OAuthIdentity, Refres
 from app.models.jobs import Job
 from app.models.limits import RateLimitEvent
 from app.models.organization import Invitation, Membership, Organization
+from app.models.support import SupportTicket
 
 __all__ = [
     "AuditLog",
@@ -35,5 +36,6 @@ __all__ = [
     "RateLimitEvent",
     "RefreshToken",
     "Subscription",
+    "SupportTicket",
     "User",
 ]

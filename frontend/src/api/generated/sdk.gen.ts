@@ -24,12 +24,18 @@ import type {
   ChangePlatformUserStatusData,
   ChangePlatformUserStatusErrors,
   ChangePlatformUserStatusResponses,
+  ChangeSupportTicketStatusData,
+  ChangeSupportTicketStatusErrors,
+  ChangeSupportTicketStatusResponses,
   CreateCaseData,
   CreateCaseErrors,
   CreateCaseResponses,
   CreateInvitationData,
   CreateInvitationErrors,
   CreateInvitationResponses,
+  CreateSupportTicketData,
+  CreateSupportTicketErrors,
+  CreateSupportTicketResponses,
   ForgotPasswordData,
   ForgotPasswordErrors,
   ForgotPasswordResponses,
@@ -51,6 +57,17 @@ import type {
   ListPlatformUsersData,
   ListPlatformUsersErrors,
   ListPlatformUsersResponses,
+  OwnSupportTicketsData,
+  OwnSupportTicketsErrors,
+  OwnSupportTicketsResponses,
+  PlatformAuditData,
+  PlatformAuditErrors,
+  PlatformAuditResponses,
+  PlatformBillingData,
+  PlatformBillingResponses,
+  PlatformSupportTicketsData,
+  PlatformSupportTicketsErrors,
+  PlatformSupportTicketsResponses,
   PreviewInvitationData,
   PreviewInvitationErrors,
   PreviewInvitationResponses,
@@ -716,6 +733,162 @@ export const changePlatformUserStatus = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/platform/users/{user_id}/status",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Resumen comercial de la plataforma
+ */
+export const platformBilling = <ThrowOnError extends boolean = false>(
+  options?: Options<PlatformBillingData, ThrowOnError>,
+): RequestResult<PlatformBillingResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    PlatformBillingResponses,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/billing",
+    ...options,
+  });
+
+/**
+ * Auditoría transversal de la plataforma
+ */
+export const platformAudit = <ThrowOnError extends boolean = false>(
+  options?: Options<PlatformAuditData, ThrowOnError>,
+): RequestResult<PlatformAuditResponses, PlatformAuditErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    PlatformAuditResponses,
+    PlatformAuditErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/audit",
+    ...options,
+  });
+
+/**
+ * Mis solicitudes de soporte
+ */
+export const ownSupportTickets = <ThrowOnError extends boolean = false>(
+  options?: Options<OwnSupportTicketsData, ThrowOnError>,
+): RequestResult<
+  OwnSupportTicketsResponses,
+  OwnSupportTicketsErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    OwnSupportTicketsResponses,
+    OwnSupportTicketsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/support/tickets",
+    ...options,
+  });
+
+/**
+ * Crear solicitud de soporte
+ */
+export const createSupportTicket = <ThrowOnError extends boolean = false>(
+  options: Options<CreateSupportTicketData, ThrowOnError>,
+): RequestResult<
+  CreateSupportTicketResponses,
+  CreateSupportTicketErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    CreateSupportTicketResponses,
+    CreateSupportTicketErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/support/tickets",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Bandeja de soporte de la plataforma
+ */
+export const platformSupportTickets = <ThrowOnError extends boolean = false>(
+  options?: Options<PlatformSupportTicketsData, ThrowOnError>,
+): RequestResult<
+  PlatformSupportTicketsResponses,
+  PlatformSupportTicketsErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    PlatformSupportTicketsResponses,
+    PlatformSupportTicketsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/support/tickets",
+    ...options,
+  });
+
+/**
+ * Resolver o reabrir solicitud
+ */
+export const changeSupportTicketStatus = <ThrowOnError extends boolean = false>(
+  options: Options<ChangeSupportTicketStatusData, ThrowOnError>,
+): RequestResult<
+  ChangeSupportTicketStatusResponses,
+  ChangeSupportTicketStatusErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).patch<
+    ChangeSupportTicketStatusResponses,
+    ChangeSupportTicketStatusErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/support/tickets/{ticket_id}/status",
     ...options,
     headers: {
       "Content-Type": "application/json",

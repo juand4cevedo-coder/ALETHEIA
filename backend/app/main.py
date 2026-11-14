@@ -9,7 +9,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 
 from app.adapters.keys import build_key_wrapper
-from app.api import API_PREFIX, auth, cases, health, invitations, me, organization, plans, platform
+from app.api import (
+    API_PREFIX,
+    auth,
+    cases,
+    health,
+    invitations,
+    me,
+    organization,
+    plans,
+    platform,
+    support,
+)
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logs import configure_logging
@@ -22,7 +33,7 @@ from app.core.middleware import (
 from app.core.openapi import install_problem_details
 from app.db.session import create_db_engine
 
-API_VERSION: Final = "0.3.0"
+API_VERSION: Final = "0.4.1"
 
 
 def _operation_id(route: APIRoute) -> str:
@@ -66,6 +77,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(invitations.router, prefix=API_PREFIX)
     app.include_router(cases.router, prefix=API_PREFIX)
     app.include_router(platform.router, prefix=API_PREFIX)
+    app.include_router(support.router, prefix=API_PREFIX)
     install_problem_details(app)
     return app
 
