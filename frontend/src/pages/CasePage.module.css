@@ -227,6 +227,33 @@
   list-style: none;
 }
 
+.memberForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.memberForm > :first-child {
+  flex: 1 1 18rem;
+}
+
+.removeConfirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.removeConfirm p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
 .member {
   display: flex;
   flex-wrap: wrap;

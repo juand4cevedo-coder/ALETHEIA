@@ -23,8 +23,10 @@ from app.core.errors import UNEXPECTED_ERROR, problem_response
 from app.models import User
 from app.schemas.cases import (
     INVALID_FILING_NUMBER,
+    CaseCandidate,
     CaseCreate,
     CaseDetail,
+    CaseMemberAdd,
     CaseMemberOut,
     CaseOut,
     CasePage,
@@ -285,6 +287,106 @@ def read_case(
             for event in view.recent_events
         ],
     )
+
+
+@router.get(
+    "/{case_id}/available-members",
+    summary="Personas disponibles para el equipo del caso",
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "El rol no administra este equipo."},
+        404: {"description": "El caso no existe o la persona no pertenece a él."},
+    },
+)
+def available_case_members(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> list[CaseCandidate]:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        candidates = cases_service.available_case_members(session, principal, case_id)
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=NOT_FOUND, headers=_NO_STORE
+        ) from None
+    except cases_service.NotAllowedToManageCaseError:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, detail=NOT_ALLOWED, headers=_NO_STORE
+        ) from None
+    return [
+        CaseCandidate.model_validate(candidate, from_attributes=True) for candidate in candidates
+    ]
+
+
+@router.post(
+    "/{case_id}/members",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Asignar una persona al caso",
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "El rol no administra este equipo."},
+        404: {"description": "El caso o la persona no pertenecen a este despacho."},
+        409: {"description": "La persona ya está asignada o el despacho está en solo lectura."},
+    },
+)
+def add_case_member(
+    case_id: uuid.UUID,
+    data: CaseMemberAdd,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> None:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        cases_service.add_case_member(session, principal, case_id, data.user_id)
+    except cases_service.CaseNotFoundError, cases_service.CaseMemberNotFoundError:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=NOT_FOUND, headers=_NO_STORE
+        ) from None
+    except cases_service.NotAllowedToManageCaseError:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, detail=NOT_ALLOWED, headers=_NO_STORE
+        ) from None
+    except cases_service.CaseMemberAlreadyAssignedError:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail="Esta persona ya pertenece al caso.", headers=_NO_STORE
+        ) from None
+    except OrganizationNotActiveError:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail=ORGANIZATION_NOT_ACTIVE, headers=_NO_STORE
+        ) from None
+
+
+@router.delete(
+    "/{case_id}/members/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Retirar una persona del caso",
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "El rol no administra este equipo o intenta retirarse a sí mismo."},
+        404: {"description": "El caso o la asignación no existen para esta persona."},
+    },
+)
+def remove_case_member(
+    case_id: uuid.UUID,
+    user_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> None:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        cases_service.remove_case_member(session, principal, case_id, user_id)
+    except cases_service.CaseNotFoundError, cases_service.CaseMemberNotFoundError:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=NOT_FOUND, headers=_NO_STORE
+        ) from None
+    except cases_service.NotAllowedToManageCaseError, cases_service.SelfRemovalError:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, detail=NOT_ALLOWED, headers=_NO_STORE
+        ) from None
 
 
 def _case_summary_out(item: cases_service.CaseSummary) -> CaseSummaryOut:
