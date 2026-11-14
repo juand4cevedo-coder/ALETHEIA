@@ -117,25 +117,24 @@
   background: radial-gradient(ellipse at 52% 50%, #252b2b55, transparent 62%);
 }
 .horizon {
-  content: "";
   position: absolute;
-  inset: 9% -8%;
-  opacity: 0.75;
+  inset: 7% -10%;
+  opacity: 0.95;
   background:
     linear-gradient(
       152deg,
-      transparent 48.75%,
-      #cbd3d328 49%,
-      transparent 49.3%
+      transparent 49.75%,
+      #cbd3d34d 50%,
+      transparent 50.25%
     ),
     linear-gradient(
       28deg,
-      transparent 48.75%,
-      #cbd3d328 49%,
-      transparent 49.3%
+      transparent 49.75%,
+      #cbd3d34d 50%,
+      transparent 50.25%
     ),
-    linear-gradient(0deg, transparent 49.8%, #d3dfdf32 50%, transparent 50.2%);
-  mask-image: linear-gradient(90deg, transparent, black 20% 80%, transparent);
+    linear-gradient(0deg, transparent 49.85%, #d3dfdf5c 50%, transparent 50.15%);
+  mask-image: radial-gradient(ellipse at center, black 18%, transparent 75%);
 }
 .cryptoScene {
   position: relative;
@@ -201,7 +200,7 @@
     inset 0 0 22px #8ecab51b;
 }
 .cryptoCore svg {
-  width: 78px;
+  width: 70px;
   stroke: #c4e3da;
   stroke-width: 1.4;
   filter: drop-shadow(0 0 7px #c4e3da66);
@@ -209,7 +208,7 @@
 .cryptoLabel {
   position: absolute;
   bottom: -14px;
-  color: #a7b8b6;
+  color: #c7d6d2;
   font: 10px var(--font-mono);
   letter-spacing: 0.22em;
 }
