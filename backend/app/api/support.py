@@ -24,6 +24,21 @@ from app.services.sessions import Principal
 router = APIRouter(tags=["soporte"])
 
 
+def get_support_customer(
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> Principal:
+    """La cuenta propietaria atiende solicitudes desde la consola de plataforma."""
+    is_owner = session.scalar(select(User.is_platform_admin).where(User.id == principal.user_id))
+    if is_owner is True:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="La cuenta propietaria atiende solicitudes desde la consola de plataforma.",
+            headers={"Cache-Control": "no-store"},
+        )
+    return principal
+
+
 def _out(ticket: SupportTicket, *, email: str | None = None) -> SupportTicketOut:
     return SupportTicketOut(
         id=ticket.id,
@@ -46,7 +61,7 @@ def _out(ticket: SupportTicket, *, email: str | None = None) -> SupportTicketOut
 def create_support_ticket(
     body: SupportTicketCreate,
     response: Response,
-    principal: Annotated[Principal, Depends(get_principal)],
+    principal: Annotated[Principal, Depends(get_support_customer)],
     session: Annotated[Session, Depends(get_session)],
     client_ip: Annotated[str, Depends(get_client_ip)],
 ) -> SupportTicketOut:
@@ -77,7 +92,7 @@ def create_support_ticket(
 @router.get("/support/tickets", summary="Mis solicitudes de soporte")
 def own_support_tickets(
     response: Response,
-    principal: Annotated[Principal, Depends(get_principal)],
+    principal: Annotated[Principal, Depends(get_support_customer)],
     session: Annotated[Session, Depends(get_session)],
     cursor: uuid.UUID | None = None,
 ) -> SupportTicketPage:

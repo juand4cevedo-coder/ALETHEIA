@@ -21,7 +21,11 @@ def test_todos_los_roles_tienen_permisos_definidos() -> None:
 
 @pytest.mark.parametrize("role", MEMBER_ROLES)
 def test_administrar_plataforma_no_da_acceso_a_otro_despacho(role: str) -> None:
-    assert permissions_for(role, platform_admin=True) - permissions_for(role) == {"platform.manage"}
+    effective = permissions_for(role, platform_admin=True)
+    assert "platform.manage" in effective
+    assert "cases.create" not in effective
+    assert "cases.read_assigned" not in effective
+    assert effective - permissions_for(role) == {"platform.manage"}
     assert not has_permission(None, "team.manage")
     assert not has_permission(None, "cases.create")
 
