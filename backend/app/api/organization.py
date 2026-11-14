@@ -73,6 +73,7 @@ def _seats_out(seats: members_service.Seats) -> SeatsOut:
         included=seats.included,
         extra_user_price_cop=seats.extra_user_price_cop,
         full=seats.full,
+        owner_exempt=seats.owner_exempt,
     )
 
 
