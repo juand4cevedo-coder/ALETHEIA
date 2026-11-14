@@ -151,7 +151,7 @@ export function PlatformSupportPage() {
       <title>{pageTitle("Soporte de la plataforma")}</title>
       <meta name="robots" content="noindex" />
       <PageHeader
-        title="Bandeja de soporte"
+        title="Solicitudes de usuarios"
         description="Revise y resuelva las solicitudes enviadas desde las cuentas de Aletheia."
       />
       {!me.platform_admin ? (

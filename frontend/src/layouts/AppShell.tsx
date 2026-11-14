@@ -78,7 +78,10 @@ export function AppShell() {
         Saltar al contenido
       </a>
       <header className={styles.header}>
-        <Link to={ROUTES.app} className={styles.brand}>
+        <Link
+          to={me.data?.platform_admin ? ROUTES.platform : ROUTES.app}
+          className={styles.brand}
+        >
           <img src={logoUrl} alt="" width={28} height={28} />
           <span>{WORDMARK}</span>
         </Link>
