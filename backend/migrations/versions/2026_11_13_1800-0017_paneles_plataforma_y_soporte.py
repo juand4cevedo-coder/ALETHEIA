@@ -51,9 +51,9 @@ def upgrade() -> None:
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column("user_id", sa.Uuid(), nullable=False),
         sa.Column("organization_id", sa.Uuid(), nullable=True),
-        sa.Column("subject", sa.String(), nullable=False),
-        sa.Column("message", sa.String(), nullable=False),
-        sa.Column("status", sa.String(), server_default="open", nullable=False),
+        sa.Column("subject", sa.Text(), nullable=False),
+        sa.Column("message", sa.Text(), nullable=False),
+        sa.Column("status", sa.Text(), server_default="open", nullable=False),
         sa.Column(
             "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
         ),
