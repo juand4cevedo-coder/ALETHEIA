@@ -17,6 +17,9 @@ import styles from "./PlatformPage.module.css";
 export function PlatformPage() {
   const me = useOutletContext<Me>();
   const [cursor, setCursor] = useState<string | undefined>();
+  const [previousCursors, setPreviousCursors] = useState<
+    (string | undefined)[]
+  >([]);
   const [target, setTarget] = useState<PlatformUser | null>(null);
   const [failed, setFailed] = useState(false);
   const queryClient = useQueryClient();
@@ -68,6 +71,7 @@ export function PlatformPage() {
                     <th scope="col">Persona</th>
                     <th scope="col">Correo</th>
                     <th scope="col">Estado</th>
+                    <th scope="col">Correo verificado</th>
                     <th scope="col">Acción</th>
                   </tr>
                 </thead>
@@ -79,6 +83,7 @@ export function PlatformPage() {
                       <td>
                         {user.status === "active" ? "Activa" : "Bloqueada"}
                       </td>
+                      <td>{user.email_verified ? "Sí" : "Pendiente"}</td>
                       <td>
                         {!user.platform_admin && (
                           <Button
@@ -101,11 +106,26 @@ export function PlatformPage() {
               </table>
             </div>
           )}
+          {previousCursors.length > 0 && (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setCursor(previousCursors.at(-1));
+                setPreviousCursors((current) => current.slice(0, -1));
+              }}
+            >
+              Volver a la página anterior
+            </Button>
+          )}
           {users.data?.next_cursor && (
             <Button
               size="sm"
               variant="secondary"
-              onClick={() => setCursor(users.data.next_cursor ?? undefined)}
+              onClick={() => {
+                setPreviousCursors((current) => [...current, cursor]);
+                setCursor(users.data.next_cursor ?? undefined);
+              }}
             >
               Ver más cuentas
             </Button>
