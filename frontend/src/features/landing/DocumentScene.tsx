@@ -1,37 +1,37 @@
-import styles from "./Hero.module.css";
+import styles from "./DocumentScene.module.css";
 
-const digest = ["8f2a", "6c91", "b4e7", "03d5"];
+const facets = [
+  "8F2A C691",
+  "B4E7 03D5",
+  "71AC 92F0",
+  "6E42 A15B",
+  "D38C 04EF",
+  "19B7 5A62",
+  "CE84 308D",
+  "5F1A E2B9",
+];
 
-/** Ilustración del recorrido de un archivo hacia su huella, sin representar un cálculo real. */
+/** Sello abstracto de huella digital. Los fragmentos visibles son ilustrativos. */
 export function DocumentScene() {
   return (
     <div className={styles.visual} aria-hidden="true">
       <div className={styles.hashScene}>
-        <div className={styles.hashGrid} />
-        <div className={styles.fileGlyph}>
-          <span className={styles.fileFold} />
-          <span className={styles.fileLine} />
-          <span className={styles.fileLine} />
-          <span className={styles.fileLineShort} />
+        <div className={styles.aura} />
+        <div className={styles.orbit} />
+        <div className={styles.seal}>
+          <div className={styles.sealLid} />
+          {facets.map((facet, index) => (
+            <div className={styles.sealFacet} key={facet}>
+              <span className={styles.facetIndex}>0{index + 1} / 08</span>
+              <span className={styles.facetMark} />
+              <span className={styles.facetHash}>{facet}</span>
+              <span className={styles.facetLabel}>SHA-256</span>
+            </div>
+          ))}
+          <div className={styles.sealBase} />
         </div>
-        <div className={styles.hashFlow}>
-          <span className={styles.flowDot} />
-          <span className={styles.flowDot} />
-          <span className={styles.flowDot} />
-        </div>
-        <div className={styles.digestCard}>
-          <span className={styles.digestHeading}>SHA-256</span>
-          <span className={styles.digestRule} />
-          <span className={styles.digestBits}>
-            {digest.map((part) => (
-              <span key={part}>{part}</span>
-            ))}
-          </span>
-          <span className={styles.digestFoot}>FRAGMENTO ILUSTRATIVO</span>
-        </div>
-        <span className={styles.sceneLabel}>
-          DEL ARCHIVO A SU HUELLA DIGITAL
-        </span>
+        <div className={styles.sealCap} />
+        <span className={styles.sceneLabel}>HUELLA DIGITAL SHA-256</span>
       </div>
     </div>
   );

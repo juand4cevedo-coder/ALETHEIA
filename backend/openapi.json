@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.4.1"
+    "version": "0.4.2"
   },
   "paths": {
     "/api/v1/health": {
@@ -3890,6 +3890,11 @@
             "type": "boolean",
             "title": "Full",
             "description": "Si ya no cabe nadie más sin cambiar de plan."
+          },
+          "owner_exempt": {
+            "type": "boolean",
+            "title": "Owner Exempt",
+            "description": "El propietario de la plataforma puede invitar sin tope del plan."
           }
         },
         "type": "object",
@@ -3897,7 +3902,8 @@
           "used",
           "included",
           "extra_user_price_cop",
-          "full"
+          "full",
+          "owner_exempt"
         ],
         "title": "SeatsOut",
         "description": "Cupo de usuarios del plan (RN-012)."

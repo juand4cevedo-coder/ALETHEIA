@@ -1368,6 +1368,12 @@ export type SeatsOut = {
    * Si ya no cabe nadie más sin cambiar de plan.
    */
   full: boolean;
+  /**
+   * Owner Exempt
+   *
+   * El propietario de la plataforma puede invitar sin tope del plan.
+   */
+  owner_exempt: boolean;
 };
 
 /**

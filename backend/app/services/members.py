@@ -15,11 +15,12 @@ import uuid
 from dataclasses import dataclass
 from typing import Final
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.permissions import has_permission
 from app.core.tokens import new_opaque_token, opaque_token_hash
-from app.models import AuditLog, Invitation, Membership, Plan
+from app.models import AuditLog, Invitation, Membership, Plan, User
 from app.repositories import organization as organization_repository
 from app.repositories import sessions as sessions_repository
 from app.repositories.organization import MemberRow
@@ -45,11 +46,16 @@ class Seats:
     included: int
     # Precio mensual de cada usuario adicional, o None si el plan no los admite.
     extra_user_price_cop: int | None
+    owner_exempt: bool = False
 
     @property
     def full(self) -> bool:
         """Si ya no cabe nadie más sin cambiar de plan."""
-        return self.extra_user_price_cop is None and self.used >= self.included
+        return (
+            not self.owner_exempt
+            and self.extra_user_price_cop is None
+            and self.used >= self.included
+        )
 
 
 class NotAManagerError(Exception):
@@ -99,16 +105,31 @@ def organization_of_manager(principal: Principal) -> uuid.UUID:
     return principal.organization_id
 
 
-def seats(session: Session, organization_id: uuid.UUID, now: datetime.datetime) -> Seats:
+def seats(
+    session: Session,
+    organization_id: uuid.UUID,
+    now: datetime.datetime,
+    *,
+    actor_id: uuid.UUID,
+) -> Seats:
     """Cupos usados e incluidos en el plan de la organización."""
     plan: Plan | None = organization_repository.plan_of(session, organization_id)
     used = organization_repository.member_count(
         session, organization_id
     ) + organization_repository.open_invitation_count(session, organization_id, now)
+    owner_exempt = bool(session.scalar(select(User.is_platform_admin).where(User.id == actor_id)))
     if plan is None:
-        return Seats(used=used, included=_FALLBACK_INCLUDED_USERS, extra_user_price_cop=None)
+        return Seats(
+            used=used,
+            included=_FALLBACK_INCLUDED_USERS,
+            extra_user_price_cop=None,
+            owner_exempt=owner_exempt,
+        )
     return Seats(
-        used=used, included=plan.included_users, extra_user_price_cop=plan.extra_user_price_cop
+        used=used,
+        included=plan.included_users,
+        extra_user_price_cop=plan.extra_user_price_cop,
+        owner_exempt=owner_exempt,
     )
 
 
@@ -146,7 +167,7 @@ def invite(
     if organization_repository.has_open_invitation(session, organization_id, email, now):
         session.rollback()
         raise InvitationAlreadyOpenError
-    current = seats(session, organization_id, now)
+    current = seats(session, organization_id, now, actor_id=principal.user_id)
     if current.full:
         session.rollback()
         raise SeatLimitReachedError(current)
@@ -288,7 +309,7 @@ def members(
     organization_id = organization_of_manager(principal)
     now = datetime.datetime.now(datetime.UTC)
     rows = organization_repository.members(session, organization_id, after=after, limit=limit)
-    return rows, seats(session, organization_id, now)
+    return rows, seats(session, organization_id, now, actor_id=principal.user_id)
 
 
 def invited_at(invitation: Invitation) -> datetime.datetime:
