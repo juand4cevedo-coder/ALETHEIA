@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from "react-router";
 
 import type { SignInError } from "../api/generated";
 import {
+  readMeOptions,
   readMeQueryKey,
   signInMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
@@ -94,7 +95,19 @@ export function SignInPage() {
       setSignedIn(true);
       rememberSession();
       await queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
-      await navigate(destination, { replace: true });
+      let next = destination;
+      if (destination === ROUTES.app) {
+        try {
+          const profile = await queryClient.fetchQuery({
+            ...readMeOptions(),
+            staleTime: 0,
+          });
+          if (profile.platform_admin) next = ROUTES.platform;
+        } catch {
+          // El marco del espacio de trabajo mostrará el error del perfil.
+        }
+      }
+      await navigate(next, { replace: true });
     },
     onError: (error) => {
       const found = problemFrom(error);
@@ -155,6 +168,7 @@ export function SignInPage() {
         name="description"
         content="Ingrese a ALETHEIA con su correo y su contraseña para trabajar en sus casos."
       />
+      <meta name="robots" content="noindex" />
       <link rel="canonical" href={`${SITE_URL}${ROUTES.signIn}`} />
 
       <div className={styles.screen}>

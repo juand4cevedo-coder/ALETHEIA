@@ -3,7 +3,7 @@
 | Campo | Contenido |
 | --- | --- |
 | Historias | HU-015 Crear un caso (#86, 3 puntos) y HU-017 Consultar mis casos (#88, 2 puntos) |
-| Estado | Aprobado en sesión de diseño, 10/11/2026 |
+| Estado | Especificación vigente desde el 10/11/2026 |
 | Decisiones que respeta | ADR-005 (llave por caso), ADR-014 (Tink por flujos), ADR-017 (AWS KMS), ADR-023 (espacio de trabajo oscuro), ADR-037 (hash de custodia calculado por la base) |
 
 ## 1. Objetivo

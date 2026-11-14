@@ -70,6 +70,16 @@ else
     falla "salud: /api/v1/health no respondió 200"
 fi
 
+# El catálogo público alimenta la portada y la página de precios. Comprobar la respuesta
+# evita publicar una web sana en apariencia pero sin planes disponibles.
+if curl --silent --show-error --fail --max-time 10 \
+    "https://$DOMINIO/api/v1/plans" \
+    | python3 -c 'import json,sys; plans=json.load(sys.stdin); codes={p["code"] for p in plans}; sys.exit(0 if {"trial","essential","professional","firm"} <= codes else 1)'; then
+    ok "catálogo público de planes"
+else
+    falla "planes: faltan los planes públicos esperados"
+fi
+
 # 2. Cabeceras en la página principal y en un error.
 revisar_cabeceras "$(cabeceras "https://$DOMINIO/")" "página principal"
 revisar_cabeceras "$(cabeceras "https://$DOMINIO/assets/no-existe.js")" "error 404"

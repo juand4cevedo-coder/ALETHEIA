@@ -31,10 +31,10 @@ export function DocumentScene() {
         <div className={styles.orbitInner} />
         <div className={styles.cryptoCore}>
           <svg viewBox="0 0 100 100" fill="none" focusable="false">
-            <path d="M50 7 87 28v44L50 93 13 72V28L50 7Z" />
-            <path d="M50 7v22m37-1L68 39m19 33L68 61M50 93V71M13 72l19-11M13 28l19 11M50 29 68 39v22L50 71 32 61V39l18-10Z" />
-            <path d="m32 39 36 22m0-22L32 61" />
-            <circle cx="50" cy="50" r="5" />
+            <path d="M31 43V32a19 19 0 0 1 38 0v11" />
+            <rect x="23" y="43" width="54" height="43" rx="7" />
+            <circle cx="50" cy="62" r="4" />
+            <path d="M50 66v9" />
           </svg>
         </div>
         <span className={styles.cryptoLabel}>SHA-256 / 256 BITS</span>
