@@ -84,6 +84,20 @@ export function ProductTour() {
                 }
               }}
             >
+              <svg
+                className={styles.travelingBorder}
+                aria-hidden="true"
+                focusable="false"
+              >
+                <rect
+                  x="1"
+                  y="1"
+                  width="calc(100% - 2px)"
+                  height="calc(100% - 2px)"
+                  rx="15"
+                  pathLength="100"
+                />
+              </svg>
               <span className={styles.tabInner}>
                 <span className={styles.icon}>
                   <view.icon size={18} aria-hidden="true" />

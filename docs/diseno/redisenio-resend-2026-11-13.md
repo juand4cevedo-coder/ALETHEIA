@@ -32,4 +32,6 @@ Tras el ajuste pasaron 295 pruebas de interfaz en 35 archivos, compilación, lin
 
 La portada y las tarjetas se revisaron en el navegador local a 1260 y 390 px de ancho. En ese navegador la preferencia de movimiento reducido estaba activa: se comprobó la composición estática, no el movimiento efectivo de los ciclos. La medición de experiencia real sigue pendiente.
 
+En la revisión siguiente, el centro de la escena se cambió por un candado y la referencia SHA-256 quedó visible bajo los anillos. Se aumentó el contraste de las tres líneas de profundidad. El borde verde de la tarjeta seleccionada ahora es un trazo SVG que recorre su perímetro mediante `stroke-dashoffset`, con ciclo infinito y estado fijo para movimiento reducido. La compilación conserva el presupuesto inicial (115,51 kB de JavaScript y 6,88 kB de CSS comprimidos); pasaron las 295 pruebas de interfaz, lint y formato. El navegador de revisión seguía configurado con movimiento reducido, así que el desplazamiento efectivo del trazo debe revisarse también con movimiento normal antes de publicar.
+
 El servidor de desarrollo de revisión escucha únicamente en `127.0.0.1:5174`. Las pantallas que consultan datos reales necesitan la API local habitual en el puerto 8000. No se añadieron datos de precios ficticios para ocultar una desconexión del backend.
