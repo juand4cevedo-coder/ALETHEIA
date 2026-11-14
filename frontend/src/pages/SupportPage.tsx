@@ -1,5 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
+import { Navigate, useOutletContext } from "react-router";
+
+import type { Me } from "../api/generated";
 
 import {
   createSupportTicketMutation,
@@ -10,9 +13,17 @@ import { Field } from "../components/ui/Field.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { pageTitle } from "../config/site.ts";
+import { ROUTES } from "../config/routes.ts";
 import styles from "./PlatformPage.module.css";
 
 export function SupportPage() {
+  const me = useOutletContext<Me>();
+  if (me.platform_admin)
+    return <Navigate to={ROUTES.platformSupport} replace />;
+  return <CustomerSupportPage />;
+}
+
+function CustomerSupportPage() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [cursor, setCursor] = useState<string | undefined>();

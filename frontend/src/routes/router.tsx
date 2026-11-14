@@ -1,6 +1,7 @@
 import { createBrowserRouter, type RouteObject } from "react-router";
 
 import { ROUTES } from "../config/routes.ts";
+import { CaseAccessGuard } from "./CaseAccessGuard.tsx";
 import type { AuthSwitch } from "../layouts/AuthLayout.tsx";
 import { PublicLayout } from "../layouts/PublicLayout.tsx";
 import { HomePage } from "../pages/HomePage.tsx";
@@ -220,16 +221,12 @@ export const routes: RouteObject[] = [
           },
           {
             path: ROUTES.cases.slice(ROUTES.app.length + 1),
-            lazy: { Component: loadCasesPage },
-          },
-          {
-            path: ROUTES.newCase.slice(ROUTES.app.length + 1),
-            lazy: { Component: loadNewCasePage },
-          },
-          {
-            // El segmento fijo «nuevo» gana sobre :caseId, así que el orden no importa.
-            path: "casos/:caseId",
-            lazy: { Component: loadCasePage },
+            Component: CaseAccessGuard,
+            children: [
+              { index: true, lazy: { Component: loadCasesPage } },
+              { path: "nuevo", lazy: { Component: loadNewCasePage } },
+              { path: ":caseId", lazy: { Component: loadCasePage } },
+            ],
           },
         ],
       },
