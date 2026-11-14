@@ -75,6 +75,9 @@ class SeatsOut(BaseModel):
         description="Precio mensual de cada usuario adicional, o null si el plan no los admite."
     )
     full: bool = Field(description="Si ya no cabe nadie más sin cambiar de plan.")
+    owner_exempt: bool = Field(
+        description="El propietario de la plataforma puede invitar sin tope del plan."
+    )
 
 
 class MemberPage(BaseModel):

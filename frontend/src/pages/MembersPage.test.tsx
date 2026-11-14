@@ -269,6 +269,35 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("permite al propietario de la plataforma invitar sin cupo del plan", async () => {
+    serve("owner", {
+      "GET /api/v1/organization/members": () =>
+        jsonResponse({
+          ...MEMBERS,
+          seats: {
+            used: 2,
+            included: 2,
+            extra_user_price_cop: null,
+            full: false,
+            owner_exempt: true,
+          },
+        }),
+    });
+    await renderRoute("/app/miembros");
+
+    expect(
+      await screen.findByText(
+        /Su cuenta de propietario puede invitar personas sin límite/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Invitar a una persona" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Su plan ya no tiene cupo/),
+    ).not.toBeInTheDocument();
+  });
+
   it("revoca una invitación después de confirmarlo", async () => {
     let revoked = false;
     serve("owner", {
