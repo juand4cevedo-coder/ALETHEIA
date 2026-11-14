@@ -17,6 +17,7 @@ from typing import Final
 
 from sqlalchemy.orm import Session
 
+from app.core.permissions import has_permission
 from app.core.tokens import new_opaque_token, opaque_token_hash
 from app.models import AuditLog, Invitation, Membership, Plan
 from app.repositories import organization as organization_repository
@@ -30,7 +31,6 @@ INVITATION_LIFETIME: Final = datetime.timedelta(hours=72)
 INVITATION_TEMPLATE: Final = "invitation"
 # Pantalla de aceptación (UI-011, HU-012). El token va en el fragmento (#t=…).
 ACCEPT_PATH: Final = "/invitacion"
-MANAGER_ROLES: Final = frozenset({"owner", "admin"})
 
 # Sin suscripción no hay plan del que saber el cupo: se niega como si solo cupiera una persona.
 _FALLBACK_INCLUDED_USERS: Final = 1
@@ -94,7 +94,7 @@ class SelfChangeError(Exception):
 
 def organization_of_manager(principal: Principal) -> uuid.UUID:
     """La organización de quien hace la petición, si la gestiona; si no, NotAManagerError."""
-    if principal.organization_id is None or principal.role not in MANAGER_ROLES:
+    if principal.organization_id is None or not has_permission(principal.role, "team.manage"):
         raise NotAManagerError
     return principal.organization_id
 

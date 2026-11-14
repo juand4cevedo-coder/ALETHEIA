@@ -69,7 +69,12 @@ export function AuthLayout() {
     retry: false,
   });
   if (redirectSignedIn && me.isSuccess) {
-    return <Navigate to={ROUTES.app} replace />;
+    return (
+      <Navigate
+        to={me.data.platform_admin ? ROUTES.platform : ROUTES.app}
+        replace
+      />
+    );
   }
 
   return (

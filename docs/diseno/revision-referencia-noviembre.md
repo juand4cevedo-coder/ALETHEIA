@@ -1,6 +1,6 @@
 # Revisión de la referencia y alcance del rediseño
 
-Fecha: 12 de noviembre de 2026. Antecedente de la revisión aprobada el 13 de noviembre; las decisiones vigentes constan en `redisenio-resend-2026-11-13.md`.
+Fecha: 12 de noviembre de 2026. Antecedente de la identidad vigente descrita en `redisenio-resend-2026-11-13.md`.
 
 ## Referencia
 
@@ -25,7 +25,7 @@ Carga de evidencia, sellado, exportación, webhooks, automatizaciones y pagos re
 
 ## Acceso con proveedores
 
-El titular confirmó que las aplicaciones de Google Cloud y Microsoft Entra todavía no están registradas. El acceso por contraseña se conserva. La activación social necesita clientes registrados, URI de retorno exactas, secretos fuera del repositorio y prueba completa por proveedor. No se vinculan cuentas automáticamente por coincidencia de correo. Se validan firma, emisor, destinatario, vencimiento, estado y nonce; el identificador estable procede del proveedor.
+Las aplicaciones de Google Cloud y Microsoft Entra todavía no están registradas. El acceso por contraseña se conserva. La activación social necesita clientes registrados, URI de retorno exactas, secretos fuera del repositorio y prueba completa por proveedor. No se vinculan cuentas automáticamente por coincidencia de correo. Se validan firma, emisor, destinatario, vencimiento, estado y nonce; el identificador estable procede del proveedor.
 
 Fuentes: [Google OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect), [validación de Microsoft](https://learn.microsoft.com/en-us/entra/identity-platform/claims-validation).
 
