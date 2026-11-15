@@ -125,7 +125,9 @@ def test_cadena_paginada_para_miembros_sin_edicion(dispositivo: NuevoCliente, db
     assert owner_client.delete(path).status_code == 405
     assert owner_client.get(path, params={"cursor": 0}).status_code == 422
 
-    assert _login(dispositivo, db, outsider).get(path).status_code == 404
+    outsider_client = _login(dispositivo, db, outsider)
+    assert outsider_client.get(path).status_code == 404
+    assert outsider_client.get(f"{_CASES}/{case_id}/custody-verification").status_code == 404
     # El asistente estuvo asignado pero ya no lo está: no conserva acceso.
     assert assistant_client.get(path).status_code == 404
 
