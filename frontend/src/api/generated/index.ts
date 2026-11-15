@@ -37,6 +37,7 @@ export {
   signIn,
   signOut,
   signOutEverywhere,
+  uploadEvidence,
   verifyEmail,
 } from "./sdk.gen";
 export type {
@@ -108,6 +109,7 @@ export type {
   CreateSupportTicketResponse,
   CreateSupportTicketResponses,
   CustodyEventOut,
+  EvidenceUploadOut,
   ForgotPasswordData,
   ForgotPasswordError,
   ForgotPasswordErrors,
@@ -261,6 +263,11 @@ export type {
   SupportTicketOut,
   SupportTicketPage,
   SupportTicketStatusChange,
+  UploadEvidenceData,
+  UploadEvidenceError,
+  UploadEvidenceErrors,
+  UploadEvidenceResponse,
+  UploadEvidenceResponses,
   UserStatusChange,
   ValidationErrorItem,
   ValidationProblem,

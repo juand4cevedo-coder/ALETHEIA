@@ -566,6 +566,30 @@ export type CustodyEventOut = {
 };
 
 /**
+ * EvidenceUploadOut
+ *
+ * Constancia inmediata de la preservación; el sello de tiempo llega después.
+ */
+export type EvidenceUploadOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Sha256
+   */
+  sha256: string;
+  /**
+   * Size Bytes
+   */
+  size_bytes: number;
+  /**
+   * Tsa Status
+   */
+  tsa_status: "pending";
+};
+
+/**
  * ForgotPasswordRequest
  *
  * Correo al que se envía el enlace para restablecer la contraseña (API-011).
@@ -897,6 +921,7 @@ export type Me = {
     | "cases.read_assigned"
     | "cases.create"
     | "cases.manage_members"
+    | "cases.upload_evidence"
   >;
   /**
    * Su organización, o null si ya no pertenece a ninguna.
@@ -2395,6 +2420,65 @@ export type AcceptInvitationResponses = {
 
 export type AcceptInvitationResponse =
   AcceptInvitationResponses[keyof AcceptInvitationResponses];
+
+export type UploadEvidenceData = {
+  /**
+   * Enviar tipo y origen antes del archivo.
+   */
+  body: {
+    tipo: "chat" | "email" | "audio" | "image" | "document" | "other";
+    origen: string;
+    archivo: Blob | File;
+  };
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/evidences";
+};
+
+export type UploadEvidenceErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * La persona no está asignada al caso o carece del permiso.
+   */
+  403: Problem;
+  /**
+   * El caso o el despacho no admiten nuevas evidencias.
+   */
+  409: Problem;
+  /**
+   * El archivo supera el tope del plan o la cuota disponible.
+   */
+  413: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * No se pudo acceder a la llave de cifrado del caso.
+   */
+  503: Problem;
+};
+
+export type UploadEvidenceError =
+  UploadEvidenceErrors[keyof UploadEvidenceErrors];
+
+export type UploadEvidenceResponses = {
+  /**
+   * Successful Response
+   */
+  201: EvidenceUploadOut;
+};
+
+export type UploadEvidenceResponse =
+  UploadEvidenceResponses[keyof UploadEvidenceResponses];
 
 export type ListCasesData = {
   body?: never;
