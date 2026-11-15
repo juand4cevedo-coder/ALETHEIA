@@ -5,6 +5,7 @@ import {
   listCasesQueryKey,
   readCaseQueryKey,
 } from "../../api/generated/@tanstack/react-query.gen.ts";
+import { sessionFetch } from "../../api/sessionFetch.ts";
 import { Button } from "../../components/ui/Button.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
 import styles from "./EvidenceUploadForm.module.css";
@@ -52,12 +53,15 @@ export function EvidenceUploadForm({ caseId }: { caseId: string }) {
       body.append("tipo", type.value);
       body.append("origen", origin.value);
       body.append("archivo", file, file.name);
-      const response = await fetch(`/api/v1/cases/${caseId}/evidences`, {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "X-Aletheia-Request": "1" },
-        body,
-      });
+      const response = await sessionFetch(
+        new URL(`/api/v1/cases/${caseId}/evidences`, window.location.origin),
+        {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "X-Aletheia-Request": "1" },
+          body,
+        },
+      );
       if (!response.ok) {
         if (response.status === 413) {
           setError(
