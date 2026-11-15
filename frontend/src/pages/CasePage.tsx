@@ -1,14 +1,28 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router";
+import {
+  useLocation,
+  useNavigate,
+  useOutletContext,
+  useParams,
+} from "react-router";
 
-import type { CaseDetail, CaseMemberOut } from "../api/generated";
-import { readCaseOptions } from "../api/generated/@tanstack/react-query.gen.ts";
+import type { CaseDetail, CaseMemberOut, Me } from "../api/generated";
+import {
+  addCaseMemberMutation,
+  availableCaseMembersOptions,
+  availableCaseMembersQueryKey,
+  listCasesQueryKey,
+  readCaseOptions,
+  readCaseQueryKey,
+  removeCaseMemberMutation,
+} from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { FilingNumber } from "../components/ui/FilingNumber.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
+import { Select } from "../components/ui/Select.tsx";
 import { StatusBadge } from "../components/ui/StatusBadge.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
@@ -16,6 +30,7 @@ import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { CustodyTimeline } from "../features/cases/CustodyTimeline.tsx";
+import { EvidenceSection } from "../features/cases/EvidenceSection.tsx";
 import { formatColombiaTime } from "../features/cases/dates.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { initialsOf } from "../features/session/initials.ts";
@@ -23,8 +38,8 @@ import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./CasePage.module.css";
 import { CargandoIcon } from "../components/ui/icons.tsx";
 
-type TabKey = "chain" | "team";
-const TAB_ORDER: readonly TabKey[] = ["chain", "team"];
+type TabKey = "chain" | "team" | "evidence";
+const TAB_ORDER: readonly TabKey[] = ["chain", "team", "evidence"];
 
 /** El caso no existe, es de otra organización o su id no es válido: MSG-011 en los tres casos. */
 function isMissing(error: unknown): boolean {
@@ -33,9 +48,9 @@ function isMissing(error: unknown): boolean {
 }
 
 // El caso (HU-015, maqueta 03): su identidad procesal, la cadena de custodia desde el evento 1 y
-// el equipo. Solo muestra lo que ya existe: sin «Editar datos», sin zona de carga, sin
-// «Verificar ahora» y sin pestañas de evidencias o paquetes hasta sus historias.
+// el equipo y la carga cifrada. Las acciones de verificación y descarga llegarán con sus historias.
 export function CasePage() {
+  const me = useOutletContext<Me>();
   const { caseId = "" } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -109,7 +124,7 @@ export function CasePage() {
     );
   }
 
-  return <CaseView detail={detail.data} justOpened={justOpened} />;
+  return <CaseView detail={detail.data} justOpened={justOpened} me={me} />;
 }
 
 function referenceLine(detail: CaseDetail) {
@@ -128,16 +143,22 @@ function referenceLine(detail: CaseDetail) {
 function CaseView({
   detail,
   justOpened,
+  me,
 }: {
   detail: CaseDetail;
   justOpened: boolean;
+  me: Me;
 }) {
-  const [tab, setTab] = useState<TabKey>("chain");
+  const location = useLocation();
+  const [tab, setTab] = useState<TabKey>(
+    location.hash === "#evidencias" ? "evidence" : "chain",
+  );
   const tabRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({
     chain: null,
     team: null,
+    evidence: null,
   });
-  const ids = { chain: useId(), team: useId() };
+  const ids = { chain: useId(), team: useId(), evidence: useId() };
   // La API entrega los últimos eventos; el número del más reciente es el total de la cadena.
   const eventCount = detail.recent_events.reduce(
     (max, event) => Math.max(max, event.seq),
@@ -161,20 +182,22 @@ function CaseView({
     tabRefs.current[key]?.focus();
   }
 
-  const tabs: { key: TabKey; label: string; count: number; unit: string }[] = [
-    {
-      key: "chain",
-      label: "Cadena de custodia",
-      count: eventCount,
-      unit: eventCount === 1 ? "evento" : "eventos",
-    },
-    {
-      key: "team",
-      label: "Equipo",
-      count: detail.member_count,
-      unit: detail.member_count === 1 ? "persona" : "personas",
-    },
-  ];
+  const tabs: { key: TabKey; label: string; count?: number; unit?: string }[] =
+    [
+      {
+        key: "chain",
+        label: "Cadena de custodia",
+        count: eventCount,
+        unit: eventCount === 1 ? "evento" : "eventos",
+      },
+      {
+        key: "team",
+        label: "Equipo",
+        count: detail.member_count,
+        unit: detail.member_count === 1 ? "persona" : "personas",
+      },
+      { key: "evidence", label: "Evidencias" },
+    ];
 
   const opened = `Abierto el ${formatColombiaTime(detail.created_at)} por ${detail.created_by_name}`;
 
@@ -225,10 +248,14 @@ function CaseView({
                 onClick={() => setTab(key)}
               >
                 <span>{label}</span>
-                <span className={styles.count} aria-hidden="true">
-                  {count}
-                </span>
-                <span className="visually-hidden">{`, ${count} ${unit}`}</span>
+                {count !== undefined && (
+                  <>
+                    <span className={styles.count} aria-hidden="true">
+                      {count}
+                    </span>
+                    <span className="visually-hidden">{`, ${count} ${unit}`}</span>
+                  </>
+                )}
               </button>
             ))}
           </div>
@@ -271,7 +298,22 @@ function CaseView({
           <p className={styles.caption}>
             Quienes trabajan en este caso y ven sus datos.
           </p>
-          <TeamList detail={detail} />
+          {tab === "team" && <TeamList detail={detail} me={me} />}
+        </div>
+        <div
+          role="tabpanel"
+          id={`${ids.evidence}-panel`}
+          aria-labelledby={`${ids.evidence}-tab`}
+          className={styles.panel}
+          tabIndex={0}
+          hidden={tab !== "evidence"}
+        >
+          {tab === "evidence" && (
+            <EvidenceSection
+              caseId={detail.id}
+              canUpload={detail.status === "open"}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -326,27 +368,150 @@ function creatorOf(detail: CaseDetail): CaseMemberOut | undefined {
     .sort((a, b) => a.added_at.localeCompare(b.added_at))[0];
 }
 
-function TeamList({ detail }: { detail: CaseDetail }) {
+function TeamList({ detail, me }: { detail: CaseDetail; me: Me }) {
   const creator = creatorOf(detail);
+  const queryClient = useQueryClient();
+  const role = me.organization?.role;
+  const canManage = role === "owner" || role === "admin" || role === "lawyer";
+  const path = { case_id: detail.id };
+  const [selectedId, setSelectedId] = useState("");
+  const [removing, setRemoving] = useState<CaseMemberOut | null>(null);
+  const [message, setMessage] = useState("");
+  const candidates = useQuery({
+    ...availableCaseMembersOptions({ path }),
+    enabled: canManage,
+  });
+  const refresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: readCaseQueryKey({ path }) }),
+      queryClient.invalidateQueries({
+        queryKey: availableCaseMembersQueryKey({ path }),
+      }),
+      queryClient.invalidateQueries({ queryKey: listCasesQueryKey() }),
+    ]);
+  };
+  const add = useMutation({
+    ...addCaseMemberMutation(),
+    onSuccess: async () => {
+      setSelectedId("");
+      setMessage("Persona asignada al caso.");
+      await refresh();
+    },
+  });
+  const remove = useMutation({
+    ...removeCaseMemberMutation(),
+    onSuccess: async () => {
+      setMessage("Persona retirada del caso. Sigue perteneciendo al despacho.");
+      setRemoving(null);
+      await refresh();
+    },
+  });
   return (
-    <ul className={styles.members}>
-      {detail.members.map((member) => (
-        <li key={member.user_id} className={styles.member}>
-          <span className={styles.avatar} aria-hidden="true">
-            {initialsOf(member.full_name)}
-          </span>
-          <span className={styles.who}>
-            <span className={styles.memberName}>{member.full_name}</span>
-            <span className={styles.memberEmail}>{member.email}</span>
-          </span>
-          <span className={styles.role}>
-            {ROLE_LABELS[member.role]}
-            {member === creator && (
-              <span className={styles.roleNote}>Abrió el caso</span>
+    <>
+      {message && <Notice tone="success">{message}</Notice>}
+      {canManage && (
+        <form
+          className={styles.memberForm}
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (selectedId) {
+              setMessage("");
+              add.mutate({ path, body: { user_id: selectedId } });
+            }
+          }}
+        >
+          <Select
+            label="Agregar a una persona del despacho"
+            value={selectedId}
+            onChange={(event) => setSelectedId(event.target.value)}
+            disabled={candidates.isPending || add.isPending}
+            options={[
+              { value: "", label: "Seleccione una persona" },
+              ...(candidates.data ?? []).map((candidate) => ({
+                value: candidate.user_id,
+                label: `${candidate.full_name} (${candidate.email})`,
+              })),
+            ]}
+          />
+          <Button
+            type="submit"
+            size="sm"
+            busy={add.isPending}
+            disabled={!selectedId}
+          >
+            Asignar al caso
+          </Button>
+          {candidates.isError && (
+            <Notice tone="error">
+              No pudimos cargar las personas disponibles.
+            </Notice>
+          )}
+          {add.isError && (
+            <Notice tone="error">
+              {apiProblem(add.error).detail ??
+                "No pudimos asignar a esta persona. Actualice el equipo e inténtelo de nuevo."}
+            </Notice>
+          )}
+        </form>
+      )}
+      <ul className={styles.members}>
+        {detail.members.map((member) => (
+          <li key={member.user_id} className={styles.member}>
+            <span className={styles.avatar} aria-hidden="true">
+              {initialsOf(member.full_name)}
+            </span>
+            <span className={styles.who}>
+              <span className={styles.memberName}>{member.full_name}</span>
+              <span className={styles.memberEmail}>{member.email}</span>
+            </span>
+            <span className={styles.role}>
+              {ROLE_LABELS[member.role]}
+              {member === creator && (
+                <span className={styles.roleNote}>Abrió el caso</span>
+              )}
+            </span>
+            {canManage && member.user_id !== me.id && (
+              <Button
+                variant="text"
+                size="sm"
+                aria-label={`Retirar a ${member.full_name} del caso`}
+                onClick={() => setRemoving(member)}
+              >
+                Retirar
+              </Button>
             )}
-          </span>
-        </li>
-      ))}
-    </ul>
+          </li>
+        ))}
+      </ul>
+      {removing && (
+        <div
+          className={styles.removeConfirm}
+          role="group"
+          aria-label="Confirmar retiro del caso"
+        >
+          <p>
+            ¿Retirar a {removing.full_name} de este caso? Conservará su acceso
+            al despacho.
+          </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            busy={remove.isPending}
+            onClick={() => {
+              setMessage("");
+              remove.mutate({ path: { ...path, user_id: removing.user_id } });
+            }}
+          >
+            Confirmar retiro
+          </Button>
+          <Button variant="text" size="sm" onClick={() => setRemoving(null)}>
+            Cancelar
+          </Button>
+          {remove.isError && (
+            <Notice tone="error">No pudimos retirar a esta persona.</Notice>
+          )}
+        </div>
+      )}
+    </>
   );
 }
