@@ -48,7 +48,7 @@ function isMissing(error: unknown): boolean {
 }
 
 // El caso (HU-015, maqueta 03): su identidad procesal, la cadena de custodia desde el evento 1 y
-// el equipo y la carga cifrada. Las acciones de verificación y descarga llegarán con sus historias.
+// el equipo y la carga cifrada. La verificación de la cadena llegará con su historia.
 export function CasePage() {
   const me = useOutletContext<Me>();
   const { caseId = "" } = useParams();
