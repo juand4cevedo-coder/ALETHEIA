@@ -1,4 +1,7 @@
-import type { CustodyEventOut } from "../../api/generated";
+import type {
+  CustodyEventOut,
+  CustodyVerificationOut,
+} from "../../api/generated";
 import { StatusBadge } from "../../components/ui/StatusBadge.tsx";
 import { custodyActionLabel } from "./custodyActions.ts";
 import { formatColombiaTime } from "./dates.ts";
@@ -18,14 +21,15 @@ type CustodyTimelineProps = {
   events: CustodyEventOut[];
   /** Resalta el primer eslabón una vez, al llegar recién abierto el caso. */
   justOpened?: boolean;
+  verification?: CustodyVerificationOut | null;
 };
 
 // Cadena de custodia del caso (maqueta 03): cada evento con su número, quién lo hizo, la hora
-// exacta en Colombia y su huella abreviada, y al final el hueco del siguiente eslabón. No dice que
-// la cadena esté íntegra: eso solo lo puede afirmar el verificador independiente (HU-024).
+// exacta en Colombia y su huella abreviada, y al final el hueco del siguiente eslabón.
 export function CustodyTimeline({
   events,
   justOpened = false,
+  verification = null,
 }: CustodyTimelineProps) {
   const chronological = [...events].sort((a, b) => a.seq - b.seq);
   const last = chronological.at(-1);
@@ -81,11 +85,25 @@ export function CustodyTimeline({
         </div>
       )}
 
-      <div className={styles.verification}>
-        <StatusBadge tone="muted">Sin verificar</StatusBadge>
-        <p>
-          Ningún verificador independiente ha comprobado todavía esta cadena.
-        </p>
+      <div className={styles.verification} role="status" aria-live="polite">
+        {verification === null ? (
+          <>
+            <StatusBadge tone="muted">Sin verificar</StatusBadge>
+            <p>La cadena todavía no se ha recalculado en esta visita.</p>
+          </>
+        ) : verification.intact ? (
+          <>
+            <StatusBadge tone="ok">Integridad comprobada</StatusBadge>
+            <p>
+              {`Coinciden los ${verification.events_checked} eventos guardados. Esta comprobación no incluye un anclaje externo.`}
+            </p>
+          </>
+        ) : (
+          <>
+            <StatusBadge tone="error">Cadena alterada</StatusBadge>
+            <p>{`La cadena no cierra en el evento #${verification.broken_at ?? 1}. Revise el historial antes de usarlo.`}</p>
+          </>
+        )}
       </div>
     </div>
   );

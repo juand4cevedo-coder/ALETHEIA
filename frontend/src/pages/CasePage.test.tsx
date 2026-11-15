@@ -67,6 +67,14 @@ function serve(
     jsonResponse({ items: [], next_cursor: null }),
   custodyResponse: (request: Request) => Response = () =>
     jsonResponse({ items: DETAIL.recent_events, next_cursor: null }),
+  verificationResponse: () => Response = () =>
+    jsonResponse({
+      intact: true,
+      events_checked: 1,
+      broken_at: null,
+      reason: null,
+      head_hash: EVENT_HASH,
+    }),
 ) {
   fetchMock.mockImplementation(async (input) => {
     const request = input as Request;
@@ -80,6 +88,12 @@ function serve(
       path === `/api/v1/cases/${CASE_ID}/custody-events`
     ) {
       return custodyResponse(request);
+    }
+    if (
+      request.method === "GET" &&
+      path === `/api/v1/cases/${CASE_ID}/custody-verification`
+    ) {
+      return verificationResponse();
     }
     if (
       request.method === "GET" &&
@@ -207,6 +221,44 @@ describe("Página del caso (HU-015)", () => {
         )
         .every((request) => request.method === "GET"),
     ).toBe(true);
+  });
+
+  it("comprueba la cadena y muestra el primer evento alterado", async () => {
+    const user = userEvent.setup();
+    serve(
+      () => jsonResponse(DETAIL),
+      undefined,
+      undefined,
+      () =>
+        jsonResponse({
+          intact: false,
+          events_checked: 0,
+          broken_at: 1,
+          reason: "event_hash",
+          head_hash: "0".repeat(64),
+        }),
+    );
+    await openCase();
+    await screen.findByText("Sin verificar");
+    await user.click(screen.getByRole("button", { name: "Verificar cadena" }));
+    expect(await screen.findByText("Cadena alterada")).toBeInTheDocument();
+    expect(
+      screen.getByText(/^La cadena no cierra en el evento #1/),
+    ).toBeInTheDocument();
+  });
+
+  it("solo afirma integridad después del recálculo", async () => {
+    const user = userEvent.setup();
+    serve(() => jsonResponse(DETAIL));
+    await openCase();
+    await screen.findByText("Sin verificar");
+    await user.click(screen.getByRole("button", { name: "Verificar cadena" }));
+    expect(
+      await screen.findByText("Integridad comprobada"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/no incluye un anclaje externo/),
+    ).toBeInTheDocument();
   });
 
   it("muestra el equipo con quien abrió el caso", async () => {
