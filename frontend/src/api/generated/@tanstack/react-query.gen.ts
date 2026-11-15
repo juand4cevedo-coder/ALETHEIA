@@ -51,6 +51,7 @@ import {
   signOut,
   signOutEverywhere,
   uploadEvidence,
+  verifyCustody,
   verifyEmail,
 } from "../sdk.gen";
 import type {
@@ -172,6 +173,9 @@ import type {
   UploadEvidenceData,
   UploadEvidenceError,
   UploadEvidenceResponse,
+  VerifyCustodyData,
+  VerifyCustodyError,
+  VerifyCustodyResponse,
   VerifyEmailData,
   VerifyEmailError,
   VerifyEmailResponse,
@@ -1016,6 +1020,31 @@ export const listCustodyEventsInfiniteOptions = (
   );
   return opts as Omit<typeof opts, "initialData">;
 };
+
+export const verifyCustodyQueryKey = (options: Options<VerifyCustodyData>) =>
+  createQueryKey("verifyCustody", options);
+
+/**
+ * Recalcular y verificar la cadena de custodia de un caso asignado
+ */
+export const verifyCustodyOptions = (options: Options<VerifyCustodyData>) =>
+  queryOptions<
+    VerifyCustodyResponse,
+    VerifyCustodyError,
+    VerifyCustodyResponse,
+    ReturnType<typeof verifyCustodyQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await verifyCustody({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: verifyCustodyQueryKey(options),
+  });
 
 export const listEvidencesQueryKey = (options: Options<ListEvidencesData>) =>
   createQueryKey("listEvidences", options);
