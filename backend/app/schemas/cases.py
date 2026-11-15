@@ -156,6 +156,16 @@ class CustodyPage(BaseModel):
     next_cursor: int | None = Field(description="Secuencia anterior a la última mostrada.")
 
 
+class CustodyVerificationOut(BaseModel):
+    """Resultado del recálculo independiente de la cadena guardada."""
+
+    intact: bool
+    events_checked: int
+    broken_at: int | None
+    reason: Literal["sequence", "previous_hash", "event_hash"] | None
+    head_hash: str = Field(description="Huella del último evento válido, en hexadecimal.")
+
+
 class EvidenceDetailOut(EvidenceSummaryOut):
     """Metadatos y eventos de una evidencia asignada, sin contenido ni token del sello."""
 

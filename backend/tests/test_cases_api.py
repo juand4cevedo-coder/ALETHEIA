@@ -11,7 +11,7 @@ from typing import Any
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import func, select, update
+from sqlalchemy import func, select, text, update
 from sqlalchemy.orm import Session
 
 from app.adapters.keys import KeyWrapperError, LocalKeyWrapper, WrappedKey
@@ -21,7 +21,7 @@ from app.api.cases import (
     FILING_NUMBER_TAKEN_PROBLEM,
     KEYS_UNAVAILABLE,
 )
-from app.api.deps import NOT_ALLOWED, get_key_wrapper
+from app.api.deps import NOT_ALLOWED, get_key_wrapper, get_session
 from app.api.organization import NOT_FOUND
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import Case, Organization, User
@@ -85,6 +85,51 @@ def _como_dueno(dispositivo: NuevoCliente, db: Session) -> tuple[Oficina, TestCl
 def _contar_casos(db: Session, oficina: Oficina) -> int:
     set_tenant(db, TenantContext(organization_id=oficina.organization_id, user_id=oficina.owner.id))
     return db.scalar(select(func.count()).select_from(Case)) or 0
+
+
+def test_verificacion_de_custodia_detecta_evento_alterado(
+    app: FastAPI, dispositivo: NuevoCliente, owner_db: Session
+) -> None:
+    # El dueño del esquema puede omitir el trigger de solo inserción; la API debe detectar
+    # ese cambio al recalcular el hash sin confiar en el trigger.
+    app.dependency_overrides[get_session] = lambda: owner_db
+    oficina = crear_oficina(owner_db)
+    cliente = _sesion(dispositivo, owner_db, oficina.owner)
+    creado = cliente.post(_CASOS, json=_datos())
+    assert creado.status_code == 201, creado.text
+    path = f"{_CASOS}/{creado.json()['id']}/custody-verification"
+
+    intacta = cliente.get(path)
+    assert intacta.status_code == 200, intacta.text
+    assert intacta.headers["Cache-Control"] == "no-store"
+    assert intacta.json()["intact"] is True
+    assert intacta.json()["events_checked"] == 1
+    assert intacta.json()["broken_at"] is None
+    assert len(intacta.json()["head_hash"]) == 64
+    assert cliente.get(f"{_CASOS}/{uuid.uuid7()}/custody-verification").status_code == 404
+
+    owner_db.execute(text("ALTER TABLE custody_events DISABLE TRIGGER custody_events_append_only"))
+    owner_db.execute(
+        text("UPDATE custody_events SET details = '{\"editado\": true}' WHERE case_id = :id"),
+        {"id": creado.json()["id"]},
+    )
+    alterada = cliente.get(path)
+    assert alterada.status_code == 200, alterada.text
+    assert alterada.json() == {
+        "intact": False,
+        "events_checked": 0,
+        "broken_at": 1,
+        "reason": "event_hash",
+        "head_hash": "0" * 64,
+    }
+    owner_db.execute(
+        text("DELETE FROM custody_events WHERE case_id = :id"), {"id": creado.json()["id"]}
+    )
+    truncada = cliente.get(path)
+    assert truncada.status_code == 200, truncada.text
+    assert truncada.json()["intact"] is False
+    assert truncada.json()["broken_at"] == 1
+    assert truncada.json()["reason"] == "sequence"
 
 
 def test_un_abogado_abre_un_caso(dispositivo: NuevoCliente, db: Session) -> None:
