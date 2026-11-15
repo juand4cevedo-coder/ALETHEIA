@@ -20,7 +20,7 @@ from app.core.config import Settings
 PART_BYTES: Final = 8 * 1024 * 1024
 PRODUCTION_BUCKET: Final = "aletheia-prod-evidencias-047938357957"
 UUID_PART: Final = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-STORAGE_KEY_PATTERN: Final = re.compile(rf"evidences/{UUID_PART}/{UUID_PART}/{UUID_PART}")
+STORAGE_KEY_PATTERN: Final = re.compile(rf"evidences/{UUID_PART}")
 
 
 class EvidenceSink(Protocol):

@@ -9,11 +9,7 @@ from botocore.exceptions import ClientError
 
 from app.adapters import evidence_storage
 
-TEST_KEY = (
-    "evidences/00000000-0000-0000-0000-000000000001/"
-    "00000000-0000-0000-0000-000000000002/"
-    "00000000-0000-0000-0000-000000000003"
-)
+TEST_KEY = "evidences/00000000-0000-0000-0000-000000000003"
 
 
 class FakeS3:
