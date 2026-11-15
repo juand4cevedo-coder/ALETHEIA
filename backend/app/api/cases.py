@@ -46,6 +46,7 @@ from app.schemas.cases import (
     CaseSummaryOut,
     CaseTotalsOut,
     CustodyEventOut,
+    CustodyPage,
     EvidenceDetailOut,
     EvidencePage,
     EvidenceSummaryOut,
@@ -126,6 +127,43 @@ type _Responses = dict[int | str, dict[str, Any]]
 _UNAUTHORIZED: Final[_Responses] = {
     status.HTTP_401_UNAUTHORIZED: {"description": "No hay una sesión válida."}
 }
+
+
+@router.get(
+    "/{case_id}/custody-events",
+    response_model=CustodyPage,
+    summary="Consultar la cadena de custodia de un caso asignado",
+    responses=_UNAUTHORIZED
+    | {404: {"description": "El caso no existe o la persona no pertenece a él."}},
+)
+def list_custody_events(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    cursor: Annotated[int | None, Query(ge=1)] = None,
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
+) -> CustodyPage:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        events, next_cursor = evidence_queries.list_case_events(
+            session, principal, case_id, cursor=cursor, limit=limit
+        )
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    return CustodyPage(
+        items=[
+            CustodyEventOut(
+                seq=event.seq,
+                action=event.action,
+                actor_name=event.actor_name,
+                occurred_at=event.occurred_at,
+                event_hash=event.event_hash.hex(),
+            )
+            for event in events
+        ],
+        next_cursor=next_cursor,
+    )
 
 
 @router.get(
