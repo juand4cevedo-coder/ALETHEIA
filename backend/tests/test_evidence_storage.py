@@ -4,6 +4,7 @@ from typing import Any
 
 import boto3
 import pytest
+from botocore.exceptions import ClientError
 
 from app.adapters import evidence_storage
 
@@ -65,3 +66,27 @@ def test_carga_grande_publica_partes_ordenadas(fake_s3: FakeS3) -> None:
     assert fake_s3.calls == ["create", "part", "part", "complete"]
     assert len(fake_s3.parts[0]) == evidence_storage.PART_BYTES
     assert fake_s3.parts[1] == b"b"
+
+
+def test_respuesta_perdida_al_completar_elimina_objeto_huerfano(
+    fake_s3: FakeS3, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def complete_without_response(**_kwargs: Any) -> None:
+        fake_s3.calls.append("complete")
+        raise TimeoutError("respuesta perdida")
+
+    def no_such_upload(**_kwargs: Any) -> None:
+        fake_s3.calls.append("abort")
+        raise ClientError(
+            {"Error": {"Code": "NoSuchUpload", "Message": "already complete"}},
+            "AbortMultipartUpload",
+        )
+
+    monkeypatch.setattr(fake_s3, "complete_multipart_upload", complete_without_response)
+    monkeypatch.setattr(fake_s3, "abort_multipart_upload", no_such_upload)
+    sink = evidence_storage.S3EvidenceSink("evidences/test")
+    sink.write(b"a" * evidence_storage.PART_BYTES)
+    with pytest.raises(TimeoutError):
+        sink.commit()
+    sink.abort()
+    assert fake_s3.calls == ["create", "part", "complete", "abort", "delete"]

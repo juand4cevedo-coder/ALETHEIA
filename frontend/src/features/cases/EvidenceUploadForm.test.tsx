@@ -4,10 +4,17 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
 
 import { createQueryClient } from "../../api/queryClient.ts";
+import { sessionFetch } from "../../api/sessionFetch.ts";
 import { jsonResponse } from "../../test/render.tsx";
 import { EvidenceUploadForm } from "./EvidenceUploadForm.tsx";
 
 const CASE_ID = "01890a5d-ac96-774b-bcce-b302099a8090";
+
+vi.mock("../../api/sessionFetch.ts", () => ({
+  sessionFetch: vi.fn((input: RequestInfo | URL, init?: RequestInit) =>
+    fetch(input, init),
+  ),
+}));
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -46,7 +53,10 @@ it("envía tipo, origen y archivo en el orden que exige la API", async () => {
 
   await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
   const [url, init] = fetchMock.mock.calls[0]!;
-  expect(url).toBe(`/api/v1/cases/${CASE_ID}/evidences`);
+  expect(new URL(String(url)).pathname).toBe(
+    `/api/v1/cases/${CASE_ID}/evidences`,
+  );
+  expect(sessionFetch).toHaveBeenCalledOnce();
   expect(init?.method).toBe("POST");
   expect(init?.headers).toEqual({ "X-Aletheia-Request": "1" });
   if (!(init?.body instanceof FormData))

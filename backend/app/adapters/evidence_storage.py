@@ -12,6 +12,7 @@ from typing import Final, Protocol
 
 import boto3
 from botocore.config import Config
+from botocore.exceptions import ClientError
 
 from app.core.config import Settings
 
@@ -127,14 +128,22 @@ class S3EvidenceSink(io.RawIOBase):
 
     def abort(self) -> None:
         self._buffer.clear()
-        if self._upload_id is not None:
-            self.client.abort_multipart_upload(
-                Bucket=PRODUCTION_BUCKET, Key=self.key, UploadId=self._upload_id
-            )
-            self._upload_id = None
-        if self._published or self._commit_attempted:
-            self.client.delete_object(Bucket=PRODUCTION_BUCKET, Key=self.key)
-            self._published = False
+        try:
+            if self._upload_id is not None:
+                try:
+                    self.client.abort_multipart_upload(
+                        Bucket=PRODUCTION_BUCKET, Key=self.key, UploadId=self._upload_id
+                    )
+                except ClientError as exc:
+                    if exc.response["Error"]["Code"] != "NoSuchUpload":
+                        raise
+                self._upload_id = None
+        finally:
+            # Una respuesta perdida de CompleteMultipartUpload deja el objeto publicado
+            # aunque el cliente aún conserve el identificador de la carga.
+            if self._published or self._commit_attempted:
+                self.client.delete_object(Bucket=PRODUCTION_BUCKET, Key=self.key)
+                self._published = False
 
 
 def new_evidence_sink(settings: Settings, key: str) -> EvidenceSink:
