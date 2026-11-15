@@ -122,6 +122,19 @@ def case_for_member(session: Session, case_id: uuid.UUID, user_id: uuid.UUID) ->
     return session.scalar(statement)
 
 
+def case_for_member_read_lock(
+    session: Session, case_id: uuid.UUID, user_id: uuid.UUID
+) -> Case | None:
+    """Mantiene estable la secuencia mientras se verifica toda la cadena."""
+    return session.scalar(
+        select(Case)
+        .join(CaseMember, CaseMember.case_id == Case.id)
+        .where(Case.id == case_id, CaseMember.user_id == user_id)
+        .with_for_update(read=True, of=Case)
+        .execution_options(populate_existing=True)
+    )
+
+
 def case_for_member_update(session: Session, case_id: uuid.UUID, user_id: uuid.UUID) -> Case | None:
     """Bloquea el caso: sus cambios de equipo y eventos de custodia quedan en orden."""
     return session.scalar(

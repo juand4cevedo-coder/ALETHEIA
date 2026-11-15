@@ -1,5 +1,6 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 
+import { verifyCustody } from "../../api/generated/sdk.gen.ts";
 import { listCustodyEventsInfiniteOptions } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../../components/ui/Button.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
@@ -18,6 +19,15 @@ export function CustodySection({
     getNextPageParam: (lastPage) => lastPage.next_cursor,
   });
   const events = listing.data?.pages.flatMap((page) => page.items) ?? [];
+  const verification = useMutation({
+    mutationFn: async () => {
+      const { data } = await verifyCustody({
+        path: { case_id: caseId },
+        throwOnError: true,
+      });
+      return data;
+    },
+  });
 
   return (
     <>
@@ -35,7 +45,26 @@ export function CustodySection({
         </Notice>
       )}
       {events.length > 0 && (
-        <CustodyTimeline events={events} justOpened={justOpened} />
+        <CustodyTimeline
+          events={events}
+          justOpened={justOpened}
+          verification={verification.data ?? null}
+        />
+      )}
+      {events.length > 0 && (
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={verification.isPending}
+          onClick={() => verification.mutate()}
+        >
+          {verification.isPending ? "Verificando cadena" : "Verificar cadena"}
+        </Button>
+      )}
+      {verification.isError && (
+        <Notice tone="error">
+          <p>No pudimos verificar la cadena. Inténtelo de nuevo.</p>
+        </Notice>
       )}
       {listing.hasNextPage && (
         <Button
