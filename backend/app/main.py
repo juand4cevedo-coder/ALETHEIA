@@ -76,6 +76,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(organization.router, prefix=API_PREFIX)
     app.include_router(invitations.router, prefix=API_PREFIX)
     app.include_router(cases.router, prefix=API_PREFIX)
+    app.include_router(cases.download_router, prefix=API_PREFIX)
     app.include_router(platform.router, prefix=API_PREFIX)
     app.include_router(support.router, prefix=API_PREFIX)
     install_problem_details(app)
