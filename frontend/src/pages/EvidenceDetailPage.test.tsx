@@ -1,0 +1,159 @@
+import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, expect, it, vi } from "vitest";
+
+import { LEGAL_VERSION } from "../config/legal.ts";
+import { jsonResponse, renderRoute } from "../test/render.tsx";
+
+const fetchMock = vi.fn<typeof fetch>();
+const caseId = "01890a5d-ac96-774b-bcce-b302099a8090";
+const evidenceId = "01890a5d-ac96-774b-bcce-b302099a8091";
+const route = `/app/casos/${caseId}/evidencias/${evidenceId}`;
+const api = `/api/v1/cases/${caseId}/evidences/${evidenceId}`;
+const sha = "a".repeat(64);
+const me = {
+  id: "01890a5d-ac96-774b-bcce-b302099a8057",
+  full_name: "Laura Gómez",
+  email: "laura@example.com",
+  email_verified: true,
+  organization: {
+    id: "01890a5d-ac96-774b-bcce-b302099a8058",
+    name: "Ruiz & Asociados",
+    role: "lawyer",
+  },
+  legal: {
+    accepted_version: LEGAL_VERSION,
+    current_version: LEGAL_VERSION,
+    acceptance_required: false,
+  },
+};
+
+beforeEach(() => {
+  fetchMock.mockReset();
+  vi.stubGlobal("fetch", fetchMock);
+});
+
+it("presenta huella, origen, sello y eventos paginados de una evidencia", async () => {
+  fetchMock.mockImplementation(async (input) => {
+    const url = new URL((input as Request).url);
+    if (url.pathname === "/api/v1/me") return jsonResponse(me);
+    if (url.pathname === api) {
+      const older = url.searchParams.get("event_cursor") === "8";
+      return jsonResponse({
+        id: evidenceId,
+        original_filename: "registro.txt",
+        declared_type: "document",
+        declared_origin: "Entregado por la cliente",
+        detected_type: "text/plain",
+        sha256: sha,
+        size_bytes: 1234,
+        tsa_status: "stamped",
+        tsa_time: "2026-11-14T15:00:00Z",
+        uploaded_at: "2026-11-14T14:00:00Z",
+        events: [
+          {
+            seq: older ? 2 : 8,
+            action: older ? "evidence_uploaded" : "evidence_stamped",
+            actor_name: older ? "Laura Gómez" : null,
+            occurred_at: "2026-11-14T15:00:00Z",
+            event_hash: older ? "b".repeat(64) : "c".repeat(64),
+          },
+        ],
+        next_event_seq: older ? null : 8,
+      });
+    }
+    throw new Error(`Ruta inesperada: ${url.pathname}`);
+  });
+  await renderRoute(route);
+  expect(
+    await screen.findByRole("heading", { name: "registro.txt" }),
+  ).toBeInTheDocument();
+  expect(screen.getByText("Entregado por la cliente")).toBeInTheDocument();
+  expect(screen.getByText("Sello obtenido")).toBeInTheDocument();
+  expect(screen.getByText(/aaaaaaaa aaaaaaaa aaaaaaaa/)).toBeInTheDocument();
+  expect(screen.getByText(/#8: Sello de tiempo obtenido/)).toBeInTheDocument();
+  await userEvent.click(
+    screen.getByRole("button", { name: "Ver más eventos" }),
+  );
+  expect(await screen.findByText(/#2: Evidencia subida/)).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "Ver más eventos" }),
+  ).not.toBeInTheDocument();
+});
+
+it("usa el mismo mensaje para una evidencia inexistente o ajena", async () => {
+  fetchMock.mockImplementation(async (input) => {
+    const url = new URL((input as Request).url);
+    if (url.pathname === "/api/v1/me") return jsonResponse(me);
+    if (url.pathname === api)
+      return jsonResponse({ status: 404, detail: "No encontrado" }, 404);
+    throw new Error(`Ruta inesperada: ${url.pathname}`);
+  });
+  await renderRoute(route);
+  expect(
+    await screen.findByText(
+      "No encontramos lo que busca o no tiene acceso a ello.",
+    ),
+  ).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Volver al caso" })).toHaveAttribute(
+    "href",
+    `/app/casos/${caseId}#evidencias`,
+  );
+});
+
+it("conserva el detalle y permite reintentar si falla la página siguiente", async () => {
+  let nextPageAttempts = 0;
+  fetchMock.mockImplementation(async (input) => {
+    const url = new URL((input as Request).url);
+    if (url.pathname === "/api/v1/me") return jsonResponse(me);
+    if (url.pathname !== api)
+      throw new Error(`Ruta inesperada: ${url.pathname}`);
+    if (url.searchParams.has("event_cursor")) {
+      nextPageAttempts += 1;
+      if (nextPageAttempts === 1)
+        return jsonResponse({ status: 404, detail: "No disponible" }, 404);
+    }
+    return jsonResponse({
+      id: evidenceId,
+      original_filename: "registro.txt",
+      declared_type: "document",
+      declared_origin: "Entregado por la cliente",
+      detected_type: "text/plain",
+      sha256: sha,
+      size_bytes: 1234,
+      tsa_status: "pending",
+      tsa_time: null,
+      uploaded_at: "2026-11-14T14:00:00Z",
+      events: [
+        {
+          seq: url.searchParams.has("event_cursor") ? 2 : 8,
+          action: "evidence_uploaded",
+          actor_name: "Laura Gómez",
+          occurred_at: "2026-11-14T15:00:00Z",
+          event_hash: "b".repeat(64),
+        },
+      ],
+      next_event_seq: url.searchParams.has("event_cursor") ? null : 8,
+    });
+  });
+  await renderRoute(route);
+  expect(
+    await screen.findByRole("heading", { name: "registro.txt" }),
+  ).toBeInTheDocument();
+  await userEvent.click(
+    screen.getByRole("button", { name: "Ver más eventos" }),
+  );
+  expect(
+    await screen.findByText(
+      "No pudimos cargar más eventos. Inténtelo de nuevo.",
+    ),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: "registro.txt" }),
+  ).toBeInTheDocument();
+  expect(screen.getByText("Entregado por la cliente")).toBeInTheDocument();
+  await userEvent.click(
+    screen.getByRole("button", { name: "Ver más eventos" }),
+  );
+  expect(await screen.findByText(/#2: Evidencia subida/)).toBeInTheDocument();
+});

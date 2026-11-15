@@ -42,6 +42,7 @@ from app.schemas.cases import (
     CaseSummaryOut,
     CaseTotalsOut,
     CustodyEventOut,
+    EvidenceDetailOut,
     EvidencePage,
     EvidenceSummaryOut,
     EvidenceUploadOut,
@@ -148,6 +149,55 @@ def list_evidences(
             for row in rows
         ],
         next_cursor=next_cursor,
+    )
+
+
+@router.get(
+    "/{case_id}/evidences/{evidence_id}",
+    response_model=EvidenceDetailOut,
+    summary="Ver los metadatos, sello y eventos de una evidencia asignada",
+    responses=_UNAUTHORIZED
+    | {404: {"description": "El caso o la evidencia no existen para esta persona."}},
+)
+def read_evidence(
+    case_id: uuid.UUID,
+    evidence_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    event_cursor: Annotated[int | None, Query(ge=1)] = None,
+) -> EvidenceDetailOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        evidence, events, next_event_seq = evidence_queries.get_evidence(
+            session, principal, case_id, evidence_id, event_cursor=event_cursor
+        )
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    return EvidenceDetailOut.model_validate(
+        {
+            "id": evidence.id,
+            "original_filename": evidence.original_filename,
+            "declared_type": evidence.declared_type,
+            "declared_origin": evidence.declared_origin,
+            "detected_type": evidence.detected_type,
+            "sha256": evidence.sha256.hex(),
+            "size_bytes": evidence.size_bytes,
+            "tsa_status": evidence.tsa_status,
+            "tsa_time": evidence.tsa_time,
+            "uploaded_at": evidence.uploaded_at,
+            "events": [
+                CustodyEventOut(
+                    seq=event.seq,
+                    action=event.action,
+                    actor_name=event.actor_name,
+                    occurred_at=event.occurred_at,
+                    event_hash=event.event_hash.hex(),
+                )
+                for event in events
+            ],
+            "next_event_seq": next_event_seq,
+        }
     )
 
 

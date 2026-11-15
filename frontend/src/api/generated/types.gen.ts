@@ -566,6 +566,62 @@ export type CustodyEventOut = {
 };
 
 /**
+ * EvidenceDetailOut
+ *
+ * Metadatos y eventos de una evidencia asignada, sin contenido ni token del sello.
+ */
+export type EvidenceDetailOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Original Filename
+   */
+  original_filename: string;
+  /**
+   * Declared Type
+   */
+  declared_type: "chat" | "email" | "audio" | "image" | "document" | "other";
+  /**
+   * Declared Origin
+   */
+  declared_origin: string;
+  /**
+   * Detected Type
+   */
+  detected_type: string;
+  /**
+   * Sha256
+   */
+  sha256: string;
+  /**
+   * Size Bytes
+   */
+  size_bytes: number;
+  /**
+   * Tsa Status
+   */
+  tsa_status: "pending" | "stamped" | "failed";
+  /**
+   * Uploaded At
+   */
+  uploaded_at: string;
+  /**
+   * Tsa Time
+   */
+  tsa_time: string | null;
+  /**
+   * Events
+   */
+  events: Array<CustodyEventOut>;
+  /**
+   * Next Event Seq
+   */
+  next_event_seq: number | null;
+};
+
+/**
  * EvidencePage
  */
 export type EvidencePage = {
@@ -2585,6 +2641,54 @@ export type UploadEvidenceResponses = {
 
 export type UploadEvidenceResponse =
   UploadEvidenceResponses[keyof UploadEvidenceResponses];
+
+export type ReadEvidenceData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Evidence Id
+     */
+    evidence_id: string;
+  };
+  query?: {
+    /**
+     * Event Cursor
+     */
+    event_cursor?: number | null;
+  };
+  url: "/api/v1/cases/{case_id}/evidences/{evidence_id}";
+};
+
+export type ReadEvidenceErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El caso o la evidencia no existen para esta persona.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ReadEvidenceError = ReadEvidenceErrors[keyof ReadEvidenceErrors];
+
+export type ReadEvidenceResponses = {
+  /**
+   * Successful Response
+   */
+  200: EvidenceDetailOut;
+};
+
+export type ReadEvidenceResponse =
+  ReadEvidenceResponses[keyof ReadEvidenceResponses];
 
 export type ListCasesData = {
   body?: never;

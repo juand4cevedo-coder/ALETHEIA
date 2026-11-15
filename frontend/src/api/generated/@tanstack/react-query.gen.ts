@@ -36,6 +36,7 @@ import {
   platformSupportTickets,
   previewInvitation,
   readCase,
+  readEvidence,
   readMe,
   refreshSession,
   registerAccount,
@@ -125,6 +126,9 @@ import type {
   ReadCaseData,
   ReadCaseError,
   ReadCaseResponse,
+  ReadEvidenceData,
+  ReadEvidenceError,
+  ReadEvidenceResponse,
   ReadMeData,
   ReadMeError,
   ReadMeResponse,
@@ -1029,6 +1033,31 @@ export const uploadEvidenceMutation = (
   };
   return mutationOptions;
 };
+
+export const readEvidenceQueryKey = (options: Options<ReadEvidenceData>) =>
+  createQueryKey("readEvidence", options);
+
+/**
+ * Ver los metadatos, sello y eventos de una evidencia asignada
+ */
+export const readEvidenceOptions = (options: Options<ReadEvidenceData>) =>
+  queryOptions<
+    ReadEvidenceResponse,
+    ReadEvidenceError,
+    ReadEvidenceResponse,
+    ReturnType<typeof readEvidenceQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await readEvidence({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: readEvidenceQueryKey(options),
+  });
 
 export const listCasesQueryKey = (options?: Options<ListCasesData>) =>
   createQueryKey("listCases", options);
