@@ -46,3 +46,13 @@ declarado, el tamaño exacto, el estado y la hora del sello, y los eventos vincu
 evidencia. Los eventos se ordenan del más reciente al más antiguo en páginas de 50; para
 continuar se envía `event_cursor` con el valor de `next_event_seq`. Los números de evento
 son posiciones en la cadena del caso, por lo que pueden tener huecos en esta vista.
+
+HU-022 añade `GET /api/v1/cases/{case_id}/evidences/{evidence_id}/download`.
+Solo propietarios, administradores y abogados asignados al caso descargan el original;
+un asistente asignado recibe 403 y una persona de otro caso recibe 404. La descarga
+sigue disponible si el despacho está en solo lectura o si la persona aún debe aceptar
+la versión nueva de los textos legales. Antes de ofrecerla, el servidor descifra el
+objeto por flujo y compara tamaño y SHA-256 con los metadatos conservados. Si falla la
+lectura o la integridad, responde 503 y no registra una descarga. Si se verifica, añade
+`evidence_downloaded` a la cadena de custodia y entrega el original como adjunto, sin
+guardarlo en claro en disco. La respuesta impide el almacenamiento en caché.

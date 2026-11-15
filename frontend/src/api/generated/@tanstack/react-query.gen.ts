@@ -21,6 +21,7 @@ import {
   createCase,
   createInvitation,
   createSupportTicket,
+  downloadEvidence,
   forgotPassword,
   health,
   listCases,
@@ -85,6 +86,8 @@ import type {
   CreateSupportTicketData,
   CreateSupportTicketError,
   CreateSupportTicketResponse,
+  DownloadEvidenceData,
+  DownloadEvidenceError,
   ForgotPasswordData,
   ForgotPasswordError,
   ForgotPasswordResponse,
@@ -1268,6 +1271,34 @@ export const removeCaseMemberMutation = (
   };
   return mutationOptions;
 };
+
+export const downloadEvidenceQueryKey = (
+  options: Options<DownloadEvidenceData>,
+) => createQueryKey("downloadEvidence", options);
+
+/**
+ * Descargar el archivo original verificado
+ */
+export const downloadEvidenceOptions = (
+  options: Options<DownloadEvidenceData>,
+) =>
+  queryOptions<
+    unknown,
+    DownloadEvidenceError,
+    unknown,
+    ReturnType<typeof downloadEvidenceQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await downloadEvidence({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: downloadEvidenceQueryKey(options),
+  });
 
 export const listPlatformUsersQueryKey = (
   options?: Options<ListPlatformUsersData>,
