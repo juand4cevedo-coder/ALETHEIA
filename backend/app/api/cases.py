@@ -42,10 +42,13 @@ from app.schemas.cases import (
     CaseSummaryOut,
     CaseTotalsOut,
     CustodyEventOut,
+    EvidencePage,
+    EvidenceSummaryOut,
     EvidenceUploadOut,
     LastEventOut,
 )
 from app.services import cases as cases_service
+from app.services import evidence_queries
 from app.services import evidence_upload as evidence_service
 from app.services.evidence_stream import FileTooLarge, InvalidUpload
 from app.services.members import OrganizationNotActiveError
@@ -103,6 +106,49 @@ type _Responses = dict[int | str, dict[str, Any]]
 _UNAUTHORIZED: Final[_Responses] = {
     status.HTTP_401_UNAUTHORIZED: {"description": "No hay una sesión válida."}
 }
+
+
+@router.get(
+    "/{case_id}/evidences",
+    response_model=EvidencePage,
+    summary="Consultar las evidencias de un caso asignado",
+    responses=_UNAUTHORIZED
+    | {404: {"description": "El caso no existe o la persona no pertenece a él."}},
+)
+def list_evidences(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    cursor: uuid.UUID | None = None,
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
+) -> EvidencePage:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        rows, next_cursor = evidence_queries.list_evidences(
+            session, principal, case_id, cursor=cursor, limit=limit
+        )
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    return EvidencePage(
+        items=[
+            EvidenceSummaryOut.model_validate(
+                {
+                    "id": row.id,
+                    "original_filename": row.original_filename,
+                    "declared_type": row.declared_type,
+                    "declared_origin": row.declared_origin,
+                    "detected_type": row.detected_type,
+                    "sha256": row.sha256.hex(),
+                    "size_bytes": row.size_bytes,
+                    "tsa_status": row.tsa_status,
+                    "uploaded_at": row.uploaded_at,
+                }
+            )
+            for row in rows
+        ],
+        next_cursor=next_cursor,
+    )
 
 
 @router.post(
