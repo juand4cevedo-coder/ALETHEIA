@@ -202,3 +202,62 @@ def test_fallo_al_registrar_limpia_el_objeto_cifrado(
         == 0
     )
     assert not list(storage.rglob("*.*"))
+
+
+def test_origen_obligatorio_y_tipo_detectado_persisten(
+    dispositivo: NuevoCliente, db: Session, storage: Path
+) -> None:
+    office, client, case_id = _case(dispositivo, db)
+    path = f"/api/v1/cases/{case_id}/evidences"
+    rejected = client.post(
+        path,
+        data={"tipo": "document", "origen": "   "},
+        files={"archivo": ("registro.pdf", b"texto legible", "application/pdf")},
+    )
+    assert rejected.status_code == 422
+    assert not list(storage.rglob("*.*"))
+
+    saved = client.post(
+        path,
+        data={"tipo": "document", "origen": "  Entregado por la cliente  "},
+        files={"archivo": ("registro.pdf", b"texto legible", "application/pdf")},
+    )
+    assert saved.status_code == 201
+    listing = client.get(path)
+    assert listing.status_code == 200
+    assert listing.headers["Cache-Control"] == "no-store"
+    assert listing.json()["next_cursor"] is None
+    item = listing.json()["items"][0]
+    assert item["id"] == saved.json()["id"]
+    assert item["declared_origin"] == "Entregado por la cliente"
+    assert item["declared_type"] == "document"
+    assert item["detected_type"] == "text/plain"
+    assert item["sha256"] == hashlib.sha256(b"texto legible").hexdigest()
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    assert (
+        db.scalar(select(func.count()).select_from(Evidence).where(Evidence.case_id == case_id))
+        == 1
+    )
+
+
+def test_listado_paginado_y_ajeno_404(dispositivo: NuevoCliente, db: Session) -> None:
+    office, client, case_id = _case(dispositivo, db)
+    for index in range(3):
+        assert _upload(client, case_id, f"archivo {index}".encode()).status_code == 201
+    path = f"/api/v1/cases/{case_id}/evidences"
+    first = client.get(path, params={"limit": 2})
+    assert first.status_code == 200
+    assert len(first.json()["items"]) == 2
+    cursor = first.json()["next_cursor"]
+    assert cursor is not None
+    second = client.get(path, params={"limit": 2, "cursor": cursor})
+    assert second.status_code == 200
+    assert len(second.json()["items"]) == 1
+    assert second.json()["next_cursor"] is None
+    assert {item["id"] for item in first.json()["items"]}.isdisjoint(
+        {item["id"] for item in second.json()["items"]}
+    )
+
+    outsider = crear_miembro(db, office, "ajeno-listado@example.com", "assistant")
+    denied = _login(dispositivo, db, outsider).get(path)
+    assert denied.status_code == 404

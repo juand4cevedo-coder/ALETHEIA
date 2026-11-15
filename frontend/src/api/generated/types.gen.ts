@@ -566,6 +566,64 @@ export type CustodyEventOut = {
 };
 
 /**
+ * EvidencePage
+ */
+export type EvidencePage = {
+  /**
+   * Items
+   */
+  items: Array<EvidenceSummaryOut>;
+  /**
+   * Next Cursor
+   */
+  next_cursor: string | null;
+};
+
+/**
+ * EvidenceSummaryOut
+ *
+ * Metadatos visibles para quienes pertenecen al caso; sin contenido del archivo.
+ */
+export type EvidenceSummaryOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Original Filename
+   */
+  original_filename: string;
+  /**
+   * Declared Type
+   */
+  declared_type: "chat" | "email" | "audio" | "image" | "document" | "other";
+  /**
+   * Declared Origin
+   */
+  declared_origin: string;
+  /**
+   * Detected Type
+   */
+  detected_type: string;
+  /**
+   * Sha256
+   */
+  sha256: string;
+  /**
+   * Size Bytes
+   */
+  size_bytes: number;
+  /**
+   * Tsa Status
+   */
+  tsa_status: "pending" | "stamped" | "failed";
+  /**
+   * Uploaded At
+   */
+  uploaded_at: string;
+};
+
+/**
  * EvidenceUploadOut
  *
  * Constancia inmediata de la preservación; el sello de tiempo llega después.
@@ -2420,6 +2478,54 @@ export type AcceptInvitationResponses = {
 
 export type AcceptInvitationResponse =
   AcceptInvitationResponses[keyof AcceptInvitationResponses];
+
+export type ListEvidencesData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: {
+    /**
+     * Cursor
+     */
+    cursor?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+  };
+  url: "/api/v1/cases/{case_id}/evidences";
+};
+
+export type ListEvidencesErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListEvidencesError = ListEvidencesErrors[keyof ListEvidencesErrors];
+
+export type ListEvidencesResponses = {
+  /**
+   * Successful Response
+   */
+  200: EvidencePage;
+};
+
+export type ListEvidencesResponse =
+  ListEvidencesResponses[keyof ListEvidencesResponses];
 
 export type UploadEvidenceData = {
   /**
