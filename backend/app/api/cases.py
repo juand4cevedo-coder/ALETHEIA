@@ -152,7 +152,7 @@ def upload_evidence(
 ) -> EvidenceUploadOut:
     response.headers["Cache-Control"] = "no-store"
     evidence_id = uuid.uuid7()
-    storage_key = f"evidences/{principal.organization_id}/{case_id}/{evidence_id}"
+    storage_key = f"evidences/{evidence_id}"
     sink = new_evidence_sink(settings, storage_key)
     try:
         received = evidence_service.upload(
