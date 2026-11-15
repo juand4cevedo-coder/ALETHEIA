@@ -1,0 +1,32 @@
+# Subida de evidencia (HU-018)
+
+`POST /api/v1/cases/{case_id}/evidences` recibe `multipart/form-data` con los campos
+`tipo`, `origen` y `archivo`, en ese orden. El cliente debe enviar la cookie de sesión y
+`X-Aletheia-Request: 1`. Puede subir quien tenga una asignación vigente al caso y el
+permiso `cases.upload_evidence`: propietario, administrador, abogado o asistente de su
+despacho. La cuenta administradora de plataforma no entra a los casos. Un no miembro
+recibe 403.
+
+Antes de leer el cuerpo se verifica membresía, estado abierto del caso, estado activo del
+despacho y límites del plan. Luego se cierra la transacción de lectura, se desenvuelve la
+llave del caso y se analiza el formulario por fragmentos. La huella SHA-256 se calcula
+sobre los bytes originales en la misma pasada en que Tink los cifra con
+AES256_GCM_HKDF_1MB. Los datos asociados contienen los identificadores del caso y de la
+evidencia. El contenido cifrado se envía a S3 por partes de 8 MiB en producción. En
+desarrollo se escribe en un archivo cifrado temporal que se publica solo al terminar.
+No se crea un archivo temporal con el contenido sin cifrar.
+
+El tamaño del archivo se compara mientras llegan los bytes con el menor valor entre el
+máximo por archivo del plan y el espacio aún disponible. Una carga excesiva responde 413
+sin seguir leyendo el resto. Cuando la carga termina, se publica el objeto cifrado y se
+vuelven a comprobar permisos, caso, despacho y cuota bajo bloqueos de fila. La evidencia,
+el evento `evidence_uploaded` y el incremento del almacenamiento se confirman en una
+sola transacción. Si esa transacción falla, se elimina el objeto. Si el formulario se
+corta o se rechaza, se elimina la carga parcial; no queda evidencia, evento ni consumo
+de cuota.
+
+El campo `detected_type` se infiere de la cabecera del archivo recibido; no se toma del
+`Content-Type` enviado por el navegador. El origen es una declaración de la persona que
+sube el archivo, no una comprobación independiente. La respuesta 201 contiene el ID, la
+huella SHA-256, el tamaño y `tsa_status: pending`. El sello de tiempo, la lista y la
+descarga de evidencias corresponden a HU-020, HU-019 y HU-022.
