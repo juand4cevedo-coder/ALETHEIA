@@ -1324,6 +1324,101 @@
       }
     },
     "/api/v1/cases/{case_id}/evidences": {
+      "get": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Consultar las evidencias de un caso asignado",
+        "operationId": "list_evidences",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidencePage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El caso no existe o la persona no pertenece a él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "casos"
@@ -3196,6 +3291,106 @@
         ],
         "title": "CustodyEventOut",
         "description": "Un evento de la cadena de custodia del caso."
+      },
+      "EvidencePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceSummaryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "EvidencePage"
+      },
+      "EvidenceSummaryOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "original_filename": {
+            "type": "string",
+            "title": "Original Filename"
+          },
+          "declared_type": {
+            "type": "string",
+            "enum": [
+              "chat",
+              "email",
+              "audio",
+              "image",
+              "document",
+              "other"
+            ],
+            "title": "Declared Type"
+          },
+          "declared_origin": {
+            "type": "string",
+            "title": "Declared Origin"
+          },
+          "detected_type": {
+            "type": "string",
+            "title": "Detected Type"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Sha256"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Size Bytes"
+          },
+          "tsa_status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "stamped",
+              "failed"
+            ],
+            "title": "Tsa Status"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Uploaded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "original_filename",
+          "declared_type",
+          "declared_origin",
+          "detected_type",
+          "sha256",
+          "size_bytes",
+          "tsa_status",
+          "uploaded_at"
+        ],
+        "title": "EvidenceSummaryOut",
+        "description": "Metadatos visibles para quienes pertenecen al caso; sin contenido del archivo."
       },
       "EvidenceUploadOut": {
         "properties": {

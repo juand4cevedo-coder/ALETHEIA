@@ -30,7 +30,7 @@ import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { CustodyTimeline } from "../features/cases/CustodyTimeline.tsx";
-import { EvidenceUploadForm } from "../features/cases/EvidenceUploadForm.tsx";
+import { EvidenceSection } from "../features/cases/EvidenceSection.tsx";
 import { formatColombiaTime } from "../features/cases/dates.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { initialsOf } from "../features/session/initials.ts";
@@ -38,8 +38,8 @@ import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./CasePage.module.css";
 import { CargandoIcon } from "../components/ui/icons.tsx";
 
-type TabKey = "chain" | "team";
-const TAB_ORDER: readonly TabKey[] = ["chain", "team"];
+type TabKey = "chain" | "team" | "evidence";
+const TAB_ORDER: readonly TabKey[] = ["chain", "team", "evidence"];
 
 /** El caso no existe, es de otra organización o su id no es válido: MSG-011 en los tres casos. */
 function isMissing(error: unknown): boolean {
@@ -153,8 +153,9 @@ function CaseView({
   const tabRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({
     chain: null,
     team: null,
+    evidence: null,
   });
-  const ids = { chain: useId(), team: useId() };
+  const ids = { chain: useId(), team: useId(), evidence: useId() };
   // La API entrega los últimos eventos; el número del más reciente es el total de la cadena.
   const eventCount = detail.recent_events.reduce(
     (max, event) => Math.max(max, event.seq),
@@ -178,20 +179,22 @@ function CaseView({
     tabRefs.current[key]?.focus();
   }
 
-  const tabs: { key: TabKey; label: string; count: number; unit: string }[] = [
-    {
-      key: "chain",
-      label: "Cadena de custodia",
-      count: eventCount,
-      unit: eventCount === 1 ? "evento" : "eventos",
-    },
-    {
-      key: "team",
-      label: "Equipo",
-      count: detail.member_count,
-      unit: detail.member_count === 1 ? "persona" : "personas",
-    },
-  ];
+  const tabs: { key: TabKey; label: string; count?: number; unit?: string }[] =
+    [
+      {
+        key: "chain",
+        label: "Cadena de custodia",
+        count: eventCount,
+        unit: eventCount === 1 ? "evento" : "eventos",
+      },
+      {
+        key: "team",
+        label: "Equipo",
+        count: detail.member_count,
+        unit: detail.member_count === 1 ? "persona" : "personas",
+      },
+      { key: "evidence", label: "Evidencias" },
+    ];
 
   const opened = `Abierto el ${formatColombiaTime(detail.created_at)} por ${detail.created_by_name}`;
 
@@ -242,10 +245,14 @@ function CaseView({
                 onClick={() => setTab(key)}
               >
                 <span>{label}</span>
-                <span className={styles.count} aria-hidden="true">
-                  {count}
-                </span>
-                <span className="visually-hidden">{`, ${count} ${unit}`}</span>
+                {count !== undefined && (
+                  <>
+                    <span className={styles.count} aria-hidden="true">
+                      {count}
+                    </span>
+                    <span className="visually-hidden">{`, ${count} ${unit}`}</span>
+                  </>
+                )}
               </button>
             ))}
           </div>
@@ -272,9 +279,6 @@ function CaseView({
                 events={detail.recent_events}
                 justOpened={justOpened}
               />
-              {detail.status === "open" && (
-                <EvidenceUploadForm caseId={detail.id} />
-              )}
             </div>
             <CaseFacts detail={detail} />
           </div>
@@ -292,6 +296,21 @@ function CaseView({
             Quienes trabajan en este caso y ven sus datos.
           </p>
           {tab === "team" && <TeamList detail={detail} me={me} />}
+        </div>
+        <div
+          role="tabpanel"
+          id={`${ids.evidence}-panel`}
+          aria-labelledby={`${ids.evidence}-tab`}
+          className={styles.panel}
+          tabIndex={0}
+          hidden={tab !== "evidence"}
+        >
+          {tab === "evidence" && (
+            <EvidenceSection
+              caseId={detail.id}
+              canUpload={detail.status === "open"}
+            />
+          )}
         </div>
       </div>
     </div>
