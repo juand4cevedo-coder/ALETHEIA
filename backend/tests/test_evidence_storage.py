@@ -1,5 +1,6 @@
 """La carga multipart nunca publica un objeto parcial y puede limpiar uno publicado."""
 
+import io
 from pathlib import Path
 from typing import Any
 
@@ -8,6 +9,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from app.adapters import evidence_storage
+from app.core.config import Settings
 
 TEST_KEY = "evidences/00000000-0000-0000-0000-000000000003"
 
@@ -37,6 +39,10 @@ class FakeS3:
 
     def put_object(self, **_kwargs: Any) -> None:
         self.calls.append("put")
+
+    def get_object(self, **_kwargs: Any) -> dict[str, io.BytesIO]:
+        self.calls.append("get")
+        return {"Body": io.BytesIO(b"objeto cifrado")}
 
 
 @pytest.fixture
@@ -107,3 +113,20 @@ def test_almacenamiento_local_acepta_la_clave_generada(tmp_path: Path) -> None:
     sink.write(b"cifrado")
     sink.commit()
     assert sink.path.read_bytes() == b"cifrado"
+
+
+def test_lectura_s3_por_flujo_cierra_el_objeto(fake_s3: FakeS3) -> None:
+    settings = Settings.model_construct(environment="production")
+    with evidence_storage.open_encrypted_evidence(settings, TEST_KEY) as stream:
+        assert stream.read(6) == b"objeto"
+    assert stream.closed
+    assert fake_s3.calls == ["get"]
+
+
+def test_lectura_rechaza_clave_fuera_del_esquema() -> None:
+    settings = Settings.model_construct(environment="production")
+    with (
+        pytest.raises(ValueError, match="clave de almacenamiento inválida"),
+        evidence_storage.open_encrypted_evidence(settings, "../fuera"),
+    ):
+        pass
