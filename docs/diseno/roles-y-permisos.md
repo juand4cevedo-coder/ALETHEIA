@@ -20,6 +20,7 @@ administrar accesos. Los roles jurídicos y su trabajo en casos corresponden a l
 | Abrir casos | Sí | Sí | Sí | No | No |
 | Ver los casos asignados | Sí | Sí | Sí | Sí | No |
 | Asignar y retirar personas de un caso asignado | Sí | Sí | Sí | No | No |
+| Subir evidencia a un caso asignado y abierto | Sí | Sí | Sí | Sí | No |
 | Bloquear y desbloquear cuentas de la plataforma | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
 | Abrir y consultar solicitudes propias de soporte | Sí | Sí | Sí | Sí | No; atiende desde la consola |
 | Resolver solicitudes de soporte | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
@@ -60,7 +61,7 @@ despacho; nadie se retira a sí mismo desde esa pantalla. Cada cambio deja un ev
 en la cadena de custodia del caso. La API responde igual por una cuenta de otro despacho y por
 una inexistente.
 
-Los permisos para evidencias, cadena de custodia, configuración, cobros y facturas
+Los demás permisos para evidencias, cadena de custodia, configuración, cobros y facturas
 se definirán junto con las rutas de cada módulo. Ninguno se concede anticipadamente por la
 presencia de un rol en esta tabla. En particular, el acceso a la plataforma no puede saltarse el
 aislamiento de los despachos. Cada ruta nueva requiere una regla de autorización en backend y

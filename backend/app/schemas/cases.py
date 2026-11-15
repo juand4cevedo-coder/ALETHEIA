@@ -24,6 +24,16 @@ PracticeArea = Literal[
 # Los mismos valores de evidences.declared_type.
 DeclaredType = Literal["chat", "email", "audio", "image", "document", "other"]
 
+
+class EvidenceUploadOut(BaseModel):
+    """Constancia inmediata de la preservación; el sello de tiempo llega después."""
+
+    id: uuid.UUID
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    size_bytes: int = Field(gt=0)
+    tsa_status: Literal["pending"]
+
+
 # MSG nuevo de la sección 5.3 del diseño: dice cuántos dígitos tiene y cómo revisarlos.
 INVALID_FILING_NUMBER: Final = (
     "El número de radicación tiene 23 dígitos. Revise que no falte ni sobre ninguno"
