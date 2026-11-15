@@ -129,6 +129,9 @@ import type {
   UploadEvidenceData,
   UploadEvidenceErrors,
   UploadEvidenceResponses,
+  VerifyCustodyData,
+  VerifyCustodyErrors,
+  VerifyCustodyResponses,
   VerifyEmailData,
   VerifyEmailErrors,
   VerifyEmailResponses,
@@ -662,6 +665,28 @@ export const listCustodyEvents = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/cases/{case_id}/custody-events",
+    ...options,
+  });
+
+/**
+ * Recalcular y verificar la cadena de custodia de un caso asignado
+ */
+export const verifyCustody = <ThrowOnError extends boolean = false>(
+  options: Options<VerifyCustodyData, ThrowOnError>,
+): RequestResult<VerifyCustodyResponses, VerifyCustodyErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    VerifyCustodyResponses,
+    VerifyCustodyErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/custody-verification",
     ...options,
   });
 
