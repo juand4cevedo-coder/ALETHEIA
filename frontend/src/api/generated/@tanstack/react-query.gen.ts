@@ -1062,34 +1062,6 @@ export const readEvidenceOptions = (options: Options<ReadEvidenceData>) =>
     queryKey: readEvidenceQueryKey(options),
   });
 
-export const downloadEvidenceQueryKey = (
-  options: Options<DownloadEvidenceData>,
-) => createQueryKey("downloadEvidence", options);
-
-/**
- * Descargar el archivo original verificado
- */
-export const downloadEvidenceOptions = (
-  options: Options<DownloadEvidenceData>,
-) =>
-  queryOptions<
-    unknown,
-    DownloadEvidenceError,
-    unknown,
-    ReturnType<typeof downloadEvidenceQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await downloadEvidence({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: downloadEvidenceQueryKey(options),
-  });
-
 export const listCasesQueryKey = (options?: Options<ListCasesData>) =>
   createQueryKey("listCases", options);
 
@@ -1299,6 +1271,34 @@ export const removeCaseMemberMutation = (
   };
   return mutationOptions;
 };
+
+export const downloadEvidenceQueryKey = (
+  options: Options<DownloadEvidenceData>,
+) => createQueryKey("downloadEvidence", options);
+
+/**
+ * Descargar el archivo original verificado
+ */
+export const downloadEvidenceOptions = (
+  options: Options<DownloadEvidenceData>,
+) =>
+  queryOptions<
+    unknown,
+    DownloadEvidenceError,
+    unknown,
+    ReturnType<typeof downloadEvidenceQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await downloadEvidence({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: downloadEvidenceQueryKey(options),
+  });
 
 export const listPlatformUsersQueryKey = (
   options?: Options<ListPlatformUsersData>,
