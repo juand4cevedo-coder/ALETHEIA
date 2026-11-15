@@ -1420,6 +1420,74 @@
         }
       }
     },
+    "/api/v1/cases/{case_id}/custody-verification": {
+      "get": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Recalcular y verificar la cadena de custodia de un caso asignado",
+        "operationId": "verify_custody",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustodyVerificationOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El caso no existe o la persona no pertenece a él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cases/{case_id}/evidences": {
       "get": {
         "tags": [
@@ -3615,6 +3683,60 @@
         ],
         "title": "CustodyPage",
         "description": "Una página de eventos del caso, del más reciente al más antiguo."
+      },
+      "CustodyVerificationOut": {
+        "properties": {
+          "intact": {
+            "type": "boolean",
+            "title": "Intact"
+          },
+          "events_checked": {
+            "type": "integer",
+            "title": "Events Checked"
+          },
+          "broken_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Broken At"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "sequence",
+                  "previous_hash",
+                  "event_hash"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "head_hash": {
+            "type": "string",
+            "title": "Head Hash",
+            "description": "Huella del último evento válido, en hexadecimal."
+          }
+        },
+        "type": "object",
+        "required": [
+          "intact",
+          "events_checked",
+          "broken_at",
+          "reason",
+          "head_hash"
+        ],
+        "title": "CustodyVerificationOut",
+        "description": "Resultado del recálculo independiente de la cadena guardada."
       },
       "EvidenceDetailOut": {
         "properties": {
