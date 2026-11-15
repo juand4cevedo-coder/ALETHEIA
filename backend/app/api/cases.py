@@ -15,10 +15,19 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.adapters.evidence_storage import new_evidence_sink
 from app.adapters.keys import KeyWrapper, KeyWrapperError
 from app.api import API_PREFIX
-from app.api.deps import NOT_ALLOWED, get_client_ip, get_key_wrapper, get_principal, get_session
+from app.api.deps import (
+    NOT_ALLOWED,
+    get_app_settings,
+    get_client_ip,
+    get_key_wrapper,
+    get_principal,
+    get_session,
+)
 from app.api.organization import NOT_FOUND
+from app.core.config import Settings
 from app.core.errors import UNEXPECTED_ERROR, problem_response
 from app.models import User
 from app.schemas.cases import (
@@ -33,9 +42,12 @@ from app.schemas.cases import (
     CaseSummaryOut,
     CaseTotalsOut,
     CustodyEventOut,
+    EvidenceUploadOut,
     LastEventOut,
 )
 from app.services import cases as cases_service
+from app.services import evidence_upload as evidence_service
+from app.services.evidence_stream import FileTooLarge, InvalidUpload
 from app.services.members import OrganizationNotActiveError
 from app.services.sessions import Principal
 
@@ -91,6 +103,86 @@ type _Responses = dict[int | str, dict[str, Any]]
 _UNAUTHORIZED: Final[_Responses] = {
     status.HTTP_401_UNAUTHORIZED: {"description": "No hay una sesión válida."}
 }
+
+
+@router.post(
+    "/{case_id}/evidences",
+    status_code=status.HTTP_201_CREATED,
+    response_model=EvidenceUploadOut,
+    summary="Preservar un archivo de evidencia cifrado",
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "content": {
+                "multipart/form-data": {
+                    "schema": {
+                        "type": "object",
+                        "required": ["tipo", "origen", "archivo"],
+                        "properties": {
+                            "tipo": {
+                                "type": "string",
+                                "enum": ["chat", "email", "audio", "image", "document", "other"],
+                            },
+                            "origen": {"type": "string", "minLength": 1, "maxLength": 500},
+                            "archivo": {"type": "string", "format": "binary"},
+                        },
+                        "description": "Enviar tipo y origen antes del archivo.",
+                    }
+                }
+            },
+        }
+    },
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "La persona no está asignada al caso o carece del permiso."},
+        409: {"description": "El caso o el despacho no admiten nuevas evidencias."},
+        413: {"description": "El archivo supera el tope del plan o la cuota disponible."},
+        422: {"description": "Formulario inválido; tipo y origen deben preceder al archivo."},
+        503: {"description": "No se pudo acceder a la llave de cifrado del caso."},
+    },
+)
+def upload_evidence(
+    case_id: uuid.UUID,
+    request: Request,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    wrapper: Annotated[KeyWrapper, Depends(get_key_wrapper)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+) -> EvidenceUploadOut:
+    response.headers["Cache-Control"] = "no-store"
+    evidence_id = uuid.uuid7()
+    storage_key = f"evidences/{principal.organization_id}/{case_id}/{evidence_id}"
+    sink = new_evidence_sink(settings, storage_key)
+    try:
+        received = evidence_service.upload(
+            session, principal, case_id, request, wrapper, sink, evidence_id, storage_key
+        )
+    except evidence_service.UploadForbidden:
+        raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
+    except evidence_service.UploadUnavailable:
+        raise HTTPException(
+            409, detail="El caso o el despacho no admiten nuevas evidencias.", headers=_NO_STORE
+        ) from None
+    except evidence_service.QuotaExceeded, FileTooLarge:
+        raise HTTPException(
+            413, detail="El archivo supera el límite disponible.", headers=_NO_STORE
+        ) from None
+    except InvalidUpload, UnicodeError, ValueError:
+        raise HTTPException(
+            422, detail="Formulario de evidencia inválido.", headers=_NO_STORE
+        ) from None
+    except KeyWrapperError as exc:
+        logger.error("No se pudo abrir la llave del caso: %s", exc)
+        raise HTTPException(
+            503, detail=KEYS_UNAVAILABLE, headers=_NO_STORE | {"Retry-After": _KMS_RETRY_SECONDS}
+        ) from None
+    return EvidenceUploadOut(
+        id=evidence_id,
+        sha256=received.sha256.hex(),
+        size_bytes=received.size,
+        tsa_status="pending",
+    )
 
 
 @router.post(

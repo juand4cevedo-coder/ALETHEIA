@@ -30,6 +30,7 @@ import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { CustodyTimeline } from "../features/cases/CustodyTimeline.tsx";
+import { EvidenceUploadForm } from "../features/cases/EvidenceUploadForm.tsx";
 import { formatColombiaTime } from "../features/cases/dates.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { initialsOf } from "../features/session/initials.ts";
@@ -47,8 +48,7 @@ function isMissing(error: unknown): boolean {
 }
 
 // El caso (HU-015, maqueta 03): su identidad procesal, la cadena de custodia desde el evento 1 y
-// el equipo. Solo muestra lo que ya existe: sin «Editar datos», sin zona de carga, sin
-// «Verificar ahora» y sin pestañas de evidencias o paquetes hasta sus historias.
+// el equipo y la carga cifrada. Las acciones de verificación y descarga llegarán con sus historias.
 export function CasePage() {
   const me = useOutletContext<Me>();
   const { caseId = "" } = useParams();
@@ -272,6 +272,9 @@ function CaseView({
                 events={detail.recent_events}
                 justOpened={justOpened}
               />
+              {detail.status === "open" && (
+                <EvidenceUploadForm caseId={detail.id} />
+              )}
             </div>
             <CaseFacts detail={detail} />
           </div>
