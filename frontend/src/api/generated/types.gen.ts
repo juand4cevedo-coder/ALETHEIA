@@ -584,6 +584,36 @@ export type CustodyPage = {
 };
 
 /**
+ * CustodyVerificationOut
+ *
+ * Resultado del recálculo independiente de la cadena guardada.
+ */
+export type CustodyVerificationOut = {
+  /**
+   * Intact
+   */
+  intact: boolean;
+  /**
+   * Events Checked
+   */
+  events_checked: number;
+  /**
+   * Broken At
+   */
+  broken_at: number | null;
+  /**
+   * Reason
+   */
+  reason: "sequence" | "previous_hash" | "event_hash" | null;
+  /**
+   * Head Hash
+   *
+   * Huella del último evento válido, en hexadecimal.
+   */
+  head_hash: string;
+};
+
+/**
  * EvidenceDetailOut
  *
  * Metadatos y eventos de una evidencia asignada, sin contenido ni token del sello.
@@ -2602,6 +2632,45 @@ export type ListCustodyEventsResponses = {
 
 export type ListCustodyEventsResponse =
   ListCustodyEventsResponses[keyof ListCustodyEventsResponses];
+
+export type VerifyCustodyData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/custody-verification";
+};
+
+export type VerifyCustodyErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type VerifyCustodyError = VerifyCustodyErrors[keyof VerifyCustodyErrors];
+
+export type VerifyCustodyResponses = {
+  /**
+   * Successful Response
+   */
+  200: CustodyVerificationOut;
+};
+
+export type VerifyCustodyResponse =
+  VerifyCustodyResponses[keyof VerifyCustodyResponses];
 
 export type ListEvidencesData = {
   body?: never;
