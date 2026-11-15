@@ -12,6 +12,7 @@ import {
   loadAppShell,
   loadAuthLayout,
   loadCasePage,
+  loadEvidenceDetailPage,
   loadCasesPage,
   loadForgotPasswordPage,
   loadLegalPage,
@@ -226,6 +227,10 @@ export const routes: RouteObject[] = [
               { index: true, lazy: { Component: loadCasesPage } },
               { path: "nuevo", lazy: { Component: loadNewCasePage } },
               { path: ":caseId", lazy: { Component: loadCasePage } },
+              {
+                path: ":caseId/evidencias/:evidenceId",
+                lazy: { Component: loadEvidenceDetailPage },
+              },
             ],
           },
         ],

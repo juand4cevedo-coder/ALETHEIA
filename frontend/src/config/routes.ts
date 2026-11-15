@@ -28,6 +28,8 @@ export const ROUTES = {
   cases: "/app/casos",
   newCase: "/app/casos/nuevo",
   caseDetail: (id: string) => `/app/casos/${id}`,
+  evidenceDetail: (caseId: string, evidenceId: string) =>
+    `/app/casos/${caseId}/evidencias/${evidenceId}`,
 } as const;
 
 export const LEGAL_PAGES = [
