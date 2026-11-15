@@ -46,6 +46,7 @@ import {
   signIn,
   signOut,
   signOutEverywhere,
+  uploadEvidence,
   verifyEmail,
 } from "../sdk.gen";
 import type {
@@ -153,6 +154,9 @@ import type {
   SignOutEverywhereError,
   SignOutEverywhereResponse,
   SignOutResponse,
+  UploadEvidenceData,
+  UploadEvidenceError,
+  UploadEvidenceResponse,
   VerifyEmailData,
   VerifyEmailError,
   VerifyEmailResponse,
@@ -907,6 +911,33 @@ export const acceptInvitationMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await acceptInvitation({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Preservar un archivo de evidencia cifrado
+ */
+export const uploadEvidenceMutation = (
+  options?: Partial<Options<UploadEvidenceData>>,
+): UseMutationOptions<
+  UploadEvidenceResponse,
+  UploadEvidenceError,
+  Options<UploadEvidenceData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    UploadEvidenceResponse,
+    UploadEvidenceError,
+    Options<UploadEvidenceData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await uploadEvidence({
         ...options,
         ...fnOptions,
         throwOnError: true,
