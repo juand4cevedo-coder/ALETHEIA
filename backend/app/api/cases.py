@@ -64,9 +64,20 @@ logger = logging.getLogger(__name__)
 
 
 def get_case_worker(
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> Principal:
+    return _case_worker(principal, session)
+
+
+def get_case_worker_for_download(
     principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
     session: Annotated[Session, Depends(get_session)],
 ) -> Principal:
+    return _case_worker(principal, session)
+
+
+def _case_worker(principal: Principal, session: Session) -> Principal:
     """La cuenta propietaria de la plataforma administra el servicio, no expedientes."""
     if session.scalar(select(User.is_platform_admin).where(User.id == principal.user_id)) is True:
         raise HTTPException(
@@ -78,6 +89,9 @@ def get_case_worker(
 
 
 router = APIRouter(prefix="/cases", tags=["casos"], dependencies=[Depends(get_case_worker)])
+download_router = APIRouter(
+    prefix="/cases", tags=["casos"], dependencies=[Depends(get_case_worker_for_download)]
+)
 
 EMAIL_NOT_VERIFIED: Final = (
     "Verifique su correo para abrir casos. Le enviamos un enlace al crear la cuenta; si "
@@ -206,7 +220,7 @@ def read_evidence(
     )
 
 
-@router.get(
+@download_router.get(
     "/{case_id}/evidences/{evidence_id}/download",
     summary="Descargar el archivo original verificado",
     responses=_UNAUTHORIZED

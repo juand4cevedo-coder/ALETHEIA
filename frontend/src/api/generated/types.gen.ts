@@ -2691,55 +2691,6 @@ export type ReadEvidenceResponses = {
 export type ReadEvidenceResponse =
   ReadEvidenceResponses[keyof ReadEvidenceResponses];
 
-export type DownloadEvidenceData = {
-  body?: never;
-  path: {
-    /**
-     * Case Id
-     */
-    case_id: string;
-    /**
-     * Evidence Id
-     */
-    evidence_id: string;
-  };
-  query?: never;
-  url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/download";
-};
-
-export type DownloadEvidenceErrors = {
-  /**
-   * No hay una sesión válida.
-   */
-  401: Problem;
-  /**
-   * El miembro del caso no puede descargar originales.
-   */
-  403: Problem;
-  /**
-   * El caso o la evidencia no existen para esta persona.
-   */
-  404: Problem;
-  /**
-   * La solicitud tiene datos inválidos.
-   */
-  422: ValidationProblem;
-  /**
-   * No se pudo verificar o leer el archivo conservado.
-   */
-  503: Problem;
-};
-
-export type DownloadEvidenceError =
-  DownloadEvidenceErrors[keyof DownloadEvidenceErrors];
-
-export type DownloadEvidenceResponses = {
-  /**
-   * Archivo original; su descarga queda en la cadena de custodia.
-   */
-  200: unknown;
-};
-
 export type ListCasesData = {
   body?: never;
   path?: never;
@@ -3007,6 +2958,55 @@ export type RemoveCaseMemberResponses = {
 
 export type RemoveCaseMemberResponse =
   RemoveCaseMemberResponses[keyof RemoveCaseMemberResponses];
+
+export type DownloadEvidenceData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Evidence Id
+     */
+    evidence_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/download";
+};
+
+export type DownloadEvidenceErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El miembro del caso no puede descargar originales.
+   */
+  403: Problem;
+  /**
+   * El caso o la evidencia no existen para esta persona.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * No se pudo verificar o leer el archivo conservado.
+   */
+  503: Problem;
+};
+
+export type DownloadEvidenceError =
+  DownloadEvidenceErrors[keyof DownloadEvidenceErrors];
+
+export type DownloadEvidenceResponses = {
+  /**
+   * Archivo original; su descarga queda en la cadena de custodia.
+   */
+  200: unknown;
+};
 
 export type ListPlatformUsersData = {
   body?: never;
