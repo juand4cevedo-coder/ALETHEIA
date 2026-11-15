@@ -94,6 +94,22 @@ class CaseMemberOut(BaseModel):
     added_at: datetime.datetime = Field(description="Cuándo se asignó al caso.")
 
 
+class CaseMemberAdd(BaseModel):
+    """Persona de la organización que se asignará al caso."""
+
+    model_config = ConfigDict(extra="forbid")
+    user_id: uuid.UUID
+
+
+class CaseCandidate(BaseModel):
+    """Persona disponible para asignar a este caso."""
+
+    user_id: uuid.UUID
+    full_name: str
+    email: str
+    role: MemberRole
+
+
 class CustodyEventOut(BaseModel):
     """Un evento de la cadena de custodia del caso."""
 

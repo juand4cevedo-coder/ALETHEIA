@@ -1,14 +1,28 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router";
+import {
+  useLocation,
+  useNavigate,
+  useOutletContext,
+  useParams,
+} from "react-router";
 
-import type { CaseDetail, CaseMemberOut } from "../api/generated";
-import { readCaseOptions } from "../api/generated/@tanstack/react-query.gen.ts";
+import type { CaseDetail, CaseMemberOut, Me } from "../api/generated";
+import {
+  addCaseMemberMutation,
+  availableCaseMembersOptions,
+  availableCaseMembersQueryKey,
+  listCasesQueryKey,
+  readCaseOptions,
+  readCaseQueryKey,
+  removeCaseMemberMutation,
+} from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { FilingNumber } from "../components/ui/FilingNumber.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
+import { Select } from "../components/ui/Select.tsx";
 import { StatusBadge } from "../components/ui/StatusBadge.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
@@ -36,6 +50,7 @@ function isMissing(error: unknown): boolean {
 // el equipo. Solo muestra lo que ya existe: sin «Editar datos», sin zona de carga, sin
 // «Verificar ahora» y sin pestañas de evidencias o paquetes hasta sus historias.
 export function CasePage() {
+  const me = useOutletContext<Me>();
   const { caseId = "" } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -109,7 +124,7 @@ export function CasePage() {
     );
   }
 
-  return <CaseView detail={detail.data} justOpened={justOpened} />;
+  return <CaseView detail={detail.data} justOpened={justOpened} me={me} />;
 }
 
 function referenceLine(detail: CaseDetail) {
@@ -128,9 +143,11 @@ function referenceLine(detail: CaseDetail) {
 function CaseView({
   detail,
   justOpened,
+  me,
 }: {
   detail: CaseDetail;
   justOpened: boolean;
+  me: Me;
 }) {
   const [tab, setTab] = useState<TabKey>("chain");
   const tabRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({
@@ -271,7 +288,7 @@ function CaseView({
           <p className={styles.caption}>
             Quienes trabajan en este caso y ven sus datos.
           </p>
-          <TeamList detail={detail} />
+          {tab === "team" && <TeamList detail={detail} me={me} />}
         </div>
       </div>
     </div>
@@ -326,27 +343,150 @@ function creatorOf(detail: CaseDetail): CaseMemberOut | undefined {
     .sort((a, b) => a.added_at.localeCompare(b.added_at))[0];
 }
 
-function TeamList({ detail }: { detail: CaseDetail }) {
+function TeamList({ detail, me }: { detail: CaseDetail; me: Me }) {
   const creator = creatorOf(detail);
+  const queryClient = useQueryClient();
+  const role = me.organization?.role;
+  const canManage = role === "owner" || role === "admin" || role === "lawyer";
+  const path = { case_id: detail.id };
+  const [selectedId, setSelectedId] = useState("");
+  const [removing, setRemoving] = useState<CaseMemberOut | null>(null);
+  const [message, setMessage] = useState("");
+  const candidates = useQuery({
+    ...availableCaseMembersOptions({ path }),
+    enabled: canManage,
+  });
+  const refresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: readCaseQueryKey({ path }) }),
+      queryClient.invalidateQueries({
+        queryKey: availableCaseMembersQueryKey({ path }),
+      }),
+      queryClient.invalidateQueries({ queryKey: listCasesQueryKey() }),
+    ]);
+  };
+  const add = useMutation({
+    ...addCaseMemberMutation(),
+    onSuccess: async () => {
+      setSelectedId("");
+      setMessage("Persona asignada al caso.");
+      await refresh();
+    },
+  });
+  const remove = useMutation({
+    ...removeCaseMemberMutation(),
+    onSuccess: async () => {
+      setMessage("Persona retirada del caso. Sigue perteneciendo al despacho.");
+      setRemoving(null);
+      await refresh();
+    },
+  });
   return (
-    <ul className={styles.members}>
-      {detail.members.map((member) => (
-        <li key={member.user_id} className={styles.member}>
-          <span className={styles.avatar} aria-hidden="true">
-            {initialsOf(member.full_name)}
-          </span>
-          <span className={styles.who}>
-            <span className={styles.memberName}>{member.full_name}</span>
-            <span className={styles.memberEmail}>{member.email}</span>
-          </span>
-          <span className={styles.role}>
-            {ROLE_LABELS[member.role]}
-            {member === creator && (
-              <span className={styles.roleNote}>Abrió el caso</span>
+    <>
+      {message && <Notice tone="success">{message}</Notice>}
+      {canManage && (
+        <form
+          className={styles.memberForm}
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (selectedId) {
+              setMessage("");
+              add.mutate({ path, body: { user_id: selectedId } });
+            }
+          }}
+        >
+          <Select
+            label="Agregar a una persona del despacho"
+            value={selectedId}
+            onChange={(event) => setSelectedId(event.target.value)}
+            disabled={candidates.isPending || add.isPending}
+            options={[
+              { value: "", label: "Seleccione una persona" },
+              ...(candidates.data ?? []).map((candidate) => ({
+                value: candidate.user_id,
+                label: `${candidate.full_name} (${candidate.email})`,
+              })),
+            ]}
+          />
+          <Button
+            type="submit"
+            size="sm"
+            busy={add.isPending}
+            disabled={!selectedId}
+          >
+            Asignar al caso
+          </Button>
+          {candidates.isError && (
+            <Notice tone="error">
+              No pudimos cargar las personas disponibles.
+            </Notice>
+          )}
+          {add.isError && (
+            <Notice tone="error">
+              {apiProblem(add.error).detail ??
+                "No pudimos asignar a esta persona. Actualice el equipo e inténtelo de nuevo."}
+            </Notice>
+          )}
+        </form>
+      )}
+      <ul className={styles.members}>
+        {detail.members.map((member) => (
+          <li key={member.user_id} className={styles.member}>
+            <span className={styles.avatar} aria-hidden="true">
+              {initialsOf(member.full_name)}
+            </span>
+            <span className={styles.who}>
+              <span className={styles.memberName}>{member.full_name}</span>
+              <span className={styles.memberEmail}>{member.email}</span>
+            </span>
+            <span className={styles.role}>
+              {ROLE_LABELS[member.role]}
+              {member === creator && (
+                <span className={styles.roleNote}>Abrió el caso</span>
+              )}
+            </span>
+            {canManage && member.user_id !== me.id && (
+              <Button
+                variant="text"
+                size="sm"
+                aria-label={`Retirar a ${member.full_name} del caso`}
+                onClick={() => setRemoving(member)}
+              >
+                Retirar
+              </Button>
             )}
-          </span>
-        </li>
-      ))}
-    </ul>
+          </li>
+        ))}
+      </ul>
+      {removing && (
+        <div
+          className={styles.removeConfirm}
+          role="group"
+          aria-label="Confirmar retiro del caso"
+        >
+          <p>
+            ¿Retirar a {removing.full_name} de este caso? Conservará su acceso
+            al despacho.
+          </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            busy={remove.isPending}
+            onClick={() => {
+              setMessage("");
+              remove.mutate({ path: { ...path, user_id: removing.user_id } });
+            }}
+          >
+            Confirmar retiro
+          </Button>
+          <Button variant="text" size="sm" onClick={() => setRemoving(null)}>
+            Cancelar
+          </Button>
+          {remove.isError && (
+            <Notice tone="error">No pudimos retirar a esta persona.</Notice>
+          )}
+        </div>
+      )}
+    </>
   );
 }
