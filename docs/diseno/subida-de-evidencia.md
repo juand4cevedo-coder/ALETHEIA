@@ -36,4 +36,13 @@ HU-019 añade `GET /api/v1/cases/{case_id}/evidences`: devuelve, por páginas de
 evidencia de la página anterior; la lista va por identificador descendente. El caso ajeno y
 el inexistente responden 404. La pestaña «Evidencias» presenta el origen como declaración
 y el tipo detectado por el sistema, también después de recargar la página. El detalle
-ampliado de cada evidencia, con sello y eventos, corresponde a HU-021.
+ampliado de cada evidencia corresponde a HU-021.
+
+HU-021 añade `GET /api/v1/cases/{case_id}/evidences/{evidence_id}`. Solo un miembro
+vigente del caso puede consultar los metadatos; una evidencia inexistente, de otro caso o
+de un caso ajeno produce el mismo 404. La respuesta no incluye el archivo cifrado, su
+clave de almacenamiento ni el token del sello. Incluye la huella SHA-256, el origen
+declarado, el tamaño exacto, el estado y la hora del sello, y los eventos vinculados a esa
+evidencia. Los eventos se ordenan del más reciente al más antiguo en páginas de 50; para
+continuar se envía `event_cursor` con el valor de `next_event_seq`. Los números de evento
+son posiciones en la cadena del caso, por lo que pueden tener huecos en esta vista.

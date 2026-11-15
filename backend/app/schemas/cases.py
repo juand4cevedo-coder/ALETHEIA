@@ -149,6 +149,14 @@ class CustodyEventOut(BaseModel):
     event_hash: str = Field(description="Huella SHA-256 del evento, en hexadecimal.")
 
 
+class EvidenceDetailOut(EvidenceSummaryOut):
+    """Metadatos y eventos de una evidencia asignada, sin contenido ni token del sello."""
+
+    tsa_time: datetime.datetime | None
+    events: list[CustodyEventOut]
+    next_event_seq: int | None
+
+
 class CaseDetail(CaseOut):
     """El caso con su equipo y sus últimos eventos (API-024)."""
 
