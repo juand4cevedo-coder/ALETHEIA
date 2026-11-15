@@ -59,6 +59,10 @@ export const loadNewCasePage = () =>
   import("../pages/NewCasePage.tsx").then((module) => module.NewCasePage);
 export const loadCasePage = () =>
   import("../pages/CasePage.tsx").then((module) => module.CasePage);
+export const loadEvidenceDetailPage = () =>
+  import("../pages/EvidenceDetailPage.tsx").then(
+    (module) => module.EvidenceDetailPage,
+  );
 
 // Lo que alguien abre casi siempre después del inicio: precios, ingresar y crear cuenta (con el
 // proveedor de consultas que las envuelve).

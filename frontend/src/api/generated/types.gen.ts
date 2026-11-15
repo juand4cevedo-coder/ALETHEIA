@@ -46,6 +46,30 @@ export type AcceptInvitationRequest = {
 };
 
 /**
+ * CaseCandidate
+ *
+ * Persona disponible para asignar a este caso.
+ */
+export type CaseCandidate = {
+  /**
+   * User Id
+   */
+  user_id: string;
+  /**
+   * Full Name
+   */
+  full_name: string;
+  /**
+   * Email
+   */
+  email: string;
+  /**
+   * Role
+   */
+  role: "owner" | "admin" | "lawyer" | "assistant";
+};
+
+/**
  * CaseCreate
  *
  * Datos con que se abre un caso (API-022).
@@ -179,6 +203,18 @@ export type CaseDetail = {
    * Últimos eventos de la cadena, del más reciente al más antiguo.
    */
   recent_events: Array<CustodyEventOut>;
+};
+
+/**
+ * CaseMemberAdd
+ *
+ * Persona de la organización que se asignará al caso.
+ */
+export type CaseMemberAdd = {
+  /**
+   * User Id
+   */
+  user_id: string;
 };
 
 /**
@@ -530,6 +566,144 @@ export type CustodyEventOut = {
 };
 
 /**
+ * EvidenceDetailOut
+ *
+ * Metadatos y eventos de una evidencia asignada, sin contenido ni token del sello.
+ */
+export type EvidenceDetailOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Original Filename
+   */
+  original_filename: string;
+  /**
+   * Declared Type
+   */
+  declared_type: "chat" | "email" | "audio" | "image" | "document" | "other";
+  /**
+   * Declared Origin
+   */
+  declared_origin: string;
+  /**
+   * Detected Type
+   */
+  detected_type: string;
+  /**
+   * Sha256
+   */
+  sha256: string;
+  /**
+   * Size Bytes
+   */
+  size_bytes: number;
+  /**
+   * Tsa Status
+   */
+  tsa_status: "pending" | "stamped" | "failed";
+  /**
+   * Uploaded At
+   */
+  uploaded_at: string;
+  /**
+   * Tsa Time
+   */
+  tsa_time: string | null;
+  /**
+   * Events
+   */
+  events: Array<CustodyEventOut>;
+  /**
+   * Next Event Seq
+   */
+  next_event_seq: number | null;
+};
+
+/**
+ * EvidencePage
+ */
+export type EvidencePage = {
+  /**
+   * Items
+   */
+  items: Array<EvidenceSummaryOut>;
+  /**
+   * Next Cursor
+   */
+  next_cursor: string | null;
+};
+
+/**
+ * EvidenceSummaryOut
+ *
+ * Metadatos visibles para quienes pertenecen al caso; sin contenido del archivo.
+ */
+export type EvidenceSummaryOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Original Filename
+   */
+  original_filename: string;
+  /**
+   * Declared Type
+   */
+  declared_type: "chat" | "email" | "audio" | "image" | "document" | "other";
+  /**
+   * Declared Origin
+   */
+  declared_origin: string;
+  /**
+   * Detected Type
+   */
+  detected_type: string;
+  /**
+   * Sha256
+   */
+  sha256: string;
+  /**
+   * Size Bytes
+   */
+  size_bytes: number;
+  /**
+   * Tsa Status
+   */
+  tsa_status: "pending" | "stamped" | "failed";
+  /**
+   * Uploaded At
+   */
+  uploaded_at: string;
+};
+
+/**
+ * EvidenceUploadOut
+ *
+ * Constancia inmediata de la preservación; el sello de tiempo llega después.
+ */
+export type EvidenceUploadOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Sha256
+   */
+  sha256: string;
+  /**
+   * Size Bytes
+   */
+  size_bytes: number;
+  /**
+   * Tsa Status
+   */
+  tsa_status: "pending";
+};
+
+/**
  * ForgotPasswordRequest
  *
  * Correo al que se envía el enlace para restablecer la contraseña (API-011).
@@ -860,6 +1034,8 @@ export type Me = {
     | "team.manage"
     | "cases.read_assigned"
     | "cases.create"
+    | "cases.manage_members"
+    | "cases.upload_evidence"
   >;
   /**
    * Su organización, o null si ya no pertenece a ninguna.
@@ -2359,6 +2535,161 @@ export type AcceptInvitationResponses = {
 export type AcceptInvitationResponse =
   AcceptInvitationResponses[keyof AcceptInvitationResponses];
 
+export type ListEvidencesData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: {
+    /**
+     * Cursor
+     */
+    cursor?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+  };
+  url: "/api/v1/cases/{case_id}/evidences";
+};
+
+export type ListEvidencesErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListEvidencesError = ListEvidencesErrors[keyof ListEvidencesErrors];
+
+export type ListEvidencesResponses = {
+  /**
+   * Successful Response
+   */
+  200: EvidencePage;
+};
+
+export type ListEvidencesResponse =
+  ListEvidencesResponses[keyof ListEvidencesResponses];
+
+export type UploadEvidenceData = {
+  /**
+   * Enviar tipo y origen antes del archivo.
+   */
+  body: {
+    tipo: "chat" | "email" | "audio" | "image" | "document" | "other";
+    origen: string;
+    archivo: Blob | File;
+  };
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/evidences";
+};
+
+export type UploadEvidenceErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * La persona no está asignada al caso o carece del permiso.
+   */
+  403: Problem;
+  /**
+   * El caso o el despacho no admiten nuevas evidencias.
+   */
+  409: Problem;
+  /**
+   * El archivo supera el tope del plan o la cuota disponible.
+   */
+  413: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * No se pudo acceder a la llave de cifrado del caso.
+   */
+  503: Problem;
+};
+
+export type UploadEvidenceError =
+  UploadEvidenceErrors[keyof UploadEvidenceErrors];
+
+export type UploadEvidenceResponses = {
+  /**
+   * Successful Response
+   */
+  201: EvidenceUploadOut;
+};
+
+export type UploadEvidenceResponse =
+  UploadEvidenceResponses[keyof UploadEvidenceResponses];
+
+export type ReadEvidenceData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Evidence Id
+     */
+    evidence_id: string;
+  };
+  query?: {
+    /**
+     * Event Cursor
+     */
+    event_cursor?: number | null;
+  };
+  url: "/api/v1/cases/{case_id}/evidences/{evidence_id}";
+};
+
+export type ReadEvidenceErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El caso o la evidencia no existen para esta persona.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ReadEvidenceError = ReadEvidenceErrors[keyof ReadEvidenceErrors];
+
+export type ReadEvidenceResponses = {
+  /**
+   * Successful Response
+   */
+  200: EvidenceDetailOut;
+};
+
+export type ReadEvidenceResponse =
+  ReadEvidenceResponses[keyof ReadEvidenceResponses];
+
 export type ListCasesData = {
   body?: never;
   path?: never;
@@ -2485,6 +2816,147 @@ export type ReadCaseResponses = {
 };
 
 export type ReadCaseResponse = ReadCaseResponses[keyof ReadCaseResponses];
+
+export type AvailableCaseMembersData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/available-members";
+};
+
+export type AvailableCaseMembersErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no administra este equipo.
+   */
+  403: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type AvailableCaseMembersError =
+  AvailableCaseMembersErrors[keyof AvailableCaseMembersErrors];
+
+export type AvailableCaseMembersResponses = {
+  /**
+   * Response Available Case Members
+   *
+   * Successful Response
+   */
+  200: Array<CaseCandidate>;
+};
+
+export type AvailableCaseMembersResponse =
+  AvailableCaseMembersResponses[keyof AvailableCaseMembersResponses];
+
+export type AddCaseMemberData = {
+  body: CaseMemberAdd;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/members";
+};
+
+export type AddCaseMemberErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no administra este equipo.
+   */
+  403: Problem;
+  /**
+   * El caso o la persona no pertenecen a este despacho.
+   */
+  404: Problem;
+  /**
+   * La persona ya está asignada o el despacho está en solo lectura.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type AddCaseMemberError = AddCaseMemberErrors[keyof AddCaseMemberErrors];
+
+export type AddCaseMemberResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type AddCaseMemberResponse =
+  AddCaseMemberResponses[keyof AddCaseMemberResponses];
+
+export type RemoveCaseMemberData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * User Id
+     */
+    user_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/members/{user_id}";
+};
+
+export type RemoveCaseMemberErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no administra este equipo o intenta retirarse a sí mismo.
+   */
+  403: Problem;
+  /**
+   * El caso o la asignación no existen para esta persona.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RemoveCaseMemberError =
+  RemoveCaseMemberErrors[keyof RemoveCaseMemberErrors];
+
+export type RemoveCaseMemberResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type RemoveCaseMemberResponse =
+  RemoveCaseMemberResponses[keyof RemoveCaseMemberResponses];
 
 export type ListPlatformUsersData = {
   body?: never;

@@ -61,13 +61,29 @@ const DETAIL = {
   ],
 };
 
-function serve(caseResponse: () => Response) {
+function serve(
+  caseResponse: () => Response,
+  evidenceResponse: (request: Request) => Response = () =>
+    jsonResponse({ items: [], next_cursor: null }),
+) {
   fetchMock.mockImplementation(async (input) => {
     const request = input as Request;
     const path = new URL(request.url).pathname;
     if (path === "/api/v1/me") return jsonResponse(ME);
     if (request.method === "GET" && path === `/api/v1/cases/${CASE_ID}`) {
       return caseResponse();
+    }
+    if (
+      request.method === "GET" &&
+      path === `/api/v1/cases/${CASE_ID}/evidences`
+    ) {
+      return evidenceResponse(request);
+    }
+    if (
+      request.method === "GET" &&
+      path === `/api/v1/cases/${CASE_ID}/available-members`
+    ) {
+      return jsonResponse([]);
     }
     throw new Error(`Ruta inesperada: ${request.method} ${path}`);
   });
@@ -159,6 +175,70 @@ describe("Página del caso (HU-015)", () => {
     expect(within(member).getByText("Abrió el caso")).toBeInTheDocument();
   });
 
+  it("asigna y retira a una persona del caso sin quitarla del despacho", async () => {
+    const user = userEvent.setup();
+    const teammate = {
+      user_id: "01890a5d-ac96-774b-bcce-b302099a8091",
+      full_name: "Sofía Ruiz",
+      email: "sofia@example.com",
+      role: "assistant",
+      added_at: "2026-11-14T15:00:00Z",
+    };
+    let assigned = false;
+    fetchMock.mockImplementation(async (input) => {
+      const request = input as Request;
+      const path = new URL(request.url).pathname;
+      if (path === "/api/v1/me") return jsonResponse(ME);
+      if (path === `/api/v1/cases/${CASE_ID}` && request.method === "GET") {
+        return jsonResponse({
+          ...DETAIL,
+          member_count: assigned ? 2 : 1,
+          members: assigned ? [...DETAIL.members, teammate] : DETAIL.members,
+        });
+      }
+      if (path === `/api/v1/cases/${CASE_ID}/available-members`) {
+        return jsonResponse(assigned ? [] : [teammate]);
+      }
+      if (
+        path === `/api/v1/cases/${CASE_ID}/members` &&
+        request.method === "POST"
+      ) {
+        expect(await request.json()).toEqual({ user_id: teammate.user_id });
+        assigned = true;
+        return new Response(null, { status: 204 });
+      }
+      if (
+        path === `/api/v1/cases/${CASE_ID}/members/${teammate.user_id}` &&
+        request.method === "DELETE"
+      ) {
+        assigned = false;
+        return new Response(null, { status: 204 });
+      }
+      throw new Error(`Ruta inesperada: ${request.method} ${path}`);
+    });
+
+    await openCase();
+    await user.click(screen.getByRole("tab", { name: /Equipo/ }));
+    await screen.findByRole("option", { name: /Sofía Ruiz/ });
+    await user.selectOptions(
+      screen.getByRole("combobox", {
+        name: "Agregar a una persona del despacho",
+      }),
+      teammate.user_id,
+    );
+    await user.click(screen.getByRole("button", { name: "Asignar al caso" }));
+    expect(await screen.findByText("Sofía Ruiz")).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: /Retirar a Sofía Ruiz del caso/ }),
+    );
+    await user.click(screen.getByRole("button", { name: "Confirmar retiro" }));
+    await screen.findByText(
+      "Persona retirada del caso. Sigue perteneciendo al despacho.",
+    );
+    expect(screen.queryByText("Sofía Ruiz")).not.toBeInTheDocument();
+  });
+
   it("no muestra «Editar datos», «Subir evidencia» ni «Verificar ahora»", async () => {
     serve(() => jsonResponse(DETAIL));
     await openCase();
@@ -168,7 +248,6 @@ describe("Página del caso (HU-015)", () => {
       /Subir evidencia/,
       /Verificar ahora/,
       /Paquetes/,
-      /Evidencias/,
     ]) {
       expect(screen.queryByRole("button", { name })).toBeNull();
       expect(screen.queryByRole("link", { name })).toBeNull();
@@ -176,6 +255,85 @@ describe("Página del caso (HU-015)", () => {
     }
     expect(screen.queryByText(/Cadena íntegra/)).toBeNull();
     expect(screen.getByText("Sin verificar")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Evidencias" })).toBeInTheDocument();
+  });
+
+  it("muestra el origen como declaración y el tipo detectado del contenido", async () => {
+    serve(
+      () => jsonResponse(DETAIL),
+      () =>
+        jsonResponse({
+          items: [
+            {
+              id: "01890a5d-ac96-774b-bcce-b302099a8092",
+              original_filename: "registro.pdf",
+              declared_type: "document",
+              declared_origin: "Entregado por la cliente",
+              detected_type: "text/plain",
+              sha256: "a".repeat(64),
+              size_bytes: 120,
+              tsa_status: "pending",
+              uploaded_at: "2026-11-14T15:00:00Z",
+            },
+          ],
+          next_cursor: null,
+        }),
+    );
+    await openCase();
+    await userEvent
+      .setup()
+      .click(screen.getByRole("tab", { name: "Evidencias" }));
+
+    const panel = screen.getByRole("tabpanel", { name: "Evidencias" });
+    expect(
+      await within(panel).findByText("Entregado por la cliente"),
+    ).toBeInTheDocument();
+    expect(within(panel).getByText("Texto plano")).toBeInTheDocument();
+    expect(
+      within(panel).getByText(/El origen es una declaración/),
+    ).toBeInTheDocument();
+  });
+
+  it("continúa la lista desde el cursor de la página anterior", async () => {
+    const firstId = "01890a5d-ac96-774b-bcce-b302099a8092";
+    const secondId = "01890a5d-ac96-774b-bcce-b302099a8091";
+    const item = (id: string, filename: string) => ({
+      id,
+      original_filename: filename,
+      declared_type: "document",
+      declared_origin: "Cliente",
+      detected_type: "text/plain",
+      sha256: "a".repeat(64),
+      size_bytes: 120,
+      tsa_status: "pending",
+      uploaded_at: "2026-11-14T15:00:00Z",
+    });
+    serve(
+      () => jsonResponse(DETAIL),
+      (request) => {
+        const cursor = new URL(request.url).searchParams.get("cursor");
+        return cursor === firstId
+          ? jsonResponse({
+              items: [item(secondId, "segundo.txt")],
+              next_cursor: null,
+            })
+          : jsonResponse({
+              items: [item(firstId, "primero.txt")],
+              next_cursor: firstId,
+            });
+      },
+    );
+    await openCase();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("tab", { name: "Evidencias" }));
+    expect(await screen.findByText("primero.txt")).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: "Ver más evidencias" }),
+    );
+    expect(await screen.findByText("segundo.txt")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Ver más evidencias" }),
+    ).toBeNull();
   });
 
   it("al llegar recién abierto anuncia «Caso abierto. Su cadena de custodia comenzó.»", async () => {
