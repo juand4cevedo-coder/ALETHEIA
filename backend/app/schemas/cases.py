@@ -34,6 +34,25 @@ class EvidenceUploadOut(BaseModel):
     tsa_status: Literal["pending"]
 
 
+class EvidenceSummaryOut(BaseModel):
+    """Metadatos visibles para quienes pertenecen al caso; sin contenido del archivo."""
+
+    id: uuid.UUID
+    original_filename: str
+    declared_type: DeclaredType
+    declared_origin: str
+    detected_type: str
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    size_bytes: int = Field(gt=0)
+    tsa_status: Literal["pending", "stamped", "failed"]
+    uploaded_at: datetime.datetime
+
+
+class EvidencePage(BaseModel):
+    items: list[EvidenceSummaryOut]
+    next_cursor: uuid.UUID | None
+
+
 # MSG nuevo de la sección 5.3 del diseño: dice cuántos dígitos tiene y cómo revisarlos.
 INVALID_FILING_NUMBER: Final = (
     "El número de radicación tiene 23 dígitos. Revise que no falte ni sobre ninguno"

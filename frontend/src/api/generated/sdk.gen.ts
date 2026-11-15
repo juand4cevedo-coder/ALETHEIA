@@ -52,6 +52,9 @@ import type {
   ListCasesData,
   ListCasesErrors,
   ListCasesResponses,
+  ListEvidencesData,
+  ListEvidencesErrors,
+  ListEvidencesResponses,
   ListInvitationsData,
   ListInvitationsErrors,
   ListInvitationsResponses,
@@ -625,6 +628,28 @@ export const acceptInvitation = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+/**
+ * Consultar las evidencias de un caso asignado
+ */
+export const listEvidences = <ThrowOnError extends boolean = false>(
+  options: Options<ListEvidencesData, ThrowOnError>,
+): RequestResult<ListEvidencesResponses, ListEvidencesErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    ListEvidencesResponses,
+    ListEvidencesErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/evidences",
+    ...options,
   });
 
 /**
