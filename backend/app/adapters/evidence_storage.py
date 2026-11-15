@@ -7,9 +7,10 @@ publica el objeto: solo ``commit`` lo hace visible, y ``abort`` limpia cualquier
 import io
 import os
 import re
-from collections.abc import Buffer
+from collections.abc import Buffer, Iterator
+from contextlib import closing, contextmanager
 from pathlib import Path
-from typing import Final, Protocol
+from typing import BinaryIO, Final, Protocol, cast
 
 import boto3
 from botocore.config import Config
@@ -157,3 +158,20 @@ def new_evidence_sink(settings: Settings, key: str) -> EvidenceSink:
     if settings.environment == "production":
         return S3EvidenceSink(key)
     return LocalEvidenceSink(Path(".local/evidence"), key)
+
+
+@contextmanager
+def open_encrypted_evidence(settings: Settings, key: str) -> Iterator[BinaryIO]:
+    """Lee el objeto cifrado sin cargarlo completo; acepta solo claves generadas."""
+    if STORAGE_KEY_PATTERN.fullmatch(key) is None:
+        raise ValueError("clave de almacenamiento inválida")
+    if settings.environment == "production":
+        client = boto3.client(
+            "s3", config=Config(connect_timeout=5, read_timeout=30, retries={"max_attempts": 3})
+        )
+        body = client.get_object(Bucket=PRODUCTION_BUCKET, Key=key)["Body"]
+        with closing(cast("BinaryIO", body)) as stream:
+            yield stream
+    else:
+        with (Path(".local/evidence") / key).open("rb") as stream:
+            yield stream
