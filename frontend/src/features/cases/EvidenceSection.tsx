@@ -3,6 +3,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import type { EvidenceSummaryOut } from "../../api/generated";
 import { listEvidencesInfiniteOptions } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../../components/ui/Button.tsx";
+import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
+import { ROUTES } from "../../config/routes.ts";
 import { Notice } from "../../components/ui/Notice.tsx";
 import { EvidenceUploadForm } from "./EvidenceUploadForm.tsx";
 import { formatColombiaTime } from "./dates.ts";
@@ -113,6 +115,13 @@ export function EvidenceSection({
                     </dd>
                   </div>
                 </dl>
+                <ButtonLink
+                  to={ROUTES.evidenceDetail(caseId, item.id)}
+                  variant="secondary"
+                  size="sm"
+                >
+                  Ver detalle
+                </ButtonLink>
               </li>
             ))}
           </ol>
