@@ -12,6 +12,8 @@ import { client } from "../client.gen";
 import {
   acceptInvitation,
   acceptLegalTerms,
+  addCaseMember,
+  availableCaseMembers,
   changeMemberRole,
   changePassword,
   changePlatformUserStatus,
@@ -22,6 +24,7 @@ import {
   forgotPassword,
   health,
   listCases,
+  listEvidences,
   listInvitations,
   listMembers,
   listPlans,
@@ -33,9 +36,11 @@ import {
   platformSupportTickets,
   previewInvitation,
   readCase,
+  readEvidence,
   readMe,
   refreshSession,
   registerAccount,
+  removeCaseMember,
   removeMember,
   resendVerification,
   resetPassword,
@@ -43,6 +48,7 @@ import {
   signIn,
   signOut,
   signOutEverywhere,
+  uploadEvidence,
   verifyEmail,
 } from "../sdk.gen";
 import type {
@@ -52,6 +58,12 @@ import type {
   AcceptLegalTermsData,
   AcceptLegalTermsError,
   AcceptLegalTermsResponse,
+  AddCaseMemberData,
+  AddCaseMemberError,
+  AddCaseMemberResponse,
+  AvailableCaseMembersData,
+  AvailableCaseMembersError,
+  AvailableCaseMembersResponse,
   ChangeMemberRoleData,
   ChangeMemberRoleError,
   ChangeMemberRoleResponse,
@@ -82,6 +94,9 @@ import type {
   ListCasesData,
   ListCasesError,
   ListCasesResponse,
+  ListEvidencesData,
+  ListEvidencesError,
+  ListEvidencesResponse,
   ListInvitationsData,
   ListInvitationsError,
   ListInvitationsResponse,
@@ -111,6 +126,9 @@ import type {
   ReadCaseData,
   ReadCaseError,
   ReadCaseResponse,
+  ReadEvidenceData,
+  ReadEvidenceError,
+  ReadEvidenceResponse,
   ReadMeData,
   ReadMeError,
   ReadMeResponse,
@@ -120,6 +138,9 @@ import type {
   RegisterAccountData,
   RegisterAccountError,
   RegisterAccountResponse,
+  RemoveCaseMemberData,
+  RemoveCaseMemberError,
+  RemoveCaseMemberResponse,
   RemoveMemberData,
   RemoveMemberError,
   RemoveMemberResponse,
@@ -141,6 +162,9 @@ import type {
   SignOutEverywhereError,
   SignOutEverywhereResponse,
   SignOutResponse,
+  UploadEvidenceData,
+  UploadEvidenceError,
+  UploadEvidenceResponse,
   VerifyEmailData,
   VerifyEmailError,
   VerifyEmailResponse,
@@ -905,6 +929,136 @@ export const acceptInvitationMutation = (
   return mutationOptions;
 };
 
+export const listEvidencesQueryKey = (options: Options<ListEvidencesData>) =>
+  createQueryKey("listEvidences", options);
+
+/**
+ * Consultar las evidencias de un caso asignado
+ */
+export const listEvidencesOptions = (options: Options<ListEvidencesData>) =>
+  queryOptions<
+    ListEvidencesResponse,
+    ListEvidencesError,
+    ListEvidencesResponse,
+    ReturnType<typeof listEvidencesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listEvidences({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listEvidencesQueryKey(options),
+  });
+
+export const listEvidencesInfiniteQueryKey = (
+  options: Options<ListEvidencesData>,
+): QueryKey<Options<ListEvidencesData>> =>
+  createQueryKey("listEvidences", options, true);
+
+/**
+ * Consultar las evidencias de un caso asignado
+ */
+export const listEvidencesInfiniteOptions = (
+  options: Options<ListEvidencesData>,
+) => {
+  const opts = infiniteQueryOptions<
+    ListEvidencesResponse,
+    ListEvidencesError,
+    InfiniteData<ListEvidencesResponse>,
+    QueryKey<Options<ListEvidencesData>>,
+    | string
+    | null
+    | Pick<
+        QueryKey<Options<ListEvidencesData>>[0],
+        "body" | "headers" | "path" | "query"
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<ListEvidencesData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  cursor: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listEvidences({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: listEvidencesInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+/**
+ * Preservar un archivo de evidencia cifrado
+ */
+export const uploadEvidenceMutation = (
+  options?: Partial<Options<UploadEvidenceData>>,
+): UseMutationOptions<
+  UploadEvidenceResponse,
+  UploadEvidenceError,
+  Options<UploadEvidenceData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    UploadEvidenceResponse,
+    UploadEvidenceError,
+    Options<UploadEvidenceData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await uploadEvidence({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const readEvidenceQueryKey = (options: Options<ReadEvidenceData>) =>
+  createQueryKey("readEvidence", options);
+
+/**
+ * Ver los metadatos, sello y eventos de una evidencia asignada
+ */
+export const readEvidenceOptions = (options: Options<ReadEvidenceData>) =>
+  queryOptions<
+    ReadEvidenceResponse,
+    ReadEvidenceError,
+    ReadEvidenceResponse,
+    ReturnType<typeof readEvidenceQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await readEvidence({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: readEvidenceQueryKey(options),
+  });
+
 export const listCasesQueryKey = (options?: Options<ListCasesData>) =>
   createQueryKey("listCases", options);
 
@@ -1032,6 +1186,88 @@ export const readCaseOptions = (options: Options<ReadCaseData>) =>
     },
     queryKey: readCaseQueryKey(options),
   });
+
+export const availableCaseMembersQueryKey = (
+  options: Options<AvailableCaseMembersData>,
+) => createQueryKey("availableCaseMembers", options);
+
+/**
+ * Personas disponibles para el equipo del caso
+ */
+export const availableCaseMembersOptions = (
+  options: Options<AvailableCaseMembersData>,
+) =>
+  queryOptions<
+    AvailableCaseMembersResponse,
+    AvailableCaseMembersError,
+    AvailableCaseMembersResponse,
+    ReturnType<typeof availableCaseMembersQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await availableCaseMembers({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: availableCaseMembersQueryKey(options),
+  });
+
+/**
+ * Asignar una persona al caso
+ */
+export const addCaseMemberMutation = (
+  options?: Partial<Options<AddCaseMemberData>>,
+): UseMutationOptions<
+  AddCaseMemberResponse,
+  AddCaseMemberError,
+  Options<AddCaseMemberData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AddCaseMemberResponse,
+    AddCaseMemberError,
+    Options<AddCaseMemberData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await addCaseMember({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Retirar una persona del caso
+ */
+export const removeCaseMemberMutation = (
+  options?: Partial<Options<RemoveCaseMemberData>>,
+): UseMutationOptions<
+  RemoveCaseMemberResponse,
+  RemoveCaseMemberError,
+  Options<RemoveCaseMemberData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RemoveCaseMemberResponse,
+    RemoveCaseMemberError,
+    Options<RemoveCaseMemberData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await removeCaseMember({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const listPlatformUsersQueryKey = (
   options?: Options<ListPlatformUsersData>,

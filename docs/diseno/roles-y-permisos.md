@@ -19,6 +19,9 @@ administrar accesos. Los roles jurídicos y su trabajo en casos corresponden a l
 | Gestionar miembros e invitaciones | Sí | Sí | No | No | No |
 | Abrir casos | Sí | Sí | Sí | No | No |
 | Ver los casos asignados | Sí | Sí | Sí | Sí | No |
+| Asignar y retirar personas de un caso asignado | Sí | Sí | Sí | No | No |
+| Subir evidencia a un caso asignado y abierto | Sí | Sí | Sí | Sí | No |
+| Consultar los metadatos de evidencia de un caso asignado | Sí | Sí | Sí | Sí | No |
 | Bloquear y desbloquear cuentas de la plataforma | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
 | Abrir y consultar solicitudes propias de soporte | Sí | Sí | Sí | Sí | No; atiende desde la consola |
 | Resolver solicitudes de soporte | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
@@ -52,7 +55,14 @@ insertar ni actualizar ese atributo.
 
 ## Módulos siguientes
 
-Los permisos para evidencias, cadena de custodia, configuración, cobros y facturas
+HU-016 permite que el propietario, administrador o abogado asignado a un caso agregue a una
+persona activa de su mismo despacho. La lista de candidatos no incluye a quien ya está en el
+caso ni a la cuenta propietaria de plataforma. Retirar a una persona del caso no la retira del
+despacho; nadie se retira a sí mismo desde esa pantalla. Cada cambio deja un evento inmutable
+en la cadena de custodia del caso. La API responde igual por una cuenta de otro despacho y por
+una inexistente.
+
+Los demás permisos para evidencias, cadena de custodia, configuración, cobros y facturas
 se definirán junto con las rutas de cada módulo. Ninguno se concede anticipadamente por la
 presencia de un rol en esta tabla. En particular, el acceso a la plataforma no puede saltarse el
 aislamiento de los despachos. Cada ruta nueva requiere una regla de autorización en backend y

@@ -12,13 +12,41 @@ Permission = Literal[
     "team.manage",
     "cases.read_assigned",
     "cases.create",
+    "cases.manage_members",
+    "cases.upload_evidence",
 ]
 
 ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
-    "owner": frozenset({"organization.view", "team.manage", "cases.read_assigned", "cases.create"}),
-    "admin": frozenset({"organization.view", "team.manage", "cases.read_assigned", "cases.create"}),
-    "lawyer": frozenset({"organization.view", "cases.read_assigned", "cases.create"}),
-    "assistant": frozenset({"organization.view", "cases.read_assigned"}),
+    "owner": frozenset(
+        {
+            "organization.view",
+            "team.manage",
+            "cases.read_assigned",
+            "cases.create",
+            "cases.manage_members",
+            "cases.upload_evidence",
+        }
+    ),
+    "admin": frozenset(
+        {
+            "organization.view",
+            "team.manage",
+            "cases.read_assigned",
+            "cases.create",
+            "cases.manage_members",
+            "cases.upload_evidence",
+        }
+    ),
+    "lawyer": frozenset(
+        {
+            "organization.view",
+            "cases.read_assigned",
+            "cases.create",
+            "cases.manage_members",
+            "cases.upload_evidence",
+        }
+    ),
+    "assistant": frozenset({"organization.view", "cases.read_assigned", "cases.upload_evidence"}),
 }
 
 
@@ -26,9 +54,15 @@ def permissions_for(role: str | None, *, platform_admin: bool = False) -> frozen
     """Da permisos de la membresía actual y, por separado, de la plataforma."""
     organization_permissions = ROLE_PERMISSIONS.get(role, frozenset()) if role else frozenset()
     if platform_admin:
-        return (organization_permissions - {"cases.read_assigned", "cases.create"}) | {
-            "platform.manage"
-        }
+        return (
+            organization_permissions
+            - {
+                "cases.read_assigned",
+                "cases.create",
+                "cases.manage_members",
+                "cases.upload_evidence",
+            }
+        ) | {"platform.manage"}
     return organization_permissions
 
 
