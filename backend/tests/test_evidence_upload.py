@@ -20,6 +20,7 @@ from app.api import cases as cases_api
 from app.core.case_keys import open_case_key
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import Case, CustodyEvent, Evidence, Organization, Plan, User
+from app.services import evidence_download as evidence_download_service
 from app.services import evidence_upload as evidence_service
 from app.services.evidence_upload import ASSOCIATED_PREFIX
 from tests.conftest import NuevoCliente
@@ -32,6 +33,11 @@ def storage(app: FastAPI, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Pa
         cases_api,
         "new_evidence_sink",
         lambda _settings, key: LocalEvidenceSink(tmp_path, key),
+    )
+    monkeypatch.setattr(
+        evidence_download_service,
+        "open_encrypted_evidence",
+        lambda _settings, key: (tmp_path / key).open("rb"),
     )
     return tmp_path
 
@@ -305,3 +311,119 @@ def test_detalle_muestra_huella_sello_y_eventos_solo_al_miembro(
     assert {
         response.json()["detail"] for response in (missing, wrong_case, denied, cross_organization)
     } == {"No encontramos lo que busca o no tiene acceso a ello."}
+
+
+def test_descarga_entrega_original_y_registra_custodia(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office, client, case_id = _case(dispositivo, db)
+    original = b"archivo original\n" * 10000
+    uploaded = _upload(client, case_id, original)
+    assert uploaded.status_code == 201
+    evidence_id = uploaded.json()["id"]
+
+    downloaded = client.get(f"/api/v1/cases/{case_id}/evidences/{evidence_id}/download")
+
+    assert downloaded.status_code == 200
+    assert downloaded.content == original
+    assert hashlib.sha256(downloaded.content).hexdigest() == uploaded.json()["sha256"]
+    assert downloaded.headers["Cache-Control"] == "no-store"
+    assert downloaded.headers["Content-Length"] == str(len(original))
+    assert downloaded.headers["Content-Disposition"].startswith("attachment;")
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    events = list(
+        db.scalars(
+            select(CustodyEvent)
+            .where(CustodyEvent.evidence_id == uuid.UUID(evidence_id))
+            .order_by(CustodyEvent.seq)
+        )
+    )
+    assert [event.action for event in events] == ["evidence_uploaded", "evidence_downloaded"]
+
+
+def test_asistente_no_descarga_y_no_miembro_no_conoce_la_evidencia(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office, owner, case_id = _case(dispositivo, db)
+    uploaded = _upload(owner, case_id, b"reservado")
+    evidence_id = uploaded.json()["id"]
+    assistant = crear_miembro(db, office, "asistente-descarga@example.com", "assistant")
+    outsider = crear_miembro(db, office, "ajeno-descarga@example.com", "lawyer")
+    added = owner.post(f"/api/v1/cases/{case_id}/members", json={"user_id": str(assistant.id)})
+    assert added.status_code == 204
+    path = f"/api/v1/cases/{case_id}/evidences/{evidence_id}/download"
+
+    assert _login(dispositivo, db, assistant).get(path).status_code == 403
+    assert _login(dispositivo, db, outsider).get(path).status_code == 404
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    assert (
+        db.scalar(
+            select(func.count())
+            .select_from(CustodyEvent)
+            .where(CustodyEvent.evidence_id == uuid.UUID(evidence_id))
+        )
+        == 1
+    )
+
+
+def test_archivo_corrupto_no_se_descarga_ni_registra_evento(
+    dispositivo: NuevoCliente, db: Session, storage: Path
+) -> None:
+    office, client, case_id = _case(dispositivo, db)
+    uploaded = _upload(client, case_id, "archivo válido".encode())
+    evidence_id = uploaded.json()["id"]
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    evidence = db.get(Evidence, uuid.UUID(evidence_id))
+    assert evidence is not None
+    encrypted = storage / evidence.storage_key
+    data = bytearray(encrypted.read_bytes())
+    data[-1] ^= 1
+    encrypted.write_bytes(data)
+
+    response = client.get(f"/api/v1/cases/{case_id}/evidences/{evidence_id}/download")
+
+    assert response.status_code == 503
+    assert (
+        db.scalar(
+            select(func.count())
+            .select_from(CustodyEvent)
+            .where(CustodyEvent.evidence_id == uuid.UUID(evidence_id))
+        )
+        == 1
+    )
+
+
+def test_descarga_sigue_disponible_en_solo_lectura(dispositivo: NuevoCliente, db: Session) -> None:
+    office, client, case_id = _case(dispositivo, db)
+    uploaded = _upload(client, case_id, b"disponible")
+    db.execute(
+        update(Organization)
+        .where(Organization.id == office.organization_id)
+        .values(status="read_only")
+    )
+    db.flush()
+
+    response = client.get(f"/api/v1/cases/{case_id}/evidences/{uploaded.json()['id']}/download")
+
+    assert response.status_code == 200
+    assert response.content == b"disponible"
+
+
+def test_descarga_sigue_disponible_con_textos_pendientes(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office, client, case_id = _case(dispositivo, db)
+    uploaded = _upload(client, case_id, b"original")
+    db.execute(
+        update(User)
+        .where(User.id == office.owner.id)
+        .values(terms_version="2026-01-01", privacy_version="2026-01-01")
+    )
+    db.flush()
+    path = f"/api/v1/cases/{case_id}/evidences/{uploaded.json()['id']}"
+
+    assert client.get(path).status_code == 403
+    response = client.get(f"{path}/download")
+
+    assert response.status_code == 200
+    assert response.content == b"original"

@@ -37,6 +37,7 @@ it("presenta huella, origen, sello y eventos paginados de una evidencia", async 
   fetchMock.mockImplementation(async (input) => {
     const url = new URL((input as Request).url);
     if (url.pathname === "/api/v1/me") return jsonResponse(me);
+    if (url.pathname === "/api/v1/auth/refresh") return jsonResponse({}, 401);
     if (url.pathname === api) {
       const older = url.searchParams.get("event_cursor") === "8";
       return jsonResponse({
@@ -70,6 +71,9 @@ it("presenta huella, origen, sello y eventos paginados de una evidencia", async 
   ).toBeInTheDocument();
   expect(screen.getByText("Entregado por la cliente")).toBeInTheDocument();
   expect(screen.getByText("Sello obtenido")).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Descargar original" }),
+  ).toBeVisible();
   expect(screen.getByText(/aaaaaaaa aaaaaaaa aaaaaaaa/)).toBeInTheDocument();
   expect(screen.getByText(/#8: Sello de tiempo obtenido/)).toBeInTheDocument();
   await userEvent.click(
@@ -78,6 +82,48 @@ it("presenta huella, origen, sello y eventos paginados de una evidencia", async 
   expect(await screen.findByText(/#2: Evidencia subida/)).toBeInTheDocument();
   expect(
     screen.queryByRole("button", { name: "Ver más eventos" }),
+  ).not.toBeInTheDocument();
+  await userEvent.click(
+    screen.getByRole("button", { name: "Descargar original" }),
+  );
+  expect(
+    await screen.findByText(
+      "Su sesión terminó. Ingrese de nuevo para descargar el archivo.",
+    ),
+  ).toBeInTheDocument();
+});
+
+it("no ofrece descargar el original a un asistente", async () => {
+  fetchMock.mockImplementation(async (input) => {
+    const url = new URL((input as Request).url);
+    if (url.pathname === "/api/v1/me")
+      return jsonResponse({
+        ...me,
+        organization: { ...me.organization, role: "assistant" },
+      });
+    if (url.pathname === api)
+      return jsonResponse({
+        id: evidenceId,
+        original_filename: "registro.txt",
+        declared_type: "document",
+        declared_origin: "Entregado por la cliente",
+        detected_type: "text/plain",
+        sha256: sha,
+        size_bytes: 4,
+        tsa_status: "pending",
+        tsa_time: null,
+        uploaded_at: "2026-11-14T14:00:00Z",
+        events: [],
+        next_event_seq: null,
+      });
+    throw new Error(`Ruta inesperada: ${url.pathname}`);
+  });
+  await renderRoute(route);
+  expect(
+    await screen.findByRole("heading", { name: "registro.txt" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "Descargar original" }),
   ).not.toBeInTheDocument();
 });
 
