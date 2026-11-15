@@ -6,6 +6,7 @@ publica el objeto: solo ``commit`` lo hace visible, y ``abort`` limpia cualquier
 
 import io
 import os
+import re
 from collections.abc import Buffer
 from pathlib import Path
 from typing import Final, Protocol
@@ -18,6 +19,8 @@ from app.core.config import Settings
 
 PART_BYTES: Final = 8 * 1024 * 1024
 PRODUCTION_BUCKET: Final = "aletheia-prod-evidencias-047938357957"
+UUID_PART: Final = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+STORAGE_KEY_PATTERN: Final = re.compile(rf"evidences/{UUID_PART}/{UUID_PART}/{UUID_PART}")
 
 
 class EvidenceSink(Protocol):
@@ -36,6 +39,8 @@ class LocalEvidenceSink(io.RawIOBase):
     """Archivo cifrado local para desarrollo; el nombre temporal nunca contiene texto claro."""
 
     def __init__(self, root: Path, key: str) -> None:
+        if STORAGE_KEY_PATTERN.fullmatch(key) is None:
+            raise ValueError("clave de almacenamiento inválida")
         self.path = root / key
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.partial = self.path.with_name(self.path.name + ".part")
@@ -52,6 +57,8 @@ class LocalEvidenceSink(io.RawIOBase):
             self._file.flush()
 
     def close(self) -> None:
+        if not hasattr(self, "_file"):
+            return
         if not self._file.closed:
             self._file.close()
         super().close()
