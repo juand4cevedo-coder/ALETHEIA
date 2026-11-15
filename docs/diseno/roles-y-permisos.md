@@ -21,6 +21,7 @@ administrar accesos. Los roles jurídicos y su trabajo en casos corresponden a l
 | Ver los casos asignados | Sí | Sí | Sí | Sí | No |
 | Asignar y retirar personas de un caso asignado | Sí | Sí | Sí | No | No |
 | Subir evidencia a un caso asignado y abierto | Sí | Sí | Sí | Sí | No |
+| Consultar los metadatos de evidencia de un caso asignado | Sí | Sí | Sí | Sí | No |
 | Bloquear y desbloquear cuentas de la plataforma | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
 | Abrir y consultar solicitudes propias de soporte | Sí | Sí | Sí | Sí | No; atiende desde la consola |
 | Resolver solicitudes de soporte | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |

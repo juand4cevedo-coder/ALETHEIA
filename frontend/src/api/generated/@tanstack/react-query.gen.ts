@@ -24,6 +24,7 @@ import {
   forgotPassword,
   health,
   listCases,
+  listEvidences,
   listInvitations,
   listMembers,
   listPlans,
@@ -92,6 +93,9 @@ import type {
   ListCasesData,
   ListCasesError,
   ListCasesResponse,
+  ListEvidencesData,
+  ListEvidencesError,
+  ListEvidencesResponse,
   ListInvitationsData,
   ListInvitationsError,
   ListInvitationsResponse,
@@ -919,6 +923,84 @@ export const acceptInvitationMutation = (
     },
   };
   return mutationOptions;
+};
+
+export const listEvidencesQueryKey = (options: Options<ListEvidencesData>) =>
+  createQueryKey("listEvidences", options);
+
+/**
+ * Consultar las evidencias de un caso asignado
+ */
+export const listEvidencesOptions = (options: Options<ListEvidencesData>) =>
+  queryOptions<
+    ListEvidencesResponse,
+    ListEvidencesError,
+    ListEvidencesResponse,
+    ReturnType<typeof listEvidencesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listEvidences({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listEvidencesQueryKey(options),
+  });
+
+export const listEvidencesInfiniteQueryKey = (
+  options: Options<ListEvidencesData>,
+): QueryKey<Options<ListEvidencesData>> =>
+  createQueryKey("listEvidences", options, true);
+
+/**
+ * Consultar las evidencias de un caso asignado
+ */
+export const listEvidencesInfiniteOptions = (
+  options: Options<ListEvidencesData>,
+) => {
+  const opts = infiniteQueryOptions<
+    ListEvidencesResponse,
+    ListEvidencesError,
+    InfiniteData<ListEvidencesResponse>,
+    QueryKey<Options<ListEvidencesData>>,
+    | string
+    | null
+    | Pick<
+        QueryKey<Options<ListEvidencesData>>[0],
+        "body" | "headers" | "path" | "query"
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<ListEvidencesData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  cursor: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listEvidences({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: listEvidencesInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
 };
 
 /**
