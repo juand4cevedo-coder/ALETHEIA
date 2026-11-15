@@ -14,6 +14,7 @@ Permission = Literal[
     "cases.create",
     "cases.manage_members",
     "cases.upload_evidence",
+    "cases.download_evidence",
 ]
 
 ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
@@ -25,6 +26,7 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.create",
             "cases.manage_members",
             "cases.upload_evidence",
+            "cases.download_evidence",
         }
     ),
     "admin": frozenset(
@@ -35,6 +37,7 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.create",
             "cases.manage_members",
             "cases.upload_evidence",
+            "cases.download_evidence",
         }
     ),
     "lawyer": frozenset(
@@ -44,6 +47,7 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.create",
             "cases.manage_members",
             "cases.upload_evidence",
+            "cases.download_evidence",
         }
     ),
     "assistant": frozenset({"organization.view", "cases.read_assigned", "cases.upload_evidence"}),
@@ -61,6 +65,7 @@ def permissions_for(role: str | None, *, platform_admin: bool = False) -> frozen
                 "cases.create",
                 "cases.manage_members",
                 "cases.upload_evidence",
+                "cases.download_evidence",
             }
         ) | {"platform.manage"}
     return organization_permissions
