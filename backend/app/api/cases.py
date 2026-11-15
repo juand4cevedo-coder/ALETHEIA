@@ -47,6 +47,7 @@ from app.schemas.cases import (
     CaseTotalsOut,
     CustodyEventOut,
     CustodyPage,
+    CustodyVerificationOut,
     EvidenceDetailOut,
     EvidencePage,
     EvidenceSummaryOut,
@@ -54,8 +55,8 @@ from app.schemas.cases import (
     LastEventOut,
 )
 from app.services import cases as cases_service
+from app.services import custody_verification, evidence_queries
 from app.services import evidence_download as evidence_download_service
-from app.services import evidence_queries
 from app.services import evidence_upload as evidence_service
 from app.services.evidence_stream import FileTooLarge, InvalidUpload
 from app.services.members import OrganizationNotActiveError
@@ -163,6 +164,33 @@ def list_custody_events(
             for event in events
         ],
         next_cursor=next_cursor,
+    )
+
+
+@router.get(
+    "/{case_id}/custody-verification",
+    response_model=CustodyVerificationOut,
+    summary="Recalcular y verificar la cadena de custodia de un caso asignado",
+    responses=_UNAUTHORIZED
+    | {404: {"description": "El caso no existe o la persona no pertenece a él."}},
+)
+def verify_custody(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> CustodyVerificationOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        report = custody_verification.verify_case(session, principal, case_id)
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    return CustodyVerificationOut(
+        intact=report.intact,
+        events_checked=report.events_checked,
+        broken_at=report.broken_at,
+        reason=report.reason,
+        head_hash=report.head_hash.hex(),
     )
 
 
