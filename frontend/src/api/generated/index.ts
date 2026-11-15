@@ -42,6 +42,7 @@ export {
   signOut,
   signOutEverywhere,
   uploadEvidence,
+  verifyCustody,
   verifyEmail,
 } from "./sdk.gen";
 export type {
@@ -114,6 +115,7 @@ export type {
   CreateSupportTicketResponses,
   CustodyEventOut,
   CustodyPage,
+  CustodyVerificationOut,
   DownloadEvidenceData,
   DownloadEvidenceError,
   DownloadEvidenceErrors,
@@ -299,6 +301,11 @@ export type {
   ValidationErrorItem,
   ValidationProblem,
   VerificationRequested,
+  VerifyCustodyData,
+  VerifyCustodyError,
+  VerifyCustodyErrors,
+  VerifyCustodyResponse,
+  VerifyCustodyResponses,
   VerifyEmailData,
   VerifyEmailError,
   VerifyEmailErrors,
