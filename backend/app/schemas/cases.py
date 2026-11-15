@@ -149,6 +149,13 @@ class CustodyEventOut(BaseModel):
     event_hash: str = Field(description="Huella SHA-256 del evento, en hexadecimal.")
 
 
+class CustodyPage(BaseModel):
+    """Una página de eventos del caso, del más reciente al más antiguo."""
+
+    items: list[CustodyEventOut]
+    next_cursor: int | None = Field(description="Secuencia anterior a la última mostrada.")
+
+
 class EvidenceDetailOut(EvidenceSummaryOut):
     """Metadatos y eventos de una evidencia asignada, sin contenido ni token del sello."""
 
