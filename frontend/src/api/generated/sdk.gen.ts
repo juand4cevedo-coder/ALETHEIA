@@ -55,6 +55,9 @@ import type {
   ListCasesData,
   ListCasesErrors,
   ListCasesResponses,
+  ListCustodyEventsData,
+  ListCustodyEventsErrors,
+  ListCustodyEventsResponses,
   ListEvidencesData,
   ListEvidencesErrors,
   ListEvidencesResponses,
@@ -634,6 +637,32 @@ export const acceptInvitation = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+/**
+ * Consultar la cadena de custodia de un caso asignado
+ */
+export const listCustodyEvents = <ThrowOnError extends boolean = false>(
+  options: Options<ListCustodyEventsData, ThrowOnError>,
+): RequestResult<
+  ListCustodyEventsResponses,
+  ListCustodyEventsErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    ListCustodyEventsResponses,
+    ListCustodyEventsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/custody-events",
+    ...options,
   });
 
 /**

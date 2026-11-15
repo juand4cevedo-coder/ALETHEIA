@@ -29,7 +29,7 @@ import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
-import { CustodyTimeline } from "../features/cases/CustodyTimeline.tsx";
+import { CustodySection } from "../features/cases/CustodySection.tsx";
 import { EvidenceSection } from "../features/cases/EvidenceSection.tsx";
 import { formatColombiaTime } from "../features/cases/dates.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
@@ -278,10 +278,9 @@ function CaseView({
                 Cada evento lleva la huella del anterior. Si alguien alterara
                 uno, la cadena dejaría de cuadrar.
               </p>
-              <CustodyTimeline
-                events={detail.recent_events}
-                justOpened={justOpened}
-              />
+              {tab === "chain" && (
+                <CustodySection caseId={detail.id} justOpened={justOpened} />
+              )}
             </div>
             <CaseFacts detail={detail} />
           </div>
