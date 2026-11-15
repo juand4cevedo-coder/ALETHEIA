@@ -28,8 +28,9 @@ de cuota.
 El campo `detected_type` se infiere de la cabecera del archivo recibido; no se toma del
 `Content-Type` enviado por el navegador. El origen es una declaración de la persona que
 sube el archivo, no una comprobación independiente. La respuesta 201 contiene el ID, la
-huella SHA-256, el tamaño y `tsa_status: pending`. El sello de tiempo y la descarga de
-evidencias corresponden a HU-020 y HU-022.
+huella SHA-256, el tamaño y `tsa_status: pending`. El sello de tiempo corresponde a
+HU-020 y sigue pendiente de la autoridad externa. La descarga del original (HU-022)
+ya está integrada.
 
 HU-019 añade `GET /api/v1/cases/{case_id}/evidences`: devuelve, por páginas de 20 (máximo
 50), los metadatos de los archivos de un caso asignado. El cursor es el UUID de la última

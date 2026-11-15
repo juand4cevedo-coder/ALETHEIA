@@ -65,6 +65,8 @@ function serve(
   caseResponse: () => Response,
   evidenceResponse: (request: Request) => Response = () =>
     jsonResponse({ items: [], next_cursor: null }),
+  custodyResponse: (request: Request) => Response = () =>
+    jsonResponse({ items: DETAIL.recent_events, next_cursor: null }),
 ) {
   fetchMock.mockImplementation(async (input) => {
     const request = input as Request;
@@ -72,6 +74,12 @@ function serve(
     if (path === "/api/v1/me") return jsonResponse(ME);
     if (request.method === "GET" && path === `/api/v1/cases/${CASE_ID}`) {
       return caseResponse();
+    }
+    if (
+      request.method === "GET" &&
+      path === `/api/v1/cases/${CASE_ID}/custody-events`
+    ) {
+      return custodyResponse(request);
     }
     if (
       request.method === "GET" &&
@@ -140,7 +148,9 @@ describe("Página del caso (HU-015)", () => {
         name: "Cadena de custodia",
       }),
     ).toBeInTheDocument();
-    const event = within(panel).getByRole("listitem", { name: /Evento 1/ });
+    const event = await within(panel).findByRole("listitem", {
+      name: /Evento 1/,
+    });
     expect(within(event).getByText("Caso creado")).toBeInTheDocument();
     const time = within(event).getByText(
       /10:32:07 a\. m\. \(hora de Colombia\)$/,
@@ -153,6 +163,50 @@ describe("Página del caso (HU-015)", () => {
     expect(hash.closest("[translate='no']")).not.toBeNull();
     // El lector de pantalla recibe la huella completa.
     expect(within(event).getByText(EVENT_HASH)).toBeInTheDocument();
+  });
+
+  it("carga los eventos anteriores en orden sin permitir modificarlos", async () => {
+    const user = userEvent.setup();
+    const events = [1, 2, 3].map((seq) => ({
+      seq,
+      action: seq === 1 ? "case_created" : "member_added",
+      actor_name: "Laura Gómez",
+      occurred_at: "2026-11-10T15:32:07Z",
+      event_hash: EVENT_HASH,
+    }));
+    serve(
+      () =>
+        jsonResponse({ ...DETAIL, recent_events: events.slice(1).reverse() }),
+      undefined,
+      (request) => {
+        const cursor = new URL(request.url).searchParams.get("cursor");
+        return cursor === "2"
+          ? jsonResponse({ items: [events[0]], next_cursor: null })
+          : jsonResponse({ items: events.slice(1).reverse(), next_cursor: 2 });
+      },
+    );
+    await openCase();
+    await screen.findByRole("listitem", { name: "Evento 3" });
+    await user.click(
+      screen.getByRole("button", { name: "Ver eventos anteriores" }),
+    );
+    await screen.findByRole("listitem", { name: "Evento 1" });
+    expect(
+      within(screen.getByRole("list", { name: "Eventos de la cadena" }))
+        .getAllByRole("listitem")
+        .map((item) => item.getAttribute("aria-label")),
+    ).toEqual(["Evento 1", "Evento 2", "Evento 3"]);
+    expect(
+      screen.queryByRole("button", { name: "Ver eventos anteriores" }),
+    ).not.toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls
+        .map(([input]) => input as Request)
+        .filter((request) =>
+          new URL(request.url).pathname.endsWith("/custody-events"),
+        )
+        .every((request) => request.method === "GET"),
+    ).toBe(true);
   });
 
   it("muestra el equipo con quien abrió el caso", async () => {
@@ -254,7 +308,7 @@ describe("Página del caso (HU-015)", () => {
       expect(screen.queryByRole("tab", { name })).toBeNull();
     }
     expect(screen.queryByText(/Cadena íntegra/)).toBeNull();
-    expect(screen.getByText("Sin verificar")).toBeInTheDocument();
+    expect(await screen.findByText("Sin verificar")).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Evidencias" })).toBeInTheDocument();
   });
 
