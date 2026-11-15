@@ -91,6 +91,45 @@ def test_abogado_asigna_y_retira_solo_a_miembro_de_su_despacho(
     assert custody_chain.verify(custody_chain.load(db, uuid.UUID(case_id))).intact
 
 
+def test_cadena_paginada_para_miembros_sin_edicion(dispositivo: NuevoCliente, db: Session) -> None:
+    office = crear_oficina(db)
+    assistant = crear_miembro(db, office, "lector-cadena@example.com", "assistant")
+    outsider = crear_miembro(db, office, "ajeno-cadena@example.com", "lawyer")
+    owner_client = _login(dispositivo, db, office.owner)
+    case_id = _case(owner_client)
+    path = f"{_CASES}/{case_id}/custody-events"
+    assert (
+        owner_client.post(
+            f"{_CASES}/{case_id}/members", json={"user_id": str(assistant.id)}
+        ).status_code
+        == 204
+    )
+    assistant_client = _login(dispositivo, db, assistant)
+    assert assistant_client.get(path).status_code == 200
+    assert owner_client.delete(f"{_CASES}/{case_id}/members/{assistant.id}").status_code == 204
+
+    first = owner_client.get(path, params={"limit": 2})
+    assert first.status_code == 200, first.text
+    assert first.headers["Cache-Control"] == "no-store"
+    assert [event["seq"] for event in first.json()["items"]] == [3, 2]
+    assert [event["action"] for event in first.json()["items"]] == [
+        "member_removed",
+        "member_added",
+    ]
+    assert all(event["actor_name"] == office.owner.full_name for event in first.json()["items"])
+    assert first.json()["next_cursor"] == 2
+    second = owner_client.get(path, params={"cursor": 2, "limit": 2})
+    assert [event["seq"] for event in second.json()["items"]] == [1]
+    assert second.json()["next_cursor"] is None
+    assert owner_client.patch(path, json={"action": "changed"}).status_code == 405
+    assert owner_client.delete(path).status_code == 405
+    assert owner_client.get(path, params={"cursor": 0}).status_code == 422
+
+    assert _login(dispositivo, db, outsider).get(path).status_code == 404
+    # El asistente estuvo asignado pero ya no lo está: no conserva acceso.
+    assert assistant_client.get(path).status_code == 404
+
+
 def test_no_asigna_a_otra_organizacion_ni_a_una_persona_inexistente(
     dispositivo: NuevoCliente, db: Session
 ) -> None:

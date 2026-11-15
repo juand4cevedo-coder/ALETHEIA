@@ -25,6 +25,7 @@ import {
   forgotPassword,
   health,
   listCases,
+  listCustodyEvents,
   listEvidences,
   listInvitations,
   listMembers,
@@ -97,6 +98,9 @@ import type {
   ListCasesData,
   ListCasesError,
   ListCasesResponse,
+  ListCustodyEventsData,
+  ListCustodyEventsError,
+  ListCustodyEventsResponse,
   ListEvidencesData,
   ListEvidencesError,
   ListEvidencesResponse,
@@ -930,6 +934,87 @@ export const acceptInvitationMutation = (
     },
   };
   return mutationOptions;
+};
+
+export const listCustodyEventsQueryKey = (
+  options: Options<ListCustodyEventsData>,
+) => createQueryKey("listCustodyEvents", options);
+
+/**
+ * Consultar la cadena de custodia de un caso asignado
+ */
+export const listCustodyEventsOptions = (
+  options: Options<ListCustodyEventsData>,
+) =>
+  queryOptions<
+    ListCustodyEventsResponse,
+    ListCustodyEventsError,
+    ListCustodyEventsResponse,
+    ReturnType<typeof listCustodyEventsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listCustodyEvents({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listCustodyEventsQueryKey(options),
+  });
+
+export const listCustodyEventsInfiniteQueryKey = (
+  options: Options<ListCustodyEventsData>,
+): QueryKey<Options<ListCustodyEventsData>> =>
+  createQueryKey("listCustodyEvents", options, true);
+
+/**
+ * Consultar la cadena de custodia de un caso asignado
+ */
+export const listCustodyEventsInfiniteOptions = (
+  options: Options<ListCustodyEventsData>,
+) => {
+  const opts = infiniteQueryOptions<
+    ListCustodyEventsResponse,
+    ListCustodyEventsError,
+    InfiniteData<ListCustodyEventsResponse>,
+    QueryKey<Options<ListCustodyEventsData>>,
+    | number
+    | null
+    | Pick<
+        QueryKey<Options<ListCustodyEventsData>>[0],
+        "body" | "headers" | "path" | "query"
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<ListCustodyEventsData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  cursor: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listCustodyEvents({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: listCustodyEventsInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
 };
 
 export const listEvidencesQueryKey = (options: Options<ListEvidencesData>) =>
