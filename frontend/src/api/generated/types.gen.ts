@@ -566,6 +566,24 @@ export type CustodyEventOut = {
 };
 
 /**
+ * CustodyPage
+ *
+ * Una página de eventos del caso, del más reciente al más antiguo.
+ */
+export type CustodyPage = {
+  /**
+   * Items
+   */
+  items: Array<CustodyEventOut>;
+  /**
+   * Next Cursor
+   *
+   * Secuencia anterior a la última mostrada.
+   */
+  next_cursor: number | null;
+};
+
+/**
  * EvidenceDetailOut
  *
  * Metadatos y eventos de una evidencia asignada, sin contenido ni token del sello.
@@ -2535,6 +2553,55 @@ export type AcceptInvitationResponses = {
 
 export type AcceptInvitationResponse =
   AcceptInvitationResponses[keyof AcceptInvitationResponses];
+
+export type ListCustodyEventsData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: {
+    /**
+     * Cursor
+     */
+    cursor?: number | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+  };
+  url: "/api/v1/cases/{case_id}/custody-events";
+};
+
+export type ListCustodyEventsErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListCustodyEventsError =
+  ListCustodyEventsErrors[keyof ListCustodyEventsErrors];
+
+export type ListCustodyEventsResponses = {
+  /**
+   * Successful Response
+   */
+  200: CustodyPage;
+};
+
+export type ListCustodyEventsResponse =
+  ListCustodyEventsResponses[keyof ListCustodyEventsResponses];
 
 export type ListEvidencesData = {
   body?: never;
