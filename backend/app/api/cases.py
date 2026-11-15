@@ -9,9 +9,12 @@ expediente, así que ningún intermediario guarda una copia, tampoco las de erro
 import logging
 import uuid
 from typing import Annotated, Any, Final, Literal
+from urllib.parse import quote
 
+import tink
+from botocore.exceptions import ClientError
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -24,6 +27,7 @@ from app.api.deps import (
     get_client_ip,
     get_key_wrapper,
     get_principal,
+    get_principal_allowing_outdated_legal,
     get_session,
 )
 from app.api.organization import NOT_FOUND
@@ -49,6 +53,7 @@ from app.schemas.cases import (
     LastEventOut,
 )
 from app.services import cases as cases_service
+from app.services import evidence_download as evidence_download_service
 from app.services import evidence_queries
 from app.services import evidence_upload as evidence_service
 from app.services.evidence_stream import FileTooLarge, InvalidUpload
@@ -59,7 +64,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_case_worker(
-    principal: Annotated[Principal, Depends(get_principal)],
+    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
     session: Annotated[Session, Depends(get_session)],
 ) -> Principal:
     """La cuenta propietaria de la plataforma administra el servicio, no expedientes."""
@@ -198,6 +203,64 @@ def read_evidence(
             ],
             "next_event_seq": next_event_seq,
         }
+    )
+
+
+@router.get(
+    "/{case_id}/evidences/{evidence_id}/download",
+    summary="Descargar el archivo original verificado",
+    responses=_UNAUTHORIZED
+    | {
+        200: {
+            "description": "Archivo original; su descarga queda en la cadena de custodia.",
+            "content": {
+                "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}
+            },
+        },
+        403: {"description": "El miembro del caso no puede descargar originales."},
+        404: {"description": "El caso o la evidencia no existen para esta persona."},
+        503: {"description": "No se pudo verificar o leer el archivo conservado."},
+    },
+)
+def download_evidence(
+    case_id: uuid.UUID,
+    evidence_id: uuid.UUID,
+    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
+    session: Annotated[Session, Depends(get_session)],
+    wrapper: Annotated[KeyWrapper, Depends(get_key_wrapper)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+) -> StreamingResponse:
+    try:
+        download = evidence_download_service.prepare_download(
+            session, principal, case_id, evidence_id, wrapper, settings
+        )
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    except evidence_download_service.DownloadForbidden:
+        raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
+    except (
+        KeyWrapperError,
+        ClientError,
+        OSError,
+        ValueError,
+        tink.TinkError,
+        evidence_download_service.EvidenceIntegrityError,
+    ):
+        logger.exception("No se pudo verificar una evidencia antes de descargarla")
+        raise HTTPException(
+            503, detail="No se pudo verificar el archivo conservado.", headers=_NO_STORE
+        ) from None
+    return StreamingResponse(
+        download.chunks(),
+        media_type="application/octet-stream",
+        headers={
+            "Cache-Control": "no-store",
+            "Content-Length": str(download.size_bytes),
+            "Content-Disposition": (
+                f"attachment; filename*=UTF-8''{quote(download.filename, safe='')}"
+            ),
+            "X-Content-Type-Options": "nosniff",
+        },
     )
 
 
