@@ -24,6 +24,35 @@ PracticeArea = Literal[
 # Los mismos valores de evidences.declared_type.
 DeclaredType = Literal["chat", "email", "audio", "image", "document", "other"]
 
+
+class EvidenceUploadOut(BaseModel):
+    """Constancia inmediata de la preservación; el sello de tiempo llega después."""
+
+    id: uuid.UUID
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    size_bytes: int = Field(gt=0)
+    tsa_status: Literal["pending"]
+
+
+class EvidenceSummaryOut(BaseModel):
+    """Metadatos visibles para quienes pertenecen al caso; sin contenido del archivo."""
+
+    id: uuid.UUID
+    original_filename: str
+    declared_type: DeclaredType
+    declared_origin: str
+    detected_type: str
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    size_bytes: int = Field(gt=0)
+    tsa_status: Literal["pending", "stamped", "failed"]
+    uploaded_at: datetime.datetime
+
+
+class EvidencePage(BaseModel):
+    items: list[EvidenceSummaryOut]
+    next_cursor: uuid.UUID | None
+
+
 # MSG nuevo de la sección 5.3 del diseño: dice cuántos dígitos tiene y cómo revisarlos.
 INVALID_FILING_NUMBER: Final = (
     "El número de radicación tiene 23 dígitos. Revise que no falte ni sobre ninguno"
@@ -94,6 +123,22 @@ class CaseMemberOut(BaseModel):
     added_at: datetime.datetime = Field(description="Cuándo se asignó al caso.")
 
 
+class CaseMemberAdd(BaseModel):
+    """Persona de la organización que se asignará al caso."""
+
+    model_config = ConfigDict(extra="forbid")
+    user_id: uuid.UUID
+
+
+class CaseCandidate(BaseModel):
+    """Persona disponible para asignar a este caso."""
+
+    user_id: uuid.UUID
+    full_name: str
+    email: str
+    role: MemberRole
+
+
 class CustodyEventOut(BaseModel):
     """Un evento de la cadena de custodia del caso."""
 
@@ -102,6 +147,14 @@ class CustodyEventOut(BaseModel):
     actor_name: str | None = Field(description="Quién lo hizo, o null si fue el sistema.")
     occurred_at: datetime.datetime = Field(description="Cuándo ocurrió.")
     event_hash: str = Field(description="Huella SHA-256 del evento, en hexadecimal.")
+
+
+class EvidenceDetailOut(EvidenceSummaryOut):
+    """Metadatos y eventos de una evidencia asignada, sin contenido ni token del sello."""
+
+    tsa_time: datetime.datetime | None
+    events: list[CustodyEventOut]
+    next_event_seq: int | None
 
 
 class CaseDetail(CaseOut):

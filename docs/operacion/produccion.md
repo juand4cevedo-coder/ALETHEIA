@@ -112,7 +112,7 @@ El rol `aletheia-prod-instancia` tiene tres políticas: `aletheia-prod-acceso` p
 
 La política de correo aún nombra todas las identidades de la cuenta: se configuró así cuando SES estaba en sandbox y exigía autorización sobre la identidad del destinatario. SES ya tiene acceso de producción. Las condiciones `ses:FromAddress`, `ses:FromDisplayName` y `ses:ApiVersion` restringen el remitente; el alcance de `Resource` puede reducirse en una revisión separada, con una prueba de envío después del cambio.
 
-Desde HU-015 la API llama a `Encrypt` de KMS cada vez que se abre un caso y llamará a `Decrypt` para leer su evidencia (HU-018). Si KMS no responde o niega la operación, abrir un caso falla con 503, no deja ninguna fila y la API registra el código de error de KMS.
+Desde HU-015 la API llama a `Encrypt` de KMS cada vez que se abre un caso. HU-018 usa `Decrypt` para abrir la llave de ese caso antes de cifrar una evidencia. Si KMS no responde o niega la operación, la API devuelve 503 sin registrar la evidencia; al abrir un caso también evita dejar filas incompletas. La implementación de HU-018 aún requiere revisión y despliegue antes de estar disponible en producción.
 
 La versión `v1` de la política administrada `aletheia-prod-acceso` nombra el ARN de la llave, restringe el algoritmo a `RSAES_OAEP_SHA_256` y autoriza `Encrypt` y `Decrypt`. Se comprobó en AWS el 13/11/2026. `Encrypt` recibe el alias como `KeyId`; `Decrypt` recibe el ARN guardado con cada caso.
 
