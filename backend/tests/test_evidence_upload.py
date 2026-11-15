@@ -261,3 +261,47 @@ def test_listado_paginado_y_ajeno_404(dispositivo: NuevoCliente, db: Session) ->
     outsider = crear_miembro(db, office, "ajeno-listado@example.com", "assistant")
     denied = _login(dispositivo, db, outsider).get(path)
     assert denied.status_code == 404
+
+
+def test_detalle_muestra_huella_sello_y_eventos_solo_al_miembro(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office, client, case_id = _case(dispositivo, db)
+    payload = b"contenido para detalle"
+    uploaded = _upload(client, case_id, payload)
+    assert uploaded.status_code == 201
+    evidence_id = uploaded.json()["id"]
+    path = f"/api/v1/cases/{case_id}/evidences/{evidence_id}"
+
+    detail = client.get(path)
+    assert detail.status_code == 200
+    assert detail.headers["Cache-Control"] == "no-store"
+    body = detail.json()
+    assert body["sha256"] == hashlib.sha256(payload).hexdigest()
+    assert body["size_bytes"] == len(payload)
+    assert body["declared_origin"] == "Entregado por el cliente"
+    assert body["tsa_status"] == "pending"
+    assert body["tsa_time"] is None
+    assert body["next_event_seq"] is None
+    assert len(body["events"]) == 1
+    assert body["events"][0]["action"] == "evidence_uploaded"
+    assert body["events"][0]["actor_name"] == office.owner.full_name
+    assert len(body["events"][0]["event_hash"]) == 64
+    assert "tsa_token" not in body
+    assert "storage_key" not in body
+
+    missing = client.get(f"/api/v1/cases/{case_id}/evidences/{uuid.uuid4()}")
+    other_case = client.post("/api/v1/cases", json={"title": "Otro caso"})
+    assert other_case.status_code == 201
+    wrong_case = client.get(f"/api/v1/cases/{other_case.json()['id']}/evidences/{evidence_id}")
+    outsider = crear_miembro(db, office, "ajeno-detalle@example.com", "assistant")
+    denied = _login(dispositivo, db, outsider).get(path)
+    other_office = crear_oficina(db)
+    cross_organization = _login(dispositivo, db, other_office.owner).get(path)
+    assert all(
+        response.status_code == 404
+        for response in (missing, wrong_case, denied, cross_organization)
+    )
+    assert {
+        response.json()["detail"] for response in (missing, wrong_case, denied, cross_organization)
+    } == {"No encontramos lo que busca o no tiene acceso a ello."}

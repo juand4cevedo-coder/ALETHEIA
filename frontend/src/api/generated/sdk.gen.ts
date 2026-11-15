@@ -84,6 +84,9 @@ import type {
   ReadCaseData,
   ReadCaseErrors,
   ReadCaseResponses,
+  ReadEvidenceData,
+  ReadEvidenceErrors,
+  ReadEvidenceResponses,
   ReadMeData,
   ReadMeErrors,
   ReadMeResponses,
@@ -677,6 +680,28 @@ export const uploadEvidence = <ThrowOnError extends boolean = false>(
       "Content-Type": null,
       ...options.headers,
     },
+  });
+
+/**
+ * Ver los metadatos, sello y eventos de una evidencia asignada
+ */
+export const readEvidence = <ThrowOnError extends boolean = false>(
+  options: Options<ReadEvidenceData, ThrowOnError>,
+): RequestResult<ReadEvidenceResponses, ReadEvidenceErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    ReadEvidenceResponses,
+    ReadEvidenceErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/evidences/{evidence_id}",
+    ...options,
   });
 
 /**

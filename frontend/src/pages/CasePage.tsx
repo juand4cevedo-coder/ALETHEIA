@@ -149,7 +149,10 @@ function CaseView({
   justOpened: boolean;
   me: Me;
 }) {
-  const [tab, setTab] = useState<TabKey>("chain");
+  const location = useLocation();
+  const [tab, setTab] = useState<TabKey>(
+    location.hash === "#evidencias" ? "evidence" : "chain",
+  );
   const tabRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({
     chain: null,
     team: null,
