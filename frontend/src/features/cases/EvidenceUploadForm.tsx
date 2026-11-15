@@ -3,6 +3,7 @@ import { useRef, useState, type FormEvent } from "react";
 
 import {
   listCasesQueryKey,
+  listEvidencesInfiniteQueryKey,
   readCaseQueryKey,
 } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { sessionFetch } from "../../api/sessionFetch.ts";
@@ -86,6 +87,11 @@ export function EvidenceUploadForm({ caseId }: { caseId: string }) {
           queryKey: readCaseQueryKey({ path: { case_id: caseId } }),
         }),
         queryClient.invalidateQueries({ queryKey: listCasesQueryKey() }),
+        queryClient.invalidateQueries({
+          queryKey: listEvidencesInfiniteQueryKey({
+            path: { case_id: caseId },
+          }),
+        }),
       ]);
     } catch {
       setError(
