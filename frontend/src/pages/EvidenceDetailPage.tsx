@@ -55,7 +55,7 @@ export function EvidenceDetailPage() {
     );
   }
 
-  if (detail.isError) {
+  if (detail.isError && !detail.data) {
     const problem = apiProblem(detail.error);
     const missing = problem.status === 404 || problem.status === 422;
     return (
