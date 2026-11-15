@@ -1,7 +1,9 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useParams } from "react-router";
+import { useState } from "react";
+import { useOutletContext, useParams } from "react-router";
 
-import { readEvidence } from "../api/generated";
+import { readEvidence, type Me } from "../api/generated";
+import { renewSession } from "../api/sessionFetch.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { Hash } from "../components/ui/Hash.tsx";
@@ -24,8 +26,31 @@ const SEAL = {
 } as const;
 
 export function EvidenceDetailPage() {
+  const me = useOutletContext<Me>();
   const { caseId = "", evidenceId = "" } = useParams();
   const back = `${ROUTES.caseDetail(caseId)}#evidencias`;
+  const [downloadBusy, setDownloadBusy] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
+
+  async function downloadOriginal() {
+    setDownloadBusy(true);
+    setDownloadError("");
+    try {
+      if (!(await renewSession())) {
+        setDownloadError(
+          "Su sesión terminó. Ingrese de nuevo para descargar el archivo.",
+        );
+        return;
+      }
+      window.location.assign(
+        `/api/v1/cases/${caseId}/evidences/${evidenceId}/download`,
+      );
+    } catch {
+      setDownloadError("No pudimos iniciar la descarga. Inténtelo de nuevo.");
+    } finally {
+      setDownloadBusy(false);
+    }
+  }
   const detail = useInfiniteQuery({
     queryKey: ["evidenceDetail", caseId, evidenceId],
     initialPageParam: null as number | null,
@@ -95,11 +120,27 @@ export function EvidenceDetailPage() {
         title={evidence.original_filename}
         description="Metadatos de la evidencia conservada"
         actions={
-          <ButtonLink to={back} variant="secondary">
-            Volver al caso
-          </ButtonLink>
+          <div className={styles.actions}>
+            {me.organization?.role !== "assistant" && me.organization && (
+              <Button
+                variant="secondary"
+                disabled={downloadBusy}
+                onClick={() => void downloadOriginal()}
+              >
+                {downloadBusy ? "Preparando descarga" : "Descargar original"}
+              </Button>
+            )}
+            <ButtonLink to={back} variant="secondary">
+              Volver al caso
+            </ButtonLink>
+          </div>
         }
       />
+      {downloadError && (
+        <Notice tone="error">
+          <p role="alert">{downloadError}</p>
+        </Notice>
+      )}
       <section className={styles.panel} aria-labelledby="evidence-metadata">
         <h2 id="evidence-metadata">Archivo y procedencia</h2>
         <dl className={styles.facts}>
