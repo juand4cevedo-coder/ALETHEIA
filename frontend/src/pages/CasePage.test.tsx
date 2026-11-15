@@ -69,6 +69,12 @@ function serve(caseResponse: () => Response) {
     if (request.method === "GET" && path === `/api/v1/cases/${CASE_ID}`) {
       return caseResponse();
     }
+    if (
+      request.method === "GET" &&
+      path === `/api/v1/cases/${CASE_ID}/available-members`
+    ) {
+      return jsonResponse([]);
+    }
     throw new Error(`Ruta inesperada: ${request.method} ${path}`);
   });
 }
@@ -157,6 +163,70 @@ describe("Página del caso (HU-015)", () => {
     expect(within(member).getByText("laura@example.com")).toBeInTheDocument();
     expect(within(member).getByText("Abogado")).toBeInTheDocument();
     expect(within(member).getByText("Abrió el caso")).toBeInTheDocument();
+  });
+
+  it("asigna y retira a una persona del caso sin quitarla del despacho", async () => {
+    const user = userEvent.setup();
+    const teammate = {
+      user_id: "01890a5d-ac96-774b-bcce-b302099a8091",
+      full_name: "Sofía Ruiz",
+      email: "sofia@example.com",
+      role: "assistant",
+      added_at: "2026-11-14T15:00:00Z",
+    };
+    let assigned = false;
+    fetchMock.mockImplementation(async (input) => {
+      const request = input as Request;
+      const path = new URL(request.url).pathname;
+      if (path === "/api/v1/me") return jsonResponse(ME);
+      if (path === `/api/v1/cases/${CASE_ID}` && request.method === "GET") {
+        return jsonResponse({
+          ...DETAIL,
+          member_count: assigned ? 2 : 1,
+          members: assigned ? [...DETAIL.members, teammate] : DETAIL.members,
+        });
+      }
+      if (path === `/api/v1/cases/${CASE_ID}/available-members`) {
+        return jsonResponse(assigned ? [] : [teammate]);
+      }
+      if (
+        path === `/api/v1/cases/${CASE_ID}/members` &&
+        request.method === "POST"
+      ) {
+        expect(await request.json()).toEqual({ user_id: teammate.user_id });
+        assigned = true;
+        return new Response(null, { status: 204 });
+      }
+      if (
+        path === `/api/v1/cases/${CASE_ID}/members/${teammate.user_id}` &&
+        request.method === "DELETE"
+      ) {
+        assigned = false;
+        return new Response(null, { status: 204 });
+      }
+      throw new Error(`Ruta inesperada: ${request.method} ${path}`);
+    });
+
+    await openCase();
+    await user.click(screen.getByRole("tab", { name: /Equipo/ }));
+    await screen.findByRole("option", { name: /Sofía Ruiz/ });
+    await user.selectOptions(
+      screen.getByRole("combobox", {
+        name: "Agregar a una persona del despacho",
+      }),
+      teammate.user_id,
+    );
+    await user.click(screen.getByRole("button", { name: "Asignar al caso" }));
+    expect(await screen.findByText("Sofía Ruiz")).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", { name: /Retirar a Sofía Ruiz del caso/ }),
+    );
+    await user.click(screen.getByRole("button", { name: "Confirmar retiro" }));
+    await screen.findByText(
+      "Persona retirada del caso. Sigue perteneciendo al despacho.",
+    );
+    expect(screen.queryByText("Sofía Ruiz")).not.toBeInTheDocument();
   });
 
   it("no muestra «Editar datos», «Subir evidencia» ni «Verificar ahora»", async () => {
