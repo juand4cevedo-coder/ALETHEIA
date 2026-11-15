@@ -16,6 +16,8 @@ dependencies = [
     "sqlalchemy==2.1.8",
     "tink==1.16.1",
     "uvicorn==0.54.0",
+    "python-multipart==0.0.33",
+    "anyio==4.12.1",
 ]
 
 [tool.uv]
@@ -61,6 +63,10 @@ plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
 module = ["tink", "tink.*", "asn1crypto", "asn1crypto.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["python_multipart", "python_multipart.*"]
 ignore_missing_imports = true
 
 [tool.pydantic-mypy]
