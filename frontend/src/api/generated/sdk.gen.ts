@@ -708,32 +708,6 @@ export const readEvidence = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Descargar el archivo original verificado
- */
-export const downloadEvidence = <ThrowOnError extends boolean = false>(
-  options: Options<DownloadEvidenceData, ThrowOnError>,
-): RequestResult<
-  DownloadEvidenceResponses,
-  DownloadEvidenceErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
-    DownloadEvidenceResponses,
-    DownloadEvidenceErrors,
-    ThrowOnError
-  >({
-    security: [
-      {
-        in: "cookie",
-        name: "__Host-aletheia_access",
-        type: "apiKey",
-      },
-    ],
-    url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/download",
-    ...options,
-  });
-
-/**
  * Listar los casos donde la persona es miembro, con su actividad
  */
 export const listCases = <ThrowOnError extends boolean = false>(
@@ -878,6 +852,32 @@ export const removeCaseMember = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/cases/{case_id}/members/{user_id}",
+    ...options,
+  });
+
+/**
+ * Descargar el archivo original verificado
+ */
+export const downloadEvidence = <ThrowOnError extends boolean = false>(
+  options: Options<DownloadEvidenceData, ThrowOnError>,
+): RequestResult<
+  DownloadEvidenceResponses,
+  DownloadEvidenceErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    DownloadEvidenceResponses,
+    DownloadEvidenceErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/download",
     ...options,
   });
 
