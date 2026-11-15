@@ -23,6 +23,40 @@ class EvidenceEvent:
     event_hash: bytes
 
 
+def list_case_events(
+    session: Session,
+    principal: Principal,
+    case_id: uuid.UUID,
+    *,
+    cursor: int | None,
+    limit: int,
+) -> tuple[list[EvidenceEvent], int | None]:
+    """Página de custodia tras comprobar la asignación al caso."""
+    organization_id = principal.organization_id
+    if organization_id is None:
+        raise CaseNotFoundError
+    set_tenant(session, TenantContext(organization_id, principal.user_id))
+    case = cases_repository.case_for_member(session, case_id, principal.user_id)
+    if case is None or case.organization_id != organization_id:
+        raise CaseNotFoundError
+    statement = (
+        select(
+            CustodyEvent.seq,
+            CustodyEvent.action,
+            User.full_name,
+            CustodyEvent.occurred_at,
+            CustodyEvent.event_hash,
+        )
+        .outerjoin(User, User.id == CustodyEvent.actor_user_id)
+        .where(CustodyEvent.organization_id == organization_id, CustodyEvent.case_id == case_id)
+    )
+    if cursor is not None:
+        statement = statement.where(CustodyEvent.seq < cursor)
+    rows = list(session.execute(statement.order_by(CustodyEvent.seq.desc()).limit(limit + 1)))
+    items = [EvidenceEvent(*row) for row in rows[:limit]]
+    return items, items[-1].seq if len(rows) > limit else None
+
+
 def list_evidences(
     session: Session,
     principal: Principal,
