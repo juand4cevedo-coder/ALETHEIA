@@ -100,3 +100,45 @@ it("usa el mismo mensaje para una evidencia inexistente o ajena", async () => {
     `/app/casos/${caseId}#evidencias`,
   );
 });
+
+it("conserva el detalle y permite reintentar si falla la página siguiente", async () => {
+  let nextPageAttempts = 0;
+  fetchMock.mockImplementation(async (input) => {
+    const url = new URL((input as Request).url);
+    if (url.pathname === "/api/v1/me") return jsonResponse(me);
+    if (url.pathname !== api) throw new Error(`Ruta inesperada: ${url.pathname}`);
+    if (url.searchParams.has("event_cursor")) {
+      nextPageAttempts += 1;
+      if (nextPageAttempts === 1)
+        return jsonResponse({ status: 404, detail: "No disponible" }, 404);
+    }
+    return jsonResponse({
+      id: evidenceId,
+      original_filename: "registro.txt",
+      declared_type: "document",
+      declared_origin: "Entregado por la cliente",
+      detected_type: "text/plain",
+      sha256: sha,
+      size_bytes: 1234,
+      tsa_status: "pending",
+      tsa_time: null,
+      uploaded_at: "2026-11-14T14:00:00Z",
+      events: [{
+        seq: url.searchParams.has("event_cursor") ? 2 : 8,
+        action: "evidence_uploaded",
+        actor_name: "Laura Gómez",
+        occurred_at: "2026-11-14T15:00:00Z",
+        event_hash: "b".repeat(64),
+      }],
+      next_event_seq: url.searchParams.has("event_cursor") ? null : 8,
+    });
+  });
+  await renderRoute(route);
+  expect(await screen.findByRole("heading", { name: "registro.txt" })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Ver más eventos" }));
+  expect(await screen.findByText("No pudimos cargar más eventos. Inténtelo de nuevo.")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "registro.txt" })).toBeInTheDocument();
+  expect(screen.getByText("Entregado por la cliente")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Ver más eventos" }));
+  expect(await screen.findByText(/#2: Evidencia subida/)).toBeInTheDocument();
+});
