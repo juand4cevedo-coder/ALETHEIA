@@ -74,7 +74,8 @@ def upgrade() -> None:
             sa.text(
                 "INSERT INTO jobs (id, kind, payload, idempotency_key, run_after) "
                 "VALUES (:id, 'subscription_expire', "
-                "jsonb_build_object('organization_id', :organization_id), :key, :deadline) "
+                "jsonb_build_object('organization_id', CAST(:organization_id AS text)), "
+                ":key, :deadline) "
                 "ON CONFLICT (idempotency_key) DO NOTHING"
             ),
             {
