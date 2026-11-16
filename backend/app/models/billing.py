@@ -70,6 +70,8 @@ class Subscription(Base):
     status: Mapped[str]
     billing_cycle: Mapped[str]
     trial_ends_at: Mapped[datetime.datetime | None]
+    # Una cortesía activa puede no tener fecha; su concesión llega con HU-116.
+    courtesy_ends_at: Mapped[datetime.datetime | None]
     current_period_end: Mapped[datetime.datetime | None]
     # Fin de los 30 días de solo lectura después de cancelar (RN-016).
     read_only_until: Mapped[datetime.datetime | None]
