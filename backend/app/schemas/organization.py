@@ -88,3 +88,20 @@ class MemberPage(BaseModel):
         description="Cursor para la página siguiente, o null si no hay más."
     )
     seats: SeatsOut = Field(description="Cupo de usuarios del plan.")
+
+
+class OrganizationAuditEvent(BaseModel):
+    """Evento de seguridad del despacho, sin contenido de casos ni datos internos."""
+
+    id: uuid.UUID
+    action: str
+    actor_user_id: uuid.UUID | None
+    target_id: uuid.UUID | None
+    ip: str | None
+    user_agent: str | None
+    created_at: datetime.datetime
+
+
+class OrganizationAuditPage(BaseModel):
+    items: list[OrganizationAuditEvent]
+    next_cursor: uuid.UUID | None

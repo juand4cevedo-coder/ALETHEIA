@@ -25,6 +25,7 @@ export const ROUTES = {
   platformAudit: "/app/plataforma/auditoria",
   support: "/app/soporte",
   members: "/app/miembros",
+  organizationAudit: "/app/auditoria",
   cases: "/app/casos",
   newCase: "/app/casos/nuevo",
   caseDetail: (id: string) => `/app/casos/${id}`,
