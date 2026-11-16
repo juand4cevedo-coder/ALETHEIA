@@ -282,6 +282,57 @@
   gap: 20px;
   max-width: 680px;
 }
+.courtesy {
+  display: grid;
+  gap: 20px;
+  padding-top: 16px;
+}
+.courtesy label {
+  color: #d7d7da;
+  font-size: 13px;
+  font-weight: 550;
+}
+.courtesy input,
+.courtesy select,
+.courtesy textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #ffffff2b;
+  border-radius: 9px;
+  background: #0a0b0d;
+  color: #f4f4f5;
+  font: inherit;
+  color-scheme: dark;
+}
+.courtesy textarea {
+  resize: vertical;
+}
+.courtesy :is(input, select, textarea):focus-visible {
+  outline: 2px solid #e2d1b7;
+  outline-offset: 2px;
+}
+.inlineForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.inlineForm input {
+  flex: 1 1 240px;
+}
+.targetCard {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid #ffffff24;
+  border-radius: 12px;
+  background: #0d0e10;
+}
+.targetCard span {
+  color: #b9bac0;
+  font-size: 13px;
+}
 .form > button {
   justify-self: start;
 }

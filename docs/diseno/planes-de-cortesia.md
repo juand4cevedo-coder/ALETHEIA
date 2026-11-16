@@ -7,14 +7,15 @@ planes del catálogo sin crear un cobro ni pasar por una pasarela. La concesión
 miembros de ese despacho y respeta los límites del plan elegido. También sirve para un despacho
 propio de trabajo jurídico, administrado con una cuenta distinta de la propietaria de plataforma.
 
-## Estado actual y dependencias
+## Implementación
 
-La consola de facturación solo lee el catálogo y cuenta suscripciones. El registro crea una
+La consola de facturación permite buscar un despacho por correo de su titular, confirmar el
+despacho y conceder, renovar o revocar un plan de cortesía. El registro crea una
 prueba de 14 días y agenda su vencimiento en el trabajador. Al vencer, la suscripción pasa a
 `expired` y el despacho a `read_only` en una transacción. La migración 0018 agenda también las
-pruebas creadas antes de esta implementación. Las cortesías todavía no se conceden desde la
-consola; HU-116 usará `courtesy_ends_at` y la misma tarea. Los cobros y las facturas siguen
-sin integración.
+pruebas creadas antes de esta implementación. Las cortesías con fecha usan la misma tarea;
+las indefinidas permanecen activas. La migración 0019 agrega el origen del acceso y los
+datos de concesión. Los cobros y las facturas siguen sin integración.
 
 ## Reglas de la entrega
 
