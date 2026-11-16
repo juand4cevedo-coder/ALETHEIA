@@ -60,6 +60,7 @@ def test_solo_gestores_ven_eventos_de_su_despacho_sin_contenido(
     )
     db.add(foreign_event)
     db.flush()
+    foreign_event_id = foreign_event.id
 
     owner_client = _login(dispositivo, first.owner)
     response = owner_client.get(PATH)
@@ -67,7 +68,7 @@ def test_solo_gestores_ven_eventos_de_su_despacho_sin_contenido(
     assert response.headers["cache-control"] == "no-store"
     page = response.json()
     assert {str(event_id) for event_id in own_ids} <= {event["id"] for event in page["items"]}
-    assert str(foreign_event.id) not in {event["id"] for event in page["items"]}
+    assert str(foreign_event_id) not in {event["id"] for event in page["items"]}
     assert all(event["action"] != "case_created" for event in page["items"])
     assert all("details" not in event and "organization_id" not in event for event in page["items"])
     assert "no publicar" not in response.text
