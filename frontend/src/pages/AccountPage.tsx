@@ -65,6 +65,35 @@ export function AccountPage() {
         </dl>
       </Card>
 
+      {me.subscription && (
+        <Card title="Plan del despacho">
+          <dl className={styles.record}>
+            <div className={styles.row}>
+              <dt>Plan</dt>
+              <dd>{me.subscription.plan_name}</dd>
+            </div>
+            <div className={styles.row}>
+              <dt>Estado</dt>
+              <dd>
+                {me.subscription.status === "active"
+                  ? "Activo"
+                  : me.subscription.status === "trial"
+                    ? "Prueba"
+                    : "Solo lectura"}
+              </dd>
+            </div>
+            <div className={styles.row}>
+              <dt>Vencimiento</dt>
+              <dd>
+                {me.subscription.ends_at
+                  ? new Date(me.subscription.ends_at).toLocaleString("es-CO")
+                  : "Sin fecha definida"}
+              </dd>
+            </div>
+          </dl>
+        </Card>
+      )}
+
       <PasswordCard />
       <SessionsCard />
     </div>

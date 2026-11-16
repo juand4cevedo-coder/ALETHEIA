@@ -70,6 +70,7 @@ def register(
                 plan_id=trial_plan_id,
                 status="trial",
                 billing_cycle="none",
+                access_source="trial",
                 trial_ends_at=now + datetime.timedelta(days=TRIAL_DAYS),
             ),
             audit=AuditLog(
