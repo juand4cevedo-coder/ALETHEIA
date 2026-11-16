@@ -53,6 +53,10 @@ export const loadAcceptInvitationPage = () =>
   );
 export const loadMembersPage = () =>
   import("../pages/MembersPage.tsx").then((module) => module.MembersPage);
+export const loadOrganizationAuditPage = () =>
+  import("../pages/OrganizationAuditPage.tsx").then(
+    (module) => module.OrganizationAuditPage,
+  );
 export const loadCasesPage = () =>
   import("../pages/CasesPage.tsx").then((module) => module.CasesPage);
 export const loadNewCasePage = () =>
