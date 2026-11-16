@@ -1272,6 +1272,56 @@ export type MySubscription = {
 };
 
 /**
+ * OrganizationAuditEvent
+ *
+ * Evento de seguridad del despacho, sin contenido de casos ni datos internos.
+ */
+export type OrganizationAuditEvent = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Action
+   */
+  action: string;
+  /**
+   * Actor User Id
+   */
+  actor_user_id: string | null;
+  /**
+   * Target Id
+   */
+  target_id: string | null;
+  /**
+   * Ip
+   */
+  ip: string | null;
+  /**
+   * User Agent
+   */
+  user_agent: string | null;
+  /**
+   * Created At
+   */
+  created_at: string;
+};
+
+/**
+ * OrganizationAuditPage
+ */
+export type OrganizationAuditPage = {
+  /**
+   * Items
+   */
+  items: Array<OrganizationAuditEvent>;
+  /**
+   * Next Cursor
+   */
+  next_cursor: string | null;
+};
+
+/**
  * OrganizationMembership
  *
  * La organización de la persona y su rol en ella.
@@ -2618,6 +2668,52 @@ export type RevokeInvitationResponses = {
 
 export type RevokeInvitationResponse =
   RevokeInvitationResponses[keyof RevokeInvitationResponses];
+
+export type OrganizationAuditPageData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Cursor
+     *
+     * next_cursor de la página anterior.
+     */
+    cursor?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+  };
+  url: "/api/v1/organization/audit";
+};
+
+export type OrganizationAuditPageErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type OrganizationAuditPageError =
+  OrganizationAuditPageErrors[keyof OrganizationAuditPageErrors];
+
+export type OrganizationAuditPageResponses = {
+  /**
+   * Successful Response
+   */
+  200: OrganizationAuditPage;
+};
+
+export type OrganizationAuditPageResponse =
+  OrganizationAuditPageResponses[keyof OrganizationAuditPageResponses];
 
 export type PreviewInvitationData = {
   body: InvitationTokenRequest;
