@@ -12,6 +12,9 @@ from app.api.deps import get_client_ip, get_principal, get_session
 from app.models import AuditLog, PaymentEvent, Plan, Subscription, User
 from app.repositories.sessions import revoke_user_sessions
 from app.schemas.platform import (
+    CourtesyGrant,
+    CourtesyRevoke,
+    CourtesyTarget,
     PlatformAuditEvent,
     PlatformAuditPage,
     PlatformBilling,
@@ -20,6 +23,7 @@ from app.schemas.platform import (
     PlatformUserPage,
     UserStatusChange,
 )
+from app.services import courtesy
 from app.services.audit import audit_ip
 from app.services.sessions import Principal
 
@@ -39,6 +43,92 @@ def get_platform_admin(
             headers={"Cache-Control": "no-store"},
         )
     return principal
+
+
+def _courtesy_result(response: Response, view: courtesy.CourtesyView) -> CourtesyTarget:
+    response.headers["Cache-Control"] = "no-store"
+    return CourtesyTarget.model_validate(view, from_attributes=True)
+
+
+@router.get("/courtesy", summary="Buscar un despacho por correo de su titular")
+def lookup_courtesy(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_platform_admin)],
+    session: Annotated[Session, Depends(get_session)],
+    owner_email: str,
+) -> CourtesyTarget:
+    try:
+        return _courtesy_result(response, courtesy.lookup(session, principal.user_id, owner_email))
+    except courtesy.OwnerNotFound:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="No encontramos ese despacho."
+        ) from None
+
+
+@router.post("/courtesy", summary="Conceder o renovar un plan de cortesía")
+def grant_courtesy(
+    change: CourtesyGrant,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_platform_admin)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+) -> CourtesyTarget:
+    try:
+        view = courtesy.grant(
+            session,
+            principal.user_id,
+            change.organization_id,
+            change.owner_email,
+            change.plan_code,
+            change.reason.strip(),
+            change.ends_at,
+            client_ip,
+        )
+        return _courtesy_result(response, view)
+    except courtesy.OwnerNotFound:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="No encontramos ese despacho."
+        ) from None
+    except courtesy.CourtesyConflict:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail="No se puede conceder este plan."
+        ) from None
+    except PermissionError:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, detail="Esta cuenta no administra la plataforma."
+        ) from None
+
+
+@router.post("/courtesy/revoke", summary="Revocar un plan de cortesía")
+def revoke_courtesy(
+    change: CourtesyRevoke,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_platform_admin)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+) -> CourtesyTarget:
+    try:
+        view = courtesy.revoke(
+            session,
+            principal.user_id,
+            change.organization_id,
+            change.owner_email,
+            change.reason.strip(),
+            client_ip,
+        )
+        return _courtesy_result(response, view)
+    except courtesy.OwnerNotFound:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="No encontramos ese despacho."
+        ) from None
+    except courtesy.CourtesyConflict:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail="No hay una cortesía activa."
+        ) from None
+    except PermissionError:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, detail="Esta cuenta no administra la plataforma."
+        ) from None
 
 
 def _public_user(user: User) -> PlatformUser:
