@@ -241,7 +241,7 @@ function CourtesyManager({
           <Button type="submit">Buscar despacho</Button>
         </div>
       </form>
-      {target.isPending && searched && <p role="status">Buscando despacho…</p>}
+      {target.isPending && searched && <p role="status">Buscando despacho</p>}
       {target.isError && (
         <Notice tone="error">
           No encontramos un despacho con ese titular.
@@ -252,13 +252,14 @@ function CourtesyManager({
           <div className={styles.targetCard}>
             <strong>{target.data.organization_name}</strong>
             <span>
-              {target.data.owner_name} · {target.data.owner_email}
+              {target.data.owner_name}, {target.data.owner_email}
             </span>
             <span>
               Plan actual:{" "}
               {plans.find((plan) => plan.code === target.data.plan_code)
-                ?.name ?? target.data.plan_code}{" "}
-              · {STATUS_LABELS[target.data.status] ?? target.data.status}
+                ?.name ?? target.data.plan_code}
+              {", "}
+              {STATUS_LABELS[target.data.status] ?? target.data.status}
             </span>
             <span>
               Acceso:{" "}

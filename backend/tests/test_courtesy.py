@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_principal
+from app.api.deps import get_principal, get_session
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, Job, Organization, Subscription
 from app.services import subscription_expiration
@@ -27,12 +27,14 @@ def _principal(user_id: uuid.UUID) -> Principal:
 
 
 def test_conceder_renovar_y_revocar_sin_registrar_pago(
-    app: FastAPI, db: Session, dispositivo: NuevoCliente
+    app: FastAPI, owner_db: Session, dispositivo: NuevoCliente
 ) -> None:
+    db = owner_db
     office = crear_oficina(db)
     admin = crear_persona(db, f"platform-{uuid.uuid4().hex}@example.com")
     admin.is_platform_admin = True
     db.commit()
+    app.dependency_overrides[get_session] = lambda: db
     app.dependency_overrides[get_principal] = lambda: _principal(admin.id)
     client = dispositivo()
     path = "/api/v1/platform/courtesy"
