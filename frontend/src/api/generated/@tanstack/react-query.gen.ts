@@ -23,6 +23,7 @@ import {
   createSupportTicket,
   downloadEvidence,
   forgotPassword,
+  grantCourtesy,
   health,
   listCases,
   listCustodyEvents,
@@ -31,6 +32,7 @@ import {
   listMembers,
   listPlans,
   listPlatformUsers,
+  lookupCourtesy,
   type Options,
   ownSupportTickets,
   platformAudit,
@@ -46,6 +48,7 @@ import {
   removeMember,
   resendVerification,
   resetPassword,
+  revokeCourtesy,
   revokeInvitation,
   signIn,
   signOut,
@@ -93,6 +96,9 @@ import type {
   ForgotPasswordData,
   ForgotPasswordError,
   ForgotPasswordResponse,
+  GrantCourtesyData,
+  GrantCourtesyError,
+  GrantCourtesyResponse,
   HealthData,
   HealthError,
   HealthResponse,
@@ -117,6 +123,9 @@ import type {
   ListPlatformUsersData,
   ListPlatformUsersError,
   ListPlatformUsersResponse,
+  LookupCourtesyData,
+  LookupCourtesyError,
+  LookupCourtesyResponse,
   OwnSupportTicketsData,
   OwnSupportTicketsError,
   OwnSupportTicketsResponse,
@@ -158,6 +167,9 @@ import type {
   ResetPasswordData,
   ResetPasswordError,
   ResetPasswordResponse,
+  RevokeCourtesyData,
+  RevokeCourtesyError,
+  RevokeCourtesyResponse,
   RevokeInvitationData,
   RevokeInvitationError,
   RevokeInvitationResponse,
@@ -1413,6 +1425,85 @@ export const downloadEvidenceOptions = (
     },
     queryKey: downloadEvidenceQueryKey(options),
   });
+
+export const lookupCourtesyQueryKey = (options: Options<LookupCourtesyData>) =>
+  createQueryKey("lookupCourtesy", options);
+
+/**
+ * Buscar un despacho por correo de su titular
+ */
+export const lookupCourtesyOptions = (options: Options<LookupCourtesyData>) =>
+  queryOptions<
+    LookupCourtesyResponse,
+    LookupCourtesyError,
+    LookupCourtesyResponse,
+    ReturnType<typeof lookupCourtesyQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await lookupCourtesy({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: lookupCourtesyQueryKey(options),
+  });
+
+/**
+ * Conceder o renovar un plan de cortesía
+ */
+export const grantCourtesyMutation = (
+  options?: Partial<Options<GrantCourtesyData>>,
+): UseMutationOptions<
+  GrantCourtesyResponse,
+  GrantCourtesyError,
+  Options<GrantCourtesyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    GrantCourtesyResponse,
+    GrantCourtesyError,
+    Options<GrantCourtesyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await grantCourtesy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Revocar un plan de cortesía
+ */
+export const revokeCourtesyMutation = (
+  options?: Partial<Options<RevokeCourtesyData>>,
+): UseMutationOptions<
+  RevokeCourtesyResponse,
+  RevokeCourtesyError,
+  Options<RevokeCourtesyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RevokeCourtesyResponse,
+    RevokeCourtesyError,
+    Options<RevokeCourtesyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await revokeCourtesy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const listPlatformUsersQueryKey = (
   options?: Options<ListPlatformUsersData>,
