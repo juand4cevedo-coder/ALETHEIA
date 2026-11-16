@@ -36,6 +36,7 @@ AUDIT_ACTIONS: Final = (
     "member_removed",
     "plan_changed",
     "subscription_canceled",
+    "subscription_expired",
     "account_blocked",
     "account_unblocked",
     "legal_accepted",
