@@ -323,7 +323,7 @@ def organization_audit_page(
                 action=event.action,
                 actor_user_id=event.actor_user_id,
                 target_id=event.target_id,
-                ip=event.ip,
+                ip=str(event.ip) if event.ip is not None else None,
                 user_agent=event.user_agent,
                 created_at=event.created_at,
             )
