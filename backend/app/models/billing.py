@@ -55,6 +55,10 @@ class Subscription(Base):
         CheckConstraint(text_values("status", SUBSCRIPTION_STATUSES), name="status"),
         CheckConstraint(text_values("billing_cycle", BILLING_CYCLES), name="billing_cycle"),
         CheckConstraint(text_values("access_source", ACCESS_SOURCES), name="access_source"),
+        CheckConstraint(
+            "courtesy_reason IS NULL OR char_length(courtesy_reason) BETWEEN 10 AND 500",
+            name="courtesy_reason_length",
+        ),
         # Una prueba siempre sabe cuándo termina (RN-017).
         CheckConstraint("status <> 'trial' OR trial_ends_at IS NOT NULL", name="trial_ends_at"),
         CheckConstraint(
