@@ -1,6 +1,6 @@
 # ALETHEIA
 
-Plataforma web para que abogados en Colombia preserven evidencia digital y documenten su integridad y trazabilidad. La versión publicada v0.4.5 conserva el archivo original, calcula su huella SHA-256 y registra las acciones en una cadena de custodia cuya integridad se puede verificar. El sello de tiempo externo RFC 3161 y el anclaje externo de la cadena siguen pendientes.
+Plataforma web para que abogados en Colombia preserven evidencia digital y documenten su integridad y trazabilidad. La versión publicada conserva el archivo original, calcula su huella SHA-256 y registra las acciones en una cadena de custodia cuya integridad se puede verificar. El sello de tiempo externo RFC 3161 y el anclaje externo de la cadena siguen pendientes.
 
 ALETHEIA preserva y documenta. No determina la autenticidad, la veracidad, la admisibilidad ni el valor probatorio de una evidencia, y no emite certificados.
 
