@@ -4,7 +4,7 @@ import datetime
 import uuid
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 
 class PlatformUser(BaseModel):
@@ -44,6 +44,37 @@ class PlatformBilling(BaseModel):
     subscription_counts: dict[str, int]
     payment_events_received: int
     payment_events_pending: int
+
+
+class CourtesyTarget(BaseModel):
+    organization_id: uuid.UUID
+    organization_name: str
+    owner_email: str
+    owner_name: str
+    plan_code: str
+    status: str
+    access_source: str
+    ends_at: datetime.datetime | None
+    granted_at: datetime.datetime | None
+    revoked_at: datetime.datetime | None
+
+
+class CourtesyGrant(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    organization_id: uuid.UUID
+    owner_email: str
+    plan_code: str
+    reason: str = Field(min_length=10, max_length=500)
+    ends_at: AwareDatetime | None = None
+
+
+class CourtesyRevoke(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    organization_id: uuid.UUID
+    owner_email: str
+    reason: str = Field(min_length=10, max_length=500)
 
 
 class PlatformAuditEvent(BaseModel):

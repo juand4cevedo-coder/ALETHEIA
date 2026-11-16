@@ -12,6 +12,7 @@ from app.db.base import Base
 from app.models._columns import UUIDv7Pk, text_values
 
 SUBSCRIPTION_STATUSES: Final = ("trial", "active", "past_due", "canceled", "expired")
+ACCESS_SOURCES: Final = ("trial", "courtesy", "payment", "legacy")
 BILLING_CYCLES: Final = ("none", "monthly", "annual")
 PAYMENT_GATEWAYS: Final = ("mercadopago", "wompi")
 
@@ -53,6 +54,11 @@ class Subscription(Base):
     __table_args__ = (
         CheckConstraint(text_values("status", SUBSCRIPTION_STATUSES), name="status"),
         CheckConstraint(text_values("billing_cycle", BILLING_CYCLES), name="billing_cycle"),
+        CheckConstraint(text_values("access_source", ACCESS_SOURCES), name="access_source"),
+        CheckConstraint(
+            "courtesy_reason IS NULL OR char_length(courtesy_reason) BETWEEN 10 AND 500",
+            name="courtesy_reason_length",
+        ),
         # Una prueba siempre sabe cuándo termina (RN-017).
         CheckConstraint("status <> 'trial' OR trial_ends_at IS NOT NULL", name="trial_ends_at"),
         CheckConstraint(
@@ -69,9 +75,14 @@ class Subscription(Base):
     plan_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("plans.id", ondelete="RESTRICT"))
     status: Mapped[str]
     billing_cycle: Mapped[str]
+    access_source: Mapped[str] = mapped_column(server_default="legacy")
     trial_ends_at: Mapped[datetime.datetime | None]
     # Una cortesía activa puede no tener fecha; su concesión llega con HU-116.
     courtesy_ends_at: Mapped[datetime.datetime | None]
+    courtesy_reason: Mapped[str | None]
+    courtesy_granted_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
+    courtesy_granted_at: Mapped[datetime.datetime | None]
+    courtesy_revoked_at: Mapped[datetime.datetime | None]
     current_period_end: Mapped[datetime.datetime | None]
     # Fin de los 30 días de solo lectura después de cancelar (RN-016).
     read_only_until: Mapped[datetime.datetime | None]

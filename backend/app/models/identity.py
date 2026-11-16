@@ -5,7 +5,7 @@ import uuid
 from typing import Final
 
 from sqlalchemy import CheckConstraint, ForeignKey, Index, func, text
-from sqlalchemy.dialects.postgresql import INET
+from sqlalchemy.dialects.postgresql import INET, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -37,6 +37,9 @@ AUDIT_ACTIONS: Final = (
     "plan_changed",
     "subscription_canceled",
     "subscription_expired",
+    "courtesy_granted",
+    "courtesy_renewed",
+    "courtesy_revoked",
     "account_blocked",
     "account_unblocked",
     "legal_accepted",
@@ -153,6 +156,7 @@ class AuditLog(Base):
     )
     action: Mapped[str]
     target_id: Mapped[uuid.UUID | None]
+    details: Mapped[dict[str, str | None] | None] = mapped_column(JSONB)
     # IP y navegador se anonimizan a los 90 días (RN-027).
     ip: Mapped[str | None] = mapped_column(INET)
     user_agent: Mapped[str | None]
