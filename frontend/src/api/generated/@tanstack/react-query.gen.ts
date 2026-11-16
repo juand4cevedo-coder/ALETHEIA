@@ -34,6 +34,7 @@ import {
   listPlatformUsers,
   lookupCourtesy,
   type Options,
+  organizationAuditPage,
   ownSupportTickets,
   platformAudit,
   platformBilling,
@@ -126,6 +127,9 @@ import type {
   LookupCourtesyData,
   LookupCourtesyError,
   LookupCourtesyResponse,
+  OrganizationAuditPageData,
+  OrganizationAuditPageError,
+  OrganizationAuditPageResponse,
   OwnSupportTicketsData,
   OwnSupportTicketsError,
   OwnSupportTicketsResponse,
@@ -896,6 +900,87 @@ export const revokeInvitationMutation = (
     },
   };
   return mutationOptions;
+};
+
+export const organizationAuditPageQueryKey = (
+  options?: Options<OrganizationAuditPageData>,
+) => createQueryKey("organizationAuditPage", options);
+
+/**
+ * Auditoría de seguridad de la organización
+ */
+export const organizationAuditPageOptions = (
+  options?: Options<OrganizationAuditPageData>,
+) =>
+  queryOptions<
+    OrganizationAuditPageResponse,
+    OrganizationAuditPageError,
+    OrganizationAuditPageResponse,
+    ReturnType<typeof organizationAuditPageQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await organizationAuditPage({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: organizationAuditPageQueryKey(options),
+  });
+
+export const organizationAuditPageInfiniteQueryKey = (
+  options?: Options<OrganizationAuditPageData>,
+): QueryKey<Options<OrganizationAuditPageData>> =>
+  createQueryKey("organizationAuditPage", options, true);
+
+/**
+ * Auditoría de seguridad de la organización
+ */
+export const organizationAuditPageInfiniteOptions = (
+  options?: Options<OrganizationAuditPageData>,
+) => {
+  const opts = infiniteQueryOptions<
+    OrganizationAuditPageResponse,
+    OrganizationAuditPageError,
+    InfiniteData<OrganizationAuditPageResponse>,
+    QueryKey<Options<OrganizationAuditPageData>>,
+    | string
+    | null
+    | Pick<
+        QueryKey<Options<OrganizationAuditPageData>>[0],
+        "body" | "headers" | "path" | "query"
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<OrganizationAuditPageData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  cursor: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await organizationAuditPage({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: organizationAuditPageInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
 };
 
 /**

@@ -79,6 +79,9 @@ import type {
   LookupCourtesyData,
   LookupCourtesyErrors,
   LookupCourtesyResponses,
+  OrganizationAuditPageData,
+  OrganizationAuditPageErrors,
+  OrganizationAuditPageResponses,
   OwnSupportTicketsData,
   OwnSupportTicketsErrors,
   OwnSupportTicketsResponses,
@@ -602,6 +605,32 @@ export const revokeInvitation = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/organization/invitations/{invitation_id}",
+    ...options,
+  });
+
+/**
+ * Auditoría de seguridad de la organización
+ */
+export const organizationAuditPage = <ThrowOnError extends boolean = false>(
+  options?: Options<OrganizationAuditPageData, ThrowOnError>,
+): RequestResult<
+  OrganizationAuditPageResponses,
+  OrganizationAuditPageErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    OrganizationAuditPageResponses,
+    OrganizationAuditPageErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/audit",
     ...options,
   });
 
