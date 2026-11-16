@@ -17,6 +17,7 @@ administrar accesos. Los roles jurídicos y su trabajo en casos corresponden a l
 | --- | :---: | :---: | :---: | :---: | :---: |
 | Ver su despacho | Sí | Sí | Sí | Sí | No |
 | Gestionar miembros e invitaciones | Sí | Sí | No | No | No |
+| Consultar auditoría de seguridad de su despacho | Sí | Sí | No | No | No |
 | Abrir casos | Sí | Sí | Sí | No | No |
 | Ver los casos asignados | Sí | Sí | Sí | Sí | No |
 | Asignar y retirar personas de un caso asignado | Sí | Sí | Sí | No | No |
@@ -33,6 +34,10 @@ gestión de miembros. El administrador del despacho puede gestionar el equipo, p
 en propietario ni cambiar su propio rol. Los cambios de rol se leen de la base en cada petición
 y quedan en auditoría. Las pantallas usan las capacidades para orientar, y la API vuelve a
 autorizar la operación en el servicio; ocultar un botón no otorga ni revoca permisos.
+La auditoría del despacho muestra ingresos y cambios administrativos sin contenido de casos.
+Solo el propietario y el administrador de ese despacho pueden consultarla. La respuesta se
+limita a su organización, pagina los eventos y no incluye los detalles internos del registro.
+La dirección IP y el agente de usuario se anonimizan después de 90 días (RN-027).
 
 El atributo `is_platform_admin` habilita la sección `/app/plataforma` y las rutas de cuentas
 `/api/v1/platform/users`. La API comprueba ese atributo en la base en cada petición. El

@@ -55,6 +55,12 @@ const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
         icon: UsuariosIcon,
         visible: (me) => managesTeam(me.organization?.role),
       },
+      {
+        to: ROUTES.organizationAudit,
+        label: "Auditoría de seguridad",
+        icon: HuellaIcon,
+        visible: (me) => managesTeam(me.organization?.role),
+      },
     ],
   },
   {
