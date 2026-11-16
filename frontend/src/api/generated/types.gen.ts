@@ -528,6 +528,96 @@ export type ChangePasswordRequest = {
 };
 
 /**
+ * CourtesyGrant
+ */
+export type CourtesyGrant = {
+  /**
+   * Organization Id
+   */
+  organization_id: string;
+  /**
+   * Owner Email
+   */
+  owner_email: string;
+  /**
+   * Plan Code
+   */
+  plan_code: string;
+  /**
+   * Reason
+   */
+  reason: string;
+  /**
+   * Ends At
+   */
+  ends_at?: string | null;
+};
+
+/**
+ * CourtesyRevoke
+ */
+export type CourtesyRevoke = {
+  /**
+   * Organization Id
+   */
+  organization_id: string;
+  /**
+   * Owner Email
+   */
+  owner_email: string;
+  /**
+   * Reason
+   */
+  reason: string;
+};
+
+/**
+ * CourtesyTarget
+ */
+export type CourtesyTarget = {
+  /**
+   * Organization Id
+   */
+  organization_id: string;
+  /**
+   * Organization Name
+   */
+  organization_name: string;
+  /**
+   * Owner Email
+   */
+  owner_email: string;
+  /**
+   * Owner Name
+   */
+  owner_name: string;
+  /**
+   * Plan Code
+   */
+  plan_code: string;
+  /**
+   * Status
+   */
+  status: string;
+  /**
+   * Access Source
+   */
+  access_source: string;
+  /**
+   * Ends At
+   */
+  ends_at: string | null;
+  /**
+   * Granted At
+   */
+  granted_at: string | null;
+  /**
+   * Revoked At
+   */
+  revoked_at: string | null;
+};
+
+/**
  * CustodyEventOut
  *
  * Un evento de la cadena de custodia del caso.
@@ -1090,6 +1180,7 @@ export type Me = {
    * Su organización, o null si ya no pertenece a ninguna.
    */
   organization: OrganizationMembership | null;
+  subscription?: MySubscription | null;
   /**
    * Su aceptación de los textos legales.
    */
@@ -1156,6 +1247,28 @@ export type MemberPage = {
    * Cupo de usuarios del plan.
    */
   seats: SeatsOut;
+};
+
+/**
+ * MySubscription
+ */
+export type MySubscription = {
+  /**
+   * Plan Name
+   */
+  plan_name: string;
+  /**
+   * Status
+   */
+  status: string;
+  /**
+   * Access Source
+   */
+  access_source: string;
+  /**
+   * Ends At
+   */
+  ends_at: string | null;
 };
 
 /**
@@ -3143,6 +3256,91 @@ export type DownloadEvidenceResponses = {
    */
   200: unknown;
 };
+
+export type LookupCourtesyData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * Owner Email
+     */
+    owner_email: string;
+  };
+  url: "/api/v1/platform/courtesy";
+};
+
+export type LookupCourtesyErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type LookupCourtesyError =
+  LookupCourtesyErrors[keyof LookupCourtesyErrors];
+
+export type LookupCourtesyResponses = {
+  /**
+   * Successful Response
+   */
+  200: CourtesyTarget;
+};
+
+export type LookupCourtesyResponse =
+  LookupCourtesyResponses[keyof LookupCourtesyResponses];
+
+export type GrantCourtesyData = {
+  body: CourtesyGrant;
+  path?: never;
+  query?: never;
+  url: "/api/v1/platform/courtesy";
+};
+
+export type GrantCourtesyErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type GrantCourtesyError = GrantCourtesyErrors[keyof GrantCourtesyErrors];
+
+export type GrantCourtesyResponses = {
+  /**
+   * Successful Response
+   */
+  200: CourtesyTarget;
+};
+
+export type GrantCourtesyResponse =
+  GrantCourtesyResponses[keyof GrantCourtesyResponses];
+
+export type RevokeCourtesyData = {
+  body: CourtesyRevoke;
+  path?: never;
+  query?: never;
+  url: "/api/v1/platform/courtesy/revoke";
+};
+
+export type RevokeCourtesyErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RevokeCourtesyError =
+  RevokeCourtesyErrors[keyof RevokeCourtesyErrors];
+
+export type RevokeCourtesyResponses = {
+  /**
+   * Successful Response
+   */
+  200: CourtesyTarget;
+};
+
+export type RevokeCourtesyResponse =
+  RevokeCourtesyResponses[keyof RevokeCourtesyResponses];
 
 export type ListPlatformUsersData = {
   body?: never;
