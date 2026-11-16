@@ -49,6 +49,9 @@ import type {
   ForgotPasswordData,
   ForgotPasswordErrors,
   ForgotPasswordResponses,
+  GrantCourtesyData,
+  GrantCourtesyErrors,
+  GrantCourtesyResponses,
   HealthData,
   HealthErrors,
   HealthResponses,
@@ -73,6 +76,9 @@ import type {
   ListPlatformUsersData,
   ListPlatformUsersErrors,
   ListPlatformUsersResponses,
+  LookupCourtesyData,
+  LookupCourtesyErrors,
+  LookupCourtesyResponses,
   OwnSupportTicketsData,
   OwnSupportTicketsErrors,
   OwnSupportTicketsResponses,
@@ -114,6 +120,9 @@ import type {
   ResetPasswordData,
   ResetPasswordErrors,
   ResetPasswordResponses,
+  RevokeCourtesyData,
+  RevokeCourtesyErrors,
+  RevokeCourtesyResponses,
   RevokeInvitationData,
   RevokeInvitationErrors,
   RevokeInvitationResponses,
@@ -933,6 +942,80 @@ export const downloadEvidence = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/download",
     ...options,
+  });
+
+/**
+ * Buscar un despacho por correo de su titular
+ */
+export const lookupCourtesy = <ThrowOnError extends boolean = false>(
+  options: Options<LookupCourtesyData, ThrowOnError>,
+): RequestResult<LookupCourtesyResponses, LookupCourtesyErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    LookupCourtesyResponses,
+    LookupCourtesyErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/courtesy",
+    ...options,
+  });
+
+/**
+ * Conceder o renovar un plan de cortesía
+ */
+export const grantCourtesy = <ThrowOnError extends boolean = false>(
+  options: Options<GrantCourtesyData, ThrowOnError>,
+): RequestResult<GrantCourtesyResponses, GrantCourtesyErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    GrantCourtesyResponses,
+    GrantCourtesyErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/courtesy",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Revocar un plan de cortesía
+ */
+export const revokeCourtesy = <ThrowOnError extends boolean = false>(
+  options: Options<RevokeCourtesyData, ThrowOnError>,
+): RequestResult<RevokeCourtesyResponses, RevokeCourtesyErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    RevokeCourtesyResponses,
+    RevokeCourtesyErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/courtesy/revoke",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**
