@@ -1,13 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useOutletContext } from "react-router";
 
 import type { Me, SupportTicketOut } from "../api/generated";
 import {
   changeSupportTicketStatusMutation,
+  grantCourtesyMutation,
+  lookupCourtesyOptions,
   platformAuditOptions,
   platformBillingOptions,
   platformSupportTicketsOptions,
+  revokeCourtesyMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
@@ -115,10 +118,226 @@ export function PlatformBillingPage() {
                 Este panel refleja los registros actuales. No emite facturas ni
                 cobra pagos.
               </p>
+              <CourtesyManager plans={billing.data.plans} />
             </>
           )}
         </section>
       )}
+    </div>
+  );
+}
+
+function CourtesyManager({
+  plans,
+}: {
+  plans: { code: string; name: string }[];
+}) {
+  const [email, setEmail] = useState("");
+  const [searched, setSearched] = useState("");
+  const [planCode, setPlanCode] = useState("");
+  const [reason, setReason] = useState("");
+  const [end, setEnd] = useState("");
+  const [message, setMessage] = useState("");
+  const queryClient = useQueryClient();
+  const target = useQuery({
+    ...lookupCourtesyOptions({ query: { owner_email: searched } }),
+    enabled: Boolean(searched),
+  });
+  const grant = useMutation({
+    ...grantCourtesyMutation(),
+    onSuccess: async () => {
+      setMessage("La cortesía quedó registrada.");
+      setReason("");
+      await queryClient.invalidateQueries();
+    },
+    onError: () => setMessage("No pudimos registrar la cortesía."),
+  });
+  const revoke = useMutation({
+    ...revokeCourtesyMutation(),
+    onSuccess: async () => {
+      setMessage(
+        "La cortesía quedó revocada. El despacho está en solo lectura.",
+      );
+      setReason("");
+      await queryClient.invalidateQueries();
+    },
+    onError: () => setMessage("No pudimos revocar la cortesía."),
+  });
+  const selectedPlan = plans.find((plan) => plan.code === planCode);
+  const busy = grant.isPending || revoke.isPending;
+
+  function search(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    setSearched(email.trim().toLowerCase());
+  }
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!target.data || !selectedPlan || reason.trim().length < 10) return;
+    const endsAt = end ? new Date(end) : null;
+    if (endsAt && (Number.isNaN(endsAt.getTime()) || endsAt <= new Date())) {
+      setMessage("El vencimiento debe ser posterior a este momento.");
+      return;
+    }
+    const deadline = endsAt
+      ? endsAt.toLocaleString("es-CO")
+      : "sin vencimiento";
+    if (
+      !window.confirm(
+        `Confirma ${selectedPlan.name} para ${target.data.organization_name} (${target.data.owner_email}), ${deadline}?`,
+      )
+    )
+      return;
+    setMessage("");
+    grant.mutate({
+      body: {
+        organization_id: target.data.organization_id,
+        owner_email: target.data.owner_email,
+        plan_code: selectedPlan.code,
+        reason: reason.trim(),
+        ends_at: endsAt?.toISOString() ?? null,
+      },
+    });
+  }
+
+  function revokeCurrent() {
+    if (!target.data || reason.trim().length < 10) {
+      setMessage("Escribe un motivo de al menos 10 caracteres.");
+      return;
+    }
+    if (
+      !window.confirm(
+        `Revocar la cortesía de ${target.data.organization_name}? El despacho pasará a solo lectura.`,
+      )
+    )
+      return;
+    setMessage("");
+    revoke.mutate({
+      body: {
+        organization_id: target.data.organization_id,
+        owner_email: target.data.owner_email,
+        reason: reason.trim(),
+      },
+    });
+  }
+
+  return (
+    <div className={styles.courtesy}>
+      <div className={styles.sectionHeading}>
+        <h2>Planes de cortesía</h2>
+        <p>Conceda acceso sin registrar un pago.</p>
+      </div>
+      <form className={styles.form} onSubmit={search}>
+        <label htmlFor="courtesy-email">Correo del titular del despacho</label>
+        <div className={styles.inlineForm}>
+          <input
+            id="courtesy-email"
+            type="email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+          <Button type="submit">Buscar despacho</Button>
+        </div>
+      </form>
+      {target.isPending && searched && <p role="status">Buscando despacho</p>}
+      {target.isError && (
+        <Notice tone="error">
+          No encontramos un despacho con ese titular.
+        </Notice>
+      )}
+      {target.data && (
+        <>
+          <div className={styles.targetCard}>
+            <strong>{target.data.organization_name}</strong>
+            <span>
+              {target.data.owner_name}, {target.data.owner_email}
+            </span>
+            <span>
+              Plan actual:{" "}
+              {plans.find((plan) => plan.code === target.data.plan_code)
+                ?.name ?? target.data.plan_code}
+              {", "}
+              {STATUS_LABELS[target.data.status] ?? target.data.status}
+            </span>
+            <span>
+              Acceso:{" "}
+              {target.data.access_source === "courtesy"
+                ? "Cortesía"
+                : target.data.access_source === "trial"
+                  ? "Prueba"
+                  : "Otro"}
+            </span>
+            {target.data.ends_at && (
+              <span>
+                Vence: <DateText value={target.data.ends_at} />
+              </span>
+            )}
+            {target.data.granted_at && (
+              <span>
+                Última concesión: <DateText value={target.data.granted_at} />
+              </span>
+            )}
+            {target.data.revoked_at && (
+              <span>
+                Revocada: <DateText value={target.data.revoked_at} />
+              </span>
+            )}
+          </div>
+          <form className={styles.form} onSubmit={submit}>
+            <label htmlFor="courtesy-plan">Plan a conceder</label>
+            <select
+              id="courtesy-plan"
+              required
+              value={planCode}
+              onChange={(event) => setPlanCode(event.target.value)}
+            >
+              <option value="">Seleccione un plan</option>
+              {plans
+                .filter((plan) => plan.code !== "trial")
+                .map((plan) => (
+                  <option key={plan.code} value={plan.code}>
+                    {plan.name}
+                  </option>
+                ))}
+            </select>
+            <label htmlFor="courtesy-end">Vencimiento (opcional)</label>
+            <input
+              id="courtesy-end"
+              type="datetime-local"
+              value={end}
+              onChange={(event) => setEnd(event.target.value)}
+            />
+            <label htmlFor="courtesy-reason">Motivo interno</label>
+            <textarea
+              id="courtesy-reason"
+              minLength={10}
+              maxLength={500}
+              required
+              rows={3}
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+            />
+            <div className={styles.inlineForm}>
+              <Button type="submit" busy={busy}>
+                Conceder o renovar
+              </Button>
+              {target.data.access_source === "courtesy" &&
+                target.data.status === "active" && (
+                  <Button
+                    variant="secondary"
+                    busy={busy}
+                    onClick={revokeCurrent}
+                  >
+                    Revocar cortesía
+                  </Button>
+                )}
+            </div>
+          </form>
+        </>
+      )}
+      {message && <p role="status">{message}</p>}
     </div>
   );
 }
@@ -239,6 +458,10 @@ const ACTION_LABELS: Record<string, string> = {
   support_ticket_opened: "Solicitud de soporte creada",
   support_ticket_closed: "Solicitud de soporte cerrada",
   support_ticket_reopened: "Solicitud de soporte reabierta",
+  courtesy_granted: "Cortesía concedida",
+  courtesy_renewed: "Cortesía renovada",
+  courtesy_revoked: "Cortesía revocada",
+  subscription_expired: "Suscripción vencida",
 };
 
 export function PlatformAuditPage() {
