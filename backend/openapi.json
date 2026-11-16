@@ -2420,6 +2420,143 @@
         }
       }
     },
+    "/api/v1/platform/courtesy": {
+      "get": {
+        "tags": [
+          "plataforma"
+        ],
+        "summary": "Buscar un despacho por correo de su titular",
+        "operationId": "lookup_courtesy",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "owner_email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Owner Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourtesyTarget"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "plataforma"
+        ],
+        "summary": "Conceder o renovar un plan de cortesía",
+        "operationId": "grant_courtesy",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourtesyGrant"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourtesyTarget"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/courtesy/revoke": {
+      "post": {
+        "tags": [
+          "plataforma"
+        ],
+        "summary": "Revocar un plan de cortesía",
+        "operationId": "revoke_courtesy",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourtesyRevoke"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourtesyTarget"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
     "/api/v1/platform/users": {
       "get": {
         "tags": [
@@ -3607,6 +3744,160 @@
         "title": "ChangePasswordRequest",
         "description": "Contraseña actual y nueva de quien tiene la sesión (API-013)."
       },
+      "CourtesyGrant": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "owner_email": {
+            "type": "string",
+            "title": "Owner Email"
+          },
+          "plan_code": {
+            "type": "string",
+            "title": "Plan Code"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 10,
+            "title": "Reason"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "organization_id",
+          "owner_email",
+          "plan_code",
+          "reason"
+        ],
+        "title": "CourtesyGrant"
+      },
+      "CourtesyRevoke": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "owner_email": {
+            "type": "string",
+            "title": "Owner Email"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 10,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "organization_id",
+          "owner_email",
+          "reason"
+        ],
+        "title": "CourtesyRevoke"
+      },
+      "CourtesyTarget": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name"
+          },
+          "owner_email": {
+            "type": "string",
+            "title": "Owner Email"
+          },
+          "owner_name": {
+            "type": "string",
+            "title": "Owner Name"
+          },
+          "plan_code": {
+            "type": "string",
+            "title": "Plan Code"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "access_source": {
+            "type": "string",
+            "title": "Access Source"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "granted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Granted At"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revoked At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "organization_name",
+          "owner_email",
+          "owner_name",
+          "plan_code",
+          "status",
+          "access_source",
+          "ends_at",
+          "granted_at",
+          "revoked_at"
+        ],
+        "title": "CourtesyTarget"
+      },
       "CustodyEventOut": {
         "properties": {
           "seq": {
@@ -4396,6 +4687,16 @@
             ],
             "description": "Su organización, o null si ya no pertenece a ninguna."
           },
+          "subscription": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MySubscription"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "legal": {
             "$ref": "#/components/schemas/LegalStatus",
             "description": "Su aceptación de los textos legales."
@@ -4498,6 +4799,42 @@
         ],
         "title": "MemberPage",
         "description": "Miembros en el orden en que llegaron, con el cupo del plan (API-015)."
+      },
+      "MySubscription": {
+        "properties": {
+          "plan_name": {
+            "type": "string",
+            "title": "Plan Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "access_source": {
+            "type": "string",
+            "title": "Access Source"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan_name",
+          "status",
+          "access_source",
+          "ends_at"
+        ],
+        "title": "MySubscription"
       },
       "OrganizationMembership": {
         "properties": {
