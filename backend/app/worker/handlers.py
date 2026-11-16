@@ -6,10 +6,12 @@ después de confirmarlas (ADR-038). La cola entrega cada tarea al menos una vez,
 manejador define cómo se comporta si se repite; la tabla está en ADR-038.
 """
 
+import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any, Final
 
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.adapters.email import EmailDeliveryError, EmailSender
@@ -17,7 +19,7 @@ from app.core.config import Settings
 
 # Registran las plantillas de correo: sin estos imports, el trabajador no las conoce.
 from app.services import account_emails as _account_emails  # noqa: F401
-from app.services import notifications
+from app.services import notifications, subscription_expiration
 from app.services import organization_emails as _organization_emails  # noqa: F401
 from app.services.jobs import PermanentJobError
 
@@ -67,5 +69,21 @@ def send_email(run: JobRun) -> None:
         raise
 
 
+def expire_subscription(run: JobRun) -> None:
+    """La fecha y el estado se comprueban de nuevo bajo candado en cada intento."""
+    try:
+        organization_id = uuid.UUID(str(run.payload["organization_id"]))
+    except (KeyError, ValueError, TypeError) as exc:
+        raise PermanentJobError("Identificador de organización inválido.") from exc
+    with run.open_session() as session, session.begin():
+        now = session.scalar(select(func.now()))
+        if now is None:
+            raise RuntimeError("La base no devolvió la fecha actual.")
+        subscription_expiration.expire(session, organization_id, now)
+
+
 # Los demás tipos de JOB_KINDS llegan con sus historias. Una tarea sin manejador se entierra.
-HANDLERS: Final[Mapping[str, Handler]] = {"email_send": send_email}
+HANDLERS: Final[Mapping[str, Handler]] = {
+    "email_send": send_email,
+    "subscription_expire": expire_subscription,
+}
