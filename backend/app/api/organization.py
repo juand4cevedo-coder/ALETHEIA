@@ -22,10 +22,13 @@ from app.schemas.organization import (
     InvitationRequest,
     MemberOut,
     MemberPage,
+    OrganizationAuditEvent,
+    OrganizationAuditPage,
     RoleChangeRequest,
     SeatsOut,
 )
 from app.services import members as members_service
+from app.services import organization_audit
 from app.services.sessions import Principal
 
 router = APIRouter(prefix="/organization", tags=["organización"])
@@ -293,4 +296,38 @@ def _invitation_out(invitation: Invitation) -> InvitationOut:
             "expires_at": invitation.expires_at,
             "expired": members_service.is_expired(invitation),
         }
+    )
+
+
+@router.get(
+    "/audit",
+    summary="Auditoría de seguridad de la organización",
+    responses=_UNAUTHORIZED | _FORBIDDEN,
+)
+def organization_audit_page(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_manager)],
+    session: Annotated[Session, Depends(get_session)],
+    cursor: Annotated[
+        uuid.UUID | None, Query(description="next_cursor de la página anterior.")
+    ] = None,
+    limit: Annotated[int, Query(ge=1, le=PAGE_SIZE_MAX)] = PAGE_SIZE_DEFAULT,
+) -> OrganizationAuditPage:
+    response.headers["Cache-Control"] = "no-store"
+    rows = organization_audit.events(session, principal, after=cursor, limit=limit + 1)
+    page = rows[:limit]
+    return OrganizationAuditPage(
+        items=[
+            OrganizationAuditEvent(
+                id=event.id,
+                action=event.action,
+                actor_user_id=event.actor_user_id,
+                target_id=event.target_id,
+                ip=event.ip,
+                user_agent=event.user_agent,
+                created_at=event.created_at,
+            )
+            for event in page
+        ],
+        next_cursor=page[-1].id if len(rows) > limit else None,
     )
