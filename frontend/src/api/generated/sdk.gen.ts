@@ -7,6 +7,7 @@ import {
   type Options as Options2,
   type RequestResult,
   type TDataShape,
+  urlSearchParamsBodySerializer,
 } from "./client";
 import { client } from "./client.gen";
 import type {
@@ -61,6 +62,9 @@ import type {
   HealthData,
   HealthErrors,
   HealthResponses,
+  InspectExportData,
+  InspectExportErrors,
+  InspectExportResponses,
   ListCasesData,
   ListCasesErrors,
   ListCasesResponses,
@@ -983,6 +987,25 @@ export const downloadEvidence = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Comprobar si un enlace de paquete sigue vigente
+ */
+export const inspectExport = <ThrowOnError extends boolean = false>(
+  options: Options<InspectExportData, ThrowOnError>,
+): RequestResult<InspectExportResponses, InspectExportErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    InspectExportResponses,
+    InspectExportErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/exports/inspect",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
  * Descargar un paquete mediante un enlace vigente
  */
 export const downloadExport = <ThrowOnError extends boolean = false>(
@@ -993,10 +1016,11 @@ export const downloadExport = <ThrowOnError extends boolean = false>(
     DownloadExportErrors,
     ThrowOnError
   >({
+    ...urlSearchParamsBodySerializer,
     url: "/api/v1/exports/download",
     ...options,
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
       ...options.headers,
     },
   });

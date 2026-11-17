@@ -108,13 +108,25 @@ def test_api_entrega_zip_solo_con_enlace_vigente(
     token = link_for_export(settings, row).split("#t=", 1)[1]
     client = dispositivo()
 
-    response = client.post("/api/v1/exports/download", json={"token": token})
+    response = client.post(
+        "/api/v1/exports/download",
+        data={"token": token},
+        headers={"Origin": settings.public_url, "Sec-Fetch-Site": "same-origin"},
+    )
     assert response.status_code == 200
     assert response.content == b"PK\x03\x04paquete"
     assert response.headers["Content-Type"] == "application/zip"
     assert response.headers["Cache-Control"] == "no-store"
-    assert client.post("/api/v1/exports/download", json={"token": "invalido"}).status_code == 404
+    assert client.post("/api/v1/exports/inspect", json={"token": token}).status_code == 200
+    assert (
+        client.post(
+            "/api/v1/exports/download",
+            data={"token": "invalido"},
+            headers={"Origin": settings.public_url, "Sec-Fetch-Site": "same-origin"},
+        ).status_code
+        == 404
+    )
 
     row.status = "expired"
     db.flush()
-    assert client.post("/api/v1/exports/download", json={"token": token}).status_code == 404
+    assert client.post("/api/v1/exports/inspect", json={"token": token}).status_code == 404
