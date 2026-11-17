@@ -40,7 +40,7 @@ _RESET_MINUTES: Final = int(RESET_LINK_LIFETIME.total_seconds() // 60)
 def _user(session: Session, payload: dict[str, Any]) -> User | None:
     try:
         user_id = uuid.UUID(str(payload["user_id"]))
-    except KeyError, ValueError:
+    except (KeyError, ValueError):
         msg = "La tarea de correo no trae un user_id válido."
         raise PermanentJobError(msg) from None
     return session.get(User, user_id)
