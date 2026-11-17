@@ -46,6 +46,7 @@ def test_enlace_resuelve_paquete_vigente_y_deja_de_servir_al_expirar(
     with pytest.raises(InvalidExportLinkError):
         resolve_export_link(db, settings, token)
 
+
 def test_enlace_no_sirve_si_cambia_el_manifiesto_o_no_hay_objeto(
     db: Session, settings: Settings
 ) -> None:
