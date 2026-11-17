@@ -1,0 +1,142 @@
+.page {
+  padding: var(--space-16) var(--space-6);
+  color: var(--text);
+}
+
+.inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.intro {
+  margin-bottom: var(--space-12);
+}
+
+.eyebrow {
+  color: var(--accent-strong);
+  font-size: var(--font-size-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.intro h1 {
+  margin: var(--space-4) 0;
+  font-family: var(--font-editorial);
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-weight: 400;
+  line-height: 1.06;
+}
+
+.intro > p:last-child,
+.scope {
+  color: var(--text-2);
+  line-height: 1.7;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-8);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+
+.form label {
+  display: grid;
+  gap: var(--space-2);
+  font-weight: 500;
+}
+
+.form input,
+.form select {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-3);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+}
+
+.form button {
+  min-height: 48px;
+  padding: 0 var(--space-6);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent-strong);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form :is(input, select, button):focus-visible,
+.scope a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.note,
+.error {
+  margin: 0;
+}
+
+.error {
+  color: var(--err);
+}
+
+.result {
+  margin-top: var(--space-8);
+  padding: var(--space-8);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-md);
+}
+
+.result h2 {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-editorial);
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.result dl {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.result dt {
+  color: var(--text-2);
+}
+
+.result dd {
+  margin: 0 0 var(--space-3);
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+}
+
+.scope {
+  margin-top: var(--space-8);
+}
+
+.scope a {
+  color: var(--accent-strong);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: var(--space-12) var(--space-4);
+  }
+
+  .form,
+  .result {
+    padding: var(--space-5);
+  }
+}
