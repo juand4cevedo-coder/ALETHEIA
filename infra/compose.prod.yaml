@@ -6,6 +6,9 @@
 # Las imágenes llegan fijadas por digest en ALETHEIA_API_IMAGEN y ALETHEIA_WEB_IMAGEN, que
 # escribe infra/prod/desplegar.sh en /var/lib/aletheia/despliegue.env. Sin ellas, las etiquetas
 # sin-desplegar no existen en GHCR y Compose se detiene antes de reemplazar algo.
+#
+# ALETHEIA_EVIDENCE_BUCKET no es secreto, pero nombra un recurso real de la cuenta: vive en
+# /etc/aletheia/entorno.env, fuera del repositorio, y lo carga infra/prod/desplegar.sh.
 name: aletheia-prod
 
 # Ajustes comunes a la API y a las migraciones: misma imagen, misma región y mismo endurecimiento.
@@ -101,7 +104,8 @@ services:
       # Clave de firma de los enlaces de los correos; el trabajador la recibe por el ancla.
       ALETHEIA_TOKEN_SIGNING_KEY_PARAMETER: /aletheia/prod/app/token-signing-key
       # No es secreto: solo nombra el bucket, la clave sigue siendo el rol de la máquina.
-      ALETHEIA_EVIDENCE_BUCKET: aletheia-prod-evidencias-047938357957
+      # El valor real vive en /etc/aletheia/entorno.env (ver la cabecera del archivo).
+      ALETHEIA_EVIDENCE_BUCKET: ${ALETHEIA_EVIDENCE_BUCKET}
     # Sin "ports": solo Caddy llega a la API, por la red frontal.
     networks:
       - frontal
