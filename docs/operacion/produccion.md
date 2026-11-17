@@ -2,13 +2,15 @@
 
 Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su despliegue según ADR-018: qué existe, cómo quedó configurado y cómo se comprobó. Aquí no hay claves, contraseñas ni llaves privadas. Las claves viven en Parameter Store y la llave SSH solo en el equipo del administrador.
 
+Los identificadores reales de la cuenta (ID de cuenta, IP elástica, ARN de KMS, ID de instancia, nombres de bucket) se mantienen en el runbook interno, fuera de este repositorio público, porque identifican la infraestructura en producción. Esta página documenta el diseño y las comprobaciones sin exponer esos valores.
+
 Última actualización: 17/11/2026, con el endurecimiento de PostgreSQL y de la red `frontal` de la auditoría de seguridad.
 
 ## Cuenta y costos
 
 | Elemento | Valor |
 | --- | --- |
-| Cuenta | [ID-CUENTA-REDACTADO], plan gratuito, con MFA activado |
+| Cuenta | Plan gratuito de AWS, con MFA activado |
 | Región | us-east-2 (Ohio) |
 | Créditos | 200 USD después de completar las cinco actividades de bienvenida. El plan gratuito vence el 29/04/2027 |
 | Presupuesto | `aletheia-mensual`: 30 USD al mes sin contar créditos, con alertas al 50 y al 80 % |
@@ -17,11 +19,11 @@ Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su
 
 | Elemento | Valor |
 | --- | --- |
-| Nombre e ID | `aletheia-prod`, `[ID-INSTANCIA-REDACTADO]` |
+| Nombre | `aletheia-prod` |
 | Tipo | t3.small x86 (2 vCPU y 2 GB) |
 | Sistema | Debian 13 (trixie), kernel `6.12.113+deb13-cloud-amd64` |
 | Disco | EBS gp3 de 30 GiB |
-| IP elástica | [IP-REDACTADA] |
+| IP elástica | Fija, reservada para el dominio; el valor real está en el runbook interno |
 | Metadatos | IMDSv2 obligatorio, con límite de saltos 2 para que los contenedores reciban las credenciales del rol |
 | Perfil de instancia | `aletheia-prod-instancia` |
 | Grupo de seguridad | `aletheia-prod-sg`: el 22 solo desde la IP pública del administrador, nunca desde `0.0.0.0/0`; el 80 y el 443 abiertos a internet para Caddy |
@@ -29,7 +31,7 @@ Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su
 ## Acceso por SSH
 
 - Usuario `admin`, solo con llave y frase de paso. Sin contraseña y sin acceso directo como root: lo fija `/etc/ssh/sshd_config.d/10-aletheia.conf`.
-- Desde Windows: `ssh -i "$HOME\.ssh\aletheia_oci" admin@[IP-REDACTADA]`. Esa llave solo sirve para el servidor; la que firma commits y etiquetas es otra.
+- La dirección del servidor y la ruta de la llave están en el runbook interno. Esa llave solo sirve para el servidor; la que firma commits y etiquetas es otra.
 - Si el 22 deja de responder y no se puede corregir a tiempo, Session Manager abre una consola desde el navegador: EC2 > Instances > `aletheia-prod` > Connect > Session Manager.
 - Si la conexión da timeout, casi siempre cambió la IP pública del administrador. Se corrige en EC2 > Security Groups > `aletheia-prod-sg` > Edit inbound rules: en la regla del puerto 22, Source pasa a My IP.
 - En la actualización completa del sistema se conservó el `sshd_config` local. La versión que traía el paquete quedó en `/etc/ssh/sshd_config.ucf-dist`.
@@ -37,8 +39,8 @@ Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su
 
 ## Red y DNS
 
-- El dominio se compró en Hostinger y su DNS sigue ahí: `A @` hacia [IP-REDACTADA] y `CNAME www` hacia `aletheia.sbs`, los dos con TTL de 300 segundos. El certificado lo saca Caddy; la sección SSL de Hostinger no aplica.
-- El correo también depende de este DNS. Hostinger publica el MX, el SPF de la raíz y las tres firmas `hostingermail-*` del buzón `contacto@aletheia.sbs`. Amazon SES usa tres CNAME `*._domainkey` hacia `dkim.amazonses.com`, y `bounce` lleva su propio MX y su SPF, así que el SPF de la raíz no se toca. El único DMARC es `_dmarc`, con `p=none` y los informes dirigidos a `contacto@aletheia.sbs`.
+- El dominio se compró en Hostinger y su DNS sigue ahí: el registro `A` apunta a la IP elástica del servidor y `CNAME www` al dominio principal, los dos con TTL de 300 segundos. El certificado lo saca Caddy; la sección SSL de Hostinger no aplica.
+- El correo también depende de este DNS. Hostinger publica el MX, el SPF de la raíz y las firmas `hostingermail-*` del buzón de contacto. Amazon SES usa tres CNAME `*._domainkey` hacia `dkim.amazonses.com`, y `bounce` lleva su propio MX y su SPF, así que el SPF de la raíz no se toca. El único DMARC es `_dmarc`, con `p=none` y los informes dirigidos al buzón de contacto.
 - No hay registros AAAA ni CAA. Un AAAA que apunte a otra parte hace fallar la validación de Let's Encrypt, y la máquina no tiene IPv6.
 - LLMNR y mDNS quedaron apagados en `/etc/systemd/resolved.conf.d/10-aletheia.conf`. Venían activos en la imagen de Debian y no tienen función en un servidor en la nube.
 
@@ -60,8 +62,8 @@ Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su
 
 | Bucket | Uso | Reglas de ciclo de vida |
 | --- | --- | --- |
-| `aletheia-prod-evidencias-[ID-CUENTA-REDACTADO]` | Evidencias cifradas y paquetes exportados | `borrar-subidas-incompletas`: descarta al día las subidas que no terminaron |
-| `aletheia-prod-respaldos-[ID-CUENTA-REDACTADO]` | Copias diarias de PostgreSQL (TT-011) | `borrar-subidas-incompletas` y `retencion-7-dias`: borra cada copia a los 7 días |
+| Evidencias (nombre real en el runbook interno) | Evidencias cifradas y paquetes exportados | `borrar-subidas-incompletas`: descarta al día las subidas que no terminaron |
+| Respaldos (nombre real en el runbook interno) | Copias diarias de PostgreSQL (TT-011) | `borrar-subidas-incompletas` y `retencion-7-dias`: borra cada copia a los 7 días |
 
 Los dos buckets tienen el acceso público bloqueado, las ACL desactivadas y cifrado SSE-S3. No usan versionado ni Object Lock. La política `SoloHTTPS` rechaza toda petición que no llegue por TLS.
 
@@ -70,14 +72,12 @@ Hay dos detalles que el código debe tener en cuenta:
 - Como el rol no puede listar el bucket de evidencias, S3 responde 403 y no 404 cuando un objeto no existe. El adaptador de almacenamiento lo trata como no encontrado.
 - La regla de 7 días cuenta hasta la medianoche UTC siguiente y AWS borra con demora. TT-011 fija un margen para `backups_expire_at` (Arquitectura 8.11).
 
-El objeto `prueba/tt-007.bin` quedó a propósito en el bucket de respaldos: lo borra la regla de 7 días.
-
 ## AWS KMS
 
 | Elemento | Valor |
 | --- | --- |
 | Alias | `alias/aletheia-prod-maestra` |
-| ARN | `arn:aws:kms:us-east-2:[ID-CUENTA-REDACTADO]:key/[ID-LLAVE-REDACTADO]` |
+| ARN | En el runbook interno |
 | Tipo | RSA_3072, uso cifrar y descifrar, una sola región |
 | Política de la llave | La predeterminada: los permisos se conceden por IAM |
 | Uso | Envolver con `RSAES_OAEP_SHA_256` la llave de cada caso (ADR-014) |
@@ -87,9 +87,9 @@ El objeto `prueba/tt-007.bin` quedó a propósito en el bucket de respaldos: lo 
 
 | Elemento | Valor |
 | --- | --- |
-| Identidad | El dominio `aletheia.sbs`, verificado el 01/11/2026 en us-east-2 |
-| Autenticación | Easy DKIM con llaves de 2048 bits, MAIL FROM `bounce.aletheia.sbs` y DMARC. Gmail confirmó SPF, DKIM y DMARC en `PASS` |
-| Remitente | `ALETHEIA <notificaciones@aletheia.sbs>`, con las respuestas a `contacto@aletheia.sbs` |
+| Identidad | El dominio de producción, verificado el 01/11/2026 en us-east-2 |
+| Autenticación | Easy DKIM con llaves de 2048 bits, MAIL FROM `bounce.<dominio>` y DMARC. Gmail confirmó SPF, DKIM y DMARC en `PASS` |
+| Remitente | `ALETHEIA`, con las respuestas al buzón de contacto |
 | Envío | Solo el trabajador, con la API v2 y el rol de la máquina. No hay credenciales SMTP |
 | Lista de supresión | La de la cuenta, activa para rebotes y quejas |
 | Plan | Essentials, que cobra 0,16 USD por cada 1.000 correos y se paga con los créditos |
@@ -105,9 +105,9 @@ El rol `aletheia-prod-instancia` tiene tres políticas: `aletheia-prod-acceso` p
 | --- | --- | --- |
 | S3 | Bucket de evidencias | `GetObject`, `PutObject`, `DeleteObject` y `AbortMultipartUpload`. No puede listar |
 | S3 | Bucket de respaldos | `GetObject`, `PutObject`, `AbortMultipartUpload` y `ListBucket`. No puede borrar |
-| KMS | ARN de la llave maestra `[ID-LLAVE-REDACTADO]` | `Encrypt` y `Decrypt`, solo con `RSAES_OAEP_SHA_256` |
+| KMS | La llave maestra | `Encrypt` y `Decrypt`, solo con `RSAES_OAEP_SHA_256` |
 | Parameter Store | Parámetros bajo `/aletheia/prod/` | `GetParameter`, `GetParameters` y `GetParametersByPath`. No puede escribir |
-| SES | Identidades de la cuenta en us-east-2 | `SendEmail` con la API v2, solo desde `notificaciones@aletheia.sbs` y con el nombre `ALETHEIA` |
+| SES | Identidades de la cuenta en us-east-2 | `SendEmail` con la API v2, solo desde el remitente de notificaciones y con el nombre `ALETHEIA` |
 | Systems Manager | El agente de la máquina | Registrarse, recibir órdenes de Run Command y abrir sesiones de Session Manager (`ec2messages` y `ssmmessages`) |
 
 La política de correo aún nombra todas las identidades de la cuenta: se configuró así cuando SES estaba en sandbox y exigía autorización sobre la identidad del destinatario. SES ya tiene acceso de producción. Las condiciones `ses:FromAddress`, `ses:FromDisplayName` y `ses:ApiVersion` restringen el remitente; el alcance de `Resource` puede reducirse en una revisión separada, con una prueba de envío después del cambio.
@@ -118,23 +118,7 @@ La versión `v1` de la política administrada `aletheia-prod-acceso` nombra el A
 
 ### Comprobación de KMS para HU-015
 
-**Aprobada el 13/11/2026.** La orden SSM `[ID-ORDEN-REDACTADO]` se ejecutó en `aletheia-prod` con su rol de instancia: cifró 32 bytes aleatorios mediante el alias, los descifró mediante el ARN, comparó ambos archivos sin mostrarlos y eliminó los temporales. Terminó con código 0 y `KMS_WRAP_UNWRAP_OK`. Para repetir la comprobación manualmente desde la máquina:
-
-1. Se crea un archivo de 32 bytes aleatorios, por ejemplo `head -c 32 /dev/urandom > /tmp/prueba-kms.bin`, y se cifra:
-
-   ```bash
-   aws kms encrypt --key-id alias/aletheia-prod-maestra --encryption-algorithm RSAES_OAEP_SHA_256 --plaintext fileb:///tmp/prueba-kms.bin --query KeyId
-   ```
-
-   Funciona si imprime el ARN de la llave (`arn:aws:kms:us-east-2:[ID-CUENTA-REDACTADO]:key/2bf06d55-...`) y no `AccessDeniedException`. Para el paso 2 se guarda también el cifrado: el mismo comando con `--query CiphertextBlob --output text | base64 -d > /tmp/prueba-kms.cifrado`.
-
-2. Se descifra con el ARN que imprimió el paso 1:
-
-   ```bash
-   aws kms decrypt --key-id <ARN> --encryption-algorithm RSAES_OAEP_SHA_256 --ciphertext-blob fileb:///tmp/prueba-kms.cifrado
-   ```
-
-   Funciona si responde con `KeyId` igual a ese ARN y un `Plaintext` (en base64) que corresponde al archivo original, sin `AccessDeniedException`. Al terminar se borran los dos archivos.
+**Aprobada el 13/11/2026.** Una orden de SSM se ejecutó en `aletheia-prod` con su rol de instancia: cifró bytes aleatorios mediante el alias, los descifró mediante el ARN, comparó ambos archivos sin mostrarlos y eliminó los temporales. Terminó con código 0 y `KMS_WRAP_UNWRAP_OK`. El procedimiento paso a paso y los identificadores de la prueba están en el runbook interno.
 
 Si una repetición responde `AccessDeniedException`, se revisa la política `aletheia-prod-acceso` y la política de la llave antes de publicar.
 
@@ -153,14 +137,7 @@ GitHub Actions no puede usar OIDC: la política de control de servicios del plan
 | Llave | Una sola, guardada como secretos `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` del entorno `production` de GitHub |
 | Comprobación | El simulador de IAM, con la región de Ohio como contexto, da `allowed` con `aletheia-desplegar` e `implicitDeny` con `AWS-RunShellScript` |
 
-La llave se rota al publicar v1.0.0 y ante cualquier sospecha. En CloudShell:
-
-1. `aws iam create-access-key --user-name aletheia-github-deploy --query 'AccessKey.[AccessKeyId,SecretAccessKey]' --output text` crea la nueva. El secreto solo se muestra esa vez y va directo a GitHub, nunca a otro lado.
-2. En GitHub, Settings > Environments > `production`, se reemplazan los dos secretos.
-3. `aws iam list-access-keys --user-name aletheia-github-deploy` muestra las dos llaves; la vieja se desactiva con `aws iam update-access-key --user-name aletheia-github-deploy --access-key-id <ID_VIEJO> --status Inactive`.
-4. Después del siguiente despliegue correcto, se borra con `aws iam delete-access-key --user-name aletheia-github-deploy --access-key-id <ID_VIEJO>`.
-
-Cada llamada del usuario queda en el historial de eventos de CloudTrail, que es gratuito y guarda 90 días.
+La llave se rota al publicar v1.0.0 y ante cualquier sospecha. El procedimiento de rotación está en el runbook interno. Cada llamada del usuario queda en el historial de eventos de CloudTrail, que es gratuito y guarda 90 días.
 
 ## Parameter Store
 
@@ -172,29 +149,7 @@ Cada llamada del usuario queda en el historial de eventos de CloudTrail, que es 
 | `/aletheia/prod/postgres/support-password` | SecureString (`aws/ssm`) | `aletheia_support`: consultas de solo lectura |
 | `/aletheia/prod/app/token-signing-key` | SecureString (`aws/ssm`) | Clave de firma de los enlaces de un solo uso: API y trabajador |
 
-Las claves se generaron en CloudShell con 40 letras y números. Pasaron por una tubería directo a AWS, así que nunca aparecieron en pantalla, en el historial ni como argumento de un comando:
-
-```bash
-for usuario in admin owner app support; do
-  openssl rand -base64 48 | tr -d '\n/+=' | head -c 40 |
-    aws ssm put-parameter --region us-east-2 \
-      --name "/aletheia/prod/postgres/${usuario}-password" \
-      --description "Clave de PostgreSQL de produccion (${usuario})" \
-      --type SecureString --value file:///dev/stdin \
-      --query Version --output text
-done
-```
-
-La clave de firma se creó de la misma forma, con 64 caracteres. La API y el trabajador derivan de ella una subclave por cada tipo de enlace (ADR-027):
-
-```bash
-openssl rand -base64 96 | tr -d '\n/+=' | head -c 64 |
-  aws ssm put-parameter --region us-east-2 \
-    --name "/aletheia/prod/app/token-signing-key" \
-    --description "Clave de firma de los enlaces de un solo uso" \
-    --type SecureString --value file:///dev/stdin \
-    --query Version --output text
-```
+Las claves se generaron en CloudShell con 40 letras y números, por una tubería directo a AWS, así que nunca aparecieron en pantalla, en el historial ni como argumento de un comando. El procedimiento exacto está en el runbook interno.
 
 ## PostgreSQL
 
@@ -232,11 +187,11 @@ La API, el trabajador y las migraciones reciben la URL de la base sin clave y el
 
 La red `frontal` tiene una subred fija (172.28.0.0/24, en `infra/compose.prod.yaml`): `backend/Dockerfile` solo acepta las cabeceras `X-Forwarded-*` de uvicorn desde esa subred, en vez de confiar en cualquier origen interno.
 
-Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy.Dockerfile`. Según ADR-019, las imágenes base, los entornos de ejecución, uv, pnpm y las acciones de GitHub deben tener más de 14 días de publicados, y las bibliotecas de Python y de JavaScript más de 7; Dependabot, uv y pnpm aplican esas esperas. La excepción de boto3 1.43.120 y sus tipos se retiró de `pyproject.toml` el 04/11/2026, cuando ya tenían más de 7 días. Python 3.14.9 y uv 0.13.5 pasan de 14 días el 05/11/2026 y el 06/11/2026; no tienen excepción en la configuración porque van fijados en la CI y en el Dockerfile.
+Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy.Dockerfile`. Según ADR-019, las imágenes base, los entornos de ejecución, uv, pnpm y las acciones de GitHub deben tener más de 14 días de publicados, y las bibliotecas de Python y de JavaScript más de 7; Dependabot, uv y pnpm aplican esas esperas.
 
 ## Caddy
 
-- Obtiene y renueva solo el certificado de Let's Encrypt para `aletheia.sbs` y `www.aletheia.sbs`. Los certificados y la cuenta ACME viven en el volumen `caddy-data`, así que un despliegue no los vuelve a pedir.
+- Obtiene y renueva solo el certificado de Let's Encrypt para el dominio de producción y su `www`. Los certificados y la cuenta ACME viven en el volumen `caddy-data`, así que un despliegue no los vuelve a pedir.
 - HTTP redirige a HTTPS con 308, y `www` al dominio principal con 301, conservando la ruta.
 - Cabeceras en todas las respuestas, también en los errores: CSP solo con `'self'` y `frame-ancestors 'none'`, HSTS de un año con `includeSubDomains` y sin `preload`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, COOP y CORP. No envía la cabecera `Server`.
 - Sin API de administración y sin HTTP/3: el grupo de seguridad solo abre el 443 por TCP.
@@ -257,9 +212,12 @@ En el servidor, el documento trae la etiqueta, comprueba su firma y deja `/opt/a
 | Archivo en el servidor | Contenido |
 | --- | --- |
 | `/etc/aletheia/firmantes-permitidos` | La llave pública que firma las etiquetas. Sin ella, ningún despliegue pasa |
+| `/etc/aletheia/entorno.env` | Configuración fija del servidor que no cambia con cada despliegue (`ALETHEIA_EVIDENCE_BUCKET`). La deja una sola vez el administrador; `desplegar.sh` no la escribe ni la toca |
 | `/var/lib/aletheia/despliegue.env` | Versión y digests de lo que está corriendo |
 | `/var/lib/aletheia/despliegue.anterior.env` | La versión a la que se vuelve si la nueva falla |
 | `/var/lib/aletheia/despliegue.fallido.env` | La última versión que falló, para revisarla |
+
+Sin `/etc/aletheia/entorno.env`, `desplegar.sh` se niega a desplegar con un mensaje claro en vez de levantar los contenedores con el bucket vacío.
 
 Las migraciones nunca se revierten. Cada una debe dejar funcionando la versión anterior de la API: primero se amplía el esquema y, en una versión posterior, se retira lo que sobra.
 
@@ -271,15 +229,6 @@ Las migraciones nunca se revierten. Cada una debe dejar funcionando la versión 
 | Fuente | `infra/prod/ssm/aletheia-desplegar.yaml` |
 | Agente | 3.3.5700.0, instalado desde el paquete regional de Ohio |
 | Parámetros | `Accion` (`desplegar` o `revertir`), `Version` (`^v\d+\.\d+\.\d+$`), `ApiDigest` y `WebDigest` (`^sha256:[a-f0-9]{64}$`) |
-
-Cuando cambia el archivo del repositorio, se actualiza la copia de AWS desde CloudShell, con el archivo descargado del commit exacto:
-
-```bash
-aws ssm update-document --region us-east-2 --name aletheia-desplegar \
-  --content file://aletheia-desplegar.yaml --document-format YAML --document-version '$LATEST' \
-  --query 'DocumentDescription.DocumentVersion' --output text
-aws ssm update-document-default-version --region us-east-2 --name aletheia-desplegar --document-version <VERSION>
-```
 
 ### Paquetes de GHCR
 
