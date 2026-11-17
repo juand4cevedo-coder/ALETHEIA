@@ -36,8 +36,10 @@ registrar() {
 }
 
 compose() {
-    [[ -f $ENTORNO ]] || {
-        registrar "Falta $ENTORNO con la configuración fija del servidor (ALETHEIA_EVIDENCE_BUCKET)."
+    local bucket
+    bucket="$([[ -f $ENTORNO ]] && sed -n 's/^ALETHEIA_EVIDENCE_BUCKET=//p' "$ENTORNO")"
+    [[ -n $bucket ]] || {
+        registrar "Falta $ENTORNO con ALETHEIA_EVIDENCE_BUCKET, o está vacío."
         return 1
     }
     docker compose --env-file "$ENTORNO" --env-file "$ACTUAL" -f "$COMPOSE" "$@"
