@@ -842,6 +842,16 @@ export type EvidenceUploadOut = {
 };
 
 /**
+ * ExportDownloadRequest
+ */
+export type ExportDownloadRequest = {
+  /**
+   * Token
+   */
+  token: string;
+};
+
+/**
  * ForgotPasswordRequest
  *
  * Correo al que se envía el enlace para restablecer la contraseña (API-011).
@@ -3349,6 +3359,42 @@ export type DownloadEvidenceError =
 export type DownloadEvidenceResponses = {
   /**
    * Archivo original; su descarga queda en la cadena de custodia.
+   */
+  200: unknown;
+};
+
+export type DownloadExportData = {
+  body: ExportDownloadRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/exports/download";
+};
+
+export type DownloadExportErrors = {
+  /**
+   * El enlace no existe o ya no está vigente.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos de descarga.
+   */
+  429: Problem;
+  /**
+   * No se pudo leer el paquete conservado.
+   */
+  503: Problem;
+};
+
+export type DownloadExportError =
+  DownloadExportErrors[keyof DownloadExportErrors];
+
+export type DownloadExportResponses = {
+  /**
+   * Paquete ZIP conservado.
    */
   200: unknown;
 };

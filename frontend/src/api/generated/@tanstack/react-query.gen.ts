@@ -22,6 +22,7 @@ import {
   createInvitation,
   createSupportTicket,
   downloadEvidence,
+  downloadExport,
   forgotPassword,
   grantCourtesy,
   health,
@@ -94,6 +95,8 @@ import type {
   CreateSupportTicketResponse,
   DownloadEvidenceData,
   DownloadEvidenceError,
+  DownloadExportData,
+  DownloadExportError,
   ForgotPasswordData,
   ForgotPasswordError,
   ForgotPasswordResponse,
@@ -1510,6 +1513,33 @@ export const downloadEvidenceOptions = (
     },
     queryKey: downloadEvidenceQueryKey(options),
   });
+
+/**
+ * Descargar un paquete mediante un enlace vigente
+ */
+export const downloadExportMutation = (
+  options?: Partial<Options<DownloadExportData>>,
+): UseMutationOptions<
+  unknown,
+  DownloadExportError,
+  Options<DownloadExportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    unknown,
+    DownloadExportError,
+    Options<DownloadExportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await downloadExport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const lookupCourtesyQueryKey = (options: Options<LookupCourtesyData>) =>
   createQueryKey("lookupCourtesy", options);
