@@ -19,6 +19,7 @@ import {
   changePlatformUserStatus,
   changeSupportTicketStatus,
   createCase,
+  createCaseExport,
   createInvitation,
   createSupportTicket,
   downloadEvidence,
@@ -42,6 +43,7 @@ import {
   platformSupportTickets,
   previewInvitation,
   readCase,
+  readCaseExport,
   readEvidence,
   readMe,
   refreshSession,
@@ -86,6 +88,9 @@ import type {
   ChangeSupportTicketStatusResponse,
   CreateCaseData,
   CreateCaseError,
+  CreateCaseExportData,
+  CreateCaseExportError,
+  CreateCaseExportResponse,
   CreateCaseResponse,
   CreateInvitationData,
   CreateInvitationError,
@@ -150,6 +155,9 @@ import type {
   PreviewInvitationResponse,
   ReadCaseData,
   ReadCaseError,
+  ReadCaseExportData,
+  ReadCaseExportError,
+  ReadCaseExportResponse,
   ReadCaseResponse,
   ReadEvidenceData,
   ReadEvidenceError,
@@ -1541,6 +1549,58 @@ export const downloadExportMutation = (
   };
   return mutationOptions;
 };
+
+/**
+ * Solicitar un paquete de preservación
+ */
+export const createCaseExportMutation = (
+  options?: Partial<Options<CreateCaseExportData>>,
+): UseMutationOptions<
+  CreateCaseExportResponse,
+  CreateCaseExportError,
+  Options<CreateCaseExportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateCaseExportResponse,
+    CreateCaseExportError,
+    Options<CreateCaseExportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createCaseExport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const readCaseExportQueryKey = (options: Options<ReadCaseExportData>) =>
+  createQueryKey("readCaseExport", options);
+
+/**
+ * Consultar una exportación y su enlace vigente
+ */
+export const readCaseExportOptions = (options: Options<ReadCaseExportData>) =>
+  queryOptions<
+    ReadCaseExportResponse,
+    ReadCaseExportError,
+    ReadCaseExportResponse,
+    ReturnType<typeof readCaseExportQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await readCaseExport({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: readCaseExportQueryKey(options),
+  });
 
 export const lookupCourtesyQueryKey = (options: Options<LookupCourtesyData>) =>
   createQueryKey("lookupCourtesy", options);
