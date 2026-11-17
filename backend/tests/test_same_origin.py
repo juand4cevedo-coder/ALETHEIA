@@ -79,6 +79,23 @@ def test_las_lecturas_no_necesitan_el_encabezado(client: TestClient) -> None:
     assert client.get("/api/v1/prueba/lectura").status_code == 200
 
 
+def test_formulario_de_descarga_exige_origen_y_sitio_propios(client: TestClient) -> None:
+    route = "/api/v1/exports/download"
+    own = client.post(
+        route,
+        data={"otro": "x"},
+        headers={"Origin": _SITIO, "Sec-Fetch-Site": "same-origin"},
+    )
+    assert own.status_code == 422
+    foreign = client.post(
+        route,
+        data={"token": "invalido"},
+        headers={"Origin": _OTRO_SITIO, "Sec-Fetch-Site": "cross-site"},
+    )
+    assert foreign.status_code == 403
+    assert client.post(route, data={"token": "invalido"}).status_code == 403
+
+
 def test_cors_solo_responde_al_origen_del_sitio(client: TestClient) -> None:
     def preflight(origen: str) -> dict[str, str]:
         response = client.options(
