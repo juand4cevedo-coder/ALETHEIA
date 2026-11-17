@@ -61,8 +61,13 @@ def _snapshot(
         return None
     if export.status not in {"queued", "building", "failed"}:
         raise PermanentJobError("La exportación no admite construcción.")
+    # Bloqueo compartido: una subida de evidencia toma FOR UPDATE sobre el caso al insertar
+    # su evento de custodia (ver evidence_upload.py), así que este lock mantiene estables,
+    # entre sí, las evidencias y la cadena que se leen a continuación.
     case = session.scalar(
-        select(Case).where(Case.id == export.case_id, Case.organization_id == organization_id)
+        select(Case)
+        .where(Case.id == export.case_id, Case.organization_id == organization_id)
+        .with_for_update(read=True)
     )
     if case is None or case.wrapped_key is None or case.status == "deleting":
         raise PermanentJobError("El caso no permite construir el paquete.")
