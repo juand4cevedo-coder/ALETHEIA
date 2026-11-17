@@ -86,6 +86,7 @@ def test_construccion_publica_zip_y_es_idempotente(
     ).all()
     assert [event.action for event in events] == ["case_created", "export_ready"]
 
+    db.commit()
     export_build.build(lambda: db, settings, wrapper, export_id, tenant.organization_id, renew)
     assert (
         len(db.scalars(select(CustodyEvent).where(CustodyEvent.case_id == tenant.case_id)).all())
