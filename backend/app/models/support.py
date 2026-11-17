@@ -19,6 +19,8 @@ class SupportTicket(Base):
         CheckConstraint("char_length(message) BETWEEN 10 AND 3000", name="message_length"),
         CheckConstraint(text_values("status", TICKET_STATUSES), name="status"),
         Index("ix_support_tickets_created_at", "created_at"),
+        # "Mis solicitudes de soporte": filtra por persona y ordena por el cursor (IDX-014).
+        Index("ix_support_tickets_user_id_id", "user_id", "id"),
     )
 
     id: Mapped[UUIDv7Pk]

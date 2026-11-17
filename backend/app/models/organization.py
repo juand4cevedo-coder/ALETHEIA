@@ -47,6 +47,9 @@ class Membership(Base):
             unique=True,
             postgresql_where=text("role = 'owner'"),
         ),
+        # Conteo de cupos y listado de miembros: filtran por organización sin el predicado
+        # de "owner" de arriba (IDX-013).
+        Index("ix_memberships_organization_id", "organization_id"),
     )
 
     id: Mapped[UUIDv7Pk]
