@@ -55,7 +55,7 @@ from app.schemas.cases import (
     LastEventOut,
 )
 from app.services import cases as cases_service
-from app.services import custody_verification, evidence_queries
+from app.services import custody_verification, evidence_queries, rate_limit
 from app.services import evidence_download as evidence_download_service
 from app.services import evidence_upload as evidence_service
 from app.services.evidence_stream import FileTooLarge, InvalidUpload
@@ -377,6 +377,7 @@ def download_evidence(
         409: {"description": "El caso o el despacho no admiten nuevas evidencias."},
         413: {"description": "El archivo supera el tope del plan o la cuota disponible."},
         422: {"description": "Formulario inválido; tipo y origen deben preceder al archivo."},
+        429: {"description": "Demasiadas subidas de esta cuenta; reintentar más tarde."},
         503: {"description": "No se pudo acceder a la llave de cifrado del caso."},
     },
 )
@@ -390,6 +391,15 @@ def upload_evidence(
     settings: Annotated[Settings, Depends(get_app_settings)],
 ) -> EvidenceUploadOut:
     response.headers["Cache-Control"] = "no-store"
+    try:
+        rate_limit.hit(session, rate_limit.UPLOAD_ACCOUNT, str(principal.user_id))
+        session.commit()
+    except rate_limit.RateLimitExceededError as exc:
+        raise HTTPException(
+            429,
+            detail="Demasiadas subidas; reintente más tarde.",
+            headers=_NO_STORE | {"Retry-After": str(exc.retry_after)},
+        ) from None
     evidence_id = uuid.uuid7()
     storage_key = f"evidences/{evidence_id}"
     sink = new_evidence_sink(settings, storage_key)

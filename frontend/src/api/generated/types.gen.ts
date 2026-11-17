@@ -3026,6 +3026,10 @@ export type UploadEvidenceErrors = {
    */
   422: ValidationProblem;
   /**
+   * Demasiadas subidas de esta cuenta; reintentar más tarde.
+   */
+  429: Problem;
+  /**
    * No se pudo acceder a la llave de cifrado del caso.
    */
   503: Problem;

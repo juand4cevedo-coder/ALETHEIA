@@ -14,7 +14,6 @@ import boto3
 from botocore.config import Config
 
 from app.adapters.evidence_storage import (
-    PRODUCTION_BUCKET,
     UUID_PART,
     EvidenceSink,
     S3EvidenceSink,
@@ -86,7 +85,7 @@ class LocalExportSink(io.RawIOBase):
 def new_export_sink(settings: Settings, export_id: uuid.UUID) -> EvidenceSink:
     key = export_storage_key(export_id)
     if settings.environment == "production":
-        return S3EvidenceSink(key)
+        return S3EvidenceSink(key, settings.evidence_bucket_name())
     return LocalExportSink(key)
 
 
@@ -98,7 +97,7 @@ def open_export(settings: Settings, key: str) -> Iterator[BinaryIO]:
         client = boto3.client(
             "s3", config=Config(connect_timeout=5, read_timeout=30, retries={"max_attempts": 3})
         )
-        body = client.get_object(Bucket=PRODUCTION_BUCKET, Key=key)["Body"]
+        body = client.get_object(Bucket=settings.evidence_bucket_name(), Key=key)["Body"]
         with closing(cast("BinaryIO", body)) as stream:
             yield stream
     else:
@@ -118,6 +117,6 @@ def delete_export(settings: Settings, key: str) -> None:
         client = boto3.client(
             "s3", config=Config(connect_timeout=5, read_timeout=30, retries={"max_attempts": 3})
         )
-        client.delete_object(Bucket=PRODUCTION_BUCKET, Key=key)
+        client.delete_object(Bucket=settings.evidence_bucket_name(), Key=key)
     else:
         (LOCAL_ROOT / key).unlink(missing_ok=True)

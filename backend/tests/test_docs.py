@@ -37,6 +37,7 @@ def test_en_produccion_la_documentacion_no_existe(
         environment="production",
         database_password_parameter="/aletheia/prod/postgres/app-password",  # noqa: S106
         token_signing_key_parameter="/aletheia/prod/app/token-signing-key",  # noqa: S106
+        evidence_bucket="aletheia-prueba",
     )
     with produccion as client:
         assert client.get(ruta).status_code == 404

@@ -103,6 +103,20 @@ class Settings(DatabaseSettings):
         description="Ruta del PEM de la llave maestra local; solo fuera de production.",
     )
 
+    # Bucket S3 de evidencias y paquetes de exportación (app.adapters.evidence_storage y
+    # export_storage). Solo se usa en production; fuera de ella el almacenamiento es local.
+    evidence_bucket: str | None = Field(
+        default=None,
+        description="Bucket S3 de evidencias y exportaciones; obligatorio en production.",
+    )
+
+    def evidence_bucket_name(self) -> str:
+        """El bucket de evidencias, o un error claro si el entorno no lo tiene."""
+        if self.evidence_bucket is None:
+            msg = "Falta ALETHEIA_EVIDENCE_BUCKET para leer o escribir evidencia en S3."
+            raise RuntimeError(msg)
+        return self.evidence_bucket
+
     @property
     def public_url(self) -> str:
         """Dirección pública del sitio, sin barra final, para armar los enlaces de los correos."""
@@ -154,6 +168,16 @@ class Settings(DatabaseSettings):
         # Una llave maestra en un archivo no protege nada: en producción solo manda KMS.
         if self.environment == "production" and self.local_key_path is not None:
             msg = "la llave local solo se usa fuera de production: ahí la maestra vive en KMS"
+            raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def _evidence_bucket_only_in_production(self) -> Self:
+        if self.environment == "production" and self.evidence_bucket is None:
+            msg = "en production falta ALETHEIA_EVIDENCE_BUCKET"
+            raise ValueError(msg)
+        if self.environment != "production" and self.evidence_bucket is not None:
+            msg = "el bucket de evidencias solo se usa con environment production"
             raise ValueError(msg)
         return self
 
