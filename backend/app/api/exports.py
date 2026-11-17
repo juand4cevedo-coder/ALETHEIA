@@ -1,28 +1,104 @@
 """Descarga transferible de paquetes de preservación ya construidos."""
 
+import datetime
 import logging
+import uuid
 from collections.abc import Iterator
 from typing import Annotated
 
 from botocore.exceptions import BotoCoreError, ClientError
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.adapters.export_storage import READ_CHUNK_BYTES, open_export
-from app.api.deps import get_app_settings, get_client_ip, get_session
+from app.api.cases import get_case_worker_for_download
+from app.api.deps import (
+    get_app_settings,
+    get_client_ip,
+    get_principal_allowing_outdated_legal,
+    get_session,
+)
 from app.core.config import Settings
 from app.core.tokens import InvalidExportLinkError
 from app.services import rate_limit
 from app.services.export_links import resolve_export_link
+from app.services.export_requests import (
+    CaseUnavailable,
+    ExportForbidden,
+    ExportNotFound,
+    get_export,
+    request_export,
+)
+from app.services.sessions import Principal
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/exports", tags=["exportaciones"])
+case_router = APIRouter(
+    prefix="/cases", tags=["exportaciones"], dependencies=[Depends(get_case_worker_for_download)]
+)
 
 
 class ExportDownloadRequest(BaseModel):
     token: str = Field(min_length=1, max_length=4096)
+
+
+class ExportResponse(BaseModel):
+    id: uuid.UUID
+    status: str
+    created_at: datetime.datetime
+    expires_at: datetime.datetime | None
+    download_url: str | None
+
+
+@case_router.post(
+    "/{case_id}/exports",
+    status_code=status.HTTP_202_ACCEPTED,
+    response_model=ExportResponse,
+    summary="Solicitar un paquete de preservación",
+)
+def create_case_export(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> ExportResponse:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        view = request_export(session, principal, case_id)
+    except ExportNotFound:
+        raise HTTPException(404, detail="El caso no existe para esta persona.") from None
+    except ExportForbidden:
+        raise HTTPException(403, detail="No puede exportar este caso.") from None
+    except CaseUnavailable:
+        raise HTTPException(409, detail="El caso no permite exportación.") from None
+    return ExportResponse.model_validate(view, from_attributes=True)
+
+
+@case_router.get(
+    "/{case_id}/exports/{export_id}",
+    response_model=ExportResponse,
+    summary="Consultar una exportación y su enlace vigente",
+)
+def read_case_export(
+    case_id: uuid.UUID,
+    export_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+) -> ExportResponse:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        view = get_export(session, settings, principal, case_id, export_id)
+    except ExportNotFound:
+        raise HTTPException(404, detail="La exportación no existe para esta persona.") from None
+    except ExportForbidden:
+        raise HTTPException(403, detail="No puede exportar este caso.") from None
+    except CaseUnavailable:
+        raise HTTPException(409, detail="El caso no permite exportación.") from None
+    return ExportResponse.model_validate(view, from_attributes=True)
 
 
 @router.post(
