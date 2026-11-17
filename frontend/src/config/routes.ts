@@ -7,6 +7,7 @@ export const ROUTES = {
   security: "/#seguridad",
   pricing: "/precios",
   verifier: "/verificador",
+  exportDownload: "/descargar-paquete",
   // La comprobación de una huella vive en la portada. La verificación de paquetes tiene
   // su propio alcance funcional (HU-026).
   verifierSection: "/#verificador",
