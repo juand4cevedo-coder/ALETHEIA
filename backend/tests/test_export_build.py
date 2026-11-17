@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.adapters.export_storage import LocalExportSink, export_storage_key
 from app.adapters.keys import KeyWrapperError, build_key_wrapper
 from app.core.config import Settings
-from app.models import CustodyEvent, Export
+from app.models import CustodyEvent, Export, Job
 from app.services import export_build
 from tests.conftest import ZERO_HASH, create_tenant
 
@@ -85,6 +85,9 @@ def test_construccion_publica_zip_y_es_idempotente(
         .order_by(CustodyEvent.seq)
     ).all()
     assert [event.action for event in events] == ["case_created", "export_ready"]
+    expiry_job = db.scalar(select(Job).where(Job.idempotency_key == f"export_expire:{export_id}"))
+    assert expiry_job is not None
+    assert expiry_job.kind == "export_expire"
 
     db.commit()
     export_build.build(lambda: db, settings, wrapper, export_id, tenant.organization_id, renew)
