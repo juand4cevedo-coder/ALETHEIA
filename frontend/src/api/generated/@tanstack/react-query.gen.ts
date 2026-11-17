@@ -19,12 +19,15 @@ import {
   changePlatformUserStatus,
   changeSupportTicketStatus,
   createCase,
+  createCaseExport,
   createInvitation,
   createSupportTicket,
   downloadEvidence,
+  downloadExport,
   forgotPassword,
   grantCourtesy,
   health,
+  inspectExport,
   listCases,
   listCustodyEvents,
   listEvidences,
@@ -41,6 +44,7 @@ import {
   platformSupportTickets,
   previewInvitation,
   readCase,
+  readCaseExport,
   readEvidence,
   readMe,
   refreshSession,
@@ -85,6 +89,9 @@ import type {
   ChangeSupportTicketStatusResponse,
   CreateCaseData,
   CreateCaseError,
+  CreateCaseExportData,
+  CreateCaseExportError,
+  CreateCaseExportResponse,
   CreateCaseResponse,
   CreateInvitationData,
   CreateInvitationError,
@@ -94,6 +101,9 @@ import type {
   CreateSupportTicketResponse,
   DownloadEvidenceData,
   DownloadEvidenceError,
+  DownloadExportData,
+  DownloadExportError,
+  DownloadExportResponse,
   ForgotPasswordData,
   ForgotPasswordError,
   ForgotPasswordResponse,
@@ -103,6 +113,9 @@ import type {
   HealthData,
   HealthError,
   HealthResponse,
+  InspectExportData,
+  InspectExportError,
+  InspectExportResponse,
   ListCasesData,
   ListCasesError,
   ListCasesResponse,
@@ -146,6 +159,9 @@ import type {
   PreviewInvitationResponse,
   ReadCaseData,
   ReadCaseError,
+  ReadCaseExportData,
+  ReadCaseExportError,
+  ReadCaseExportResponse,
   ReadCaseResponse,
   ReadEvidenceData,
   ReadEvidenceError,
@@ -1509,6 +1525,112 @@ export const downloadEvidenceOptions = (
       return data;
     },
     queryKey: downloadEvidenceQueryKey(options),
+  });
+
+/**
+ * Comprobar si un enlace de paquete sigue vigente
+ */
+export const inspectExportMutation = (
+  options?: Partial<Options<InspectExportData>>,
+): UseMutationOptions<
+  InspectExportResponse,
+  InspectExportError,
+  Options<InspectExportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    InspectExportResponse,
+    InspectExportError,
+    Options<InspectExportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await inspectExport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Descargar un paquete mediante un enlace vigente
+ */
+export const downloadExportMutation = (
+  options?: Partial<Options<DownloadExportData>>,
+): UseMutationOptions<
+  DownloadExportResponse,
+  DownloadExportError,
+  Options<DownloadExportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    DownloadExportResponse,
+    DownloadExportError,
+    Options<DownloadExportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await downloadExport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Solicitar un paquete de preservación
+ */
+export const createCaseExportMutation = (
+  options?: Partial<Options<CreateCaseExportData>>,
+): UseMutationOptions<
+  CreateCaseExportResponse,
+  CreateCaseExportError,
+  Options<CreateCaseExportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateCaseExportResponse,
+    CreateCaseExportError,
+    Options<CreateCaseExportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createCaseExport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const readCaseExportQueryKey = (options: Options<ReadCaseExportData>) =>
+  createQueryKey("readCaseExport", options);
+
+/**
+ * Consultar una exportación y su enlace vigente
+ */
+export const readCaseExportOptions = (options: Options<ReadCaseExportData>) =>
+  queryOptions<
+    ReadCaseExportResponse,
+    ReadCaseExportError,
+    ReadCaseExportResponse,
+    ReturnType<typeof readCaseExportQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await readCaseExport({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: readCaseExportQueryKey(options),
   });
 
 export const lookupCourtesyQueryKey = (options: Options<LookupCourtesyData>) =>
