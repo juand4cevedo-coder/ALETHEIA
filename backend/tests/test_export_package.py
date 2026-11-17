@@ -9,6 +9,7 @@ import zipfile
 from dataclasses import replace
 
 import pytest
+from pypdf import PdfReader
 
 from app.services.custody_chain import GENESIS_HASH, ChainEvent, event_digest
 from app.services.export_manifest import EvidenceFile
@@ -102,6 +103,21 @@ def test_sello_pendiente_no_inventa_token() -> None:
         assert data["evidences"][0]["tsa_status"] == "pending"
         assert data["evidences"][0]["tsa_token_path"] is None
         assert data["custody"]["anchor_token_path"] is None
+
+
+def test_paquete_genera_informe_pdf_si_no_se_proporciona() -> None:
+    target = io.BytesIO()
+    build_package(
+        target,
+        export_id=EXPORT_ID,
+        case_id=CASE_ID,
+        generated_at=DATE,
+        evidences=[_file()],
+        custody_events=[_event()],
+    )
+    with zipfile.ZipFile(io.BytesIO(target.getvalue())) as archive:
+        report = PdfReader(io.BytesIO(archive.read("report.pdf")))
+        assert "Sellos pendientes: 1" in report.pages[0].extract_text()
 
 
 def test_nombres_originales_iguales_no_colisionan() -> None:
