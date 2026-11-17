@@ -102,7 +102,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # La interfaz y la API comparten origen, así que el único origen permitido es el del sitio.
     allowed_origins = [settings.public_url]
     app.add_middleware(
-        SameOriginMiddleware, allowed_origins=allowed_origins, path_prefix=API_PREFIX
+        SameOriginMiddleware,
+        allowed_origins=allowed_origins,
+        path_prefix=API_PREFIX,
+        form_post_paths=[f"{API_PREFIX}/exports/download"],
     )
     app.add_middleware(
         CORSMiddleware,
