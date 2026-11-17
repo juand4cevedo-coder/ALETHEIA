@@ -97,6 +97,7 @@ import type {
   DownloadEvidenceError,
   DownloadExportData,
   DownloadExportError,
+  DownloadExportResponse,
   ForgotPasswordData,
   ForgotPasswordError,
   ForgotPasswordResponse,
@@ -1520,12 +1521,12 @@ export const downloadEvidenceOptions = (
 export const downloadExportMutation = (
   options?: Partial<Options<DownloadExportData>>,
 ): UseMutationOptions<
-  unknown,
+  DownloadExportResponse,
   DownloadExportError,
   Options<DownloadExportData>
 > => {
   const mutationOptions: UseMutationOptions<
-    unknown,
+    DownloadExportResponse,
     DownloadExportError,
     Options<DownloadExportData>
   > = {
