@@ -17,6 +17,7 @@ from app.core.case_keys import open_case_key
 from app.core.config import Settings
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import Case, CustodyEvent, Evidence, Export
+from app.services import jobs
 from app.services.custody_chain import ChainEvent, load
 from app.services.evidence_download import PreparedDownload
 from app.services.evidence_upload import ASSOCIATED_PREFIX
@@ -170,6 +171,13 @@ def _publish(
             occurred_at=now,
             prev_hash=previous,
         )
+    )
+    jobs.enqueue(
+        session,
+        "export_expire",
+        {"export_id": str(export.id), "organization_id": str(snapshot.organization_id)},
+        f"export_expire:{export.id}",
+        delay=datetime.timedelta(hours=24),
     )
     session.flush()
 
