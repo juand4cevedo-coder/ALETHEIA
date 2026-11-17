@@ -70,6 +70,15 @@ def create_case_export(
 ) -> ExportResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
+        rate_limit.hit(session, rate_limit.EXPORT_ACCOUNT, str(principal.user_id))
+        session.commit()
+    except rate_limit.RateLimitExceededError as exc:
+        raise HTTPException(
+            429,
+            detail="Demasiadas exportaciones; reintente más tarde.",
+            headers={"Cache-Control": "no-store", "Retry-After": str(exc.retry_after)},
+        ) from None
+    try:
         view = request_export(session, principal, case_id)
     except ExportNotFound:
         raise HTTPException(404, detail="El caso no existe para esta persona.") from None

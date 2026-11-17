@@ -19,7 +19,6 @@ from botocore.exceptions import ClientError
 from app.core.config import Settings
 
 PART_BYTES: Final = 8 * 1024 * 1024
-PRODUCTION_BUCKET: Final = "aletheia-prod-evidencias-047938357957"
 UUID_PART: Final = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 STORAGE_KEY_PATTERN: Final = re.compile(rf"evidences/{UUID_PART}")
 
@@ -77,8 +76,9 @@ class LocalEvidenceSink(io.RawIOBase):
 class S3EvidenceSink(io.RawIOBase):
     """Carga multipart a S3 con memoria acotada, sin disco temporal."""
 
-    def __init__(self, key: str) -> None:
+    def __init__(self, key: str, bucket: str) -> None:
         self.key = key
+        self.bucket = bucket
         self.client = boto3.client(
             "s3",
             config=Config(connect_timeout=5, read_timeout=30, retries={"max_attempts": 3}),
@@ -104,11 +104,11 @@ class S3EvidenceSink(io.RawIOBase):
 
     def _part(self, data: bytes) -> None:
         if self._upload_id is None:
-            response = self.client.create_multipart_upload(Bucket=PRODUCTION_BUCKET, Key=self.key)
+            response = self.client.create_multipart_upload(Bucket=self.bucket, Key=self.key)
             self._upload_id = response["UploadId"]
         number = len(self._parts) + 1
         response = self.client.upload_part(
-            Bucket=PRODUCTION_BUCKET,
+            Bucket=self.bucket,
             Key=self.key,
             UploadId=self._upload_id,
             PartNumber=number,
@@ -120,12 +120,12 @@ class S3EvidenceSink(io.RawIOBase):
         self.close()
         self._commit_attempted = True
         if self._upload_id is None:
-            self.client.put_object(Bucket=PRODUCTION_BUCKET, Key=self.key, Body=bytes(self._buffer))
+            self.client.put_object(Bucket=self.bucket, Key=self.key, Body=bytes(self._buffer))
         else:
             if self._buffer:
                 self._part(bytes(self._buffer))
             self.client.complete_multipart_upload(
-                Bucket=PRODUCTION_BUCKET,
+                Bucket=self.bucket,
                 Key=self.key,
                 UploadId=self._upload_id,
                 MultipartUpload={"Parts": self._parts},
@@ -140,7 +140,7 @@ class S3EvidenceSink(io.RawIOBase):
             if self._upload_id is not None:
                 try:
                     self.client.abort_multipart_upload(
-                        Bucket=PRODUCTION_BUCKET, Key=self.key, UploadId=self._upload_id
+                        Bucket=self.bucket, Key=self.key, UploadId=self._upload_id
                     )
                 except ClientError as exc:
                     if exc.response["Error"]["Code"] != "NoSuchUpload":
@@ -150,13 +150,13 @@ class S3EvidenceSink(io.RawIOBase):
             # Una respuesta perdida de CompleteMultipartUpload deja el objeto publicado
             # aunque el cliente aún conserve el identificador de la carga.
             if self._published or self._commit_attempted:
-                self.client.delete_object(Bucket=PRODUCTION_BUCKET, Key=self.key)
+                self.client.delete_object(Bucket=self.bucket, Key=self.key)
                 self._published = False
 
 
 def new_evidence_sink(settings: Settings, key: str) -> EvidenceSink:
     if settings.environment == "production":
-        return S3EvidenceSink(key)
+        return S3EvidenceSink(key, settings.evidence_bucket_name())
     return LocalEvidenceSink(Path(".local/evidence"), key)
 
 
@@ -169,7 +169,7 @@ def open_encrypted_evidence(settings: Settings, key: str) -> Iterator[BinaryIO]:
         client = boto3.client(
             "s3", config=Config(connect_timeout=5, read_timeout=30, retries={"max_attempts": 3})
         )
-        body = client.get_object(Bucket=PRODUCTION_BUCKET, Key=key)["Body"]
+        body = client.get_object(Bucket=settings.evidence_bucket_name(), Key=key)["Body"]
         with closing(cast("BinaryIO", body)) as stream:
             yield stream
     else:

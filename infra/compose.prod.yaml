@@ -26,12 +26,26 @@ x-api: &api
 
 services:
   postgres:
-    # Misma versión que infra/compose.dev.yaml y que la CI.
-    image: postgres:18.6-trixie
+    # Misma versión que infra/compose.dev.yaml y que la CI, fijada por digest (ADR-019).
+    image: postgres:18.6-trixie@sha256:979bccfde35445db618c65107d27d08c6c21339d8dc3ad4c830c6633947be0e4
     restart: unless-stopped
     # La imagen se apaga con SIGINT, que cierra las conexiones y guarda todo antes de salir.
     # Le doy un minuto antes de que Docker la detenga a la fuerza.
     stop_grace_period: 1m
+    # El entrypoint oficial arranca como root para preparar /var/lib/postgresql y luego bajar
+    # a postgres, así que solo suelta las capacidades que no necesita para eso.
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    # Tope de memoria junto al de la API, el trabajador y Caddy: la máquina tiene 2 GB (RT-007).
+    mem_limit: 768m
     environment:
       POSTGRES_USER: aletheia
       POSTGRES_DB: aletheia
@@ -86,6 +100,8 @@ services:
       ALETHEIA_DATABASE_PASSWORD_PARAMETER: /aletheia/prod/postgres/app-password
       # Clave de firma de los enlaces de los correos; el trabajador la recibe por el ancla.
       ALETHEIA_TOKEN_SIGNING_KEY_PARAMETER: /aletheia/prod/app/token-signing-key
+      # No es secreto: solo nombra el bucket, la clave sigue siendo el rol de la máquina.
+      ALETHEIA_EVIDENCE_BUCKET: aletheia-prod-evidencias-047938357957
     # Sin "ports": solo Caddy llega a la API, por la red frontal.
     networks:
       - frontal
@@ -153,8 +169,12 @@ services:
     mem_limit: 256m
 
 networks:
-  # Internet llega a Caddy, y Caddy a la API.
+  # Internet llega a Caddy, y Caddy a la API. Subred fija para que la API solo acepte
+  # X-Forwarded-* desde ella (backend/Dockerfile), en vez de confiar en cualquier origen.
   frontal:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
   # La API, el trabajador y las migraciones llegan a PostgreSQL. Ningún contenedor de esta red
   # publica puertos.
   datos:

@@ -79,6 +79,7 @@ def _produccion(**extra: str) -> Settings:
             "database_url": _URL_SIN_CLAVE,
             "database_password_parameter": _PARAMETRO,
             "token_signing_key_parameter": _PARAMETRO_FIRMA,
+            "evidence_bucket": "aletheia-prueba",
             **extra,
         }
     )
@@ -180,6 +181,7 @@ def test_get_settings_lee_la_clave_al_arrancar_en_produccion(
     monkeypatch.setenv("ALETHEIA_DATABASE_URL", _URL_SIN_CLAVE)
     monkeypatch.setenv("ALETHEIA_DATABASE_PASSWORD_PARAMETER", _PARAMETRO)
     monkeypatch.setenv("ALETHEIA_TOKEN_SIGNING_KEY_PARAMETER", _PARAMETRO_FIRMA)
+    monkeypatch.setenv("ALETHEIA_EVIDENCE_BUCKET", "aletheia-prueba")
     monkeypatch.setattr(secrets, "ssm_client", lambda: cliente)
 
     with Stubber(cliente) as stub:
