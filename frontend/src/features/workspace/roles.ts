@@ -15,7 +15,7 @@ export const ROLE_LABELS: Record<Role, string> = {
 };
 
 // Qué puede hacer cada rol que se invita, a partir del Manual de Usuario (sección 4). Solo se
-// nombra lo que la plataforma ya hace: la carga de evidencias y la auditoría aún no existen.
+// nombra lo que la plataforma ya hace.
 // El propietario no se invita: nace con la organización (RN-010).
 export const INVITABLE_ROLES: readonly {
   value: InvitableRole;

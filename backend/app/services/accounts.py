@@ -22,7 +22,7 @@ from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, Organization, Subscription, User
 from app.repositories import accounts as accounts_repository
 from app.schemas.auth import RegisterRequest
-from app.services import rate_limit, verification
+from app.services import rate_limit, subscription_expiration, verification
 from app.services.audit import audit_ip, audit_user_agent
 from app.services.legal import LegalVersionMismatchError, record_registration
 from app.services.plans import TRIAL_DAYS, TRIAL_PLAN_CODE
@@ -70,6 +70,7 @@ def register(
                 plan_id=trial_plan_id,
                 status="trial",
                 billing_cycle="none",
+                access_source="trial",
                 trial_ends_at=now + datetime.timedelta(days=TRIAL_DAYS),
             ),
             audit=AuditLog(
@@ -84,6 +85,11 @@ def register(
         )
         # La prueba de la aceptación nace con la cuenta (Ley 1581 de 2012, art. 9).
         record_registration(session, user)
+        subscription_expiration.schedule(
+            session,
+            organization_id,
+            now + datetime.timedelta(days=TRIAL_DAYS),
+        )
         # El correo de verificación sale solo si la cuenta queda creada: va en la misma transacción.
         verification.enqueue_verification(session, user_id)
         session.commit()
