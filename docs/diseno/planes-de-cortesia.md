@@ -7,12 +7,15 @@ planes del catálogo sin crear un cobro ni pasar por una pasarela. La concesión
 miembros de ese despacho y respeta los límites del plan elegido. También sirve para un despacho
 propio de trabajo jurídico, administrado con una cuenta distinta de la propietaria de plataforma.
 
-## Estado actual y dependencias
+## Implementación
 
-La consola de facturación solo lee el catálogo y cuenta suscripciones. El registro crea una
-prueba de 14 días, pero no hay un proceso que cambie la suscripción y el estado del despacho al
-vencer. Los cobros y las facturas siguen sin integración. Este documento define la siguiente
-entrega comercial; no describe una función ya disponible.
+La consola de facturación permite buscar un despacho por correo de su titular, confirmar el
+despacho y conceder, renovar o revocar un plan de cortesía. El registro crea una
+prueba de 14 días y agenda su vencimiento en el trabajador. Al vencer, la suscripción pasa a
+`expired` y el despacho a `read_only` en una transacción. La migración 0018 agenda también las
+pruebas creadas antes de esta implementación. Las cortesías con fecha usan la misma tarea;
+las indefinidas permanecen activas. La migración 0019 agrega el origen del acceso y los
+datos de concesión. Los cobros y las facturas siguen sin integración.
 
 ## Reglas de la entrega
 
@@ -31,6 +34,8 @@ entrega comercial; no describe una función ya disponible.
 6. La prueba gratis vence según `trial_ends_at`; la cortesía, según su fecha si tiene una. El
    trabajador procesa el vencimiento de forma idempotente. Cada transición actualiza
    `subscriptions.status` y `organizations.status` en la misma transacción y deja auditoría.
+   La tarea comprueba el estado y la fecha actuales bajo candado, de modo que una tarea antigua
+   no venza una renovación; si encuentra una fecha futura, agenda la nueva fecha.
 7. El propietario de plataforma puede ver el tipo de acceso, plan, fecha de fin y última acción
    en su consola. El titular ve su plan y su vencimiento sin ver el motivo interno.
 8. Los límites de usuarios se leen del plan vigente; al llegar HU-018 se aplican del mismo modo

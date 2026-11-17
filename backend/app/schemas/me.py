@@ -1,5 +1,6 @@
 """Esquemas del perfil de quien tiene la sesión (API-014)."""
 
+import datetime
 import uuid
 from typing import Literal
 
@@ -46,6 +47,13 @@ class LegalAcceptanceRequest(BaseModel):
     )
 
 
+class MySubscription(BaseModel):
+    plan_name: str
+    status: str
+    access_source: str
+    ends_at: datetime.datetime | None
+
+
 class Me(BaseModel):
     """Perfil, organización y rol de quien tiene la sesión."""
 
@@ -62,4 +70,5 @@ class Me(BaseModel):
     organization: OrganizationMembership | None = Field(
         description="Su organización, o null si ya no pertenece a ninguna."
     )
+    subscription: MySubscription | None = None
     legal: LegalStatus = Field(description="Su aceptación de los textos legales.")

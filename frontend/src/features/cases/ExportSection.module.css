@@ -1,0 +1,59 @@
+.section {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 720px;
+}
+
+.section h2,
+.section p {
+  margin: 0;
+}
+
+.section > p {
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+.section > button {
+  justify-self: start;
+}
+
+.ready {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.actions a {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.actions a:focus-visible,
+.copyField input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.copyField {
+  display: grid;
+  gap: var(--space-2);
+  font-weight: 500;
+}
+
+.copyField input {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-3);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+}

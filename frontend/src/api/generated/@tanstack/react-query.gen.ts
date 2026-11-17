@@ -19,11 +19,15 @@ import {
   changePlatformUserStatus,
   changeSupportTicketStatus,
   createCase,
+  createCaseExport,
   createInvitation,
   createSupportTicket,
   downloadEvidence,
+  downloadExport,
   forgotPassword,
+  grantCourtesy,
   health,
+  inspectExport,
   listCases,
   listCustodyEvents,
   listEvidences,
@@ -31,13 +35,16 @@ import {
   listMembers,
   listPlans,
   listPlatformUsers,
+  lookupCourtesy,
   type Options,
+  organizationAuditPage,
   ownSupportTickets,
   platformAudit,
   platformBilling,
   platformSupportTickets,
   previewInvitation,
   readCase,
+  readCaseExport,
   readEvidence,
   readMe,
   refreshSession,
@@ -46,6 +53,7 @@ import {
   removeMember,
   resendVerification,
   resetPassword,
+  revokeCourtesy,
   revokeInvitation,
   signIn,
   signOut,
@@ -81,6 +89,9 @@ import type {
   ChangeSupportTicketStatusResponse,
   CreateCaseData,
   CreateCaseError,
+  CreateCaseExportData,
+  CreateCaseExportError,
+  CreateCaseExportResponse,
   CreateCaseResponse,
   CreateInvitationData,
   CreateInvitationError,
@@ -90,12 +101,21 @@ import type {
   CreateSupportTicketResponse,
   DownloadEvidenceData,
   DownloadEvidenceError,
+  DownloadExportData,
+  DownloadExportError,
+  DownloadExportResponse,
   ForgotPasswordData,
   ForgotPasswordError,
   ForgotPasswordResponse,
+  GrantCourtesyData,
+  GrantCourtesyError,
+  GrantCourtesyResponse,
   HealthData,
   HealthError,
   HealthResponse,
+  InspectExportData,
+  InspectExportError,
+  InspectExportResponse,
   ListCasesData,
   ListCasesError,
   ListCasesResponse,
@@ -117,6 +137,12 @@ import type {
   ListPlatformUsersData,
   ListPlatformUsersError,
   ListPlatformUsersResponse,
+  LookupCourtesyData,
+  LookupCourtesyError,
+  LookupCourtesyResponse,
+  OrganizationAuditPageData,
+  OrganizationAuditPageError,
+  OrganizationAuditPageResponse,
   OwnSupportTicketsData,
   OwnSupportTicketsError,
   OwnSupportTicketsResponse,
@@ -133,6 +159,9 @@ import type {
   PreviewInvitationResponse,
   ReadCaseData,
   ReadCaseError,
+  ReadCaseExportData,
+  ReadCaseExportError,
+  ReadCaseExportResponse,
   ReadCaseResponse,
   ReadEvidenceData,
   ReadEvidenceError,
@@ -158,6 +187,9 @@ import type {
   ResetPasswordData,
   ResetPasswordError,
   ResetPasswordResponse,
+  RevokeCourtesyData,
+  RevokeCourtesyError,
+  RevokeCourtesyResponse,
   RevokeInvitationData,
   RevokeInvitationError,
   RevokeInvitationResponse,
@@ -886,6 +918,87 @@ export const revokeInvitationMutation = (
   return mutationOptions;
 };
 
+export const organizationAuditPageQueryKey = (
+  options?: Options<OrganizationAuditPageData>,
+) => createQueryKey("organizationAuditPage", options);
+
+/**
+ * Auditoría de seguridad de la organización
+ */
+export const organizationAuditPageOptions = (
+  options?: Options<OrganizationAuditPageData>,
+) =>
+  queryOptions<
+    OrganizationAuditPageResponse,
+    OrganizationAuditPageError,
+    OrganizationAuditPageResponse,
+    ReturnType<typeof organizationAuditPageQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await organizationAuditPage({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: organizationAuditPageQueryKey(options),
+  });
+
+export const organizationAuditPageInfiniteQueryKey = (
+  options?: Options<OrganizationAuditPageData>,
+): QueryKey<Options<OrganizationAuditPageData>> =>
+  createQueryKey("organizationAuditPage", options, true);
+
+/**
+ * Auditoría de seguridad de la organización
+ */
+export const organizationAuditPageInfiniteOptions = (
+  options?: Options<OrganizationAuditPageData>,
+) => {
+  const opts = infiniteQueryOptions<
+    OrganizationAuditPageResponse,
+    OrganizationAuditPageError,
+    InfiniteData<OrganizationAuditPageResponse>,
+    QueryKey<Options<OrganizationAuditPageData>>,
+    | string
+    | null
+    | Pick<
+        QueryKey<Options<OrganizationAuditPageData>>[0],
+        "body" | "headers" | "path" | "query"
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<OrganizationAuditPageData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  cursor: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await organizationAuditPage({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: organizationAuditPageInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
 /**
  * Ver una invitación antes de aceptarla
  */
@@ -1413,6 +1526,191 @@ export const downloadEvidenceOptions = (
     },
     queryKey: downloadEvidenceQueryKey(options),
   });
+
+/**
+ * Comprobar si un enlace de paquete sigue vigente
+ */
+export const inspectExportMutation = (
+  options?: Partial<Options<InspectExportData>>,
+): UseMutationOptions<
+  InspectExportResponse,
+  InspectExportError,
+  Options<InspectExportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    InspectExportResponse,
+    InspectExportError,
+    Options<InspectExportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await inspectExport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Descargar un paquete mediante un enlace vigente
+ */
+export const downloadExportMutation = (
+  options?: Partial<Options<DownloadExportData>>,
+): UseMutationOptions<
+  DownloadExportResponse,
+  DownloadExportError,
+  Options<DownloadExportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    DownloadExportResponse,
+    DownloadExportError,
+    Options<DownloadExportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await downloadExport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Solicitar un paquete de preservación
+ */
+export const createCaseExportMutation = (
+  options?: Partial<Options<CreateCaseExportData>>,
+): UseMutationOptions<
+  CreateCaseExportResponse,
+  CreateCaseExportError,
+  Options<CreateCaseExportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateCaseExportResponse,
+    CreateCaseExportError,
+    Options<CreateCaseExportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createCaseExport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const readCaseExportQueryKey = (options: Options<ReadCaseExportData>) =>
+  createQueryKey("readCaseExport", options);
+
+/**
+ * Consultar una exportación y su enlace vigente
+ */
+export const readCaseExportOptions = (options: Options<ReadCaseExportData>) =>
+  queryOptions<
+    ReadCaseExportResponse,
+    ReadCaseExportError,
+    ReadCaseExportResponse,
+    ReturnType<typeof readCaseExportQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await readCaseExport({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: readCaseExportQueryKey(options),
+  });
+
+export const lookupCourtesyQueryKey = (options: Options<LookupCourtesyData>) =>
+  createQueryKey("lookupCourtesy", options);
+
+/**
+ * Buscar un despacho por correo de su titular
+ */
+export const lookupCourtesyOptions = (options: Options<LookupCourtesyData>) =>
+  queryOptions<
+    LookupCourtesyResponse,
+    LookupCourtesyError,
+    LookupCourtesyResponse,
+    ReturnType<typeof lookupCourtesyQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await lookupCourtesy({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: lookupCourtesyQueryKey(options),
+  });
+
+/**
+ * Conceder o renovar un plan de cortesía
+ */
+export const grantCourtesyMutation = (
+  options?: Partial<Options<GrantCourtesyData>>,
+): UseMutationOptions<
+  GrantCourtesyResponse,
+  GrantCourtesyError,
+  Options<GrantCourtesyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    GrantCourtesyResponse,
+    GrantCourtesyError,
+    Options<GrantCourtesyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await grantCourtesy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Revocar un plan de cortesía
+ */
+export const revokeCourtesyMutation = (
+  options?: Partial<Options<RevokeCourtesyData>>,
+): UseMutationOptions<
+  RevokeCourtesyResponse,
+  RevokeCourtesyError,
+  Options<RevokeCourtesyData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RevokeCourtesyResponse,
+    RevokeCourtesyError,
+    Options<RevokeCourtesyData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await revokeCourtesy({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const listPlatformUsersQueryKey = (
   options?: Options<ListPlatformUsersData>,
