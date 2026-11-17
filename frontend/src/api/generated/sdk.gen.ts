@@ -46,6 +46,9 @@ import type {
   DownloadEvidenceData,
   DownloadEvidenceErrors,
   DownloadEvidenceResponses,
+  DownloadExportData,
+  DownloadExportErrors,
+  DownloadExportResponses,
   ForgotPasswordData,
   ForgotPasswordErrors,
   ForgotPasswordResponses,
@@ -971,6 +974,25 @@ export const downloadEvidence = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/download",
     ...options,
+  });
+
+/**
+ * Descargar un paquete mediante un enlace vigente
+ */
+export const downloadExport = <ThrowOnError extends boolean = false>(
+  options: Options<DownloadExportData, ThrowOnError>,
+): RequestResult<DownloadExportResponses, DownloadExportErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    DownloadExportResponses,
+    DownloadExportErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/exports/download",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**
