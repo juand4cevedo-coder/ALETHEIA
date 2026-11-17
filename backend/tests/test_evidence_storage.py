@@ -53,7 +53,7 @@ def fake_s3(monkeypatch: pytest.MonkeyPatch) -> FakeS3:
 
 
 def test_parte_incompleta_se_cancela(fake_s3: FakeS3) -> None:
-    sink = evidence_storage.S3EvidenceSink("evidences/test")
+    sink = evidence_storage.S3EvidenceSink("evidences/test", "aletheia-prueba")
     sink.write(b"a" * evidence_storage.PART_BYTES)
     sink.write(b"resto")
     sink.abort()
@@ -61,7 +61,7 @@ def test_parte_incompleta_se_cancela(fake_s3: FakeS3) -> None:
 
 
 def test_objeto_publicado_se_elimina_si_falla_la_base(fake_s3: FakeS3) -> None:
-    sink = evidence_storage.S3EvidenceSink("evidences/test")
+    sink = evidence_storage.S3EvidenceSink("evidences/test", "aletheia-prueba")
     sink.write(b"archivo cifrado")
     sink.commit()
     sink.abort()
@@ -69,7 +69,7 @@ def test_objeto_publicado_se_elimina_si_falla_la_base(fake_s3: FakeS3) -> None:
 
 
 def test_carga_grande_publica_partes_ordenadas(fake_s3: FakeS3) -> None:
-    sink = evidence_storage.S3EvidenceSink("evidences/test")
+    sink = evidence_storage.S3EvidenceSink("evidences/test", "aletheia-prueba")
     sink.write(b"a" * evidence_storage.PART_BYTES + b"b")
     sink.commit()
     assert fake_s3.calls == ["create", "part", "part", "complete"]
@@ -93,7 +93,7 @@ def test_respuesta_perdida_al_completar_elimina_objeto_huerfano(
 
     monkeypatch.setattr(fake_s3, "complete_multipart_upload", complete_without_response)
     monkeypatch.setattr(fake_s3, "abort_multipart_upload", no_such_upload)
-    sink = evidence_storage.S3EvidenceSink("evidences/test")
+    sink = evidence_storage.S3EvidenceSink("evidences/test", "aletheia-prueba")
     sink.write(b"a" * evidence_storage.PART_BYTES)
     with pytest.raises(TimeoutError):
         sink.commit()
@@ -116,7 +116,7 @@ def test_almacenamiento_local_acepta_la_clave_generada(tmp_path: Path) -> None:
 
 
 def test_lectura_s3_por_flujo_cierra_el_objeto(fake_s3: FakeS3) -> None:
-    settings = Settings.model_construct(environment="production")
+    settings = Settings.model_construct(environment="production", evidence_bucket="aletheia-prueba")
     with evidence_storage.open_encrypted_evidence(settings, TEST_KEY) as stream:
         assert stream.read(6) == b"objeto"
     assert stream.closed
@@ -124,7 +124,7 @@ def test_lectura_s3_por_flujo_cierra_el_objeto(fake_s3: FakeS3) -> None:
 
 
 def test_lectura_rechaza_clave_fuera_del_esquema() -> None:
-    settings = Settings.model_construct(environment="production")
+    settings = Settings.model_construct(environment="production", evidence_bucket="aletheia-prueba")
     with (
         pytest.raises(ValueError, match="clave de almacenamiento inválida"),
         evidence_storage.open_encrypted_evidence(settings, "../fuera"),

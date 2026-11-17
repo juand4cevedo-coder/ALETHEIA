@@ -6,7 +6,7 @@ ALETHEIA preserva y documenta. No determina la autenticidad, la veracidad, la ad
 
 ## Estado
 
-En construcción. Las instrucciones de instalación, desarrollo y despliegue se agregan a medida que cada parte del sistema existe.
+En producción, en desarrollo activo. `develop` reúne el trabajo integrado y cada versión se publica desde `main` con una etiqueta firmada (sección Producción). El sello de tiempo externo RFC 3161 y el anclaje externo de la cadena de custodia siguen pendientes.
 
 ## Tecnologías
 
@@ -272,6 +272,7 @@ En producción la API no recibe claves. Su URL llega sin clave y la API la lee d
 | `ALETHEIA_TOKEN_SIGNING_KEY_PARAMETER` | `/aletheia/prod/app/token-signing-key` |
 | `ALETHEIA_MIGRATION_DATABASE_URL` | `postgresql+psycopg://aletheia_owner@postgres:5432/aletheia` |
 | `ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER` | `/aletheia/prod/postgres/owner-password` |
+| `ALETHEIA_EVIDENCE_BUCKET` | El bucket S3 de evidencias y paquetes de exportación (`docs/operacion/produccion.md`) |
 | `AWS_DEFAULT_REGION` | `us-east-2` |
 
 Para publicar una versión:
