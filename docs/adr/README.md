@@ -51,3 +51,4 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-045](adr-045.md) | SHA-256 incremental para la verificación local | Aceptado | 17/11/2026 |
 | [ADR-046](adr-046.md) | Estructura del ZIP de preservación y custodia verificable | Aceptado | 17/11/2026 |
 | [ADR-047](adr-047.md) | Informe PDF generado a partir del manifiesto exacto | Aceptado | 17/11/2026 |
+| [ADR-048](adr-048.md) | Enlace de exportación válido 24 horas con firma de la aplicación | Aceptado | 17/11/2026 |
