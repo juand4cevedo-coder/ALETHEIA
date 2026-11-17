@@ -151,8 +151,8 @@ describe("Página de inicio (HU-001)", () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const { container } = await renderRoute("/");
 
-    // La comprobación local se abre en la sección, sin navegación a una ruta vacía.
-    expect(container.querySelector("a[href='/verificador']")).toBeNull();
+    // El menú lleva al verificador de manifiestos; la portada conserva su demostración local.
+    expect(container.querySelector("a[href='/verificador']")).not.toBeNull();
     const verifier = container.querySelector("#verificador")!;
     expect(within(verifier as HTMLElement).queryAllByRole("link")).toEqual([]);
     expect(verifier).toHaveTextContent(
