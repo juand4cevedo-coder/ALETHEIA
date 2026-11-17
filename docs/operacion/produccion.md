@@ -2,7 +2,7 @@
 
 Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su despliegue según ADR-018: qué existe, cómo quedó configurado y cómo se comprobó. Aquí no hay claves, contraseñas ni llaves privadas. Las claves viven en Parameter Store y la llave SSH solo en el equipo del administrador.
 
-Última actualización: 13/11/2026, con la comprobación de KMS y SES previa al release v0.3.0.
+Última actualización: 17/11/2026, con el endurecimiento de PostgreSQL y de la red `frontal` de la auditoría de seguridad.
 
 ## Cuenta y costos
 
@@ -226,9 +226,11 @@ sudo docker compose --env-file /var/lib/aletheia/despliegue.env -f compose.prod.
 | `api` | `aletheia-api`, por digest | Usuario 10001, solo lectura con `/tmp` en memoria, sin capacidades, `no-new-privileges`, 512 MB y healthcheck a `/api/v1/health` |
 | `worker` | La misma de la API, con `python -m app.worker` | Igual que la API, 256 MB y 45 segundos para terminar la tarea en curso. Su healthcheck revisa el latido con `python -m app.worker --check` |
 | `migrate` | La misma de la API | Igual que la API. Va en el perfil `migraciones` y solo corre con `docker compose run --rm migrate` |
-| `postgres` | `postgres:18.6-trixie` | Sin puertos publicados y solo en la red `datos` |
+| `postgres` | `postgres:18.6-trixie`, por digest | Solo las capacidades que el entrypoint oficial necesita para arrancar como root y bajar a `postgres` (`CHOWN`, `DAC_OVERRIDE`, `FOWNER`, `SETGID`, `SETUID`), `no-new-privileges`, 768 MB. Sin puertos publicados y solo en la red `datos` |
 
 La API, el trabajador y las migraciones reciben la URL de la base sin clave y el nombre de su parámetro. Leen la clave de Parameter Store al arrancar, con el rol de la máquina, así que `docker inspect` no muestra ninguna. En producción la API no publica `/api/v1/docs` ni `/api/v1/openapi.json`.
+
+La red `frontal` tiene una subred fija (172.28.0.0/24, en `infra/compose.prod.yaml`): `backend/Dockerfile` solo acepta las cabeceras `X-Forwarded-*` de uvicorn desde esa subred, en vez de confiar en cualquier origen interno.
 
 Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy.Dockerfile`. Según ADR-019, las imágenes base, los entornos de ejecución, uv, pnpm y las acciones de GitHub deben tener más de 14 días de publicados, y las bibliotecas de Python y de JavaScript más de 7; Dependabot, uv y pnpm aplican esas esperas. La excepción de boto3 1.43.120 y sus tipos se retiró de `pyproject.toml` el 04/11/2026, cuando ya tenían más de 7 días. Python 3.14.9 y uv 0.13.5 pasan de 14 días el 05/11/2026 y el 06/11/2026; no tienen excepción en la configuración porque van fijados en la CI y en el Dockerfile.
 

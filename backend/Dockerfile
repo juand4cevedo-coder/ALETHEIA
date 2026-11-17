@@ -59,10 +59,10 @@ COPY pyproject.toml ./
 USER 10001:10001
 EXPOSE 8000
 
-# Solo Caddy llega a este puerto (la API no publica puertos en Compose), por eso se aceptan
-# las cabeceras X-Forwarded-* de cualquier origen de la red interna: así la API ve la IP
-# real del visitante y el esquema https.
+# Solo Caddy llega a este puerto (la API no publica puertos en Compose), así que la API solo
+# acepta las cabeceras X-Forwarded-* desde la subred de la red "frontal" (infra/compose.prod.yaml):
+# así ve la IP real del visitante y el esquema https sin confiar en cualquier origen interno.
 CMD ["uvicorn", "app.main:create_app", "--factory", \
      "--host", "0.0.0.0", "--port", "8000", \
-     "--proxy-headers", "--forwarded-allow-ips", "*", \
+     "--proxy-headers", "--forwarded-allow-ips", "172.28.0.0/24", \
      "--no-server-header", "--timeout-graceful-shutdown", "20"]
