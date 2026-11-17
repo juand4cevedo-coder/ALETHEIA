@@ -413,11 +413,11 @@ def upload_evidence(
         raise HTTPException(
             409, detail="El caso o el despacho no admiten nuevas evidencias.", headers=_NO_STORE
         ) from None
-    except (evidence_service.QuotaExceeded, FileTooLarge):
+    except evidence_service.QuotaExceeded, FileTooLarge:
         raise HTTPException(
             413, detail="El archivo supera el límite disponible.", headers=_NO_STORE
         ) from None
-    except (InvalidUpload, UnicodeError, ValueError):
+    except InvalidUpload, UnicodeError, ValueError:
         raise HTTPException(
             422, detail="Formulario de evidencia inválido.", headers=_NO_STORE
         ) from None
@@ -682,7 +682,7 @@ def add_case_member(
     response.headers["Cache-Control"] = "no-store"
     try:
         cases_service.add_case_member(session, principal, case_id, data.user_id)
-    except (cases_service.CaseNotFoundError, cases_service.CaseMemberNotFoundError):
+    except cases_service.CaseNotFoundError, cases_service.CaseMemberNotFoundError:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=NOT_FOUND, headers=_NO_STORE
         ) from None
@@ -720,11 +720,11 @@ def remove_case_member(
     response.headers["Cache-Control"] = "no-store"
     try:
         cases_service.remove_case_member(session, principal, case_id, user_id)
-    except (cases_service.CaseNotFoundError, cases_service.CaseMemberNotFoundError):
+    except cases_service.CaseNotFoundError, cases_service.CaseMemberNotFoundError:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=NOT_FOUND, headers=_NO_STORE
         ) from None
-    except (cases_service.NotAllowedToManageCaseError, cases_service.SelfRemovalError):
+    except cases_service.NotAllowedToManageCaseError, cases_service.SelfRemovalError:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN, detail=NOT_ALLOWED, headers=_NO_STORE
         ) from None

@@ -149,7 +149,7 @@ def read_link(master_key: str, purpose: LinkPurpose, token: str) -> LinkClaims:
             options={"require": ["iss", "aud", "sub", "iat", "exp", "st"]},
         )
         return LinkClaims(subject=uuid.UUID(claims["sub"]), state_seal=str(claims["st"]))
-    except (jwt.PyJWTError, ValueError, TypeError):
+    except jwt.PyJWTError, ValueError, TypeError:
         raise InvalidLinkError from None
 
 
@@ -194,7 +194,7 @@ def read_access_token(master_key: str, token: str) -> AccessClaims:
             options={"require": ["iss", "aud", "sub", "sid", "iat", "exp"]},
         )
         return AccessClaims(subject=uuid.UUID(claims["sub"]), session_id=uuid.UUID(claims["sid"]))
-    except (jwt.PyJWTError, ValueError, TypeError):
+    except jwt.PyJWTError, ValueError, TypeError:
         raise InvalidAccessTokenError from None
 
 
@@ -249,7 +249,7 @@ def read_export_download_link(master_key: str, token: str) -> ExportDownloadClai
             organization_id=uuid.UUID(claims["org"]),
             state_seal=str(claims["st"]),
         )
-    except (jwt.PyJWTError, ValueError, TypeError):
+    except jwt.PyJWTError, ValueError, TypeError:
         raise InvalidExportLinkError from None
 
 
