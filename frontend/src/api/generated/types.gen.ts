@@ -3396,8 +3396,11 @@ export type DownloadExportResponses = {
   /**
    * Paquete ZIP conservado.
    */
-  200: unknown;
+  200: Blob | File;
 };
+
+export type DownloadExportResponse =
+  DownloadExportResponses[keyof DownloadExportResponses];
 
 export type LookupCourtesyData = {
   body?: never;
