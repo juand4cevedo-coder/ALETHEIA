@@ -17,6 +17,7 @@ import {
   loadForgotPasswordPage,
   loadLegalPage,
   loadMembersPage,
+  loadOrganizationAuditPage,
   loadNewCasePage,
   loadPlatformPage,
   loadPlatformBillingPage,
@@ -47,6 +48,22 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <HomePage /> },
       { path: "precios", lazy: { Component: loadPricingPage } },
+      {
+        path: ROUTES.exportDownload.slice(1),
+        lazy: {
+          Component: () =>
+            import("../pages/ExportDownloadPage.tsx").then(
+              (module) => module.ExportDownloadPage,
+            ),
+        },
+      },
+      {
+        path: ROUTES.verifier.slice(1),
+        lazy: {
+          Component: () =>
+            import("../pages/VerifierPage.tsx").then((m) => m.VerifierPage),
+        },
+      },
       {
         path: "docs/:slug?",
         lazy: {
@@ -219,6 +236,10 @@ export const routes: RouteObject[] = [
           {
             path: ROUTES.members.slice(ROUTES.app.length + 1),
             lazy: { Component: loadMembersPage },
+          },
+          {
+            path: ROUTES.organizationAudit.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadOrganizationAuditPage },
           },
           {
             path: ROUTES.cases.slice(ROUTES.app.length + 1),

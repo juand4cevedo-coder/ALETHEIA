@@ -129,41 +129,41 @@ export const DOCUMENTATION: DocArticle[] = [
   },
   {
     slug: "verificar-un-archivo",
-    title: "Comparar una huella SHA-256",
+    title: "Verificar un archivo con su manifiesto",
     group: "Integridad",
     description:
-      "Compruebe si un archivo coincide con una huella de referencia, directamente en su navegador.",
+      "Compare un archivo con el manifiesto del paquete de preservación, directamente en su navegador.",
     sections: [
       {
         id: "necesita",
         title: "Qué necesita",
         paragraphs: [
-          "Un archivo de hasta 32 MB y una huella SHA-256 de referencia: una secuencia de 64 caracteres hexadecimales. La referencia debe venir de una fuente que pueda identificar y conservar.",
+          "Necesita el archivo y manifest.json del paquete de preservación. Conserve también el origen del manifiesto: la coincidencia de huellas por sí sola no lo autentica.",
         ],
       },
       {
         id: "comparar",
         title: "Realice la comparación",
         paragraphs: [
-          "La operación es local. El comprobador no sube su archivo a Aletheia.",
+          "La operación es local. El verificador no sube el archivo ni el manifiesto a Aletheia. Lee archivos grandes por fragmentos para limitar el uso de memoria.",
         ],
         steps: [
-          "Abra el comprobador de la página de inicio.",
-          "Seleccione el archivo que quiere revisar.",
-          "Introduzca la huella SHA-256 de referencia.",
-          "Consulte el resultado y conserve el origen de la referencia con su registro de revisión.",
+          "Abra el verificador público.",
+          "Seleccione manifest.json y, si contiene varios registros, elija el archivo correspondiente.",
+          "Seleccione el archivo que quiere revisar y pulse Comparar huellas.",
+          "Conserve el manifiesto y su origen junto con el resultado de la revisión.",
         ],
       },
       {
         id: "resultado",
         title: "Interprete el resultado",
         paragraphs: [
-          "Una coincidencia indica que la huella calculada coincide con la referencia introducida. Una diferencia significa que no coinciden: revise el archivo y la referencia usados.",
-          "Una huella no verifica quién creó el archivo ni cuándo. Si alguien sustituye a la vez el archivo y la referencia, esta comparación no permite advertir esa sustitución.",
+          "Una coincidencia indica que la huella calculada coincide con el registro seleccionado del manifiesto. Una diferencia significa que no coinciden: revise el archivo y el manifiesto usados.",
+          "La comparación no verifica quién creó el archivo o el manifiesto ni cuándo. Tampoco determina autenticidad o validez jurídica. Si alguien sustituye a la vez el archivo y el manifiesto, esta operación no permite advertirlo.",
         ],
       },
     ],
-    action: { to: "/#verificador", label: "Abrir el comprobador" },
+    action: { to: "/verificador", label: "Abrir el verificador" },
   },
   {
     slug: "recuperar-el-acceso",
