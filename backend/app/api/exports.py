@@ -7,7 +7,7 @@ from collections.abc import Iterator
 from typing import Annotated
 
 from botocore.exceptions import BotoCoreError, ClientError
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Response, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -40,8 +40,12 @@ case_router = APIRouter(
 )
 
 
-class ExportDownloadRequest(BaseModel):
+class ExportInspectRequest(BaseModel):
     token: str = Field(min_length=1, max_length=4096)
+
+
+class ExportInspectResponse(BaseModel):
+    expires_at: datetime.datetime
 
 
 class ExportResponse(BaseModel):
@@ -102,6 +106,32 @@ def read_case_export(
 
 
 @router.post(
+    "/inspect",
+    response_model=ExportInspectResponse,
+    summary="Comprobar si un enlace de paquete sigue vigente",
+)
+def inspect_export(
+    body: ExportInspectRequest,
+    response: Response,
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+) -> ExportInspectResponse:
+    response.headers["Cache-Control"] = "no-store"
+    rate_limit.hit(session, rate_limit.EXPORT_LINK_IP, client_ip)
+    session.commit()
+    try:
+        ready = resolve_export_link(session, settings, body.token)
+    except InvalidExportLinkError:
+        raise HTTPException(
+            404,
+            detail="El enlace no existe o ya no está vigente.",
+            headers={"Cache-Control": "no-store"},
+        ) from None
+    return ExportInspectResponse(expires_at=ready.expires_at)
+
+
+@router.post(
     "/download",
     response_class=StreamingResponse,
     summary="Descargar un paquete mediante un enlace vigente",
@@ -116,7 +146,7 @@ def read_case_export(
     },
 )
 def download_export(
-    body: ExportDownloadRequest,
+    token: Annotated[str, Form(min_length=1, max_length=4096)],
     session: Annotated[Session, Depends(get_session)],
     settings: Annotated[Settings, Depends(get_app_settings)],
     client_ip: Annotated[str, Depends(get_client_ip)],
@@ -125,7 +155,7 @@ def download_export(
     rate_limit.hit(session, rate_limit.EXPORT_LINK_IP, client_ip)
     session.commit()
     try:
-        ready = resolve_export_link(session, settings, body.token)
+        ready = resolve_export_link(session, settings, token)
     except InvalidExportLinkError:
         raise HTTPException(
             404,

@@ -27,6 +27,7 @@ import {
   forgotPassword,
   grantCourtesy,
   health,
+  inspectExport,
   listCases,
   listCustodyEvents,
   listEvidences,
@@ -112,6 +113,9 @@ import type {
   HealthData,
   HealthError,
   HealthResponse,
+  InspectExportData,
+  InspectExportError,
+  InspectExportResponse,
   ListCasesData,
   ListCasesError,
   ListCasesResponse,
@@ -1522,6 +1526,33 @@ export const downloadEvidenceOptions = (
     },
     queryKey: downloadEvidenceQueryKey(options),
   });
+
+/**
+ * Comprobar si un enlace de paquete sigue vigente
+ */
+export const inspectExportMutation = (
+  options?: Partial<Options<InspectExportData>>,
+): UseMutationOptions<
+  InspectExportResponse,
+  InspectExportError,
+  Options<InspectExportData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    InspectExportResponse,
+    InspectExportError,
+    Options<InspectExportData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await inspectExport({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 /**
  * Descargar un paquete mediante un enlace vigente

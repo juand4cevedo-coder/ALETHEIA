@@ -2509,6 +2509,47 @@
         }
       }
     },
+    "/api/v1/exports/inspect": {
+      "post": {
+        "tags": [
+          "exportaciones"
+        ],
+        "summary": "Comprobar si un enlace de paquete sigue vigente",
+        "operationId": "inspect_export",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportInspectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportInspectResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/exports/download": {
       "post": {
         "tags": [
@@ -2518,9 +2559,9 @@
         "operationId": "download_export",
         "requestBody": {
           "content": {
-            "application/json": {
+            "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/ExportDownloadRequest"
+                "$ref": "#/components/schemas/Body_download_export"
               }
             }
           },
@@ -3308,6 +3349,21 @@
         ],
         "title": "AcceptInvitationRequest",
         "description": "Aceptar la invitación (API-019).\n\nCon full_name se crea una cuenta nueva: la contraseña es la nueva y debe aceptar los textos\nlegales vigentes. Sin full_name, la persona ya tiene cuenta y la contraseña es la suya."
+      },
+      "Body_download_export": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "Body_download_export"
       },
       "CaseCandidate": {
         "properties": {
@@ -4533,7 +4589,7 @@
         "title": "EvidenceUploadOut",
         "description": "Constancia inmediata de la preservación; el sello de tiempo llega después."
       },
-      "ExportDownloadRequest": {
+      "ExportInspectRequest": {
         "properties": {
           "token": {
             "type": "string",
@@ -4546,7 +4602,21 @@
         "required": [
           "token"
         ],
-        "title": "ExportDownloadRequest"
+        "title": "ExportInspectRequest"
+      },
+      "ExportInspectResponse": {
+        "properties": {
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expires_at"
+        ],
+        "title": "ExportInspectResponse"
       },
       "ExportResponse": {
         "properties": {
