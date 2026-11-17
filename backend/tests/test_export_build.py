@@ -12,9 +12,8 @@ from sqlalchemy.orm import Session
 
 from app.adapters.export_storage import LocalExportSink, export_storage_key
 from app.adapters.keys import KeyWrapperError, build_key_wrapper
-from app.core.case_keys import new_wrapped_case_key
 from app.core.config import Settings
-from app.models import Case, CustodyEvent, Export
+from app.models import CustodyEvent, Export
 from app.services import export_build
 from tests.conftest import ZERO_HASH, create_tenant
 
@@ -24,11 +23,13 @@ def test_construccion_publica_zip_y_es_idempotente(
 ) -> None:
     tenant = create_tenant(db, "Paquete")
     wrapper = build_key_wrapper(settings)
-    wrapped = new_wrapped_case_key(wrapper)
-    case = db.get(Case, tenant.case_id)
-    assert case is not None
-    case.wrapped_key = wrapped.ciphertext
-    case.key_version = wrapped.key_version
+
+    # No hay originales en este caso; la apertura real de llave se prueba por separado.
+    class EmptyKeyset:
+        def primitive(self, _kind: object) -> object:
+            return object()
+
+    monkeypatch.setattr(export_build, "open_case_key", lambda _wrapper, _wrapped: EmptyKeyset())
     db.add(
         CustodyEvent(
             organization_id=tenant.organization_id,
