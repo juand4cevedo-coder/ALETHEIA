@@ -61,7 +61,7 @@ def colombian_datetime(moment: datetime.datetime) -> str:
 def _ids(payload: dict[str, Any]) -> tuple[uuid.UUID, uuid.UUID]:
     try:
         return uuid.UUID(str(payload["invitation_id"])), uuid.UUID(str(payload["organization_id"]))
-    except KeyError, ValueError:
+    except (KeyError, ValueError):
         msg = "La tarea de invitación no trae identificadores válidos."
         raise PermanentJobError(msg) from None
 

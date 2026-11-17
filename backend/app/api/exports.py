@@ -177,7 +177,7 @@ def download_export(
     source_context = open_export(settings, ready.storage_key)
     try:
         source = source_context.__enter__()
-    except OSError, ValueError, KeyError, BotoCoreError, ClientError:
+    except (OSError, ValueError, KeyError, BotoCoreError, ClientError):
         logger.exception("No se pudo abrir el paquete de exportación")
         raise HTTPException(
             503,
@@ -188,7 +188,7 @@ def download_export(
         first_chunk = source.read(READ_CHUNK_BYTES)
         if not first_chunk:
             raise OSError("Paquete vacío")
-    except OSError, ValueError, KeyError, BotoCoreError, ClientError:
+    except (OSError, ValueError, KeyError, BotoCoreError, ClientError):
         source_context.__exit__(None, None, None)
         logger.exception("No se pudo abrir el paquete de exportación")
         raise HTTPException(

@@ -41,7 +41,7 @@ def verify_password(password_hash: str, password: str) -> bool:
         return _HASHER.verify(password_hash, normalize(password))
     # ValueError cubre InvalidHashError y también un hash con caracteres fuera de ASCII, que
     # argon2 rechaza con UnicodeEncodeError: ninguno de los dos debe terminar en un error 500.
-    except VerificationError, ValueError:
+    except (VerificationError, ValueError):
         return False
 
 
@@ -66,5 +66,5 @@ def needs_rehash(password_hash: str) -> bool:
     """Indica si el hash se hizo con parámetros distintos de los vigentes y debe rehacerse."""
     try:
         return _HASHER.check_needs_rehash(password_hash)
-    except InvalidHashError, ValueError:
+    except (InvalidHashError, ValueError):
         return False
