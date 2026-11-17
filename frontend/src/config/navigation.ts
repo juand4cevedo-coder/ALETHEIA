@@ -26,9 +26,9 @@ export const NAVIGATION: NavigationGroup[] = [
         description: "Acceso con responsabilidades claras.",
       },
       {
-        to: ROUTES.verifierSection,
+        to: ROUTES.verifier,
         label: "Comprobador de archivos",
-        description: "Compare una huella SHA-256.",
+        description: "Compare un archivo con su manifiesto.",
       },
       {
         to: "/seguridad",

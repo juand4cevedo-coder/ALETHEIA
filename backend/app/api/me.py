@@ -11,6 +11,7 @@ exige, como toda ruta con sesión.
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import (
@@ -21,8 +22,15 @@ from app.api.deps import (
 )
 from app.core.legal import LEGAL_VERSION
 from app.core.permissions import permissions_for
+from app.models import Plan, Subscription
 from app.schemas.auth import ChangePasswordRequest
-from app.schemas.me import LegalAcceptanceRequest, LegalStatus, Me, OrganizationMembership
+from app.schemas.me import (
+    LegalAcceptanceRequest,
+    LegalStatus,
+    Me,
+    MySubscription,
+    OrganizationMembership,
+)
 from app.services import accounts as accounts_service
 from app.services import credentials as credentials_service
 from app.services import legal as legal_service
@@ -51,6 +59,28 @@ def read_me(
         if profile.organization is not None
         else None
     )
+    subscription = None
+    if profile.organization is not None:
+        row = session.execute(
+            select(Subscription, Plan.name)
+            .join(Plan, Plan.id == Subscription.plan_id)
+            .where(Subscription.organization_id == profile.organization.id)
+        ).one_or_none()
+        if row is not None:
+            current, plan_name = row
+            deadline = (
+                current.trial_ends_at
+                if current.access_source == "trial"
+                else current.courtesy_ends_at
+                if current.access_source == "courtesy"
+                else current.current_period_end
+            )
+            subscription = MySubscription(
+                plan_name=plan_name,
+                status=current.status,
+                access_source=current.access_source,
+                ends_at=deadline,
+            )
     return Me(
         id=profile.user.id,
         full_name=profile.user.full_name,
@@ -61,6 +91,7 @@ def read_me(
             permissions_for(principal.role, platform_admin=profile.user.is_platform_admin)
         ),
         organization=organization,
+        subscription=subscription,
         legal=LegalStatus(
             accepted_version=principal.legal_version,
             current_version=LEGAL_VERSION,

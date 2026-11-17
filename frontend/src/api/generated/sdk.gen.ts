@@ -7,6 +7,7 @@ import {
   type Options as Options2,
   type RequestResult,
   type TDataShape,
+  urlSearchParamsBodySerializer,
 } from "./client";
 import { client } from "./client.gen";
 import type {
@@ -36,6 +37,9 @@ import type {
   ChangeSupportTicketStatusResponses,
   CreateCaseData,
   CreateCaseErrors,
+  CreateCaseExportData,
+  CreateCaseExportErrors,
+  CreateCaseExportResponses,
   CreateCaseResponses,
   CreateInvitationData,
   CreateInvitationErrors,
@@ -46,12 +50,21 @@ import type {
   DownloadEvidenceData,
   DownloadEvidenceErrors,
   DownloadEvidenceResponses,
+  DownloadExportData,
+  DownloadExportErrors,
+  DownloadExportResponses,
   ForgotPasswordData,
   ForgotPasswordErrors,
   ForgotPasswordResponses,
+  GrantCourtesyData,
+  GrantCourtesyErrors,
+  GrantCourtesyResponses,
   HealthData,
   HealthErrors,
   HealthResponses,
+  InspectExportData,
+  InspectExportErrors,
+  InspectExportResponses,
   ListCasesData,
   ListCasesErrors,
   ListCasesResponses,
@@ -73,6 +86,12 @@ import type {
   ListPlatformUsersData,
   ListPlatformUsersErrors,
   ListPlatformUsersResponses,
+  LookupCourtesyData,
+  LookupCourtesyErrors,
+  LookupCourtesyResponses,
+  OrganizationAuditPageData,
+  OrganizationAuditPageErrors,
+  OrganizationAuditPageResponses,
   OwnSupportTicketsData,
   OwnSupportTicketsErrors,
   OwnSupportTicketsResponses,
@@ -89,6 +108,9 @@ import type {
   PreviewInvitationResponses,
   ReadCaseData,
   ReadCaseErrors,
+  ReadCaseExportData,
+  ReadCaseExportErrors,
+  ReadCaseExportResponses,
   ReadCaseResponses,
   ReadEvidenceData,
   ReadEvidenceErrors,
@@ -114,6 +136,9 @@ import type {
   ResetPasswordData,
   ResetPasswordErrors,
   ResetPasswordResponses,
+  RevokeCourtesyData,
+  RevokeCourtesyErrors,
+  RevokeCourtesyResponses,
   RevokeInvitationData,
   RevokeInvitationErrors,
   RevokeInvitationResponses,
@@ -597,6 +622,32 @@ export const revokeInvitation = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Auditoría de seguridad de la organización
+ */
+export const organizationAuditPage = <ThrowOnError extends boolean = false>(
+  options?: Options<OrganizationAuditPageData, ThrowOnError>,
+): RequestResult<
+  OrganizationAuditPageResponses,
+  OrganizationAuditPageErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    OrganizationAuditPageResponses,
+    OrganizationAuditPageErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/audit",
+    ...options,
+  });
+
+/**
  * Ver una invitación antes de aceptarla
  */
 export const previewInvitation = <ThrowOnError extends boolean = false>(
@@ -933,6 +984,167 @@ export const downloadEvidence = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/download",
     ...options,
+  });
+
+/**
+ * Comprobar si un enlace de paquete sigue vigente
+ */
+export const inspectExport = <ThrowOnError extends boolean = false>(
+  options: Options<InspectExportData, ThrowOnError>,
+): RequestResult<InspectExportResponses, InspectExportErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    InspectExportResponses,
+    InspectExportErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/exports/inspect",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Descargar un paquete mediante un enlace vigente
+ */
+export const downloadExport = <ThrowOnError extends boolean = false>(
+  options: Options<DownloadExportData, ThrowOnError>,
+): RequestResult<DownloadExportResponses, DownloadExportErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    DownloadExportResponses,
+    DownloadExportErrors,
+    ThrowOnError
+  >({
+    ...urlSearchParamsBodySerializer,
+    url: "/api/v1/exports/download",
+    ...options,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Solicitar un paquete de preservación
+ */
+export const createCaseExport = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCaseExportData, ThrowOnError>,
+): RequestResult<
+  CreateCaseExportResponses,
+  CreateCaseExportErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    CreateCaseExportResponses,
+    CreateCaseExportErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/exports",
+    ...options,
+  });
+
+/**
+ * Consultar una exportación y su enlace vigente
+ */
+export const readCaseExport = <ThrowOnError extends boolean = false>(
+  options: Options<ReadCaseExportData, ThrowOnError>,
+): RequestResult<ReadCaseExportResponses, ReadCaseExportErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    ReadCaseExportResponses,
+    ReadCaseExportErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/exports/{export_id}",
+    ...options,
+  });
+
+/**
+ * Buscar un despacho por correo de su titular
+ */
+export const lookupCourtesy = <ThrowOnError extends boolean = false>(
+  options: Options<LookupCourtesyData, ThrowOnError>,
+): RequestResult<LookupCourtesyResponses, LookupCourtesyErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    LookupCourtesyResponses,
+    LookupCourtesyErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/courtesy",
+    ...options,
+  });
+
+/**
+ * Conceder o renovar un plan de cortesía
+ */
+export const grantCourtesy = <ThrowOnError extends boolean = false>(
+  options: Options<GrantCourtesyData, ThrowOnError>,
+): RequestResult<GrantCourtesyResponses, GrantCourtesyErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    GrantCourtesyResponses,
+    GrantCourtesyErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/courtesy",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Revocar un plan de cortesía
+ */
+export const revokeCourtesy = <ThrowOnError extends boolean = false>(
+  options: Options<RevokeCourtesyData, ThrowOnError>,
+): RequestResult<RevokeCourtesyResponses, RevokeCourtesyErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    RevokeCourtesyResponses,
+    RevokeCourtesyErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/courtesy/revoke",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**

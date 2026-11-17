@@ -46,6 +46,16 @@ export type AcceptInvitationRequest = {
 };
 
 /**
+ * Body_download_export
+ */
+export type BodyDownloadExport = {
+  /**
+   * Token
+   */
+  token: string;
+};
+
+/**
  * CaseCandidate
  *
  * Persona disponible para asignar a este caso.
@@ -528,6 +538,96 @@ export type ChangePasswordRequest = {
 };
 
 /**
+ * CourtesyGrant
+ */
+export type CourtesyGrant = {
+  /**
+   * Organization Id
+   */
+  organization_id: string;
+  /**
+   * Owner Email
+   */
+  owner_email: string;
+  /**
+   * Plan Code
+   */
+  plan_code: string;
+  /**
+   * Reason
+   */
+  reason: string;
+  /**
+   * Ends At
+   */
+  ends_at?: string | null;
+};
+
+/**
+ * CourtesyRevoke
+ */
+export type CourtesyRevoke = {
+  /**
+   * Organization Id
+   */
+  organization_id: string;
+  /**
+   * Owner Email
+   */
+  owner_email: string;
+  /**
+   * Reason
+   */
+  reason: string;
+};
+
+/**
+ * CourtesyTarget
+ */
+export type CourtesyTarget = {
+  /**
+   * Organization Id
+   */
+  organization_id: string;
+  /**
+   * Organization Name
+   */
+  organization_name: string;
+  /**
+   * Owner Email
+   */
+  owner_email: string;
+  /**
+   * Owner Name
+   */
+  owner_name: string;
+  /**
+   * Plan Code
+   */
+  plan_code: string;
+  /**
+   * Status
+   */
+  status: string;
+  /**
+   * Access Source
+   */
+  access_source: string;
+  /**
+   * Ends At
+   */
+  ends_at: string | null;
+  /**
+   * Granted At
+   */
+  granted_at: string | null;
+  /**
+   * Revoked At
+   */
+  revoked_at: string | null;
+};
+
+/**
  * CustodyEventOut
  *
  * Un evento de la cadena de custodia del caso.
@@ -749,6 +849,52 @@ export type EvidenceUploadOut = {
    * Tsa Status
    */
   tsa_status: "pending";
+};
+
+/**
+ * ExportInspectRequest
+ */
+export type ExportInspectRequest = {
+  /**
+   * Token
+   */
+  token: string;
+};
+
+/**
+ * ExportInspectResponse
+ */
+export type ExportInspectResponse = {
+  /**
+   * Expires At
+   */
+  expires_at: string;
+};
+
+/**
+ * ExportResponse
+ */
+export type ExportResponse = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Status
+   */
+  status: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Expires At
+   */
+  expires_at: string | null;
+  /**
+   * Download Url
+   */
+  download_url: string | null;
 };
 
 /**
@@ -1090,6 +1236,7 @@ export type Me = {
    * Su organización, o null si ya no pertenece a ninguna.
    */
   organization: OrganizationMembership | null;
+  subscription?: MySubscription | null;
   /**
    * Su aceptación de los textos legales.
    */
@@ -1156,6 +1303,78 @@ export type MemberPage = {
    * Cupo de usuarios del plan.
    */
   seats: SeatsOut;
+};
+
+/**
+ * MySubscription
+ */
+export type MySubscription = {
+  /**
+   * Plan Name
+   */
+  plan_name: string;
+  /**
+   * Status
+   */
+  status: string;
+  /**
+   * Access Source
+   */
+  access_source: string;
+  /**
+   * Ends At
+   */
+  ends_at: string | null;
+};
+
+/**
+ * OrganizationAuditEvent
+ *
+ * Evento de seguridad del despacho, sin contenido de casos ni datos internos.
+ */
+export type OrganizationAuditEvent = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Action
+   */
+  action: string;
+  /**
+   * Actor User Id
+   */
+  actor_user_id: string | null;
+  /**
+   * Target Id
+   */
+  target_id: string | null;
+  /**
+   * Ip
+   */
+  ip: string | null;
+  /**
+   * User Agent
+   */
+  user_agent: string | null;
+  /**
+   * Created At
+   */
+  created_at: string;
+};
+
+/**
+ * OrganizationAuditPage
+ */
+export type OrganizationAuditPage = {
+  /**
+   * Items
+   */
+  items: Array<OrganizationAuditEvent>;
+  /**
+   * Next Cursor
+   */
+  next_cursor: string | null;
 };
 
 /**
@@ -2506,6 +2725,52 @@ export type RevokeInvitationResponses = {
 export type RevokeInvitationResponse =
   RevokeInvitationResponses[keyof RevokeInvitationResponses];
 
+export type OrganizationAuditPageData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Cursor
+     *
+     * next_cursor de la página anterior.
+     */
+    cursor?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+  };
+  url: "/api/v1/organization/audit";
+};
+
+export type OrganizationAuditPageErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type OrganizationAuditPageError =
+  OrganizationAuditPageErrors[keyof OrganizationAuditPageErrors];
+
+export type OrganizationAuditPageResponses = {
+  /**
+   * Successful Response
+   */
+  200: OrganizationAuditPage;
+};
+
+export type OrganizationAuditPageResponse =
+  OrganizationAuditPageResponses[keyof OrganizationAuditPageResponses];
+
 export type PreviewInvitationData = {
   body: InvitationTokenRequest;
   path?: never;
@@ -3143,6 +3408,224 @@ export type DownloadEvidenceResponses = {
    */
   200: unknown;
 };
+
+export type InspectExportData = {
+  body: ExportInspectRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/exports/inspect";
+};
+
+export type InspectExportErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type InspectExportError = InspectExportErrors[keyof InspectExportErrors];
+
+export type InspectExportResponses = {
+  /**
+   * Successful Response
+   */
+  200: ExportInspectResponse;
+};
+
+export type InspectExportResponse =
+  InspectExportResponses[keyof InspectExportResponses];
+
+export type DownloadExportData = {
+  body: BodyDownloadExport;
+  path?: never;
+  query?: never;
+  url: "/api/v1/exports/download";
+};
+
+export type DownloadExportErrors = {
+  /**
+   * El enlace no existe o ya no está vigente.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos de descarga.
+   */
+  429: Problem;
+  /**
+   * No se pudo leer el paquete conservado.
+   */
+  503: Problem;
+};
+
+export type DownloadExportError =
+  DownloadExportErrors[keyof DownloadExportErrors];
+
+export type DownloadExportResponses = {
+  /**
+   * Paquete ZIP conservado.
+   */
+  200: Blob | File;
+};
+
+export type DownloadExportResponse =
+  DownloadExportResponses[keyof DownloadExportResponses];
+
+export type CreateCaseExportData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/exports";
+};
+
+export type CreateCaseExportErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CreateCaseExportError =
+  CreateCaseExportErrors[keyof CreateCaseExportErrors];
+
+export type CreateCaseExportResponses = {
+  /**
+   * Successful Response
+   */
+  202: ExportResponse;
+};
+
+export type CreateCaseExportResponse =
+  CreateCaseExportResponses[keyof CreateCaseExportResponses];
+
+export type ReadCaseExportData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Export Id
+     */
+    export_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/exports/{export_id}";
+};
+
+export type ReadCaseExportErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ReadCaseExportError =
+  ReadCaseExportErrors[keyof ReadCaseExportErrors];
+
+export type ReadCaseExportResponses = {
+  /**
+   * Successful Response
+   */
+  200: ExportResponse;
+};
+
+export type ReadCaseExportResponse =
+  ReadCaseExportResponses[keyof ReadCaseExportResponses];
+
+export type LookupCourtesyData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * Owner Email
+     */
+    owner_email: string;
+  };
+  url: "/api/v1/platform/courtesy";
+};
+
+export type LookupCourtesyErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type LookupCourtesyError =
+  LookupCourtesyErrors[keyof LookupCourtesyErrors];
+
+export type LookupCourtesyResponses = {
+  /**
+   * Successful Response
+   */
+  200: CourtesyTarget;
+};
+
+export type LookupCourtesyResponse =
+  LookupCourtesyResponses[keyof LookupCourtesyResponses];
+
+export type GrantCourtesyData = {
+  body: CourtesyGrant;
+  path?: never;
+  query?: never;
+  url: "/api/v1/platform/courtesy";
+};
+
+export type GrantCourtesyErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type GrantCourtesyError = GrantCourtesyErrors[keyof GrantCourtesyErrors];
+
+export type GrantCourtesyResponses = {
+  /**
+   * Successful Response
+   */
+  200: CourtesyTarget;
+};
+
+export type GrantCourtesyResponse =
+  GrantCourtesyResponses[keyof GrantCourtesyResponses];
+
+export type RevokeCourtesyData = {
+  body: CourtesyRevoke;
+  path?: never;
+  query?: never;
+  url: "/api/v1/platform/courtesy/revoke";
+};
+
+export type RevokeCourtesyErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RevokeCourtesyError =
+  RevokeCourtesyErrors[keyof RevokeCourtesyErrors];
+
+export type RevokeCourtesyResponses = {
+  /**
+   * Successful Response
+   */
+  200: CourtesyTarget;
+};
+
+export type RevokeCourtesyResponse =
+  RevokeCourtesyResponses[keyof RevokeCourtesyResponses];
 
 export type ListPlatformUsersData = {
   body?: never;

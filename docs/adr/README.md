@@ -47,3 +47,8 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-041](adr-041.md) | Landing con voz editorial, hoja de expediente y entradas ligadas al desplazamiento | Aceptado | 10/11/2026 |
 | [ADR-042](adr-042.md) | Abrir un caso: llave envuelta antes de la transacción, radicado único y datos procesales opcionales | Aceptado | 10/11/2026 |
 | [ADR-043](adr-043.md) | Identidad grafito y sistema de diseño: color con significado, Geist, Phosphor y sin efectos decorativos | Propuesto | 11/11/2026 |
+| [ADR-044](adr-044.md) | Formato del manifiesto de preservación versión 1 | Aceptado | 16/11/2026 |
+| [ADR-045](adr-045.md) | SHA-256 incremental para la verificación local | Aceptado | 17/11/2026 |
+| [ADR-046](adr-046.md) | Estructura del ZIP de preservación y custodia verificable | Aceptado | 17/11/2026 |
+| [ADR-047](adr-047.md) | Informe PDF generado a partir del manifiesto exacto | Aceptado | 17/11/2026 |
+| [ADR-048](adr-048.md) | Enlace de exportación válido 24 horas con firma de la aplicación | Aceptado | 17/11/2026 |

@@ -1,6 +1,6 @@
 # ALETHEIA
 
-Plataforma web para que abogados en Colombia preserven evidencia digital y puedan demostrar su integridad y trazabilidad. ALETHEIA conserva el archivo original, calcula su huella SHA-256, obtiene un sello de tiempo de un tercero y registra cada acción en una cadena de custodia que no se puede alterar sin que se note.
+Plataforma web para que abogados en Colombia preserven evidencia digital y documenten su integridad y trazabilidad. La versión publicada conserva el archivo original, calcula su huella SHA-256 y registra las acciones en una cadena de custodia cuya integridad se puede verificar. El sello de tiempo externo RFC 3161 y el anclaje externo de la cadena siguen pendientes.
 
 ALETHEIA preserva y documenta. No determina la autenticidad, la veracidad, la admisibilidad ni el valor probatorio de una evidencia, y no emite certificados.
 
@@ -209,7 +209,7 @@ Las políticas legales comparten una sola versión y fecha de vigencia, definida
 
 El sitio solo usa las cookies de sesión. Cualquier herramienta no esencial que se agregue, como una de analítica, se carga únicamente si `hasCookieConsent("analytics")` devuelve `true`, y su llegada sube `CONSENT_VERSION` en `src/features/consent/cookieConsent.ts` para que el panel vuelva a preguntar.
 
-Las pantallas bajo `/app` exigen sesión. Su marco, `AppShell`, consulta `GET /api/v1/me` antes de mostrar nada: sin sesión lleva a `/ingresar` (si la sesión venció, con el aviso MSG-012) y, al entrar, la persona vuelve a la pantalla que intentaba abrir. El menú lateral (`WorkspaceNav`) lista las secciones que ya existen y cada persona ve solo las de su rol: Miembros aparece solo al propietario y al administrador; facturación, bandeja de soporte y auditoría transversal solo a la cuenta propietaria de plataforma. Cualquier cuenta puede abrir y consultar sus propias solicitudes de soporte. En el equipo de un caso, un propietario, administrador o abogado asignado puede agregar a personas de su despacho o retirarlas solo de ese caso; cada cambio queda en su cadena de custodia. Una sección nueva se agrega en `ITEMS`, con su regla de visibilidad si la tiene.
+Las pantallas bajo `/app` exigen sesión. Su marco, `AppShell`, consulta `GET /api/v1/me` antes de mostrar nada: sin sesión lleva a `/ingresar` (si la sesión venció, con el aviso MSG-012) y, al entrar, la persona vuelve a la pantalla que intentaba abrir. El menú lateral (`WorkspaceNav`) lista las secciones que ya existen y cada persona ve solo las de su rol: Miembros y auditoría de seguridad del despacho aparecen solo al propietario y al administrador; facturación, bandeja de soporte y auditoría transversal solo a la cuenta propietaria de plataforma. Cualquier cuenta puede abrir y consultar sus propias solicitudes de soporte. En el equipo de un caso, un propietario, administrador o abogado asignado puede agregar a personas de su despacho o retirarlas solo de ese caso; cada cambio queda en su cadena de custodia. Una sección nueva se agrega en `GROUPS`, con su regla de visibilidad si la tiene.
 
 Las pruebas de componentes usan Vitest, Testing Library y axe-core (ADR-022). Cada prueba vive junto al archivo que prueba, con el sufijo `.test.tsx`. `pnpm test` las ejecuta una vez y `pnpm test:watch` las repite cada vez que se guarda un archivo.
 

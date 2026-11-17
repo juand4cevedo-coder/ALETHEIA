@@ -16,7 +16,7 @@ from app.core.legal import LEGAL_VERSION
 from app.core.passwords import verify_password
 from app.db.tenancy import TenantContext, set_tenant
 from app.main import create_app
-from app.models import AuditLog, Membership, Organization, Plan, Subscription, User
+from app.models import AuditLog, Job, Membership, Organization, Plan, Subscription, User
 from app.repositories import accounts as accounts_repository
 from app.services.plans import TRIAL_DAYS
 from tests.conftest import SAME_ORIGIN_HEADERS
@@ -75,6 +75,9 @@ def test_crea_la_cuenta_la_organizacion_y_la_prueba(client: TestClient, db: Sess
     trial = db.scalars(select(Plan).where(Plan.code == "trial")).one()
     assert (subscription.plan_id, subscription.status) == (trial.id, "trial")
     assert subscription.trial_ends_at is not None
+    expiration = db.scalars(select(Job).where(Job.kind == "subscription_expire")).one()
+    assert expiration.payload == {"organization_id": str(membership.organization_id)}
+    assert expiration.run_after == subscription.trial_ends_at
     remaining = subscription.trial_ends_at - user.consented_at
     assert remaining == datetime.timedelta(days=TRIAL_DAYS)
 
