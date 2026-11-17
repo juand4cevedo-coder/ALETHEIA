@@ -52,7 +52,8 @@ def download_export(
         ready = resolve_export_link(session, settings, body.token)
     except InvalidExportLinkError:
         raise HTTPException(
-            404, detail="El enlace no existe o ya no está vigente.",
+            404,
+            detail="El enlace no existe o ya no está vigente.",
             headers={"Cache-Control": "no-store"},
         ) from None
     session.commit()
@@ -61,21 +62,23 @@ def download_export(
     source_context = open_export(settings, ready.storage_key)
     try:
         source = source_context.__enter__()
-    except (OSError, ValueError, KeyError, BotoCoreError, ClientError):
+    except OSError, ValueError, KeyError, BotoCoreError, ClientError:
         logger.exception("No se pudo abrir el paquete de exportación")
         raise HTTPException(
-            503, detail="No se pudo leer el paquete conservado.",
+            503,
+            detail="No se pudo leer el paquete conservado.",
             headers={"Cache-Control": "no-store"},
         ) from None
     try:
         first_chunk = source.read(READ_CHUNK_BYTES)
         if not first_chunk:
             raise OSError("Paquete vacío")
-    except (OSError, ValueError, KeyError, BotoCoreError, ClientError):
+    except OSError, ValueError, KeyError, BotoCoreError, ClientError:
         source_context.__exit__(None, None, None)
         logger.exception("No se pudo abrir el paquete de exportación")
         raise HTTPException(
-            503, detail="No se pudo leer el paquete conservado.",
+            503,
+            detail="No se pudo leer el paquete conservado.",
             headers={"Cache-Control": "no-store"},
         ) from None
 
