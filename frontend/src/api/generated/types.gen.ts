@@ -46,6 +46,16 @@ export type AcceptInvitationRequest = {
 };
 
 /**
+ * Body_download_export
+ */
+export type BodyDownloadExport = {
+  /**
+   * Token
+   */
+  token: string;
+};
+
+/**
  * CaseCandidate
  *
  * Persona disponible para asignar a este caso.
@@ -842,13 +852,23 @@ export type EvidenceUploadOut = {
 };
 
 /**
- * ExportDownloadRequest
+ * ExportInspectRequest
  */
-export type ExportDownloadRequest = {
+export type ExportInspectRequest = {
   /**
    * Token
    */
   token: string;
+};
+
+/**
+ * ExportInspectResponse
+ */
+export type ExportInspectResponse = {
+  /**
+   * Expires At
+   */
+  expires_at: string;
 };
 
 /**
@@ -3389,8 +3409,34 @@ export type DownloadEvidenceResponses = {
   200: unknown;
 };
 
+export type InspectExportData = {
+  body: ExportInspectRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/exports/inspect";
+};
+
+export type InspectExportErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type InspectExportError = InspectExportErrors[keyof InspectExportErrors];
+
+export type InspectExportResponses = {
+  /**
+   * Successful Response
+   */
+  200: ExportInspectResponse;
+};
+
+export type InspectExportResponse =
+  InspectExportResponses[keyof InspectExportResponses];
+
 export type DownloadExportData = {
-  body: ExportDownloadRequest;
+  body: BodyDownloadExport;
   path?: never;
   query?: never;
   url: "/api/v1/exports/download";
