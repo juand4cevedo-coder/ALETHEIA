@@ -1757,6 +1757,16 @@
               }
             }
           },
+          "429": {
+            "description": "Demasiadas subidas de esta cuenta; reintentar más tarde.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
           "503": {
             "description": "No se pudo acceder a la llave de cifrado del caso.",
             "content": {
