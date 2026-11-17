@@ -54,6 +54,7 @@ INVITATION_ACCOUNT: Final = Limit("invitation_account", 20, _WINDOW)
 # probar enlaces sin límite.
 INVITATION_LINK_IP: Final = Limit("invitation_link_ip", 20, _WINDOW)
 SUPPORT_ACCOUNT: Final = Limit("support_account", 10, _WINDOW)
+EXPORT_LINK_IP: Final = Limit("export_link_ip", 20, _WINDOW)
 
 LIMITS: Final = (
     LOGIN_ACCOUNT,
@@ -66,6 +67,7 @@ LIMITS: Final = (
     INVITATION_ACCOUNT,
     INVITATION_LINK_IP,
     SUPPORT_ACCOUNT,
+    EXPORT_LINK_IP,
 )
 # Un intento más viejo que la ventana más larga ya no cuenta para ningún límite.
 RETENTION: Final = max(limit.window for limit in LIMITS)

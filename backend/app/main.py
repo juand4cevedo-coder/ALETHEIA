@@ -13,6 +13,7 @@ from app.api import (
     API_PREFIX,
     auth,
     cases,
+    exports,
     health,
     invitations,
     me,
@@ -77,6 +78,8 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(invitations.router, prefix=API_PREFIX)
     app.include_router(cases.router, prefix=API_PREFIX)
     app.include_router(cases.download_router, prefix=API_PREFIX)
+    app.include_router(exports.router, prefix=API_PREFIX)
+    app.include_router(exports.case_router, prefix=API_PREFIX)
     app.include_router(platform.router, prefix=API_PREFIX)
     app.include_router(support.router, prefix=API_PREFIX)
     install_problem_details(app)
@@ -99,7 +102,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # La interfaz y la API comparten origen, así que el único origen permitido es el del sitio.
     allowed_origins = [settings.public_url]
     app.add_middleware(
-        SameOriginMiddleware, allowed_origins=allowed_origins, path_prefix=API_PREFIX
+        SameOriginMiddleware,
+        allowed_origins=allowed_origins,
+        path_prefix=API_PREFIX,
+        form_post_paths=[f"{API_PREFIX}/exports/download"],
     )
     app.add_middleware(
         CORSMiddleware,
