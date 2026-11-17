@@ -8,7 +8,7 @@ Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su
 
 | Elemento | Valor |
 | --- | --- |
-| Cuenta | [ID-CUENTA-REDACTADO], plan gratuito, con MFA activado |
+| Cuenta | `<ID-DE-CUENTA>`, plan gratuito, con MFA activado |
 | Región | us-east-2 (Ohio) |
 | Créditos | 200 USD después de completar las cinco actividades de bienvenida. El plan gratuito vence el 29/04/2027 |
 | Presupuesto | `aletheia-mensual`: 30 USD al mes sin contar créditos, con alertas al 50 y al 80 % |
@@ -60,8 +60,8 @@ Registro de la infraestructura de producción de ALETHEIA según ADR-017 y de su
 
 | Bucket | Uso | Reglas de ciclo de vida |
 | --- | --- | --- |
-| `aletheia-prod-evidencias-[ID-CUENTA-REDACTADO]` | Evidencias cifradas y paquetes exportados | `borrar-subidas-incompletas`: descarta al día las subidas que no terminaron |
-| `aletheia-prod-respaldos-[ID-CUENTA-REDACTADO]` | Copias diarias de PostgreSQL (TT-011) | `borrar-subidas-incompletas` y `retencion-7-dias`: borra cada copia a los 7 días |
+| `aletheia-prod-evidencias-<ID-DE-CUENTA>` | Evidencias cifradas y paquetes exportados | `borrar-subidas-incompletas`: descarta al día las subidas que no terminaron |
+| `aletheia-prod-respaldos-<ID-DE-CUENTA>` | Copias diarias de PostgreSQL (TT-011) | `borrar-subidas-incompletas` y `retencion-7-dias`: borra cada copia a los 7 días |
 
 Los dos buckets tienen el acceso público bloqueado, las ACL desactivadas y cifrado SSE-S3. No usan versionado ni Object Lock. La política `SoloHTTPS` rechaza toda petición que no llegue por TLS.
 
@@ -77,7 +77,7 @@ El objeto `prueba/tt-007.bin` quedó a propósito en el bucket de respaldos: lo 
 | Elemento | Valor |
 | --- | --- |
 | Alias | `alias/aletheia-prod-maestra` |
-| ARN | `arn:aws:kms:us-east-2:[ID-CUENTA-REDACTADO]:key/[ID-LLAVE-REDACTADO]` |
+| ARN | `arn:aws:kms:us-east-2:<ID-DE-CUENTA>:key/<ID-DE-LLAVE>` |
 | Tipo | RSA_3072, uso cifrar y descifrar, una sola región |
 | Política de la llave | La predeterminada: los permisos se conceden por IAM |
 | Uso | Envolver con `RSAES_OAEP_SHA_256` la llave de cada caso (ADR-014) |
@@ -105,7 +105,7 @@ El rol `aletheia-prod-instancia` tiene tres políticas: `aletheia-prod-acceso` p
 | --- | --- | --- |
 | S3 | Bucket de evidencias | `GetObject`, `PutObject`, `DeleteObject` y `AbortMultipartUpload`. No puede listar |
 | S3 | Bucket de respaldos | `GetObject`, `PutObject`, `AbortMultipartUpload` y `ListBucket`. No puede borrar |
-| KMS | ARN de la llave maestra `[ID-LLAVE-REDACTADO]` | `Encrypt` y `Decrypt`, solo con `RSAES_OAEP_SHA_256` |
+| KMS | ARN de la llave maestra `<ID-DE-LLAVE>` | `Encrypt` y `Decrypt`, solo con `RSAES_OAEP_SHA_256` |
 | Parameter Store | Parámetros bajo `/aletheia/prod/` | `GetParameter`, `GetParameters` y `GetParametersByPath`. No puede escribir |
 | SES | Identidades de la cuenta en us-east-2 | `SendEmail` con la API v2, solo desde `notificaciones@aletheia.sbs` y con el nombre `ALETHEIA` |
 | Systems Manager | El agente de la máquina | Registrarse, recibir órdenes de Run Command y abrir sesiones de Session Manager (`ec2messages` y `ssmmessages`) |
@@ -126,7 +126,7 @@ La versión `v1` de la política administrada `aletheia-prod-acceso` nombra el A
    aws kms encrypt --key-id alias/aletheia-prod-maestra --encryption-algorithm RSAES_OAEP_SHA_256 --plaintext fileb:///tmp/prueba-kms.bin --query KeyId
    ```
 
-   Funciona si imprime el ARN de la llave (`arn:aws:kms:us-east-2:[ID-CUENTA-REDACTADO]:key/2bf06d55-...`) y no `AccessDeniedException`. Para el paso 2 se guarda también el cifrado: el mismo comando con `--query CiphertextBlob --output text | base64 -d > /tmp/prueba-kms.cifrado`.
+   Funciona si imprime el ARN de la llave (`arn:aws:kms:us-east-2:<ID-DE-CUENTA>:key/<ID-DE-LLAVE>`) y no `AccessDeniedException`. Para el paso 2 se guarda también el cifrado: el mismo comando con `--query CiphertextBlob --output text | base64 -d > /tmp/prueba-kms.cifrado`.
 
 2. Se descifra con el ARN que imprimió el paso 1:
 
