@@ -131,6 +131,7 @@ export type {
   DownloadExportData,
   DownloadExportError,
   DownloadExportErrors,
+  DownloadExportResponse,
   DownloadExportResponses,
   EvidenceDetailOut,
   EvidencePage,

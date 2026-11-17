@@ -27,6 +27,7 @@ class ExportDownloadRequest(BaseModel):
 
 @router.post(
     "/download",
+    response_class=StreamingResponse,
     summary="Descargar un paquete mediante un enlace vigente",
     responses={
         200: {
