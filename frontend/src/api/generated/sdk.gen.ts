@@ -36,6 +36,9 @@ import type {
   ChangeSupportTicketStatusResponses,
   CreateCaseData,
   CreateCaseErrors,
+  CreateCaseExportData,
+  CreateCaseExportErrors,
+  CreateCaseExportResponses,
   CreateCaseResponses,
   CreateInvitationData,
   CreateInvitationErrors,
@@ -101,6 +104,9 @@ import type {
   PreviewInvitationResponses,
   ReadCaseData,
   ReadCaseErrors,
+  ReadCaseExportData,
+  ReadCaseExportErrors,
+  ReadCaseExportResponses,
   ReadCaseResponses,
   ReadEvidenceData,
   ReadEvidenceErrors,
@@ -993,6 +999,54 @@ export const downloadExport = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+/**
+ * Solicitar un paquete de preservación
+ */
+export const createCaseExport = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCaseExportData, ThrowOnError>,
+): RequestResult<
+  CreateCaseExportResponses,
+  CreateCaseExportErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    CreateCaseExportResponses,
+    CreateCaseExportErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/exports",
+    ...options,
+  });
+
+/**
+ * Consultar una exportación y su enlace vigente
+ */
+export const readCaseExport = <ThrowOnError extends boolean = false>(
+  options: Options<ReadCaseExportData, ThrowOnError>,
+): RequestResult<ReadCaseExportResponses, ReadCaseExportErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    ReadCaseExportResponses,
+    ReadCaseExportErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/exports/{export_id}",
+    ...options,
   });
 
 /**

@@ -852,6 +852,32 @@ export type ExportDownloadRequest = {
 };
 
 /**
+ * ExportResponse
+ */
+export type ExportResponse = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Status
+   */
+  status: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Expires At
+   */
+  expires_at: string | null;
+  /**
+   * Download Url
+   */
+  download_url: string | null;
+};
+
+/**
  * ForgotPasswordRequest
  *
  * Correo al que se envía el enlace para restablecer la contraseña (API-011).
@@ -3401,6 +3427,74 @@ export type DownloadExportResponses = {
 
 export type DownloadExportResponse =
   DownloadExportResponses[keyof DownloadExportResponses];
+
+export type CreateCaseExportData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/exports";
+};
+
+export type CreateCaseExportErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CreateCaseExportError =
+  CreateCaseExportErrors[keyof CreateCaseExportErrors];
+
+export type CreateCaseExportResponses = {
+  /**
+   * Successful Response
+   */
+  202: ExportResponse;
+};
+
+export type CreateCaseExportResponse =
+  CreateCaseExportResponses[keyof CreateCaseExportResponses];
+
+export type ReadCaseExportData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Export Id
+     */
+    export_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/exports/{export_id}";
+};
+
+export type ReadCaseExportErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ReadCaseExportError =
+  ReadCaseExportErrors[keyof ReadCaseExportErrors];
+
+export type ReadCaseExportResponses = {
+  /**
+   * Successful Response
+   */
+  200: ExportResponse;
+};
+
+export type ReadCaseExportResponse =
+  ReadCaseExportResponses[keyof ReadCaseExportResponses];
 
 export type LookupCourtesyData = {
   body?: never;
