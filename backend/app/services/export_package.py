@@ -17,6 +17,7 @@ from app.services.export_manifest import (
     EvidenceFile,
     build_manifest,
 )
+from app.services.export_report import render_report
 
 
 class PackageIntegrityError(Exception):
@@ -74,7 +75,7 @@ def build_package(
     generated_at: datetime.datetime,
     evidences: Iterable[PackageEvidence],
     custody_events: Iterable[ChainEvent],
-    report_pdf: bytes,
+    report_pdf: bytes | None = None,
     anchor_token: bytes | None = None,
 ) -> BuiltManifest:
     """Escribe el ZIP por flujo y devuelve la huella de `manifest.json`.
@@ -82,7 +83,7 @@ def build_package(
     `target` debe ser descartable/abortable: ante cualquier fallo no se publica el ZIP parcial.
     La carga y el descifrado de originales ocurren fuera de una transacción de base de datos.
     """
-    if not report_pdf.startswith(b"%PDF-"):
+    if report_pdf is not None and not report_pdf.startswith(b"%PDF-"):
         raise ValueError("El informe debe ser un PDF.")
     if anchor_token == b"":
         raise ValueError("El token de anclaje no puede estar vacío.")
@@ -105,6 +106,8 @@ def build_package(
         [entry.metadata for entry in files],
         CustodyHead(report.events_checked, report.head_hash, anchor_token is not None),
     )
+    if report_pdf is None:
+        report_pdf = render_report(manifest)
 
     with zipfile.ZipFile(target, mode="w", allowZip64=True) as archive:
         for entry in files:
