@@ -11,11 +11,15 @@ import pytest
 from app.core.tokens import (
     MAX_TOKEN_LENGTH,
     InvalidAccessTokenError,
+    InvalidExportLinkError,
     InvalidLinkError,
     LinkPurpose,
+    export_manifest_matches,
     issue_access_token,
+    issue_export_download_link,
     issue_link,
     read_access_token,
+    read_export_download_link,
     read_link,
     state_matches,
 )
@@ -178,3 +182,61 @@ def test_un_acceso_sin_sesion_o_sin_firma_no_sirve() -> None:
 def test_un_texto_que_no_es_un_acceso_no_sirve(token: str) -> None:
     with pytest.raises(InvalidAccessTokenError):
         read_access_token(_CLAVE, token)
+
+
+# --- Enlaces transferibles de exportación ------------------------------------------------
+
+_EXPORTACION = uuid.UUID("01890a5d-ac96-774b-bcce-b302099a8070")
+_ORGANIZACION = uuid.UUID("01890a5d-ac96-774b-bcce-b302099a8059")
+_HUELLA = b"\xaa" * 32
+
+
+def _export_link(*, now: datetime.datetime | None = None) -> str:
+    moment = now or datetime.datetime.now(datetime.UTC)
+    return issue_export_download_link(
+        _CLAVE,
+        _EXPORTACION,
+        _ORGANIZACION,
+        _HUELLA,
+        moment + datetime.timedelta(hours=24),
+        now=moment,
+    )
+
+
+def test_enlace_exportacion_firma_organizacion_y_huella_sin_exponerla() -> None:
+    token = _export_link()
+    claims = read_export_download_link(_CLAVE, token)
+    assert claims.export_id == _EXPORTACION
+    assert claims.organization_id == _ORGANIZACION
+    assert export_manifest_matches(_CLAVE, claims, _HUELLA)
+    assert not export_manifest_matches(_CLAVE, claims, b"\xbb" * 32)
+    payload = _contenido(token)
+    assert payload["aud"] == "export_download"
+    assert payload["exp"] == payload["iat"] + 86400  # type: ignore[operator]
+    assert _HUELLA.hex() not in json.dumps(payload)
+
+
+def test_enlace_exportacion_vencido_o_de_otro_uso_no_sirve() -> None:
+    expired = _export_link(now=datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=2))
+    with pytest.raises(InvalidExportLinkError):
+        read_export_download_link(_CLAVE, expired)
+    with pytest.raises(InvalidExportLinkError):
+        read_export_download_link(_CLAVE, _enlace())
+    with pytest.raises(InvalidLinkError):
+        read_link(_CLAVE, _PROPOSITO, _export_link())
+
+
+def test_enlace_exportacion_alterado_o_firmado_con_otra_clave_no_sirve() -> None:
+    token = _export_link()
+    with pytest.raises(InvalidExportLinkError):
+        read_export_download_link(_OTRA_CLAVE, token)
+    with pytest.raises(InvalidExportLinkError):
+        read_export_download_link(_CLAVE, token + "x")
+
+
+def test_enlace_exportacion_exige_huella_y_vencimiento() -> None:
+    now = datetime.datetime.now(datetime.UTC)
+    with pytest.raises(ValueError, match="huella"):
+        issue_export_download_link(_CLAVE, _EXPORTACION, _ORGANIZACION, b"corta", now + _DIA)
+    with pytest.raises(ValueError, match="vencimiento"):
+        issue_export_download_link(_CLAVE, _EXPORTACION, _ORGANIZACION, _HUELLA, now - _DIA)
