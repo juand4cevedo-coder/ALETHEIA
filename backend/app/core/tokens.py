@@ -49,6 +49,8 @@ def opaque_token_hash(token: str) -> bytes:
 
 _ACCESS_USE: Final = "session:access"
 _ACCESS_AUDIENCE: Final = "session"
+_EXPORT_USE: Final = "link:export_download"
+_EXPORT_AUDIENCE: Final = "export_download"
 
 
 class LinkPurpose(StrEnum):
@@ -83,6 +85,19 @@ class AccessClaims:
 
     subject: uuid.UUID
     session_id: uuid.UUID
+
+
+@dataclass(frozen=True, slots=True)
+class ExportDownloadClaims:
+    """Identificadores firmados y sello de la huella, sin datos del expediente."""
+
+    export_id: uuid.UUID
+    organization_id: uuid.UUID
+    state_seal: str
+
+
+class InvalidExportLinkError(Exception):
+    """El enlace no sirve, sin revelar si existe un paquete o de qué organización es."""
 
 
 def _subkey(master_key: str, use: str) -> bytes:
@@ -181,3 +196,68 @@ def read_access_token(master_key: str, token: str) -> AccessClaims:
         return AccessClaims(subject=uuid.UUID(claims["sub"]), session_id=uuid.UUID(claims["sid"]))
     except jwt.PyJWTError, ValueError, TypeError:
         raise InvalidAccessTokenError from None
+
+
+def issue_export_download_link(
+    master_key: str,
+    export_id: uuid.UUID,
+    organization_id: uuid.UUID,
+    manifest_sha256: bytes,
+    expires_at: datetime.datetime,
+    *,
+    now: datetime.datetime | None = None,
+) -> str:
+    """Firma un enlace transferible que no puede durar más que la fila `exports`."""
+    issued_at = now or datetime.datetime.now(datetime.UTC)
+    if (
+        len(manifest_sha256) != 32
+        or issued_at.tzinfo is None
+        or issued_at.utcoffset() is None
+        or expires_at.tzinfo is None
+        or expires_at.utcoffset() is None
+        or expires_at <= issued_at
+    ):
+        raise ValueError("Paquete sin huella válida o vencimiento futuro.")
+    key = _subkey(master_key, _EXPORT_USE)
+    claims = {
+        "iss": _ISSUER,
+        "aud": _EXPORT_AUDIENCE,
+        "sub": str(export_id),
+        "org": str(organization_id),
+        "iat": issued_at,
+        "exp": expires_at,
+        "st": _seal(key, manifest_sha256.hex()),
+    }
+    return jwt.encode(claims, key, algorithm=_ALGORITHM)
+
+
+def read_export_download_link(master_key: str, token: str) -> ExportDownloadClaims:
+    """Comprueba firma, propósito, vigencia e identificadores antes de consultar la base."""
+    if len(token) > MAX_TOKEN_LENGTH:
+        raise InvalidExportLinkError
+    try:
+        claims = jwt.decode(
+            token,
+            _subkey(master_key, _EXPORT_USE),
+            algorithms=[_ALGORITHM],
+            audience=_EXPORT_AUDIENCE,
+            issuer=_ISSUER,
+            options={"require": ["iss", "aud", "sub", "org", "iat", "exp", "st"]},
+        )
+        return ExportDownloadClaims(
+            export_id=uuid.UUID(claims["sub"]),
+            organization_id=uuid.UUID(claims["org"]),
+            state_seal=str(claims["st"]),
+        )
+    except jwt.PyJWTError, ValueError, TypeError:
+        raise InvalidExportLinkError from None
+
+
+def export_manifest_matches(
+    master_key: str, claims: ExportDownloadClaims, manifest_sha256: bytes
+) -> bool:
+    """Invalida el enlace si el manifiesto fue reemplazado después de emitirlo."""
+    if len(manifest_sha256) != 32:
+        return False
+    expected = _seal(_subkey(master_key, _EXPORT_USE), manifest_sha256.hex())
+    return hmac.compare_digest(expected, claims.state_seal)
