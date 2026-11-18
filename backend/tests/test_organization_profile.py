@@ -33,9 +33,7 @@ def _nombre(db: Session, oficina: Oficina) -> str | None:
 
 def _auditoria(db: Session, oficina: Oficina) -> list[AuditLog]:
     set_tenant(db, TenantContext(organization_id=oficina.organization_id, user_id=oficina.owner.id))
-    return list(
-        db.scalars(select(AuditLog).where(AuditLog.action == "organization_renamed"))
-    )
+    return list(db.scalars(select(AuditLog).where(AuditLog.action == "organization_renamed")))
 
 
 def test_el_propietario_cambia_el_nombre_y_queda_en_la_auditoria(
@@ -108,8 +106,6 @@ def test_el_cuerpo_no_admite_campos_de_mas(dispositivo: NuevoCliente, db: Sessio
     oficina = crear_oficina(db, "firm")
     cliente = _sesion(dispositivo, oficina.owner)
 
-    respuesta = cliente.patch(
-        _ORGANIZACION, json={"name": "Otro nombre", "id": "algo"}
-    )
+    respuesta = cliente.patch(_ORGANIZACION, json={"name": "Otro nombre", "id": "algo"})
 
     assert respuesta.status_code == 422
