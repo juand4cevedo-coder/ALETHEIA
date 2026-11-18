@@ -35,7 +35,7 @@ from app.core.middleware import (
 from app.core.openapi import install_problem_details
 from app.db.session import create_db_engine
 
-API_VERSION: Final = "0.4.8"
+API_VERSION: Final = "0.4.9"
 
 
 def _operation_id(route: APIRoute) -> str:
