@@ -1,5 +1,6 @@
 """Primer cobro de una suscripción con Wompi (HU-027): quién puede iniciarlo y con qué datos."""
 
+import datetime
 import uuid
 
 import pytest
@@ -34,6 +35,7 @@ def _en_prueba(db: Session, office: Oficina) -> Subscription:
     ).one()
     subscription.status = "trial"
     subscription.billing_cycle = "none"
+    subscription.trial_ends_at = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=7)
     db.flush()
     return subscription
 

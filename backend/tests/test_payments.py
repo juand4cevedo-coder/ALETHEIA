@@ -1,5 +1,6 @@
 """Procesa las notificaciones de Wompi una sola vez, sin fiarse de lo que venga en ellas."""
 
+import datetime
 import hashlib
 from typing import Any
 
@@ -49,6 +50,7 @@ def _en_prueba(db: Session, office: Oficina) -> Subscription:
     ).one()
     subscription.status = "trial"
     subscription.billing_cycle = "none"
+    subscription.trial_ends_at = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=7)
     db.flush()
     return subscription
 
