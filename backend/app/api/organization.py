@@ -11,8 +11,8 @@ from typing import Annotated, Any, Final
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_client_ip, get_manager, get_session
-from app.models import Invitation
+from app.api.deps import get_client_ip, get_manager, get_owner, get_session
+from app.models import Invitation, Organization
 from app.repositories.organization import MemberRow
 from app.schemas.organization import (
     PAGE_SIZE_DEFAULT,
@@ -24,10 +24,13 @@ from app.schemas.organization import (
     MemberPage,
     OrganizationAuditEvent,
     OrganizationAuditPage,
+    OrganizationOut,
+    OrganizationRenameRequest,
     RoleChangeRequest,
     SeatsOut,
 )
 from app.services import members as members_service
+from app.services import organization as organization_service
 from app.services import organization_audit
 from app.services.sessions import Principal
 
@@ -78,6 +81,34 @@ def _seats_out(seats: members_service.Seats) -> SeatsOut:
         full=seats.full,
         owner_exempt=seats.owner_exempt,
     )
+
+
+def _organization_out(organization: Organization) -> OrganizationOut:
+    return OrganizationOut(
+        id=organization.id,
+        name=organization.name,
+        created_at=organization.created_at,
+    )
+
+
+@router.patch(
+    "",
+    summary="Cambiar el nombre del despacho",
+    responses=_UNAUTHORIZED | _FORBIDDEN,
+)
+def rename_organization(
+    request: OrganizationRenameRequest,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_owner)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> OrganizationOut:
+    response.headers["Cache-Control"] = "no-store"
+    organization = organization_service.rename(
+        session, principal, request.name, client_ip=client_ip, user_agent=user_agent
+    )
+    return _organization_out(organization)
 
 
 @router.get(

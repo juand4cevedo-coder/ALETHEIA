@@ -52,6 +52,7 @@ import {
   registerAccount,
   removeCaseMember,
   removeMember,
+  renameOrganization,
   resendVerification,
   resetPassword,
   revokeCourtesy,
@@ -186,6 +187,9 @@ import type {
   RemoveMemberData,
   RemoveMemberError,
   RemoveMemberResponse,
+  RenameOrganizationData,
+  RenameOrganizationError,
+  RenameOrganizationResponse,
   ResendVerificationData,
   ResendVerificationError,
   ResendVerificationResponse,
@@ -615,6 +619,33 @@ export const changePasswordMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await changePassword({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Cambiar el nombre del despacho
+ */
+export const renameOrganizationMutation = (
+  options?: Partial<Options<RenameOrganizationData>>,
+): UseMutationOptions<
+  RenameOrganizationResponse,
+  RenameOrganizationError,
+  Options<RenameOrganizationData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RenameOrganizationResponse,
+    RenameOrganizationError,
+    Options<RenameOrganizationData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await renameOrganization({
         ...options,
         ...fnOptions,
         throwOnError: true,

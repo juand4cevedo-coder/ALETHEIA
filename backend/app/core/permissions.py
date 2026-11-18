@@ -9,6 +9,7 @@ from typing import Final, Literal
 Permission = Literal[
     "platform.manage",
     "organization.view",
+    "organization.manage",
     "team.manage",
     "billing.manage",
     "cases.read_assigned",
@@ -22,6 +23,7 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
     "owner": frozenset(
         {
             "organization.view",
+            "organization.manage",
             "team.manage",
             "billing.manage",
             "cases.read_assigned",

@@ -14,13 +14,18 @@ import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import { EmailStatus } from "../features/session/EmailStatus.tsx";
-import { managesTeam, ROLE_LABELS } from "../features/workspace/roles.ts";
+import {
+  managesOrganization,
+  managesTeam,
+  ROLE_LABELS,
+} from "../features/workspace/roles.ts";
 import { canOpenCases } from "../features/cases/roles.ts";
 import { custodyActionLabel } from "../features/cases/custodyActions.ts";
 import { formatRecentActivity } from "../features/cases/dates.ts";
 import styles from "./WorkspacePage.module.css";
 import {
   CarpetaAbiertaIcon,
+  EdificioIcon,
   FlechaDerechaIcon,
   MasIcon,
   ReciboIcon,
@@ -235,6 +240,16 @@ export function WorkspacePage() {
                   <ButtonLink to={ROUTES.members} variant="secondary" size="sm">
                     <UsuariosIcon size={16} aria-hidden="true" />
                     Equipo
+                  </ButtonLink>
+                )}
+                {managesOrganization(me.organization?.role) && (
+                  <ButtonLink
+                    to={ROUTES.organization}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    <EdificioIcon size={16} aria-hidden="true" />
+                    Organización
                   </ButtonLink>
                 )}
                 {canManageTeam && (

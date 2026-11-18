@@ -43,3 +43,8 @@ export const INVITABLE_ROLES: readonly {
 export function managesTeam(role: Role | undefined): boolean {
   return role === "owner" || role === "admin";
 }
+
+/** Quién administra los datos propios del despacho, como su nombre (RN-010). */
+export function managesOrganization(role: Role | undefined): boolean {
+  return role === "owner";
+}

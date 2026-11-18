@@ -124,3 +124,20 @@ def get_manager(principal: Annotated[Principal, Depends(get_principal)]) -> Prin
             headers={"Cache-Control": "no-store"},
         )
     return principal
+
+
+def get_owner(principal: Annotated[Principal, Depends(get_principal)]) -> Principal:
+    """Quien hace la petición, si es propietario de su organización.
+
+    Administrar los datos del despacho en sí (su nombre) es solo del propietario (RN-010): a
+    diferencia del equipo, no lo comparte con el administrador.
+    """
+    if principal.organization_id is None or not has_permission(
+        principal.role, "organization.manage"
+    ):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail=NOT_ALLOWED,
+            headers={"Cache-Control": "no-store"},
+        )
+    return principal
