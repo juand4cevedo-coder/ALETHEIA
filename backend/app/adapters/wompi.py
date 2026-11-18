@@ -1,0 +1,197 @@
+"""Pasarela de pagos Wompi (HU-027, ADR-010): Nequi para el primer cobro de una suscripción.
+
+Documentación oficial: https://docs.wompi.co/en/docs/colombia/. Toda llamada autenticada usa
+la llave privada como Bearer, salvo la consulta de tokens de aceptación, que usa la llave
+pública en el encabezado `x-merchant-public-key`. La firma de integridad que exige Wompi al
+crear una transacción es SHA256 de `reference + amount_in_cents + currency + integrity_secret`,
+en ese orden y sin separadores (verificado contra el vector de prueba de la guía de Checkout
+Web). La firma de los webhooks es SHA256 de los valores de `signature.properties`, en el orden
+que la propia notificación indica, seguidos del `timestamp` (entero) y del secreto de eventos;
+Wompi advierte que esa lista de propiedades puede cambiar, así que nunca se asume fija aquí.
+"""
+
+import hashlib
+import hmac
+import json
+import urllib.error
+import urllib.request
+from dataclasses import dataclass
+from typing import Any, Final
+
+from app.core.config import Settings
+
+_SANDBOX_URL: Final = "https://sandbox.wompi.co/v1"
+_PRODUCTION_URL: Final = "https://production.wompi.co/v1"
+_ESPERA_SEGUNDOS: Final = 15
+
+
+class WompiNoConfiguradoError(RuntimeError):
+    """Faltan las credenciales de Wompi en la configuración."""
+
+
+class WompiRechazadoError(RuntimeError):
+    """Wompi respondió que la solicitud está mal formada; reintentarla igual no sirve."""
+
+
+class WompiNoDisponibleError(RuntimeError):
+    """Wompi no respondió o falló de su lado; vale la pena reintentar."""
+
+
+@dataclass(frozen=True, slots=True)
+class Credenciales:
+    public_key: str
+    private_key: str
+    integrity_secret: str
+    events_secret: str
+    base_url: str
+
+
+def credenciales_de(settings: Settings) -> Credenciales:
+    if (
+        settings.wompi_public_key is None
+        or settings.wompi_private_key is None
+        or settings.wompi_integrity_secret is None
+        or settings.wompi_events_secret is None
+    ):
+        raise WompiNoConfiguradoError("Faltan las variables ALETHEIA_WOMPI_* de configuración.")
+    return Credenciales(
+        public_key=settings.wompi_public_key,
+        private_key=settings.wompi_private_key.get_secret_value(),
+        integrity_secret=settings.wompi_integrity_secret.get_secret_value(),
+        events_secret=settings.wompi_events_secret.get_secret_value(),
+        base_url=_PRODUCTION_URL if settings.environment == "production" else _SANDBOX_URL,
+    )
+
+
+def _llamar(
+    url: str,
+    *,
+    cuerpo: dict[str, object] | None = None,
+    metodo: str = "GET",
+    bearer: str | None = None,
+    encabezados: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    datos = json.dumps(cuerpo).encode() if cuerpo is not None else None
+    todos = {"Content-Type": "application/json", "Accept": "application/json"}
+    if bearer is not None:
+        todos["Authorization"] = f"Bearer {bearer}"
+    if encabezados is not None:
+        todos.update(encabezados)
+    peticion = urllib.request.Request(url, data=datos, headers=todos, method=metodo)  # noqa: S310
+    try:
+        with urllib.request.urlopen(peticion, timeout=_ESPERA_SEGUNDOS) as respuesta:  # noqa: S310
+            cuerpo_respuesta: dict[str, Any] = json.loads(respuesta.read())
+            return cuerpo_respuesta
+    except urllib.error.HTTPError as exc:
+        texto = exc.read().decode("utf-8", errors="replace")
+        if exc.code in (400, 401, 404, 422):
+            raise WompiRechazadoError(f"Wompi respondió {exc.code}: {texto}") from exc
+        raise WompiNoDisponibleError(f"Wompi respondió {exc.code}: {texto}") from exc
+    except (urllib.error.URLError, TimeoutError) as exc:
+        raise WompiNoDisponibleError(f"Wompi no respondió: {exc}") from exc
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        raise WompiNoDisponibleError(f"La respuesta de Wompi no se pudo leer: {exc}") from exc
+
+
+@dataclass(frozen=True, slots=True)
+class TokensDeAceptacion:
+    acceptance_token: str
+    accept_personal_auth: str
+
+
+def tokens_de_aceptacion(creds: Credenciales) -> TokensDeAceptacion:
+    """GET /merchants/info con la llave pública: los dos contratos que exige la ley de
+    habeas data, vigentes al momento de la consulta (RF-038)."""
+    respuesta = _llamar(
+        f"{creds.base_url}/merchants/info",
+        encabezados={"x-merchant-public-key": creds.public_key},
+    )
+    data = respuesta["data"]
+    return TokensDeAceptacion(
+        acceptance_token=data["presigned_acceptance"]["acceptance_token"],
+        accept_personal_auth=data["presigned_personal_data_auth"]["acceptance_token"],
+    )
+
+
+def firma_de_integridad(reference: str, amount_in_cents: int, currency: str, secreto: str) -> str:
+    cadena = f"{reference}{amount_in_cents}{currency}{secreto}"
+    return hashlib.sha256(cadena.encode()).hexdigest()
+
+
+@dataclass(frozen=True, slots=True)
+class Transaccion:
+    id: str
+    status: str
+    reference: str
+    payment_method_type: str | None = None
+
+
+def crear_transaccion_nequi(
+    creds: Credenciales,
+    *,
+    reference: str,
+    amount_in_cents: int,
+    customer_email: str,
+    phone_number: str,
+    tokens: TokensDeAceptacion,
+) -> Transaccion:
+    """POST /transactions con payment_method NEQUI. Siempre vuelve en PENDING (RF-038): el
+    cliente aprueba con una notificación push de Nequi y el estado final llega por webhook."""
+    cuerpo: dict[str, object] = {
+        "acceptance_token": tokens.acceptance_token,
+        "accept_personal_auth": tokens.accept_personal_auth,
+        "amount_in_cents": amount_in_cents,
+        "currency": "COP",
+        "customer_email": customer_email,
+        "payment_method": {"type": "NEQUI", "phone_number": phone_number},
+        "reference": reference,
+        "signature": firma_de_integridad(reference, amount_in_cents, "COP", creds.integrity_secret),
+    }
+    respuesta = _llamar(
+        f"{creds.base_url}/transactions", cuerpo=cuerpo, metodo="POST", bearer=creds.private_key
+    )
+    data = respuesta["data"]
+    return Transaccion(id=data["id"], status=data["status"], reference=data["reference"])
+
+
+def consultar_transaccion(creds: Credenciales, transaction_id: str) -> Transaccion:
+    """GET /transactions/{id}, para el reconciliador: respaldo si el webhook nunca llega."""
+    respuesta = _llamar(f"{creds.base_url}/transactions/{transaction_id}", bearer=creds.private_key)
+    data = respuesta["data"]
+    return Transaccion(
+        id=data["id"],
+        status=data["status"],
+        reference=data["reference"],
+        payment_method_type=data.get("payment_method_type"),
+    )
+
+
+def _valor_de(objeto: dict[str, Any], ruta: str) -> object:
+    actual: object = objeto
+    for parte in ruta.split("."):
+        if not isinstance(actual, dict) or parte not in actual:
+            raise KeyError(ruta)
+        actual = actual[parte]
+    return actual
+
+
+def firma_de_webhook_es_valida(payload: dict[str, Any], events_secret: str) -> bool:
+    """Compara el checksum recibido contra el calculado con los campos que la propia
+    notificación lista en signature.properties, en ese orden, más el timestamp y el secreto
+    de eventos. Una notificación sin esos campos, o que no cuadra, se trata como inválida."""
+    firma = payload.get("signature")
+    timestamp = payload.get("timestamp")
+    data = payload.get("data")
+    if not isinstance(firma, dict) or not isinstance(data, dict) or timestamp is None:
+        return False
+    propiedades = firma.get("properties")
+    checksum = firma.get("checksum")
+    if not isinstance(propiedades, list) or not propiedades or not isinstance(checksum, str):
+        return False
+    try:
+        valores = "".join(str(_valor_de(data, str(propiedad))) for propiedad in propiedades)
+    except KeyError:
+        return False
+    cadena = f"{valores}{timestamp}{events_secret}"
+    calculado = hashlib.sha256(cadena.encode()).hexdigest()
+    return hmac.compare_digest(calculado.lower(), checksum.lower())

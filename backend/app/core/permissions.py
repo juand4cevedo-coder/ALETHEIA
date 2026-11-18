@@ -10,6 +10,7 @@ Permission = Literal[
     "platform.manage",
     "organization.view",
     "team.manage",
+    "billing.manage",
     "cases.read_assigned",
     "cases.create",
     "cases.manage_members",
@@ -22,6 +23,7 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
         {
             "organization.view",
             "team.manage",
+            "billing.manage",
             "cases.read_assigned",
             "cases.create",
             "cases.manage_members",

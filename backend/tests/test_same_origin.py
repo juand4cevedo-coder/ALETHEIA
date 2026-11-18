@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 from app.core.config import Settings
 from app.core.errors import PROBLEM_JSON
-from app.core.middleware import SAME_ORIGIN_HEADER
+from app.core.middleware import SAME_ORIGIN_HEADER, SameOriginMiddleware
 from app.main import create_app
 
 _SITIO = "http://localhost:5173"
@@ -27,6 +27,29 @@ def client(settings: Settings) -> Iterator[TestClient]:
     def lectura() -> dict[str, bool]:
         return {"hecho": True}
 
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+def client_con_ruta_exenta() -> Iterator[TestClient]:
+    """Una app mínima, sin billing.router, para probar exempt_paths en aislamiento."""
+    app = FastAPI()
+
+    @app.post("/api/v1/webhooks/prueba")
+    def webhook_de_prueba() -> dict[str, bool]:
+        return {"hecho": True}
+
+    @app.post("/api/v1/prueba/cambio")
+    def cambio() -> dict[str, bool]:
+        return {"hecho": True}
+
+    app.add_middleware(
+        SameOriginMiddleware,
+        allowed_origins=[_SITIO],
+        path_prefix="/api/v1",
+        exempt_paths=["/api/v1/webhooks/prueba"],
+    )
     with TestClient(app) as test_client:
         yield test_client
 
@@ -115,3 +138,15 @@ def test_cors_solo_responde_al_origen_del_sitio(client: TestClient) -> None:
     assert propio["access-control-allow-credentials"] == "true"
     assert SAME_ORIGIN_HEADER.lower() in propio["access-control-allow-headers"].lower()
     assert "access-control-allow-origin" not in ajeno
+
+
+def test_una_ruta_exenta_pasa_sin_ningun_encabezado(client_con_ruta_exenta: TestClient) -> None:
+    # Así llega la notificación de un webhook: sin Origin, sin Sec-Fetch-Site y sin el
+    # encabezado propio, porque no sale de un navegador.
+    assert client_con_ruta_exenta.post("/api/v1/webhooks/prueba", json={}).status_code == 200
+
+
+def test_una_ruta_no_exenta_sigue_exigiendo_el_origen(
+    client_con_ruta_exenta: TestClient,
+) -> None:
+    assert client_con_ruta_exenta.post("/api/v1/prueba/cambio").status_code == 403
