@@ -93,6 +93,22 @@ def test_una_suscripcion_legacy_activa_no_vence_por_este_camino(db: Session) -> 
     assert not subscription_expiration.expire(db, office.organization_id, now)
 
 
+def test_el_despacho_del_dueno_de_la_plataforma_nunca_vence(db: Session) -> None:
+    office = crear_oficina(db)
+    now = datetime.datetime.now(datetime.UTC)
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    subscription = _subscription(db, office.organization_id)
+    subscription.status = "trial"
+    subscription.billing_cycle = "none"
+    subscription.trial_ends_at = now - datetime.timedelta(seconds=1)
+    office.owner.is_platform_admin = True
+    db.flush()
+
+    assert not subscription_expiration.expire(db, office.organization_id, now)
+    assert subscription.status == "trial"
+    assert db.get_one(Organization, office.organization_id).status == "active"
+
+
 def test_cortesia_con_fecha_vence_y_sin_fecha_sigue_activa(db: Session) -> None:
     office = crear_oficina(db)
     now = datetime.datetime.now(datetime.UTC)
