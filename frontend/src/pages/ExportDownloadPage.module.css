@@ -13,14 +13,6 @@
   background: var(--surface-1);
 }
 
-.eyebrow {
-  margin: 0;
-  color: var(--accent-strong);
-  font-size: var(--font-size-label);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .card h1 {
   margin: var(--space-4) 0 var(--space-6);
   font-family: var(--font-editorial);

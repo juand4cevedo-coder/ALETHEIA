@@ -112,7 +112,6 @@ export function VerifierPage() {
       <section className={styles.page} aria-labelledby="verificador-titulo">
         <div className={styles.inner}>
           <header className={styles.intro}>
-            <p className={styles.eyebrow}>Verificación local con SHA-256</p>
             <h1 id="verificador-titulo">
               Compare un archivo con su manifiesto.
             </h1>
