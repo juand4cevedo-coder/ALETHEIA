@@ -103,6 +103,39 @@ class Settings(DatabaseSettings):
         description="Ruta del PEM de la llave maestra local; solo fuera de production.",
     )
 
+    # Bucket S3 de evidencias y paquetes de exportación (app.adapters.evidence_storage y
+    # export_storage). Solo se usa en production; fuera de ella el almacenamiento es local.
+    evidence_bucket: str | None = Field(
+        default=None,
+        description="Bucket S3 de evidencias y exportaciones; obligatorio en production.",
+    )
+
+    def evidence_bucket_name(self) -> str:
+        """El bucket de evidencias, o un error claro si el entorno no lo tiene."""
+        if self.evidence_bucket is None:
+            msg = "Falta ALETHEIA_EVIDENCE_BUCKET para leer o escribir evidencia en S3."
+            raise RuntimeError(msg)
+        return self.evidence_bucket
+
+    # Pasarela de pagos (HU-027, ADR-010). La llave pública identifica el comercio ante Wompi
+    # al pedir los tokens de aceptación; las otras tres nunca salen del backend. En sandbox
+    # llevan los prefijos pub_test_/prv_test_/test_integrity_/test_events_; en producción,
+    # pub_prod_/prv_prod_/prod_integrity_/prod_events_. Por ahora viven en variables de
+    # entorno en todos los entornos; pasarlas a Parameter Store queda para cuando haya una
+    # cuenta real de Wompi, igual que la clave de PostgreSQL.
+    wompi_public_key: str | None = Field(
+        default=None, description="Llave pública de Wompi (pub_test_... o pub_prod_...)."
+    )
+    wompi_private_key: Secret[str] | None = Field(
+        default=None, description="Llave privada de Wompi; solo el backend la usa."
+    )
+    wompi_integrity_secret: Secret[str] | None = Field(
+        default=None, description="Secreto de integridad de Wompi, para firmar transacciones."
+    )
+    wompi_events_secret: Secret[str] | None = Field(
+        default=None, description="Secreto de eventos de Wompi, para verificar sus webhooks."
+    )
+
     @property
     def public_url(self) -> str:
         """Dirección pública del sitio, sin barra final, para armar los enlaces de los correos."""
@@ -154,6 +187,16 @@ class Settings(DatabaseSettings):
         # Una llave maestra en un archivo no protege nada: en producción solo manda KMS.
         if self.environment == "production" and self.local_key_path is not None:
             msg = "la llave local solo se usa fuera de production: ahí la maestra vive en KMS"
+            raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def _evidence_bucket_only_in_production(self) -> Self:
+        if self.environment == "production" and self.evidence_bucket is None:
+            msg = "en production falta ALETHEIA_EVIDENCE_BUCKET"
+            raise ValueError(msg)
+        if self.environment != "production" and self.evidence_bucket is not None:
+            msg = "el bucket de evidencias solo se usa con environment production"
             raise ValueError(msg)
         return self
 

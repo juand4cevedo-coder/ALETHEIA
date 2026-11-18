@@ -325,7 +325,6 @@ export function KnowledgePage() {
       <article className={styles.docsBody}>
         {article ? (
           <>
-            <p className={styles.kicker}>Guía de uso</p>
             <h1>{article.title}</h1>
             <p>{article.text}</p>
             <ButtonLink to={article.related}>
@@ -335,7 +334,6 @@ export function KnowledgePage() {
           </>
         ) : (
           <>
-            <p className={styles.kicker}>Ayuda</p>
             <h1>Un buen lugar para empezar.</h1>
             <p>Guías breves para encontrar su camino dentro de Aletheia.</p>
             <div className={styles.cards}>

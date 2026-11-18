@@ -34,6 +34,7 @@ function problem(status: number, extra: Record<string, unknown> = {}) {
 async function fillForm(
   user: ReturnType<typeof userEvent.setup>,
   password = "una frase larga y fácil",
+  confirmPassword = password,
 ) {
   await user.type(screen.getByLabelText("Nombre completo"), "Ana Restrepo");
   await user.type(
@@ -41,6 +42,10 @@ async function fillForm(
     "ana@example.com",
   );
   await user.type(screen.getByLabelText("Contraseña"), password);
+  await user.type(
+    screen.getByLabelText("Confirmar contraseña"),
+    confirmPassword,
+  );
   await user.click(screen.getByRole("checkbox"));
 }
 
@@ -122,12 +127,51 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("exige confirmar la contraseña y enfoca ese campo si queda vacío", async () => {
+    const user = userEvent.setup();
+    await renderRoute("/registro");
+
+    await user.type(screen.getByLabelText("Nombre completo"), "Ana Restrepo");
+    await user.type(
+      screen.getByLabelText("Correo electrónico"),
+      "ana@example.com",
+    );
+    await user.type(
+      screen.getByLabelText("Contraseña"),
+      "una frase larga y fácil",
+    );
+    await user.click(screen.getByRole("checkbox"));
+    await submit(user);
+
+    const confirmar = screen.getByLabelText("Confirmar contraseña");
+    expect(confirmar).toHaveFocus();
+    expect(confirmar).toHaveAccessibleDescription(
+      "Las contraseñas no coinciden.",
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("avisa si la confirmación no coincide y no llama a la API", async () => {
+    const user = userEvent.setup();
+    await renderRoute("/registro");
+
+    await fillForm(user, "una frase larga y fácil", "otra frase distinta");
+    await submit(user);
+
+    const confirmar = screen.getByLabelText("Confirmar contraseña");
+    expect(confirmar).toHaveFocus();
+    expect(confirmar).toHaveAccessibleDescription(
+      "Las contraseñas no coinciden.",
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("permite ver la contraseña escrita", async () => {
     const user = userEvent.setup();
     await renderRoute("/registro");
     const contrasena = screen.getByLabelText("Contraseña");
     const mostrar = screen.getByRole("button", {
-      name: "Mostrar la contraseña",
+      name: "Mostrar contraseña",
     });
 
     expect(contrasena).toHaveAttribute("type", "password");

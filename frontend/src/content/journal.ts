@@ -2,6 +2,10 @@ export type JournalArticle = {
   slug: string;
   title: string;
   category: string;
+  /** Cuándo se publicó, en ISO (AAAA-MM-DD). */
+  date: string;
+  /** Línea corta para la tarjeta de la portada de blog: específica del artículo, no un relleno. */
+  tagline: string;
   summary: string;
   sections: { title: string; paragraphs: string[] }[];
 };
@@ -10,6 +14,8 @@ export const JOURNAL: JournalArticle[] = [
   {
     slug: "un-caso-con-contexto",
     category: "Práctica",
+    date: "2026-10-05",
+    tagline: "No es solo un nombre.",
     title: "Un caso necesita algo más que un nombre",
     summary:
       "Radicado, despacho y responsables. Los datos que ayudan a retomar un asunto sin reconstruirlo desde cero.",
@@ -39,6 +45,8 @@ export const JOURNAL: JournalArticle[] = [
   {
     slug: "que-dice-una-huella-sha256",
     category: "Integridad",
+    date: "2026-10-22",
+    tagline: "Coincide, no certifica.",
     title: "Qué dice una huella digital. Y qué no.",
     summary:
       "Una coincidencia ayuda a comparar contenido. No cuenta por sí sola quién creó el archivo ni cómo se obtuvo.",
@@ -69,6 +77,8 @@ export const JOURNAL: JournalArticle[] = [
   {
     slug: "permisos-con-intencion",
     category: "Seguridad",
+    date: "2026-11-10",
+    tagline: "El acceso se revisa.",
     title: "Dar acceso también es una decisión",
     summary:
       "Cómo separar las responsabilidades de una organización del acceso a un caso concreto.",

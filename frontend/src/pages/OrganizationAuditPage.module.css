@@ -1,0 +1,134 @@
+/* Auditoría de seguridad (UI-021): la tabla de eventos vive en un panel, con el mismo borde y
+   superficie que el resto de la plataforma. En el celular cada fila pasa a una tarjeta apilada,
+   como las listas de miembros. */
+.screen {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.loading {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.status {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+.empty {
+  margin: 0;
+  padding: var(--space-6);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+  text-align: center;
+}
+
+.tableScroll {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--font-size-ui);
+}
+
+.table th,
+.table td {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.table thead th {
+  padding-top: 0;
+  padding-bottom: var(--space-3);
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  letter-spacing: var(--tracking-subtitle);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table tbody tr:first-child th,
+.table tbody tr:first-child td {
+  border-top: 0;
+}
+
+.table tbody th {
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.table tbody td {
+  color: var(--text-2);
+}
+
+/* El nombre reemplaza el identificador crudo; el id queda solo en title= para depuración. */
+.person {
+  font-weight: 500;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+}
+
+@media (max-width: 720px) {
+  .table,
+  .table thead,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody tr {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-3) 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .table tbody tr:first-child {
+    border-top: 0;
+  }
+
+  .table tbody th,
+  .table tbody td {
+    padding: 0;
+    border-top: 0;
+    white-space: normal;
+  }
+
+  .table tbody td::before,
+  .table tbody th::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: var(--space-1);
+    color: var(--text-3);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    letter-spacing: var(--tracking-subtitle);
+    text-transform: uppercase;
+  }
+}

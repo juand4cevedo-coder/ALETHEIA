@@ -11,12 +11,20 @@
   --bronze: #c5ae8b;
 
   --bg: #000000;
+  /* Un paso más oscuro que surface-1, para paneles flotantes (menús, tarjetas de
+     ilustración) que necesitan verse por delante del resto de los paneles. */
+  --surface-0: #050505;
   --surface-1: #0e0f11;
+  /* Un paso más claro que surface-1, para los degradados de dos puntos que antes usaban
+     valores sueltos cercanos entre sí. */
+  --surface-1b: #141414;
   --surface-2: #1a1b1e;
 
   --line: #252629;
 
   --line-control: #686b70;
+  /* Línea de borde de las tarjetas y encabezados de sección en la landing. */
+  --line-accent: rgb(214 235 253 / 19%);
   --text: #f0f0f0;
   --text-2: #a1a4a5;
 
@@ -30,6 +38,13 @@
   --ok: #63d4a1;
   --warn: #e8ba75;
   --err: #ff9999;
+
+  /* Tinte de fondo por categoría en las tarjetas del blog: distingue Integridad y Seguridad de
+     un vistazo, sin depender solo del texto de la categoría. */
+  --tint-integridad: #66351f;
+  --tint-seguridad: #163a31;
+  /* Franja del ítem activo en la navegación del espacio de trabajo. */
+  --accent-nav: #d6c1a4;
 
   --font-sans:
     "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

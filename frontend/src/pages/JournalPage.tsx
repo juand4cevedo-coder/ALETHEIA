@@ -6,6 +6,17 @@ import { BuscarIcon, FlechaDerechaIcon } from "../components/ui/icons.tsx";
 import { NotFoundPage } from "./NotFoundPage.tsx";
 import styles from "./EditorialPage.module.css";
 
+// Fecha de publicación, sin hora: se formatea en UTC para que "2026-10-05" lea 5 de octubre,
+// no el 4 por la noche al convertir a la hora de Colombia.
+function formatPublishDate(iso: string): string {
+  return new Intl.DateTimeFormat("es-CO", {
+    timeZone: "UTC",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(iso));
+}
+
 export function JournalPage() {
   const { slug } = useParams();
   const [query, setQuery] = useState("");
@@ -22,10 +33,12 @@ export function JournalPage() {
           Volver al blog
         </Link>
         <header className={styles.articleHead}>
-          <p className={styles.kicker}>{article.category}</p>
           <h1>{article.title}</h1>
           <p>{article.summary}</p>
-          <small>Equipo Aletheia, 12 de noviembre de 2026</small>
+          <small>
+            {article.category}, Equipo Aletheia,{" "}
+            {formatPublishDate(article.date)}
+          </small>
         </header>
         <div
           className={`${styles.articleVisual} ${styles.articleHero}`}
@@ -84,7 +97,6 @@ export function JournalPage() {
       <link rel="canonical" href={SITE_URL + "/blog"} />
       <header className={styles.blogHead}>
         <div>
-          <p className={styles.kicker}>Ideas para trabajar mejor</p>
           <h1>Blog</h1>
         </div>
         <label className={styles.search}>
@@ -116,7 +128,7 @@ export function JournalPage() {
         {results.length} artículos
       </p>
       <div className={styles.blogGrid}>
-        {results.map((item, index) => (
+        {results.map((item) => (
           <Link
             className={styles.blogCard}
             to={"/blog/" + item.slug}
@@ -134,13 +146,11 @@ export function JournalPage() {
                     ? "Acceso"
                     : "Contexto"}
               </span>
-              <small>
-                {index === 0
-                  ? "Cada detalle cuenta."
-                  : "La claridad empieza aquí."}
-              </small>
+              <small>{item.tagline}</small>
             </div>
-            <p className={styles.kicker}>{item.category}, 12 nov 2026</p>
+            <p className={styles.kicker}>
+              {item.category}, {formatPublishDate(item.date)}
+            </p>
             <h2>{item.title}</h2>
             <p>{item.summary}</p>
             <span className={styles.read}>

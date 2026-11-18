@@ -2,7 +2,7 @@ import { matchRoutes } from "react-router";
 import { routes } from "../routes/router.tsx";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SIGN_UP_LABEL } from "../config/site.ts";
 import { seriousAxeViolations } from "../test/axe.ts";
@@ -11,9 +11,23 @@ import { jsonResponse, renderRoute } from "../test/render.tsx";
 
 const fetchMock = vi.fn<typeof fetch>();
 
+// jsdom no implementa Worker: sin esto, el comprobador de la sección de verificación se cree sin
+// soporte y muestra su aviso de "navegador no compatible" en cada prueba de esta página.
+class FakeWorker {
+  onmessage: ((event: MessageEvent) => void) | null = null;
+  onerror: (() => void) | null = null;
+  postMessage(_value: unknown) {}
+  terminate() {}
+}
+
 beforeEach(() => {
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
+  vi.stubGlobal("Worker", FakeWorker);
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 describe("Página de inicio (HU-001)", () => {
@@ -151,8 +165,8 @@ describe("Página de inicio (HU-001)", () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const { container } = await renderRoute("/");
 
-    // La comprobación local se abre en la sección, sin navegación a una ruta vacía.
-    expect(container.querySelector("a[href='/verificador']")).toBeNull();
+    // El menú lleva al verificador de manifiestos; la portada conserva su demostración local.
+    expect(container.querySelector("a[href='/verificador']")).not.toBeNull();
     const verifier = container.querySelector("#verificador")!;
     expect(within(verifier as HTMLElement).queryAllByRole("link")).toEqual([]);
     expect(verifier).toHaveTextContent(

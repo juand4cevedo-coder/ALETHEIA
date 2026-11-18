@@ -7,6 +7,7 @@ import {
   type Options as Options2,
   type RequestResult,
   type TDataShape,
+  urlSearchParamsBodySerializer,
 } from "./client";
 import { client } from "./client.gen";
 import type {
@@ -36,7 +37,13 @@ import type {
   ChangeSupportTicketStatusResponses,
   CreateCaseData,
   CreateCaseErrors,
+  CreateCaseExportData,
+  CreateCaseExportErrors,
+  CreateCaseExportResponses,
   CreateCaseResponses,
+  CreateCheckoutData,
+  CreateCheckoutErrors,
+  CreateCheckoutResponses,
   CreateInvitationData,
   CreateInvitationErrors,
   CreateInvitationResponses,
@@ -46,6 +53,9 @@ import type {
   DownloadEvidenceData,
   DownloadEvidenceErrors,
   DownloadEvidenceResponses,
+  DownloadExportData,
+  DownloadExportErrors,
+  DownloadExportResponses,
   ForgotPasswordData,
   ForgotPasswordErrors,
   ForgotPasswordResponses,
@@ -55,6 +65,9 @@ import type {
   HealthData,
   HealthErrors,
   HealthResponses,
+  InspectExportData,
+  InspectExportErrors,
+  InspectExportResponses,
   ListCasesData,
   ListCasesErrors,
   ListCasesResponses,
@@ -98,6 +111,9 @@ import type {
   PreviewInvitationResponses,
   ReadCaseData,
   ReadCaseErrors,
+  ReadCaseExportData,
+  ReadCaseExportErrors,
+  ReadCaseExportResponses,
   ReadCaseResponses,
   ReadEvidenceData,
   ReadEvidenceErrors,
@@ -147,6 +163,9 @@ import type {
   VerifyEmailData,
   VerifyEmailErrors,
   VerifyEmailResponses,
+  WompiTermsData,
+  WompiTermsErrors,
+  WompiTermsResponses,
 } from "./types.gen";
 
 export type Options<
@@ -974,6 +993,93 @@ export const downloadEvidence = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Comprobar si un enlace de paquete sigue vigente
+ */
+export const inspectExport = <ThrowOnError extends boolean = false>(
+  options: Options<InspectExportData, ThrowOnError>,
+): RequestResult<InspectExportResponses, InspectExportErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    InspectExportResponses,
+    InspectExportErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/exports/inspect",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Descargar un paquete mediante un enlace vigente
+ */
+export const downloadExport = <ThrowOnError extends boolean = false>(
+  options: Options<DownloadExportData, ThrowOnError>,
+): RequestResult<DownloadExportResponses, DownloadExportErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    DownloadExportResponses,
+    DownloadExportErrors,
+    ThrowOnError
+  >({
+    ...urlSearchParamsBodySerializer,
+    url: "/api/v1/exports/download",
+    ...options,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Solicitar un paquete de preservación
+ */
+export const createCaseExport = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCaseExportData, ThrowOnError>,
+): RequestResult<
+  CreateCaseExportResponses,
+  CreateCaseExportErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    CreateCaseExportResponses,
+    CreateCaseExportErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/exports",
+    ...options,
+  });
+
+/**
+ * Consultar una exportación y su enlace vigente
+ */
+export const readCaseExport = <ThrowOnError extends boolean = false>(
+  options: Options<ReadCaseExportData, ThrowOnError>,
+): RequestResult<ReadCaseExportResponses, ReadCaseExportErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    ReadCaseExportResponses,
+    ReadCaseExportErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/exports/{export_id}",
+    ...options,
+  });
+
+/**
  * Buscar un despacho por correo de su titular
  */
 export const lookupCourtesy = <ThrowOnError extends boolean = false>(
@@ -1252,6 +1358,44 @@ export const changeSupportTicketStatus = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/platform/support/tickets/{ticket_id}/status",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Contratos de Wompi que hay que mostrar antes de cobrar
+ */
+export const wompiTerms = <ThrowOnError extends boolean = false>(
+  options?: Options<WompiTermsData, ThrowOnError>,
+): RequestResult<WompiTermsResponses, WompiTermsErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    WompiTermsResponses,
+    WompiTermsErrors,
+    ThrowOnError
+  >({ url: "/api/v1/billing/wompi-terms", ...options });
+
+/**
+ * Iniciar el primer cobro de una suscripción con Nequi
+ */
+export const createCheckout = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCheckoutData, ThrowOnError>,
+): RequestResult<CreateCheckoutResponses, CreateCheckoutErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CreateCheckoutResponses,
+    CreateCheckoutErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/billing/checkout",
     ...options,
     headers: {
       "Content-Type": "application/json",

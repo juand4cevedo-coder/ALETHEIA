@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 
 import { LEGAL_VERSION } from "../config/legal.ts";
@@ -36,6 +36,26 @@ it("muestra eventos de seguridad al propietario sin contenido de casos", async (
   fetchMock.mockImplementation(async (input) => {
     const path = new URL((input as Request).url).pathname;
     if (path === "/api/v1/me") return jsonResponse(profile("owner"));
+    if (path === "/api/v1/organization/members")
+      return jsonResponse({
+        items: [
+          {
+            user_id: "01890a5d-ac96-774b-bcce-b302099a8057",
+            full_name: "Ana Restrepo",
+            email: "ana@example.com",
+            role: "owner",
+            joined_at: "2026-01-01T00:00:00Z",
+          },
+        ],
+        next_cursor: null,
+        seats: {
+          used: 1,
+          included: 1,
+          full: false,
+          owner_exempt: true,
+          extra_user_price_cop: null,
+        },
+      });
     if (path === "/api/v1/organization/audit")
       return jsonResponse({
         items: [
@@ -43,7 +63,7 @@ it("muestra eventos de seguridad al propietario sin contenido de casos", async (
             id: "01890a5d-ac96-774b-bcce-b302099a8060",
             action: "role_changed",
             actor_user_id: "01890a5d-ac96-774b-bcce-b302099a8057",
-            target_id: null,
+            target_id: "01890a5d-ac96-774b-bcce-b302099a8099",
             ip: "192.0.2.10",
             user_agent: "Navegador de prueba",
             created_at: "2026-11-16T12:00:00Z",
@@ -57,7 +77,17 @@ it("muestra eventos de seguridad al propietario sin contenido de casos", async (
   expect(
     await screen.findByRole("rowheader", { name: "Rol cambiado" }),
   ).toBeInTheDocument();
-  expect(screen.getByText("192.0.2.10")).toBeInTheDocument();
+  const table = screen.getByRole("table");
+  expect(within(table).getByText("192.0.2.10")).toBeInTheDocument();
+  // La persona resuelve a su nombre, no al identificador crudo.
+  expect(within(table).getByText("Ana Restrepo")).toBeInTheDocument();
+  // El objeto ya no es miembro: se avisa en vez de mostrar su id.
+  expect(
+    within(table).getByText("Persona que ya no está en el despacho"),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByText("01890a5d-ac96-774b-bcce-b302099a8057"),
+  ).not.toBeInTheDocument();
   expect(screen.queryByText(/caso abierto/i)).not.toBeInTheDocument();
 });
 

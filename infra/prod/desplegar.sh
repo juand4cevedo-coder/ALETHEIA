@@ -23,6 +23,9 @@ readonly ESTADO=/var/lib/aletheia
 readonly ACTUAL="$ESTADO/despliegue.env"
 readonly ANTERIOR="$ESTADO/despliegue.anterior.env"
 readonly FALLIDO="$ESTADO/despliegue.fallido.env"
+# Configuración estática que no cambia con cada despliegue (por ejemplo el bucket de
+# evidencias): no la escribe este script, la deja una sola vez el administrador.
+readonly ENTORNO=/etc/aletheia/entorno.env
 readonly REGISTRO=ghcr.io/juand4cevedo-coder
 readonly DOMINIO=aletheia.sbs
 readonly PATRON_VERSION='^v[0-9]+\.[0-9]+\.[0-9]+$'
@@ -33,7 +36,13 @@ registrar() {
 }
 
 compose() {
-    docker compose --env-file "$ACTUAL" -f "$COMPOSE" "$@"
+    local bucket
+    bucket="$([[ -f $ENTORNO ]] && sed -n 's/^ALETHEIA_EVIDENCE_BUCKET=//p' "$ENTORNO")"
+    [[ -n $bucket ]] || {
+        registrar "Falta $ENTORNO con ALETHEIA_EVIDENCE_BUCKET, o está vacío."
+        return 1
+    }
+    docker compose --env-file "$ENTORNO" --env-file "$ACTUAL" -f "$COMPOSE" "$@"
 }
 
 repo() {

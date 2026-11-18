@@ -11,6 +11,7 @@ import { Button } from "../components/ui/Button.tsx";
 import { Dialog } from "../components/ui/Dialog.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
+import { Panel } from "../components/ui/Panel.tsx";
 import { pageTitle } from "../config/site.ts";
 import styles from "./PlatformPage.module.css";
 
@@ -49,13 +50,10 @@ export function PlatformPage() {
       {!me.platform_admin ? (
         <Notice tone="error">Esta cuenta no administra la plataforma.</Notice>
       ) : (
-        <section aria-label="Cuentas" className={styles.section}>
-          <div className={styles.sectionHeading}>
-            <h2>Cuentas</h2>
-            <p>
-              Bloquear una cuenta cierra sus sesiones en todos los dispositivos.
-            </p>
-          </div>
+        <Panel
+          title="Cuentas"
+          description="Bloquear una cuenta cierra sus sesiones en todos los dispositivos."
+        >
           {users.isPending && <p role="status">Cargando cuentas</p>}
           {users.isError && (
             <Notice tone="error">No pudimos cargar las cuentas.</Notice>
@@ -130,7 +128,7 @@ export function PlatformPage() {
               Ver más cuentas
             </Button>
           )}
-        </section>
+        </Panel>
       )}
       <Dialog
         open={target !== null}

@@ -21,31 +21,6 @@
   margin-block: var(--space-5);
 }
 
-.form label {
-  display: grid;
-  gap: var(--space-2);
-  color: var(--text);
-  font-size: var(--font-size-label);
-  font-weight: 600;
-}
-
-.form input,
-.form select {
-  min-width: 0;
-  min-height: var(--control-height);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--line-control);
-  border-radius: var(--radius-sm);
-  background: var(--surface-1);
-  color: var(--text);
-  font: inherit;
-}
-
-.form :is(input, select):focus-visible {
-  outline: none;
-  box-shadow: var(--ring-focus);
-}
-
 .hash {
   display: block;
   overflow-wrap: anywhere;

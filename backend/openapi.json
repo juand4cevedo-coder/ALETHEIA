@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.4.8"
+    "version": "0.4.9"
   },
   "paths": {
     "/api/v1/health": {
@@ -1757,6 +1757,16 @@
               }
             }
           },
+          "429": {
+            "description": "Demasiadas subidas de esta cuenta; reintentar más tarde.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
           "503": {
             "description": "No se pudo acceder a la llave de cifrado del caso.",
             "content": {
@@ -2509,6 +2519,225 @@
         }
       }
     },
+    "/api/v1/exports/inspect": {
+      "post": {
+        "tags": [
+          "exportaciones"
+        ],
+        "summary": "Comprobar si un enlace de paquete sigue vigente",
+        "operationId": "inspect_export",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportInspectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportInspectResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exports/download": {
+      "post": {
+        "tags": [
+          "exportaciones"
+        ],
+        "summary": "Descargar un paquete mediante un enlace vigente",
+        "operationId": "download_export",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_download_export"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Paquete ZIP conservado.",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El enlace no existe o ya no está vigente.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos de descarga.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "No se pudo leer el paquete conservado.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/exports": {
+      "post": {
+        "tags": [
+          "exportaciones"
+        ],
+        "summary": "Solicitar un paquete de preservación",
+        "operationId": "create_case_export",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/exports/{export_id}": {
+      "get": {
+        "tags": [
+          "exportaciones"
+        ],
+        "summary": "Consultar una exportación y su enlace vigente",
+        "operationId": "read_case_export",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "export_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Export Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/platform/courtesy": {
       "get": {
         "tags": [
@@ -3061,6 +3290,103 @@
           }
         }
       }
+    },
+    "/api/v1/billing/wompi-terms": {
+      "get": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "Contratos de Wompi que hay que mostrar antes de cobrar",
+        "operationId": "wompi_terms",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WompiTermsOut"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Wompi no respondió.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/billing/checkout": {
+      "post": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "Iniciar el primer cobro de una suscripción con Nequi",
+        "operationId": "create_checkout",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutOut"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no administra la facturación.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Wompi no respondió.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -3130,6 +3456,21 @@
         ],
         "title": "AcceptInvitationRequest",
         "description": "Aceptar la invitación (API-019).\n\nCon full_name se crea una cuenta nueva: la contraseña es la nueva y debe aceptar los textos\nlegales vigentes. Sin full_name, la persona ya tiene cuenta y la contraseña es la suya."
+      },
+      "Body_download_export": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "Body_download_export"
       },
       "CaseCandidate": {
         "properties": {
@@ -3833,6 +4174,80 @@
         "title": "ChangePasswordRequest",
         "description": "Contraseña actual y nueva de quien tiene la sesión (API-013)."
       },
+      "CheckoutCreate": {
+        "properties": {
+          "plan_code": {
+            "type": "string",
+            "pattern": "^[a-z_]{1,30}$",
+            "title": "Plan Code"
+          },
+          "billing_cycle": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "annual"
+            ],
+            "title": "Billing Cycle"
+          },
+          "phone_number": {
+            "type": "string",
+            "pattern": "^3\\d{9}$",
+            "title": "Phone Number"
+          },
+          "acceptance_token": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Acceptance Token"
+          },
+          "accept_personal_auth": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Accept Personal Auth"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_code",
+          "billing_cycle",
+          "phone_number",
+          "acceptance_token",
+          "accept_personal_auth"
+        ],
+        "title": "CheckoutCreate"
+      },
+      "CheckoutOut": {
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id"
+          },
+          "reference": {
+            "type": "string",
+            "title": "Reference"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "DECLINED",
+              "VOIDED",
+              "ERROR"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_id",
+          "reference",
+          "status"
+        ],
+        "title": "CheckoutOut"
+      },
       "CourtesyGrant": {
         "properties": {
           "organization_id": {
@@ -4355,6 +4770,85 @@
         "title": "EvidenceUploadOut",
         "description": "Constancia inmediata de la preservación; el sello de tiempo llega después."
       },
+      "ExportInspectRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "ExportInspectRequest"
+      },
+      "ExportInspectResponse": {
+        "properties": {
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expires_at"
+        ],
+        "title": "ExportInspectResponse"
+      },
+      "ExportResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "download_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Download Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "created_at",
+          "expires_at",
+          "download_url"
+        ],
+        "title": "ExportResponse"
+      },
       "ForgotPasswordRequest": {
         "properties": {
           "email": {
@@ -4754,6 +5248,7 @@
                 "platform.manage",
                 "organization.view",
                 "team.manage",
+                "billing.manage",
                 "cases.read_assigned",
                 "cases.create",
                 "cases.manage_members",
@@ -5943,6 +6438,39 @@
         ],
         "title": "VerifyEmailRequest",
         "description": "Token del enlace de verificación (API-004). La página lo toma del fragmento #t=."
+      },
+      "WompiTermsOut": {
+        "properties": {
+          "acceptance_token": {
+            "type": "string",
+            "title": "Acceptance Token",
+            "description": "Token de aceptación de las políticas de Wompi."
+          },
+          "acceptance_permalink": {
+            "type": "string",
+            "title": "Acceptance Permalink",
+            "description": "Texto de las políticas que ampara el token."
+          },
+          "accept_personal_auth": {
+            "type": "string",
+            "title": "Accept Personal Auth",
+            "description": "Token de autorización de tratamiento de datos personales."
+          },
+          "personal_auth_permalink": {
+            "type": "string",
+            "title": "Personal Auth Permalink",
+            "description": "Texto de la autorización que ampara el token."
+          }
+        },
+        "type": "object",
+        "required": [
+          "acceptance_token",
+          "acceptance_permalink",
+          "accept_personal_auth",
+          "personal_auth_permalink"
+        ],
+        "title": "WompiTermsOut",
+        "description": "Los dos contratos que Wompi exige aceptar; el cliente debe mostrarlos y solo mandar\nlos tokens de vuelta en /billing/checkout si la persona los aceptó de verdad (RN-022)."
       }
     },
     "securitySchemes": {

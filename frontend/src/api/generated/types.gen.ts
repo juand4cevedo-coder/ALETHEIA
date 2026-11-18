@@ -46,6 +46,16 @@ export type AcceptInvitationRequest = {
 };
 
 /**
+ * Body_download_export
+ */
+export type BodyDownloadExport = {
+  /**
+   * Token
+   */
+  token: string;
+};
+
+/**
  * CaseCandidate
  *
  * Persona disponible para asignar a este caso.
@@ -528,6 +538,50 @@ export type ChangePasswordRequest = {
 };
 
 /**
+ * CheckoutCreate
+ */
+export type CheckoutCreate = {
+  /**
+   * Plan Code
+   */
+  plan_code: string;
+  /**
+   * Billing Cycle
+   */
+  billing_cycle: "monthly" | "annual";
+  /**
+   * Phone Number
+   */
+  phone_number: string;
+  /**
+   * Acceptance Token
+   */
+  acceptance_token: string;
+  /**
+   * Accept Personal Auth
+   */
+  accept_personal_auth: string;
+};
+
+/**
+ * CheckoutOut
+ */
+export type CheckoutOut = {
+  /**
+   * Transaction Id
+   */
+  transaction_id: string;
+  /**
+   * Reference
+   */
+  reference: string;
+  /**
+   * Status
+   */
+  status: "PENDING" | "APPROVED" | "DECLINED" | "VOIDED" | "ERROR";
+};
+
+/**
  * CourtesyGrant
  */
 export type CourtesyGrant = {
@@ -839,6 +893,52 @@ export type EvidenceUploadOut = {
    * Tsa Status
    */
   tsa_status: "pending";
+};
+
+/**
+ * ExportInspectRequest
+ */
+export type ExportInspectRequest = {
+  /**
+   * Token
+   */
+  token: string;
+};
+
+/**
+ * ExportInspectResponse
+ */
+export type ExportInspectResponse = {
+  /**
+   * Expires At
+   */
+  expires_at: string;
+};
+
+/**
+ * ExportResponse
+ */
+export type ExportResponse = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Status
+   */
+  status: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Expires At
+   */
+  expires_at: string | null;
+  /**
+   * Download Url
+   */
+  download_url: string | null;
 };
 
 /**
@@ -1170,6 +1270,7 @@ export type Me = {
     | "platform.manage"
     | "organization.view"
     | "team.manage"
+    | "billing.manage"
     | "cases.read_assigned"
     | "cases.create"
     | "cases.manage_members"
@@ -1954,6 +2055,39 @@ export type VerifyEmailRequest = {
    * Token del enlace.
    */
   token: string;
+};
+
+/**
+ * WompiTermsOut
+ *
+ * Los dos contratos que Wompi exige aceptar; el cliente debe mostrarlos y solo mandar
+ * los tokens de vuelta en /billing/checkout si la persona los aceptó de verdad (RN-022).
+ */
+export type WompiTermsOut = {
+  /**
+   * Acceptance Token
+   *
+   * Token de aceptación de las políticas de Wompi.
+   */
+  acceptance_token: string;
+  /**
+   * Acceptance Permalink
+   *
+   * Texto de las políticas que ampara el token.
+   */
+  acceptance_permalink: string;
+  /**
+   * Accept Personal Auth
+   *
+   * Token de autorización de tratamiento de datos personales.
+   */
+  accept_personal_auth: string;
+  /**
+   * Personal Auth Permalink
+   *
+   * Texto de la autorización que ampara el token.
+   */
+  personal_auth_permalink: string;
 };
 
 export type HealthData = {
@@ -2970,6 +3104,10 @@ export type UploadEvidenceErrors = {
    */
   422: ValidationProblem;
   /**
+   * Demasiadas subidas de esta cuenta; reintentar más tarde.
+   */
+  429: Problem;
+  /**
    * No se pudo acceder a la llave de cifrado del caso.
    */
   503: Problem;
@@ -3353,6 +3491,139 @@ export type DownloadEvidenceResponses = {
   200: unknown;
 };
 
+export type InspectExportData = {
+  body: ExportInspectRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/exports/inspect";
+};
+
+export type InspectExportErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type InspectExportError = InspectExportErrors[keyof InspectExportErrors];
+
+export type InspectExportResponses = {
+  /**
+   * Successful Response
+   */
+  200: ExportInspectResponse;
+};
+
+export type InspectExportResponse =
+  InspectExportResponses[keyof InspectExportResponses];
+
+export type DownloadExportData = {
+  body: BodyDownloadExport;
+  path?: never;
+  query?: never;
+  url: "/api/v1/exports/download";
+};
+
+export type DownloadExportErrors = {
+  /**
+   * El enlace no existe o ya no está vigente.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos de descarga.
+   */
+  429: Problem;
+  /**
+   * No se pudo leer el paquete conservado.
+   */
+  503: Problem;
+};
+
+export type DownloadExportError =
+  DownloadExportErrors[keyof DownloadExportErrors];
+
+export type DownloadExportResponses = {
+  /**
+   * Paquete ZIP conservado.
+   */
+  200: Blob | File;
+};
+
+export type DownloadExportResponse =
+  DownloadExportResponses[keyof DownloadExportResponses];
+
+export type CreateCaseExportData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/exports";
+};
+
+export type CreateCaseExportErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CreateCaseExportError =
+  CreateCaseExportErrors[keyof CreateCaseExportErrors];
+
+export type CreateCaseExportResponses = {
+  /**
+   * Successful Response
+   */
+  202: ExportResponse;
+};
+
+export type CreateCaseExportResponse =
+  CreateCaseExportResponses[keyof CreateCaseExportResponses];
+
+export type ReadCaseExportData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Export Id
+     */
+    export_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/exports/{export_id}";
+};
+
+export type ReadCaseExportErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ReadCaseExportError =
+  ReadCaseExportErrors[keyof ReadCaseExportErrors];
+
+export type ReadCaseExportResponses = {
+  /**
+   * Successful Response
+   */
+  200: ExportResponse;
+};
+
+export type ReadCaseExportResponse =
+  ReadCaseExportResponses[keyof ReadCaseExportResponses];
+
 export type LookupCourtesyData = {
   body?: never;
   path?: never;
@@ -3676,3 +3947,63 @@ export type ChangeSupportTicketStatusResponses = {
 
 export type ChangeSupportTicketStatusResponse =
   ChangeSupportTicketStatusResponses[keyof ChangeSupportTicketStatusResponses];
+
+export type WompiTermsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/billing/wompi-terms";
+};
+
+export type WompiTermsErrors = {
+  /**
+   * Wompi no respondió.
+   */
+  503: Problem;
+};
+
+export type WompiTermsError = WompiTermsErrors[keyof WompiTermsErrors];
+
+export type WompiTermsResponses = {
+  /**
+   * Successful Response
+   */
+  200: WompiTermsOut;
+};
+
+export type WompiTermsResponse = WompiTermsResponses[keyof WompiTermsResponses];
+
+export type CreateCheckoutData = {
+  body: CheckoutCreate;
+  path?: never;
+  query?: never;
+  url: "/api/v1/billing/checkout";
+};
+
+export type CreateCheckoutErrors = {
+  /**
+   * El rol no administra la facturación.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Wompi no respondió.
+   */
+  503: Problem;
+};
+
+export type CreateCheckoutError =
+  CreateCheckoutErrors[keyof CreateCheckoutErrors];
+
+export type CreateCheckoutResponses = {
+  /**
+   * Successful Response
+   */
+  200: CheckoutOut;
+};
+
+export type CreateCheckoutResponse =
+  CreateCheckoutResponses[keyof CreateCheckoutResponses];

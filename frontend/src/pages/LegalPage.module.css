@@ -7,7 +7,12 @@
    Sin focos de luz ni retícula: el texto y su huella bastan. */
 .head {
   background:
-    radial-gradient(ellipse at 50% 0%, #ffffff07, transparent 65%), var(--bg);
+    radial-gradient(
+      ellipse at 50% 0%,
+      color-mix(in srgb, var(--accent-strong) 3%, transparent),
+      transparent 65%
+    ),
+    var(--bg);
   margin-top: calc(-1 * var(--header-height));
   padding: calc(var(--header-height) + var(--space-12)) 0 var(--space-12);
   border-bottom: 1px solid var(--line);

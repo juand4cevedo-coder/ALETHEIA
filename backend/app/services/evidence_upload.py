@@ -17,6 +17,7 @@ from app.core.permissions import has_permission
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import CustodyEvent, Evidence, Membership, Organization, Plan, Subscription
 from app.repositories import cases as cases_repository
+from app.services import jobs
 from app.services.custody_chain import GENESIS_HASH
 from app.services.evidence_stream import ReceivedFile, receive
 from app.services.sessions import Principal
@@ -168,6 +169,17 @@ def _record(
         )
     )
     session.flush()
+    # El trabajador pide el sello RFC 3161 fuera de esta transacción (HU-020, EVT-tsa_stamp).
+    jobs.enqueue(
+        session,
+        "tsa_stamp",
+        {
+            "evidence_id": str(evidence_id),
+            "case_id": str(case_id),
+            "organization_id": str(organization_id),
+        },
+        f"tsa_stamp:{evidence_id}",
+    )
 
 
 def upload(

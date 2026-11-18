@@ -32,18 +32,18 @@
 .primary {
   background: linear-gradient(
     104deg,
-    rgb(253 253 253 / 5%) 5%,
-    rgb(240 240 228 / 10%) 100%
+    color-mix(in srgb, var(--accent-strong) 5%, transparent) 5%,
+    color-mix(in srgb, var(--accent-strong) 10%, transparent) 100%
   );
-  border: 2px solid rgb(255 255 255 / 5%);
-  color: #f0f0f0;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
+  border: 2px solid color-mix(in srgb, var(--accent-strong) 5%, transparent);
+  color: var(--text);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--bg) 10%, transparent);
 }
 
 .primary:hover {
-  background: rgb(255 255 255 / 90%);
-  color: #000;
-  box-shadow: 0 0 24px rgb(255 255 255 / 12%);
+  background: color-mix(in srgb, var(--accent-strong) 90%, transparent);
+  color: var(--bg);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--accent-strong) 12%, transparent);
 }
 
 .secondary {

@@ -99,21 +99,46 @@ class SameOriginMiddleware:
 
     SameSite=Strict ya impide que la cookie viaje desde otro sitio. Esto agrega dos barreras
     más: el encabezado propio y, cuando el navegador los envía, Origin y Sec-Fetch-Site deben
-    ser los del propio sitio. Un cliente que no es un navegador, como curl, no lleva cookies de
-    nadie: solo necesita el encabezado.
+    ser los del propio sitio. El formulario público de descarga no puede fijar encabezados:
+    para esa ruta exacta se exige Origin propio y Sec-Fetch-Site propio cuando esté presente.
+    Un cliente que no es un navegador, como curl, no lleva cookies de nadie: solo necesita el
+    encabezado.
     """
 
-    def __init__(self, app: ASGIApp, *, allowed_origins: Collection[str], path_prefix: str) -> None:
+    def __init__(
+        self,
+        app: ASGIApp,
+        *,
+        allowed_origins: Collection[str],
+        path_prefix: str,
+        form_post_paths: Collection[str] = (),
+        exempt_paths: Collection[str] = (),
+    ) -> None:
         self.app = app
         self.allowed_origins = frozenset(allowed_origins)
         self.path_prefix = path_prefix
+        self.form_post_paths = frozenset(form_post_paths)
+        # Rutas que no vienen de un navegador y verifican su propio origen de otra forma, como
+        # la firma de un webhook: el encabezado propio no tendría sentido para ellas.
+        self.exempt_paths = frozenset(exempt_paths)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        headers = Headers(scope=scope)
+        form_from_site = (
+            scope["method"] == "POST"
+            and scope["path"] in self.form_post_paths
+            and headers.get("content-type", "").startswith("application/x-www-form-urlencoded")
+            and headers.get("origin") in self.allowed_origins
+            and headers.get("sec-fetch-site") in {None, "same-origin"}
+        )
         if (
-            scope["type"] == "http"
-            and scope["method"] in _UNSAFE_METHODS
+            scope["method"] in _UNSAFE_METHODS
             and scope["path"].startswith(self.path_prefix)
-            and not self._comes_from_the_site(Headers(scope=scope))
+            and scope["path"] not in self.exempt_paths
+            and not (self._comes_from_the_site(headers) or form_from_site)
         ):
             response = problem_response(
                 Request(scope),

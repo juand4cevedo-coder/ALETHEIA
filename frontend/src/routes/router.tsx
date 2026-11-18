@@ -49,6 +49,22 @@ export const routes: RouteObject[] = [
       { index: true, element: <HomePage /> },
       { path: "precios", lazy: { Component: loadPricingPage } },
       {
+        path: ROUTES.exportDownload.slice(1),
+        lazy: {
+          Component: () =>
+            import("../pages/ExportDownloadPage.tsx").then(
+              (module) => module.ExportDownloadPage,
+            ),
+        },
+      },
+      {
+        path: ROUTES.verifier.slice(1),
+        lazy: {
+          Component: () =>
+            import("../pages/VerifierPage.tsx").then((m) => m.VerifierPage),
+        },
+      },
+      {
         path: "docs/:slug?",
         lazy: {
           Component: () =>

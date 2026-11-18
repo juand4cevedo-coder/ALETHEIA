@@ -46,7 +46,6 @@ export function ScopeSection() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-alcance"
-          kicker="Alcance"
           title="Una herramienta precisa. Un alcance claro."
           lead="Aletheia acompaña la organización de su trabajo y la comprensión técnica de la evidencia. La valoración de la prueba corresponde a la autoridad judicial."
         />

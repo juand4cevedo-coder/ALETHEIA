@@ -31,6 +31,7 @@ import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { CustodySection } from "../features/cases/CustodySection.tsx";
 import { EvidenceSection } from "../features/cases/EvidenceSection.tsx";
+import { ExportSection } from "../features/cases/ExportSection.tsx";
 import { formatColombiaTime } from "../features/cases/dates.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { initialsOf } from "../features/session/initials.ts";
@@ -38,8 +39,8 @@ import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./CasePage.module.css";
 import { CargandoIcon } from "../components/ui/icons.tsx";
 
-type TabKey = "chain" | "team" | "evidence";
-const TAB_ORDER: readonly TabKey[] = ["chain", "team", "evidence"];
+type TabKey = "chain" | "team" | "evidence" | "export";
+const TAB_ORDER: readonly TabKey[] = ["chain", "team", "evidence", "export"];
 
 /** El caso no existe, es de otra organización o su id no es válido: MSG-011 en los tres casos. */
 function isMissing(error: unknown): boolean {
@@ -124,7 +125,14 @@ export function CasePage() {
     );
   }
 
-  return <CaseView detail={detail.data} justOpened={justOpened} me={me} />;
+  return (
+    <CaseView
+      key={detail.data.id}
+      detail={detail.data}
+      justOpened={justOpened}
+      me={me}
+    />
+  );
 }
 
 function referenceLine(detail: CaseDetail) {
@@ -153,12 +161,24 @@ function CaseView({
   const [tab, setTab] = useState<TabKey>(
     location.hash === "#evidencias" ? "evidence" : "chain",
   );
+  const canExport = ["owner", "admin", "lawyer"].includes(
+    me.organization?.role ?? "",
+  );
+  const tabOrder = canExport
+    ? TAB_ORDER
+    : TAB_ORDER.filter((key) => key !== "export");
   const tabRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({
     chain: null,
     team: null,
     evidence: null,
+    export: null,
   });
-  const ids = { chain: useId(), team: useId(), evidence: useId() };
+  const ids = {
+    chain: useId(),
+    team: useId(),
+    evidence: useId(),
+    export: useId(),
+  };
   // La API entrega los últimos eventos; el número del más reciente es el total de la cadena.
   const eventCount = detail.recent_events.reduce(
     (max, event) => Math.max(max, event.seq),
@@ -167,17 +187,17 @@ function CaseView({
 
   // Pestañas según el patrón WAI-ARIA: las flechas, Inicio y Fin mueven el foco y la selección.
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    const index = TAB_ORDER.indexOf(tab);
+    const index = tabOrder.indexOf(tab);
     const moves: Record<string, number> = {
-      ArrowRight: (index + 1) % TAB_ORDER.length,
-      ArrowLeft: (index - 1 + TAB_ORDER.length) % TAB_ORDER.length,
+      ArrowRight: (index + 1) % tabOrder.length,
+      ArrowLeft: (index - 1 + tabOrder.length) % tabOrder.length,
       Home: 0,
-      End: TAB_ORDER.length - 1,
+      End: tabOrder.length - 1,
     };
     const next = moves[event.key];
     if (next === undefined) return;
     event.preventDefault();
-    const key = TAB_ORDER[next]!;
+    const key = tabOrder[next]!;
     setTab(key);
     tabRefs.current[key]?.focus();
   }
@@ -197,6 +217,7 @@ function CaseView({
         unit: detail.member_count === 1 ? "persona" : "personas",
       },
       { key: "evidence", label: "Evidencias" },
+      ...(canExport ? [{ key: "export" as const, label: "Paquete" }] : []),
     ];
 
   const opened = `Abierto el ${formatColombiaTime(detail.created_at)} por ${detail.created_by_name}`;
@@ -285,7 +306,6 @@ function CaseView({
             <CaseFacts detail={detail} />
           </div>
         </div>
-
         <div
           role="tabpanel"
           id={`${ids.team}-panel`}
@@ -314,6 +334,18 @@ function CaseView({
             />
           )}
         </div>
+        {canExport && (
+          <div
+            role="tabpanel"
+            id={`${ids.export}-panel`}
+            aria-labelledby={`${ids.export}-tab`}
+            className={styles.panel}
+            tabIndex={0}
+            hidden={tab !== "export"}
+          >
+            {tab === "export" && <ExportSection caseId={detail.id} />}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -48,6 +48,14 @@ def expire(session: Session, organization_id: uuid.UUID, now: datetime.datetime)
         deadline = subscription.trial_ends_at
     elif subscription.status == "active" and subscription.billing_cycle == "none":
         deadline = subscription.courtesy_ends_at
+    elif (
+        subscription.status == "active"
+        and subscription.billing_cycle in ("monthly", "annual")
+        and subscription.access_source == "payment"
+    ):
+        # Periodo pagado sin renovación automática todavía (HU-027): si nadie vuelve a pagar
+        # antes de current_period_end, se vence igual que una prueba o una cortesía.
+        deadline = subscription.current_period_end
     else:
         return False
     if deadline is None:

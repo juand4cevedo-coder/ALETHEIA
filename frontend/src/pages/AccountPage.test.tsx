@@ -1,0 +1,224 @@
+import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, expect, it, vi } from "vitest";
+
+import { LEGAL_VERSION } from "../config/legal.ts";
+import { jsonResponse, renderRoute } from "../test/render.tsx";
+
+const fetchMock = vi.fn<typeof fetch>();
+
+beforeEach(() => {
+  fetchMock.mockReset();
+  vi.stubGlobal("fetch", fetchMock);
+});
+
+function ownerEnPrueba() {
+  return {
+    id: "01890a5d-ac96-774b-bcce-b302099a8057",
+    full_name: "Ana Restrepo",
+    email: "ana@example.com",
+    email_verified: true,
+    platform_admin: false,
+    permissions: ["billing.manage"],
+    organization: {
+      id: "01890a5d-ac96-774b-bcce-b302099a8059",
+      name: "Restrepo Abogados",
+      role: "owner",
+    },
+    subscription: {
+      plan_name: "Esencial",
+      status: "trial",
+      access_source: "trial",
+      ends_at: "2026-12-01T00:00:00Z",
+    },
+    legal: {
+      accepted_version: LEGAL_VERSION,
+      current_version: LEGAL_VERSION,
+      acceptance_required: false,
+    },
+  };
+}
+
+it("permite a la propietaria en prueba pagar el plan con Nequi", async () => {
+  let checkoutBody: Record<string, unknown> | null = null;
+  fetchMock.mockImplementation(async (input, init) => {
+    // El catálogo de planes (catalog.tsx) llama a fetch con una URL relativa en texto, no con
+    // un Request; Node no la resuelve sin una base. El resto de llamadas sí pasan un Request
+    // ya armado por el cliente generado.
+    const isRequest = typeof input !== "string";
+    const url = isRequest ? (input as Request).url : input;
+    const path = new URL(url, "http://localhost").pathname;
+    const method = isRequest
+      ? (input as Request).method
+      : (init?.method ?? "GET");
+    const json = async () =>
+      isRequest
+        ? ((input as Request).json() as Promise<unknown>)
+        : JSON.parse(String(init?.body));
+    if (path === "/api/v1/me") return jsonResponse(ownerEnPrueba());
+    if (path === "/api/v1/plans")
+      return jsonResponse([
+        {
+          code: "essential",
+          name: "Esencial",
+          monthly_price_cop: 29_900,
+          annual_price_cop: 299_000,
+          included_users: 3,
+          extra_user_price_cop: null,
+          storage_limit_bytes: 1024 ** 3,
+          max_file_bytes: 1024 ** 3,
+          trial_days: 14,
+          is_public: true,
+        },
+      ]);
+    if (path === "/api/v1/billing/wompi-terms")
+      return jsonResponse({
+        acceptance_token: "token-acc",
+        acceptance_permalink: "https://wompi.co/terminos",
+        accept_personal_auth: "token-datos",
+        personal_auth_permalink: "https://wompi.co/datos",
+      });
+    if (path === "/api/v1/billing/checkout" && method === "POST") {
+      checkoutBody = (await json()) as Record<string, unknown>;
+      return jsonResponse({
+        transaction_id: "tx-1",
+        reference: "aletheia:org:essential:monthly:nonce",
+        status: "PENDING",
+      });
+    }
+    throw new Error(`Ruta inesperada: ${method} ${path}`);
+  });
+  const user = userEvent.setup();
+  await renderRoute("/app/cuenta");
+
+  await user.type(await screen.findByLabelText("Celular Nequi"), "3001234567");
+  await user.click(screen.getByRole("button", { name: "Continuar" }));
+
+  await user.click(
+    await screen.findByRole("checkbox", {
+      name: /términos de uso de Wompi/,
+    }),
+  );
+  await user.click(
+    screen.getByRole("checkbox", {
+      name: /tratamiento de mis datos personales/,
+    }),
+  );
+  await user.click(screen.getByRole("button", { name: "Pagar con Nequi" }));
+
+  expect(
+    await screen.findByText(/Enviamos el cobro a su Nequi/),
+  ).toBeInTheDocument();
+  await waitFor(() => {
+    expect(checkoutBody).toMatchObject({
+      plan_code: "essential",
+      billing_cycle: "monthly",
+      phone_number: "3001234567",
+      acceptance_token: "token-acc",
+      accept_personal_auth: "token-datos",
+    });
+  });
+});
+
+it("confirma el pago con Nequi cuando la suscripción queda activa", async () => {
+  let active = false;
+  fetchMock.mockImplementation(async (input, init) => {
+    const isRequest = typeof input !== "string";
+    const url = isRequest ? (input as Request).url : input;
+    const path = new URL(url, "http://localhost").pathname;
+    const method = isRequest
+      ? (input as Request).method
+      : (init?.method ?? "GET");
+    if (path === "/api/v1/me")
+      return jsonResponse(
+        active
+          ? {
+              ...ownerEnPrueba(),
+              subscription: {
+                ...ownerEnPrueba().subscription,
+                status: "active",
+              },
+            }
+          : ownerEnPrueba(),
+      );
+    if (path === "/api/v1/plans")
+      return jsonResponse([
+        {
+          code: "essential",
+          name: "Esencial",
+          monthly_price_cop: 29_900,
+          annual_price_cop: 299_000,
+          included_users: 3,
+          extra_user_price_cop: null,
+          storage_limit_bytes: 1024 ** 3,
+          max_file_bytes: 1024 ** 3,
+          trial_days: 14,
+          is_public: true,
+        },
+      ]);
+    if (path === "/api/v1/billing/wompi-terms")
+      return jsonResponse({
+        acceptance_token: "token-acc",
+        acceptance_permalink: "https://wompi.co/terminos",
+        accept_personal_auth: "token-datos",
+        personal_auth_permalink: "https://wompi.co/datos",
+      });
+    if (path === "/api/v1/billing/checkout" && method === "POST") {
+      return jsonResponse({
+        transaction_id: "tx-1",
+        reference: "aletheia:org:essential:monthly:nonce",
+        status: "PENDING",
+      });
+    }
+    throw new Error(`Ruta inesperada: ${method} ${path}`);
+  });
+  const user = userEvent.setup();
+  await renderRoute("/app/cuenta");
+
+  await user.type(await screen.findByLabelText("Celular Nequi"), "3001234567");
+  await user.click(screen.getByRole("button", { name: "Continuar" }));
+
+  await user.click(
+    await screen.findByRole("checkbox", {
+      name: /términos de uso de Wompi/,
+    }),
+  );
+  await user.click(
+    screen.getByRole("checkbox", {
+      name: /tratamiento de mis datos personales/,
+    }),
+  );
+  await user.click(screen.getByRole("button", { name: "Pagar con Nequi" }));
+
+  await screen.findByText(/Enviamos el cobro a su Nequi/);
+
+  // La aprobación llegó del lado de Nequi: la siguiente consulta de /me ya la refleja.
+  active = true;
+  expect(
+    await screen.findByText(/Su pago quedó aprobado/, undefined, {
+      timeout: 10_000,
+    }),
+  ).toBeInTheDocument();
+}, 15_000);
+
+it("no muestra el pago con Nequi a quien no administra la facturación", async () => {
+  fetchMock.mockImplementation(async (input) => {
+    const request = input as Request;
+    const path = new URL(request.url).pathname;
+    if (path === "/api/v1/me")
+      return jsonResponse({
+        ...ownerEnPrueba(),
+        permissions: [],
+        organization: {
+          id: "01890a5d-ac96-774b-bcce-b302099a8059",
+          name: "Restrepo Abogados",
+          role: "lawyer",
+        },
+      });
+    throw new Error(`Ruta inesperada: ${request.method} ${path}`);
+  });
+  await renderRoute("/app/cuenta");
+
+  await screen.findByText("Esencial");
+  expect(screen.queryByLabelText("Celular Nequi")).not.toBeInTheDocument();
+});

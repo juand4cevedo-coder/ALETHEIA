@@ -59,6 +59,40 @@ def test_una_renovacion_futura_no_vencen_por_una_tarea_antigua(db: Session) -> N
     assert job.run_after == subscription.trial_ends_at
 
 
+def test_un_periodo_pagado_vence_si_nadie_vuelve_a_pagar(db: Session) -> None:
+    office = crear_oficina(db)  # ya queda active/monthly/legacy
+    now = datetime.datetime.now(datetime.UTC)
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    subscription = _subscription(db, office.organization_id)
+    subscription.access_source = "payment"
+    subscription.current_period_end = now - datetime.timedelta(seconds=1)
+    db.flush()
+
+    assert subscription_expiration.expire(db, office.organization_id, now)
+    assert subscription.status == "expired"
+    assert db.get_one(Organization, office.organization_id).status == "read_only"
+
+
+def test_un_periodo_pagado_que_no_vence_todavia_no_se_toca(db: Session) -> None:
+    office = crear_oficina(db)
+    now = datetime.datetime.now(datetime.UTC)
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    subscription = _subscription(db, office.organization_id)
+    subscription.access_source = "payment"
+    subscription.current_period_end = now + datetime.timedelta(days=5)
+    db.flush()
+
+    assert not subscription_expiration.expire(db, office.organization_id, now)
+    assert subscription.status == "active"
+
+
+def test_una_suscripcion_legacy_activa_no_vence_por_este_camino(db: Session) -> None:
+    office = crear_oficina(db)  # access_source queda en "legacy", no "payment"
+    now = datetime.datetime.now(datetime.UTC)
+
+    assert not subscription_expiration.expire(db, office.organization_id, now)
+
+
 def test_cortesia_con_fecha_vence_y_sin_fecha_sigue_activa(db: Session) -> None:
     office = crear_oficina(db)
     now = datetime.datetime.now(datetime.UTC)

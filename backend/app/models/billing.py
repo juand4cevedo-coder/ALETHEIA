@@ -65,6 +65,10 @@ class Subscription(Base):
             "char_length(gateway_subscription_id) BETWEEN 1 AND 100",
             name="gateway_subscription_id_length",
         ),
+        CheckConstraint(
+            "char_length(pending_checkout_reference) BETWEEN 1 AND 255",
+            name="pending_checkout_reference_length",
+        ),
     )
 
     id: Mapped[UUIDv7Pk]
@@ -87,6 +91,9 @@ class Subscription(Base):
     # Fin de los 30 días de solo lectura después de cancelar (RN-016).
     read_only_until: Mapped[datetime.datetime | None]
     gateway_subscription_id: Mapped[str | None] = mapped_column(unique=True)
+    # La referencia del cobro en curso, mientras no llega un estado final de Wompi (HU-027):
+    # bloquea un segundo cobro sobre la misma suscripción (RN-032).
+    pending_checkout_reference: Mapped[str | None] = mapped_column(unique=True)
 
 
 class PaymentEvent(Base):

@@ -14,12 +14,21 @@ from typing import Any, Final
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.adapters import wompi
 from app.adapters.email import EmailDeliveryError, EmailSender
+from app.adapters.keys import build_key_wrapper
 from app.core.config import Settings
 
 # Registran las plantillas de correo: sin estos imports, el trabajador no las conoce.
 from app.services import account_emails as _account_emails  # noqa: F401
-from app.services import notifications, subscription_expiration
+from app.services import (
+    evidence_stamp,
+    export_build,
+    export_expiration,
+    notifications,
+    payments,
+    subscription_expiration,
+)
 from app.services import organization_emails as _organization_emails  # noqa: F401
 from app.services.jobs import PermanentJobError
 
@@ -82,8 +91,62 @@ def expire_subscription(run: JobRun) -> None:
         subscription_expiration.expire(session, organization_id, now)
 
 
+def build_export(run: JobRun) -> None:
+    try:
+        export_id = uuid.UUID(str(run.payload["export_id"]))
+        organization_id = uuid.UUID(str(run.payload["organization_id"]))
+    except (KeyError, ValueError, TypeError) as exc:
+        raise PermanentJobError("Identificadores de exportación inválidos.") from exc
+    export_build.build(
+        run.open_session,
+        run.context.settings,
+        build_key_wrapper(run.context.settings),
+        export_id,
+        organization_id,
+        run.renew_lease,
+    )
+
+
+def stamp_evidence(run: JobRun) -> None:
+    try:
+        evidence_id = uuid.UUID(str(run.payload["evidence_id"]))
+        case_id = uuid.UUID(str(run.payload["case_id"]))
+        organization_id = uuid.UUID(str(run.payload["organization_id"]))
+    except (KeyError, ValueError, TypeError) as exc:
+        raise PermanentJobError("Identificadores de evidencia inválidos.") from exc
+    evidence_stamp.stamp(run.open_session, evidence_id, case_id, organization_id)
+
+
+def reconcile_payment(run: JobRun) -> None:
+    """payment_reconcile (EVT-007): si el webhook de Wompi ya activó o rechazó el cobro, esto
+    encuentra la misma clave de deduplicación y no hace nada; si nunca llegó, lo resuelve con
+    la respuesta de Wompi en vez de dejarlo pendiente para siempre."""
+    transaction_id = str(run.payload.get("transaction_id", ""))
+    if not transaction_id:
+        raise PermanentJobError("Falta el identificador de la transacción.")
+    creds = wompi.credenciales_de(run.context.settings)
+    try:
+        with run.open_session() as session, session.begin():
+            payments.reconciliar(session, creds, transaction_id)
+    except wompi.WompiRechazadoError as exc:
+        raise PermanentJobError(str(exc)) from exc
+
+
+def expire_export(run: JobRun) -> None:
+    try:
+        export_id = uuid.UUID(str(run.payload["export_id"]))
+        organization_id = uuid.UUID(str(run.payload["organization_id"]))
+    except (KeyError, ValueError, TypeError) as exc:
+        raise PermanentJobError("Identificadores de exportación inválidos.") from exc
+    export_expiration.expire(run.open_session, run.context.settings, export_id, organization_id)
+
+
 # Los demás tipos de JOB_KINDS llegan con sus historias. Una tarea sin manejador se entierra.
 HANDLERS: Final[Mapping[str, Handler]] = {
     "email_send": send_email,
     "subscription_expire": expire_subscription,
+    "export_build": build_export,
+    "export_expire": expire_export,
+    "tsa_stamp": stamp_evidence,
+    "payment_reconcile": reconcile_payment,
 }

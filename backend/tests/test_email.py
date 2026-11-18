@@ -211,6 +211,7 @@ def test_en_produccion_el_correo_sale_por_ses(monkeypatch: pytest.MonkeyPatch) -
             "token_signing_key_parameter": "/aletheia/prod/app/token-signing-key",
             # La clave de firma de backend/.env tampoco: en producción viene de Parameter Store.
             "token_signing_key": None,
+            "evidence_bucket": "aletheia-prueba",
         }
     )
     client = boto3.client("sesv2", region_name="us-east-2")

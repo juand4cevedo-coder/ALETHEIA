@@ -1,20 +1,24 @@
 [project]
 name = "aletheia-backend"
-version = "0.4.8"
+version = "0.4.9"
 description = "API de ALETHEIA: preservación de evidencia digital con integridad y trazabilidad."
 requires-python = ">=3.14,<3.15"
 dependencies = [
     "alembic==1.20.1",
-    "anyio==4.15.1",
+    "anyio==4.16.0",
     "argon2-cffi==25.1.0",
-    "boto3==1.43.123",
+    "asn1crypto==1.5.1",
+    "boto3==1.43.127",
     "cryptography==50.0.2",
-    "fastapi==0.162.0",
-    "psycopg[binary]==3.3.7",
-    "pydantic==2.14.2",
+    "fastapi==0.162.2",
+    "psycopg[binary]==3.3.8",
+    "pydantic==2.14.3",
     "pydantic-settings==2.16.2",
     "pyjwt==2.15.1",
+    "python-dateutil==2.9.0.post0",
     "python-multipart==0.0.33",
+    "reportlab==5.1.0",
+    "rfc3161-client==1.0.9",
     "sqlalchemy==2.1.8",
     "tink==1.16.1",
     "uvicorn==0.54.0",
@@ -30,17 +34,18 @@ add-bounds = "exact"
 
 [dependency-groups]
 dev = [
-    "boto3-stubs[kms,sesv2,ssm]==1.43.123",
+    "boto3-stubs[kms,sesv2,ssm]==1.43.127",
     "httpx2==2.16.0",
     "mypy==2.4.1",
+    "pypdf==7.0.0",
     "pytest==9.2.0",
-    "ruff==0.17.3",
+    "ruff==0.17.4",
+    "types-python-dateutil==2.9.0.20261104",
+    "types-reportlab==5.1.0.20261104",
 ]
 spike = [
-    "asn1crypto==1.5.1",
     "psutil==7.2.2",
     "python-multipart==0.0.33",
-    "rfc3161-client==1.0.9",
     "types-psutil==7.2.2.20260906",
 ]
 
@@ -62,7 +67,7 @@ files = ["app", "migrations", "tests"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["tink", "tink.*", "asn1crypto", "asn1crypto.*"]
+module = ["tink", "tink.*", "asn1crypto", "asn1crypto.*", "rfc3161_client", "rfc3161_client.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

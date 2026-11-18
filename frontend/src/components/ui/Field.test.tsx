@@ -80,7 +80,7 @@ describe("Campo de texto", () => {
 
     const input = screen.getByLabelText("Contraseña");
     const toggle = screen.getByRole("button", {
-      name: "Mostrar la contraseña",
+      name: "Mostrar contraseña",
     });
     expect(input).toHaveAttribute("type", "password");
 

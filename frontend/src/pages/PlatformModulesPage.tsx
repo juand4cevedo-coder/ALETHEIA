@@ -15,6 +15,7 @@ import {
 import { Button } from "../components/ui/Button.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
+import { Panel } from "../components/ui/Panel.tsx";
 import { pageTitle } from "../config/site.ts";
 import styles from "./PlatformPage.module.css";
 
@@ -59,69 +60,68 @@ export function PlatformBillingPage() {
       {!me.platform_admin ? (
         <Restricted />
       ) : (
-        <section className={styles.section} aria-label="Resumen comercial">
+        <>
           {billing.isPending && <p role="status">Cargando facturación</p>}
           {billing.isError && (
             <Notice tone="error">No pudimos cargar la facturación.</Notice>
           )}
           {billing.data && (
             <>
-              <div className={styles.metrics}>
-                <div>
-                  <strong>{billing.data.payment_events_received}</strong>
-                  <span>Notificaciones de pago recibidas</span>
-                </div>
-                <div>
-                  <strong>{billing.data.payment_events_pending}</strong>
-                  <span>Sin procesar</span>
-                </div>
-              </div>
-              <div className={styles.sectionHeading}>
-                <h2>Suscripciones por estado</h2>
-              </div>
-              <dl className={styles.metrics}>
-                {Object.entries(STATUS_LABELS).map(([status, label]) => (
-                  <div key={status}>
-                    <dt>{label}</dt>
-                    <dd>{billing.data.subscription_counts[status] ?? 0}</dd>
+              <Panel title="Notificaciones de pago">
+                <div className={styles.metrics}>
+                  <div>
+                    <strong>{billing.data.payment_events_received}</strong>
+                    <span>Notificaciones de pago recibidas</span>
                   </div>
-                ))}
-              </dl>
-              <div className={styles.sectionHeading}>
-                <h2>Planes del catálogo</h2>
-              </div>
-              <div className={styles.tableScroll}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th scope="col">Plan</th>
-                      <th scope="col">Mensual</th>
-                      <th scope="col">Anual</th>
-                      <th scope="col">Usuarios incluidos</th>
-                      <th scope="col">En precios</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {billing.data.plans.map((plan) => (
-                      <tr key={plan.code}>
-                        <th scope="row">{plan.name}</th>
-                        <td>{money(plan.monthly_price_cop)}</td>
-                        <td>{money(plan.annual_price_cop)}</td>
-                        <td>{plan.included_users}</td>
-                        <td>{plan.is_public ? "Sí" : "Por cotización"}</td>
+                  <div>
+                    <strong>{billing.data.payment_events_pending}</strong>
+                    <span>Sin procesar</span>
+                  </div>
+                </div>
+              </Panel>
+              <Panel title="Suscripciones por estado">
+                <dl className={styles.metrics}>
+                  {Object.entries(STATUS_LABELS).map(([status, label]) => (
+                    <div key={status}>
+                      <dt>{label}</dt>
+                      <dd>{billing.data.subscription_counts[status] ?? 0}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </Panel>
+              <Panel
+                title="Planes del catálogo"
+                description="Este panel refleja los registros actuales. No emite facturas ni cobra pagos."
+              >
+                <div className={styles.tableScroll}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th scope="col">Plan</th>
+                        <th scope="col">Mensual</th>
+                        <th scope="col">Anual</th>
+                        <th scope="col">Usuarios incluidos</th>
+                        <th scope="col">En precios</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className={styles.note}>
-                Este panel refleja los registros actuales. No emite facturas ni
-                cobra pagos.
-              </p>
+                    </thead>
+                    <tbody>
+                      {billing.data.plans.map((plan) => (
+                        <tr key={plan.code}>
+                          <th scope="row">{plan.name}</th>
+                          <td>{money(plan.monthly_price_cop)}</td>
+                          <td>{money(plan.annual_price_cop)}</td>
+                          <td>{plan.included_users}</td>
+                          <td>{plan.is_public ? "Sí" : "Por cotización"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Panel>
               <CourtesyManager plans={billing.data.plans} />
             </>
           )}
-        </section>
+        </>
       )}
     </div>
   );
@@ -223,122 +223,125 @@ function CourtesyManager({
   }
 
   return (
-    <div className={styles.courtesy}>
-      <div className={styles.sectionHeading}>
-        <h2>Planes de cortesía</h2>
-        <p>Conceda acceso sin registrar un pago.</p>
-      </div>
-      <form className={styles.form} onSubmit={search}>
-        <label htmlFor="courtesy-email">Correo del titular del despacho</label>
-        <div className={styles.inlineForm}>
-          <input
-            id="courtesy-email"
-            type="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-          <Button type="submit">Buscar despacho</Button>
-        </div>
-      </form>
-      {target.isPending && searched && <p role="status">Buscando despacho</p>}
-      {target.isError && (
-        <Notice tone="error">
-          No encontramos un despacho con ese titular.
-        </Notice>
-      )}
-      {target.data && (
-        <>
-          <div className={styles.targetCard}>
-            <strong>{target.data.organization_name}</strong>
-            <span>
-              {target.data.owner_name}, {target.data.owner_email}
-            </span>
-            <span>
-              Plan actual:{" "}
-              {plans.find((plan) => plan.code === target.data.plan_code)
-                ?.name ?? target.data.plan_code}
-              {", "}
-              {STATUS_LABELS[target.data.status] ?? target.data.status}
-            </span>
-            <span>
-              Acceso:{" "}
-              {target.data.access_source === "courtesy"
-                ? "Cortesía"
-                : target.data.access_source === "trial"
-                  ? "Prueba"
-                  : "Otro"}
-            </span>
-            {target.data.ends_at && (
-              <span>
-                Vence: <DateText value={target.data.ends_at} />
-              </span>
-            )}
-            {target.data.granted_at && (
-              <span>
-                Última concesión: <DateText value={target.data.granted_at} />
-              </span>
-            )}
-            {target.data.revoked_at && (
-              <span>
-                Revocada: <DateText value={target.data.revoked_at} />
-              </span>
-            )}
-          </div>
-          <form className={styles.form} onSubmit={submit}>
-            <label htmlFor="courtesy-plan">Plan a conceder</label>
-            <select
-              id="courtesy-plan"
-              required
-              value={planCode}
-              onChange={(event) => setPlanCode(event.target.value)}
-            >
-              <option value="">Seleccione un plan</option>
-              {plans
-                .filter((plan) => plan.code !== "trial")
-                .map((plan) => (
-                  <option key={plan.code} value={plan.code}>
-                    {plan.name}
-                  </option>
-                ))}
-            </select>
-            <label htmlFor="courtesy-end">Vencimiento (opcional)</label>
+    <Panel
+      title="Planes de cortesía"
+      description="Conceda acceso sin registrar un pago."
+    >
+      <div className={styles.courtesy}>
+        <form className={styles.form} onSubmit={search}>
+          <label htmlFor="courtesy-email">
+            Correo del titular del despacho
+          </label>
+          <div className={styles.inlineForm}>
             <input
-              id="courtesy-end"
-              type="datetime-local"
-              value={end}
-              onChange={(event) => setEnd(event.target.value)}
-            />
-            <label htmlFor="courtesy-reason">Motivo interno</label>
-            <textarea
-              id="courtesy-reason"
-              minLength={10}
-              maxLength={500}
+              id="courtesy-email"
+              type="email"
               required
-              rows={3}
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
             />
-            <div className={styles.inlineForm}>
-              <Button type="submit" busy={busy}>
-                Conceder o renovar
-              </Button>
-              {target.data.access_source === "courtesy" &&
-                target.data.status === "active" && (
-                  <Button
-                    variant="secondary"
-                    busy={busy}
-                    onClick={revokeCurrent}
-                  >
-                    Revocar cortesía
-                  </Button>
-                )}
+            <Button type="submit">Buscar despacho</Button>
+          </div>
+        </form>
+        {target.isPending && searched && <p role="status">Buscando despacho</p>}
+        {target.isError && (
+          <Notice tone="error">
+            No encontramos un despacho con ese titular.
+          </Notice>
+        )}
+        {target.data && (
+          <>
+            <div className={styles.targetCard}>
+              <strong>{target.data.organization_name}</strong>
+              <span>
+                {target.data.owner_name}, {target.data.owner_email}
+              </span>
+              <span>
+                Plan actual:{" "}
+                {plans.find((plan) => plan.code === target.data.plan_code)
+                  ?.name ?? target.data.plan_code}
+                {", "}
+                {STATUS_LABELS[target.data.status] ?? target.data.status}
+              </span>
+              <span>
+                Acceso:{" "}
+                {target.data.access_source === "courtesy"
+                  ? "Cortesía"
+                  : target.data.access_source === "trial"
+                    ? "Prueba"
+                    : "Otro"}
+              </span>
+              {target.data.ends_at && (
+                <span>
+                  Vence: <DateText value={target.data.ends_at} />
+                </span>
+              )}
+              {target.data.granted_at && (
+                <span>
+                  Última concesión: <DateText value={target.data.granted_at} />
+                </span>
+              )}
+              {target.data.revoked_at && (
+                <span>
+                  Revocada: <DateText value={target.data.revoked_at} />
+                </span>
+              )}
             </div>
-          </form>
-        </>
-      )}
-      {message && <p role="status">{message}</p>}
-    </div>
+            <form className={styles.form} onSubmit={submit}>
+              <label htmlFor="courtesy-plan">Plan a conceder</label>
+              <select
+                id="courtesy-plan"
+                required
+                value={planCode}
+                onChange={(event) => setPlanCode(event.target.value)}
+              >
+                <option value="">Seleccione un plan</option>
+                {plans
+                  .filter((plan) => plan.code !== "trial")
+                  .map((plan) => (
+                    <option key={plan.code} value={plan.code}>
+                      {plan.name}
+                    </option>
+                  ))}
+              </select>
+              <label htmlFor="courtesy-end">Vencimiento (opcional)</label>
+              <input
+                id="courtesy-end"
+                type="datetime-local"
+                value={end}
+                onChange={(event) => setEnd(event.target.value)}
+              />
+              <label htmlFor="courtesy-reason">Motivo interno</label>
+              <textarea
+                id="courtesy-reason"
+                minLength={10}
+                maxLength={500}
+                required
+                rows={3}
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+              />
+              <div className={styles.inlineForm}>
+                <Button type="submit" busy={busy}>
+                  Conceder o renovar
+                </Button>
+                {target.data.access_source === "courtesy" &&
+                  target.data.status === "active" && (
+                    <Button
+                      variant="secondary"
+                      busy={busy}
+                      onClick={revokeCurrent}
+                    >
+                      Revocar cortesía
+                    </Button>
+                  )}
+              </div>
+            </form>
+          </>
+        )}
+        {message && <p role="status">{message}</p>}
+      </div>
+    </Panel>
   );
 }
 
@@ -376,7 +379,7 @@ export function PlatformSupportPage() {
       {!me.platform_admin ? (
         <Restricted />
       ) : (
-        <section className={styles.section} aria-label="Solicitudes">
+        <Panel title="Solicitudes">
           {tickets.isPending && <p role="status">Cargando solicitudes</p>}
           {tickets.isError && (
             <Notice tone="error">No pudimos cargar las solicitudes.</Notice>
@@ -435,7 +438,7 @@ export function PlatformSupportPage() {
               </Button>
             )}
           </div>
-        </section>
+        </Panel>
       )}
     </div>
   );
@@ -483,7 +486,7 @@ export function PlatformAuditPage() {
       {!me.platform_admin ? (
         <Restricted />
       ) : (
-        <section className={styles.section} aria-label="Eventos">
+        <Panel title="Eventos">
           {audit.isPending && <p role="status">Cargando eventos</p>}
           {audit.isError && (
             <Notice tone="error">No pudimos cargar los eventos.</Notice>
@@ -554,7 +557,7 @@ export function PlatformAuditPage() {
               </Button>
             )}
           </div>
-        </section>
+        </Panel>
       )}
     </div>
   );

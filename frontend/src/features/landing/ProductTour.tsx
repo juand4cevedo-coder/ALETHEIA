@@ -125,9 +125,6 @@ export function ProductTour() {
           />
           <p>{active.text}</p>
         </div>
-        <p className={styles.caption}>
-          Capturas de la aplicación con datos locales de demostración.
-        </p>
       </div>
     </section>
   );

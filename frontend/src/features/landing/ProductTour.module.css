@@ -12,13 +12,13 @@
   border: 0;
   border-radius: 16px;
   color: var(--text);
-  background: rgb(214 235 253 / 19%);
+  background: var(--line-accent);
   cursor: pointer;
   font: 500 15px var(--font-sans);
   text-align: left;
 }
 .tabs button[aria-selected="true"] {
-  background: rgb(214 235 253 / 19%);
+  background: var(--line-accent);
 }
 .travelingBorder {
   position: absolute;
@@ -30,11 +30,11 @@
   overflow: hidden;
   pointer-events: none;
   opacity: 0;
-  stroke: #a5f3c0;
+  stroke: var(--ok);
   stroke-width: 2;
   stroke-dasharray: 8 92;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 5px #22c55e);
+  filter: drop-shadow(0 0 5px var(--ok));
 }
 .tabs button[aria-selected="true"] .travelingBorder {
   opacity: 1;
@@ -49,11 +49,15 @@
   gap: 16px;
   height: 100%;
   border-radius: 15px;
-  background: #000;
+  background: var(--bg);
   padding: 24px;
 }
 .tabs button[aria-selected="true"] .tabInner {
-  background: linear-gradient(#080808, #030303 50%, #000);
+  background: linear-gradient(
+    var(--surface-0),
+    var(--surface-0) 50%,
+    var(--bg)
+  );
 }
 .icon {
   display: grid;
@@ -62,17 +66,21 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  border: 1px solid rgb(214 235 253 / 19%);
-  background: linear-gradient(225deg, #ffffff1a, transparent);
+  border: 1px solid var(--line-accent);
+  background: linear-gradient(
+    225deg,
+    color-mix(in srgb, var(--accent-strong) 10%, transparent),
+    transparent
+  );
 }
 .tabs button[aria-selected="true"] .icon {
-  color: #22c55e;
+  color: var(--ok);
 }
 .panel {
-  border: 1px solid rgb(214 235 253 / 19%);
+  border: 1px solid var(--line-accent);
   border-radius: 16px;
   overflow: hidden;
-  background: #08090b;
+  background: var(--brand-dark);
 }
 .panel img {
   display: block;
@@ -87,12 +95,6 @@
   border-top: 1px solid var(--line);
   color: var(--text-2);
   font-size: 14px;
-  text-align: center;
-}
-.caption {
-  margin-top: 16px;
-  color: var(--text-3);
-  font-size: 12px;
   text-align: center;
 }
 @keyframes tourBorder {
