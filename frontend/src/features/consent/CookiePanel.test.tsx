@@ -62,9 +62,7 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
     const user = userEvent.setup();
     const { unmount } = await renderRoute(PAGE);
 
-    await user.click(
-      screen.getByRole("button", { name: "Rechazar" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Rechazar" }));
 
     expect(cookiePanel()).not.toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(
@@ -181,9 +179,7 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
     const user = userEvent.setup();
     await renderRoute(PAGE);
 
-    await user.click(
-      screen.getByRole("button", { name: "Rechazar" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Rechazar" }));
     expect(cookiePanel()).not.toBeInTheDocument();
 
     getItem.mockRestore();

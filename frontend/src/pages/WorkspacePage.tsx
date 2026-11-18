@@ -108,15 +108,24 @@ export function WorkspacePage() {
           >
             <StatTile
               label="Casos abiertos"
-              value={caseTotals?.open ?? (totals.isPending ? "Cargando" : "No disponible")}
+              value={
+                caseTotals?.open ??
+                (totals.isPending ? "Cargando" : "No disponible")
+              }
             />
             <StatTile
               label="Casos cerrados"
-              value={caseTotals?.closed ?? (totals.isPending ? "Cargando" : "No disponible")}
+              value={
+                caseTotals?.closed ??
+                (totals.isPending ? "Cargando" : "No disponible")
+              }
             />
             <StatTile
               label="Sellos de tiempo pendientes"
-              value={caseTotals?.pending_stamps ?? (totals.isPending ? "Cargando" : "No disponible")}
+              value={
+                caseTotals?.pending_stamps ??
+                (totals.isPending ? "Cargando" : "No disponible")
+              }
               note={
                 caseTotals && caseTotals.pending_stamps > 0
                   ? "Evidencias esperando su sello."
@@ -125,7 +134,10 @@ export function WorkspacePage() {
             />
             <StatTile
               label="Eventos de custodia"
-              value={caseTotals?.custody_events ?? (totals.isPending ? "Cargando" : "No disponible")}
+              value={
+                caseTotals?.custody_events ??
+                (totals.isPending ? "Cargando" : "No disponible")
+              }
             />
           </section>
           {totals.isError && (
@@ -146,7 +158,9 @@ export function WorkspacePage() {
           )}
 
           <Panel title="Actividad reciente">
-            {recent.isPending && <p role="status">Cargando la actividad reciente</p>}
+            {recent.isPending && (
+              <p role="status">Cargando la actividad reciente</p>
+            )}
             {recent.isError && (
               <p role="status" className={styles.note}>
                 No pudimos cargar la actividad reciente.
@@ -154,7 +168,9 @@ export function WorkspacePage() {
             )}
             {recentItems && recentItems.length === 0 && (
               <EmptyState
-                title={canCreate ? "Todavía no hay casos" : "Nada asignado por ahora"}
+                title={
+                  canCreate ? "Todavía no hay casos" : "Nada asignado por ahora"
+                }
                 description={
                   canCreate
                     ? "Abra el primero y empiece a reunir el contexto de su equipo."
@@ -174,17 +190,24 @@ export function WorkspacePage() {
               <ul className={styles.activity}>
                 {recentItems.map((item: CaseSummaryOut) => (
                   <li key={item.id} className={styles.activityRow}>
-                    <a href={`${ROUTES.cases}/${item.id}`} className={styles.activityLink}>
+                    <a
+                      href={`${ROUTES.cases}/${item.id}`}
+                      className={styles.activityLink}
+                    >
                       <span className={styles.activityTitle}>{item.title}</span>
                       {item.last_event && (
                         <span className={styles.activityMeta}>
-                          <StatusBadge tone={toneForAction(item.last_event.action)}>
+                          <StatusBadge
+                            tone={toneForAction(item.last_event.action)}
+                          >
                             {custodyActionLabel(item.last_event.action)}
                           </StatusBadge>
                           {item.last_event.actor_name && (
                             <span>por {item.last_event.actor_name}</span>
                           )}
-                          <span>{formatRecentActivity(item.last_activity_at)}</span>
+                          <span>
+                            {formatRecentActivity(item.last_activity_at)}
+                          </span>
                         </span>
                       )}
                     </a>

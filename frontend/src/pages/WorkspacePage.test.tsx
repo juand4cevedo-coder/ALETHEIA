@@ -107,7 +107,9 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     const { container } = await renderRoute("/app");
 
     await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
-    expect(screen.getByText("Ruiz & Asociados, Propietario")).toBeInTheDocument();
+    expect(
+      screen.getByText("Ruiz & Asociados, Propietario"),
+    ).toBeInTheDocument();
 
     const overview = screen.getByRole("region", {
       name: "Resumen de sus casos",
@@ -124,9 +126,7 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     expect(screen.getByText("Evidencia subida")).toBeInTheDocument();
     expect(screen.getByText(/por Laura Gómez/)).toBeInTheDocument();
 
-    const quickLinks = screen
-      .getByText("Accesos rápidos")
-      .closest("section")!;
+    const quickLinks = screen.getByText("Accesos rápidos").closest("section")!;
     expect(
       within(quickLinks).getByRole("link", { name: /Equipo/ }),
     ).toHaveAttribute("href", "/app/miembros");

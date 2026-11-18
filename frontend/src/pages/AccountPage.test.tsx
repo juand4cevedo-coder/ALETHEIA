@@ -132,7 +132,13 @@ it("confirma el pago con Nequi cuando la suscripción queda activa", async () =>
     if (path === "/api/v1/me")
       return jsonResponse(
         active
-          ? { ...ownerEnPrueba(), subscription: { ...ownerEnPrueba().subscription, status: "active" } }
+          ? {
+              ...ownerEnPrueba(),
+              subscription: {
+                ...ownerEnPrueba().subscription,
+                status: "active",
+              },
+            }
           : ownerEnPrueba(),
       );
     if (path === "/api/v1/plans")

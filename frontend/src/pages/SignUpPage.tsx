@@ -284,9 +284,7 @@ export function SignUpPage() {
                 maxLength={PASSWORD_MAX_LENGTH}
                 value={confirmPassword}
                 error={confirmPasswordErrorMessage}
-                onChange={(event) =>
-                  updateConfirmPassword(event.target.value)
-                }
+                onChange={(event) => updateConfirmPassword(event.target.value)}
               />
             </fieldset>
 

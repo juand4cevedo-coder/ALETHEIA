@@ -38,9 +38,10 @@ export function EvidenceUploadForm({ caseId }: { caseId: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<Result | null>(null);
-  const [progress, setProgress] = useState<{ loaded: number; total: number } | null>(
-    null,
-  );
+  const [progress, setProgress] = useState<{
+    loaded: number;
+    total: number;
+  } | null>(null);
   const fileId = useId();
   const fileHelpId = useId();
 

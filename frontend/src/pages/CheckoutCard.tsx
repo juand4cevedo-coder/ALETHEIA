@@ -87,16 +87,15 @@ export function CheckoutCard({ me }: { me: Me }) {
     return (
       <div className={styles.form}>
         <Notice tone="success">
-          Enviamos el cobro a su Nequi. Abra la notificación push en su
-          teléfono y apruébela para activar el plan; puede tardar unos
-          minutos en reflejarse aquí.
+          Enviamos el cobro a su Nequi. Abra la notificación push en su teléfono
+          y apruébela para activar el plan; puede tardar unos minutos en
+          reflejarse aquí.
         </Notice>
         {pollTimedOut && (
           <Notice tone="warning">
             <p>
               Todavía no vemos la aprobación. Revise la app de Nequi: si ya
-              aprobó el cobro ahí, puede tardar un poco más en reflejarse
-              aquí.
+              aprobó el cobro ahí, puede tardar un poco más en reflejarse aquí.
             </p>
             <Button variant="secondary" size="sm" onClick={verifyAgain}>
               Ya aprobé el pago, verificar de nuevo
@@ -248,11 +247,7 @@ function Checkout({ onStarted }: { onStarted: () => void }) {
 
   return (
     <div className={styles.form}>
-      <h3
-        ref={confirmHeadingRef}
-        tabIndex={-1}
-        className={styles.confirmTitle}
-      >
+      <h3 ref={confirmHeadingRef} tabIndex={-1} className={styles.confirmTitle}>
         Confirme su pago
       </h3>
       {terms.isPending && (
@@ -281,9 +276,7 @@ function Checkout({ onStarted }: { onStarted: () => void }) {
           </Checkbox>
           <Checkbox
             checked={acceptedPersonalAuth}
-            onChange={(event) =>
-              setAcceptedPersonalAuth(event.target.checked)
-            }
+            onChange={(event) => setAcceptedPersonalAuth(event.target.checked)}
           >
             Autorizo el{" "}
             <a
