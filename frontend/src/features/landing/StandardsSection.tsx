@@ -83,7 +83,7 @@ export function StandardsSection() {
               <h3>El sello de tiempo</h3>
               <p>
                 Vincula una huella con una fecha y hora mediante la firma de una
-                autoridad de sellado. Este es un ejemplo ilustrativo.
+                autoridad de sellado, como en este ejemplo.
               </p>
               <StampCard />
             </div>
