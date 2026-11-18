@@ -113,7 +113,9 @@ def _sellar_con(url: str, huella: bytes) -> SelloDeTiempo:
         raise SelloNoDisponibleError(f"{url} no respondió: {exc}") from exc
     try:
         hora = _verificar(respuesta, huella, nonce)
-    except VerificationError as exc:
+    except (VerificationError, ValueError) as exc:
+        # ValueError: asn1crypto o rfc3161-client no pudieron leer una respuesta truncada o
+        # corrupta. No es un fallo de red: reintentar con la misma huella no lo arregla.
         raise SelloInvalidoError(f"{url} devolvió un sello que no verifica: {exc}") from exc
     return SelloDeTiempo(token=respuesta, hora=hora)
 

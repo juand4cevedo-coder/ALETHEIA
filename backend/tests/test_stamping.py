@@ -97,3 +97,13 @@ def test_un_sello_que_no_verifica_no_es_reintentable() -> None:
         pytest.raises(stamping.SelloInvalidoError),
     ):
         stamping.pedir_sello_de_tiempo(HUELLA)
+
+
+def test_una_respuesta_truncada_tambien_es_invalida_no_reintentable() -> None:
+    """asn1crypto lanza ValueError con bytes corruptos; eso también cuenta como fallo del sello."""
+    with (
+        patch.object(stamping, "_pedir_sello", return_value=_respuesta("digicert")[:10]),
+        patch.object(stamping, "_solicitud", return_value=(b"", _nonce("digicert"))),
+        pytest.raises(stamping.SelloInvalidoError),
+    ):
+        stamping.pedir_sello_de_tiempo(HUELLA)
