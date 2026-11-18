@@ -252,6 +252,76 @@ def test_una_referencia_que_no_es_nuestra_se_ignora(
     assert guardado.signature_valid is True
 
 
+def test_reconciliar_activa_un_cobro_cuyo_webhook_nunca_llego(
+    db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    office = crear_oficina(db)
+    subscription = _en_prueba(db, office)
+    reference = checkout.referencia_nueva(office.organization_id, "essential", "monthly")
+    subscription.pending_checkout_reference = reference
+    db.flush()
+    transaccion = wompi.Transaccion(
+        id="tx-1",
+        status="APPROVED",
+        reference=reference,
+        amount_in_cents=_MENSUAL_ESENCIAL_CENTAVOS,
+    )
+    monkeypatch.setattr(wompi, "consultar_transaccion", _consultar_falsa(transaccion))
+
+    payments.reconciliar(db, _credenciales(), "tx-1")
+
+    db.refresh(subscription)
+    assert subscription.status == "active"
+    assert subscription.pending_checkout_reference is None
+
+
+def test_reconciliar_no_duplica_un_cobro_que_el_webhook_ya_activo(
+    db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    office = crear_oficina(db)
+    subscription = _en_prueba(db, office)
+    reference = checkout.referencia_nueva(office.organization_id, "essential", "monthly")
+    transaccion = wompi.Transaccion(
+        id="tx-1",
+        status="APPROVED",
+        reference=reference,
+        amount_in_cents=_MENSUAL_ESENCIAL_CENTAVOS,
+    )
+    monkeypatch.setattr(wompi, "consultar_transaccion", _consultar_falsa(transaccion))
+    payments.procesar_evento(db, _webhook("tx-1", "APPROVED"), _credenciales())
+    db.refresh(subscription)
+    subscription.status = "canceled"  # si reconciliar lo reaplica, esto se vería sobrescrito
+    db.flush()
+
+    payments.reconciliar(db, _credenciales(), "tx-1")
+
+    db.refresh(subscription)
+    assert subscription.status == "canceled"
+    assert (
+        db.scalar(
+            select(func.count()).select_from(PaymentEvent).where(PaymentEvent.gateway == "wompi")
+        )
+        == 1
+    )
+
+
+def test_reconciliar_no_hace_nada_si_wompi_sigue_sin_resolver(
+    db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    office = crear_oficina(db)
+    subscription = _en_prueba(db, office)
+    transaccion = wompi.Transaccion(
+        id="tx-1", status="PENDING", reference="otra", amount_in_cents=1
+    )
+    monkeypatch.setattr(wompi, "consultar_transaccion", _consultar_falsa(transaccion))
+
+    payments.reconciliar(db, _credenciales(), "tx-1")
+
+    db.refresh(subscription)
+    assert subscription.status == "trial"
+    assert db.scalar(select(func.count()).select_from(PaymentEvent)) == 0
+
+
 def test_un_estado_pendiente_no_genera_evento_ni_consulta_a_wompi(
     db: Session, monkeypatch: pytest.MonkeyPatch
 ) -> None:

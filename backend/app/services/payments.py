@@ -67,13 +67,27 @@ def procesar_evento(session: Session, payload: dict[str, Any], creds: wompi.Cred
     transaccion = wompi.consultar_transaccion(creds, transaction_id)
     if transaccion.status not in _ESTADOS_FINALES:
         return
+    _registrar_y_aplicar(session, transaccion, str(payload.get("event", "transaction.updated")))
 
+
+def reconciliar(session: Session, creds: wompi.Credenciales, transaction_id: str) -> None:
+    """Red de seguridad para un webhook que nunca llegó (EVT-007): vuelve a pedir la misma
+    transacción y la aplica por el mismo camino que un webhook válido, con la misma clave de
+    deduplicación. Si el webhook sí llegó, esto encuentra la fila que ya existe y no hace nada;
+    si no llegó, activa o rechaza el plan con la respuesta de Wompi, nunca con una suposición."""
+    transaccion = wompi.consultar_transaccion(creds, transaction_id)
+    if transaccion.status not in _ESTADOS_FINALES:
+        return  # sigue pendiente: el checkout todavía puede recibir el webhook más tarde
+    _registrar_y_aplicar(session, transaccion, "reconcile")
+
+
+def _registrar_y_aplicar(session: Session, transaccion: wompi.Transaccion, event_type: str) -> None:
     resultado = session.execute(
         insert(PaymentEvent)
         .values(
             gateway="wompi",
             gateway_event_id=f"{transaccion.id}:{transaccion.status}"[:100],
-            event_type=str(payload.get("event", "transaction.updated"))[:60],
+            event_type=event_type[:60],
             signature_valid=True,
             payload={
                 "status": transaccion.status,

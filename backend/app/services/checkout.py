@@ -5,6 +5,7 @@ nunca desde aquí. La referencia que se le manda a Wompi lleva codificada la org
 plan y el ciclo, así que la activación no necesita guardar nada mientras el pago está pendiente.
 """
 
+import datetime
 import re
 import uuid
 from dataclasses import dataclass
@@ -18,7 +19,13 @@ from app.core.config import Settings
 from app.core.permissions import has_permission
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import Organization, Plan, Subscription, User
+from app.services import jobs
 from app.services.sessions import Principal
+
+# Cuánto se le da a la notificación push de Nequi y al webhook de Wompi antes de ir a
+# preguntar directamente (EVT-007): ni tan corto que se adelante al pago normal, ni tan largo
+# que una persona se quede esperando sin necesidad si el webhook de verdad se perdió.
+_ESPERA_RECONCILIACION: Final = datetime.timedelta(minutes=15)
 
 _PREFIJO: Final = "aletheia"
 _REFERENCIA: Final = re.compile(
@@ -122,6 +129,16 @@ def iniciar(
         phone_number=phone_number,
         acceptance_token=acceptance_token,
         accept_personal_auth=accept_personal_auth,
+    )
+    # Red de seguridad si el webhook de Wompi nunca llega (EVT-007): sin esto, un cobro
+    # aprobado de verdad podría dejar a alguien para siempre con pending_checkout_reference
+    # puesto y la suscripción sin activar.
+    jobs.enqueue(
+        session,
+        "payment_reconcile",
+        {"transaction_id": transaccion.id},
+        f"payment_reconcile:{transaccion.id}",
+        delay=_ESPERA_RECONCILIACION,
     )
     return Cobro(
         transaction_id=transaccion.id, reference=transaccion.reference, status=transaccion.status

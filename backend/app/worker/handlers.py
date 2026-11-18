@@ -14,6 +14,7 @@ from typing import Any, Final
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.adapters import wompi
 from app.adapters.email import EmailDeliveryError, EmailSender
 from app.adapters.keys import build_key_wrapper
 from app.core.config import Settings
@@ -25,6 +26,7 @@ from app.services import (
     export_build,
     export_expiration,
     notifications,
+    payments,
     subscription_expiration,
 )
 from app.services import organization_emails as _organization_emails  # noqa: F401
@@ -115,6 +117,21 @@ def stamp_evidence(run: JobRun) -> None:
     evidence_stamp.stamp(run.open_session, evidence_id, case_id, organization_id)
 
 
+def reconcile_payment(run: JobRun) -> None:
+    """payment_reconcile (EVT-007): si el webhook de Wompi ya activó o rechazó el cobro, esto
+    encuentra la misma clave de deduplicación y no hace nada; si nunca llegó, lo resuelve con
+    la respuesta de Wompi en vez de dejarlo pendiente para siempre."""
+    transaction_id = str(run.payload.get("transaction_id", ""))
+    if not transaction_id:
+        raise PermanentJobError("Falta el identificador de la transacción.")
+    creds = wompi.credenciales_de(run.context.settings)
+    try:
+        with run.open_session() as session, session.begin():
+            payments.reconciliar(session, creds, transaction_id)
+    except wompi.WompiRechazadoError as exc:
+        raise PermanentJobError(str(exc)) from exc
+
+
 def expire_export(run: JobRun) -> None:
     try:
         export_id = uuid.UUID(str(run.payload["export_id"]))
@@ -131,4 +148,5 @@ HANDLERS: Final[Mapping[str, Handler]] = {
     "export_build": build_export,
     "export_expire": expire_export,
     "tsa_stamp": stamp_evidence,
+    "payment_reconcile": reconcile_payment,
 }

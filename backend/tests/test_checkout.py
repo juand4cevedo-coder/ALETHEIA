@@ -12,7 +12,7 @@ from app.adapters import wompi
 from app.core.config import Settings
 from app.core.legal import LEGAL_VERSION
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import Subscription
+from app.models import Job, Subscription
 from app.services import checkout
 from app.services.sessions import Principal
 from tests.organizations import Oficina, crear_oficina
@@ -144,3 +144,5 @@ def test_el_cobro_se_crea_con_los_tokens_y_la_firma_de_wompi(
         select(Subscription).where(Subscription.organization_id == office.organization_id)
     ).one()
     assert subscription.pending_checkout_reference == cobro.reference
+    tarea = db.scalars(select(Job).where(Job.kind == "payment_reconcile")).one()
+    assert tarea.payload["transaction_id"] == "tx-1"
