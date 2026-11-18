@@ -60,7 +60,7 @@ def test_solo_el_propietario_puede_iniciar_el_cobro(db: Session, settings: Setti
     principal = _principal(office.organization_id, office.owner.id, "lawyer")
 
     with pytest.raises(checkout.CheckoutNoPermitidoError):
-        checkout.iniciar(db, settings, principal, "essential", "monthly", "3001234567")
+        checkout.iniciar(db, settings, principal, "essential", "monthly", "3001234567", "a", "p")
 
 
 def test_un_telefono_que_no_es_celular_colombiano_se_rechaza(
@@ -71,7 +71,7 @@ def test_un_telefono_que_no_es_celular_colombiano_se_rechaza(
     principal = _principal(office.organization_id, office.owner.id, "owner")
 
     with pytest.raises(checkout.CheckoutNoPermitidoError):
-        checkout.iniciar(db, settings, principal, "essential", "monthly", "123")
+        checkout.iniciar(db, settings, principal, "essential", "monthly", "123", "a", "p")
 
 
 def test_una_suscripcion_ya_pagada_no_se_vuelve_a_cobrar(db: Session, settings: Settings) -> None:
@@ -79,7 +79,22 @@ def test_una_suscripcion_ya_pagada_no_se_vuelve_a_cobrar(db: Session, settings: 
     principal = _principal(office.organization_id, office.owner.id, "owner")
 
     with pytest.raises(checkout.CheckoutNoPermitidoError):
-        checkout.iniciar(db, settings, principal, "essential", "monthly", "3001234567")
+        checkout.iniciar(db, settings, principal, "essential", "monthly", "3001234567", "a", "p")
+
+
+def test_un_segundo_cobro_no_arranca_mientras_el_primero_esta_pendiente(
+    db: Session, settings: Settings
+) -> None:
+    office = crear_oficina(db)
+    subscription = _en_prueba(db, office)
+    subscription.pending_checkout_reference = checkout.referencia_nueva(
+        office.organization_id, "essential", "monthly"
+    )
+    db.flush()
+    principal = _principal(office.organization_id, office.owner.id, "owner")
+
+    with pytest.raises(checkout.CheckoutNoPermitidoError):
+        checkout.iniciar(db, settings, principal, "essential", "monthly", "3001234567", "a", "p")
 
 
 def test_el_cobro_se_crea_con_los_tokens_y_la_firma_de_wompi(
@@ -98,26 +113,32 @@ def test_el_cobro_se_crea_con_los_tokens_y_la_firma_de_wompi(
     )
     llamadas: dict[str, object] = {}
 
-    def tokens_falsos(_creds: wompi.Credenciales) -> wompi.TokensDeAceptacion:
-        return wompi.TokensDeAceptacion(
-            acceptance_token="acc",  # noqa: S106 (no es una clave, es un token de prueba)
-            accept_personal_auth="pers",
-        )
-
     def crear_falsa(_creds: wompi.Credenciales, **kwargs: object) -> wompi.Transaccion:
         llamadas.update(kwargs)
-        return wompi.Transaccion(id="tx-1", status="PENDING", reference=str(kwargs["reference"]))
+        return wompi.Transaccion(
+            id="tx-1",
+            status="PENDING",
+            reference=str(kwargs["reference"]),
+            amount_in_cents=int(kwargs["amount_in_cents"]),  # type: ignore[call-overload]
+        )
 
-    monkeypatch.setattr(wompi, "tokens_de_aceptacion", tokens_falsos)
     monkeypatch.setattr(wompi, "crear_transaccion_nequi", crear_falsa)
 
-    cobro = checkout.iniciar(db, con_wompi, principal, "essential", "monthly", "3001234567")
+    cobro = checkout.iniciar(
+        db, con_wompi, principal, "essential", "monthly", "3001234567", "acc", "pers"
+    )
 
     assert cobro.status == "PENDING"
     assert cobro.transaction_id == "tx-1"
     assert llamadas["phone_number"] == "3001234567"
     assert llamadas["amount_in_cents"] == 29_900 * 100
+    assert llamadas["acceptance_token"] == "acc"  # noqa: S105
+    assert llamadas["accept_personal_auth"] == "pers"
     referencia = checkout.leer_referencia(cobro.reference)
     assert referencia is not None
     assert referencia.organization_id == office.organization_id
     assert referencia.plan_code == "essential"
+    subscription = db.scalars(
+        select(Subscription).where(Subscription.organization_id == office.organization_id)
+    ).one()
+    assert subscription.pending_checkout_reference == cobro.reference

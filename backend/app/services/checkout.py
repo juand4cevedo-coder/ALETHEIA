@@ -74,7 +74,12 @@ def iniciar(
     plan_code: str,
     billing_cycle: Literal["monthly", "annual"],
     phone_number: str,
+    acceptance_token: str,
+    accept_personal_auth: str,
 ) -> Cobro:
+    """acceptance_token y accept_personal_auth son los que la persona aceptó de verdad: los
+    entregó antes GET /billing/wompi-terms, y quien llama los manda tal cual, para que nunca
+    se cobre con una aceptación que la persona nunca vio (RN-022)."""
     organization_id = principal.organization_id
     if organization_id is None or not has_permission(principal.role, "billing.manage"):
         raise CheckoutNoPermitidoError
@@ -89,27 +94,34 @@ def iniciar(
     amount_cop = plan.monthly_price_cop if billing_cycle == "monthly" else plan.annual_price_cop
     if amount_cop is None or amount_cop <= 0:
         raise CheckoutNoPermitidoError
-    # Una suscripción activa por pago no se vuelve a cobrar desde aquí: HU-029 cambia de plan.
+    # Bloqueada, para que dos peticiones a la vez no pasen las dos el siguiente chequeo.
     subscription = session.scalar(
-        select(Subscription).where(Subscription.organization_id == organization_id)
+        select(Subscription)
+        .where(Subscription.organization_id == organization_id)
+        .with_for_update()
     )
-    if (
-        subscription is not None
-        and subscription.status == "active"
-        and subscription.billing_cycle != "none"
-    ):
+    if subscription is None:
+        raise CheckoutNoPermitidoError
+    # Una suscripción activa por pago no se vuelve a cobrar desde aquí: HU-029 cambia de plan.
+    if subscription.status == "active" and subscription.billing_cycle != "none":
+        raise CheckoutNoPermitidoError
+    # Un cobro de esta misma suscripción ya está esperando la respuesta de Wompi: ni un
+    # reintento del usuario ni dos pestañas a la vez generan una segunda transacción.
+    if subscription.pending_checkout_reference is not None:
         raise CheckoutNoPermitidoError
 
-    creds = wompi.credenciales_de(settings)
-    tokens = wompi.tokens_de_aceptacion(creds)
     reference = referencia_nueva(organization_id, plan_code, billing_cycle)
+    subscription.pending_checkout_reference = reference
+
+    creds = wompi.credenciales_de(settings)
     transaccion = wompi.crear_transaccion_nequi(
         creds,
         reference=reference,
         amount_in_cents=amount_cop * 100,
         customer_email=user.email,
         phone_number=phone_number,
-        tokens=tokens,
+        acceptance_token=acceptance_token,
+        accept_personal_auth=accept_personal_auth,
     )
     return Cobro(
         transaction_id=transaccion.id, reference=transaccion.reference, status=transaccion.status

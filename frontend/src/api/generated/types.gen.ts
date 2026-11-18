@@ -553,6 +553,14 @@ export type CheckoutCreate = {
    * Phone Number
    */
   phone_number: string;
+  /**
+   * Acceptance Token
+   */
+  acceptance_token: string;
+  /**
+   * Accept Personal Auth
+   */
+  accept_personal_auth: string;
 };
 
 /**
@@ -2047,6 +2055,39 @@ export type VerifyEmailRequest = {
    * Token del enlace.
    */
   token: string;
+};
+
+/**
+ * WompiTermsOut
+ *
+ * Los dos contratos que Wompi exige aceptar; el cliente debe mostrarlos y solo mandar
+ * los tokens de vuelta en /billing/checkout si la persona los aceptó de verdad (RN-022).
+ */
+export type WompiTermsOut = {
+  /**
+   * Acceptance Token
+   *
+   * Token de aceptación de las políticas de Wompi.
+   */
+  acceptance_token: string;
+  /**
+   * Acceptance Permalink
+   *
+   * Texto de las políticas que ampara el token.
+   */
+  acceptance_permalink: string;
+  /**
+   * Accept Personal Auth
+   *
+   * Token de autorización de tratamiento de datos personales.
+   */
+  accept_personal_auth: string;
+  /**
+   * Personal Auth Permalink
+   *
+   * Texto de la autorización que ampara el token.
+   */
+  personal_auth_permalink: string;
 };
 
 export type HealthData = {
@@ -3906,6 +3947,31 @@ export type ChangeSupportTicketStatusResponses = {
 
 export type ChangeSupportTicketStatusResponse =
   ChangeSupportTicketStatusResponses[keyof ChangeSupportTicketStatusResponses];
+
+export type WompiTermsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/billing/wompi-terms";
+};
+
+export type WompiTermsErrors = {
+  /**
+   * Wompi no respondió.
+   */
+  503: Problem;
+};
+
+export type WompiTermsError = WompiTermsErrors[keyof WompiTermsErrors];
+
+export type WompiTermsResponses = {
+  /**
+   * Successful Response
+   */
+  200: WompiTermsOut;
+};
+
+export type WompiTermsResponse = WompiTermsResponses[keyof WompiTermsResponses];
 
 export type CreateCheckoutData = {
   body: CheckoutCreate;

@@ -62,6 +62,7 @@ import {
   uploadEvidence,
   verifyCustody,
   verifyEmail,
+  wompiTerms,
 } from "../sdk.gen";
 import type {
   AcceptInvitationData,
@@ -215,6 +216,9 @@ import type {
   VerifyEmailData,
   VerifyEmailError,
   VerifyEmailResponse,
+  WompiTermsData,
+  WompiTermsError,
+  WompiTermsResponse,
 } from "../types.gen";
 
 export type QueryKey<TOptions extends Options> = [
@@ -2145,6 +2149,31 @@ export const changeSupportTicketStatusMutation = (
   };
   return mutationOptions;
 };
+
+export const wompiTermsQueryKey = (options?: Options<WompiTermsData>) =>
+  createQueryKey("wompiTerms", options);
+
+/**
+ * Contratos de Wompi que hay que mostrar antes de cobrar
+ */
+export const wompiTermsOptions = (options?: Options<WompiTermsData>) =>
+  queryOptions<
+    WompiTermsResponse,
+    WompiTermsError,
+    WompiTermsResponse,
+    ReturnType<typeof wompiTermsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await wompiTerms({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: wompiTermsQueryKey(options),
+  });
 
 /**
  * Iniciar el primer cobro de una suscripción con Nequi

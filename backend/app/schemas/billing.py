@@ -5,6 +5,20 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class WompiTermsOut(BaseModel):
+    """Los dos contratos que Wompi exige aceptar; el cliente debe mostrarlos y solo mandar
+    los tokens de vuelta en /billing/checkout si la persona los aceptó de verdad (RN-022)."""
+
+    acceptance_token: str = Field(description="Token de aceptación de las políticas de Wompi.")
+    acceptance_permalink: str = Field(description="Texto de las políticas que ampara el token.")
+    accept_personal_auth: str = Field(
+        description="Token de autorización de tratamiento de datos personales."
+    )
+    personal_auth_permalink: str = Field(
+        description="Texto de la autorización que ampara el token."
+    )
+
+
 class CheckoutCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -12,6 +26,11 @@ class CheckoutCreate(BaseModel):
     billing_cycle: Literal["monthly", "annual"]
     # Celular colombiano registrado en Nequi: empieza en 3 y tiene 10 dígitos.
     phone_number: str = Field(pattern=r"^3\d{9}$")
+    # Los mismos dos tokens que entregó GET /billing/wompi-terms, después de que la persona
+    # vio los contratos y los aceptó. El backend nunca los pide por su cuenta: solo así se
+    # sabe que alguien los aceptó de verdad y no que el servidor aceptó en su nombre.
+    acceptance_token: str = Field(min_length=1, max_length=2000)
+    accept_personal_auth: str = Field(min_length=1, max_length=2000)
 
 
 class CheckoutOut(BaseModel):

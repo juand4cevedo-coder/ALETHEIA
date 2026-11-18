@@ -96,12 +96,16 @@ def _llamar(
 @dataclass(frozen=True, slots=True)
 class TokensDeAceptacion:
     acceptance_token: str
+    acceptance_permalink: str
     accept_personal_auth: str
+    personal_auth_permalink: str
 
 
 def tokens_de_aceptacion(creds: Credenciales) -> TokensDeAceptacion:
     """GET /merchants/info con la llave pública: los dos contratos que exige la ley de
-    habeas data, vigentes al momento de la consulta (RF-038)."""
+    habeas data, vigentes al momento de la consulta, con el enlace a su texto para que la
+    persona los lea antes de aceptarlos (RF-038, RN-022: la aceptación es explícita, nunca
+    implícita por el solo hecho de pagar)."""
     respuesta = _llamar(
         f"{creds.base_url}/merchants/info",
         encabezados={"x-merchant-public-key": creds.public_key},
@@ -109,7 +113,9 @@ def tokens_de_aceptacion(creds: Credenciales) -> TokensDeAceptacion:
     data = respuesta["data"]
     return TokensDeAceptacion(
         acceptance_token=data["presigned_acceptance"]["acceptance_token"],
+        acceptance_permalink=data["presigned_acceptance"]["permalink"],
         accept_personal_auth=data["presigned_personal_data_auth"]["acceptance_token"],
+        personal_auth_permalink=data["presigned_personal_data_auth"]["permalink"],
     )
 
 
@@ -123,6 +129,7 @@ class Transaccion:
     id: str
     status: str
     reference: str
+    amount_in_cents: int
     payment_method_type: str | None = None
 
 
@@ -133,13 +140,17 @@ def crear_transaccion_nequi(
     amount_in_cents: int,
     customer_email: str,
     phone_number: str,
-    tokens: TokensDeAceptacion,
+    acceptance_token: str,
+    accept_personal_auth: str,
 ) -> Transaccion:
     """POST /transactions con payment_method NEQUI. Siempre vuelve en PENDING (RF-038): el
-    cliente aprueba con una notificación push de Nequi y el estado final llega por webhook."""
+    cliente aprueba con una notificación push de Nequi y el estado final llega por webhook.
+
+    acceptance_token y accept_personal_auth deben ser los que la persona aceptó de verdad,
+    nunca unos que este adaptador pida por su cuenta (RN-022)."""
     cuerpo: dict[str, object] = {
-        "acceptance_token": tokens.acceptance_token,
-        "accept_personal_auth": tokens.accept_personal_auth,
+        "acceptance_token": acceptance_token,
+        "accept_personal_auth": accept_personal_auth,
         "amount_in_cents": amount_in_cents,
         "currency": "COP",
         "customer_email": customer_email,
@@ -151,17 +162,25 @@ def crear_transaccion_nequi(
         f"{creds.base_url}/transactions", cuerpo=cuerpo, metodo="POST", bearer=creds.private_key
     )
     data = respuesta["data"]
-    return Transaccion(id=data["id"], status=data["status"], reference=data["reference"])
+    return Transaccion(
+        id=data["id"],
+        status=data["status"],
+        reference=data["reference"],
+        amount_in_cents=data["amount_in_cents"],
+    )
 
 
 def consultar_transaccion(creds: Credenciales, transaction_id: str) -> Transaccion:
-    """GET /transactions/{id}, para el reconciliador: respaldo si el webhook nunca llega."""
+    """GET /transactions/{id}: la versión de la transacción en la que Wompi manda, no la que
+    venga en un webhook. El webhook solo avisa que algo cambió (HU-027); nunca se activa un
+    plan con datos que no salgan de aquí o de una respuesta de POST /transactions."""
     respuesta = _llamar(f"{creds.base_url}/transactions/{transaction_id}", bearer=creds.private_key)
     data = respuesta["data"]
     return Transaccion(
         id=data["id"],
         status=data["status"],
         reference=data["reference"],
+        amount_in_cents=data["amount_in_cents"],
         payment_method_type=data.get("payment_method_type"),
     )
 

@@ -3291,6 +3291,37 @@
         }
       }
     },
+    "/api/v1/billing/wompi-terms": {
+      "get": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "Contratos de Wompi que hay que mostrar antes de cobrar",
+        "operationId": "wompi_terms",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WompiTermsOut"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Wompi no respondió.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/billing/checkout": {
       "post": {
         "tags": [
@@ -4162,6 +4193,18 @@
             "type": "string",
             "pattern": "^3\\d{9}$",
             "title": "Phone Number"
+          },
+          "acceptance_token": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Acceptance Token"
+          },
+          "accept_personal_auth": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Accept Personal Auth"
           }
         },
         "additionalProperties": false,
@@ -4169,7 +4212,9 @@
         "required": [
           "plan_code",
           "billing_cycle",
-          "phone_number"
+          "phone_number",
+          "acceptance_token",
+          "accept_personal_auth"
         ],
         "title": "CheckoutCreate"
       },
@@ -6393,6 +6438,39 @@
         ],
         "title": "VerifyEmailRequest",
         "description": "Token del enlace de verificación (API-004). La página lo toma del fragmento #t=."
+      },
+      "WompiTermsOut": {
+        "properties": {
+          "acceptance_token": {
+            "type": "string",
+            "title": "Acceptance Token",
+            "description": "Token de aceptación de las políticas de Wompi."
+          },
+          "acceptance_permalink": {
+            "type": "string",
+            "title": "Acceptance Permalink",
+            "description": "Texto de las políticas que ampara el token."
+          },
+          "accept_personal_auth": {
+            "type": "string",
+            "title": "Accept Personal Auth",
+            "description": "Token de autorización de tratamiento de datos personales."
+          },
+          "personal_auth_permalink": {
+            "type": "string",
+            "title": "Personal Auth Permalink",
+            "description": "Texto de la autorización que ampara el token."
+          }
+        },
+        "type": "object",
+        "required": [
+          "acceptance_token",
+          "acceptance_permalink",
+          "accept_personal_auth",
+          "personal_auth_permalink"
+        ],
+        "title": "WompiTermsOut",
+        "description": "Los dos contratos que Wompi exige aceptar; el cliente debe mostrarlos y solo mandar\nlos tokens de vuelta en /billing/checkout si la persona los aceptó de verdad (RN-022)."
       }
     },
     "securitySchemes": {

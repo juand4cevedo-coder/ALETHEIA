@@ -53,6 +53,7 @@ export {
   uploadEvidence,
   verifyCustody,
   verifyEmail,
+  wompiTerms,
 } from "./sdk.gen";
 export type {
   AcceptInvitationData,
@@ -378,4 +379,10 @@ export type {
   VerifyEmailRequest,
   VerifyEmailResponse,
   VerifyEmailResponses,
+  WompiTermsData,
+  WompiTermsError,
+  WompiTermsErrors,
+  WompiTermsOut,
+  WompiTermsResponse,
+  WompiTermsResponses,
 } from "./types.gen";
