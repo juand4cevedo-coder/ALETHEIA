@@ -10,10 +10,11 @@ from sqlalchemy.orm import Session
 from app.adapters import wompi
 from app.core.config import Settings
 from app.core.legal import LEGAL_VERSION
+from app.db.tenancy import TenantContext, set_tenant
 from app.models import Subscription
 from app.services import checkout
 from app.services.sessions import Principal
-from tests.organizations import crear_oficina
+from tests.organizations import Oficina, crear_oficina
 
 
 def _principal(organization_id: uuid.UUID, user_id: uuid.UUID, role: str | None) -> Principal:
@@ -26,9 +27,10 @@ def _principal(organization_id: uuid.UUID, user_id: uuid.UUID, role: str | None)
     )
 
 
-def _en_prueba(db: Session, organization_id: uuid.UUID) -> Subscription:
+def _en_prueba(db: Session, office: Oficina) -> Subscription:
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
     subscription = db.scalars(
-        select(Subscription).where(Subscription.organization_id == organization_id)
+        select(Subscription).where(Subscription.organization_id == office.organization_id)
     ).one()
     subscription.status = "trial"
     subscription.billing_cycle = "none"
@@ -54,7 +56,7 @@ def test_una_referencia_ajena_no_se_interpreta() -> None:
 
 def test_solo_el_propietario_puede_iniciar_el_cobro(db: Session, settings: Settings) -> None:
     office = crear_oficina(db)
-    _en_prueba(db, office.organization_id)
+    _en_prueba(db, office)
     principal = _principal(office.organization_id, office.owner.id, "lawyer")
 
     with pytest.raises(checkout.CheckoutNoPermitidoError):
@@ -65,7 +67,7 @@ def test_un_telefono_que_no_es_celular_colombiano_se_rechaza(
     db: Session, settings: Settings
 ) -> None:
     office = crear_oficina(db)
-    _en_prueba(db, office.organization_id)
+    _en_prueba(db, office)
     principal = _principal(office.organization_id, office.owner.id, "owner")
 
     with pytest.raises(checkout.CheckoutNoPermitidoError):
@@ -84,7 +86,7 @@ def test_el_cobro_se_crea_con_los_tokens_y_la_firma_de_wompi(
     db: Session, monkeypatch: pytest.MonkeyPatch, settings: Settings
 ) -> None:
     office = crear_oficina(db)
-    _en_prueba(db, office.organization_id)
+    _en_prueba(db, office)
     principal = _principal(office.organization_id, office.owner.id, "owner")
     con_wompi = settings.model_copy(
         update={

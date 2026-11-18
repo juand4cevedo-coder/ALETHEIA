@@ -41,6 +41,9 @@ import type {
   CreateCaseExportErrors,
   CreateCaseExportResponses,
   CreateCaseResponses,
+  CreateCheckoutData,
+  CreateCheckoutErrors,
+  CreateCheckoutResponses,
   CreateInvitationData,
   CreateInvitationErrors,
   CreateInvitationResponses,
@@ -1352,6 +1355,32 @@ export const changeSupportTicketStatus = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/platform/support/tickets/{ticket_id}/status",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Iniciar el primer cobro de una suscripción con Nequi
+ */
+export const createCheckout = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCheckoutData, ThrowOnError>,
+): RequestResult<CreateCheckoutResponses, CreateCheckoutErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CreateCheckoutResponses,
+    CreateCheckoutErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/billing/checkout",
     ...options,
     headers: {
       "Content-Type": "application/json",

@@ -20,6 +20,7 @@ import {
   changeSupportTicketStatus,
   createCase,
   createCaseExport,
+  createCheckout,
   createInvitation,
   createSupportTicket,
   downloadEvidence,
@@ -93,6 +94,9 @@ import type {
   CreateCaseExportError,
   CreateCaseExportResponse,
   CreateCaseResponse,
+  CreateCheckoutData,
+  CreateCheckoutError,
+  CreateCheckoutResponse,
   CreateInvitationData,
   CreateInvitationError,
   CreateInvitationResponse,
@@ -2132,6 +2136,33 @@ export const changeSupportTicketStatusMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await changeSupportTicketStatus({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Iniciar el primer cobro de una suscripción con Nequi
+ */
+export const createCheckoutMutation = (
+  options?: Partial<Options<CreateCheckoutData>>,
+): UseMutationOptions<
+  CreateCheckoutResponse,
+  CreateCheckoutError,
+  Options<CreateCheckoutData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateCheckoutResponse,
+    CreateCheckoutError,
+    Options<CreateCheckoutData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createCheckout({
         ...options,
         ...fnOptions,
         throwOnError: true,

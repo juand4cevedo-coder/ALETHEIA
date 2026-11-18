@@ -7,9 +7,10 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, PaymentEvent, Subscription
 from app.services import checkout, payments
-from tests.organizations import crear_oficina
+from tests.organizations import Oficina, crear_oficina
 
 _SECRETO = "test_events_x"
 
@@ -34,9 +35,10 @@ def _evento(*, reference: str, status: str, transaction_id: str | None = None) -
     }
 
 
-def _en_prueba(db: Session, organization_id: uuid.UUID) -> Subscription:
+def _en_prueba(db: Session, office: Oficina) -> Subscription:
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
     subscription = db.scalars(
-        select(Subscription).where(Subscription.organization_id == organization_id)
+        select(Subscription).where(Subscription.organization_id == office.organization_id)
     ).one()
     subscription.status = "trial"
     subscription.billing_cycle = "none"
@@ -46,7 +48,7 @@ def _en_prueba(db: Session, organization_id: uuid.UUID) -> Subscription:
 
 def test_un_pago_aprobado_activa_la_suscripcion_y_audita(db: Session) -> None:
     office = crear_oficina(db)
-    subscription = _en_prueba(db, office.organization_id)
+    subscription = _en_prueba(db, office)
     reference = checkout.referencia_nueva(office.organization_id, "essential", "monthly")
 
     payments.procesar_evento(db, _evento(reference=reference, status="APPROVED"), _SECRETO)
@@ -66,7 +68,7 @@ def test_un_pago_aprobado_activa_la_suscripcion_y_audita(db: Session) -> None:
 
 def test_un_pago_rechazado_no_activa_nada(db: Session) -> None:
     office = crear_oficina(db)
-    subscription = _en_prueba(db, office.organization_id)
+    subscription = _en_prueba(db, office)
     reference = checkout.referencia_nueva(office.organization_id, "essential", "monthly")
 
     payments.procesar_evento(db, _evento(reference=reference, status="DECLINED"), _SECRETO)
@@ -83,7 +85,7 @@ def test_un_pago_rechazado_no_activa_nada(db: Session) -> None:
 
 def test_una_firma_invalida_no_activa_nada_pero_se_guarda(db: Session) -> None:
     office = crear_oficina(db)
-    subscription = _en_prueba(db, office.organization_id)
+    subscription = _en_prueba(db, office)
     reference = checkout.referencia_nueva(office.organization_id, "essential", "monthly")
     evento = _evento(reference=reference, status="APPROVED")
     evento["signature"]["checksum"] = "0" * 64
@@ -98,7 +100,7 @@ def test_una_firma_invalida_no_activa_nada_pero_se_guarda(db: Session) -> None:
 
 def test_el_mismo_evento_repetido_no_se_procesa_dos_veces(db: Session) -> None:
     office = crear_oficina(db)
-    subscription = _en_prueba(db, office.organization_id)
+    subscription = _en_prueba(db, office)
     reference = checkout.referencia_nueva(office.organization_id, "essential", "monthly")
     evento = _evento(reference=reference, status="APPROVED")
 
@@ -130,7 +132,7 @@ def test_una_referencia_que_no_es_nuestra_se_ignora(db: Session) -> None:
 
 def test_un_estado_pendiente_no_genera_evento(db: Session) -> None:
     office = crear_oficina(db)
-    _en_prueba(db, office.organization_id)
+    _en_prueba(db, office)
     reference = checkout.referencia_nueva(office.organization_id, "essential", "monthly")
 
     payments.procesar_evento(db, _evento(reference=reference, status="PENDING"), _SECRETO)
