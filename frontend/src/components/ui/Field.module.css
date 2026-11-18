@@ -34,6 +34,12 @@
   border-color: var(--err);
 }
 
+/* Un textarea crece con su contenido en vez de quedar atado al alto fijo del control. */
+.control[data-multiline] {
+  height: auto;
+  align-items: stretch;
+}
+
 .control:focus-within,
 .control[data-invalid]:focus-within {
   border-color: var(--accent);
@@ -53,6 +59,12 @@
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
   outline: none;
+}
+
+textarea.input {
+  height: auto;
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
 }
 
 /* El navegador pinta de claro los campos que autocompleta; el sombreado interno los devuelve a

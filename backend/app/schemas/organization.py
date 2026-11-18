@@ -27,6 +27,26 @@ class InvitationRequest(BaseModel):
     role: InvitableRole = Field(description="Rol con que entrará: admin, lawyer o assistant.")
 
 
+class OrganizationRenameRequest(BaseModel):
+    """Nombre nuevo del despacho (API-022). Solo el propietario lo cambia."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(
+        min_length=1,
+        max_length=120,
+        description="Nombre de la oficina, la firma o la persona independiente.",
+    )
+
+
+class OrganizationOut(BaseModel):
+    """Los datos propios del despacho que puede administrar su propietario."""
+
+    id: uuid.UUID = Field(description="Identificador de la organización.")
+    name: str = Field(description="Nombre de la oficina, la firma o la persona independiente.")
+    created_at: datetime.datetime = Field(description="Cuándo se creó la organización.")
+
+
 class RoleChangeRequest(BaseModel):
     """El rol nuevo de un miembro (API-020). El propietario no se asigna: nace con la
     organización (RN-010)."""

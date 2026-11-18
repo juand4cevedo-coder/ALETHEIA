@@ -286,7 +286,7 @@ function CaseView({
           role="tabpanel"
           id={`${ids.chain}-panel`}
           aria-labelledby={`${ids.chain}-tab`}
-          className={styles.panel}
+          className={styles.tabPanel}
           tabIndex={0}
           hidden={tab !== "chain"}
         >
@@ -310,7 +310,7 @@ function CaseView({
           role="tabpanel"
           id={`${ids.team}-panel`}
           aria-labelledby={`${ids.team}-tab`}
-          className={styles.panel}
+          className={styles.tabPanel}
           tabIndex={0}
           hidden={tab !== "team"}
         >
@@ -323,7 +323,7 @@ function CaseView({
           role="tabpanel"
           id={`${ids.evidence}-panel`}
           aria-labelledby={`${ids.evidence}-tab`}
-          className={styles.panel}
+          className={styles.tabPanel}
           tabIndex={0}
           hidden={tab !== "evidence"}
         >
@@ -339,7 +339,7 @@ function CaseView({
             role="tabpanel"
             id={`${ids.export}-panel`}
             aria-labelledby={`${ids.export}-tab`}
-            className={styles.panel}
+            className={styles.tabPanel}
             tabIndex={0}
             hidden={tab !== "export"}
           >

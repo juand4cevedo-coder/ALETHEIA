@@ -14,13 +14,18 @@ import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import { EmailStatus } from "../features/session/EmailStatus.tsx";
-import { managesTeam, ROLE_LABELS } from "../features/workspace/roles.ts";
+import {
+  managesOrganization,
+  managesTeam,
+  ROLE_LABELS,
+} from "../features/workspace/roles.ts";
 import { canOpenCases } from "../features/cases/roles.ts";
 import { custodyActionLabel } from "../features/cases/custodyActions.ts";
 import { formatRecentActivity } from "../features/cases/dates.ts";
 import styles from "./WorkspacePage.module.css";
 import {
   CarpetaAbiertaIcon,
+  EdificioIcon,
   FlechaDerechaIcon,
   MasIcon,
   ReciboIcon,
@@ -217,45 +222,53 @@ export function WorkspacePage() {
             )}
           </Panel>
 
-          {(canManageTeam || canCreate) && (
-            <Panel title="Accesos rápidos" density="compact">
-              <div className={styles.quickLinks}>
-                {canCreate && me.email_verified && (
-                  <ButtonLink to={ROUTES.newCase} variant="secondary" size="sm">
-                    <MasIcon size={16} aria-hidden="true" />
-                    Abrir un caso
-                  </ButtonLink>
-                )}
-                <ButtonLink to={ROUTES.cases} variant="secondary" size="sm">
-                  <CarpetaAbiertaIcon size={16} aria-hidden="true" />
-                  Libro de casos
-                  <FlechaDerechaIcon size={14} aria-hidden="true" />
+          <Panel title="Accesos rápidos" density="compact">
+            <div className={styles.quickLinks}>
+              {canCreate && me.email_verified && (
+                <ButtonLink to={ROUTES.newCase} variant="secondary" size="sm">
+                  <MasIcon size={16} aria-hidden="true" />
+                  Abrir un caso
                 </ButtonLink>
-                {canManageTeam && (
-                  <ButtonLink to={ROUTES.members} variant="secondary" size="sm">
-                    <UsuariosIcon size={16} aria-hidden="true" />
-                    Equipo
-                  </ButtonLink>
-                )}
-                {canManageTeam && (
-                  <ButtonLink
-                    to={ROUTES.organizationAudit}
-                    variant="secondary"
-                    size="sm"
-                  >
-                    <SelloIcon size={16} aria-hidden="true" />
-                    Auditoría de seguridad
-                  </ButtonLink>
-                )}
-                {canPay && (
-                  <ButtonLink to={ROUTES.account} variant="secondary" size="sm">
-                    <ReciboIcon size={16} aria-hidden="true" />
-                    Plan y facturación
-                  </ButtonLink>
-                )}
-              </div>
-            </Panel>
-          )}
+              )}
+              <ButtonLink to={ROUTES.cases} variant="secondary" size="sm">
+                <CarpetaAbiertaIcon size={16} aria-hidden="true" />
+                Libro de casos
+                <FlechaDerechaIcon size={14} aria-hidden="true" />
+              </ButtonLink>
+              {canManageTeam && (
+                <ButtonLink to={ROUTES.members} variant="secondary" size="sm">
+                  <UsuariosIcon size={16} aria-hidden="true" />
+                  Equipo
+                </ButtonLink>
+              )}
+              {managesOrganization(me.organization?.role) && (
+                <ButtonLink
+                  to={ROUTES.organization}
+                  variant="secondary"
+                  size="sm"
+                >
+                  <EdificioIcon size={16} aria-hidden="true" />
+                  Organización
+                </ButtonLink>
+              )}
+              {canManageTeam && (
+                <ButtonLink
+                  to={ROUTES.organizationAudit}
+                  variant="secondary"
+                  size="sm"
+                >
+                  <SelloIcon size={16} aria-hidden="true" />
+                  Auditoría de seguridad
+                </ButtonLink>
+              )}
+              {canPay && (
+                <ButtonLink to={ROUTES.account} variant="secondary" size="sm">
+                  <ReciboIcon size={16} aria-hidden="true" />
+                  Plan y facturación
+                </ButtonLink>
+              )}
+            </div>
+          </Panel>
         </>
       )}
 
