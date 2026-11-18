@@ -1,15 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useOutletContext } from "react-router";
 
 import type { Me } from "../api/generated";
-import { organizationAuditPageOptions } from "../api/generated/@tanstack/react-query.gen.ts";
+import {
+  listMembersOptions,
+  organizationAuditPageOptions,
+} from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
+import { Panel } from "../components/ui/Panel.tsx";
+import { Skeleton } from "../components/ui/Skeleton.tsx";
 import { pageTitle } from "../config/site.ts";
 import { managesTeam } from "../features/workspace/roles.ts";
-import styles from "./PlatformPage.module.css";
+import styles from "./OrganizationAuditPage.module.css";
 
 const ACTION_LABELS: Record<string, string> = {
   user_registered: "Cuenta creada",
@@ -38,6 +43,10 @@ const ACTION_LABELS: Record<string, string> = {
   google_linked: "Cuenta de Google vinculada",
 };
 
+// Cuando el id ya no corresponde a ningún miembro actual (la persona salió del despacho), se
+// muestra este texto en vez del identificador crudo.
+const PERSON_GONE = "Persona que ya no está en el despacho";
+
 export function OrganizationAuditPage() {
   const me = useOutletContext<Me>();
   const allowed = managesTeam(me.organization?.role);
@@ -47,6 +56,20 @@ export function OrganizationAuditPage() {
     ...organizationAuditPageOptions({ query: cursor ? { cursor } : {} }),
     enabled: allowed,
   });
+
+  // Solo trae la primera página de miembros: alcanza para resolver nombres en un despacho normal.
+  // Si el volumen de miembros crece mucho, esto debería paginar también o resolver por lote.
+  const members = useQuery({
+    ...listMembersOptions({ query: {} }),
+    enabled: allowed,
+  });
+  const memberNames = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const member of members.data?.items ?? []) {
+      map.set(member.user_id, member.full_name);
+    }
+    return map;
+  }, [members.data]);
 
   return (
     <div className={styles.screen}>
@@ -59,8 +82,17 @@ export function OrganizationAuditPage() {
       {!allowed ? (
         <Notice tone="error">Esta cuenta no administra el despacho.</Notice>
       ) : (
-        <section className={styles.section} aria-label="Eventos de seguridad">
-          {audit.isPending && <p role="status">Cargando eventos</p>}
+        <Panel title="Eventos de seguridad">
+          {audit.isPending && (
+            <div className={styles.loading}>
+              <p role="status" className={styles.status}>
+                Cargando eventos
+              </p>
+              <Skeleton height="2.5rem" />
+              <Skeleton height="2.5rem" />
+              <Skeleton height="2.5rem" />
+            </div>
+          )}
           {audit.isError && (
             <Notice tone="error">No pudimos cargar los eventos.</Notice>
           )}
@@ -83,23 +115,35 @@ export function OrganizationAuditPage() {
                 <tbody>
                   {audit.data.items.map((event) => (
                     <tr key={event.id}>
-                      <td>
+                      <td data-label="Fecha">
                         <time dateTime={event.created_at}>
                           {new Date(event.created_at).toLocaleString("es-CO")}
                         </time>
                       </td>
-                      <th scope="row">
+                      <th scope="row" data-label="Acción">
                         {ACTION_LABELS[event.action] ??
                           event.action.replaceAll("_", " ")}
                       </th>
-                      <td className={styles.identifier}>
-                        {event.actor_user_id ?? "Sistema"}
+                      <td data-label="Persona">
+                        <Person
+                          id={event.actor_user_id}
+                          names={memberNames}
+                          fallback="Sistema"
+                        />
                       </td>
-                      <td className={styles.identifier}>
-                        {event.target_id ?? "Sin objeto"}
+                      <td data-label="Objeto">
+                        <Person
+                          id={event.target_id}
+                          names={memberNames}
+                          fallback="Sin objeto"
+                        />
                       </td>
-                      <td>{event.ip ?? "No registrada"}</td>
-                      <td>{event.user_agent ?? "No registrado"}</td>
+                      <td data-label="Dirección IP">
+                        {event.ip ?? "No registrada"}
+                      </td>
+                      <td data-label="Navegador">
+                        {event.user_agent ?? "No registrado"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -132,8 +176,28 @@ export function OrganizationAuditPage() {
               </Button>
             )}
           </div>
-        </section>
+        </Panel>
       )}
     </div>
+  );
+}
+
+// Resuelve un id de persona a su nombre entre los miembros actuales; si ya no es miembro, se
+// avisa en vez de mostrar el identificador crudo (que queda solo en title=, para depuración).
+function Person({
+  id,
+  names,
+  fallback,
+}: {
+  id: string | null;
+  names: Map<string, string>;
+  fallback: string;
+}) {
+  if (!id) return <>{fallback}</>;
+  const name = names.get(id);
+  return (
+    <span className={styles.person} title={id}>
+      {name ?? PERSON_GONE}
+    </span>
   );
 }

@@ -130,27 +130,3 @@
     padding: var(--space-6) var(--space-4);
   }
 }
-
-.layout {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 40px;
-}
-.copy {
-  max-width: 680px;
-  margin: auto;
-  text-align: center;
-}
-.privacy {
-  justify-content: center;
-  color: var(--gold);
-}
-.scope {
-  max-width: 600px;
-  margin: auto;
-}
-.form {
-  width: 100%;
-  max-width: 620px;
-  margin: auto;
-  border-radius: 6px;
-}

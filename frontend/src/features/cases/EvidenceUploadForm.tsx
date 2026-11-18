@@ -1,14 +1,17 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useRef, useState, type FormEvent } from "react";
+import { useId, useRef, useState, type FormEvent } from "react";
 
 import {
   listCasesQueryKey,
   listEvidencesInfiniteQueryKey,
   readCaseQueryKey,
 } from "../../api/generated/@tanstack/react-query.gen.ts";
-import { sessionFetch } from "../../api/sessionFetch.ts";
+import { sessionUpload } from "../../api/sessionFetch.ts";
 import { Button } from "../../components/ui/Button.tsx";
+import { Field } from "../../components/ui/Field.tsx";
+import fieldStyles from "../../components/ui/Field.module.css";
 import { Notice } from "../../components/ui/Notice.tsx";
+import { Select } from "../../components/ui/Select.tsx";
 import styles from "./EvidenceUploadForm.module.css";
 
 type Result = {
@@ -27,12 +30,19 @@ const TYPES = [
   ["other", "Otro"],
 ] as const;
 
+const TYPE_OPTIONS = TYPES.map(([value, label]) => ({ value, label }));
+
 export function EvidenceUploadForm({ caseId }: { caseId: string }) {
   const queryClient = useQueryClient();
   const form = useRef<HTMLFormElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<Result | null>(null);
+  const [progress, setProgress] = useState<{ loaded: number; total: number } | null>(
+    null,
+  );
+  const fileId = useId();
+  const fileHelpId = useId();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,6 +50,7 @@ export function EvidenceUploadForm({ caseId }: { caseId: string }) {
     setBusy(true);
     setError("");
     setResult(null);
+    setProgress(null);
     try {
       const fields = event.currentTarget.elements;
       const type = fields.namedItem("tipo") as HTMLSelectElement | null;
@@ -54,13 +65,12 @@ export function EvidenceUploadForm({ caseId }: { caseId: string }) {
       body.append("tipo", type.value);
       body.append("origen", origin.value);
       body.append("archivo", file, file.name);
-      const response = await sessionFetch(
+      const response = await sessionUpload(
         new URL(`/api/v1/cases/${caseId}/evidences`, window.location.origin),
+        body,
         {
-          method: "POST",
-          credentials: "same-origin",
           headers: { "X-Aletheia-Request": "1" },
-          body,
+          onProgress: (next) => setProgress(next),
         },
       );
       if (!response.ok) {
@@ -99,8 +109,14 @@ export function EvidenceUploadForm({ caseId }: { caseId: string }) {
       );
     } finally {
       setBusy(false);
+      setProgress(null);
     }
   }
+
+  const percent =
+    progress && progress.total > 0
+      ? Math.round((progress.loaded / progress.total) * 100)
+      : null;
 
   return (
     <section className={styles.box} aria-labelledby="evidence-upload-title">
@@ -114,34 +130,47 @@ export function EvidenceUploadForm({ caseId }: { caseId: string }) {
         onSubmit={(event) => void submit(event)}
         className={styles.form}
       >
-        <label>
-          Tipo de archivo
-          <select name="tipo" required disabled={busy} defaultValue="document">
-            {TYPES.map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Origen declarado
-          <input
-            name="origen"
-            type="text"
-            required
-            maxLength={500}
-            disabled={busy}
-            placeholder="Ej.: entregado por el cliente"
-          />
-        </label>
-        <label>
-          Archivo
-          <input name="archivo" type="file" required disabled={busy} />
-        </label>
-        <Button type="submit" disabled={busy}>
+        <Select
+          label="Tipo de archivo"
+          name="tipo"
+          required
+          disabled={busy}
+          defaultValue="document"
+          options={TYPE_OPTIONS}
+        />
+        <Field
+          label="Origen declarado"
+          name="origen"
+          required
+          maxLength={500}
+          disabled={busy}
+          help="Por ejemplo: entregado por el cliente."
+        />
+        <div className={fieldStyles.field}>
+          <label htmlFor={fileId} className={fieldStyles.label}>
+            Archivo
+          </label>
+          <div className={fieldStyles.control}>
+            <input
+              id={fileId}
+              name="archivo"
+              type="file"
+              required
+              disabled={busy}
+              className={fieldStyles.input}
+              aria-describedby={fileHelpId}
+            />
+          </div>
+          <p id={fileHelpId} className={fieldStyles.help}>
+            Cualquier tipo de archivo, hasta el límite de su plan.
+          </p>
+        </div>
+        <Button type="submit" busy={busy}>
           {busy ? "Conservando archivo" : "Conservar evidencia"}
         </Button>
+        {percent !== null && (
+          <p role="status">Subiendo el archivo: {percent} %</p>
+        )}
       </form>
       {error && (
         <Notice tone="error">

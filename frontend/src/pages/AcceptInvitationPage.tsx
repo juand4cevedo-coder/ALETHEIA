@@ -21,7 +21,10 @@ import styles from "../features/auth/AccessScreen.module.css";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { LegalConsent } from "../features/auth/LegalConsent.tsx";
 import { tokenFromHash } from "../features/auth/linkToken.ts";
-import { newPasswordError } from "../features/auth/newPassword.ts";
+import {
+  confirmPasswordError,
+  newPasswordError,
+} from "../features/auth/newPassword.ts";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import {
   PASSWORD_MAX_LENGTH,
@@ -134,16 +137,21 @@ function AcceptForm({
   const isNew = invitation.account === "new";
   const [values, setValues] = useState<Values>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmPasswordErrorMessage, setConfirmPasswordErrorMessage] =
+    useState<string | undefined>(undefined);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [unusable, setUnusable] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
   const acceptsRef = useRef<HTMLInputElement>(null);
 
   const accept = useMutation({
     ...acceptInvitationMutation(),
     onSuccess: async () => {
       setValues(EMPTY);
+      setConfirmPassword("");
       rememberSession();
       await queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
       await navigate(ROUTES.app, { replace: true });
@@ -193,6 +201,11 @@ function AcceptForm({
     setErrors(found);
     if (found.fullName) return nameRef.current?.focus();
     if (found.password) return passwordRef.current?.focus();
+    if (isNew) {
+      const mismatch = confirmPasswordError(values.password, confirmPassword);
+      setConfirmPasswordErrorMessage(mismatch);
+      if (mismatch) return confirmPasswordRef.current?.focus();
+    }
     if (found.accepts) return acceptsRef.current?.focus();
     accept.mutate({
       body: isNew
@@ -275,6 +288,20 @@ function AcceptForm({
               <PasswordMeter id={METER_ID} password={values.password} />
             )}
           </Field>
+          {isNew && (
+            <Field
+              ref={confirmPasswordRef}
+              label="Confirmar contraseña"
+              name="confirmar-contrasena"
+              type="password"
+              autoComplete="new-password"
+              required
+              maxLength={PASSWORD_MAX_LENGTH}
+              value={confirmPassword}
+              error={confirmPasswordErrorMessage}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+            />
+          )}
         </fieldset>
 
         {isNew ? (

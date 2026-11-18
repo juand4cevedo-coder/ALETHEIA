@@ -1,5 +1,4 @@
-import { digestFile, MAX_VERIFY_BYTES } from "./fileDigest.ts";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "../../components/ui/Button.tsx";
 import { Field } from "../../components/ui/Field.tsx";
 import {
@@ -10,38 +9,64 @@ import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
 import styles from "./VerifierSection.module.css";
 
+type WorkerMessage =
+  | { type: "progress"; bytes: number }
+  | { type: "complete"; digest: string }
+  | { type: "error" };
+
 export function VerifierSection() {
   const id = useId();
   const [file, setFile] = useState<File | null>(null);
   const [expected, setExpected] = useState("");
   const [hash, setHash] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState("");
-  const supported = typeof crypto !== "undefined" && !!crypto.subtle;
+  const supported = typeof Worker !== "undefined";
+  const workerRef = useRef<Worker | null>(null);
+  const busy = progress !== null;
   const normalized = expected.trim().toLowerCase();
   const validExpected = /^[a-f0-9]{64}$/.test(normalized);
   const matches = hash && validExpected ? hash === normalized : null;
 
-  async function verify() {
+  useEffect(() => () => workerRef.current?.terminate(), []);
+
+  function verify() {
     if (!file || busy || !supported) return;
     setHash(null);
     setError("");
-    if (file.size > MAX_VERIFY_BYTES) {
-      setError(
-        "Elija un archivo de hasta 32 MB para esta comprobación en el navegador.",
-      );
-      return;
-    }
-    setBusy(true);
-    try {
-      setHash(await digestFile(file));
-    } catch {
+    const worker = new Worker(
+      new URL("../verifier/hash.worker.ts", import.meta.url),
+      { type: "module" },
+    );
+    workerRef.current = worker;
+    setProgress(0);
+    worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
+      const message = event.data;
+      if (message.type === "progress") {
+        setProgress(message.bytes);
+      } else if (message.type === "complete") {
+        setProgress(null);
+        setHash(message.digest);
+        worker.terminate();
+        workerRef.current = null;
+      } else {
+        setProgress(null);
+        setError(
+          "No pudimos leer el archivo. Vuelva a seleccionarlo e intente de nuevo.",
+        );
+        worker.terminate();
+        workerRef.current = null;
+      }
+    };
+    worker.onerror = () => {
+      setProgress(null);
       setError(
         "No pudimos leer el archivo. Vuelva a seleccionarlo e intente de nuevo.",
       );
-    } finally {
-      setBusy(false);
-    }
+      worker.terminate();
+      workerRef.current = null;
+    };
+    worker.postMessage({ file });
   }
 
   return (
@@ -56,7 +81,6 @@ export function VerifierSection() {
           <div className={styles.copy}>
             <SectionHeading
               id="titulo-verificador"
-              kicker="Comprobación independiente"
               title="La confianza también se comprueba."
               lead="Calcule la huella de un archivo y compárela con una huella de referencia. Sin cuenta y sin enviar su archivo."
               className={section.headingStacked}
@@ -75,7 +99,7 @@ export function VerifierSection() {
             className={styles.form}
             onSubmit={(event) => {
               event.preventDefault();
-              void verify();
+              verify();
             }}
             aria-label="Comprobar la huella de un archivo"
           >
@@ -98,8 +122,8 @@ export function VerifierSection() {
                 }}
               />
               <p id={id + "-help"}>
-                Cualquier formato, hasta 32 MB. El contenido no se abre ni se
-                ejecuta.
+                Cualquier formato, sin límite de tamaño: el cálculo avanza por
+                partes en un hilo propio, sin bloquear la página.
               </p>
             </div>
             <Field
@@ -127,6 +151,11 @@ export function VerifierSection() {
               <p role="alert">
                 Su navegador no permite calcular huellas en esta página. Use un
                 navegador actualizado con una conexión HTTPS.
+              </p>
+            )}
+            {progress !== null && file && (
+              <p role="status">
+                Calculando: {Math.round((progress / file.size) * 100)} %
               </p>
             )}
             {error && (

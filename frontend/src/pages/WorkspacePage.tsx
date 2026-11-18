@@ -2,142 +2,260 @@ import { Navigate, useOutletContext } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { listCasesOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 
-import type { Me } from "../api/generated";
+import type { CaseSummaryOut, Me } from "../api/generated";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
+import { Panel } from "../components/ui/Panel.tsx";
+import { StatTile } from "../components/ui/StatTile.tsx";
+import { StatusBadge } from "../components/ui/StatusBadge.tsx";
+import { Notice } from "../components/ui/Notice.tsx";
+import { EmptyState } from "../components/ui/EmptyState.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import { EmailStatus } from "../features/session/EmailStatus.tsx";
-import { ROLE_LABELS } from "../features/workspace/roles.ts";
+import { managesTeam, ROLE_LABELS } from "../features/workspace/roles.ts";
 import { canOpenCases } from "../features/cases/roles.ts";
+import { custodyActionLabel } from "../features/cases/custodyActions.ts";
+import { formatRecentActivity } from "../features/cases/dates.ts";
 import styles from "./WorkspacePage.module.css";
 import {
   CarpetaAbiertaIcon,
   FlechaDerechaIcon,
   MasIcon,
+  ReciboIcon,
+  SelloIcon,
+  UsuariosIcon,
 } from "../components/ui/icons.tsx";
 
-// Inicio del espacio de trabajo. Por ahora muestra a nombre de quién está la sesión, el estado
-// real de la cuenta y el camino al libro de casos, donde se abren; HU-031 lo convierte en el
-// tablero con casos, evidencias y exportaciones. Nada aquí anuncia funciones que no existen.
+const ACTION_TONE: Record<string, "ok" | "pending" | "error" | "muted"> = {
+  evidence_stamped: "ok",
+  chain_verified: "ok",
+  evidence_stamp_failed: "error",
+  case_closed: "muted",
+  export_ready: "ok",
+};
+
+function toneForAction(action: string): "ok" | "pending" | "error" | "muted" {
+  return ACTION_TONE[action] ?? "pending";
+}
+
+// Inicio del espacio de trabajo (HU-031): lo primero que ve la persona al ingresar. Un asistente
+// no abre casos, así que su acción principal es distinta a la del resto del equipo; el
+// propietario y el administrador además gestionan el despacho, así que ven accesos que un
+// abogado no necesita. Nada aquí usa datos que la API no exponga ya en /me o en el libro de
+// casos.
 export function WorkspacePage() {
   const me = useOutletContext<Me>();
-  const summary = useQuery({
+  const canCreate = canOpenCases(me.organization?.role);
+  const canManageTeam = managesTeam(me.organization?.role);
+  const canPay = me.permissions?.includes("billing.manage") ?? false;
+
+  const totals = useQuery({
     ...listCasesOptions({ query: { status: "open", limit: 1 } }),
     enabled: me.organization != null && !me.platform_admin,
   });
-  const totals = summary.data?.totals;
+  const recent = useQuery({
+    ...listCasesOptions({ query: { status: "all", limit: 5 } }),
+    enabled: me.organization != null && !me.platform_admin,
+  });
 
   if (me.platform_admin) return <Navigate to={ROUTES.platform} replace />;
+
+  // Acceso defensivo: una respuesta con otra forma (por ejemplo en una prueba que no simula
+  // este endpoint) no debe tumbar la pantalla, solo se trata como «sin datos todavía».
+  const caseTotals = totals.data?.totals;
+  const recentItems = recent.data?.items;
+
+  const subscription = me.subscription;
+  const needsAttention =
+    canPay &&
+    subscription != null &&
+    (subscription.status === "trial" || subscription.status === "expired");
 
   return (
     <div className={styles.screen}>
       <title>{pageTitle("Espacio de trabajo")}</title>
       <meta name="robots" content="noindex" />
 
-      <div className={styles.welcome}>
-        <p className={styles.eyebrow}>Su espacio de trabajo</p>
-        <PageHeader
-          title={me.full_name}
-          actions={
-            me.organization && (
-              // Los casos se abren y se consultan en el libro de casos, para todos los roles. Con
-              // el correo sin verificar, la acción que se espera es verificarlo: el botón principal
-              // es el del enlace nuevo y este pasa a secundario.
-              <ButtonLink
-                to={ROUTES.cases}
-                size="sm"
-                variant={me.email_verified ? "primary" : "secondary"}
-              >
-                <CarpetaAbiertaIcon size={16} aria-hidden="true" />
-                Ver mis casos
-              </ButtonLink>
-            )
-          }
-        />
-        <p className={styles.welcomeText}>
-          Cada detalle en su lugar. Continúe con los casos de su organización.
-        </p>
-      </div>
+      <PageHeader
+        title={me.full_name}
+        description={
+          me.organization
+            ? `${me.organization.name}, ${ROLE_LABELS[me.organization.role]}`
+            : undefined
+        }
+        actions={
+          me.organization && (
+            <ButtonLink
+              to={ROUTES.cases}
+              size="sm"
+              variant={me.email_verified ? "primary" : "secondary"}
+            >
+              <CarpetaAbiertaIcon size={16} aria-hidden="true" />
+              {canCreate ? "Ver mis casos" : "Ver mis casos asignados"}
+            </ButtonLink>
+          )
+        }
+      />
 
       {me.organization && (
         <>
           <section
             className={styles.overview}
             aria-label="Resumen de sus casos"
-            aria-busy={summary.isPending}
+            aria-busy={totals.isPending}
           >
-            {[
-              { label: "Casos abiertos", value: totals?.open },
-              { label: "Casos cerrados", value: totals?.closed },
-              { label: "Registros de custodia", value: totals?.custody_events },
-            ].map(({ label, value }) => (
-              <div key={label} className={styles.metric}>
-                <p>{label}</p>
-                <strong>
-                  {value ?? (summary.isPending ? "Cargando" : "No disponible")}
-                </strong>
-              </div>
-            ))}
+            <StatTile
+              label="Casos abiertos"
+              value={caseTotals?.open ?? (totals.isPending ? "Cargando" : "No disponible")}
+            />
+            <StatTile
+              label="Casos cerrados"
+              value={caseTotals?.closed ?? (totals.isPending ? "Cargando" : "No disponible")}
+            />
+            <StatTile
+              label="Sellos de tiempo pendientes"
+              value={caseTotals?.pending_stamps ?? (totals.isPending ? "Cargando" : "No disponible")}
+              note={
+                caseTotals && caseTotals.pending_stamps > 0
+                  ? "Evidencias esperando su sello."
+                  : undefined
+              }
+            />
+            <StatTile
+              label="Eventos de custodia"
+              value={caseTotals?.custody_events ?? (totals.isPending ? "Cargando" : "No disponible")}
+            />
           </section>
-          {summary.isError && (
+          {totals.isError && (
             <p role="status" className={styles.note}>
               No pudimos cargar el resumen. Puede seguir trabajando desde la
               lista de casos.
             </p>
           )}
-          <div className={styles.quickActions}>
-            <div>
-              <p className={styles.eyebrow}>El siguiente paso</p>
-              <h2>Su trabajo continúa aquí.</h2>
-              <p>
-                Consulte el contexto de cada caso, su equipo responsable y su
-                actividad.
+
+          {needsAttention && (
+            <Notice tone="warning">
+              {subscription?.status === "trial"
+                ? "Su período de prueba está activo. "
+                : "Su período de prueba venció. "}
+              <a href={ROUTES.account}>Revise el plan en Mi cuenta</a> para no
+              perder el acceso.
+            </Notice>
+          )}
+
+          <Panel title="Actividad reciente">
+            {recent.isPending && <p role="status">Cargando la actividad reciente</p>}
+            {recent.isError && (
+              <p role="status" className={styles.note}>
+                No pudimos cargar la actividad reciente.
               </p>
-            </div>
-            <div className={styles.actionLinks}>
-              {canOpenCases(me.organization.role) && me.email_verified && (
-                <ButtonLink to={ROUTES.newCase}>
-                  <MasIcon size={18} aria-hidden="true" />
-                  Abrir un caso
+            )}
+            {recentItems && recentItems.length === 0 && (
+              <EmptyState
+                title={canCreate ? "Todavía no hay casos" : "Nada asignado por ahora"}
+                description={
+                  canCreate
+                    ? "Abra el primero y empiece a reunir el contexto de su equipo."
+                    : "Cuando le asignen un caso, su actividad aparecerá aquí."
+                }
+                actions={
+                  canCreate && me.email_verified ? (
+                    <ButtonLink to={ROUTES.newCase} size="sm">
+                      <MasIcon size={16} aria-hidden="true" />
+                      Abrir un caso
+                    </ButtonLink>
+                  ) : undefined
+                }
+              />
+            )}
+            {recentItems && recentItems.length > 0 && (
+              <ul className={styles.activity}>
+                {recentItems.map((item: CaseSummaryOut) => (
+                  <li key={item.id} className={styles.activityRow}>
+                    <a href={`${ROUTES.cases}/${item.id}`} className={styles.activityLink}>
+                      <span className={styles.activityTitle}>{item.title}</span>
+                      {item.last_event && (
+                        <span className={styles.activityMeta}>
+                          <StatusBadge tone={toneForAction(item.last_event.action)}>
+                            {custodyActionLabel(item.last_event.action)}
+                          </StatusBadge>
+                          {item.last_event.actor_name && (
+                            <span>por {item.last_event.actor_name}</span>
+                          )}
+                          <span>{formatRecentActivity(item.last_activity_at)}</span>
+                        </span>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+
+          {(canManageTeam || canCreate) && (
+            <Panel title="Accesos rápidos" density="compact">
+              <div className={styles.quickLinks}>
+                {canCreate && me.email_verified && (
+                  <ButtonLink to={ROUTES.newCase} variant="secondary" size="sm">
+                    <MasIcon size={16} aria-hidden="true" />
+                    Abrir un caso
+                  </ButtonLink>
+                )}
+                <ButtonLink to={ROUTES.cases} variant="secondary" size="sm">
+                  <CarpetaAbiertaIcon size={16} aria-hidden="true" />
+                  Libro de casos
+                  <FlechaDerechaIcon size={14} aria-hidden="true" />
                 </ButtonLink>
-              )}
-              <ButtonLink to={ROUTES.cases} variant="secondary">
-                Ir al libro de casos
-                <FlechaDerechaIcon size={18} aria-hidden="true" />
-              </ButtonLink>
-            </div>
-          </div>
+                {canManageTeam && (
+                  <ButtonLink to={ROUTES.members} variant="secondary" size="sm">
+                    <UsuariosIcon size={16} aria-hidden="true" />
+                    Equipo
+                  </ButtonLink>
+                )}
+                {canManageTeam && (
+                  <ButtonLink
+                    to={ROUTES.organizationAudit}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    <SelloIcon size={16} aria-hidden="true" />
+                    Auditoría de seguridad
+                  </ButtonLink>
+                )}
+                {canPay && (
+                  <ButtonLink to={ROUTES.account} variant="secondary" size="sm">
+                    <ReciboIcon size={16} aria-hidden="true" />
+                    Plan y facturación
+                  </ButtonLink>
+                )}
+              </div>
+            </Panel>
+          )}
         </>
       )}
 
-      <dl className={styles.record}>
-        <div className={styles.row}>
-          <dt>Organización</dt>
-          <dd>{me.organization?.name ?? "Sin organización"}</dd>
-        </div>
-        {me.organization && (
-          <div className={styles.row}>
-            <dt>Su rol</dt>
-            <dd>{ROLE_LABELS[me.organization.role]}</dd>
-          </div>
-        )}
-        <div className={styles.row}>
-          <dt>Correo</dt>
-          <dd className={styles.email}>
-            <span translate="no">{me.email}</span>
-            <EmailStatus verified={me.email_verified} />
-          </dd>
-        </div>
-      </dl>
+      {!me.organization && (
+        <p className={styles.note}>
+          Su cuenta ya no pertenece a ninguna organización. Para volver a
+          trabajar en una, pida a su propietario que lo invite de nuevo.
+        </p>
+      )}
+
+      {me.organization && (
+        <p className={styles.identity}>
+          <span translate="no">{me.email}</span>
+          <EmailStatus verified={me.email_verified} />
+        </p>
+      )}
 
       {!me.email_verified && (
-        <section className={styles.notice} aria-labelledby="titulo-verificar">
-          <h2 id="titulo-verificar" className={styles.noticeTitle}>
+        <section className={styles.verify} aria-labelledby="titulo-verificar">
+          <h2 id="titulo-verificar" className={styles.verifyTitle}>
             Verifique su correo
           </h2>
-          <p className={styles.noticeText}>
+          <p className={styles.note}>
             Abra el enlace que le enviamos al crear la cuenta. Hasta entonces no
             podrá abrir casos. Si el enlace venció o no le llegó, pida uno
             nuevo.
@@ -146,13 +264,6 @@ export function WorkspacePage() {
             <ResendVerification email={me.email} />
           </div>
         </section>
-      )}
-
-      {!me.organization && (
-        <p className={styles.note}>
-          Su cuenta ya no pertenece a ninguna organización. Para volver a
-          trabajar en una, pida a su propietario que lo invite de nuevo.
-        </p>
       )}
     </div>
   );

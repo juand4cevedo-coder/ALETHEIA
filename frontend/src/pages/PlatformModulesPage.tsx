@@ -15,6 +15,7 @@ import {
 import { Button } from "../components/ui/Button.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
+import { Panel } from "../components/ui/Panel.tsx";
 import { pageTitle } from "../config/site.ts";
 import styles from "./PlatformPage.module.css";
 
@@ -59,69 +60,68 @@ export function PlatformBillingPage() {
       {!me.platform_admin ? (
         <Restricted />
       ) : (
-        <section className={styles.section} aria-label="Resumen comercial">
+        <>
           {billing.isPending && <p role="status">Cargando facturación</p>}
           {billing.isError && (
             <Notice tone="error">No pudimos cargar la facturación.</Notice>
           )}
           {billing.data && (
             <>
-              <div className={styles.metrics}>
-                <div>
-                  <strong>{billing.data.payment_events_received}</strong>
-                  <span>Notificaciones de pago recibidas</span>
-                </div>
-                <div>
-                  <strong>{billing.data.payment_events_pending}</strong>
-                  <span>Sin procesar</span>
-                </div>
-              </div>
-              <div className={styles.sectionHeading}>
-                <h2>Suscripciones por estado</h2>
-              </div>
-              <dl className={styles.metrics}>
-                {Object.entries(STATUS_LABELS).map(([status, label]) => (
-                  <div key={status}>
-                    <dt>{label}</dt>
-                    <dd>{billing.data.subscription_counts[status] ?? 0}</dd>
+              <Panel title="Notificaciones de pago">
+                <div className={styles.metrics}>
+                  <div>
+                    <strong>{billing.data.payment_events_received}</strong>
+                    <span>Notificaciones de pago recibidas</span>
                   </div>
-                ))}
-              </dl>
-              <div className={styles.sectionHeading}>
-                <h2>Planes del catálogo</h2>
-              </div>
-              <div className={styles.tableScroll}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th scope="col">Plan</th>
-                      <th scope="col">Mensual</th>
-                      <th scope="col">Anual</th>
-                      <th scope="col">Usuarios incluidos</th>
-                      <th scope="col">En precios</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {billing.data.plans.map((plan) => (
-                      <tr key={plan.code}>
-                        <th scope="row">{plan.name}</th>
-                        <td>{money(plan.monthly_price_cop)}</td>
-                        <td>{money(plan.annual_price_cop)}</td>
-                        <td>{plan.included_users}</td>
-                        <td>{plan.is_public ? "Sí" : "Por cotización"}</td>
+                  <div>
+                    <strong>{billing.data.payment_events_pending}</strong>
+                    <span>Sin procesar</span>
+                  </div>
+                </div>
+              </Panel>
+              <Panel title="Suscripciones por estado">
+                <dl className={styles.metrics}>
+                  {Object.entries(STATUS_LABELS).map(([status, label]) => (
+                    <div key={status}>
+                      <dt>{label}</dt>
+                      <dd>{billing.data.subscription_counts[status] ?? 0}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </Panel>
+              <Panel
+                title="Planes del catálogo"
+                description="Este panel refleja los registros actuales. No emite facturas ni cobra pagos."
+              >
+                <div className={styles.tableScroll}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th scope="col">Plan</th>
+                        <th scope="col">Mensual</th>
+                        <th scope="col">Anual</th>
+                        <th scope="col">Usuarios incluidos</th>
+                        <th scope="col">En precios</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className={styles.note}>
-                Este panel refleja los registros actuales. No emite facturas ni
-                cobra pagos.
-              </p>
+                    </thead>
+                    <tbody>
+                      {billing.data.plans.map((plan) => (
+                        <tr key={plan.code}>
+                          <th scope="row">{plan.name}</th>
+                          <td>{money(plan.monthly_price_cop)}</td>
+                          <td>{money(plan.annual_price_cop)}</td>
+                          <td>{plan.included_users}</td>
+                          <td>{plan.is_public ? "Sí" : "Por cotización"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Panel>
               <CourtesyManager plans={billing.data.plans} />
             </>
           )}
-        </section>
+        </>
       )}
     </div>
   );
@@ -223,11 +223,11 @@ function CourtesyManager({
   }
 
   return (
-    <div className={styles.courtesy}>
-      <div className={styles.sectionHeading}>
-        <h2>Planes de cortesía</h2>
-        <p>Conceda acceso sin registrar un pago.</p>
-      </div>
+    <Panel
+      title="Planes de cortesía"
+      description="Conceda acceso sin registrar un pago."
+    >
+      <div className={styles.courtesy}>
       <form className={styles.form} onSubmit={search}>
         <label htmlFor="courtesy-email">Correo del titular del despacho</label>
         <div className={styles.inlineForm}>
@@ -338,7 +338,8 @@ function CourtesyManager({
         </>
       )}
       {message && <p role="status">{message}</p>}
-    </div>
+      </div>
+    </Panel>
   );
 }
 
@@ -376,7 +377,7 @@ export function PlatformSupportPage() {
       {!me.platform_admin ? (
         <Restricted />
       ) : (
-        <section className={styles.section} aria-label="Solicitudes">
+        <Panel title="Solicitudes">
           {tickets.isPending && <p role="status">Cargando solicitudes</p>}
           {tickets.isError && (
             <Notice tone="error">No pudimos cargar las solicitudes.</Notice>
@@ -435,7 +436,7 @@ export function PlatformSupportPage() {
               </Button>
             )}
           </div>
-        </section>
+        </Panel>
       )}
     </div>
   );
@@ -483,7 +484,7 @@ export function PlatformAuditPage() {
       {!me.platform_admin ? (
         <Restricted />
       ) : (
-        <section className={styles.section} aria-label="Eventos">
+        <Panel title="Eventos">
           {audit.isPending && <p role="status">Cargando eventos</p>}
           {audit.isError && (
             <Notice tone="error">No pudimos cargar los eventos.</Notice>
@@ -554,7 +555,7 @@ export function PlatformAuditPage() {
               </Button>
             )}
           </div>
-        </section>
+        </Panel>
       )}
     </div>
   );

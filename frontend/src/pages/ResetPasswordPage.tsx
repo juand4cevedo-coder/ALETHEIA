@@ -13,7 +13,10 @@ import { apiProblem } from "../features/auth/apiProblem.ts";
 import { Field } from "../components/ui/Field.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { tokenFromHash } from "../features/auth/linkToken.ts";
-import { newPasswordError } from "../features/auth/newPassword.ts";
+import {
+  confirmPasswordError,
+  newPasswordError,
+} from "../features/auth/newPassword.ts";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import { PASSWORD_MAX_LENGTH } from "../features/auth/signUp.ts";
 import { CirculoVistoIcon, VinculoIcon } from "../components/ui/icons.tsx";
@@ -34,9 +37,11 @@ export function ResetPasswordPage() {
   const [token] = useState(() => tokenFromHash(location.hash));
   const [stage, setStage] = useState<Stage>(token ? "form" : "invalid");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [problem, setProblem] = useState<Problem | null>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -54,6 +59,7 @@ export function ResetPasswordPage() {
     onSuccess: () => {
       // La contraseña no se queda en la memoria de la página.
       setPassword("");
+      setConfirmPassword("");
       setStage("done");
     },
     onError: (failure) => {
@@ -71,6 +77,9 @@ export function ResetPasswordPage() {
   });
 
   const error = submitted ? newPasswordError(password) : undefined;
+  const confirmError = submitted
+    ? confirmPasswordError(password, confirmPassword)
+    : undefined;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -79,6 +88,10 @@ export function ResetPasswordPage() {
     setProblem(null);
     if (newPasswordError(password)) {
       passwordRef.current?.focus();
+      return;
+    }
+    if (confirmPasswordError(password, confirmPassword)) {
+      confirmPasswordRef.current?.focus();
       return;
     }
     reset.mutate({ body: { token, password } });
@@ -135,6 +148,18 @@ export function ResetPasswordPage() {
                 >
                   <PasswordMeter id={METER_ID} password={password} />
                 </Field>
+                <Field
+                  ref={confirmPasswordRef}
+                  label="Confirmar contraseña"
+                  name="confirmar-contrasena"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  maxLength={PASSWORD_MAX_LENGTH}
+                  value={confirmPassword}
+                  error={confirmError}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                />
               </fieldset>
 
               <div className={styles.submit}>

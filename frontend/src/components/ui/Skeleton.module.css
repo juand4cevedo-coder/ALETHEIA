@@ -1,0 +1,23 @@
+/* Marcador de carga: un bloque que respira, no una barra de progreso falsa. */
+.skeleton {
+  display: inline-block;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  animation: breathe var(--motion-enter) var(--ease-standard) infinite alternate;
+}
+
+@keyframes breathe {
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    opacity: 0.8;
+  }
+}

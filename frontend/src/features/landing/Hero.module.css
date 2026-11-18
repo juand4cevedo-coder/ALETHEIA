@@ -74,7 +74,7 @@
   align-items: center;
   gap: 8px;
   padding: 5px 12px;
-  background: #0b0d10;
+  background: var(--surface-1);
   border-radius: inherit;
 }
 .eyebrow svg {
@@ -97,7 +97,7 @@
 .lead {
   font-size: 18px;
   line-height: 1.6;
-  color: #a5a5a5;
+  color: var(--text-2);
   max-width: 450px;
   margin-top: 24px;
 }
@@ -113,7 +113,7 @@
   margin: auto;
   padding: 56px 24px 88px;
   text-align: center;
-  color: #999;
+  color: var(--text-3);
   font-size: 13px;
 }
 .benefits ul {
@@ -125,7 +125,7 @@
   margin: 0;
   list-style: none;
   font-size: 20px;
-  color: #c2c2c2;
+  color: var(--text-2);
   letter-spacing: -0.03em;
 }
 @property --border-angle {

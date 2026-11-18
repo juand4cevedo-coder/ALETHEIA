@@ -12,13 +12,13 @@
   border: 0;
   border-radius: 16px;
   color: var(--text);
-  background: rgb(214 235 253 / 19%);
+  background: var(--line-accent);
   cursor: pointer;
   font: 500 15px var(--font-sans);
   text-align: left;
 }
 .tabs button[aria-selected="true"] {
-  background: rgb(214 235 253 / 19%);
+  background: var(--line-accent);
 }
 .travelingBorder {
   position: absolute;
@@ -30,11 +30,11 @@
   overflow: hidden;
   pointer-events: none;
   opacity: 0;
-  stroke: #a5f3c0;
+  stroke: var(--ok);
   stroke-width: 2;
   stroke-dasharray: 8 92;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 5px #22c55e);
+  filter: drop-shadow(0 0 5px var(--ok));
 }
 .tabs button[aria-selected="true"] .travelingBorder {
   opacity: 1;
@@ -62,14 +62,14 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  border: 1px solid rgb(214 235 253 / 19%);
+  border: 1px solid var(--line-accent);
   background: linear-gradient(225deg, #ffffff1a, transparent);
 }
 .tabs button[aria-selected="true"] .icon {
-  color: #22c55e;
+  color: var(--ok);
 }
 .panel {
-  border: 1px solid rgb(214 235 253 / 19%);
+  border: 1px solid var(--line-accent);
   border-radius: 16px;
   overflow: hidden;
   background: #08090b;

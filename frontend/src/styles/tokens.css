@@ -17,6 +17,8 @@
   --line: #252629;
 
   --line-control: #686b70;
+  /* Línea de borde de las tarjetas y encabezados de sección en la landing. */
+  --line-accent: rgb(214 235 253 / 19%);
   --text: #f0f0f0;
   --text-2: #a1a4a5;
 

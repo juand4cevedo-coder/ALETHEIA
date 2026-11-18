@@ -7,273 +7,89 @@
   place-items: center;
   overflow: hidden;
   isolation: isolate;
-  perspective: 900px;
 }
 
-.sculpture {
+/* El documento, con el sello sobre la esquina inferior derecha: el mismo motivo que StampCard. */
+.document {
   position: relative;
-  width: 420px;
-  height: 420px;
+  width: 300px;
+  height: 380px;
+  padding: var(--space-8) var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(165deg, var(--surface-1), var(--bg));
+  box-shadow: var(--shadow-float);
+  animation: float 6.5s ease-in-out infinite;
+}
+
+.lines {
   display: grid;
-  place-items: center;
-  transform-style: preserve-3d;
-  animation: levitate 5.8s ease-in-out infinite;
+  gap: var(--space-4);
 }
 
-.ambient {
-  position: absolute;
-  inset: 15px;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 50deg,
-    #5b5bff44,
-    #b651e04d,
-    #f19f583d,
-    #53d7c03d,
-    #5b5bff44
-  );
-  filter: blur(62px);
-  animation: ambientTurn 11s linear infinite;
-}
-
-.orbit {
-  position: absolute;
-  width: 396px;
-  height: 396px;
-  border: 1px solid #a8b8cb2d;
-  border-radius: 50%;
-  transform: rotateX(71deg) rotateZ(-20deg);
-  box-shadow: 0 0 25px #aaa0ff18;
-  animation: orbitTurn 13s linear infinite;
-}
-
-.orbit::before,
-.orbit::after {
-  content: "";
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #b8b3ff;
-  box-shadow: 0 0 16px 3px #9a8cff;
-}
-
-.orbit::before {
-  top: 34px;
-  left: 50px;
-}
-.orbit::after {
-  right: 36px;
-  bottom: 55px;
-  background: #f0ba8c;
-  box-shadow: 0 0 16px 3px #e8a069;
-}
-
-.outerRing,
-.innerRing {
-  position: absolute;
-  border-radius: 50%;
-  transform-style: preserve-3d;
-  filter: drop-shadow(0 18px 28px #000b);
-}
-
-.outerRing {
-  width: 340px;
-  height: 340px;
-  background: conic-gradient(
-    from 18deg,
-    #12131a 0deg,
-    #596173 30deg,
-    #161820 65deg,
-    #bb7fb5 108deg,
-    #30303d 143deg,
-    #0b0e15 185deg,
-    #53b5ae 225deg,
-    #282c3a 255deg,
-    #e4a56b 300deg,
-    #14151c 342deg,
-    #12131a 360deg
-  );
-  -webkit-mask: radial-gradient(farthest-side, transparent 78%, #000 79%);
-  mask: radial-gradient(farthest-side, transparent 78%, #000 79%);
-  animation: outerTurn 10s linear infinite;
-}
-
-.outerRing::after {
-  content: "";
-  position: absolute;
-  inset: 10px;
-  border-radius: 50%;
-  background: repeating-conic-gradient(
-    from 0deg,
-    #f8f8ff8c 0deg 1deg,
-    transparent 1deg 22.5deg
-  );
-  -webkit-mask: radial-gradient(farthest-side, transparent 90%, #000 92%);
-  mask: radial-gradient(farthest-side, transparent 90%, #000 92%);
-}
-
-.innerRing {
-  width: 274px;
-  height: 274px;
-  background: conic-gradient(
-    from 145deg,
-    #0c0e14,
-    #606779 40deg,
-    #16171e 98deg,
-    #8b719d 145deg,
-    #171920 208deg,
-    #6c9eae 262deg,
-    #191a20 317deg,
-    #0c0e14
-  );
-  -webkit-mask: radial-gradient(farthest-side, transparent 83%, #000 84%);
-  mask: radial-gradient(farthest-side, transparent 83%, #000 84%);
-  animation: innerTurn 8s linear infinite;
-}
-
-.core {
-  position: absolute;
-  width: 173px;
-  height: 205px;
-  display: grid;
-  place-items: center;
-  clip-path: polygon(
-    50% 0,
-    91% 15%,
-    87% 64%,
-    76% 82%,
-    50% 100%,
-    24% 82%,
-    13% 64%,
-    9% 15%
-  );
-  background: conic-gradient(
-    from 205deg at 50% 45%,
-    #4a5360,
-    #a6c7c5,
-    #343847,
-    #c389b2,
-    #282c38,
-    #e7b280,
-    #4a5360
-  );
-  box-shadow: 0 34px 44px #000c;
-  animation: coreBreathe 5.8s ease-in-out infinite;
-}
-
-.coreInset {
-  position: relative;
-  width: calc(100% - 9px);
-  height: calc(100% - 9px);
-  display: grid;
-  place-items: center;
-  clip-path: inherit;
-  background:
-    radial-gradient(ellipse at 30% 16%, #aab5d331, transparent 46%),
-    linear-gradient(145deg, #20232d, #0b0d13 61%, #181a22);
-}
-
-.coreInset::before {
-  content: "";
-  position: absolute;
-  inset: 28px 30px 38px;
-  border: 1px solid #8895ac48;
-  border-radius: 50%;
-  box-shadow:
-    0 0 20px #bca2e11c,
-    inset 0 0 18px #a3c0c516;
-}
-
-.keyhole {
-  position: relative;
-  width: 25px;
-  height: 25px;
-  margin-top: -10px;
-  border: 2px solid #d9d9ec;
-  border-radius: 50%;
-  background: #e7efff1c;
-  box-shadow:
-    0 0 18px #c0b7ff8c,
-    inset 0 0 8px #8bcaca7a;
-}
-
-.keyhole::after {
-  content: "";
-  position: absolute;
-  top: 18px;
-  left: 8px;
-  width: 6px;
-  height: 21px;
-  border: 2px solid #d9d9ec;
-  border-top: 0;
-  border-radius: 0 0 3px 3px;
-  background: #d9d9ec;
-  box-shadow: 0 0 15px #c0b7ff8c;
-}
-
-.spark {
-  position: absolute;
-  width: 10px;
+.lines span {
+  display: block;
   height: 10px;
-  border-radius: 50%;
-  background: #f3f0ff;
-  box-shadow: 0 0 20px 8px #b0a4ff8c;
-  animation: sparkOrbit 7s linear infinite;
+  border-radius: var(--radius-sm);
+  background: var(--line);
 }
 
-@keyframes levitate {
+.lines span:nth-child(1) {
+  width: 70%;
+}
+.lines span:nth-child(2) {
+  width: 92%;
+}
+.lines span:nth-child(3) {
+  width: 84%;
+}
+
+.lineShort {
+  width: 48% !important;
+}
+
+.seal {
+  position: absolute;
+  right: -34px;
+  bottom: -34px;
+  width: 128px;
+  height: 128px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-1);
+  box-shadow: var(--shadow-float);
+}
+
+.sealRing {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--ok) 70%, transparent);
+  animation: ringTurn 16s linear infinite;
+}
+
+.sealMark {
+  width: 34px;
+  height: 18px;
+  border-left: 3px solid var(--ok);
+  border-bottom: 3px solid var(--ok);
+  transform: rotate(-45deg) translate(2px, -4px);
+}
+
+@keyframes float {
   0%,
   100% {
-    transform: translateY(7px) rotateZ(-4deg);
+    transform: translateY(6px);
   }
   50% {
-    transform: translateY(-9px) rotateZ(4deg);
+    transform: translateY(-6px);
   }
 }
-@keyframes ambientTurn {
+
+@keyframes ringTurn {
   to {
     transform: rotate(360deg);
-  }
-}
-@keyframes orbitTurn {
-  to {
-    transform: rotateX(71deg) rotateZ(340deg);
-  }
-}
-@keyframes outerTurn {
-  from {
-    transform: rotateX(23deg) rotateY(-23deg) rotateZ(0);
-  }
-  to {
-    transform: rotateX(23deg) rotateY(-23deg) rotateZ(360deg);
-  }
-}
-@keyframes innerTurn {
-  from {
-    transform: rotateX(-25deg) rotateY(20deg) rotateZ(360deg);
-  }
-  to {
-    transform: rotateX(-25deg) rotateY(20deg) rotateZ(0);
-  }
-}
-@keyframes coreBreathe {
-  0%,
-  100% {
-    filter: brightness(0.9);
-    transform: rotateY(-9deg) rotateZ(-3deg);
-  }
-  50% {
-    filter: brightness(1.18);
-    transform: rotateY(9deg) rotateZ(3deg);
-  }
-}
-@keyframes sparkOrbit {
-  from {
-    transform: rotate(0) translateX(170px) rotate(0);
-  }
-  to {
-    transform: rotate(360deg) translateX(170px) rotate(-360deg);
   }
 }
 
@@ -283,60 +99,27 @@
     height: 310px;
     margin: 0;
   }
-  .sculpture {
-    transform: scale(0.72);
-    animation: mobileLevitate 5.8s ease-in-out infinite;
+  .document {
+    width: 216px;
+    height: 274px;
+    padding: var(--space-6) var(--space-4);
   }
-  @keyframes mobileLevitate {
-    0%,
-    100% {
-      transform: scale(0.72) translateY(7px) rotateZ(-4deg);
-    }
-    50% {
-      transform: scale(0.72) translateY(-9px) rotateZ(4deg);
-    }
+  .seal {
+    right: -24px;
+    bottom: -24px;
+    width: 92px;
+    height: 92px;
   }
-}
-@media (max-width: 440px) {
-  .sculpture {
-    animation: smallLevitate 5.8s ease-in-out infinite;
-  }
-  @keyframes smallLevitate {
-    0%,
-    100% {
-      transform: scale(0.6) translateY(7px) rotateZ(-4deg);
-    }
-    50% {
-      transform: scale(0.6) translateY(-9px) rotateZ(4deg);
-    }
+  .sealMark {
+    width: 24px;
+    height: 13px;
   }
 }
 
-/* La portada conserva el movimiento solicitado aun si el sistema reduce otras animaciones. */
+/* Lo decorativo se detiene por completo cuando el sistema pide menos movimiento. */
 @media (prefers-reduced-motion: reduce) {
-  .sculpture,
-  .core {
-    animation-duration: 5.8s !important;
-    animation-iteration-count: infinite !important;
-  }
-  .ambient {
-    animation-duration: 11s !important;
-    animation-iteration-count: infinite !important;
-  }
-  .orbit {
-    animation-duration: 13s !important;
-    animation-iteration-count: infinite !important;
-  }
-  .outerRing {
-    animation-duration: 10s !important;
-    animation-iteration-count: infinite !important;
-  }
-  .innerRing {
-    animation-duration: 8s !important;
-    animation-iteration-count: infinite !important;
-  }
-  .spark {
-    animation-duration: 7s !important;
-    animation-iteration-count: infinite !important;
+  .document,
+  .sealRing {
+    animation: none;
   }
 }

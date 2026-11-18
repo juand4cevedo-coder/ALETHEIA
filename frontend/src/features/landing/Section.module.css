@@ -3,7 +3,7 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 96px 0;
-  border-top: 1px solid rgb(214 235 253 / 19%);
+  border-top: 1px solid var(--line-accent);
   border-radius: 24px 24px 0 0;
 }
 
@@ -26,24 +26,13 @@
   margin: 0 auto;
 }
 
-.kicker {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-2);
-  font-size: var(--font-size-support);
-  font-weight: 500;
-  line-height: var(--line-height-support);
-}
-
 .title {
   font-family: var(--font-sans);
   font-size: var(--font-size-section);
   font-weight: 400;
   line-height: var(--line-height-section);
   letter-spacing: var(--tracking-section);
-  background: linear-gradient(135deg, #fff 30%, #ffffff80);
-  background-clip: text;
-  color: transparent;
+  color: var(--text);
 }
 
 .lead {
@@ -56,7 +45,7 @@
 
 .card {
   position: relative;
-  border: 1px solid rgb(214 235 253 / 19%);
+  border: 1px solid var(--line-accent);
   border-radius: 24px;
   background:
     radial-gradient(41% 12% at 50% 0%, #ffffff0d, transparent),

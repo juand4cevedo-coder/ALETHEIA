@@ -19,7 +19,6 @@ export function PlansSection() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-planes"
-          kicker="Precios"
           title="Un espacio a la medida de su práctica."
           lead="Compare la capacidad, los integrantes y las condiciones de cada plan. Todos los valores se muestran en pesos colombianos."
         />

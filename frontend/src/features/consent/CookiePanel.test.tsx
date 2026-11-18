@@ -46,10 +46,10 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
     const panel = cookiePanel();
     expect(panel).toBeInTheDocument();
     expect(
-      within(panel!).getByRole("button", { name: "Rechazar opcionales" }),
+      within(panel!).getByRole("button", { name: "Rechazar" }),
     ).toBeVisible();
     expect(
-      within(panel!).getByRole("button", { name: "Aceptar opcionales" }),
+      within(panel!).getByRole("button", { name: "Aceptar" }),
     ).toBeVisible();
     expect(document.activeElement).toBe(document.body);
     expect(document.cookie).toBe("");
@@ -63,7 +63,7 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
     const { unmount } = await renderRoute(PAGE);
 
     await user.click(
-      screen.getByRole("button", { name: "Rechazar opcionales" }),
+      screen.getByRole("button", { name: "Rechazar" }),
     );
 
     expect(cookiePanel()).not.toBeInTheDocument();
@@ -86,8 +86,8 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
     const user = userEvent.setup();
     await renderRoute(PAGE);
 
-    const reject = screen.getByRole("button", { name: "Rechazar opcionales" });
-    const accept = screen.getByRole("button", { name: "Aceptar opcionales" });
+    const reject = screen.getByRole("button", { name: "Rechazar" });
+    const accept = screen.getByRole("button", { name: "Aceptar" });
     expect(accept.className).toBe(reject.className);
 
     await user.click(accept);
@@ -182,7 +182,7 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
     await renderRoute(PAGE);
 
     await user.click(
-      screen.getByRole("button", { name: "Rechazar opcionales" }),
+      screen.getByRole("button", { name: "Rechazar" }),
     );
     expect(cookiePanel()).not.toBeInTheDocument();
 

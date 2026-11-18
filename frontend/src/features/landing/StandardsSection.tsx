@@ -21,7 +21,6 @@ export function StandardsSection() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-estandares"
-          kicker="El cuidado también está por dentro"
           title="Saber qué ocurre. Decidir quién participa."
           lead="Su información merece atención. Cada caso tiene sus miembros y usted puede revisar sus accesos desde su cuenta."
         />

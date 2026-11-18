@@ -14,7 +14,7 @@
 .guarantees li {
   position: relative;
   padding: 64px 40px 48px;
-  border: 1px solid rgb(214 235 253 / 19%);
+  border: 1px solid var(--line-accent);
   border-bottom: 0;
   border-radius: 24px;
   background:
