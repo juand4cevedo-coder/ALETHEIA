@@ -1269,6 +1269,7 @@ export type Me = {
   permissions: Array<
     | "platform.manage"
     | "organization.view"
+    | "organization.manage"
     | "team.manage"
     | "billing.manage"
     | "cases.read_assigned"
@@ -1446,6 +1447,46 @@ export type OrganizationMembership = {
    * Rol de la persona en la organización.
    */
   role: "owner" | "admin" | "lawyer" | "assistant";
+};
+
+/**
+ * OrganizationOut
+ *
+ * Los datos propios del despacho que puede administrar su propietario.
+ */
+export type OrganizationOut = {
+  /**
+   * Id
+   *
+   * Identificador de la organización.
+   */
+  id: string;
+  /**
+   * Name
+   *
+   * Nombre de la oficina, la firma o la persona independiente.
+   */
+  name: string;
+  /**
+   * Created At
+   *
+   * Cuándo se creó la organización.
+   */
+  created_at: string;
+};
+
+/**
+ * OrganizationRenameRequest
+ *
+ * Nombre nuevo del despacho (API-022). Solo el propietario lo cambia.
+ */
+export type OrganizationRenameRequest = {
+  /**
+   * Name
+   *
+   * Nombre de la oficina, la firma o la persona independiente.
+   */
+  name: string;
 };
 
 /**
@@ -2533,6 +2574,41 @@ export type ChangePasswordResponses = {
 
 export type ChangePasswordResponse =
   ChangePasswordResponses[keyof ChangePasswordResponses];
+
+export type RenameOrganizationData = {
+  body: OrganizationRenameRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/organization";
+};
+
+export type RenameOrganizationErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RenameOrganizationError =
+  RenameOrganizationErrors[keyof RenameOrganizationErrors];
+
+export type RenameOrganizationResponses = {
+  /**
+   * Successful Response
+   */
+  200: OrganizationOut;
+};
+
+export type RenameOrganizationResponse =
+  RenameOrganizationResponses[keyof RenameOrganizationResponses];
 
 export type ListMembersData = {
   body?: never;

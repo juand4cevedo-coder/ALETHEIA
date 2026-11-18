@@ -51,6 +51,7 @@ AUDIT_ACTIONS: Final = (
     "support_ticket_reopened",
     "payment_approved",
     "payment_declined",
+    "organization_renamed",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.

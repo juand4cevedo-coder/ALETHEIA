@@ -1,6 +1,6 @@
-/* Miembros e invitaciones (UI-021): el cupo del plan y dos listas en paneles, con filas de borde
-   a borde como el libro de casos. Las columnas se alinean entre filas con subgrid; en el celular
-   cada fila pasa a una tarjeta apilada. */
+/* Miembros e invitaciones (UI-021): el cupo del plan y dos listas dentro del Panel compartido.
+   Las columnas se alinean entre filas con subgrid; en el celular cada fila pasa a una tarjeta
+   apilada. */
 .screen {
   display: grid;
   gap: var(--space-6);
@@ -78,23 +78,6 @@
   background: var(--text);
 }
 
-.card {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface-1);
-}
-
-.cardTitle {
-  margin: 0;
-  padding: var(--space-4) var(--space-6);
-  border-bottom: 1px solid var(--line);
-  color: var(--text);
-  font-size: var(--font-size-ui);
-  font-weight: 500;
-  line-height: var(--line-height-ui);
-}
-
 /* Persona, rol, fecha y acciones; las invitaciones no llevan fecha de ingreso. */
 .rows {
   display: grid;
@@ -115,7 +98,7 @@
   grid-template-columns: subgrid;
   align-items: center;
   min-height: var(--row-height);
-  padding: var(--space-2) var(--space-6);
+  padding: var(--space-2) 0;
   border-top: 1px solid var(--line);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
@@ -222,7 +205,7 @@
   .row {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: var(--space-2) var(--space-4);
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-3) 0;
   }
 
   .meta {
@@ -253,10 +236,6 @@
 @media (max-width: 560px) {
   .seats {
     padding: var(--space-4);
-  }
-
-  .cardTitle {
-    padding: var(--space-3) var(--space-4);
   }
 }
 

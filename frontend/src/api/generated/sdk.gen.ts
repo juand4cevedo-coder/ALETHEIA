@@ -133,6 +133,9 @@ import type {
   RemoveMemberData,
   RemoveMemberErrors,
   RemoveMemberResponses,
+  RenameOrganizationData,
+  RenameOrganizationErrors,
+  RenameOrganizationResponses,
   ResendVerificationData,
   ResendVerificationErrors,
   ResendVerificationResponses,
@@ -464,6 +467,36 @@ export const changePassword = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/me/password",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Cambiar el nombre del despacho
+ */
+export const renameOrganization = <ThrowOnError extends boolean = false>(
+  options: Options<RenameOrganizationData, ThrowOnError>,
+): RequestResult<
+  RenameOrganizationResponses,
+  RenameOrganizationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).patch<
+    RenameOrganizationResponses,
+    RenameOrganizationErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization",
     ...options,
     headers: {
       "Content-Type": "application/json",

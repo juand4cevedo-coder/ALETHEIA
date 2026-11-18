@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.4.9"
+    "version": "0.4.10"
   },
   "paths": {
     "/api/v1/health": {
@@ -661,6 +661,72 @@
           },
           "429": {
             "description": "Demasiados intentos fallidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/organization": {
+      "patch": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Cambiar el nombre del despacho",
+        "operationId": "rename_organization",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationRenameRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No es propietario ni administrador.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -5247,6 +5313,7 @@
               "enum": [
                 "platform.manage",
                 "organization.view",
+                "organization.manage",
                 "team.manage",
                 "billing.manage",
                 "cases.read_assigned",
@@ -5558,6 +5625,53 @@
         ],
         "title": "OrganizationMembership",
         "description": "La organización de la persona y su rol en ella."
+      },
+      "OrganizationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Identificador de la organización."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nombre de la oficina, la firma o la persona independiente."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Cuándo se creó la organización."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_at"
+        ],
+        "title": "OrganizationOut",
+        "description": "Los datos propios del despacho que puede administrar su propietario."
+      },
+      "OrganizationRenameRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Nombre de la oficina, la firma o la persona independiente."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "OrganizationRenameRequest",
+        "description": "Nombre nuevo del despacho (API-022). Solo el propietario lo cambia."
       },
       "PasswordResetRequested": {
         "properties": {

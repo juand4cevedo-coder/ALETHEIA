@@ -25,6 +25,7 @@ export const ROUTES = {
   platformSupport: "/app/plataforma/soporte",
   platformAudit: "/app/plataforma/auditoria",
   support: "/app/soporte",
+  organization: "/app/organizacion",
   members: "/app/miembros",
   organizationAudit: "/app/auditoria",
   cases: "/app/casos",

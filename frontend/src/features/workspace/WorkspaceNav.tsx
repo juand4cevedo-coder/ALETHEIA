@@ -4,11 +4,12 @@ import { NavLink } from "react-router";
 import type { Me } from "../../api/generated";
 import { listCasesOptions } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { ROUTES } from "../../config/routes.ts";
-import { managesTeam } from "./roles.ts";
+import { managesOrganization, managesTeam } from "./roles.ts";
 import styles from "./WorkspaceNav.module.css";
 import {
   CarpetaAbiertaIcon,
   CorreoIcon,
+  EdificioIcon,
   HuellaIcon,
   InicioIcon,
   ReciboIcon,
@@ -54,6 +55,12 @@ const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
         label: "Miembros",
         icon: UsuariosIcon,
         visible: (me) => managesTeam(me.organization?.role),
+      },
+      {
+        to: ROUTES.organization,
+        label: "Organización",
+        icon: EdificioIcon,
+        visible: (me) => managesOrganization(me.organization?.role),
       },
       {
         to: ROUTES.organizationAudit,

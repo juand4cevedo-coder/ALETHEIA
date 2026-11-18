@@ -1,0 +1,11 @@
+/* Organización (API-022): un único formulario por ahora, el mismo patrón de los demás paneles
+   de la cuenta. */
+.form {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 420px;
+}
+
+.form > button {
+  justify-self: start;
+}
