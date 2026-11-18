@@ -9,6 +9,7 @@ import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { Hash } from "../components/ui/Hash.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
+import { Panel } from "../components/ui/Panel.tsx";
 import { StatusBadge } from "../components/ui/StatusBadge.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
@@ -141,8 +142,7 @@ export function EvidenceDetailPage() {
           <p role="alert">{downloadError}</p>
         </Notice>
       )}
-      <section className={styles.panel} aria-labelledby="evidence-metadata">
-        <h2 id="evidence-metadata">Archivo y procedencia</h2>
+      <Panel title="Archivo y procedencia">
         <dl className={styles.facts}>
           <div>
             <dt>Origen declarado por quien subió el archivo</dt>
@@ -188,12 +188,11 @@ export function EvidenceDetailPage() {
             </dd>
           </div>
         </dl>
-      </section>
-      <section className={styles.panel} aria-labelledby="evidence-events">
-        <h2 id="evidence-events">Eventos de esta evidencia</h2>
-        <p>
-          Los números indican su posición en la cadena de custodia del caso.
-        </p>
+      </Panel>
+      <Panel
+        title="Eventos de esta evidencia"
+        description="Los números indican su posición en la cadena de custodia del caso."
+      >
         <ol className={styles.events}>
           {events.map((event) => (
             <li key={event.seq}>
@@ -227,7 +226,7 @@ export function EvidenceDetailPage() {
             {detail.isFetchingNextPage ? "Cargando más" : "Ver más eventos"}
           </Button>
         )}
-      </section>
+      </Panel>
     </div>
   );
 }

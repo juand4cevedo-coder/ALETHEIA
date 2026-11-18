@@ -1,0 +1,96 @@
+/* Soporte (UI-023): una solicitud nueva y el historial de las propias, en el Panel compartido. */
+.screen {
+  display: grid;
+  gap: var(--space-6);
+  width: min(100%, 1200px);
+  padding-bottom: 80px;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 680px;
+}
+
+.form > button {
+  justify-self: start;
+}
+
+.tickets {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.ticket {
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.ticketHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-6);
+}
+
+.ticketHead h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-subtitle);
+  font-weight: 500;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: 1.35;
+}
+
+.ticketHead span {
+  padding: calc(var(--space-1) / 2) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+}
+
+.note {
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.message {
+  max-width: var(--measure);
+  margin: var(--space-4) 0 0;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  min-height: 152px;
+  margin: 0;
+  padding: var(--space-6);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-md);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  text-align: center;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+@media (max-width: 680px) {
+  .ticket {
+    padding: var(--space-4);
+  }
+}

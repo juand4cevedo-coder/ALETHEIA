@@ -20,11 +20,15 @@ type FieldProps = Omit<
   help?: string;
   /** Qué pasó y cómo corregirlo. */
   error?: string;
-  ref?: Ref<HTMLInputElement>;
+  ref?: Ref<HTMLInputElement | HTMLTextAreaElement>;
   /** Ayuda dinámica bajo el campo, como el medidor de la contraseña o un contador. */
   children?: ReactNode;
   /** Identificador de esa ayuda dinámica, para leerla junto con el campo. */
   describedBy?: string;
+  /** Un `<textarea>` en vez de un `<input>`, para mensajes largos (soporte, motivos internos). */
+  multiline?: boolean;
+  /** Alto del `<textarea>` en líneas. Solo aplica con `multiline`. */
+  rows?: number;
 };
 
 // Campo de texto (CMP-UI-002, especificación de identidad, sección 7): la etiqueta va encima y
@@ -38,6 +42,8 @@ export function Field({
   ref,
   children,
   describedBy: extraDescription,
+  multiline = false,
+  rows = 4,
   ...inputProps
 }: FieldProps) {
   const id = useId();
@@ -53,16 +59,32 @@ export function Field({
       <label htmlFor={id} className={styles.label}>
         {label}
       </label>
-      <div className={styles.control} data-invalid={error ? "true" : undefined}>
-        <input
-          {...inputProps}
-          ref={ref}
-          id={id}
-          type={isPassword && revealed ? "text" : type}
-          className={styles.input}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={describedBy}
-        />
+      <div
+        className={styles.control}
+        data-invalid={error ? "true" : undefined}
+        data-multiline={multiline || undefined}
+      >
+        {multiline ? (
+          <textarea
+            {...(inputProps as InputHTMLAttributes<HTMLTextAreaElement>)}
+            ref={ref as Ref<HTMLTextAreaElement>}
+            id={id}
+            rows={rows}
+            className={styles.input}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={describedBy}
+          />
+        ) : (
+          <input
+            {...inputProps}
+            ref={ref as Ref<HTMLInputElement>}
+            id={id}
+            type={isPassword && revealed ? "text" : type}
+            className={styles.input}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={describedBy}
+          />
+        )}
         {isPassword && (
           <button
             type="button"

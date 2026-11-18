@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { type FormEvent, type ReactNode, useId, useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { useOutletContext } from "react-router";
 
 import type { Me } from "../api/generated";
@@ -7,6 +7,7 @@ import { changePasswordMutation } from "../api/generated/@tanstack/react-query.g
 import { Button } from "../components/ui/Button.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
+import { Panel } from "../components/ui/Panel.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { pageTitle } from "../config/site.ts";
@@ -46,7 +47,7 @@ export function AccountPage() {
 
       <PageHeader title="Mi cuenta" />
 
-      <Card title="Perfil">
+      <Panel title="Perfil">
         <dl className={styles.record}>
           <div className={styles.row}>
             <dt>Nombre</dt>
@@ -64,10 +65,10 @@ export function AccountPage() {
             <dd>Correo y contraseña</dd>
           </div>
         </dl>
-      </Card>
+      </Panel>
 
       {me.subscription && (
-        <Card title="Plan del despacho">
+        <Panel title="Plan del despacho">
           <dl className={styles.record}>
             <div className={styles.row}>
               <dt>Plan</dt>
@@ -93,36 +94,12 @@ export function AccountPage() {
             </div>
           </dl>
           <CheckoutCard me={me} />
-        </Card>
+        </Panel>
       )}
 
       <PasswordCard />
       <SessionsCard />
     </div>
-  );
-}
-
-// Un panel por tema: el título y, si hace falta, lo que pasa al usar lo que contiene.
-function Card({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description?: string;
-  children: ReactNode;
-}) {
-  const titleId = useId();
-  return (
-    <section className={styles.card} aria-labelledby={titleId}>
-      <div className={styles.cardHead}>
-        <h2 id={titleId} className={styles.cardTitle}>
-          {title}
-        </h2>
-        {description && <p className={styles.cardText}>{description}</p>}
-      </div>
-      {children}
-    </section>
   );
 }
 
@@ -184,7 +161,7 @@ function PasswordCard() {
   }
 
   return (
-    <Card
+    <Panel
       title="Contraseña"
       description="Al cambiarla se cierran sus sesiones en otros dispositivos. En este puede seguir trabajando."
     >
@@ -245,7 +222,7 @@ function PasswordCard() {
           </Button>
         </div>
       </form>
-    </Card>
+    </Panel>
   );
 }
 
@@ -254,7 +231,7 @@ function SessionsCard() {
   const [confirming, setConfirming] = useState(false);
 
   return (
-    <Card
+    <Panel
       title="Sesiones"
       description="Si perdió un equipo o cree que alguien más entró a su cuenta, cierre todas las sesiones."
     >
@@ -289,6 +266,6 @@ function SessionsCard() {
         busy={session.pending === "everywhere"}
         failed={session.failed}
       />
-    </Card>
+    </Panel>
   );
 }

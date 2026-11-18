@@ -144,12 +144,12 @@
   line-height: var(--line-height-label);
 }
 
-.panel {
+.tabPanel {
   padding: var(--space-6) var(--space-8) var(--space-8);
   container-type: inline-size;
 }
 
-.panel:focus-visible {
+.tabPanel:focus-visible {
   outline-offset: -4px;
 }
 
@@ -322,7 +322,7 @@
     padding: var(--space-6) var(--space-4) 0;
   }
 
-  .panel {
+  .tabPanel {
     padding: var(--space-4);
   }
 

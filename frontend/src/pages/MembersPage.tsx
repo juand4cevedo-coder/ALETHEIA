@@ -17,6 +17,7 @@ import {
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
+import { Panel } from "../components/ui/Panel.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
@@ -181,7 +182,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
 
       <SeatsBar seats={seats} loading={members.isPending} />
 
-      <Card title="Personas">
+      <Panel title="Personas">
         {members.isError ? (
           <LoadError
             error={members.error}
@@ -250,9 +251,9 @@ function Team({ currentUserId }: { currentUserId: string }) {
             onClick={() => void members.fetchNextPage()}
           />
         )}
-      </Card>
+      </Panel>
 
-      <Card title="Invitaciones pendientes">
+      <Panel title="Invitaciones pendientes">
         {invitations.isError ? (
           <LoadError
             error={invitations.error}
@@ -310,7 +311,7 @@ function Team({ currentUserId }: { currentUserId: string }) {
             onClick={() => void invitations.fetchNextPage()}
           />
         )}
-      </Card>
+      </Panel>
 
       <InviteDialog
         open={inviting}
@@ -432,19 +433,6 @@ function SeatsBar({
         </Notice>
       )}
     </>
-  );
-}
-
-// Un panel por lista: el título arriba y las filas de borde a borde, como el libro de casos.
-function Card({ title, children }: { title: string; children: ReactNode }) {
-  const titleId = useId();
-  return (
-    <section className={styles.card} aria-labelledby={titleId}>
-      <h2 id={titleId} className={styles.cardTitle}>
-        {title}
-      </h2>
-      {children}
-    </section>
   );
 }
 
