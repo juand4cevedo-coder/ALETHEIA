@@ -222,55 +222,53 @@ export function WorkspacePage() {
             )}
           </Panel>
 
-          {(canManageTeam || canCreate) && (
-            <Panel title="Accesos rápidos" density="compact">
-              <div className={styles.quickLinks}>
-                {canCreate && me.email_verified && (
-                  <ButtonLink to={ROUTES.newCase} variant="secondary" size="sm">
-                    <MasIcon size={16} aria-hidden="true" />
-                    Abrir un caso
-                  </ButtonLink>
-                )}
-                <ButtonLink to={ROUTES.cases} variant="secondary" size="sm">
-                  <CarpetaAbiertaIcon size={16} aria-hidden="true" />
-                  Libro de casos
-                  <FlechaDerechaIcon size={14} aria-hidden="true" />
+          <Panel title="Accesos rápidos" density="compact">
+            <div className={styles.quickLinks}>
+              {canCreate && me.email_verified && (
+                <ButtonLink to={ROUTES.newCase} variant="secondary" size="sm">
+                  <MasIcon size={16} aria-hidden="true" />
+                  Abrir un caso
                 </ButtonLink>
-                {canManageTeam && (
-                  <ButtonLink to={ROUTES.members} variant="secondary" size="sm">
-                    <UsuariosIcon size={16} aria-hidden="true" />
-                    Equipo
-                  </ButtonLink>
-                )}
-                {managesOrganization(me.organization?.role) && (
-                  <ButtonLink
-                    to={ROUTES.organization}
-                    variant="secondary"
-                    size="sm"
-                  >
-                    <EdificioIcon size={16} aria-hidden="true" />
-                    Organización
-                  </ButtonLink>
-                )}
-                {canManageTeam && (
-                  <ButtonLink
-                    to={ROUTES.organizationAudit}
-                    variant="secondary"
-                    size="sm"
-                  >
-                    <SelloIcon size={16} aria-hidden="true" />
-                    Auditoría de seguridad
-                  </ButtonLink>
-                )}
-                {canPay && (
-                  <ButtonLink to={ROUTES.account} variant="secondary" size="sm">
-                    <ReciboIcon size={16} aria-hidden="true" />
-                    Plan y facturación
-                  </ButtonLink>
-                )}
-              </div>
-            </Panel>
-          )}
+              )}
+              <ButtonLink to={ROUTES.cases} variant="secondary" size="sm">
+                <CarpetaAbiertaIcon size={16} aria-hidden="true" />
+                Libro de casos
+                <FlechaDerechaIcon size={14} aria-hidden="true" />
+              </ButtonLink>
+              {canManageTeam && (
+                <ButtonLink to={ROUTES.members} variant="secondary" size="sm">
+                  <UsuariosIcon size={16} aria-hidden="true" />
+                  Equipo
+                </ButtonLink>
+              )}
+              {managesOrganization(me.organization?.role) && (
+                <ButtonLink
+                  to={ROUTES.organization}
+                  variant="secondary"
+                  size="sm"
+                >
+                  <EdificioIcon size={16} aria-hidden="true" />
+                  Organización
+                </ButtonLink>
+              )}
+              {canManageTeam && (
+                <ButtonLink
+                  to={ROUTES.organizationAudit}
+                  variant="secondary"
+                  size="sm"
+                >
+                  <SelloIcon size={16} aria-hidden="true" />
+                  Auditoría de seguridad
+                </ButtonLink>
+              )}
+              {canPay && (
+                <ButtonLink to={ROUTES.account} variant="secondary" size="sm">
+                  <ReciboIcon size={16} aria-hidden="true" />
+                  Plan y facturación
+                </ButtonLink>
+              )}
+            </div>
+          </Panel>
         </>
       )}
 
