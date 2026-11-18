@@ -73,12 +73,13 @@ def _append_event(
     )
     if previous is None:
         raise PermanentJobError("El caso no tiene un último evento de custodia.")
-    case.custody_seq += 1
+    # cases.custody_seq lo actualiza el disparador de la base al insertar el evento (migración
+    # 0013); la aplicación ni siquiera tiene permiso para escribirlo directamente.
     session.add(
         CustodyEvent(
             organization_id=organization_id,
             case_id=case_id,
-            seq=case.custody_seq,
+            seq=case.custody_seq + 1,
             evidence_id=evidence_id,
             actor_user_id=None,
             action=action,
