@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, Job, Organization, Subscription
+from app.models import AuditLog, Job, Membership, Organization, Subscription, User
 
 
 def schedule(session: Session, organization_id: uuid.UUID, deadline: datetime.datetime) -> None:
@@ -26,9 +26,27 @@ def schedule(session: Session, organization_id: uuid.UUID, deadline: datetime.da
     )
 
 
+def _owned_by_platform_admin(session: Session, organization_id: uuid.UUID) -> bool:
+    """El despacho con el que ingresó quien administra la plataforma (RN-010): no es un
+    cliente, así que nunca pasa a solo lectura por falta de pago."""
+    return bool(
+        session.scalar(
+            select(Membership.user_id)
+            .join(User, User.id == Membership.user_id)
+            .where(
+                Membership.organization_id == organization_id,
+                Membership.role == "owner",
+                User.is_platform_admin.is_(True),
+            )
+        )
+    )
+
+
 def expire(session: Session, organization_id: uuid.UUID, now: datetime.datetime) -> bool:
     """Cambia ambos estados y audita en una transacción que aporta el llamante."""
     set_tenant(session, TenantContext(organization_id=organization_id))
+    if _owned_by_platform_admin(session, organization_id):
+        return False
     # Las cargas e invitaciones bloquean primero la organización. Respetar ese orden evita
     # un interbloqueo al vencer una suscripción durante una escritura.
     organization = session.scalar(
