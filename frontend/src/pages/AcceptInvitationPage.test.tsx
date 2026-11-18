@@ -106,6 +106,7 @@ describe("Aceptar una invitación (UI-011, HU-012)", () => {
       "  Carlos Gómez ",
     );
     await user.type(screen.getByLabelText("Contraseña nueva"), NUEVA);
+    await user.type(screen.getByLabelText("Confirmar contraseña"), NUEVA);
     await user.click(screen.getByRole("checkbox"));
     await user.click(
       screen.getByRole("button", { name: "Crear mi cuenta y entrar" }),
@@ -135,11 +136,66 @@ describe("Aceptar una invitación (UI-011, HU-012)", () => {
       "Carlos Gómez",
     );
     await user.type(screen.getByLabelText("Contraseña nueva"), NUEVA);
+    await user.type(screen.getByLabelText("Confirmar contraseña"), NUEVA);
     await user.click(
       screen.getByRole("button", { name: "Crear mi cuenta y entrar" }),
     );
 
     await waitFor(() => expect(screen.getByRole("checkbox")).toHaveFocus());
+    expect(requests("/api/v1/invitations/accept")).toHaveLength(0);
+  });
+
+  it("exige confirmar la contraseña y enfoca ese campo si queda vacío", async () => {
+    serve({
+      "/api/v1/invitations/preview": () => jsonResponse(preview("new")),
+    });
+    const user = userEvent.setup();
+    await renderRoute(`/invitacion#t=${TOKEN}`);
+
+    await user.type(
+      await screen.findByLabelText("Nombre completo"),
+      "Carlos Gómez",
+    );
+    await user.type(screen.getByLabelText("Contraseña nueva"), NUEVA);
+    await user.click(screen.getByRole("checkbox"));
+    await user.click(
+      screen.getByRole("button", { name: "Crear mi cuenta y entrar" }),
+    );
+
+    const confirmar = screen.getByLabelText("Confirmar contraseña");
+    await waitFor(() => expect(confirmar).toHaveFocus());
+    expect(confirmar).toHaveAccessibleDescription(
+      "Las contraseñas no coinciden.",
+    );
+    expect(requests("/api/v1/invitations/accept")).toHaveLength(0);
+  });
+
+  it("avisa si la confirmación no coincide y no llama a la API", async () => {
+    serve({
+      "/api/v1/invitations/preview": () => jsonResponse(preview("new")),
+    });
+    const user = userEvent.setup();
+    await renderRoute(`/invitacion#t=${TOKEN}`);
+
+    await user.type(
+      await screen.findByLabelText("Nombre completo"),
+      "Carlos Gómez",
+    );
+    await user.type(screen.getByLabelText("Contraseña nueva"), NUEVA);
+    await user.type(
+      screen.getByLabelText("Confirmar contraseña"),
+      "otra frase distinta",
+    );
+    await user.click(screen.getByRole("checkbox"));
+    await user.click(
+      screen.getByRole("button", { name: "Crear mi cuenta y entrar" }),
+    );
+
+    const confirmar = screen.getByLabelText("Confirmar contraseña");
+    await waitFor(() => expect(confirmar).toHaveFocus());
+    expect(confirmar).toHaveAccessibleDescription(
+      "Las contraseñas no coinciden.",
+    );
     expect(requests("/api/v1/invitations/accept")).toHaveLength(0);
   });
 

@@ -69,7 +69,7 @@ export function Field({
             className={styles.reveal}
             aria-controls={id}
             aria-pressed={revealed}
-            aria-label="Mostrar la contraseña"
+            aria-label={`Mostrar ${label.toLowerCase()}`}
             onClick={() => setRevealed((value) => !value)}
           >
             {revealed ? (

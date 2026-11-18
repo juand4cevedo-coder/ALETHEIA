@@ -1,20 +1,28 @@
+import { SelloIcon } from "../../components/ui/icons.tsx";
 import styles from "./DocumentScene.module.css";
 
-/** Emblema de custodia: núcleo protegido y dos anillos que giran sin datos ficticios. */
+// Huella ilustrativa: la misma idea de StampCard, no una huella real.
+const HASH_PREVIEW = "7f3a9c1e...d05e82b5";
+
+/** Expedientes en custodia con el sello al frente: StampCard llevado al hero. */
 export function DocumentScene() {
   return (
     <div className={styles.visual} aria-hidden="true">
-      <div className={styles.sculpture}>
-        <div className={styles.ambient} />
-        <div className={styles.orbit} />
-        <div className={styles.outerRing} />
-        <div className={styles.innerRing} />
-        <div className={styles.core}>
-          <div className={styles.coreInset}>
-            <span className={styles.keyhole} />
+      <div className={styles.stack}>
+        <div className={styles.cardBack} />
+        <div className={styles.cardMid} />
+        <div className={styles.card}>
+          <div className={styles.lines}>
+            <span className={styles.lineTitle} />
+            <span />
+            <span />
+            <span className={styles.lineShort} />
           </div>
+          <p className={styles.hash}>{HASH_PREVIEW}</p>
         </div>
-        <div className={styles.spark} />
+        <div className={styles.seal}>
+          <SelloIcon size={64} />
+        </div>
       </div>
     </div>
   );

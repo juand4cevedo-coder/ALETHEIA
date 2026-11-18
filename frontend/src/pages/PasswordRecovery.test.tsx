@@ -149,6 +149,7 @@ describe("Elegir la contraseña nueva (HU-010, API-012)", () => {
 
     await waitFor(() => expect(router.state.location.hash).toBe(""));
     await user.type(await screen.findByLabelText("Contraseña nueva"), NUEVA);
+    await user.type(screen.getByLabelText("Confirmar contraseña"), NUEVA);
     await user.click(
       screen.getByRole("button", { name: "Guardar la contraseña" }),
     );
@@ -180,12 +181,53 @@ describe("Elegir la contraseña nueva (HU-010, API-012)", () => {
     expect(requests("/api/v1/auth/password/reset")).toHaveLength(0);
   });
 
+  it("exige confirmar la contraseña y enfoca ese campo si queda vacío", async () => {
+    serve({});
+    const user = userEvent.setup();
+    await renderRoute("/restablecer-contrasena#t=token");
+
+    await user.type(await screen.findByLabelText("Contraseña nueva"), NUEVA);
+    await user.click(
+      screen.getByRole("button", { name: "Guardar la contraseña" }),
+    );
+
+    const confirmar = screen.getByLabelText("Confirmar contraseña");
+    expect(confirmar).toHaveFocus();
+    expect(confirmar).toHaveAccessibleDescription(
+      "Las contraseñas no coinciden.",
+    );
+    expect(requests("/api/v1/auth/password/reset")).toHaveLength(0);
+  });
+
+  it("avisa si la confirmación no coincide y no llama a la API", async () => {
+    serve({});
+    const user = userEvent.setup();
+    await renderRoute("/restablecer-contrasena#t=token");
+
+    await user.type(await screen.findByLabelText("Contraseña nueva"), NUEVA);
+    await user.type(
+      screen.getByLabelText("Confirmar contraseña"),
+      "otra frase distinta",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Guardar la contraseña" }),
+    );
+
+    const confirmar = screen.getByLabelText("Confirmar contraseña");
+    expect(confirmar).toHaveFocus();
+    expect(confirmar).toHaveAccessibleDescription(
+      "Las contraseñas no coinciden.",
+    );
+    expect(requests("/api/v1/auth/password/reset")).toHaveLength(0);
+  });
+
   it("un enlace que ya no sirve lleva a pedir otro", async () => {
     serve({ "/api/v1/auth/password/reset": () => problem(400) });
     const user = userEvent.setup();
     await renderRoute("/restablecer-contrasena#t=usado");
 
     await user.type(await screen.findByLabelText("Contraseña nueva"), NUEVA);
+    await user.type(screen.getByLabelText("Confirmar contraseña"), NUEVA);
     await user.click(
       screen.getByRole("button", { name: "Guardar la contraseña" }),
     );

@@ -2,7 +2,7 @@
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: #000 url("/media/auth-1920.webp") center / cover fixed;
+  background: var(--bg) url("/media/auth-1920.webp") center / cover fixed;
 }
 .skipLink {
   position: absolute;
@@ -52,9 +52,9 @@
   width: 48px;
   height: 48px;
   padding: 9px;
-  border: 1px solid #ffffff16;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 9%, transparent);
   border-radius: 12px;
-  background: #0008;
+  background: color-mix(in srgb, var(--bg) 53%, transparent);
 }
 .panel {
   width: 100%;

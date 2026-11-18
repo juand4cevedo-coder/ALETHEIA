@@ -14,12 +14,19 @@
 .guarantees li {
   position: relative;
   padding: 64px 40px 48px;
-  border: 1px solid rgb(214 235 253 / 19%);
+  border: 1px solid var(--line-accent);
   border-bottom: 0;
   border-radius: 24px;
   background:
-    radial-gradient(41% 12% at 50% 0%, #ffffff1a, transparent),
-    linear-gradient(#101010, #000c);
+    radial-gradient(
+      41% 12% at 50% 0%,
+      color-mix(in srgb, var(--accent-strong) 10%, transparent),
+      transparent
+    ),
+    linear-gradient(
+      var(--surface-1b),
+      color-mix(in srgb, var(--bg) 80%, transparent)
+    );
 }
 .guarantees li::before {
   content: "";
@@ -28,7 +35,12 @@
   left: calc(50% - 75px);
   width: 150px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #8f8f8fab, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--text-2) 67%, transparent),
+    transparent
+  );
 }
 .guarantees svg {
   color: var(--text);
@@ -36,7 +48,11 @@
   padding: 18px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: linear-gradient(225deg, #ffffff1a, transparent);
+  background: linear-gradient(
+    225deg,
+    color-mix(in srgb, var(--accent-strong) 10%, transparent),
+    transparent
+  );
   margin-bottom: 28px;
 }
 .guarantees h3 {

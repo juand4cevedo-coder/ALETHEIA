@@ -77,6 +77,13 @@ export function LegalRenewal({ me }: { me: Me }) {
   // pantalla anuncie de inmediato por qué cambió lo que había.
   useEffect(() => titleRef.current?.focus(), []);
 
+  // El aviso de error todavía no existe en el DOM cuando se guarda el error: un
+  // requestAnimationFrame podía disparar antes de que React montara el elemento. El efecto
+  // corre después de que React confirma el render con el aviso ya presente.
+  useEffect(() => {
+    if (problem) alertRef.current?.focus();
+  }, [problem]);
+
   const accept = useMutation({
     ...acceptLegalTermsMutation(),
     onSuccess: async () => {
@@ -85,7 +92,6 @@ export function LegalRenewal({ me }: { me: Me }) {
     },
     onError: (error) => {
       setProblem(problemFrom(error));
-      requestAnimationFrame(() => alertRef.current?.focus());
     },
   });
 

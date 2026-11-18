@@ -107,14 +107,14 @@ export function CookiePanel({
               className={choiceButton}
               onClick={() => decide(false)}
             >
-              Rechazar opcionales
+              Rechazar
             </button>
             <button
               type="button"
               className={choiceButton}
               onClick={() => decide(true)}
             >
-              Aceptar opcionales
+              Aceptar
             </button>
           </div>
           <button

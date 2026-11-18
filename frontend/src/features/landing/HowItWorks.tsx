@@ -31,7 +31,6 @@ export function HowItWorks() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-como-funciona"
-          kicker="Así empieza todo"
           title="Un poco de orden. Mucho más espacio para pensar."
           lead="Lo esencial, a mano. Sin tener que aprender una forma distinta de trabajar."
         />

@@ -474,7 +474,9 @@ describe("Inicio del espacio de trabajo", () => {
           screen.getByRole("link", { name: "Abrir un caso" }),
         ).toHaveAttribute("href", "/app/casos/nuevo");
       }
-      await user.click(screen.getByRole("link", { name: "Ver mis casos" }));
+      const workspaceLinkName =
+        role === "assistant" ? "Ver mis casos asignados" : "Ver mis casos";
+      await user.click(screen.getByRole("link", { name: workspaceLinkName }));
       await waitFor(() =>
         expect(router.state.location.pathname).toBe("/app/casos"),
       );

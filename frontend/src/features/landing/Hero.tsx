@@ -10,12 +10,6 @@ export function Hero() {
     <section className={styles.hero} aria-labelledby="titulo-inicio">
       <div className={styles.scene}>
         <div className={styles.intro}>
-          <a href="#como-funciona" className={styles.eyebrow}>
-            <span>
-              Un lugar para cada caso{" "}
-              <FlechaDerechaIcon size={14} aria-hidden="true" />
-            </span>
-          </a>
           <h1 id="titulo-inicio" className={styles.title}>
             Su trabajo.
             <br />

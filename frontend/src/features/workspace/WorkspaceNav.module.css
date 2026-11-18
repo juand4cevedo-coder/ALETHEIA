@@ -7,7 +7,7 @@
   --line: var(--brand-line);
   --accent: var(--on-brand);
   border-right: 1px solid var(--line);
-  background: linear-gradient(180deg, #111216, #0a0b0e 70%);
+  background: linear-gradient(180deg, var(--surface-1b), var(--surface-1) 70%);
 }
 
 .groups {
@@ -61,13 +61,17 @@
 
 .link:hover {
   color: var(--text);
-  background: #ffffff08;
+  background: color-mix(in srgb, var(--accent-strong) 3%, transparent);
 }
 
 .active,
 .active:hover {
-  background: linear-gradient(90deg, #ffffff16, #ffffff09);
-  box-shadow: inset 2px 0 0 #d6c1a4;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent-strong) 9%, transparent),
+    color-mix(in srgb, var(--accent-strong) 4%, transparent)
+  );
+  box-shadow: inset 2px 0 0 var(--accent-nav);
   color: var(--text);
 }
 

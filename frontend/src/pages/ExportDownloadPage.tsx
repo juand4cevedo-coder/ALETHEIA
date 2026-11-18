@@ -54,7 +54,6 @@ export function ExportDownloadPage() {
       <title>{pageTitle("Descargar paquete")}</title>
       <meta name="robots" content="noindex" />
       <div className={styles.card}>
-        <p className={styles.eyebrow}>Paquete de preservación</p>
         <h1>Descargar paquete</h1>
         {state.kind === "checking" && (
           <p role="status">Comprobando el enlace.</p>

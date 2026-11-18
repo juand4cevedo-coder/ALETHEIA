@@ -38,18 +38,21 @@
   font-size: var(--font-size-ui);
 }
 
-.checkboxRow {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
+.confirmTitle {
   color: var(--text);
   font-size: var(--font-size-ui);
-  line-height: var(--line-height-ui);
+  font-weight: 600;
 }
 
-.checkboxRow a {
-  color: var(--accent-strong);
-  text-underline-offset: var(--underline-offset);
+.confirmTitle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.help {
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
 }
 
 .actions {

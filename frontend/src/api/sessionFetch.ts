@@ -84,3 +84,56 @@ export async function sessionFetch(
   if (!(await renewSession())) return response;
   return globalThis.fetch(retry);
 }
+
+export type UploadProgress = { loaded: number; total: number };
+
+/** Variante de sessionFetch para subidas: fetch no avisa del progreso de envío del cuerpo, pero
+ * XMLHttpRequest sí (xhr.upload.onprogress), que es lo que necesita una barra de progreso con
+ * archivos grandes. Misma renovación de sesión que sessionFetch: ante un 401 renueva el par de
+ * cookies y repite la subida una sola vez. El FormData no se consume al enviarlo, así que no
+ * hace falta clonar nada para el reintento. */
+export function sessionUpload(
+  url: URL | string,
+  formData: FormData,
+  options: {
+    headers?: Record<string, string>;
+    onProgress?: (progress: UploadProgress) => void;
+  } = {},
+): Promise<Response> {
+  const href = typeof url === "string" ? url : url.toString();
+
+  function attempt(): Promise<Response> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", href);
+      for (const [name, value] of Object.entries(options.headers ?? {})) {
+        xhr.setRequestHeader(name, value);
+      }
+      if (options.onProgress) {
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            options.onProgress!({ loaded: event.loaded, total: event.total });
+          }
+        };
+      }
+      xhr.onload = () => {
+        resolve(
+          new Response(xhr.responseText, {
+            status: xhr.status,
+            statusText: xhr.statusText,
+          }),
+        );
+      };
+      // Igual que un fetch sin respuesta: red caída, CORS, etc.
+      xhr.onerror = () => reject(new TypeError("Failed to fetch"));
+      xhr.send(formData);
+    });
+  }
+
+  return (async () => {
+    const first = await attempt();
+    if (first.status !== 401 || !renewsSession(href)) return first;
+    if (!(await renewSession())) return first;
+    return attempt();
+  })();
+}

@@ -13,7 +13,7 @@
   background: conic-gradient(
     from 210deg at 65% 0%,
     transparent 0deg,
-    #ffffff07 12deg,
+    color-mix(in srgb, var(--accent-strong) 3%, transparent) 12deg,
     transparent 35deg
   );
   filter: blur(28px);
@@ -40,9 +40,9 @@
   background: linear-gradient(
     8deg,
     transparent 36%,
-    #ffffff05 44%,
+    color-mix(in srgb, var(--accent-strong) 2%, transparent) 44%,
     transparent 52%,
-    #ffffff03 58%,
+    color-mix(in srgb, var(--accent-strong) 1%, transparent) 58%,
     transparent 66%
   );
   filter: blur(12px);
@@ -52,37 +52,6 @@
   z-index: 1;
   animation: introIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px;
-  border-radius: 99px;
-  color: var(--text);
-  text-decoration: none;
-  font-size: 13px;
-  margin-bottom: 32px;
-  background: linear-gradient(
-    var(--border-angle),
-    #02fcef50,
-    #ffb52b40,
-    #a02bfe60
-  );
-  animation: borderOrbit 20s linear infinite;
-}
-.eyebrow > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 12px;
-  background: #0b0d10;
-  border-radius: inherit;
-}
-.eyebrow svg {
-  transition: transform 0.2s;
-}
-.eyebrow:hover svg {
-  transform: translateX(3px);
-}
 .title {
   font-family: var(--font-editorial);
   font-size: clamp(76px, 8.1vw, 108px);
@@ -90,14 +59,21 @@
   line-height: 0.98;
   letter-spacing: -0.025em;
   padding-bottom: 8px;
-  background: linear-gradient(145deg, #fff 25%, #d6d6d6 68%, #8b8b8b);
+  /* El único degradado de texto del sitio, reservado al H1 del hero. Los dos tonos intermedios
+     son propios de este efecto y no se repiten en ningún otro lado, así que no llevan token. */
+  background: linear-gradient(
+    145deg,
+    var(--accent-strong) 25%,
+    #d6d6d6 68%,
+    #8b8b8b
+  );
   background-clip: text;
   color: transparent;
 }
 .lead {
   font-size: 18px;
   line-height: 1.6;
-  color: #a5a5a5;
+  color: var(--text-2);
   max-width: 450px;
   margin-top: 24px;
 }
@@ -113,7 +89,7 @@
   margin: auto;
   padding: 56px 24px 88px;
   text-align: center;
-  color: #999;
+  color: var(--text-3);
   font-size: 13px;
 }
 .benefits ul {
@@ -125,18 +101,8 @@
   margin: 0;
   list-style: none;
   font-size: 20px;
-  color: #c2c2c2;
+  color: var(--text-2);
   letter-spacing: -0.03em;
-}
-@property --border-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-@keyframes borderOrbit {
-  to {
-    --border-angle: 360deg;
-  }
 }
 @keyframes introIn {
   from {
@@ -161,10 +127,6 @@
     font-size: 16px;
     margin: 22px auto 0;
   }
-  .eyebrow {
-    margin-bottom: 26px;
-    font-size: 12px;
-  }
   .actions {
     justify-content: center;
     margin-top: 26px;
@@ -179,7 +141,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .eyebrow,
   .intro {
     animation: none;
   }

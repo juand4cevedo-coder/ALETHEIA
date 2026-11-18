@@ -52,7 +52,6 @@ export function FaqSection() {
       <div className={`${section.inner} ${styles.layout}`}>
         <SectionHeading
           id="titulo-preguntas"
-          kicker="Preguntas frecuentes"
           title="Antes de empezar"
           className={`${section.headingStacked} ${styles.heading}`}
         />
