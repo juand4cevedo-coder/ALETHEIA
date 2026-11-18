@@ -112,7 +112,9 @@ El rol `aletheia-prod-instancia` tiene tres políticas: `aletheia-prod-acceso` p
 
 La política de correo aún nombra todas las identidades de la cuenta: se configuró así cuando SES estaba en sandbox y exigía autorización sobre la identidad del destinatario. SES ya tiene acceso de producción. Las condiciones `ses:FromAddress`, `ses:FromDisplayName` y `ses:ApiVersion` restringen el remitente; el alcance de `Resource` puede reducirse en una revisión separada, con una prueba de envío después del cambio.
 
-Desde HU-015 la API llama a `Encrypt` de KMS cada vez que se abre un caso. HU-018, publicada en v0.4.4, usa `Decrypt` para abrir la llave de ese caso antes de cifrar una evidencia. Si KMS no responde o niega la operación, la API devuelve 503 sin registrar la evidencia; al abrir un caso también evita dejar filas incompletas. El sello externo RFC 3161 sigue pendiente (HU-020).
+Desde HU-015 la API llama a `Encrypt` de KMS cada vez que se abre un caso. HU-018, publicada en v0.4.4, usa `Decrypt` para abrir la llave de ese caso antes de cifrar una evidencia. Si KMS no responde o niega la operación, la API devuelve 503 sin registrar la evidencia; al abrir un caso también evita dejar filas incompletas.
+
+El sello externo RFC 3161 de cada evidencia (HU-020) ya pide el sello a DigiCert, con Sectigo como respaldo, en una tarea `tsa_stamp` que se encola al subir la evidencia (`app/adapters/stamping.py`, `app/services/evidence_stamp.py`). Falta sellar también la cabeza de la cadena de custodia al exportar el paquete y, después, una vez al día si la cadena cambió (ADR-037); eso necesita un disparador recurrente que todavía no existe.
 
 La versión `v1` de la política administrada `aletheia-prod-acceso` nombra el ARN de la llave, restringe el algoritmo a `RSAES_OAEP_SHA_256` y autoriza `Encrypt` y `Decrypt`. Se comprobó en AWS el 13/11/2026. `Encrypt` recibe el alias como `KeyId`; `Decrypt` recibe el ARN guardado con cada caso.
 
