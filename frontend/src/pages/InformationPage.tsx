@@ -252,10 +252,11 @@ export function InformationPage() {
           <div className={styles.prose}>
             <h2>El símbolo de Aletheia</h2>
             <p>
-              El símbolo reúne seis trazos en una misma figura. Sus dos
-              versiones, clara y oscura, permiten conservar el contraste sobre
-              diferentes superficies. Utilice el archivo vectorial para mantener
-              la nitidez en cualquier tamaño.
+              El símbolo es un sello con las manecillas de un reloj: el momento
+              exacto en que una evidencia queda registrada. Sus dos versiones,
+              clara y oscura, permiten conservar el contraste sobre diferentes
+              superficies. Utilice el archivo vectorial para mantener la nitidez
+              en cualquier tamaño.
             </p>
             <h2>Uso del nombre</h2>
             <p>
