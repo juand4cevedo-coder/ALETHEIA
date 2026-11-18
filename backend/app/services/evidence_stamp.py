@@ -70,11 +70,14 @@ def _append_event(
     details: dict[str, object],
     now: datetime.datetime,
 ) -> None:
-    """Mismo bloqueo y cálculo del evento anterior que evidence_upload._record."""
+    """Mismo bloqueo exclusivo y cálculo del evento anterior que evidence_upload._record: el
+    disparador de custodia (migración 0013) toma FOR UPDATE sobre el caso al insertar, así que
+    un bloqueo compartido aquí terminaría en un deadlock de actualización entre dos sellos del
+    mismo caso que se cierran a la vez."""
     case = session.scalar(
         select(Case)
         .where(Case.id == case_id, Case.organization_id == organization_id)
-        .with_for_update(read=True)
+        .with_for_update()
     )
     if case is None:
         raise PermanentJobError("El caso ya no existe.")
