@@ -20,7 +20,13 @@ from app.core.config import Settings
 
 # Registran las plantillas de correo: sin estos imports, el trabajador no las conoce.
 from app.services import account_emails as _account_emails  # noqa: F401
-from app.services import export_build, export_expiration, notifications, subscription_expiration
+from app.services import (
+    evidence_stamp,
+    export_build,
+    export_expiration,
+    notifications,
+    subscription_expiration,
+)
 from app.services import organization_emails as _organization_emails  # noqa: F401
 from app.services.jobs import PermanentJobError
 
@@ -99,6 +105,16 @@ def build_export(run: JobRun) -> None:
     )
 
 
+def stamp_evidence(run: JobRun) -> None:
+    try:
+        evidence_id = uuid.UUID(str(run.payload["evidence_id"]))
+        case_id = uuid.UUID(str(run.payload["case_id"]))
+        organization_id = uuid.UUID(str(run.payload["organization_id"]))
+    except (KeyError, ValueError, TypeError) as exc:
+        raise PermanentJobError("Identificadores de evidencia inválidos.") from exc
+    evidence_stamp.stamp(run.open_session, evidence_id, case_id, organization_id)
+
+
 def expire_export(run: JobRun) -> None:
     try:
         export_id = uuid.UUID(str(run.payload["export_id"]))
@@ -114,4 +130,5 @@ HANDLERS: Final[Mapping[str, Handler]] = {
     "subscription_expire": expire_subscription,
     "export_build": build_export,
     "export_expire": expire_export,
+    "tsa_stamp": stamp_evidence,
 }
