@@ -26,7 +26,7 @@
   border-radius: 9px;
   margin: 24px 0 30px;
   color: var(--text-3);
-  background: #ffffff04;
+  background: color-mix(in srgb, var(--accent-strong) 2%, transparent);
 }
 .search input {
   border: 0;
@@ -51,23 +51,23 @@
   font-size: 12px;
   font-weight: 600;
   padding: 0 10px 8px;
-  color: #ddd;
+  color: var(--text);
 }
 .group a {
   padding: 8px 10px;
   font-size: 13px;
-  color: #999;
+  color: var(--text-3);
   border-radius: 6px;
   text-decoration: none;
   line-height: 1.5;
 }
 .group a:hover {
-  color: #fff;
-  background: #ffffff05;
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent-strong) 2%, transparent);
 }
 .group a[aria-current="page"] {
-  background: #ffffff0b;
-  color: #f5f5f5;
+  background: color-mix(in srgb, var(--accent-strong) 4%, transparent);
+  color: var(--text);
 }
 .support {
   border-top: 1px solid var(--line);
@@ -76,7 +76,7 @@
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  color: #aaa;
+  color: var(--text-2);
   text-decoration: none;
 }
 .category {
@@ -93,7 +93,7 @@
 }
 .lead {
   font-size: 17px;
-  color: #a6a6a6;
+  color: var(--text-2);
   margin-top: 20px;
   line-height: 1.75;
 }
@@ -111,14 +111,14 @@
   text-decoration: none;
 }
 .article section p {
-  color: #aaa;
+  color: var(--text-2);
   line-height: 1.9;
   font-size: 15px;
   margin: 16px 0;
 }
 .steps {
   padding-left: 24px;
-  color: #bbb;
+  color: var(--text-2);
   line-height: 1.85;
   font-size: 14px;
 }
@@ -127,7 +127,7 @@
   margin: 18px 0;
 }
 .steps li::marker {
-  color: #eee;
+  color: var(--text);
   font-family: var(--font-mono);
   font-size: 12px;
 }
@@ -145,12 +145,12 @@
   padding: 24px 20px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: linear-gradient(135deg, #141414, #070707);
+  background: linear-gradient(135deg, var(--surface-1b), var(--surface-0));
   text-decoration: none;
   font-size: 14px;
 }
 .quickLinks a:hover {
-  border-color: #555;
+  border-color: var(--line-control);
 }
 .quickLinks svg {
   flex: none;
@@ -187,7 +187,8 @@
   font-size: 12px;
 }
 .contents {
-  border-left: 1px solid #ffffff12;
+  border-left: 1px solid
+    color-mix(in srgb, var(--accent-strong) 7%, transparent);
   padding-left: 20px;
   font-size: 12px;
 }

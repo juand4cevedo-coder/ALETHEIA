@@ -27,13 +27,13 @@
   place-items: center;
   width: 84px;
   height: 84px;
-  border: 1px solid #32353a;
+  border: 1px solid var(--line);
   border-radius: 24px;
   margin: 0 auto 32px;
-  background: linear-gradient(145deg, #303238, #0b0c0e 65%);
+  background: linear-gradient(145deg, var(--line), var(--brand-dark) 65%);
   box-shadow:
-    inset 0 1px 1px #ffffff30,
-    0 12px 50px #ffffff08;
+    inset 0 1px 1px color-mix(in srgb, var(--accent-strong) 19%, transparent),
+    0 12px 50px color-mix(in srgb, var(--accent-strong) 3%, transparent);
   transform: rotate(-8deg);
 }
 .cards {
@@ -47,7 +47,7 @@
   gap: 16px;
   min-height: 180px;
   padding: 32px;
-  background: linear-gradient(145deg, #151618, #050506);
+  background: linear-gradient(145deg, var(--surface-1b), var(--surface-0));
   border: 1px solid var(--line);
   border-radius: 16px;
   color: var(--text);
@@ -58,7 +58,7 @@
 }
 .cards > a:hover {
   border-color: var(--line-control);
-  background: linear-gradient(145deg, #222429, #08090b);
+  background: linear-gradient(145deg, var(--line), var(--brand-dark));
 }
 .cards h2 {
   font-size: 20px;
@@ -84,7 +84,7 @@
 }
 .principles section > span {
   font: 400 80px/1 var(--font-editorial);
-  color: #777b82;
+  color: var(--line-control);
 }
 .principles h2 {
   font-size: 26px;
@@ -199,11 +199,16 @@
   justify-content: center;
   align-items: center;
   aspect-ratio: 1.8;
-  border: 1px solid #31343a;
+  border: 1px solid var(--line);
   border-radius: 16px;
   margin-bottom: 24px;
   background:
-    radial-gradient(ellipse at 50% 0%, #383c4266, transparent 60%), #08090b;
+    radial-gradient(
+      ellipse at 50% 0%,
+      color-mix(in srgb, var(--accent-strong) 40%, transparent),
+      transparent 60%
+    ),
+    var(--brand-dark);
   overflow: hidden;
   transition: border-color 0.2s;
 }
@@ -212,7 +217,7 @@
   z-index: 1;
   font: 400 clamp(40px, 4.5vw, 62px)/1 var(--font-editorial);
   letter-spacing: -0.03em;
-  background: linear-gradient(#fff, #777);
+  background: linear-gradient(var(--accent-strong), var(--line-control));
   color: transparent;
   background-clip: text;
 }
@@ -225,11 +230,21 @@
 }
 .articleVisual[data-kind="Integridad"] {
   background:
-    radial-gradient(ellipse at 75% 20%, #66351f66, transparent 70%), #090808;
+    radial-gradient(
+      ellipse at 75% 20%,
+      color-mix(in srgb, var(--tint-integridad) 40%, transparent),
+      transparent 70%
+    ),
+    var(--brand-dark);
 }
 .articleVisual[data-kind="Seguridad"] {
   background:
-    radial-gradient(ellipse at 30% 10%, #163a3166, transparent 70%), #080a09;
+    radial-gradient(
+      ellipse at 30% 10%,
+      color-mix(in srgb, var(--tint-seguridad) 40%, transparent),
+      transparent 70%
+    ),
+    var(--brand-dark);
 }
 .blogCard:hover .articleVisual {
   border-color: var(--line-control);
@@ -245,29 +260,41 @@
   background: repeating-radial-gradient(
     ellipse at center,
     transparent 0 11px,
-    #ffffff14 12px 13px,
+    color-mix(in srgb, var(--accent-strong) 8%, transparent) 12px 13px,
     transparent 14px 20px
   );
   transform: rotate(-25deg) scaleX(0.8);
-  mask-image: linear-gradient(#000, transparent);
+  mask-image: linear-gradient(var(--bg), transparent);
   transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .articleVisual[data-kind="Seguridad"]::before {
   border-radius: 28px;
   background:
-    repeating-linear-gradient(90deg, transparent 0 19px, #ffffff12 20px 21px),
-    repeating-linear-gradient(0deg, transparent 0 19px, #ffffff12 20px 21px);
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 19px,
+      color-mix(in srgb, var(--accent-strong) 7%, transparent) 20px 21px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 19px,
+      color-mix(in srgb, var(--accent-strong) 7%, transparent) 20px 21px
+    );
   transform: perspective(500px) rotateY(-30deg) rotateZ(20deg);
 }
 .articleVisual[data-kind="Práctica"]::before {
   border-radius: 12px;
-  border: 1px solid #ffffff24;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 14%, transparent);
   box-shadow:
-    20px 20px 0 -1px #161616,
-    20px 20px 0 #ffffff20,
-    40px 40px 0 -1px #161616,
-    40px 40px 0 #ffffff12;
-  background: linear-gradient(135deg, #ffffff0e, transparent);
+    20px 20px 0 -1px var(--surface-1b),
+    20px 20px 0 color-mix(in srgb, var(--accent-strong) 13%, transparent),
+    40px 40px 0 -1px var(--surface-1b),
+    40px 40px 0 color-mix(in srgb, var(--accent-strong) 7%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-strong) 5%, transparent),
+    transparent
+  );
   transform: rotate(-28deg);
 }
 .blogCard:hover .articleVisual::before {
@@ -349,7 +376,11 @@
   padding: 64px 24px;
   border: 1px solid var(--line);
   border-radius: 24px;
-  background: radial-gradient(ellipse at top, #ffffff0d, transparent 60%);
+  background: radial-gradient(
+    ellipse at top,
+    color-mix(in srgb, var(--accent-strong) 5%, transparent),
+    transparent 60%
+  );
 }
 .wordmarkSample span {
   font-size: clamp(44px, 8vw, 100px);

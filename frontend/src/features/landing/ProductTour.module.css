@@ -49,11 +49,15 @@
   gap: 16px;
   height: 100%;
   border-radius: 15px;
-  background: #000;
+  background: var(--bg);
   padding: 24px;
 }
 .tabs button[aria-selected="true"] .tabInner {
-  background: linear-gradient(#080808, #030303 50%, #000);
+  background: linear-gradient(
+    var(--surface-0),
+    var(--surface-0) 50%,
+    var(--bg)
+  );
 }
 .icon {
   display: grid;
@@ -63,7 +67,11 @@
   height: 40px;
   border-radius: 12px;
   border: 1px solid var(--line-accent);
-  background: linear-gradient(225deg, #ffffff1a, transparent);
+  background: linear-gradient(
+    225deg,
+    color-mix(in srgb, var(--accent-strong) 10%, transparent),
+    transparent
+  );
 }
 .tabs button[aria-selected="true"] .icon {
   color: var(--ok);
@@ -72,7 +80,7 @@
   border: 1px solid var(--line-accent);
   border-radius: 16px;
   overflow: hidden;
-  background: #08090b;
+  background: var(--brand-dark);
 }
 .panel img {
   display: block;

@@ -23,9 +23,10 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgb(0 0 0 / 80%);
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid #ffffff09;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--accent-strong) 4%, transparent);
 }
 .bar {
   display: flex;
@@ -88,11 +89,11 @@
   padding: 24px;
   border: 1px solid var(--line);
   border-radius: 24px 24px 0 0;
-  background: #08090b;
+  background: var(--brand-dark);
   color: var(--text);
 }
 .sheet::backdrop {
-  background: #000b;
+  background: color-mix(in srgb, var(--bg) 73%, transparent);
   backdrop-filter: blur(8px);
 }
 .sheetHead {
@@ -120,7 +121,8 @@
   text-decoration: none;
 }
 .mobileGroup {
-  border-bottom: 1px solid #ffffff12;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--accent-strong) 7%, transparent);
   padding-bottom: 16px;
 }
 .mobileGroup summary {
@@ -158,9 +160,14 @@
 .footer {
   position: relative;
   padding: 120px 24px 32px;
-  border-top: 1px solid #191b1c;
+  border-top: 1px solid var(--surface-2);
   background:
-    radial-gradient(ellipse 60% 120px at 50% 0%, #ffffff05, transparent), #000;
+    radial-gradient(
+      ellipse 60% 120px at 50% 0%,
+      color-mix(in srgb, var(--accent-strong) 2%, transparent),
+      transparent
+    ),
+    var(--bg);
   color: var(--text-2);
   font-size: 13px;
 }
@@ -192,7 +199,7 @@
   padding: 8px 14px;
   border: 1px solid var(--line);
   border-radius: 99px;
-  background: linear-gradient(#171717, #090909);
+  background: linear-gradient(var(--surface-1b), var(--brand-dark));
 }
 .footerNav {
   display: grid;
