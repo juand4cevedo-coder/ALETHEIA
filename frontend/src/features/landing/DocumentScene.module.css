@@ -9,17 +9,61 @@
   isolation: isolate;
 }
 
-/* El documento, con el sello sobre la esquina inferior derecha: el mismo motivo que StampCard. */
-.document {
+.stack {
   position: relative;
   width: 300px;
   height: 380px;
-  padding: var(--space-8) var(--space-6);
+}
+
+.cardBack,
+.cardMid,
+.card {
+  position: absolute;
+  inset: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
+}
+
+/* Dos expedientes detrás del principal, cada uno un paso más oscuro y más cerca del borde. */
+.cardBack {
+  background: var(--surface-0);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--bg) 55%, transparent);
+  transform: rotate(-9deg) translate(-22px, 14px);
+  animation: cardBackIn var(--motion-enter) var(--ease-out) both;
+}
+
+.cardMid {
+  background: var(--surface-1b);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--bg) 60%, transparent);
+  transform: rotate(5deg) translate(14px, 6px);
+  animation: cardMidIn var(--motion-enter) var(--ease-out) 90ms both;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-8) var(--space-6);
   background: linear-gradient(165deg, var(--surface-1), var(--bg));
   box-shadow: var(--shadow-float);
-  animation: float 6.5s ease-in-out infinite;
+  transform: rotate(-1.5deg);
+  animation: cardFrontIn var(--motion-enter) var(--ease-out) 160ms both;
+}
+
+/* Esquina doblada: el detalle de físico que separa un expediente de un rectángulo plano. */
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    color-mix(in srgb, var(--accent-strong) 7%, transparent) 50%
+  );
+  border-radius: 0 var(--radius-lg) 0 0;
 }
 
 .lines {
@@ -34,9 +78,12 @@
   background: var(--line);
 }
 
-.lines span:nth-child(1) {
-  width: 70%;
+.lineTitle {
+  width: 58%;
+  height: 12px;
+  background: var(--line-control);
 }
+
 .lines span:nth-child(2) {
   width: 92%;
 }
@@ -48,48 +95,79 @@
   width: 48% !important;
 }
 
+.hash {
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+  font: 12px var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--text-3);
+}
+
+/* El sello, apenas girado como si acabara de caer sobre el expediente. */
 .seal {
   position: absolute;
-  right: -34px;
-  bottom: -34px;
-  width: 128px;
-  height: 128px;
+  right: -22px;
+  bottom: -26px;
+  z-index: 1;
+  width: 112px;
+  height: 112px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--surface-1);
   box-shadow: var(--shadow-float);
+  color: var(--ok);
+  transform: rotate(-9deg);
+  animation: sealStamp 520ms cubic-bezier(0.34, 1.56, 0.64, 1) 420ms both;
 }
 
-.sealRing {
+/* El anillo de tinta que se expande una sola vez cuando el sello llega, no un halo fijo. */
+.seal::after {
+  content: "";
   position: absolute;
-  inset: 6px;
+  inset: -14px;
   border-radius: 50%;
-  border: 2px dashed color-mix(in srgb, var(--ok) 70%, transparent);
-  animation: ringTurn 16s linear infinite;
+  border: 1px solid color-mix(in srgb, var(--ok) 55%, transparent);
+  animation: inkBloom 640ms var(--ease-out) 760ms both;
 }
 
-.sealMark {
-  width: 34px;
-  height: 18px;
-  border-left: 3px solid var(--ok);
-  border-bottom: 3px solid var(--ok);
-  transform: rotate(-45deg) translate(2px, -4px);
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(6px);
-  }
-  50% {
-    transform: translateY(-6px);
+@keyframes cardBackIn {
+  from {
+    opacity: 0;
+    transform: rotate(-9deg) translate(-22px, 34px);
   }
 }
 
-@keyframes ringTurn {
+@keyframes cardMidIn {
+  from {
+    opacity: 0;
+    transform: rotate(5deg) translate(14px, 26px);
+  }
+}
+
+@keyframes cardFrontIn {
+  from {
+    opacity: 0;
+    transform: rotate(-1.5deg) translateY(22px);
+  }
+}
+
+@keyframes sealStamp {
+  from {
+    opacity: 0;
+    transform: rotate(-32deg) scale(1.5) translateY(-10px);
+  }
+}
+
+@keyframes inkBloom {
+  from {
+    opacity: 0.9;
+    transform: scale(0.7);
+  }
   to {
-    transform: rotate(360deg);
+    opacity: 0;
+    transform: scale(1.5);
   }
 }
 
@@ -99,27 +177,32 @@
     height: 310px;
     margin: 0;
   }
-  .document {
+  .stack {
     width: 216px;
     height: 274px;
+  }
+  .card {
     padding: var(--space-6) var(--space-4);
   }
   .seal {
-    right: -24px;
-    bottom: -24px;
-    width: 92px;
-    height: 92px;
+    right: -16px;
+    bottom: -18px;
+    width: 84px;
+    height: 84px;
   }
-  .sealMark {
-    width: 24px;
-    height: 13px;
+  .seal svg {
+    width: 48px;
+    height: 48px;
   }
 }
 
 /* Lo decorativo se detiene por completo cuando el sistema pide menos movimiento. */
 @media (prefers-reduced-motion: reduce) {
-  .document,
-  .sealRing {
+  .cardBack,
+  .cardMid,
+  .card,
+  .seal,
+  .seal::after {
     animation: none;
   }
 }
