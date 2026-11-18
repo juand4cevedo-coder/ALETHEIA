@@ -89,17 +89,30 @@ def _pedir_sello(url: str, cuerpo: bytes) -> bytes:
 
 
 def _ordenar_certificados(respuesta: bytes) -> bytes:
-    """El sello con sus certificados en orden DER, sin tocar lo que la autoridad firmó."""
+    """El sello, concedido, con sus certificados en orden DER, sin tocar lo que firmó."""
     sello = tsp.TimeStampResp.load(respuesta)
-    if sello["status"]["status"].native != "granted":
-        return respuesta
     firmados = sello["time_stamp_token"]["content"]
     firmados["certificates"] = cms.CertificateSet(list(firmados["certificates"]))
     normalizado: bytes = sello.dump()
     return normalizado
 
 
+# PKIStatus que sí traen un token que verificar (RFC 3161, sección 2.4.2).
+_CONCEDIDO: Final = frozenset({"granted", "granted_with_mods"})
+# PKIFailureInfo que indican un problema del lado de la autoridad, no de la solicitud: vale la
+# pena reintentar, incluso con la otra autoridad.
+_RECHAZO_TEMPORAL: Final = frozenset(
+    {"system_failure", "time_not_available", "add_info_not_available"}
+)
+
+
 def _verificar(respuesta: bytes, huella: bytes, nonce: int) -> datetime:
+    estado = tsp.TimeStampResp.load(respuesta)["status"]
+    if estado["status"].native not in _CONCEDIDO:
+        fallas = estado["fail_info"].native if estado["fail_info"] else set()
+        if fallas & _RECHAZO_TEMPORAL:
+            raise SelloNoDisponibleError(f"rechazo temporal de la autoridad: {sorted(fallas)}")
+        raise SelloInvalidoError(f"la autoridad no concedió el sello: {estado['status'].native}")
     sello = decode_timestamp_response(_ordenar_certificados(respuesta))
     VerifierBuilder(roots=_cargar_raices(), nonce=nonce).build().verify(sello, huella)
     return sello.tst_info.gen_time

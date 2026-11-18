@@ -45,6 +45,22 @@ def _pendiente(
     return _Pendiente(sha256=evidence.sha256)
 
 
+def _bloquear_pendiente(
+    session: Session, evidence_id: uuid.UUID, organization_id: uuid.UUID
+) -> Evidence | None:
+    """Bloquea la fila antes de decidir: dos intentos del mismo sello (reserva vencida y
+    retomada por otro trabajador) no deben terminar los dos en stamped o en failed."""
+    set_tenant(session, TenantContext(organization_id=organization_id))
+    evidence = session.scalar(
+        select(Evidence)
+        .where(Evidence.id == evidence_id, Evidence.organization_id == organization_id)
+        .with_for_update()
+    )
+    if evidence is None or evidence.tsa_status != "pending":
+        return None
+    return evidence
+
+
 def _append_event(
     session: Session,
     case_id: uuid.UUID,
@@ -105,12 +121,7 @@ def stamp(
         sello = pedir_sello_de_tiempo(pendiente.sha256)
     except SelloInvalidoError as exc:
         with open_session() as session, session.begin():
-            set_tenant(session, TenantContext(organization_id=organization_id))
-            evidence = session.scalar(
-                select(Evidence).where(
-                    Evidence.id == evidence_id, Evidence.organization_id == organization_id
-                )
-            )
+            evidence = _bloquear_pendiente(session, evidence_id, organization_id)
             if evidence is not None:
                 evidence.tsa_status = "failed"
                 _append_event(
@@ -124,13 +135,8 @@ def stamp(
                 )
         raise PermanentJobError(str(exc)) from exc
     with open_session() as session, session.begin():
-        set_tenant(session, TenantContext(organization_id=organization_id))
-        evidence = session.scalar(
-            select(Evidence).where(
-                Evidence.id == evidence_id, Evidence.organization_id == organization_id
-            )
-        )
-        if evidence is None or evidence.tsa_status != "pending":
+        evidence = _bloquear_pendiente(session, evidence_id, organization_id)
+        if evidence is None:
             return
         evidence.tsa_status = "stamped"
         evidence.tsa_token = sello.token

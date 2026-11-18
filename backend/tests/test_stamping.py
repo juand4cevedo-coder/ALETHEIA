@@ -18,6 +18,17 @@ def _respuesta(nombre: str) -> bytes:
     return (SELLOS / f"{nombre}.tsr").read_bytes()
 
 
+def _rechazo(fail_info: str) -> bytes:
+    """Una respuesta de rechazo válida en DER, sin token (RFC 3161 §2.4.2)."""
+    respuesta: bytes = tsp.TimeStampResp(
+        {
+            "status": {"status": "rejection", "fail_info": {fail_info}},
+            "time_stamp_token": {"content_type": "data", "content": b""},
+        }
+    ).dump()
+    return respuesta
+
+
 def _nonce(nombre: str) -> int:
     return int(tsp.TimeStampReq.load((SELLOS / f"{nombre}.tsq").read_bytes())["nonce"].native)
 
@@ -94,6 +105,34 @@ def test_un_sello_que_no_verifica_no_es_reintentable() -> None:
     with (
         patch.object(stamping, "_pedir_sello", return_value=_respuesta("digicert")),
         patch.object(stamping, "_solicitud", return_value=(b"", _nonce("digicert") + 1)),
+        pytest.raises(stamping.SelloInvalidoError),
+    ):
+        stamping.pedir_sello_de_tiempo(HUELLA)
+
+
+def test_un_rechazo_temporal_cae_a_la_otra_autoridad() -> None:
+    llamadas = {"digicert": 0, "sectigo": 0}
+
+    def pedir(url: str, cuerpo: bytes) -> bytes:
+        if "digicert" in url:
+            llamadas["digicert"] += 1
+            return _rechazo("system_failure")
+        llamadas["sectigo"] += 1
+        return _respuesta("sectigo")
+
+    with (
+        patch.object(stamping, "_pedir_sello", side_effect=pedir),
+        patch.object(stamping, "_solicitud", return_value=(b"", _nonce("sectigo"))),
+    ):
+        resultado = stamping.pedir_sello_de_tiempo(HUELLA)
+    assert llamadas == {"digicert": 1, "sectigo": 1}
+    assert resultado.token == _respuesta("sectigo")
+
+
+def test_un_rechazo_permanente_no_cae_a_la_otra_autoridad() -> None:
+    with (
+        patch.object(stamping, "_pedir_sello", return_value=_rechazo("bad_request")),
+        patch.object(stamping, "_solicitud", return_value=(b"", 1)),
         pytest.raises(stamping.SelloInvalidoError),
     ):
         stamping.pedir_sello_de_tiempo(HUELLA)
