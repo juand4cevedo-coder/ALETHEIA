@@ -1,7 +1,23 @@
-/* Pantallas de acceso (ADR-029): título y formulario dentro del panel de AuthLayout. */
+/* Pantallas de acceso (ADR-029): título y formulario dentro del panel de AuthLayout. El mismo
+   momento de entrada que el resto de la aplicación, para que esta pantalla no sea la única sin
+   ninguno. */
 .screen {
   display: grid;
   gap: var(--space-6);
+  animation: screenIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes screenIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen {
+    animation: none;
+  }
 }
 
 .intro {
