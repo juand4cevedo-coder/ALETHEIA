@@ -3,11 +3,11 @@
 import datetime
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, Job, Organization, Subscription
+from app.models import AuditLog, Job, Organization, Subscription, User
 from app.services import subscription_expiration
 from tests.organizations import crear_oficina
 
@@ -91,6 +91,23 @@ def test_una_suscripcion_legacy_activa_no_vence_por_este_camino(db: Session) -> 
     now = datetime.datetime.now(datetime.UTC)
 
     assert not subscription_expiration.expire(db, office.organization_id, now)
+
+
+def test_el_despacho_del_dueno_de_la_plataforma_nunca_vence(owner_db: Session) -> None:
+    db = owner_db
+    office = crear_oficina(db)
+    now = datetime.datetime.now(datetime.UTC)
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    db.execute(update(User).where(User.id == office.owner.id).values(is_platform_admin=True))
+    subscription = _subscription(db, office.organization_id)
+    subscription.status = "trial"
+    subscription.billing_cycle = "none"
+    subscription.trial_ends_at = now - datetime.timedelta(seconds=1)
+    db.flush()
+
+    assert not subscription_expiration.expire(db, office.organization_id, now)
+    assert subscription.status == "trial"
+    assert db.get_one(Organization, office.organization_id).status == "active"
 
 
 def test_cortesia_con_fecha_vence_y_sin_fecha_sigue_activa(db: Session) -> None:

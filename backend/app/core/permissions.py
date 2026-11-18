@@ -65,6 +65,7 @@ def permissions_for(role: str | None, *, platform_admin: bool = False) -> frozen
         return (
             organization_permissions
             - {
+                "billing.manage",
                 "cases.read_assigned",
                 "cases.create",
                 "cases.manage_members",
