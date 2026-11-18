@@ -18,6 +18,7 @@ import { PASSWORD_MAX_LENGTH } from "../features/auth/signUp.ts";
 import { EmailStatus } from "../features/session/EmailStatus.tsx";
 import { SignOutEverywhereDialog } from "../features/session/SignOutEverywhereDialog.tsx";
 import { useSignOut } from "../features/session/useSignOut.ts";
+import { CheckoutCard } from "./CheckoutCard.tsx";
 import styles from "./AccountPage.module.css";
 
 const METER_ID = "medidor-cambio";
@@ -91,6 +92,7 @@ export function AccountPage() {
               </dd>
             </div>
           </dl>
+          <CheckoutCard me={me} />
         </Card>
       )}
 
