@@ -20,6 +20,7 @@ import {
   changeSupportTicketStatus,
   createCase,
   createCaseExport,
+  createCheckout,
   createInvitation,
   createSupportTicket,
   downloadEvidence,
@@ -61,6 +62,7 @@ import {
   uploadEvidence,
   verifyCustody,
   verifyEmail,
+  wompiTerms,
 } from "../sdk.gen";
 import type {
   AcceptInvitationData,
@@ -93,6 +95,9 @@ import type {
   CreateCaseExportError,
   CreateCaseExportResponse,
   CreateCaseResponse,
+  CreateCheckoutData,
+  CreateCheckoutError,
+  CreateCheckoutResponse,
   CreateInvitationData,
   CreateInvitationError,
   CreateInvitationResponse,
@@ -211,6 +216,9 @@ import type {
   VerifyEmailData,
   VerifyEmailError,
   VerifyEmailResponse,
+  WompiTermsData,
+  WompiTermsError,
+  WompiTermsResponse,
 } from "../types.gen";
 
 export type QueryKey<TOptions extends Options> = [
@@ -2132,6 +2140,58 @@ export const changeSupportTicketStatusMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await changeSupportTicketStatus({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const wompiTermsQueryKey = (options?: Options<WompiTermsData>) =>
+  createQueryKey("wompiTerms", options);
+
+/**
+ * Contratos de Wompi que hay que mostrar antes de cobrar
+ */
+export const wompiTermsOptions = (options?: Options<WompiTermsData>) =>
+  queryOptions<
+    WompiTermsResponse,
+    WompiTermsError,
+    WompiTermsResponse,
+    ReturnType<typeof wompiTermsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await wompiTerms({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: wompiTermsQueryKey(options),
+  });
+
+/**
+ * Iniciar el primer cobro de una suscripción con Nequi
+ */
+export const createCheckoutMutation = (
+  options?: Partial<Options<CreateCheckoutData>>,
+): UseMutationOptions<
+  CreateCheckoutResponse,
+  CreateCheckoutError,
+  Options<CreateCheckoutData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateCheckoutResponse,
+    CreateCheckoutError,
+    Options<CreateCheckoutData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createCheckout({
         ...options,
         ...fnOptions,
         throwOnError: true,

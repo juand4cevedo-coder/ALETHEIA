@@ -112,11 +112,15 @@ class SameOriginMiddleware:
         allowed_origins: Collection[str],
         path_prefix: str,
         form_post_paths: Collection[str] = (),
+        exempt_paths: Collection[str] = (),
     ) -> None:
         self.app = app
         self.allowed_origins = frozenset(allowed_origins)
         self.path_prefix = path_prefix
         self.form_post_paths = frozenset(form_post_paths)
+        # Rutas que no vienen de un navegador y verifican su propio origen de otra forma, como
+        # la firma de un webhook: el encabezado propio no tendría sentido para ellas.
+        self.exempt_paths = frozenset(exempt_paths)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
@@ -133,6 +137,7 @@ class SameOriginMiddleware:
         if (
             scope["method"] in _UNSAFE_METHODS
             and scope["path"].startswith(self.path_prefix)
+            and scope["path"] not in self.exempt_paths
             and not (self._comes_from_the_site(headers) or form_from_site)
         ):
             response = problem_response(

@@ -45,6 +45,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyjwt" },
+    { name = "python-dateutil" },
     { name = "python-multipart" },
     { name = "reportlab" },
     { name = "rfc3161-client" },
@@ -61,6 +62,7 @@ dev = [
     { name = "pypdf" },
     { name = "pytest" },
     { name = "ruff" },
+    { name = "types-python-dateutil" },
     { name = "types-reportlab" },
 ]
 spike = [
@@ -82,6 +84,7 @@ requires-dist = [
     { name = "pydantic", specifier = "==2.14.3" },
     { name = "pydantic-settings", specifier = "==2.16.2" },
     { name = "pyjwt", specifier = "==2.15.1" },
+    { name = "python-dateutil", specifier = "==2.9.0.post0" },
     { name = "python-multipart", specifier = "==0.0.33" },
     { name = "reportlab", specifier = "==5.1.0" },
     { name = "rfc3161-client", specifier = "==1.0.9" },
@@ -98,6 +101,7 @@ dev = [
     { name = "pypdf", specifier = "==7.0.0" },
     { name = "pytest", specifier = "==9.2.0" },
     { name = "ruff", specifier = "==0.17.4" },
+    { name = "types-python-dateutil", specifier = "==2.9.0.20261104" },
     { name = "types-reportlab", specifier = "==5.1.0.20261104" },
 ]
 spike = [
@@ -1203,6 +1207,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/97/0a/f48b9b0ab5ba8599fd117309e345152bf82c756c72be2ff0f635780c2792/types_psutil-7.2.2.20260906.tar.gz", hash = "sha256:93abf22cf9a62b915f724e433bde702995ac274865425fd4a76d1d9b5828da1a", size = 27396, upload-time = "2026-09-06T06:35:24.499Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/eb/8d/81a86107486e1c23f5ca21bea1e9e5b18a50754242e7a0b82f41f9ae8384/types_psutil-7.2.2.20260906-py3-none-any.whl", hash = "sha256:db00baf7f96c3f63421c4d3d68d373923094a0dfddf13e922c5c5fbc42488159", size = 33383, upload-time = "2026-09-06T06:35:23.575Z" },
+]
+
+[[package]]
+name = "types-python-dateutil"
+version = "2.9.0.20261104"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/da/aaf5b20ea6c9e714fae9fdc611b68bde4edcba0aa4b1b853fc157d3d7b37/types_python_dateutil-2.9.0.20261104.tar.gz", hash = "sha256:5d0495702a5f7343741f5d842c531bcd1c941da8b4a85307d52ef43ba80252db", size = 17861, upload-time = "2026-11-04T08:14:27.977Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9f/4d/f9beea6da46a838025209b06d91374c8af9fbb82c599167ae99ee59cfb7a/types_python_dateutil-2.9.0.20261104-py3-none-any.whl", hash = "sha256:f6ee76c91c547716b4795373a53d4c07e8e06cf98384ecb89fcf134d212de2ad", size = 18509, upload-time = "2026-11-04T08:14:26.989Z" },
 ]
 
 [[package]]

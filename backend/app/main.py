@@ -12,6 +12,7 @@ from app.adapters.keys import build_key_wrapper
 from app.api import (
     API_PREFIX,
     auth,
+    billing,
     cases,
     exports,
     health,
@@ -82,6 +83,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(exports.case_router, prefix=API_PREFIX)
     app.include_router(platform.router, prefix=API_PREFIX)
     app.include_router(support.router, prefix=API_PREFIX)
+    app.include_router(billing.router, prefix=API_PREFIX)
     install_problem_details(app)
     return app
 
@@ -106,6 +108,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allowed_origins=allowed_origins,
         path_prefix=API_PREFIX,
         form_post_paths=[f"{API_PREFIX}/exports/download"],
+        # Wompi llama a esta ruta directamente desde su servidor: no hay Origin ni el
+        # encabezado propio que verifican las demás. La firma de la notificación es su
+        # verificación de origen (app.adapters.wompi.firma_de_webhook_es_valida).
+        exempt_paths=[f"{API_PREFIX}/webhooks/wompi"],
     )
     app.add_middleware(
         CORSMiddleware,

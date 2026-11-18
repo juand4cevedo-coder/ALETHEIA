@@ -45,6 +45,9 @@ def test_permisos_actuales_por_rol() -> None:
     assert not has_permission("assistant", "cases.download_evidence")
     for role in MEMBER_ROLES:
         assert has_permission(role, "cases.read_assigned")
+    assert has_permission("owner", "billing.manage")
+    for role in ("admin", "lawyer", "assistant"):
+        assert not has_permission(role, "billing.manage")
 
 
 def test_la_aplicacion_no_puede_asignar_administracion_de_plataforma(db: Session) -> None:
