@@ -11,12 +11,12 @@
   --bronze: #c5ae8b;
 
   --bg: #000000;
-  /* Un paso intermedio entre --bg y --surface-1: paneles flotantes (menús, tarjetas de
-     ilustración) que necesitan verse un poco más oscuros que el resto de los paneles. */
+  /* Un paso más oscuro que surface-1, para paneles flotantes (menús, tarjetas de
+     ilustración) que necesitan verse por delante del resto de los paneles. */
   --surface-0: #050505;
   --surface-1: #0e0f11;
-  /* Un paso intermedio entre --surface-1 y --surface-2, para los degradados de dos puntos que
-     antes usaban valores sueltos cercanos entre sí. */
+  /* Un paso más claro que surface-1, para los degradados de dos puntos que antes usaban
+     valores sueltos cercanos entre sí. */
   --surface-1b: #141414;
   --surface-2: #1a1b1e;
 
