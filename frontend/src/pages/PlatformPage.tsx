@@ -12,6 +12,7 @@ import { Dialog } from "../components/ui/Dialog.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
+import { StatusBadge } from "../components/ui/StatusBadge.tsx";
 import { pageTitle } from "../config/site.ts";
 import styles from "./PlatformPage.module.css";
 
@@ -79,9 +80,19 @@ export function PlatformPage() {
                       <th scope="row">{user.full_name}</th>
                       <td translate="no">{user.email}</td>
                       <td>
-                        {user.status === "active" ? "Activa" : "Bloqueada"}
+                        <StatusBadge
+                          tone={user.status === "active" ? "ok" : "error"}
+                        >
+                          {user.status === "active" ? "Activa" : "Bloqueada"}
+                        </StatusBadge>
                       </td>
-                      <td>{user.email_verified ? "Sí" : "Pendiente"}</td>
+                      <td>
+                        <StatusBadge
+                          tone={user.email_verified ? "ok" : "pending"}
+                        >
+                          {user.email_verified ? "Verificado" : "Pendiente"}
+                        </StatusBadge>
+                      </td>
                       <td>
                         {!user.platform_admin && (
                           <Button
