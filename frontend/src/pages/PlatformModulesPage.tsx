@@ -16,6 +16,7 @@ import { Button } from "../components/ui/Button.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
+import { StatTile } from "../components/ui/StatTile.tsx";
 import { pageTitle } from "../config/site.ts";
 import styles from "./PlatformPage.module.css";
 
@@ -68,26 +69,32 @@ export function PlatformBillingPage() {
           {billing.data && (
             <>
               <Panel title="Notificaciones de pago">
-                <div className={styles.metrics}>
-                  <div>
-                    <strong>{billing.data.payment_events_received}</strong>
-                    <span>Notificaciones de pago recibidas</span>
-                  </div>
-                  <div>
-                    <strong>{billing.data.payment_events_pending}</strong>
-                    <span>Sin procesar</span>
-                  </div>
+                <div className={styles.stats}>
+                  <StatTile
+                    label="Recibidas"
+                    value={billing.data.payment_events_received}
+                  />
+                  <StatTile
+                    label="Sin procesar"
+                    value={billing.data.payment_events_pending}
+                    note={
+                      billing.data.payment_events_pending > 0
+                        ? "Esperando que Wompi confirme el pago."
+                        : undefined
+                    }
+                  />
                 </div>
               </Panel>
               <Panel title="Suscripciones por estado">
-                <dl className={styles.metrics}>
+                <div className={styles.stats}>
                   {Object.entries(STATUS_LABELS).map(([status, label]) => (
-                    <div key={status}>
-                      <dt>{label}</dt>
-                      <dd>{billing.data.subscription_counts[status] ?? 0}</dd>
-                    </div>
+                    <StatTile
+                      key={status}
+                      label={label}
+                      value={billing.data.subscription_counts[status] ?? 0}
+                    />
                   ))}
-                </dl>
+                </div>
               </Panel>
               <Panel
                 title="Planes del catálogo"
@@ -516,12 +523,8 @@ export function PlatformAuditPage() {
                         {ACTION_LABELS[event.action] ??
                           event.action.replaceAll("_", " ")}
                       </th>
-                      <td className={styles.identifier}>
-                        {event.actor_user_id ?? "Sistema"}
-                      </td>
-                      <td className={styles.identifier}>
-                        {event.organization_id ?? "Plataforma"}
-                      </td>
+                      <td>{event.actor_name ?? "Sistema"}</td>
+                      <td>{event.organization_name ?? "Plataforma"}</td>
                       <td className={styles.identifier}>
                         {event.target_id ?? "Sin objeto"}
                       </td>

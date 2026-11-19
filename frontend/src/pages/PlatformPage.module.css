@@ -8,42 +8,6 @@
   padding-bottom: 80px;
 }
 
-.section {
-  display: grid;
-  gap: var(--space-4);
-  min-width: 0;
-  padding: var(--space-6);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface-1);
-}
-
-.sectionHeading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-6);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--line);
-}
-
-.sectionHeading h2 {
-  margin: 0;
-  color: var(--text);
-  font-size: var(--font-size-subtitle);
-  font-weight: 500;
-  letter-spacing: var(--tracking-subtitle);
-}
-
-.sectionHeading p {
-  margin: 0;
-  max-width: var(--measure);
-  color: var(--text-2);
-  font-size: var(--font-size-ui);
-  line-height: var(--line-height-ui);
-}
-
 .tableScroll {
   min-width: 0;
   overflow-x: auto;
@@ -93,43 +57,10 @@
   border-bottom: 0;
 }
 
-.metrics {
+.stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 1px;
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--line);
-}
-
-.metrics > div {
-  display: flex;
-  flex-direction: column-reverse;
-  justify-content: center;
-  gap: var(--space-3);
-  min-height: 118px;
-  padding: var(--space-6);
-  background: var(--surface-1);
-}
-
-.metrics strong,
-.metrics dd {
-  margin: 0;
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-title);
-  font-variant-numeric: tabular-nums;
-  font-weight: 500;
-  line-height: 1;
-}
-
-.metrics span,
-.metrics dt {
-  color: var(--text-2);
-  font-size: var(--font-size-label);
-  line-height: var(--line-height-label);
+  gap: var(--space-4);
 }
 
 .ticket {
@@ -271,40 +202,7 @@
 .form > button {
   justify-self: start;
 }
-.textareaField {
-  display: grid;
-  gap: var(--space-2);
-}
-.textareaField label {
-  color: var(--text);
-  font-size: var(--font-size-support);
-  font-weight: 500;
-}
-.textareaField textarea {
-  width: 100%;
-  padding: var(--space-4);
-  border: 1px solid var(--line-control);
-  border-radius: var(--radius-sm);
-  background: var(--surface-1);
-  color: var(--text);
-  font: inherit;
-  line-height: 1.6;
-  resize: vertical;
-  transition: border-color var(--motion-fast) var(--ease-standard);
-}
-.textareaField textarea:hover {
-  border-color: var(--text-3);
-}
-.textareaField textarea:focus-visible {
-  border-color: var(--accent);
-  outline: none;
-  box-shadow: var(--ring-focus);
-}
-
 @media (max-width: 680px) {
-  .section {
-    gap: var(--space-4);
-  }
   .ticket {
     padding: var(--space-4);
   }
@@ -312,7 +210,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .table tbody tr,
-  .textareaField textarea,
   .form :is(input, select, textarea) {
     transition: none;
   }

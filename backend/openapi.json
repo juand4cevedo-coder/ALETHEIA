@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.4.11"
+    "version": "0.4.12"
   },
   "paths": {
     "/api/v1/health": {
@@ -5711,6 +5711,18 @@
             ],
             "title": "Actor User Id"
           },
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name",
+            "description": "Nombre de quien actuó, o null si ya no existe."
+          },
           "organization_id": {
             "anyOf": [
               {
@@ -5722,6 +5734,18 @@
               }
             ],
             "title": "Organization Id"
+          },
+          "organization_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Name",
+            "description": "Nombre del despacho, o null si ya no existe."
           },
           "target_id": {
             "anyOf": [
@@ -5746,7 +5770,9 @@
           "id",
           "action",
           "actor_user_id",
+          "actor_name",
           "organization_id",
+          "organization_name",
           "target_id",
           "created_at"
         ],

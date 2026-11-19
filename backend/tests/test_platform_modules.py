@@ -97,6 +97,37 @@ def test_facturacion_y_auditoria_solo_exponen_el_resumen_y_eventos(
     assert "user_agent" not in audit.text
 
 
+def test_la_auditoria_resuelve_nombres_en_vez_de_ids_crudos(
+    app: FastAPI, owner_db: Session, dispositivo: NuevoCliente
+) -> None:
+    admin = _user(owner_db, "owner@example.com", platform_admin=True)
+    tenant = create_tenant(owner_db, "Restrepo Abogados")
+    owner_db.add(
+        AuditLog(
+            organization_id=tenant.organization_id,
+            actor_user_id=admin.id,
+            action="login",
+            target_id=None,
+            ip=None,
+            user_agent=None,
+        )
+    )
+    owner_db.flush()
+    app.dependency_overrides[get_session] = lambda: owner_db
+    app.dependency_overrides[get_principal] = lambda: _principal(admin)
+    client = dispositivo()
+
+    audit = client.get("/api/v1/platform/audit")
+
+    assert audit.status_code == 200
+    organization_id = str(tenant.organization_id)
+    event = next(
+        item for item in audit.json()["items"] if item["organization_id"] == organization_id
+    )
+    assert event["actor_name"] == "Persona de prueba"
+    assert event["organization_name"] == "Restrepo Abogados"
+
+
 def test_solicitud_de_soporte_y_resolucion_dejan_auditoria(
     app: FastAPI, owner_db: Session, dispositivo: NuevoCliente
 ) -> None:
