@@ -1520,9 +1520,21 @@ export type PlatformAuditEvent = {
    */
   actor_user_id: string | null;
   /**
+   * Actor Name
+   *
+   * Nombre de quien actuó, o null si ya no existe.
+   */
+  actor_name: string | null;
+  /**
    * Organization Id
    */
   organization_id: string | null;
+  /**
+   * Organization Name
+   *
+   * Nombre del despacho, o null si ya no existe.
+   */
+  organization_name: string | null;
   /**
    * Target Id
    */

@@ -516,12 +516,8 @@ export function PlatformAuditPage() {
                         {ACTION_LABELS[event.action] ??
                           event.action.replaceAll("_", " ")}
                       </th>
-                      <td className={styles.identifier}>
-                        {event.actor_user_id ?? "Sistema"}
-                      </td>
-                      <td className={styles.identifier}>
-                        {event.organization_id ?? "Plataforma"}
-                      </td>
+                      <td>{event.actor_name ?? "Sistema"}</td>
+                      <td>{event.organization_name ?? "Plataforma"}</td>
                       <td className={styles.identifier}>
                         {event.target_id ?? "Sin objeto"}
                       </td>

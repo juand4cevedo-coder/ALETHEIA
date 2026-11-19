@@ -81,7 +81,11 @@ class PlatformAuditEvent(BaseModel):
     id: uuid.UUID
     action: str
     actor_user_id: uuid.UUID | None
+    actor_name: str | None = Field(description="Nombre de quien actuó, o null si ya no existe.")
     organization_id: uuid.UUID | None
+    organization_name: str | None = Field(
+        description="Nombre del despacho, o null si ya no existe."
+    )
     target_id: uuid.UUID | None
     created_at: datetime.datetime
 
