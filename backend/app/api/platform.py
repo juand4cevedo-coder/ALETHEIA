@@ -9,7 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_client_ip, get_principal, get_session
-from app.models import AuditLog, PaymentEvent, Plan, Subscription, User
+from app.models import AuditLog, Organization, PaymentEvent, Plan, Subscription, User
 from app.repositories.sessions import revoke_user_sessions
 from app.schemas.platform import (
     CourtesyGrant,
@@ -252,17 +252,36 @@ def platform_audit(
     if cursor is not None:
         query = query.where(AuditLog.id < cursor)
     events = list(session.scalars(query))
+    page = events[:50]
+
+    # Una sola consulta por tabla para toda la página, en vez de una por fila.
+    actor_ids = {event.actor_user_id for event in page if event.actor_user_id is not None}
+    organization_ids = {
+        event.organization_id for event in page if event.organization_id is not None
+    }
+    actor_names = dict(
+        session.execute(select(User.id, User.full_name).where(User.id.in_(actor_ids))).all()
+    )
+    organization_names = dict(
+        session.execute(
+            select(Organization.id, Organization.name).where(Organization.id.in_(organization_ids))
+        ).all()
+    )
     return PlatformAuditPage(
         items=[
             PlatformAuditEvent(
                 id=event.id,
                 action=event.action,
                 actor_user_id=event.actor_user_id,
+                actor_name=actor_names.get(event.actor_user_id) if event.actor_user_id else None,
                 organization_id=event.organization_id,
+                organization_name=(
+                    organization_names.get(event.organization_id) if event.organization_id else None
+                ),
                 target_id=event.target_id,
                 created_at=event.created_at,
             )
-            for event in events[:50]
+            for event in page
         ],
         next_cursor=events[49].id if len(events) > 50 else None,
     )
