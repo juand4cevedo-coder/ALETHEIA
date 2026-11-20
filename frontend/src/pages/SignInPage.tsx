@@ -1,12 +1,11 @@
 import { SocialAccess } from "../features/auth/SocialAccess.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import type { SignInError } from "../api/generated";
 import {
   readMeOptions,
-  readMeQueryKey,
   signInMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
@@ -79,6 +78,10 @@ export function SignInPage() {
     Partial<Record<SignInField, HTMLInputElement | null>>
   >({});
   const alertRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (problem && problem.kind !== "invalidCredentials")
+      alertRef.current?.focus();
+  }, [problem]);
 
   // Quien acaba de cerrar la sesión o cuya sesión venció recibe el aviso aquí (HU-009).
   const notice = sessionNotice(location.state);
@@ -94,7 +97,7 @@ export function SignInPage() {
       setValues((current) => ({ ...current, password: "" }));
       setSignedIn(true);
       rememberSession();
-      await queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
+      queryClient.clear();
       let next = destination;
       if (destination === ROUTES.app) {
         try {
@@ -118,10 +121,7 @@ export function SignInPage() {
         fieldRefs.current.password?.focus();
         return;
       }
-      if (found) {
-        alertRef.current?.focus();
-        return;
-      }
+      if (found) return;
       if (typeof error === "object" && error !== null && "errors" in error) {
         const apiErrors = fieldErrorsFromApi(error.errors);
         setErrors(apiErrors);

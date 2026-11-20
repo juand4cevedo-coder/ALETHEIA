@@ -12,7 +12,7 @@ from typing import Annotated, Any, Final, Literal
 from urllib.parse import quote
 
 import tink
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import select
@@ -320,6 +320,7 @@ def download_evidence(
         raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
     except (
         KeyWrapperError,
+        BotoCoreError,
         ClientError,
         OSError,
         ValueError,

@@ -4,9 +4,11 @@ import datetime
 import hashlib
 import io
 import uuid
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from botocore.exceptions import EndpointConnectionError
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from httpx2 import Response
@@ -364,6 +366,62 @@ def test_asistente_no_descarga_y_no_miembro_no_conoce_la_evidencia(
         )
         == 1
     )
+
+
+@pytest.mark.parametrize("durante_lectura", [False, True])
+def test_eliminacion_impide_descargar_el_original(
+    dispositivo: NuevoCliente, db: Session, monkeypatch: pytest.MonkeyPatch, durante_lectura: bool
+) -> None:
+    office, client, case_id = _case(dispositivo, db)
+    evidence_id = _upload(client, case_id, b"original").json()["id"]
+
+    def iniciar_eliminacion() -> None:
+        set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+        db.execute(
+            update(Case)
+            .where(Case.id == case_id)
+            .values(status="deleting", closed_at=datetime.datetime.now(datetime.UTC))
+        )
+        db.commit()
+
+    if durante_lectura:
+        leer = evidence_download_service.PreparedDownload.chunks
+
+        def leer_y_cerrar(download: evidence_download_service.PreparedDownload) -> Iterator[bytes]:
+            yield from leer(download)
+            iniciar_eliminacion()
+
+        monkeypatch.setattr(evidence_download_service.PreparedDownload, "chunks", leer_y_cerrar)
+    else:
+        iniciar_eliminacion()
+
+    response = client.get(f"/api/v1/cases/{case_id}/evidences/{evidence_id}/download")
+    assert response.status_code == 404
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    assert (
+        db.scalar(
+            select(CustodyEvent.id).where(
+                CustodyEvent.evidence_id == evidence_id,
+                CustodyEvent.action == "evidence_downloaded",
+            )
+        )
+        is None
+    )
+
+
+def test_descarga_sin_almacenamiento_responde_con_error_transitorio(
+    dispositivo: NuevoCliente, db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _, client, case_id = _case(dispositivo, db)
+    evidence_id = _upload(client, case_id, b"original").json()["id"]
+
+    def no_disponible(_settings: object, _key: str) -> None:
+        raise EndpointConnectionError(endpoint_url="https://almacenamiento.invalid")
+
+    monkeypatch.setattr(evidence_download_service, "open_encrypted_evidence", no_disponible)
+    response = client.get(f"/api/v1/cases/{case_id}/evidences/{evidence_id}/download")
+    assert response.status_code == 503
+    assert response.headers["Cache-Control"] == "no-store"
 
 
 def test_archivo_corrupto_no_se_descarga_ni_registra_evento(

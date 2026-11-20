@@ -206,6 +206,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Hizo varios intentos seguidos. Espere 15 minutos e inténtelo de nuevo.",
     );
+    expect(screen.getByRole("alert")).toHaveFocus();
   });
 
   it("muestra el aviso de cuenta bloqueada que da la API", async () => {

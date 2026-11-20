@@ -2,6 +2,8 @@
 
 import hashlib
 import urllib.error
+from http.client import HTTPMessage
+from io import BytesIO
 from pathlib import Path
 from unittest.mock import patch
 
@@ -146,3 +148,25 @@ def test_una_respuesta_truncada_tambien_es_invalida_no_reintentable() -> None:
         pytest.raises(stamping.SelloInvalidoError),
     ):
         stamping.pedir_sello_de_tiempo(HUELLA)
+
+
+def test_respuesta_de_sellado_tiene_limite_de_lectura() -> None:
+    with patch.object(urllib.request, "build_opener") as opener:
+        respuesta = opener.return_value.open.return_value.__enter__.return_value
+        respuesta.headers.get_content_type.return_value = "application/timestamp-reply"
+        respuesta.read.return_value = bytes(stamping._MAX_RESPUESTA + 1)
+        with pytest.raises(stamping.SelloInvalidoError, match="tamaño"):
+            stamping._pedir_sello(stamping.AUTORIDADES[0][1], b"consulta")
+        respuesta.read.assert_called_once_with(stamping._MAX_RESPUESTA + 1)
+        opener.assert_called_once_with(stamping._SinRedirecciones)
+
+
+def test_el_transporte_no_sigue_redirecciones() -> None:
+    handler = stamping._SinRedirecciones()
+    solicitud = urllib.request.Request(stamping.AUTORIDADES[0][1], method="POST")  # noqa: S310
+    assert (
+        handler.redirect_request(
+            solicitud, BytesIO(), 302, "Found", HTTPMessage(), "https://example.test/"
+        )
+        is None
+    )

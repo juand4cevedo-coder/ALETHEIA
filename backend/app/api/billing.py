@@ -54,7 +54,7 @@ def wompi_terms(
     summary="Iniciar el primer cobro de una suscripción con Nequi",
     responses={
         status.HTTP_403_FORBIDDEN: {"description": "El rol no administra la facturación."},
-        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {
             "description": "El plan, el ciclo o el teléfono no son válidos."
         },
         status.HTTP_503_SERVICE_UNAVAILABLE: {"description": "Wompi no respondió."},
@@ -83,7 +83,7 @@ def create_checkout(
     except checkout_service.CheckoutNoPermitidoError:
         session.rollback()
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="No se pudo iniciar el cobro con esos datos.",
             headers=_NO_STORE,
         ) from None
@@ -98,7 +98,7 @@ def create_checkout(
         session.rollback()
         logger.warning("Wompi rechazó la solicitud de cobro: %s", exc)
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Wompi no aceptó la solicitud de cobro.",
             headers=_NO_STORE,
         ) from None

@@ -1,12 +1,20 @@
 # ALETHEIA
 
-Plataforma web para que abogados en Colombia preserven evidencia digital y documenten su integridad y trazabilidad. La versión publicada conserva el archivo original, calcula su huella SHA-256 y registra las acciones en una cadena de custodia cuya integridad se puede verificar. El sello de tiempo externo RFC 3161 y el anclaje externo de la cadena siguen pendientes.
+Plataforma web para que abogados en Colombia preserven evidencia digital y documenten su integridad y trazabilidad. La versión publicada conserva el archivo original, calcula su huella SHA-256 y registra las acciones en una cadena de custodia cuya integridad se puede verificar. Desde el detalle de un caso se puede solicitar un paquete de preservación con los originales, el manifiesto, los eventos de custodia y un informe PDF.
 
 ALETHEIA preserva y documenta. No determina la autenticidad, la veracidad, la admisibilidad ni el valor probatorio de una evidencia, y no emite certificados.
 
+## Contenido
+
+- [Estado](#estado)
+- [Tecnologías](#tecnologías)
+- [Desarrollo](#desarrollo)
+- [Producción](#producción)
+- [Derechos de autor](#derechos-de-autor)
+
 ## Estado
 
-En producción, en desarrollo activo. `develop` reúne el trabajo integrado y cada versión se publica desde `develop` con una etiqueta firmada (sección Producción). El sello de tiempo externo RFC 3161 y el anclaje externo de la cadena de custodia siguen pendientes.
+En producción, en desarrollo activo. `develop` reúne el trabajo integrado y cada versión se publica desde `develop` con una etiqueta firmada (sección Producción). El trabajador solicita un sello RFC 3161 por evidencia. El paquete incluye el token cuando el sellado ha tenido éxito. Quedan pendientes la validación operativa del proveedor y el anclaje externo de la cabeza de custodia. [Estado y comprobaciones de las integraciones](docs/operacion/integraciones-externas.md).
 
 ## Tecnologías
 

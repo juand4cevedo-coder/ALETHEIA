@@ -67,8 +67,9 @@ export function AuthLayout() {
     ...readMeOptions(),
     enabled: redirectSignedIn && hinted,
     retry: false,
+    staleTime: 0,
   });
-  if (redirectSignedIn && me.isSuccess) {
+  if (redirectSignedIn && hinted && me.isFetchedAfterMount && me.isSuccess) {
     return (
       <Navigate
         to={me.data.platform_admin ? ROUTES.platform : ROUTES.app}

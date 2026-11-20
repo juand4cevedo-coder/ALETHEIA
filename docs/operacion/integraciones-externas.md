@@ -1,6 +1,6 @@
 # Integraciones externas pendientes: acceso y sellado de tiempo
 
-Estado comprobado el 17/11/2026. Este documento registra los pasos necesarios antes de activar servicios externos. La versión de producción v0.4.8 no ofrece ingreso con Google ni Microsoft ni sellos RFC 3161 de evidencias. La exportación de paquetes está integrada en `develop` y aún no se ha publicado.
+La versión v0.5.0 incluye exportación de paquetes y sellado por evidencia mediante un trabajador. El inicio de sesión con Google y Microsoft sigue pendiente. La validación operativa del proveedor de sellado y del ciclo completo de preservación se registra en DEP-04, HU-020 y HU-025.
 
 ## Google: HU-008 / DEP-01
 
@@ -20,7 +20,7 @@ Microsoft documenta Entra ID Free sin cargo para sus funciones básicas, pero la
 
 ## Fecha y hora externa: HU-020 / DEP-04
 
-Un reloj de servidor o la fecha de la base no sustituye un token RFC 3161. El ADR-015 fija una solución técnica probada con DigiCert y Sectigo, pero esa prueba no confirma permiso de uso documental en producción. El ADR-037 prevé anclar la cabeza de la cadena; ese anclaje tampoco está implementado. Los paquetes actuales deben declarar la ausencia de sello externo.
+El trabajador solicita un token RFC 3161 a DigiCert y usa Sectigo como respaldo ante indisponibilidad. La aplicación verifica el token antes de registrar el sello. El ZIP incorpora el token si existe y el manifiesto indica el estado de cada evidencia. El anclaje externo de la cabeza de custodia permanece pendiente. La integración técnica no acredita autorización de uso documental ni continuidad del servicio.
 
 ### Alternativas gratuitas y abiertas
 
@@ -30,16 +30,25 @@ Un reloj de servidor o la fecha de la base no sustituye un token RFC 3161. El AD
 | FreeTSA, RFC 3161 | Que una autoridad firmó la huella y declaró una hora; el token se verifica con su cadena publicada. | Raíz propia que el verificador debe instalar explícitamente, sin SLA y con límite de uso. La confianza depende de esa entidad y de su reloj. |
 | Registrar solo hashes o fechas en nuestra base | Que los datos conservados coinciden con los hashes calculados hoy. | Un administrador de la misma base podría reescribir historia y hashes; no hay testigo externo. |
 
-**Decisión para ALETHEIA:** usar OpenTimestamps como anclaje adicional y gratuito de la cabeza de custodia por lotes. Guardar la prueba pendiente, intentar completarla más tarde y exportar la prueba completa con instrucciones de verificación independientes. Solo mostrar «anclado en Bitcoin» cuando la confirmación se haya comprobado; mostrar el número de bloque y el límite temporal que demuestra. Esto da un testigo externo distinto de ALETHEIA sin pagar una transacción por evidencia. Mantener HU-020 y DEP-04 para el sello RFC 3161 por evidencia: OpenTimestamps no cumple por sí solo ese criterio de aceptación. El usuario del paquete debe poder distinguir la hora declarada al recibir la evidencia, un eventual token RFC 3161 y el límite temporal demostrado por Bitcoin. Ninguna de esas pruebas certifica por sí sola la procedencia, veracidad o admisibilidad del contenido.
+ADR-037 prevé sellar la cabeza de custodia mediante RFC 3161 al exportar y una vez al día si la cadena cambia. Ese anclaje sigue pendiente. OpenTimestamps se contempla como testigo adicional por lotes. Su incorporación requeriría guardar la prueba pendiente, actualizarla y comprobar su confirmación antes de mostrar un número de bloque. El manifiesto y el informe deben distinguir la hora de recepción, el sello por evidencia y la prueba externa de la cabeza de custodia.
 
 [OpenTimestamps: funcionamiento y calendarios](https://opentimestamps.org/), [cliente: prueba pendiente, actualización y verificación](https://github.com/opentimestamps/opentimestamps-client), [protocolo RFC 3161](https://www.rfc-editor.org/info/rfc3161/).
 
 FreeTSA publica un servicio RFC 3161 gratuito y permite uso comercial, con un máximo de una solicitud por segundo por IP. No ofrece SLA ni plazo de restauración. La prueba TT-006 del proyecto descartó su raíz porque no pertenece a los almacenes públicos de confianza usados allí. Por ello es un candidato para evaluar, no una autoridad aprobada automáticamente. Si se usa, el verificador independiente necesitará la raíz fijada y una política clara de rotación y revocación; no se presentará como sello de una entidad acreditada en Colombia.
 
-Para resolver DEP-04 sin contratar por defecto: obtener y archivar condiciones de uso actuales, URL, límites, política y cadena de confianza del proveedor; verificar un token de prueba contra el archivo original con OpenSSL; comprobar conectividad desde producción, disponibilidad y rotación de certificados; decidir explícitamente si su nivel de confianza y continuidad es suficiente para el producto. La decisión se registra en DEP-04 y se actualiza ADR-015 antes de habilitar `tsa_stamp`. Si ningún servicio gratuito satisface esos criterios, el sello permanece `pending` y se informa al usuario sin prometer fecha externa.
+Para resolver DEP-04 sin contratar por defecto: obtener y archivar condiciones de uso actuales, URL, límites, política y cadena de confianza del proveedor; verificar un token de prueba contra el archivo original con OpenSSL; comprobar conectividad desde producción, disponibilidad y rotación de certificados; decidir explícitamente si su nivel de confianza y continuidad es suficiente para el producto. La decisión se registra en DEP-04 y se actualiza ADR-015 para respaldar la operación de `tsa_stamp`. Si todavía no hay un token verificado, se informa el estado real de la tarea sin prometer una fecha externa.
 
 [Política de FreeTSA](https://www.freetsa.org/freetsa.html), [certificados publicados por FreeTSA](https://www.freetsa.org/index_en.php), [ADR-015](../adr/adr-015.md), [ADR-037](../adr/adr-037.md).
 
+## Verificación de preservación
+
+Use un espacio de pruebas y un archivo de muestra. El navegador y el trabajador deben usar el mismo entorno.
+
+1. Cargue el archivo como evidencia de un caso de prueba. Compare su SHA-256 local con el detalle. Si el trabajador obtiene un sello, compruebe que el estado cambie a sellado y que la cadena incluya el evento correspondiente.
+2. Como abogado autorizado, solicite el paquete desde la pestaña Paquete. Cuando esté listo, descargue el ZIP y compare el original y su huella con `manifest.json`. Compruebe que el informe PDF y la cadena exportada correspondan al caso.
+3. Si hay un token de evidencia, verifíquelo contra el original con la cadena de confianza aprobada. Compruebe el estado de anclaje por separado en el manifiesto y en el informe.
+4. Confirme que un asistente no pueda solicitar el paquete y que el enlace venza a las 24 horas.
+
 ## Orden de trabajo
 
-La configuración de cuentas y servicios externos corresponde a la persona administradora y no requiere compartir credenciales por chat. Mientras se realiza, el equipo puede preparar y probar los adaptadores y pantallas en entornos de prueba. Ninguna integración se marca como disponible en la documentación de usuario o en los nueve documentos de Drive hasta comprobarla en producción. La matriz maestra de trazabilidad se conserva sin cambios.
+La configuración de cuentas y servicios externos corresponde a la persona administradora y no requiere compartir credenciales por chat. Mientras se realiza, el equipo puede preparar y probar los adaptadores y pantallas en entornos de prueba. Ninguna integración se marca como disponible en la documentación de usuario o en los documentos de Drive hasta comprobarla en producción. La matriz maestra de trazabilidad se conserva sin cambios.

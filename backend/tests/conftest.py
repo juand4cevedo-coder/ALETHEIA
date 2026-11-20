@@ -22,6 +22,7 @@ from sqlalchemy import Connection, Engine, create_engine, make_url, pool
 from sqlalchemy.exc import ArgumentError, DBAPIError
 from sqlalchemy.orm import Session
 
+from app.adapters.keys import WrappedKey
 from app.api.deps import get_session
 from app.core.config import Settings
 from app.core.middleware import SAME_ORIGIN_HEADER
@@ -220,7 +221,7 @@ class Tenant:
         return TenantContext(organization_id=self.organization_id, user_id=self.user_id)
 
 
-def create_tenant(session: Session, name: str) -> Tenant:
+def create_tenant(session: Session, name: str, *, key: WrappedKey | None = None) -> Tenant:
     """Crea una organización con su propietario y un caso, y deja su contexto fijado."""
     tenant = Tenant(organization_id=uuid.uuid7(), user_id=uuid.uuid7(), case_id=uuid.uuid7())
     session.add(
@@ -245,8 +246,8 @@ def create_tenant(session: Session, name: str) -> Tenant:
             id=tenant.case_id,
             organization_id=tenant.organization_id,
             title=f"Caso de {name}",
-            wrapped_key=os.urandom(40),
-            key_version="prueba",
+            wrapped_key=key.ciphertext if key else os.urandom(40),
+            key_version=key.key_version if key else "prueba",
             created_by=tenant.user_id,
         )
     )
@@ -268,7 +269,7 @@ def add_evidence(session: Session, tenant: Tenant, content: bytes) -> uuid.UUID:
             declared_type="chat",
             detected_type="text/plain",
             declared_origin="Exportada desde WhatsApp",
-            storage_key=f"cases/{tenant.case_id}/{evidence_id}",
+            storage_key=f"evidences/{evidence_id}",
             uploaded_by=tenant.user_id,
         )
     )

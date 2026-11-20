@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.core.permissions import has_permission
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import CustodyEvent, Export, Membership
+from app.models import Case, CustodyEvent, Export, Membership
 from app.repositories import cases as cases_repository
 from app.services import jobs
 from app.services.export_links import link_for_export
@@ -38,7 +38,7 @@ class ExportView:
     download_url: str | None
 
 
-def _case_member(session: Session, principal: Principal, case_id: uuid.UUID, *, lock: bool) -> None:
+def _case_member(session: Session, principal: Principal, case_id: uuid.UUID, *, lock: bool) -> Case:
     org_id = principal.organization_id
     if org_id is None:
         raise ExportNotFound
@@ -60,19 +60,15 @@ def _case_member(session: Session, principal: Principal, case_id: uuid.UUID, *, 
         raise ExportForbidden
     if case.status == "deleting":
         raise CaseUnavailable
+    return case
 
 
 def request_export(session: Session, principal: Principal, case_id: uuid.UUID) -> ExportView:
     """Encola una exportación y registra la solicitud de custodia en el mismo commit."""
     session.commit()
     with session.begin():
-        _case_member(session, principal, case_id, lock=True)
-        org_id = principal.organization_id
-        if org_id is None:
-            raise ExportNotFound
-        case = cases_repository.case_for_member(session, case_id, principal.user_id)
-        if case is None:
-            raise ExportNotFound
+        case = _case_member(session, principal, case_id, lock=True)
+        org_id = case.organization_id
         previous = session.scalar(
             select(CustodyEvent.event_hash).where(
                 CustodyEvent.case_id == case_id, CustodyEvent.seq == case.custody_seq

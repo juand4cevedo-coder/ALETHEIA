@@ -72,7 +72,7 @@ def prepare_download(
         raise CaseNotFoundError
     set_tenant(session, TenantContext(organization_id, principal.user_id))
     case = cases_repository.case_for_member(session, case_id, principal.user_id)
-    if case is None or case.organization_id != organization_id:
+    if case is None or case.organization_id != organization_id or case.status == "deleting":
         raise CaseNotFoundError
     evidence = session.scalar(
         select(Evidence).where(
@@ -114,7 +114,7 @@ def prepare_download(
     with session.begin():
         set_tenant(session, TenantContext(organization_id, principal.user_id))
         locked_case = cases_repository.case_for_member_update(session, case_id, principal.user_id)
-        if locked_case is None:
+        if locked_case is None or locked_case.status == "deleting":
             raise CaseNotFoundError
         current_role = session.scalar(
             select(Membership.role).where(

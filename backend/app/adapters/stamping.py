@@ -15,8 +15,9 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from datetime import datetime
+from http.client import HTTPMessage
 from pathlib import Path
-from typing import Final
+from typing import IO, Final, override
 
 from asn1crypto import cms, tsp
 from cryptography import x509
@@ -29,6 +30,7 @@ AUTORIDADES: Final = (
     ("sectigo", "http://timestamp.sectigo.com"),
 )
 ESPERA_SEGUNDOS: Final = 15
+_MAX_RESPUESTA: Final = 1024 * 1024
 _RAICES_PATH: Final = Path(__file__).with_name("raices_sellado.pem")
 
 
@@ -72,6 +74,21 @@ def _solicitud(huella: bytes) -> tuple[bytes, int]:
     return peticion.dump(), nonce
 
 
+class _SinRedirecciones(urllib.request.HTTPRedirectHandler):
+    @override
+    def redirect_request(
+        self,
+        req: urllib.request.Request,
+        fp: IO[bytes],
+        code: int,
+        msg: str,
+        headers: HTTPMessage,
+        newurl: str,
+    ) -> None:
+        # Dejar que urllib cierre la respuesta HTTP sin contactar otro destino.
+        return None
+
+
 def _pedir_sello(url: str, cuerpo: bytes) -> bytes:
     if url not in {autoridad_url for _, autoridad_url in AUTORIDADES}:
         raise ValueError("solo se contacta a las autoridades configuradas")
@@ -81,10 +98,14 @@ def _pedir_sello(url: str, cuerpo: bytes) -> bytes:
         headers={"Content-Type": "application/timestamp-query"},
         method="POST",
     )
-    with urllib.request.urlopen(peticion, timeout=ESPERA_SEGUNDOS) as respuesta:  # noqa: S310
+    with urllib.request.build_opener(_SinRedirecciones).open(
+        peticion, timeout=ESPERA_SEGUNDOS
+    ) as respuesta:
         if respuesta.headers.get_content_type() != "application/timestamp-reply":
             raise SelloInvalidoError("la respuesta no es application/timestamp-reply")
-        contenido: bytes = respuesta.read()
+        contenido: bytes = respuesta.read(_MAX_RESPUESTA + 1)
+        if len(contenido) > _MAX_RESPUESTA:
+            raise SelloInvalidoError("la respuesta de sellado supera el tamaño permitido")
         return contenido
 
 
