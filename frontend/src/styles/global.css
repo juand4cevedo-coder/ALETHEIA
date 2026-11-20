@@ -28,7 +28,7 @@ body {
   /* Cuerpo 15/24, como proporción para que un título sin interlineado propio no se encime. */
   line-height: 1.6;
   color: var(--text);
-  background: var(--bg);
+  background: var(--paper);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -51,12 +51,51 @@ p {
 }
 
 a {
-  color: var(--accent-strong);
+  color: var(--brass-600);
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--brass-600);
   outline-offset: 2px;
+}
+
+/* Superficie de tinta: el latón de papel (brass-600) no alcanza contraste sobre fondo oscuro.
+   Un contexto la declara con esta clase y todo control dentro hereda el latón claro, tanto en
+   el contorno como en --ring-focus. Es una sobrescritura de propiedades personalizadas, sin
+   tocar tokens.css ni repetir reglas por componente. */
+.on-ink {
+  --ring-focus:
+    0 0 0 1px var(--brass-400),
+    0 0 0 4px color-mix(in srgb, var(--brass-400) 30%, transparent);
+}
+
+.on-ink :focus-visible {
+  outline-color: var(--brass-400);
+}
+
+/* Paralaje de imagen (7.4): ligado al desplazamiento, solo donde el navegador lo entiende.
+   Fuera del @supports la imagen queda en su posición natural, sin desplazamiento alguno. */
+@supports (animation-timeline: view()) {
+  .parallax {
+    animation: parallax-shift linear both;
+    animation-timeline: view();
+  }
+
+  /* Con movimiento reducido la imagen se queda quieta. */
+  @media (prefers-reduced-motion: reduce) {
+    .parallax {
+      animation: none;
+    }
+  }
+}
+
+@keyframes parallax-shift {
+  from {
+    transform: translateY(-6%);
+  }
+  to {
+    transform: translateY(6%);
+  }
 }
 
 /* Oculta un elemento a la vista y lo deja disponible para lectores de pantalla. */
@@ -92,20 +131,6 @@ a {
   }
 }
 
-[data-reveal-ready] {
-  opacity: 0;
-  transform: translateY(22px);
-  transition:
-    opacity 0.65s ease,
-    transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-[data-reveal-ready][data-visible="true"] {
-  opacity: 1;
-  transform: none;
-}
-@media (prefers-reduced-motion: reduce), print {
-  [data-reveal-ready] {
-    opacity: 1;
-    transform: none;
-  }
+html {
+  scroll-padding-block-end: var(--cookie-bar-height, 0px);
 }

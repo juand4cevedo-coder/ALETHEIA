@@ -38,11 +38,7 @@ const COLUMNS: readonly Column[] = [
 // destaca con otro color, porque ninguno es un estado de una evidencia.
 export function ScopeSection() {
   return (
-    <section
-      data-reveal
-      className={section.section}
-      aria-labelledby="titulo-alcance"
-    >
+    <section className={section.section} aria-labelledby="titulo-alcance">
       <div className={section.inner}>
         <SectionHeading
           id="titulo-alcance"

@@ -1,3 +1,4 @@
+import { Reveal } from "../../components/ui/Reveal.tsx";
 import { useEffect } from "react";
 import { useLocation } from "react-router";
 
@@ -28,47 +29,32 @@ export function BelowFold() {
     if (id) document.getElementById(id)?.scrollIntoView();
   }, [hash]);
 
-  useEffect(() => {
-    if (
-      !("IntersectionObserver" in window) ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    )
-      return;
-    const sections = document.querySelectorAll<HTMLElement>("[data-reveal]");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries)
-          if (entry.isIntersecting) {
-            entry.target.setAttribute("data-visible", "true");
-            observer.unobserve(entry.target);
-          }
-      },
-      { threshold: 0.08 },
-    );
-    sections.forEach((section) => {
-      if (section.getBoundingClientRect().top > window.innerHeight) {
-        section.setAttribute("data-reveal-ready", "true");
-        observer.observe(section);
-      }
-    });
-    return () => {
-      observer.disconnect();
-      sections.forEach((section) =>
-        section.removeAttribute("data-reveal-ready"),
-      );
-    };
-  }, []);
-
   return (
     <>
-      <ProductTour />
-      <HowItWorks />
-      <StandardsSection />
-      <ScopeSection />
-      <VerifierSection />
-      <PlansSection />
-      <FaqSection />
-      <ClosingSection />
+      <Reveal>
+        <ProductTour />
+      </Reveal>
+      <Reveal>
+        <HowItWorks />
+      </Reveal>
+      <Reveal>
+        <StandardsSection />
+      </Reveal>
+      <Reveal>
+        <ScopeSection />
+      </Reveal>
+      <Reveal>
+        <VerifierSection />
+      </Reveal>
+      <Reveal>
+        <PlansSection />
+      </Reveal>
+      <Reveal>
+        <FaqSection />
+      </Reveal>
+      <Reveal>
+        <ClosingSection />
+      </Reveal>
     </>
   );
 }

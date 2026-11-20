@@ -1,9 +1,14 @@
-/* Cifra de trabajo real: número grande, rótulo arriba, nota opcional abajo. */
+/* Cifra de trabajo real: número grande, rótulo arriba, nota opcional abajo. Es una tarjeta sobre
+   el papel, igual que el resto de la aplicación. */
 .tile {
+  /* La cifra se dimensiona contra el ancho de su propia tarjeta, no contra el de la ventana: una
+     ventana ancha con cuatro tarjetas en fila deja a cada una la cuarta parte del espacio. */
+  container-type: inline-size;
   padding: var(--space-6);
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--surface-1);
+  background: var(--paper-raised);
+  box-shadow: var(--brass-hairline), var(--shadow-card);
 }
 
 .label {
@@ -13,15 +18,22 @@
   line-height: var(--line-height-support);
 }
 
+/* La cifra no se parte: "No disponible" baja de línea entre sus dos palabras y, si ni así cabe,
+   el tamaño se reduce. Con un corte de palabra permisivo se leía "No dispo / nible", y un
+   número partido en dos renglones deja de ser un número. 14cqi deja a la palabra más larga
+   (diez letras, unos 5,8 em) dentro del ancho de la tarjeta. */
 .value {
   display: block;
   margin-top: var(--space-4);
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: clamp(1.5rem, 3vw, 2.8rem);
+  font-size: clamp(1rem, 14cqi, 2.8rem);
   font-weight: 500;
   line-height: 1.2;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+  text-wrap: balance;
 }
 
 .note {
@@ -40,7 +52,10 @@
     padding: var(--space-4);
   }
 
+  /* En fila la cifra comparte renglón con su rótulo: tamaño fijo y alineada a la derecha. */
   .value {
     margin-top: 0;
+    font-size: 1.5rem;
+    text-align: right;
   }
 }

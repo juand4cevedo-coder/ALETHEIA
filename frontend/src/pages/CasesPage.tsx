@@ -94,8 +94,9 @@ const NONE_IN_SEGMENT: Record<Status, string> = {
 const ASSISTANT_EMPTY =
   "Los casos los abre un abogado, el administrador o el propietario. Cuando lo asignen a uno, aparecerá aquí";
 
-// En 900 px o menos la tabla pasa a tarjetas apiladas (especificación, 5.2).
-const CARDS_QUERY = "(max-width: 900px)";
+// En 1100 px o menos la tabla pasa a tarjetas apiladas: con el menú lateral de 240 px, antes de ahí
+// la columna del título no llega a 240 px de texto (especificación, 5.2).
+const CARDS_QUERY = "(max-width: 1100px)";
 
 /** Sin tildes ni mayúsculas: «sucesion» encuentra «Sucesión». */
 function fold(text: string): string {
@@ -534,7 +535,7 @@ function CaseTable({ items, caption }: ListProps) {
   );
 }
 
-// 900 px o menos: tarjetas apiladas con los mismos datos, cada una con su título como encabezado
+// 1100 px o menos: tarjetas apiladas con los mismos datos, cada una con su título como encabezado
 // y los demás datos como una lista de definiciones.
 function CaseCards({ items, caption }: ListProps) {
   return (

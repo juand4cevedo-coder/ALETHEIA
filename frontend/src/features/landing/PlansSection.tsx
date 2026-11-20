@@ -11,11 +11,7 @@ import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 // de este archivo; el enlace lleva a la comparación completa (UI-002).
 export function PlansSection() {
   return (
-    <section
-      data-reveal
-      className={section.section}
-      aria-labelledby="titulo-planes"
-    >
+    <section className={section.section} aria-labelledby="titulo-planes">
       <div className={section.inner}>
         <SectionHeading
           id="titulo-planes"

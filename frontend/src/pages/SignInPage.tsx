@@ -181,7 +181,6 @@ export function SignInPage() {
             <Link to={ROUTES.signUp}>Crear una cuenta</Link>
           </p>
         </header>
-        <SocialAccess />
 
         <form
           className={styles.form}
@@ -244,6 +243,7 @@ export function SignInPage() {
             </Button>
           </div>
         </form>
+        <SocialAccess />
       </div>
     </>
   );

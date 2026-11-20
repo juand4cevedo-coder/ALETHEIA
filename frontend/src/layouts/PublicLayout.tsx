@@ -1,3 +1,4 @@
+import { Foto } from "../components/ui/Foto.tsx";
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, ScrollRestoration, useLocation } from "react-router";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
@@ -143,6 +144,7 @@ export function PublicLayout() {
         <Outlet />
       </main>
       <footer className={styles.footer}>
+        <Foto nombre="pie" alt="" className={styles.footerPhoto} />
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
             <Brand />

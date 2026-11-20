@@ -7,23 +7,25 @@ import { describe, expect, it } from "vitest";
 // Se lee del disco: en las pruebas, Vite entrega vacío todo CSS importado, incluso con ?raw.
 const tokensCss = readFileSync(join(import.meta.dirname, "tokens.css"), "utf8");
 
-// Colores semánticos de la identidad (especificación de identidad, sección 3). Un cambio de
-// valor aquí es un cambio de identidad y debe pasar antes por la especificación.
+// Colores semánticos de la identidad (especificación del rediseño del 19 de noviembre, sección
+// 7.1). Un cambio de valor aquí es un cambio de identidad y debe pasar antes por la especificación.
 const SEMANTIC_COLORS: Record<string, string> = {
-  "--bg": "#000000",
-  "--surface-1": "#0E0F11",
-  "--surface-2": "#1A1B1E",
-  "--line": "#252629",
-  "--line-control": "#686B70",
-  "--text": "#F0F0F0",
-  "--text-2": "#A1A4A5",
-  "--text-3": "#999DA3",
-  "--accent": "#F0F0F0",
-  "--accent-strong": "#FFFFFF",
-  "--on-accent": "#08090B",
-  "--ok": "#63D4A1",
-  "--warn": "#E8BA75",
-  "--err": "#FF9999",
+  "--paper": "#F4F1EA",
+  "--paper-raised": "#FFFFFF",
+  "--paper-sunken": "#E9E4D8",
+  "--ink-900": "#071423",
+  "--ink-700": "#12304F",
+  "--ink-500": "#1E4A74",
+  "--brass-600": "#7E5F36",
+  "--brass-400": "#C3A572",
+  "--text": "#111820",
+  "--text-2": "#49545F",
+  "--text-3": "#5C656F",
+  "--on-ink": "#F4F1EA",
+  "--on-ink-2": "#A9B6C4",
+  "--ok": "#1F6B4A",
+  "--warn": "#8A5A18",
+  "--err": "#9B2226",
 };
 
 function declaredValue(name: string): string | undefined {
@@ -60,48 +62,76 @@ function contrast(a: string, b: string): number {
 }
 
 describe("legibilidad de la identidad", () => {
-  it.each(["--bg", "--surface-1", "--surface-2"])(
+  it.each(["--paper", "--paper-raised", "--paper-sunken"])(
     "el texto y los estados alcanzan AA sobre %s",
     (surface) => {
       for (const foreground of [
         "--text",
         "--text-2",
         "--text-3",
-        "--accent",
-        "--accent-strong",
+        "--ink-500",
+        "--brass-600",
         "--ok",
         "--warn",
         "--err",
-        "--bronze",
       ]) {
         expect(
           contrast(foreground, surface),
           foreground,
         ).toBeGreaterThanOrEqual(4.5);
       }
+    },
+  );
+  it.each(["--paper", "--paper-raised", "--paper-sunken"])(
+    "el contorno de los controles alcanza 3 a 1 sobre %s",
+    (surface) => {
       expect(contrast("--line-control", surface)).toBeGreaterThanOrEqual(3);
     },
   );
-  it("mantiene contraste en botones y superficies oscuras", () => {
-    expect(contrast("--gold", "--brand-dark")).toBeGreaterThanOrEqual(4.5);
-    expect(contrast("--gold-hover", "--brand-dark")).toBeGreaterThanOrEqual(
-      4.5,
-    );
-    expect(contrast("--on-accent", "--accent")).toBeGreaterThanOrEqual(4.5);
-    expect(contrast("--on-accent", "--accent-strong")).toBeGreaterThanOrEqual(
-      4.5,
-    );
-    expect(contrast("--on-brand", "--brand-dark")).toBeGreaterThanOrEqual(4.5);
-    expect(contrast("--brand-muted", "--brand-dark")).toBeGreaterThanOrEqual(
-      4.5,
-    );
+  it("mantiene contraste sobre las superficies de tinta", () => {
+    for (const surface of ["--ink-900", "--ink-700"]) {
+      expect(contrast("--on-ink", surface)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast("--on-ink-2", surface)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast("--brass-400", surface)).toBeGreaterThanOrEqual(4.5);
+    }
+    expect(contrast("--paper", "--ink-900")).toBeGreaterThanOrEqual(4.5);
   });
 });
 
 // Nombres del sistema anterior que el puente traducía a los tokens nuevos. Ya no existen: un
 // módulo que los use se quedaría sin color, tamaño o duración sin que nada falle.
-const RETIRED_TOKENS =
-  /--color-[a-z0-9]|--shadow-raised\b|--font-display\b|--motion-(?:flash|slow)\b/;
+const RETIRED_NAMES = [
+  "shadow-raised",
+  "font-display",
+  "motion-flash",
+  "motion-slow",
+  "bg",
+  "surface-0",
+  "surface-1",
+  "surface-1b",
+  "surface-2",
+  "line",
+  "line-accent",
+  "accent",
+  "accent-strong",
+  "accent-nav",
+  "on-accent",
+  "on-brand",
+  "gold",
+  "gold-hover",
+  "brand-dark",
+  "brand-muted",
+  "brand-line",
+  "bronze",
+  "tint-integridad",
+  "tint-seguridad",
+];
+// El cierre no puede ser \b (borde de palabra): coincide antes de un guion, y los tokens
+// vivos de la escala tipográfica comparten prefijo con los retirados (--line-height-body frente
+// a --line). Sin bandera g, para que test no arrastre lastIndex entre llamadas.
+const RETIRED_TOKENS = new RegExp(
+  `--color-[a-z0-9]|--(?:${RETIRED_NAMES.join("|")})(?![\\w-])`,
+);
 const SRC = join(import.meta.dirname, "..");
 
 function sourceFiles(dir: string): string[] {
@@ -114,6 +144,18 @@ function sourceFiles(dir: string): string[] {
       : [];
   });
 }
+
+// Fuera de "tokens retirados" a propósito: esta prueba no depende del resto de src y debe
+// correr aun cuando se excluya el inventario de archivos pendientes.
+describe("patrón de los tokens retirados", () => {
+  it("distingue un token retirado de uno vivo que comparte prefijo", () => {
+    expect(RETIRED_TOKENS.test("--line:")).toBe(true);
+    expect(RETIRED_TOKENS.test("--line-height-body:")).toBe(false);
+    expect(RETIRED_TOKENS.test("--accent:")).toBe(true);
+    expect(RETIRED_TOKENS.test("--accent-strong:")).toBe(true);
+    expect(RETIRED_TOKENS.test("--brass-hairline:")).toBe(false);
+  });
+});
 
 describe("tokens retirados", () => {
   it("ningún archivo de src usa los nombres del sistema anterior", () => {

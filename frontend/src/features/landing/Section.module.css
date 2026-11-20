@@ -3,8 +3,7 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 96px 0;
-  border-top: 1px solid var(--line-accent);
-  border-radius: 24px 24px 0 0;
+  border-top: 1px solid var(--ink-hairline);
 }
 
 .inner {
@@ -27,7 +26,7 @@
 }
 
 .title {
-  font-family: var(--font-sans);
+  font-family: var(--font-editorial);
   font-size: var(--font-size-section);
   font-weight: 400;
   line-height: var(--line-height-section);
@@ -45,17 +44,17 @@
 
 .card {
   position: relative;
-  border: 1px solid var(--line-accent);
-  border-radius: 24px;
+  border: 1px solid var(--ink-hairline);
+  border-radius: var(--radius-lg);
   background:
     radial-gradient(
       41% 12% at 50% 0%,
-      color-mix(in srgb, var(--accent-strong) 5%, transparent),
+      color-mix(in srgb, var(--ink-900) 5%, transparent),
       transparent
     ),
     linear-gradient(
-      var(--surface-1b),
-      color-mix(in srgb, var(--bg) 80%, transparent)
+      var(--paper-raised),
+      color-mix(in srgb, var(--paper) 80%, transparent)
     );
 }
 
@@ -89,7 +88,7 @@
   }
 
   .title {
-    font-family: var(--font-sans);
+    font-family: var(--font-editorial);
     font-size: var(--font-size-section-sm);
     line-height: var(--line-height-section-sm);
   }

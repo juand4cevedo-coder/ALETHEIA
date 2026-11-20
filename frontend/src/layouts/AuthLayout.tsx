@@ -1,3 +1,4 @@
+import { Foto } from "../components/ui/Foto.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import {
@@ -37,10 +38,9 @@ function isAuthSwitch(value: unknown): value is AuthSwitch {
   );
 }
 
-const logoUrl = "/brand/symbol-white.svg";
+const logoUrl = "/brand/symbol-dark.svg";
 const CURRENT_YEAR = new Date().getFullYear();
 
-// Un formulario centrado para todos los recorridos de acceso. El fondo es decorativo.
 export function AuthLayout() {
   const { pathname } = useLocation();
   const primaryAccess =
@@ -91,6 +91,13 @@ export function AuthLayout() {
         </Link>
       </header>
 
+      <Foto
+        nombre="acceso"
+        alt=""
+        prioridad
+        sizes="(min-width: 900px) 44vw, 100vw"
+        className={styles.photo}
+      />
       <main id="contenido" className={styles.main} tabIndex={-1}>
         <img
           className={styles.symbol}

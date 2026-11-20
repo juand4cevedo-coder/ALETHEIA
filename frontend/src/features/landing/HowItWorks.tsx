@@ -23,7 +23,6 @@ const STEPS = [
 export function HowItWorks() {
   return (
     <section
-      data-reveal
       id="como-funciona"
       className={section.section}
       aria-labelledby="titulo-como-funciona"

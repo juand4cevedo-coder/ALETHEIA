@@ -1,7 +1,7 @@
 name: Publicar
 
-# Se ejecuta al subir una etiqueta vX.Y.Z, que se crea firmada sobre main al cerrar una rama
-# release/ (GitFlow). Construye las dos imágenes, las publica en GHCR y, con la aprobación
+# Se ejecuta al subir una etiqueta vX.Y.Z, que se crea firmada sobre develop al integrar una rama
+# release/. Construye las dos imágenes, las publica en GHCR y, con la aprobación
 # manual del entorno production, las despliega en aletheia-prod por SSM.
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          # Toda la historia, para comprobar que la etiqueta está sobre main.
+          # Toda la historia, para comprobar que la etiqueta está sobre develop.
           fetch-depth: 0
 
       - name: Comprobar el formato, la rama y las versiones
@@ -39,8 +39,8 @@ jobs:
             echo "::error::La etiqueta $VERSION no tiene la forma vX.Y.Z."
             exit 1
           fi
-          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
-            echo "::error::La etiqueta $VERSION no apunta a un commit de main."
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/develop; then
+            echo "::error::La etiqueta $VERSION no apunta a un commit de develop."
             exit 1
           fi
           # La versión del código debe coincidir con la etiqueta: se sube en la rama release/.
@@ -50,7 +50,7 @@ jobs:
             echo "::error::La etiqueta es $VERSION, pero el backend dice $backend y el frontend $frontend."
             exit 1
           fi
-          echo "La etiqueta $VERSION está sobre main y coincide con el código."
+          echo "La etiqueta $VERSION está sobre develop y coincide con el código."
 
   imagenes:
     name: Construir y publicar las imágenes

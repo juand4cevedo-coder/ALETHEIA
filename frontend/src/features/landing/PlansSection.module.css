@@ -6,7 +6,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--accent-strong);
+  color: var(--ink-900);
   font-size: var(--font-size-ui);
   font-weight: 500;
   line-height: var(--line-height-ui);

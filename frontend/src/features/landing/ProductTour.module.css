@@ -12,13 +12,13 @@
   border: 0;
   border-radius: 16px;
   color: var(--text);
-  background: var(--line-accent);
+  background: var(--ink-hairline);
   cursor: pointer;
   font: 500 15px var(--font-sans);
   text-align: left;
 }
 .tabs button[aria-selected="true"] {
-  background: var(--line-accent);
+  background: var(--ink-hairline);
 }
 .travelingBorder {
   position: absolute;
@@ -49,15 +49,11 @@
   gap: 16px;
   height: 100%;
   border-radius: 15px;
-  background: var(--bg);
+  background: var(--paper);
   padding: 24px;
 }
 .tabs button[aria-selected="true"] .tabInner {
-  background: linear-gradient(
-    var(--surface-0),
-    var(--surface-0) 50%,
-    var(--bg)
-  );
+  background: linear-gradient(var(--paper), var(--paper) 50%, var(--paper));
 }
 .icon {
   display: grid;
@@ -66,10 +62,10 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  border: 1px solid var(--line-accent);
+  border: 1px solid var(--ink-hairline);
   background: linear-gradient(
     225deg,
-    color-mix(in srgb, var(--accent-strong) 10%, transparent),
+    color-mix(in srgb, var(--ink-900) 10%, transparent),
     transparent
   );
 }
@@ -77,10 +73,10 @@
   color: var(--ok);
 }
 .panel {
-  border: 1px solid var(--line-accent);
+  border: 1px solid var(--ink-hairline);
   border-radius: 16px;
   overflow: hidden;
-  background: var(--brand-dark);
+  background: var(--ink-700);
 }
 .panel img {
   display: block;
@@ -92,7 +88,7 @@
 }
 .panel p {
   padding: 24px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink-hairline);
   color: var(--text-2);
   font-size: 14px;
   text-align: center;

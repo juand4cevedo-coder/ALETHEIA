@@ -2,9 +2,10 @@
    panel. La integridad abre la fila y lleva una insignia en lugar de un número. */
 .strip {
   overflow: hidden;
-  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background: var(--surface-1);
+  background: var(--paper-raised);
+  border: 1px solid transparent;
+  box-shadow: var(--brass-hairline), var(--shadow-card);
 }
 
 .figures {
@@ -19,7 +20,7 @@
   gap: var(--space-2);
   min-width: 0;
   padding: var(--space-4) var(--space-6);
-  border-left: 1px solid var(--line);
+  border-left: 1px solid var(--ink-hairline);
 }
 
 .figure:first-child {
@@ -73,7 +74,7 @@
   /* La integridad ocupa su propia fila sobre las tres cifras. */
   .figure:first-child {
     grid-column: 1 / -1;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--ink-hairline);
   }
 
   .figure:nth-child(2) {
@@ -90,7 +91,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     padding: var(--space-3) var(--space-4);
-    border-top: 1px solid var(--line);
+    border-top: 1px solid var(--ink-hairline);
     border-left: 0;
   }
 

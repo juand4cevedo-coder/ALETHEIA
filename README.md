@@ -6,7 +6,7 @@ ALETHEIA preserva y documenta. No determina la autenticidad, la veracidad, la ad
 
 ## Estado
 
-En producción, en desarrollo activo. `develop` reúne el trabajo integrado y cada versión se publica desde `main` con una etiqueta firmada (sección Producción). El sello de tiempo externo RFC 3161 y el anclaje externo de la cadena de custodia siguen pendientes.
+En producción, en desarrollo activo. `develop` reúne el trabajo integrado y cada versión se publica desde `develop` con una etiqueta firmada (sección Producción). El sello de tiempo externo RFC 3161 y el anclaje externo de la cadena de custodia siguen pendientes.
 
 ## Tecnologías
 
@@ -201,9 +201,9 @@ Los estilos de cada componente van en su archivo `.module.css` y usan solo las v
 
 Los íconos se importan solo de `src/components/ui/icons.tsx`: Phosphor en peso regular, copiado en `src/components/ui/icons/` con un archivo por ícono, más cuatro propios (huella, sello, cadena y paquete). Para agregar uno, se copia su trazado regular de Phosphor en un archivo nuevo de esa carpeta, igual a los demás, y se exporta desde `icons.tsx`. Como cada ícono vive en su archivo, cada pantalla descarga solo los que dibuja.
 
-Las fuentes son Inter, Instrument Serif y Geist Mono, alojadas en el propio sitio con subconjunto latino (`src/styles/fonts.css`). Mientras cargan se ve la fuente del sistema, e Inter se precarga en `index.html`.
+Las fuentes son Inter, Fraunces y Geist Mono, alojadas en el propio sitio con subconjunto latino (`src/styles/fonts.css`). Mientras cargan se ve la fuente del sistema, e Inter se precarga en `index.html`.
 
-La landing tiene un presupuesto de carga (especificación de identidad, sección 8): menos de 120 KB de JavaScript inicial comprimido y menos de 30 KB de CSS. El script `frontend/scripts/check-bundle-budget.mjs` mide la entrada y sus dependencias estáticas al ejecutar `pnpm build`; las secciones debajo del primer pantallazo llegan aparte (`src/features/landing/BelowFold.tsx`). La escena criptográfica del inicio usa SVG y CSS, sin WebGL.
+La landing tiene un presupuesto de carga (especificación de identidad, sección 8): menos de 120 KB de JavaScript inicial comprimido y menos de 36 KB de CSS. El script `frontend/scripts/check-bundle-budget.mjs` mide la entrada y sus dependencias estáticas al ejecutar `pnpm build`; las secciones debajo del primer pantallazo llegan aparte (`src/features/landing/BelowFold.tsx`). La escena criptográfica del inicio usa SVG y CSS, sin WebGL.
 
 Las políticas legales comparten una sola versión y fecha de vigencia, definidas en `src/config/legal.ts`. Si un cambio de texto altera derechos u obligaciones, se sube la versión ahí y en ningún otro lugar: el registro guarda qué versión aceptó cada persona.
 
@@ -277,12 +277,12 @@ En producción la API no recibe claves. Su URL llega sin clave y la API la lee d
 
 Para publicar una versión:
 
-1. En la rama `release/X.Y.Z`, sube la versión en `backend/pyproject.toml`, `backend/app/main.py` y `frontend/package.json`, regenera el contrato y el cliente (sección Contrato de la API) y abre el pull request hacia main.
-2. Con el pull request integrado, crea la etiqueta firmada sobre main y súbela:
+1. En la rama `release/X.Y.Z`, sube la versión en `backend/pyproject.toml`, `backend/app/main.py` y `frontend/package.json`, regenera el contrato y el cliente (sección Contrato de la API) y abre el pull request hacia `develop`.
+2. Con el pull request integrado, crea la etiqueta firmada sobre `develop` y súbela:
 
 ```powershell
-git switch main
-git pull
+git switch develop
+git pull --ff-only
 git tag -s vX.Y.Z -m "ALETHEIA X.Y.Z"
 git push origin vX.Y.Z
 ```

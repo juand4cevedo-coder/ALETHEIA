@@ -14,7 +14,7 @@ const VIEWS = [
     title: "Su trabajo a la vista",
     icon: InicioIcon,
     text: "Casos abiertos, cerrados y registros de actividad. Los datos de su espacio, sin reconstruirlos a mano.",
-    alt: "Panel real de Aletheia con tres casos abiertos y tres registros de custodia en una cuenta de revisión.",
+    alt: "Panel real de Aletheia con tres casos abiertos y tres registros de custodia en una cuenta de ejemplo.",
   },
   {
     id: "casos",
@@ -37,7 +37,6 @@ export function ProductTour() {
   const active = VIEWS[selected]!;
   return (
     <section
-      data-reveal
       id="recorrido"
       className={section.section}
       aria-labelledby="titulo-producto"
@@ -116,6 +115,7 @@ export function ProductTour() {
         >
           <img
             key={active.id}
+            className="parallax"
             src={"/media/producto-" + active.id + ".webp"}
             width={1260}
             height={720}

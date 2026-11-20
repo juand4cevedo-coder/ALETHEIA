@@ -71,7 +71,6 @@ export function VerifierSection() {
 
   return (
     <section
-      data-reveal
       id="verificador"
       className={styles.section}
       aria-labelledby="titulo-verificador"

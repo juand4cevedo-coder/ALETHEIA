@@ -1,0 +1,33 @@
+/* Sección 7.4: opacidad y desplazamiento de 16 px, 700 ms, curva de salida suave. El estado
+   por omisión es el contenido a la vista; solo Reveal.tsx lo oculta, y únicamente cuando el
+   observador ya confirmó que está bajo el pliegue. */
+.reveal {
+  transition:
+    opacity var(--motion-enter) var(--ease-out),
+    transform var(--motion-enter) var(--ease-out);
+}
+
+/* El retraso escalonado se aplica solo al mostrar, no al ocultar. */
+.reveal[data-visible="true"] {
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal[data-visible="false"] {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+/* Con movimiento reducido queda solo el cambio de opacidad, sin desplazamiento. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal[data-visible="false"] {
+    transform: none;
+  }
+}
+
+/* En papel todo se imprime a la vista, haya o no entrado en pantalla. */
+@media print {
+  .reveal[data-visible="false"] {
+    opacity: 1;
+    transform: none;
+  }
+}

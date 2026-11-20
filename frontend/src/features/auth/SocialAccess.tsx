@@ -29,9 +29,6 @@ export function SocialAccess() {
       <p id={id} className={styles.pending}>
         Google y Microsoft estarán disponibles próximamente.
       </p>
-      <div className={styles.divider}>
-        <span>o continúe con su correo</span>
-      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 /* Tablero de inicio del espacio de trabajo (HU-031). */
 .screen {
+  container-type: inline-size;
   display: grid;
   gap: var(--space-6);
   max-width: var(--content-width);
@@ -28,7 +29,7 @@
 }
 
 .activityRow {
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink-hairline);
 }
 
 .activityRow:first-child {
@@ -45,7 +46,7 @@
 }
 
 .activityLink:hover {
-  color: var(--accent-strong);
+  color: var(--ink-500);
 }
 
 .activityTitle {
@@ -84,9 +85,10 @@
   display: grid;
   gap: var(--space-3);
   padding: var(--space-6);
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--surface-1);
+  background: var(--paper-raised);
+  box-shadow: var(--brass-hairline), var(--shadow-card);
 }
 
 .verifyTitle {
@@ -103,17 +105,22 @@
   margin-top: var(--space-2);
 }
 
-@media (max-width: 760px) {
+/* Cuatro cifras en fila piden unos 200 px de tarjeta: con la barra lateral, a 1000 px de ventana
+   cada una quedaba en 150 px y "No disponible" no cabía. El corte mira el ancho de la pantalla. */
+@container (max-width: 840px) {
   .overview {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 560px) {
+/* A 620 px la cifra pasa a su propia fila dentro de la tarjeta (StatTile.module.css). */
+@media (max-width: 620px) {
   .overview {
     grid-template-columns: minmax(0, 1fr);
   }
+}
 
+@media (max-width: 560px) {
   .verify {
     padding: var(--space-4);
   }

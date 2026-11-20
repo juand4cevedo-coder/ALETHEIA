@@ -1,7 +1,7 @@
 .hash {
   display: inline-flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-2) var(--space-3);
   min-width: 0;
 }
@@ -25,8 +25,15 @@
   vertical-align: middle;
 }
 
+/* El texto es un enlace subrayado, pero lo que se toca mide el mínimo táctil: sin esa altura el
+   botón quedaba en 82 por 21 px. */
 .copy {
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-2);
   border: 0;
   background: none;
   color: inherit;

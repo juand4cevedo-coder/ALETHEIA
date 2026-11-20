@@ -1,69 +1,159 @@
+/* Botón (CMP-UI-001). Cuatro variantes: principal en tinta, secundario con borde de tinta,
+   terciario de solo texto y circular para la acción principal de cada sección.
+   El anillo de foco no se declara aquí: lo pone global.css y sobre superficies de tinta lo
+   cambia la clase .on-ink, de modo que estos controles lo heredan sin repetirlo. */
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  /* 52 px de la sección 8.1. Supera de sobra el mínimo táctil de 44 px. */
   min-height: var(--control-height);
   padding: var(--space-2) var(--space-6);
   border: 1px solid transparent;
-  border-radius: 16px;
+  border-radius: var(--radius-sm);
   font: inherit;
-  font-size: var(--font-size-ui);
-  font-weight: 650;
+  /* 16 px para que el navegador del celular no acerque la pantalla al tocar el control. */
+  font-size: var(--font-size-control-touch);
+  font-weight: 600;
   line-height: var(--line-height-ui);
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
   transition:
-    background-color var(--motion-fast) var(--ease-standard),
-    border-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard);
+    background-color var(--motion-base) var(--ease-standard),
+    border-color var(--motion-base) var(--ease-standard),
+    color var(--motion-base) var(--ease-standard),
+    background-size var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
 }
 
 .button svg {
   flex: none;
 }
 
+/* La variante compacta conserva el mínimo táctil de 44 px. */
 .sm {
   min-height: var(--control-height-sm);
-  padding: 0 var(--space-3);
+  padding: var(--space-2) var(--space-4);
 }
 
+/* Principal: tinta plena. Colores directos de los tokens, sin degradados ni mezclas que puedan
+   dejar el botón sin fondo. */
 .primary {
-  background: linear-gradient(
-    104deg,
-    color-mix(in srgb, var(--accent-strong) 5%, transparent) 5%,
-    color-mix(in srgb, var(--accent-strong) 10%, transparent) 100%
-  );
-  border: 2px solid color-mix(in srgb, var(--accent-strong) 5%, transparent);
-  color: var(--text);
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--bg) 10%, transparent);
+  background-color: var(--ink-900);
+  border-color: var(--ink-900);
+  color: var(--on-ink);
 }
 
-.primary:hover {
-  background: color-mix(in srgb, var(--accent-strong) 90%, transparent);
-  color: var(--bg);
-  box-shadow: 0 0 24px color-mix(in srgb, var(--accent-strong) 12%, transparent);
+.primary:hover:not(:disabled) {
+  background-color: var(--brass-600);
+  border-color: var(--brass-600);
 }
 
+/* Secundario: contorno con el token de contorno de controles (3 a 1 contra el papel). */
 .secondary {
-  border-color: var(--line);
-  background: transparent;
-  color: var(--text);
-}
-
-.secondary:hover {
+  background-color: transparent;
   border-color: var(--line-control);
-}
-
-.text {
-  background: transparent;
-  color: var(--text-2);
-}
-
-.text:hover {
-  background: transparent;
   color: var(--text);
+}
+
+.secondary:hover:not(:disabled) {
+  background-color: var(--paper-raised);
+  border-color: var(--ink-900);
+}
+
+/* Terciario: texto subrayado. Un subrayado fino de reposo y otro de latón que crece desde la
+   izquierda al pasar el cursor. El texto y su subrayado de reposo no dependen de la imagen de
+   fondo, así que siguen visibles aunque ella no se pinte. */
+.text {
+  padding-inline: var(--space-2);
+  background-color: transparent;
+  background-image: linear-gradient(var(--brass-600), var(--brass-600));
+  background-repeat: no-repeat;
+  background-position: left calc(50% + 0.8em);
+  background-size: 0% 2px;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--text) 35%, transparent);
+  text-underline-offset: 0.3em;
+}
+
+.text:hover:not(:disabled) {
+  background-size: 100% 2px;
+}
+
+/* Circular: 56 px con la flecha. Al pasar el cursor la flecha gira 45 grados y el círculo se
+   llena de tinta. */
+.circular {
+  width: var(--control-height-circular);
+  height: var(--control-height-circular);
+  min-height: var(--control-height-circular);
+  padding: 0;
+  border-color: var(--line-control);
+  border-radius: 50%;
+  background-color: transparent;
+  color: var(--text);
+}
+
+.circular svg {
+  transition: transform var(--motion-base) var(--ease-standard);
+}
+
+.circular:hover:not(:disabled) {
+  background-color: var(--ink-900);
+  border-color: var(--ink-900);
+  color: var(--on-ink);
+}
+
+.circular:hover:not(:disabled) svg {
+  transform: rotate(45deg);
+}
+
+/* Sobre una superficie de tinta (.on-ink) las cuatro variantes se invierten. Contrastes:
+   principal, texto de tinta sobre marfil, 16:1; al pasar el cursor, sobre latón claro, 7,8:1.
+   Secundario, texto marfil sobre tinta, 16:1, con contorno de marfil secundario (8,9:1 contra
+   la tinta); al pasar el cursor, relleno de tinta media con texto marfil, 12:1. Terciario,
+   texto marfil, 16:1, con el subrayado de latón claro. Circular, flecha de tinta sobre círculo
+   de marfil, 16:1; al pasar el cursor, sobre latón claro, 7,8:1. Todo sale de tokens con valor
+   propio, sin mezclas que puedan dejar un control sin color. */
+:global(.on-ink) .primary {
+  background-color: var(--on-ink);
+  border-color: var(--on-ink);
+  color: var(--ink-900);
+}
+
+:global(.on-ink) .primary:hover:not(:disabled) {
+  background-color: var(--brass-400);
+  border-color: var(--brass-400);
+}
+
+:global(.on-ink) .secondary {
+  border-color: var(--on-ink-2);
+  color: var(--on-ink);
+}
+
+:global(.on-ink) .secondary:hover:not(:disabled) {
+  background-color: var(--ink-700);
+  border-color: var(--on-ink);
+}
+
+:global(.on-ink) .text {
+  background-image: linear-gradient(var(--brass-400), var(--brass-400));
+  color: var(--on-ink);
+  text-decoration-color: var(--on-ink-2);
+}
+
+:global(.on-ink) .circular {
+  background-color: var(--on-ink);
+  border-color: var(--on-ink);
+  color: var(--ink-900);
+}
+
+:global(.on-ink) .circular:hover:not(:disabled) {
+  background-color: var(--brass-400);
+  border-color: var(--brass-400);
+  color: var(--ink-900);
 }
 
 .block {
@@ -80,6 +170,10 @@
   opacity: 1;
 }
 
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
 .spinner {
   animation: spin var(--motion-spin) linear infinite;
 }
@@ -91,22 +185,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .button {
+  .button,
+  .circular svg {
     transition: none;
+  }
+
+  .circular:hover:not(:disabled) svg,
+  .button:active:not(:disabled) {
+    transform: none;
   }
 
   .spinner {
     animation: none;
   }
-}
-
-.button:active:not(:disabled) {
-  transform: translateY(1px);
-}
-.secondary {
-  border-color: var(--line-control);
-}
-.secondary:hover,
-.text:hover {
-  background: var(--surface-2);
 }

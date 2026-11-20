@@ -22,7 +22,7 @@
   padding: calc(var(--space-1) - 1px);
   border: 1px solid var(--line-control);
   border-radius: var(--radius-md);
-  background: var(--surface-1);
+  background: var(--paper-raised);
 }
 
 .option {
@@ -57,16 +57,16 @@
   color: var(--text);
 }
 
-/* La elegida se distingue por su borde --line-control (3,5:1 sobre --surface-1 y 3,3:1 sobre
-   --surface-2), además de la superficie y el texto. */
+/* La elegida se distingue por su borde --line-control (3,5:1 sobre --paper-raised y 3,3:1 sobre
+   --paper-sunken), además de la superficie y el texto. */
 .option[data-checked] {
-  background: var(--surface-2);
+  background: var(--paper-sunken);
   border-color: var(--line-control);
   color: var(--text);
 }
 
 .option:has(input:focus-visible) {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--ink-500);
   outline-offset: 2px;
 }
 

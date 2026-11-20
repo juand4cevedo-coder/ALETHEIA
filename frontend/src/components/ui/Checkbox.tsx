@@ -37,7 +37,9 @@ export function Checkbox({
         aria-invalid={error ? true : undefined}
         aria-describedby={errorId}
       />
-      <label htmlFor={id}>{children}</label>
+      <label htmlFor={id}>
+        <span>{children}</span>
+      </label>
       {error && (
         <p id={errorId} className={styles.error}>
           {error}

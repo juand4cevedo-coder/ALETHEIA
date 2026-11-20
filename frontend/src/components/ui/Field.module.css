@@ -8,9 +8,11 @@
 
 .label {
   color: var(--text);
-  font-size: var(--font-size-support);
-  font-weight: 500;
-  line-height: var(--line-height-support);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: var(--line-height-label);
+  text-transform: uppercase;
 }
 
 .control {
@@ -19,15 +21,15 @@
   align-items: center;
   height: var(--control-height);
   border: 1px solid var(--line-control);
-  border-radius: var(--radius-md);
-  background: var(--surface-1);
+  border-radius: var(--radius-sm);
+  background: var(--paper-raised);
   transition:
     border-color var(--motion-fast) var(--ease-standard),
     box-shadow var(--motion-fast) var(--ease-standard);
 }
 
 .control:hover {
-  border-color: var(--text-3);
+  border-color: var(--ink-900);
 }
 
 .control[data-invalid] {
@@ -40,10 +42,15 @@
   align-items: stretch;
 }
 
-.control:focus-within,
-.control[data-invalid]:focus-within {
-  border-color: var(--accent);
+.control:focus-within {
+  border-color: var(--ink-900);
   box-shadow: var(--ring-focus);
+}
+
+/* Con error el borde sigue siendo el del error aunque el campo tenga foco: el estado no se
+   pierde. */
+.control[data-invalid]:focus-within {
+  border-color: var(--err);
 }
 
 .input {
@@ -56,7 +63,8 @@
   background: transparent;
   color: var(--text);
   font: inherit;
-  font-size: var(--font-size-ui);
+  /* 16 px siempre: por debajo, el navegador del celular acerca la pantalla al enfocar. */
+  font-size: var(--font-size-control-touch);
   line-height: var(--line-height-ui);
   outline: none;
 }
@@ -71,7 +79,7 @@ textarea.input {
    la superficie del campo. */
 .input:-webkit-autofill {
   -webkit-text-fill-color: var(--text);
-  box-shadow: inset 0 0 0 40px var(--surface-1);
+  box-shadow: inset 0 0 0 40px var(--paper-raised);
   caret-color: var(--text);
 }
 
@@ -90,7 +98,7 @@ textarea.input {
 }
 
 .reveal:hover {
-  background: var(--surface-2);
+  background: var(--paper-sunken);
   color: var(--text);
 }
 
@@ -107,12 +115,6 @@ textarea.input {
 
 .error {
   color: var(--err);
-}
-
-@media (pointer: coarse) {
-  .input {
-    font-size: var(--font-size-control-touch);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

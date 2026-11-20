@@ -1,24 +1,33 @@
 .check {
+  --check-size: 24px;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-3);
   align-items: start;
-  color: var(--text-2);
-  font-size: var(--font-size-ui);
+  color: var(--text);
+  font-size: var(--font-size-control-touch);
   line-height: var(--line-height-ui);
 }
 
+/* La casilla mide 24 px y la etiqueta, que también la activa, da el blanco táctil de 44 px. */
 .check input {
-  width: var(--space-4);
-  height: var(--space-4);
-  /* Centrada con la primera línea del texto. */
-  margin: calc((var(--line-height-ui) - var(--space-4)) / 2) 0 0;
-  accent-color: var(--accent);
+  width: var(--check-size);
+  height: var(--check-size);
+  /* Centrada en el alto táctil de la etiqueta: si ese alto cambia, la casilla lo sigue. */
+  margin: calc((var(--control-height-sm) - var(--check-size)) / 2) 0 0;
+  accent-color: var(--ink-900);
+  cursor: pointer;
+}
+
+.check label {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-height-sm);
   cursor: pointer;
 }
 
 .check input[aria-invalid="true"]:not(:focus-visible) {
-  outline: 1px solid var(--err);
+  outline: 2px solid var(--err);
   outline-offset: 2px;
 }
 
