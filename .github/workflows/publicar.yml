@@ -52,6 +52,17 @@ jobs:
           fi
           echo "La etiqueta $VERSION está sobre develop y coincide con el código."
 
+      - name: Comprobar la firma antes de publicar imágenes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          objeto="$(git rev-parse --verify "refs/tags/$VERSION^{tag}")"
+          verificada="$(gh api "repos/$GITHUB_REPOSITORY/git/tags/$objeto" --jq '.verification.verified')"
+          if [[ $verificada != true ]]; then
+            echo "::error::GitHub no pudo verificar la firma de la etiqueta $VERSION."
+            exit 1
+          fi
+
   imagenes:
     name: Construir y publicar las imágenes
     needs: verificar
@@ -77,24 +88,23 @@ jobs:
       - name: Construir y publicar para linux/amd64
         id: publicar
         run: |
-          # Construye, publica y devuelve el digest que quedó en el registro. Ese digest, y no la
-          # etiqueta, es lo que se despliega: una etiqueta se puede mover, un digest no.
+          set -euo pipefail
           publicar() {
-            local nombre=$1 referencia digest
+            local servicio=$1 referencia metadatos digest
             shift
-            referencia="$REGISTRO/$nombre:$VERSION"
+            referencia="$REGISTRO/aletheia-$servicio:$VERSION"
+            metadatos="$RUNNER_TEMP/aletheia-$servicio.json"
             docker buildx build --platform linux/amd64 \
               --label "org.opencontainers.image.version=$VERSION" \
               --label "org.opencontainers.image.revision=$GITHUB_SHA" \
-              --tag "$referencia" --push "$@" >&2
-            digest="$(docker buildx imagetools inspect "$referencia" --format '{{json .Manifest}}' \
-              | jq --raw-output .digest)"
-            [[ $digest =~ ^sha256:[a-f0-9]{64}$ ]] || { echo "::error::Digest inválido para $nombre." >&2; return 1; }
-            echo "$nombre: $referencia@$digest" >&2
-            echo "$digest"
+              --tag "$referencia" --metadata-file "$metadatos" --push "$@"
+            digest="$(jq --exit-status --raw-output '."containerimage.digest"' "$metadatos")"
+            [[ $digest =~ ^sha256:[a-f0-9]{64}$ ]] || { echo "::error::Digest inválido para $servicio." >&2; return 1; }
+            echo "$referencia@$digest"
+            echo "$servicio=$digest" >> "$GITHUB_OUTPUT"
           }
-          echo "api=$(publicar aletheia-api --file backend/Dockerfile backend)" >> "$GITHUB_OUTPUT"
-          echo "web=$(publicar aletheia-web --file infra/caddy.Dockerfile .)" >> "$GITHUB_OUTPUT"
+          publicar api --file backend/Dockerfile backend
+          publicar web --file infra/caddy.Dockerfile .
 
   desplegar:
     name: Desplegar en producción

@@ -29,11 +29,10 @@ const SEMANTIC_COLORS: Record<string, string> = {
 };
 
 function declaredValue(name: string): string | undefined {
-  const escaped = name.replace(/[-]/g, "\\-");
-  const match = new RegExp(`(?:^|[\\s;{])${escaped}\\s*:\\s*([^;]+);`).exec(
-    tokensCss,
-  );
-  return match?.[1]?.trim();
+  for (const match of tokensCss.matchAll(/^\s*(--[\w-]+)\s*:\s*([^;]+);/gm)) {
+    if (match[1] === name) return match[2]?.trim();
+  }
+  return undefined;
 }
 
 describe("tokens.css", () => {

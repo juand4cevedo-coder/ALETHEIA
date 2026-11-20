@@ -29,6 +29,9 @@ beforeEach(() => {
 });
 
 describe("Qué rutas renuevan la sesión ante un 401", () => {
+  it("solo renueva para la API del mismo origen", () => {
+    expect(renewsSession("https://externo.example/api/v1/me")).toBe(false);
+  });
   it.each([
     ["/api/v1/me", true],
     ["/api/v1/me/legal-acceptance", true],
@@ -39,6 +42,7 @@ describe("Qué rutas renuevan la sesión ante un 401", () => {
     ["/api/v1/auth/register", false],
     ["/api/v1/auth/verify-email", false],
     ["/precios", false],
+    ["/api/v10/me", false],
   ])("%s → %s", (path, expected) => {
     expect(renewsSession(`${origin}${path}`)).toBe(expected);
   });

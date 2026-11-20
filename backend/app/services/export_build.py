@@ -44,6 +44,7 @@ class ExportSnapshot:
     organization_id: uuid.UUID
     wrapped_key: bytes
     key_version: str
+    custody_seq: int
     evidences: list[EvidenceSnapshot]
     events: list[ChainEvent]
 
@@ -84,6 +85,7 @@ def _snapshot(
         organization_id=organization_id,
         wrapped_key=case.wrapped_key,
         key_version=case.key_version,
+        custody_seq=case.custody_seq,
         evidences=[
             EvidenceSnapshot(
                 id=row.id,
@@ -236,6 +238,7 @@ def build(
             generated_at=datetime.datetime.now(datetime.UTC),
             evidences=_files(snapshot, primitive, settings, maybe_renew),
             custody_events=snapshot.events,
+            custody_seq=snapshot.custody_seq,
         )
         maybe_renew(force=True)
         sink.commit()

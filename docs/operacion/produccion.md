@@ -201,13 +201,15 @@ Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy
 
 ## Despliegue
 
-Se publica una versión subiendo una etiqueta firmada sobre main, al cerrar una rama `release/`. El workflow `.github/workflows/publicar.yml` hace el resto:
+Al integrar la rama `release/X.Y.Z` en `develop`, se crea y se sube una etiqueta firmada sobre el commit integrado. La publicación sigue estos pasos en `.github/workflows/publicar.yml`.
 
-1. Comprueba que la etiqueta tenga la forma `vX.Y.Z`, que esté sobre main y que coincida con la versión de `backend/pyproject.toml` y `frontend/package.json`.
-2. Construye las dos imágenes para linux/amd64, las publica en GHCR y toma del registro sus digests.
+1. Comprueba que la etiqueta tenga la forma `vX.Y.Z`, que su commit pertenezca al historial de `develop` y que coincida con la versión de `backend/pyproject.toml` y `frontend/package.json`.
+2. Comprueba que GitHub haya verificado la firma de la etiqueta anotada. Construye las dos imágenes para linux/amd64, las publica en GHCR y obtiene sus digests de los metadatos de cada compilación.
 3. Espera la aprobación del administrador en el entorno `production`, que solo admite etiquetas `v*`.
 4. Envía el documento `aletheia-desplegar` con `infra/prod/ssm/enviar.sh` y muestra la salida del servidor.
 5. Ejecuta `infra/prod/prueba-de-humo.sh` desde internet. Si falla, envía la misma orden con la acción `revertir`.
+
+Tras verificar la publicación, se sincroniza `main` mediante un pull request para que su contenido corresponda al código desplegado.
 
 En el servidor, el documento trae la etiqueta, comprueba su firma y deja `/opt/aletheia` en ella antes de ejecutar `infra/prod/desplegar.sh`. El script descarga las imágenes, aplica las migraciones, actualiza los contenedores y consulta la salud por HTTPS desde la misma máquina. Si algo falla, vuelve solo a la versión anterior.
 

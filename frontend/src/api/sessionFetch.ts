@@ -26,8 +26,12 @@ const AUTH_ROUTES_WITH_SESSION = new Set([
 
 /** Si un 401 de esta ruta se puede resolver renovando la sesión. */
 export function renewsSession(url: string): boolean {
-  const { pathname } = new URL(url, window.location.origin);
-  if (!pathname.startsWith(API_PREFIX)) return false;
+  const { origin, pathname } = new URL(url, window.location.origin);
+  if (
+    origin !== window.location.origin ||
+    !pathname.startsWith(API_PREFIX + "/")
+  )
+    return false;
   if (!pathname.startsWith(AUTH_PREFIX)) return true;
   return AUTH_ROUTES_WITH_SESSION.has(pathname);
 }

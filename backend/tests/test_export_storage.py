@@ -13,8 +13,8 @@ from app.adapters import export_storage
 from app.adapters.export_storage import (
     LocalExportSink,
     delete_export,
-    export_chunks,
     export_storage_key,
+    open_export,
 )
 from app.core.config import Settings
 
@@ -37,7 +37,8 @@ def test_publicacion_atomica_y_lectura_por_fragmentos(
 
     monkeypatch.setattr(export_storage, "LOCAL_ROOT", tmp_path)
     settings = cast("Settings", SimpleNamespace(environment="development"))
-    assert b"".join(export_chunks(settings, key)) == sink.path.read_bytes()
+    with open_export(settings, key) as source:
+        assert source.read(2) + source.read() == sink.path.read_bytes()
     delete_export(settings, key)
     assert not sink.path.exists()
 

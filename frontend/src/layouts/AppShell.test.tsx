@@ -214,7 +214,10 @@ describe("Sesión vencida (NAV-004, MSG-012)", () => {
       if (path === "/api/v1/me" && alive) return jsonResponse(ME);
       return jsonResponse({ type: "about:blank", status: 401 }, 401);
     });
-    const { router } = await renderRoute("/app");
+    const { router, queryClient } = await renderRoute("/app");
+    queryClient.setQueryData(["private-case"], {
+      name: "Expediente de prueba",
+    });
     await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" });
 
     alive = false;
@@ -231,6 +234,7 @@ describe("Sesión vencida (NAV-004, MSG-012)", () => {
         "Su sesión terminó por seguridad. Ingrese de nuevo para continuar donde iba.",
       ),
     ).toBeInTheDocument();
+    expect(queryClient.getQueryData(["private-case"])).toBeUndefined();
     focusManager.setFocused(undefined);
   });
 });

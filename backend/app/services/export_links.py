@@ -16,7 +16,7 @@ from app.core.tokens import (
     read_export_download_link,
 )
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import Export
+from app.models import Case, Export
 
 LINK_PATH: Final = "/descargar-paquete"
 
@@ -62,9 +62,13 @@ def resolve_export_link(
     claims = read_export_download_link(settings.signing_key(), token)
     set_tenant(session, TenantContext(organization_id=claims.organization_id))
     export = session.scalar(
-        select(Export).where(
+        select(Export)
+        .join(Case, Case.id == Export.case_id)
+        .where(
             Export.id == claims.export_id,
             Export.organization_id == claims.organization_id,
+            Case.organization_id == claims.organization_id,
+            Case.status != "deleting",
         )
     )
     checked_at = now or datetime.datetime.now(datetime.UTC)

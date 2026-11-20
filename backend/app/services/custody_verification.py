@@ -24,14 +24,6 @@ def verify_case(
     if case is None or case.organization_id != organization_id:
         raise CaseNotFoundError
 
-    report = custody_chain.verify(custody_chain.load(session, case_id))
-    if report.intact and report.events_checked != case.custody_seq:
-        # Detecta también una cola eliminada directamente en la base. Sin esta comparación,
-        # una cadena truncada antes del último evento parecería íntegra.
-        return custody_chain.ChainReport(
-            report.events_checked,
-            broken_at=report.events_checked + 1,
-            reason="sequence",
-            head_hash=report.head_hash,
-        )
-    return report
+    return custody_chain.verify(
+        custody_chain.load(session, case_id), expected_count=case.custody_seq
+    )

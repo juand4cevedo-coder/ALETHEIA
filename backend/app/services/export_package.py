@@ -75,6 +75,7 @@ def build_package(
     generated_at: datetime.datetime,
     evidences: Iterable[PackageEvidence],
     custody_events: Iterable[ChainEvent],
+    custody_seq: int,
     report_pdf: bytes | None = None,
     anchor_token: bytes | None = None,
 ) -> BuiltManifest:
@@ -91,7 +92,7 @@ def build_package(
     events = list(custody_events)
     if any(event.case_id != case_id for event in events):
         raise PackageIntegrityError("La cadena contiene un evento de otro caso.")
-    report = verify(events)
+    report = verify(events, expected_count=custody_seq)
     if not report.intact or report.events_checked < 1:
         raise PackageIntegrityError("La cadena de custodia no está íntegra.")
     for entry in files:

@@ -3,10 +3,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { previewInvitation } from "../api/generated";
-import {
-  acceptInvitationMutation,
-  readMeQueryKey,
-} from "../api/generated/@tanstack/react-query.gen.ts";
+import { acceptInvitationMutation } from "../api/generated/@tanstack/react-query.gen.ts";
 import type { InvitationPreview } from "../api/generated";
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
@@ -153,7 +150,7 @@ function AcceptForm({
       setValues(EMPTY);
       setConfirmPassword("");
       rememberSession();
-      await queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
+      queryClient.clear();
       await navigate(ROUTES.app, { replace: true });
     },
     onError: (error) => {

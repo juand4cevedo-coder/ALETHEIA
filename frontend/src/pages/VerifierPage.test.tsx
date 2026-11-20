@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
 
@@ -96,4 +96,64 @@ it("rechaza un manifiesto mal formado sin comenzar el cálculo", async () => {
   expect(
     screen.getByRole("button", { name: "Comparar huellas" }),
   ).toBeDisabled();
+});
+
+it("ignora el resultado de una lectura anterior tras cambiar el manifiesto", async () => {
+  const user = userEvent.setup();
+  await renderRoute("/verificador");
+  const input = screen.getByLabelText(/Manifiesto de preservación/);
+  const previous = new File(["{"], "anterior.json", {
+    type: "application/json",
+  });
+  let completePrevious!: (text: string) => void;
+  const pending = new Promise<string>((resolve) => {
+    completePrevious = resolve;
+  });
+  Object.defineProperty(previous, "text", { value: () => pending });
+  const currentText = JSON.stringify(manifest);
+  const current = new File([currentText], "actual.json", {
+    type: "application/json",
+  });
+  Object.defineProperty(current, "text", {
+    value: () => Promise.resolve(currentText),
+  });
+
+  await user.upload(input, previous);
+  await user.upload(input, current);
+  expect(await screen.findByText(/registrados en el manifiesto/)).toBeVisible();
+  await act(async () => completePrevious("{"));
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+});
+
+it("permite reintentar si el navegador no inicia el cálculo", async () => {
+  vi.stubGlobal(
+    "Worker",
+    class {
+      constructor() {
+        throw new Error("No se pudo iniciar el proceso local");
+      }
+    },
+  );
+  const user = userEvent.setup();
+  await renderRoute("/verificador");
+  const text = JSON.stringify(manifest);
+  const chosen = new File([text], "manifest.json", {
+    type: "application/json",
+  });
+  Object.defineProperty(chosen, "text", { value: () => Promise.resolve(text) });
+  await user.upload(
+    screen.getByLabelText(/Manifiesto de preservación/),
+    chosen,
+  );
+  await user.upload(
+    screen.getByLabelText(/Archivo a comprobar/),
+    new File(["abc"], "archivo.txt"),
+  );
+
+  const compare = screen.getByRole("button", { name: "Comparar huellas" });
+  await user.click(compare);
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "Inténtelo de nuevo",
+  );
+  expect(compare).toBeEnabled();
 });

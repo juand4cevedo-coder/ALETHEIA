@@ -82,7 +82,7 @@ def event_digest(event: ChainEvent) -> bytes:
     return hashlib.sha256(canonical(event)).digest()
 
 
-def verify(events: Iterable[ChainEvent]) -> ChainReport:
+def verify(events: Iterable[ChainEvent], *, expected_count: int | None = None) -> ChainReport:
     """Recorre la cadena en orden y devuelve el primer evento que no cierra, si hay alguno.
 
     Comprueba tres cosas en cada evento: que siga al anterior sin huecos, que traiga el hash
@@ -98,6 +98,8 @@ def verify(events: Iterable[ChainEvent]) -> ChainReport:
         if event.event_hash != event_digest(event):
             return ChainReport(checked - 1, event.seq, "event_hash", expected_prev)
         expected_prev = event.event_hash
+    if expected_count is not None and checked != expected_count:
+        return ChainReport(checked, min(checked, expected_count) + 1, "sequence", expected_prev)
     return ChainReport(checked, head_hash=expected_prev)
 
 

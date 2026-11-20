@@ -45,8 +45,7 @@ export function useSignOut() {
   const finish = (scope: SignOutScope) => {
     // Nada de la cuenta queda en la memoria de la página para quien use el equipo después.
     forgetSession();
-    void queryClient.cancelQueries();
-    queryClient.removeQueries();
+    queryClient.clear();
     void navigate(ROUTES.signIn, {
       replace: true,
       state: { signedOut: scope } satisfies SignedOutState,

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 import { Button } from "../../components/ui/Button.tsx";
 import { Field } from "../../components/ui/Field.tsx";
 import {
@@ -9,65 +9,18 @@ import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
 import styles from "./VerifierSection.module.css";
 
-type WorkerMessage =
-  | { type: "progress"; bytes: number }
-  | { type: "complete"; digest: string }
-  | { type: "error" };
+import { useFileHash } from "../verifier/useFileHash.ts";
 
 export function VerifierSection() {
   const id = useId();
   const [file, setFile] = useState<File | null>(null);
   const [expected, setExpected] = useState("");
-  const [hash, setHash] = useState<string | null>(null);
-  const [progress, setProgress] = useState<number | null>(null);
-  const [error, setError] = useState("");
+  const { digest: hash, progress, failed, reset, start } = useFileHash();
   const supported = typeof Worker !== "undefined";
-  const workerRef = useRef<Worker | null>(null);
   const busy = progress !== null;
   const normalized = expected.trim().toLowerCase();
   const validExpected = /^[a-f0-9]{64}$/.test(normalized);
   const matches = hash && validExpected ? hash === normalized : null;
-
-  useEffect(() => () => workerRef.current?.terminate(), []);
-
-  function verify() {
-    if (!file || busy || !supported) return;
-    setHash(null);
-    setError("");
-    const worker = new Worker(
-      new URL("../verifier/hash.worker.ts", import.meta.url),
-      { type: "module" },
-    );
-    workerRef.current = worker;
-    setProgress(0);
-    worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
-      const message = event.data;
-      if (message.type === "progress") {
-        setProgress(message.bytes);
-      } else if (message.type === "complete") {
-        setProgress(null);
-        setHash(message.digest);
-        worker.terminate();
-        workerRef.current = null;
-      } else {
-        setProgress(null);
-        setError(
-          "No pudimos leer el archivo. Vuelva a seleccionarlo e intente de nuevo.",
-        );
-        worker.terminate();
-        workerRef.current = null;
-      }
-    };
-    worker.onerror = () => {
-      setProgress(null);
-      setError(
-        "No pudimos leer el archivo. Vuelva a seleccionarlo e intente de nuevo.",
-      );
-      worker.terminate();
-      workerRef.current = null;
-    };
-    worker.postMessage({ file });
-  }
 
   return (
     <section
@@ -98,7 +51,7 @@ export function VerifierSection() {
             className={styles.form}
             onSubmit={(event) => {
               event.preventDefault();
-              verify();
+              if (file && !busy && supported) start(file);
             }}
             aria-label="Comprobar la huella de un archivo"
           >
@@ -116,8 +69,7 @@ export function VerifierSection() {
                 aria-describedby={id + "-help"}
                 onChange={(event) => {
                   setFile(event.target.files?.[0] ?? null);
-                  setHash(null);
-                  setError("");
+                  reset();
                 }}
               />
               <p id={id + "-help"}>
@@ -153,13 +105,12 @@ export function VerifierSection() {
               </p>
             )}
             {progress !== null && file && (
-              <p role="status">
-                Calculando: {Math.round((progress / file.size) * 100)} %
-              </p>
+              <p role="status">Calculando: {progress} %</p>
             )}
-            {error && (
+            {failed && (
               <p role="alert" className={styles.error}>
-                {error}
+                No pudimos leer el archivo. Vuelva a seleccionarlo e intente de
+                nuevo.
               </p>
             )}
             {hash && (

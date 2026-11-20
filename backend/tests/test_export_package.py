@@ -62,6 +62,7 @@ def test_zip_contiene_original_manifiesto_custodia_informe_y_sello_si_existe() -
         generated_at=DATE,
         evidences=[_file(stamped=True)],
         custody_events=[_event()],
+        custody_seq=1,
         report_pdf=b"%PDF-1.7\n%%EOF",
         anchor_token=b"anchor",
     )
@@ -95,6 +96,7 @@ def test_sello_pendiente_no_inventa_token() -> None:
         generated_at=DATE,
         evidences=[_file()],
         custody_events=[_event()],
+        custody_seq=1,
         report_pdf=b"%PDF-1.7\n%%EOF",
     )
     with zipfile.ZipFile(io.BytesIO(target.getvalue())) as archive:
@@ -114,6 +116,7 @@ def test_paquete_genera_informe_pdf_si_no_se_proporciona() -> None:
         generated_at=DATE,
         evidences=[_file()],
         custody_events=[_event()],
+        custody_seq=1,
     )
     with zipfile.ZipFile(io.BytesIO(target.getvalue())) as archive:
         report = PdfReader(io.BytesIO(archive.read("report.pdf")))
@@ -130,6 +133,7 @@ def test_nombres_originales_iguales_no_colisionan() -> None:
         generated_at=DATE,
         evidences=[_file(evidence_id=other_id), _file()],
         custody_events=[_event()],
+        custody_seq=1,
         report_pdf=b"%PDF-1.7\n%%EOF",
     )
     with zipfile.ZipFile(io.BytesIO(target.getvalue())) as archive:
@@ -148,6 +152,7 @@ def test_original_alterado_y_cadena_rota_rechazan_paquete() -> None:
             generated_at=DATE,
             evidences=[_file(b"abd")],
             custody_events=[_event()],
+            custody_seq=1,
             report_pdf=b"%PDF-1.7\n%%EOF",
         )
     with pytest.raises(PackageIntegrityError, match="cadena"):
@@ -158,6 +163,7 @@ def test_original_alterado_y_cadena_rota_rechazan_paquete() -> None:
             generated_at=DATE,
             evidences=[_file()],
             custody_events=[replace(_event(), event_hash=bytes(32))],
+            custody_seq=1,
             report_pdf=b"%PDF-1.7\n%%EOF",
         )
 
@@ -171,6 +177,7 @@ def test_no_acepta_tokens_vacios_ni_informe_que_no_sea_pdf() -> None:
             generated_at=DATE,
             evidences=[_file()],
             custody_events=[_event()],
+            custody_seq=1,
             report_pdf=b"%PDF-1.7\n%%EOF",
             anchor_token=b"",
         )
@@ -182,5 +189,21 @@ def test_no_acepta_tokens_vacios_ni_informe_que_no_sea_pdf() -> None:
             generated_at=DATE,
             evidences=[_file()],
             custody_events=[_event()],
+            custody_seq=1,
             report_pdf=b"documento",
         )
+
+
+def test_paquete_rechaza_prefijo_integro_si_falta_el_ultimo_evento() -> None:
+    target = io.BytesIO()
+    with pytest.raises(PackageIntegrityError, match="cadena"):
+        build_package(
+            target,
+            export_id=EXPORT_ID,
+            case_id=CASE_ID,
+            generated_at=DATE,
+            evidences=[],
+            custody_events=[_event()],
+            custody_seq=2,
+        )
+    assert target.getvalue() == b""

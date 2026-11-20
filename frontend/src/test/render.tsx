@@ -48,7 +48,7 @@ export async function renderRoute(path: InitialEntry) {
     },
     { timeout: 5000 },
   );
-  return { router, ...rendered };
+  return { queryClient, router, ...rendered };
 }
 
 /** Respuesta JSON como la que entrega la API. */
