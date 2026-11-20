@@ -9,7 +9,7 @@
 /* La lista que abre el sistema usa estos colores en Windows y Linux; en el celular es la del
    propio sistema. */
 .select option {
-  background: var(--surface-1);
+  background: var(--paper-raised);
   color: var(--text);
 }
 

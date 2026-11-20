@@ -7,7 +7,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: var(--control-height);
+  min-height: var(--touch-target);
   max-width: min(var(--measure-menu), 70vw);
   padding: 0 var(--space-2) 0 var(--space-1);
   border: 1px solid transparent;
@@ -24,27 +24,27 @@
 
 .trigger:hover,
 .trigger[aria-expanded="true"] {
-  border-color: var(--line);
-  background: var(--surface-2);
+  border-color: var(--ink-hairline);
+  background: var(--paper-sunken);
 }
 
 .seal {
   display: grid;
   flex: none;
   place-items: center;
-  width: var(--control-height-sm);
-  height: var(--control-height-sm);
-  border: 1px solid var(--line-control);
+  width: calc(var(--touch-target) - var(--space-3));
+  height: calc(var(--touch-target) - var(--space-3));
+  border: 1px solid var(--brass-400);
   border-radius: 50%;
-  background: var(--surface-2);
-  color: var(--text);
+  background: var(--ink-900);
+  color: var(--on-ink);
   font-size: var(--font-size-label);
   font-weight: 600;
   line-height: var(--line-height-label);
 }
 
 .who {
-  display: grid;
+  display: none;
   min-width: 0;
 }
 
@@ -76,7 +76,7 @@
   transform: rotate(180deg);
 }
 
-/* El menú flota sobre la página: es uno de los dos usos de la sombra del sistema. */
+/* El menú flota sobre la página: tono claro, sombra de dos capas y filete metálico arriba. */
 .panel {
   position: absolute;
   top: calc(100% + var(--space-2));
@@ -84,10 +84,9 @@
   z-index: 20;
   width: min(var(--menu-width), calc(100vw - 2 * var(--space-4)));
   padding: var(--space-2);
-  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background: var(--surface-1);
-  box-shadow: var(--shadow-float);
+  background: var(--paper-raised);
+  box-shadow: var(--brass-hairline), var(--shadow-float);
   animation: unfold var(--motion-fast) var(--ease-standard);
 }
 
@@ -103,7 +102,7 @@
 
 .account {
   padding: var(--space-3) var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--ink-hairline);
 }
 
 .panelName {
@@ -163,7 +162,7 @@
 }
 
 .action:hover:not(:disabled) {
-  background: var(--surface-2);
+  background: var(--paper-sunken);
 }
 
 .action:disabled {
@@ -196,13 +195,13 @@
   line-height: var(--line-height-support);
 }
 
-@media (max-width: 560px) {
+@media (min-width: 560px) {
   .who {
-    display: none;
+    display: grid;
   }
 
   .trigger {
-    padding-right: var(--space-2);
+    padding-right: var(--space-3);
   }
 }
 

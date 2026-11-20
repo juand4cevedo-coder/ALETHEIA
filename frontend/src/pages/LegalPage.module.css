@@ -9,13 +9,13 @@
   background:
     radial-gradient(
       ellipse at 50% 0%,
-      color-mix(in srgb, var(--accent-strong) 3%, transparent),
+      color-mix(in srgb, var(--ink-900) 3%, transparent),
       transparent 65%
     ),
-    var(--bg);
+    var(--paper);
   margin-top: calc(-1 * var(--header-height));
   padding: calc(var(--header-height) + var(--space-12)) 0 var(--space-12);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--ink-hairline);
 }
 
 .inner {
@@ -34,7 +34,7 @@
   padding: calc(var(--space-1) - 1px);
   border: 1px solid var(--line-control);
   border-radius: var(--radius-md);
-  background: var(--surface-1);
+  background: var(--paper-raised);
   list-style: none;
 }
 
@@ -63,7 +63,7 @@
 
 .switcherLink[aria-current="page"] {
   border-color: var(--line-control);
-  background: var(--surface-2);
+  background: var(--paper-sunken);
   color: var(--text);
 }
 
@@ -121,9 +121,9 @@
   display: grid;
   gap: var(--space-3);
   padding: var(--space-6);
-  border: 1px solid var(--line);
+  border: 1px solid var(--ink-hairline);
   border-radius: var(--radius-lg);
-  background: var(--surface-1);
+  background: var(--paper-raised);
 }
 
 .sealLabel {
@@ -183,7 +183,7 @@
 
 .keyPoint {
   padding-top: var(--space-4);
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink-hairline);
   color: var(--text-2);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
@@ -247,7 +247,7 @@
 .indexLink {
   display: block;
   padding: var(--space-1) var(--space-3);
-  border-left: 1px solid var(--line);
+  border-left: 1px solid var(--ink-hairline);
   color: var(--text-2);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
@@ -262,7 +262,7 @@
 }
 
 .indexLink[aria-current="location"] {
-  border-left-color: var(--accent);
+  border-left-color: var(--ink-500);
   color: var(--text);
   font-weight: 500;
 }
@@ -276,7 +276,7 @@
 .section {
   position: relative;
   padding: var(--space-12) 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink-hairline);
 }
 
 .section:first-child {
@@ -363,14 +363,14 @@
 }
 
 .prose a {
-  color: var(--accent-strong);
+  color: var(--ink-900);
   text-underline-offset: var(--underline-offset);
 }
 
 .prose code {
   padding: 0 var(--space-1);
   border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  background: var(--paper-sunken);
   color: var(--text);
   font-family: var(--font-mono);
   font-size: var(--font-size-mono);
@@ -396,7 +396,7 @@
 .prose th,
 .prose td {
   padding: var(--space-3);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--ink-hairline);
   text-align: left;
   vertical-align: top;
 }
@@ -412,13 +412,13 @@
 .contact {
   margin-top: var(--space-4);
   padding: var(--space-8);
-  border: 1px solid var(--line);
+  border: 1px solid var(--ink-hairline);
   border-radius: var(--radius-lg);
-  background: var(--surface-1);
+  background: var(--paper-raised);
 }
 
 .contact a {
-  color: var(--accent-strong);
+  color: var(--ink-900);
   text-underline-offset: var(--underline-offset);
 }
 
@@ -488,9 +488,9 @@
     max-height: none;
     overflow: visible;
     padding: var(--space-2) var(--space-4);
-    border: 1px solid var(--line);
+    border: 1px solid var(--ink-hairline);
     border-radius: var(--radius-lg);
-    background: var(--surface-1);
+    background: var(--paper-raised);
   }
 
   .indexTitle {
@@ -505,7 +505,7 @@
     padding: 0;
     border: 0;
     background: none;
-    color: var(--accent-strong);
+    color: var(--ink-900);
     font: inherit;
     font-size: var(--font-size-ui);
     font-weight: 500;
@@ -524,7 +524,7 @@
 
 @media (max-width: 640px) {
   .head {
-    background: var(--surface-2);
+    background: var(--paper-sunken);
     padding: calc(var(--header-height) + var(--space-8)) 0 var(--space-8);
   }
 
@@ -579,7 +579,7 @@
 
   .prose tr {
     padding: var(--space-3) 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--ink-hairline);
   }
 
   .prose td {
@@ -604,7 +604,7 @@
    el papel; aquí solo se acomoda la página. */
 @media print {
   .head {
-    background: var(--surface-2);
+    background: var(--paper-sunken);
     margin-top: 0;
     padding: 0 0 var(--space-6);
     border-color: var(--line-control);

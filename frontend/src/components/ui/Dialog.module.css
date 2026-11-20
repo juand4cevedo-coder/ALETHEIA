@@ -1,12 +1,12 @@
-/* Diálogo modal (CMP-UI-005): un panel en --surface-1 que flota sobre la página velada. Es uno
+/* Diálogo modal (CMP-UI-005): un panel en --paper-raised que flota sobre la página velada. Es uno
    de los dos casos que llevan la sombra del sistema; el otro son los menús. */
 .dialog {
   width: min(var(--panel-width), calc(100vw - 2 * var(--space-4)));
   padding: 0;
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--surface-1);
-  box-shadow: var(--shadow-float);
+  background: var(--paper-raised);
+  box-shadow: var(--brass-hairline), var(--shadow-float);
   color: var(--text);
 }
 
@@ -16,7 +16,7 @@
 }
 
 .dialog::backdrop {
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  background: color-mix(in srgb, var(--ink-900) 60%, transparent);
 }
 
 @keyframes appear {
@@ -40,9 +40,8 @@
   width: var(--control-height);
   height: var(--control-height);
   margin-bottom: var(--space-1);
-  border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background: var(--surface-2);
+  background: var(--paper-sunken);
   color: var(--text);
 }
 

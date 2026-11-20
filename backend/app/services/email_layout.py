@@ -9,17 +9,17 @@ import html
 from typing import Final
 
 # La misma paleta de lectura y acción que utiliza el sitio.
-_PAGE: Final = "#000000"
-_CARD: Final = "#0E0F11"
-_LINE: Final = "#252629"
-_TEXT: Final = "#F0F0F0"
-_TEXT_2: Final = "#A1A4A5"
-_MUTED: Final = "#999DA3"
-_ACTION: Final = "#F0F0F0"
-_ACTION_TEXT: Final = "#08090B"
+_PAGE: Final = "#F4F1EA"
+_CARD: Final = "#FFFFFF"
+_LINE: Final = "#E9E4D8"
+_TEXT: Final = "#111820"
+_TEXT_2: Final = "#49545F"
+_MUTED: Final = "#5C656F"
+_ACTION: Final = "#071423"
+_ACTION_TEXT: Final = "#F4F1EA"
 _FONT: Final = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
 
-# El logo se sirve desde una ruta pública estable del sitio: un PNG de 64 px que se muestra a
+# El logo se sirve desde una ruta pública estable del sitio: un PNG de 128 px que se muestra a
 # 32 px, porque muchos clientes de correo no dibujan SVG.
 LOGO_PATH: Final = "/email/logo-claro.png"
 _LOGO_SIZE: Final = 32

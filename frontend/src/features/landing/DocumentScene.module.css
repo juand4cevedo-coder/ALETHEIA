@@ -1,208 +1,123 @@
-.visual {
+.scene {
   position: relative;
-  width: 112%;
-  height: 490px;
-  margin-left: -2%;
   display: grid;
   place-items: center;
-  overflow: hidden;
   isolation: isolate;
+  min-width: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--ink-900);
 }
 
-.stack {
-  position: relative;
-  width: 300px;
-  height: 380px;
-}
-
-.cardBack,
-.cardMid,
-.card {
+.field {
   position: absolute;
   inset: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 23px,
+      rgb(244 241 234 / 4%) 23px 24px
+    ),
+    radial-gradient(ellipse at 25% 12%, var(--ink-700), transparent 72%);
 }
 
-/* Dos expedientes detrás del principal, cada uno un paso más oscuro y más cerca del borde. */
-.cardBack {
-  background: var(--surface-0);
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--bg) 55%, transparent);
-  transform: rotate(-9deg) translate(-22px, 14px);
-  animation: cardBackIn var(--motion-enter) var(--ease-out) both;
-}
-
-.cardMid {
-  background: var(--surface-1b);
-  box-shadow: 0 14px 32px color-mix(in srgb, var(--bg) 60%, transparent);
-  transform: rotate(5deg) translate(14px, 6px);
-  animation: cardMidIn var(--motion-enter) var(--ease-out) 90ms both;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: var(--space-8) var(--space-6);
-  background: linear-gradient(165deg, var(--surface-1), var(--bg));
-  box-shadow: var(--shadow-float);
-  transform: rotate(-1.5deg);
-  animation: cardFrontIn var(--motion-enter) var(--ease-out) 160ms both;
-}
-
-/* Esquina doblada: el detalle de físico que separa un expediente de un rectángulo plano. */
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(
-    135deg,
-    transparent 50%,
-    color-mix(in srgb, var(--accent-strong) 7%, transparent) 50%
-  );
-  border-radius: 0 var(--radius-lg) 0 0;
-}
-
-.lines {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.lines span {
-  display: block;
-  height: 10px;
-  border-radius: var(--radius-sm);
-  background: var(--line);
-}
-
-.lineTitle {
-  width: 58%;
-  height: 12px;
-  background: var(--line-control);
-}
-
-.lines span:nth-child(2) {
-  width: 92%;
-}
-.lines span:nth-child(3) {
-  width: 84%;
-}
-
-.lineShort {
-  width: 48% !important;
-}
-
-.hash {
-  margin: 0;
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--line);
-  font: 12px var(--font-mono);
-  letter-spacing: 0.02em;
-  color: var(--text-3);
-}
-
-/* El sello, apenas girado como si acabara de caer sobre el expediente. */
-.seal {
-  position: absolute;
-  right: -22px;
-  bottom: -26px;
-  z-index: 1;
-  width: 112px;
-  height: 112px;
+.plate {
+  position: relative;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background: var(--surface-1);
-  box-shadow: var(--shadow-float);
-  color: var(--ok);
+  width: 64%;
+  aspect-ratio: 7 / 6;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--brass-400) 48%, transparent);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--ink-700) 80%, var(--ink-900)),
+    var(--ink-900) 64%
+  );
+  box-shadow:
+    inset 0 0 0 5px var(--ink-900),
+    0 24px 50px rgb(0 0 0 / 42%);
   transform: rotate(-9deg);
-  animation: sealStamp 520ms cubic-bezier(0.34, 1.56, 0.64, 1) 420ms both;
+  animation: drift 4.8s var(--ease-standard) infinite alternate;
 }
 
-/* El anillo de tinta que se expande una sola vez cuando el sello llega, no un halo fijo. */
-.seal::after {
-  content: "";
+.plate::before,
+.plate::after {
   position: absolute;
-  inset: -14px;
+  inset: 10px;
+  border: 1px solid rgb(244 241 234 / 11%);
+  content: "";
+  pointer-events: none;
+}
+
+.plate::after {
+  inset: 19px;
+  border: 0;
+  background:
+    linear-gradient(var(--brass-400), var(--brass-400)) top left / 14px 1px,
+    linear-gradient(var(--brass-400), var(--brass-400)) top left / 1px 14px,
+    linear-gradient(var(--brass-400), var(--brass-400)) bottom right / 14px 1px,
+    linear-gradient(var(--brass-400), var(--brass-400)) bottom right / 1px 14px;
+  background-repeat: no-repeat;
+}
+
+.engraving {
+  display: grid;
+  place-items: center;
+  width: 54%;
+  aspect-ratio: 1;
+  border: 1px solid rgb(244 241 234 / 12%);
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--ok) 55%, transparent);
-  animation: inkBloom 640ms var(--ease-out) 760ms both;
+  color: var(--brass-400);
+  box-shadow: 0 0 0 8px rgb(244 241 234 / 3%);
 }
 
-@keyframes cardBackIn {
-  from {
-    opacity: 0;
-    transform: rotate(-9deg) translate(-22px, 34px);
-  }
+.engraving svg {
+  width: 60%;
+  height: auto;
+  stroke-width: 0.8;
 }
 
-@keyframes cardMidIn {
-  from {
-    opacity: 0;
-    transform: rotate(5deg) translate(14px, 26px);
-  }
+.scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    transparent 40%,
+    rgb(195 165 114 / 12%) 48%,
+    rgb(195 165 114 / 72%) 50%,
+    rgb(195 165 114 / 16%) 52%,
+    transparent 60%
+  );
+  animation: scan 2.4s var(--ease-standard) infinite alternate;
 }
 
-@keyframes cardFrontIn {
+@keyframes drift {
   from {
-    opacity: 0;
-    transform: rotate(-1.5deg) translateY(22px);
-  }
-}
-
-@keyframes sealStamp {
-  from {
-    opacity: 0;
-    transform: rotate(-32deg) scale(1.5) translateY(-10px);
-  }
-}
-
-@keyframes inkBloom {
-  from {
-    opacity: 0.9;
-    transform: scale(0.7);
+    transform: translateY(2%) rotate(-9deg);
   }
   to {
-    opacity: 0;
-    transform: scale(1.5);
+    transform: translateY(-3%) rotate(-4deg);
   }
 }
 
-@media (max-width: 760px) {
-  .visual {
-    width: 100%;
-    height: 310px;
-    margin: 0;
+@keyframes scan {
+  from {
+    transform: translateY(-42%);
   }
-  .stack {
-    width: 216px;
-    height: 274px;
-  }
-  .card {
-    padding: var(--space-6) var(--space-4);
-  }
-  .seal {
-    right: -16px;
-    bottom: -18px;
-    width: 84px;
-    height: 84px;
-  }
-  .seal svg {
-    width: 48px;
-    height: 48px;
+  to {
+    transform: translateY(42%);
   }
 }
 
-/* Lo decorativo se detiene por completo cuando el sistema pide menos movimiento. */
 @media (prefers-reduced-motion: reduce) {
-  .cardBack,
-  .cardMid,
-  .card,
-  .seal,
-  .seal::after {
+  .plate {
     animation: none;
+  }
+
+  .scan {
+    display: none;
   }
 }

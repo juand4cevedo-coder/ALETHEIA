@@ -1,7 +1,10 @@
-/* Auditoría de seguridad (UI-021): la tabla de eventos vive en un panel, con el mismo borde y
-   superficie que el resto de la plataforma. En el celular cada fila pasa a una tarjeta apilada,
-   como las listas de miembros. */
+/* Auditoría de seguridad (UI-021): la tabla de eventos vive en el panel compartido. Cuando el
+   panel no da texto suficiente a la persona, cada evento pasa a una tarjeta apilada, como las
+   filas de miembros. */
 .screen {
+  /* El corte de tarjetas se mide contra el ancho de la pantalla, no contra el de la ventana: la
+     barra lateral ocupa 240 px y la tabla de seis columnas no cabe en lo que queda. */
+  container-type: inline-size;
   display: grid;
   gap: var(--space-6);
   min-width: 0;
@@ -33,31 +36,62 @@
   overflow-x: auto;
 }
 
+/* Anchos repartidos por porcentaje: la persona y el objeto reciben la mayor parte, y la fecha
+   baja de renglón entre el día y la hora en vez de ensancharse. organizacionCss.test.ts deriva de
+   estas cifras el texto que le queda a la persona cuando la tabla aparece. */
 .table {
   width: 100%;
-  min-width: 720px;
+  table-layout: fixed;
   border-collapse: collapse;
   text-align: left;
   font-size: var(--font-size-ui);
 }
 
+.table thead th:nth-child(1) {
+  width: 14%;
+}
+
+.table thead th:nth-child(2) {
+  width: 13%;
+}
+
+.table thead th:nth-child(3) {
+  width: 19%;
+}
+
+.table thead th:nth-child(4) {
+  width: 19%;
+}
+
+.table thead th:nth-child(5) {
+  width: 16%;
+}
+
+.table thead th:nth-child(6) {
+  width: 19%;
+}
+
 .table th,
 .table td {
-  padding: var(--space-3) var(--space-4);
-  border-top: 1px solid var(--line);
+  padding: var(--space-3);
+  border-top: 1px solid var(--ink-hairline);
   vertical-align: middle;
+  /* Solo como último recurso: un agente de navegador es una sola cadena larga. */
+  overflow-wrap: break-word;
 }
 
 .table thead th {
   padding-top: 0;
   padding-bottom: var(--space-3);
   border-top: 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--ink-hairline);
   color: var(--text-2);
   font-size: var(--font-size-label);
   font-weight: 500;
   letter-spacing: var(--tracking-subtitle);
   text-transform: uppercase;
+  /* El encabezado nunca se parte: con el corte de palabra de las celdas, "Dirección IP" bajaría
+     de línea a la mitad de la palabra. */
   white-space: nowrap;
 }
 
@@ -69,7 +103,6 @@
 .table tbody th {
   color: var(--text);
   font-weight: 500;
-  white-space: nowrap;
 }
 
 .table tbody td {
@@ -88,7 +121,7 @@
   padding-top: var(--space-2);
 }
 
-@media (max-width: 720px) {
+@container (max-width: 970px) {
   .table,
   .table thead,
   .table tbody,
@@ -102,22 +135,24 @@
     display: none;
   }
 
-  .table tbody tr {
+  .table tbody {
     display: grid;
-    gap: var(--space-1);
-    padding: var(--space-3) 0;
-    border-top: 1px solid var(--line);
+    gap: var(--space-3);
   }
 
-  .table tbody tr:first-child {
-    border-top: 0;
+  .table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: var(--space-3) var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--paper);
   }
 
   .table tbody th,
   .table tbody td {
     padding: 0;
     border-top: 0;
-    white-space: normal;
   }
 
   .table tbody td::before,

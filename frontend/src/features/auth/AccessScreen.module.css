@@ -3,6 +3,7 @@
    ninguno. */
 .screen {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
   animation: screenIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -22,12 +23,13 @@
 
 .intro {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
   text-align: center;
 }
 
 .title {
-  font-family: var(--font-sans);
+  font-family: var(--font-editorial);
   font-size: 28px;
   font-weight: 600;
   letter-spacing: var(--tracking-title);
@@ -46,11 +48,13 @@
 
 .form {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
 }
 
 .fields {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
   min-width: 0;
   margin: 0;
@@ -80,12 +84,13 @@
 
 .alert {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
   justify-items: start;
   padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--err) 40%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--err) 40%, var(--ink-hairline));
   border-radius: var(--radius-md);
-  background: var(--surface-2);
+  background: var(--paper-sunken);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
 }
@@ -101,7 +106,7 @@
   align-items: center;
   min-height: var(--control-height-sm);
   margin-top: calc(-1 * var(--space-2));
-  color: var(--accent-strong);
+  color: var(--ink-900);
   font-size: var(--font-size-support);
   font-weight: 500;
   text-decoration: none;
@@ -117,6 +122,7 @@
    el color del texto y no en verde. */
 .notice {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: start;
   gap: var(--space-3);
 }

@@ -1,7 +1,7 @@
 // Módulo solo de íconos generados por fábricas: la recarga en caliente no aplica.
 /* oxlint-disable react/only-export-components */
-// Íconos de la interfaz: única puerta de entrada. Phosphor en peso regular más los cuatro
-// propios (huella, sello, cadena y paquete), dibujados con el mismo trazo. Ningún archivo
+// Íconos de la interfaz: única puerta de entrada. Phosphor en peso light más los tres
+// propios (sello, cadena y paquete), dibujados con el mismo trazo. Ningún archivo
 // importa íconos de otra parte. Cada ícono de Phosphor vive en su archivo (carpeta icons): una
 // pantalla descarga solo los que dibuja, y la landing no carga los del espacio de trabajo.
 import { crearPropio } from "./icons/fabrica.tsx";
@@ -9,6 +9,7 @@ import { crearPropio } from "./icons/fabrica.tsx";
 export type { IconComponent, IconProps } from "./icons/fabrica.tsx";
 
 export { FlechaDerechaIcon } from "./icons/FlechaDerecha.ts";
+export { FlechaCircularIcon } from "./icons/FlechaCircular.ts";
 export { FlechaDiagonalIcon } from "./icons/FlechaDiagonal.ts";
 export { VerificadoIcon } from "./icons/Verificado.ts";
 export { EdificioIcon } from "./icons/Edificio.ts";
@@ -58,20 +59,9 @@ export { UsuarioAgregarIcon } from "./icons/UsuarioAgregar.ts";
 export { UsuarioIcon } from "./icons/Usuario.ts";
 export { UsuariosIcon } from "./icons/Usuarios.ts";
 export { CerrarIcon } from "./icons/Cerrar.ts";
+export { HuellaIcon } from "./icons/Huella.ts";
 
 // Íconos propios: ver crearPropio.
-
-/** Huella de un archivo: crestas concéntricas con 3 px entre ejes, abiertas por abajo. */
-export const HuellaIcon = /* @__PURE__ */ crearPropio(
-  "HuellaIcon",
-  <>
-    <path d="M3 16v-4a9 9 0 0 1 18 0v1" />
-    <path d="M21 16.5v2.5" />
-    <path d="M6 20v-8a6 6 0 0 1 12 0v5" />
-    <path d="M9 21v-9a3 3 0 0 1 6 0v6" />
-    <path d="M12 14v7" />
-  </>,
-);
 
 /** Sello de tiempo: borde dentado y las manecillas de un reloj. */
 export const SelloIcon = /* @__PURE__ */ crearPropio(

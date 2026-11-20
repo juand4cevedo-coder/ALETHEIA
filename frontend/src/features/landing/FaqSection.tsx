@@ -44,11 +44,7 @@ const QUESTIONS = [
 // encabezado queda fijo (sticky) mientras se leen las preguntas.
 export function FaqSection() {
   return (
-    <section
-      data-reveal
-      className={section.section}
-      aria-labelledby="titulo-preguntas"
-    >
+    <section className={section.section} aria-labelledby="titulo-preguntas">
       <div className={`${section.inner} ${styles.layout}`}>
         <SectionHeading
           id="titulo-preguntas"

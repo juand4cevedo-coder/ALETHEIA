@@ -58,6 +58,7 @@ export function AccountMenu({ me }: { me: Me }) {
         ref={triggerRef}
         type="button"
         className={styles.trigger}
+        aria-label={`Opciones de la cuenta de ${me.full_name}`}
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((current) => !current)}
@@ -76,7 +77,6 @@ export function AccountMenu({ me }: { me: Me }) {
           size={16}
           aria-hidden="true"
         />
-        <span className="visually-hidden">Opciones de la cuenta</span>
       </button>
 
       <div id={panelId} className={styles.panel} hidden={!open}>

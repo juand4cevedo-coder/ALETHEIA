@@ -34,7 +34,7 @@
 .record {
   display: grid;
   margin: 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--ink-hairline);
 }
 
 .row {
@@ -42,7 +42,7 @@
   grid-template-columns: var(--label-column) minmax(0, 1fr);
   gap: var(--space-4);
   padding: var(--space-3) 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink-hairline);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
 }

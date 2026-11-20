@@ -29,13 +29,13 @@
   gap: var(--space-4);
   align-items: baseline;
   padding: var(--space-3) 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink-hairline);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
 }
 
 .field:last-child {
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--ink-hairline);
 }
 
 .field dt {

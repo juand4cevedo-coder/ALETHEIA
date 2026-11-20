@@ -1,5 +1,5 @@
-/* Pantalla vacía: qué falta y cuál es el primer paso. El panel lateral es un panel más, sin luz
-   ni sombra: la profundidad la dan la superficie y la línea. */
+/* Pantalla vacía: qué falta y cuál es el primer paso. El panel lateral lleva la misma tarjeta
+   del resto de la aplicación. */
 .empty {
   display: grid;
   gap: var(--space-12);
@@ -36,9 +36,10 @@
 
 .aside {
   padding: var(--space-6);
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--surface-1);
+  background: var(--paper-raised);
+  box-shadow: var(--brass-hairline), var(--shadow-card);
 }
 
 @media (width <= 900px) {

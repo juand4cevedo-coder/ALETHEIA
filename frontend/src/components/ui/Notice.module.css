@@ -15,9 +15,9 @@
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--line);
+  border: 1px solid var(--ink-hairline);
   border-radius: var(--radius-md);
-  background: var(--surface-1);
+  background: var(--paper-raised);
   color: var(--text);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
@@ -48,7 +48,7 @@
 .notice[data-tone="error"] {
   --tone: var(--err);
 
-  border-color: color-mix(in srgb, var(--err) 40%, var(--line));
+  border-color: color-mix(in srgb, var(--err) 55%, var(--paper-raised));
 }
 
 .notice > svg {
@@ -66,5 +66,5 @@
 }
 
 .content :where(a) {
-  color: var(--accent-strong);
+  color: var(--ink-500);
 }

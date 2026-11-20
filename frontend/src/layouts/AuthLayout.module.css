@@ -1,8 +1,18 @@
 .shell {
   min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg) url("/media/auth-1920.webp") center / cover fixed;
+  padding-block-end: var(--cookie-bar-height, 0px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr auto;
+  background: var(--paper);
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  height: clamp(104px, 25vw, 200px);
+  object-fit: cover;
+  object-position: center 48%;
 }
 .skipLink {
   position: absolute;
@@ -10,7 +20,7 @@
   left: 8px;
   z-index: 30;
   transform: translateY(-200%);
-  background: var(--surface-2);
+  background: var(--paper-sunken);
   color: var(--text);
   padding: 8px 16px;
 }
@@ -25,10 +35,11 @@
   align-items: center;
   gap: 8px;
   color: var(--text-2);
-  font-size: 13px;
-  font-weight: 650;
+  font-family: var(--font-editorial);
+  font-size: 16px;
+  font-weight: 600;
   text-decoration: none;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.01em;
 }
 .brand img {
   width: 24px;
@@ -52,9 +63,9 @@
   width: 48px;
   height: 48px;
   padding: 9px;
-  border: 1px solid color-mix(in srgb, var(--accent-strong) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink-900) 9%, transparent);
   border-radius: 12px;
-  background: color-mix(in srgb, var(--bg) 53%, transparent);
+  background: color-mix(in srgb, var(--paper) 53%, transparent);
   animation: symbolIn 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
@@ -106,7 +117,7 @@
 .footerButton {
   color: var(--text-2);
   text-decoration: none;
-  min-height: 36px;
+  min-height: var(--touch-target);
   display: inline-flex;
   align-items: center;
 }
@@ -121,23 +132,41 @@
 .footerButton:hover {
   color: var(--text);
 }
-@media (max-width: 600px) {
+@media (min-width: 900px) {
   .shell {
-    background-image: url("/media/auth-1024.webp");
-    background-attachment: scroll;
+    grid-template-columns: minmax(0, 44fr) minmax(0, 56fr);
+    grid-template-rows: auto 1fr auto;
   }
+
+  .photo {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .header,
+  .main,
+  .footer {
+    grid-column: 2;
+  }
+
   .header {
-    padding: 20px 24px;
+    grid-row: 1;
+  }
+  .footer {
+    grid-row: 3;
   }
   .main {
-    padding-top: 32px;
-    padding-bottom: 48px;
+    grid-row: 2;
+    padding-top: var(--space-8);
   }
 }
 @media print {
   .shell {
     background: none;
   }
+  .photo,
   .header,
   .footer {
     display: none;

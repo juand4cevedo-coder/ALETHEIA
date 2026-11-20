@@ -177,7 +177,6 @@ export function SignUpPage() {
             ¿Ya tiene cuenta? <Link to={ROUTES.signIn}>Ingresar</Link>
           </p>
         </header>
-        {!sentTo && <SocialAccess />}
 
         {sentTo ? (
           <section className={styles.notice} aria-labelledby="titulo-aviso">
@@ -306,6 +305,7 @@ export function SignUpPage() {
             </div>
           </form>
         )}
+        {!sentTo && <SocialAccess />}
       </div>
     </>
   );

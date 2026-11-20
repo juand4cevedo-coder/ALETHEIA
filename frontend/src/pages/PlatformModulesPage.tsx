@@ -101,24 +101,44 @@ export function PlatformBillingPage() {
                 description="Este panel refleja los registros actuales. No emite facturas ni cobra pagos."
               >
                 <div className={styles.tableScroll}>
-                  <table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th scope="col">Plan</th>
-                        <th scope="col">Mensual</th>
-                        <th scope="col">Anual</th>
-                        <th scope="col">Usuarios incluidos</th>
-                        <th scope="col">En precios</th>
+                  <table className={styles.table} role="table">
+                    <thead role="rowgroup">
+                      <tr role="row">
+                        <th scope="col" role="columnheader">
+                          Plan
+                        </th>
+                        <th scope="col" role="columnheader">
+                          Mensual
+                        </th>
+                        <th scope="col" role="columnheader">
+                          Anual
+                        </th>
+                        <th scope="col" role="columnheader">
+                          Usuarios incluidos
+                        </th>
+                        <th scope="col" role="columnheader">
+                          En precios
+                        </th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody role="rowgroup">
                       {billing.data.plans.map((plan) => (
-                        <tr key={plan.code}>
-                          <th scope="row">{plan.name}</th>
-                          <td>{money(plan.monthly_price_cop)}</td>
-                          <td>{money(plan.annual_price_cop)}</td>
-                          <td>{plan.included_users}</td>
-                          <td>{plan.is_public ? "Sí" : "Por cotización"}</td>
+                        <tr role="row" key={plan.code}>
+                          <th scope="row" role="rowheader">
+                            {plan.name}
+                          </th>
+                          <td role="cell" data-label="Mensual">
+                            {money(plan.monthly_price_cop)}
+                          </td>
+                          <td role="cell" data-label="Anual">
+                            {money(plan.annual_price_cop)}
+                          </td>
+                          <td role="cell" data-label="Usuarios incluidos">
+                            {plan.included_users}
+                          </td>
+                          <td role="cell" data-label="En precios">
+                            {plan.is_public ? "Sí" : "Por cotización"}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -503,29 +523,47 @@ export function PlatformAuditPage() {
           )}
           {audit.data && audit.data.items.length > 0 && (
             <div className={styles.tableScroll}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th scope="col">Fecha</th>
-                    <th scope="col">Acción</th>
-                    <th scope="col">Persona</th>
-                    <th scope="col">Organización</th>
-                    <th scope="col">Objeto</th>
+              <table className={styles.table} role="table">
+                <thead role="rowgroup">
+                  <tr role="row">
+                    <th scope="col" role="columnheader">
+                      Fecha
+                    </th>
+                    <th scope="col" role="columnheader">
+                      Acción
+                    </th>
+                    <th scope="col" role="columnheader">
+                      Persona
+                    </th>
+                    <th scope="col" role="columnheader">
+                      Organización
+                    </th>
+                    <th scope="col" role="columnheader">
+                      Objeto
+                    </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody role="rowgroup">
                   {audit.data.items.map((event) => (
-                    <tr key={event.id}>
-                      <td>
+                    <tr role="row" key={event.id}>
+                      <td role="cell" data-label="Fecha">
                         <DateText value={event.created_at} />
                       </td>
-                      <th scope="row">
+                      <th scope="row" role="rowheader">
                         {ACTION_LABELS[event.action] ??
                           event.action.replaceAll("_", " ")}
                       </th>
-                      <td>{event.actor_name ?? "Sistema"}</td>
-                      <td>{event.organization_name ?? "Plataforma"}</td>
-                      <td className={styles.identifier}>
+                      <td role="cell" data-label="Persona">
+                        {event.actor_name ?? "Sistema"}
+                      </td>
+                      <td role="cell" data-label="Organización">
+                        {event.organization_name ?? "Plataforma"}
+                      </td>
+                      <td
+                        role="cell"
+                        data-label="Objeto"
+                        className={styles.identifier}
+                      >
                         {event.target_id ?? "Sin objeto"}
                       </td>
                     </tr>
