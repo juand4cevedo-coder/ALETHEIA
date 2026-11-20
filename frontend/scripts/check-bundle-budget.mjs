@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 
-// Presupuesto de la entrada pública, en bytes gzip (1 kB = 1000 bytes).
+// Presupuesto de la entrada pública, en bytes gzip (1 kB = 1000 bytes). El techo de CSS subió de
+// 30 kB a 36 kB con el rediseño del 19 de noviembre.
 // Se cuentan una sola vez los módulos compartidos. Las rutas diferidas no forman
 // parte de este límite; sus descargas se miden aparte en el navegador.
 const dist = new URL("../dist/", import.meta.url);
@@ -31,7 +32,7 @@ visit("index.html");
 let exceeded = false;
 for (const [label, files, limit] of [
   ["JavaScript inicial", javascript, 120_000],
-  ["CSS inicial", styles, 30_000],
+  ["CSS inicial", styles, 36_000],
 ]) {
   let total = 0;
   for (const file of files) {

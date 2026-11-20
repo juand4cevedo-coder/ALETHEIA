@@ -1,4 +1,10 @@
-import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import {
+  type KeyboardEvent,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Link } from "react-router";
 
 import { buttonClassName } from "../../components/ui/buttonStyles.ts";
@@ -34,12 +40,33 @@ export function CookiePanel({
     openedByVisitor ? "settings" : "summary",
   );
   const [analytics, setAnalytics] = useState(choice?.analytics ?? false);
+  const panelRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
   const movedByVisitor = useRef(openedByVisitor);
 
   useEffect(() => {
     // El foco entra al panel cuando el visitante lo pidió: al abrirlo o al pasar a configurar.
     if (movedByVisitor.current) titleRef.current?.focus();
+  }, [view]);
+
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+    const property = "--cookie-bar-height";
+    const root = document.documentElement.style;
+    const measure = () => root.setProperty(property, `${panel.offsetHeight}px`);
+    measure();
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(measure);
+    observer?.observe(panel);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", measure);
+      root.removeProperty(property);
+    };
   }, [view]);
 
   function decide(acceptAnalytics: boolean) {
@@ -69,6 +96,7 @@ export function CookiePanel({
 
   return (
     <section
+      ref={panelRef}
       className={styles.panel}
       aria-labelledby="cookies-titulo"
       onKeyDown={handleKeyDown}

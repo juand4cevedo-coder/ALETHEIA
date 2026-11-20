@@ -8,14 +8,14 @@
 .step {
   text-align: center;
   padding: 16px 48px 24px;
-  border-right: 1px solid var(--line);
+  border-right: 1px solid var(--ink-hairline);
 }
 .step:last-child {
   border: 0;
 }
 .marker {
   display: block;
-  color: var(--bronze);
+  color: var(--brass-600);
   font-family: var(--font-editorial);
   font-size: 40px;
   margin-bottom: 24px;
@@ -45,7 +45,7 @@
   .step {
     padding: 0 16px 32px;
     border-right: 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--ink-hairline);
   }
   .marker {
     margin-bottom: 12px;

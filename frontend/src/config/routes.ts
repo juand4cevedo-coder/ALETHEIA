@@ -1,4 +1,4 @@
-// Rutas públicas del sitio, según el mapa de navegación del documento de Diseño (DIA-IA-01).
+// Rutas públicas del sitio, según el mapa de navegación del documento de Diseño (DIA-INF-01).
 // Los enlaces las toman de aquí para que un cambio de ruta se haga en un solo lugar.
 export const ROUTES = {
   home: "/",

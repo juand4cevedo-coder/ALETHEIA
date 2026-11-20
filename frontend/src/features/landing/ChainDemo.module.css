@@ -72,9 +72,9 @@
   place-items: center;
   width: var(--control-height-sm);
   height: var(--control-height-sm);
-  border: 1px solid var(--line);
+  border: 1px solid var(--ink-hairline);
   border-radius: var(--radius-pill);
-  background: var(--surface-2);
+  background: var(--paper-sunken);
   color: var(--text-2);
 }
 
@@ -169,7 +169,7 @@
   justify-content: space-between;
   gap: var(--space-3);
   padding-top: var(--space-4);
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink-hairline);
 }
 
 /* Sin verde: los datos de la demostración no los comprobó el sistema en esta página. */

@@ -1,4 +1,4 @@
-// Phosphor Icons, peso regular, versión 2.1.10. Licencia MIT: ../LICENSE-phosphor.
+// Phosphor Icons, peso light, versión 2.1.10. Licencia MIT: ../LICENSE-phosphor.
 import { crearIcono } from "./fabrica.tsx";
 
 export const ArchivoComprimidoIcon = /* @__PURE__ */ crearIcono(

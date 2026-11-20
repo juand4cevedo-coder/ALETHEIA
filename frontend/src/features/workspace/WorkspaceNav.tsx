@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { NavLink } from "react-router";
+import { useEffect, useRef } from "react";
+import { NavLink, useLocation } from "react-router";
 
 import type { Me } from "../../api/generated";
 import { listCasesOptions } from "../../api/generated/@tanstack/react-query.gen.ts";
@@ -137,9 +138,27 @@ export function WorkspaceNav({ me }: { me: Me }) {
   })).filter((group) => group.items.length > 0);
   // Sin organización no hay casos que contar.
   const openCases = useOpenCases(me.organization != null && !me.platform_admin);
+  const navRef = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
+
+  // En celular la franja se desliza de lado: al montar y al cambiar de pantalla se centra el
+  // enlace activo, para no perder la señal de dónde está la persona. Se asigna el scrollLeft de
+  // la franja y nada más: scrollIntoView movería también al documento y pisaría la posición que
+  // ScrollRestoration acaba de restaurar. No hace nada sin enlace activo ni si la franja cabe
+  // entera (columna lateral de escritorio).
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav || nav.scrollWidth <= nav.clientWidth) return;
+    const active = nav.querySelector("[aria-current=page]");
+    if (!active) return;
+    const navBox = nav.getBoundingClientRect();
+    const box = active.getBoundingClientRect();
+    nav.scrollLeft +=
+      box.left - navBox.left - (nav.clientWidth - box.width) / 2;
+  }, [pathname]);
 
   return (
-    <nav className={styles.nav} aria-label="Espacio de trabajo">
+    <nav ref={navRef} className={styles.nav} aria-label="Espacio de trabajo">
       <div className={styles.groups}>
         {groups.map((group) => (
           <section className={styles.group} key={group.label}>

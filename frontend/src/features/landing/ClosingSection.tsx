@@ -1,3 +1,4 @@
+import { Foto } from "../../components/ui/Foto.tsx";
 import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../../config/routes.ts";
 import { SIGN_UP_LABEL } from "../../config/site.ts";
@@ -14,10 +15,10 @@ export function ClosingSection() {
 
   return (
     <section
-      data-reveal
-      className={section.section}
+      className={`${section.section} ${styles.section} on-ink`}
       aria-labelledby="titulo-cierre"
     >
+      <Foto nombre="cierre" alt="" className={styles.photo} />
       <div className={`${section.inner} ${styles.layout}`}>
         <div className={styles.copy}>
           <h2 id="titulo-cierre" className={section.title}>

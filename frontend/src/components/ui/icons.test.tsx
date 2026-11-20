@@ -46,22 +46,28 @@ describe("Íconos de la interfaz", () => {
     expect(nombrado?.querySelector("title")).toHaveTextContent("Cargando");
   });
 
+  it("HuellaIcon es una silueta de Phosphor en peso light, no un ícono propio", () => {
+    const { container } = render(<HuellaIcon />);
+    const svg = container.querySelector("svg");
+    expect(svg).toHaveAttribute("viewBox", "0 0 256 256");
+    expect(svg).toHaveAttribute("fill", "currentColor");
+    expect(svg).not.toHaveAttribute("stroke");
+  });
+
   it.each([
-    ["HuellaIcon", HuellaIcon],
     ["SelloIcon", SelloIcon],
     ["CadenaIcon", CadenaIcon],
     ["PaqueteIcon", PaqueteIcon],
-  ])("%s usa el trazo común de 1,5 y hereda el color", (_nombre, Icono) => {
+  ])("%s usa el trazo común de 1,125 y hereda el color", (_nombre, Icono) => {
     const { container } = render(<Icono />);
     const svg = container.querySelector("svg");
     expect(svg).toHaveAttribute("viewBox", "0 0 24 24");
     expect(svg).toHaveAttribute("stroke", "currentColor");
-    expect(svg).toHaveAttribute("stroke-width", "1.5");
+    expect(svg).toHaveAttribute("stroke-width", "1.125");
     expect(svg).toHaveAttribute("stroke-linecap", "round");
   });
 
   it.each([
-    ["HuellaIcon", HuellaIcon],
     ["SelloIcon", SelloIcon],
     ["CadenaIcon", CadenaIcon],
     ["PaqueteIcon", PaqueteIcon],

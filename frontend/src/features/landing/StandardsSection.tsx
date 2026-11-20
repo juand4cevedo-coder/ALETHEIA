@@ -1,3 +1,4 @@
+import { Foto } from "../../components/ui/Foto.tsx";
 import { ChainDemo } from "./ChainDemo.tsx";
 import { HashDemo } from "./HashDemo.tsx";
 import { StampCard } from "./StampCard.tsx";
@@ -13,14 +14,15 @@ import styles from "./StandardsSection.module.css";
 export function StandardsSection() {
   return (
     <section
-      data-reveal
       id="seguridad"
-      className={`${section.section} ${styles.section}`}
+      className={`${section.section} ${styles.section} on-ink`}
       aria-labelledby="titulo-estandares"
     >
+      <Foto nombre="seguridad" alt="" className={styles.photo} />
       <div className={section.inner}>
         <SectionHeading
           id="titulo-estandares"
+          className={styles.heading}
           title="Saber qué ocurre. Decidir quién participa."
           lead="Su información merece atención. Cada caso tiene sus miembros y usted puede revisar sus accesos desde su cuenta."
         />

@@ -40,7 +40,7 @@ function accesibilidad(
   return { "aria-hidden": props["aria-hidden"] ?? true };
 }
 
-/** Ícono de Phosphor en peso regular: relleno con el color del texto. Cada ícono vive en su
+/** Ícono de Phosphor en peso light: relleno con el color del texto. Cada ícono vive en su
  * propio archivo, así una pantalla descarga solo los que dibuja. */
 export function crearIcono(
   clave: string,
@@ -72,7 +72,7 @@ export function crearIcono(
   return Icono;
 }
 
-/** Ícono propio. Cuadrícula de 24 px, trazo de 1,5 (el de Phosphor regular a 24 px), extremos
+/** Ícono propio. Cuadrícula de 24 px, trazo de 1,125 (el de Phosphor light a 24 px: 12 de 256), extremos
  * y uniones redondeados, color heredado del texto. */
 export function crearPropio(
   nombre: string,
@@ -88,7 +88,7 @@ export function crearPropio(
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        strokeWidth={1.5}
+        strokeWidth={1.125}
         strokeLinecap="round"
         strokeLinejoin="round"
         {...resto}

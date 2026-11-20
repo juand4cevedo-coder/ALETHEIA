@@ -14,8 +14,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
   overflow: hidden;
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
+  box-shadow: var(--brass-hairline), var(--shadow-card);
   border-radius: var(--radius-lg);
+  background: var(--paper-raised);
 }
 
 .formPanel {
@@ -23,13 +25,13 @@
   align-content: start;
   gap: var(--space-8);
   padding: var(--space-8) var(--space-8) var(--space-6);
-  border-right: 1px solid var(--line);
-  background: var(--surface-1);
+  border-right: 1px solid var(--ink-hairline);
+  background: var(--paper-raised);
 }
 
 .previewPanel {
   padding: var(--space-8);
-  background: var(--bg);
+  background: var(--paper-sunken);
 }
 
 .form {
@@ -110,7 +112,7 @@
   justify-content: space-between;
   gap: var(--space-4);
   padding-top: var(--space-6);
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink-hairline);
 }
 
 .note {
@@ -134,7 +136,7 @@
 
   .formPanel {
     border-right: 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--ink-hairline);
   }
 }
 

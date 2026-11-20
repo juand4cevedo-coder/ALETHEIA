@@ -1,6 +1,41 @@
 .section {
-  background: var(--bg);
+  isolation: isolate;
+  max-width: none;
+  border-radius: 0;
+  background-color: var(--ink-900);
+  color: var(--on-ink);
 }
+.photo {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.14;
+}
+.section h2 {
+  color: var(--on-ink);
+}
+
+.heading > p,
+.detailIntro,
+.explanation > p {
+  color: var(--on-ink-2);
+}
+.guarantees li,
+.explanation {
+  color: var(--text);
+}
+.explanation {
+  padding-inline: var(--space-6);
+  background: var(--paper-raised);
+  border-radius: var(--radius-md);
+}
+.explanation > p {
+  color: var(--text-2);
+}
+
 .guarantees {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -14,18 +49,18 @@
 .guarantees li {
   position: relative;
   padding: 64px 40px 48px;
-  border: 1px solid var(--line-accent);
+  border: 1px solid var(--ink-hairline);
   border-bottom: 0;
   border-radius: 24px;
   background:
     radial-gradient(
       41% 12% at 50% 0%,
-      color-mix(in srgb, var(--accent-strong) 10%, transparent),
+      color-mix(in srgb, var(--ink-900) 10%, transparent),
       transparent
     ),
     linear-gradient(
-      var(--surface-1b),
-      color-mix(in srgb, var(--bg) 80%, transparent)
+      var(--paper-raised),
+      color-mix(in srgb, var(--paper) 80%, transparent)
     );
 }
 .guarantees li::before {
@@ -46,11 +81,11 @@
   color: var(--text);
   box-sizing: content-box;
   padding: 18px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--ink-hairline);
   border-radius: 18px;
   background: linear-gradient(
     225deg,
-    color-mix(in srgb, var(--accent-strong) 10%, transparent),
+    color-mix(in srgb, var(--ink-900) 10%, transparent),
     transparent
   );
   margin-bottom: 28px;
@@ -72,7 +107,7 @@
 .detailIntro {
   max-width: 560px;
   margin: 0 auto 24px;
-  color: var(--text-2);
+  color: var(--on-ink-2);
   text-align: center;
   font-size: 13px;
   line-height: 1.8;

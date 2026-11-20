@@ -1,7 +1,8 @@
 /* Miembros e invitaciones (UI-021): el cupo del plan y dos listas dentro del Panel compartido.
-   Las columnas se alinean entre filas con subgrid; en el celular cada fila pasa a una tarjeta
-   apilada. */
+   Las columnas se alinean entre filas con subgrid; cuando la persona se queda sin texto cada fila
+   pasa a una tarjeta apilada. */
 .screen {
+  container-type: inline-size;
   display: grid;
   gap: var(--space-6);
   min-width: 0;
@@ -12,13 +13,14 @@
   display: grid;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-6);
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  background: var(--surface-1);
+  background: var(--paper-raised);
+  box-shadow: var(--brass-hairline), var(--shadow-card);
 }
 
 /* Mientras carga, el panel vacío reserva el alto del cupo para que la página no salte: la cifra
-   y el medidor. Con la caja de contenido, el relleno y el borde se suman solos, como en el
+   y el medidor. Con la caja de contenido, el relleno se suma solo, como en el
    panel lleno. */
 .seats[aria-hidden="true"] {
   box-sizing: content-box;
@@ -63,7 +65,7 @@
   height: var(--meter-height);
   overflow: hidden;
   border-radius: var(--radius-pill);
-  background: var(--surface-2);
+  background: var(--paper-sunken);
 }
 
 .meter > span {
@@ -99,7 +101,7 @@
   align-items: center;
   min-height: var(--row-height);
   padding: var(--space-2) 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink-hairline);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
 }
@@ -154,7 +156,7 @@
   justify-self: start;
   padding: calc(var(--space-1) / 2) var(--space-2);
   border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  background: var(--paper-sunken);
   color: var(--text-2);
   font-size: var(--font-size-label);
   font-weight: 500;
@@ -193,19 +195,28 @@
   display: flex;
   justify-content: center;
   padding: var(--space-4);
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--ink-hairline);
 }
 
-@media (max-width: 720px) {
+/* Cuando el panel no le da texto suficiente a la persona, cada fila pasa a una tarjeta apilada.
+   El corte se mide contra el ancho de la pantalla (el contenedor) y no contra el de la ventana:
+   la barra lateral ocupa 240 px, y a 901 px de ventana la columna de la persona quedaba en cero
+   y la página se desplazaba de lado. organizacionCss.test.ts deriva de esta cifra el texto que le
+   queda a la persona. */
+@container (max-width: 920px) {
   .rows,
   .rows[data-kind="invitations"] {
+    gap: var(--space-3);
     grid-template-columns: minmax(0, 1fr);
   }
 
   .row {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: var(--space-2) var(--space-4);
-    padding: var(--space-3) 0;
+    padding: var(--space-4);
+    border-top: 0;
+    border-radius: var(--radius-md);
+    background: var(--paper);
   }
 
   .meta {
@@ -215,6 +226,14 @@
   /* La fecha de vencimiento es el dato que se viene a buscar: en el celular baja de línea en
      vez de cortarse. */
   .detail {
+    white-space: normal;
+  }
+
+  /* En la tarjeta el nombre y el correo bajan de renglón: cortados con puntos suspensivos no
+     dicen quién es la persona. El corte dentro de una palabra queda como último recurso. */
+  .name,
+  .email {
+    overflow-wrap: break-word;
     white-space: normal;
   }
 
@@ -230,6 +249,13 @@
 
   .rowAction :where(button) {
     width: 100%;
+  }
+}
+
+/* En un celular el rol no cabe al lado del nombre sin cortar el correo: baja a su propia línea. */
+@container (max-width: 520px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

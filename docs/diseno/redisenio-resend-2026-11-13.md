@@ -1,5 +1,7 @@
 # Rediseño público de Aletheia
 
+> Registro histórico. Consulte el [sistema de diseño del rediseño](identidad-y-sistema-de-diseno.md).
+
 13 de noviembre de 2026. Especificación de la identidad pública y sus efectos de movimiento.
 
 ## Referencia y decisiones

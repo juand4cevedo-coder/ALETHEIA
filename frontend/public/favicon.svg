@@ -1,7 +1,18 @@
+<!-- Favicon sobre un mosaico opaco que cambia con el tema del navegador, así se lee en barras claras y oscuras.
+     Navegador claro (o sin soporte de prefers-color-scheme): mosaico de tinta (#071423) con símbolo marfil (#f4f1ea).
+     Navegador oscuro: mosaico marfil con símbolo de tinta. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#090909" />
-  <g transform="translate(12,12) scale(1.6667)" fill="none" stroke="#f5f5f0" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 2.2L14.17 3.89L16.9 3.51L17.94 6.06L20.49 7.1L20.11 9.83L21.8 12L20.11 14.17L20.49 16.9L17.94 17.94L16.9 20.49L14.17 20.11L12 21.8L9.83 20.11L7.1 20.49L6.06 17.94L3.51 16.9L3.89 14.17L2.2 12L3.89 9.83L3.51 7.1L6.06 6.06L7.1 3.51L9.83 3.89z" />
-    <path d="M12 8v4l2.5 1.5" />
+  <style>
+    .mosaico { fill: #071423; }
+    .simbolo { fill: #f4f1ea; }
+    @media (prefers-color-scheme: dark) {
+      .mosaico { fill: #f4f1ea; }
+      .simbolo { fill: #071423; }
+    }
+  </style>
+  <rect class="mosaico" width="64" height="64" rx="14" />
+  <g class="simbolo" transform="translate(32,32) scale(0.78) translate(-32,-31.5)">
+    <path fill-rule="evenodd" d="M22 3 h11 l12 12 v17 a3 3 0 0 1 -3 3 H22 a3 3 0 0 1 -3 -3 V6 a3 3 0 0 1 3 -3 Z M33 3 v9 a3 3 0 0 0 3 3 h9 Z"/>
+    <path d="M28.4 35 h7.2 v9 h5.4 v4.8 h-5.4 v3.4 h4.4 v4.8 h-4.4 v3 h-7.2 Z"/>
   </g>
 </svg>

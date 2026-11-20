@@ -1,7 +1,9 @@
 /* Administración de la plataforma (UI-022 y módulos de soporte/facturación/auditoría): un panel
-   operativo para cuentas con platform_admin, no una página de ventas. Línea y superficie dan la
-   profundidad, nunca una sombra ni un degradado. */
+   operativo para cuentas con platform_admin, no una página de ventas. Las tablas pasan a
+   tarjetas apiladas cuando el contenedor no les da texto suficiente: el corte se mide contra
+   .screen y no contra la ventana, porque la barra lateral de 240 px se interpone. */
 .screen {
+  container-type: inline-size;
   display: grid;
   gap: clamp(24px, 4vw, 44px);
   width: min(100%, 1200px);
@@ -11,13 +13,11 @@
 .tableScroll {
   min-width: 0;
   overflow-x: auto;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-top: 1px solid var(--ink-hairline);
 }
 
 .table {
   width: 100%;
-  min-width: 720px;
   border-collapse: collapse;
   text-align: left;
   font-size: var(--font-size-ui);
@@ -25,8 +25,8 @@
 
 .table th,
 .table td {
-  padding: var(--space-4);
-  border-bottom: 1px solid var(--line);
+  padding: var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--ink-hairline);
   vertical-align: middle;
 }
 
@@ -36,7 +36,6 @@
   font-weight: 500;
   letter-spacing: 0.075em;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 
 .table tbody th {
@@ -50,7 +49,7 @@
   transition: background-color var(--motion-fast) var(--ease-standard);
 }
 .table tbody tr:hover {
-  background: var(--surface-2);
+  background: var(--paper);
 }
 .table tbody tr:last-child th,
 .table tbody tr:last-child td {
@@ -65,9 +64,10 @@
 
 .ticket {
   padding: var(--space-6);
-  border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background: var(--surface-2);
+  background: var(--paper);
+  border: 1px solid transparent;
+  box-shadow: var(--brass-hairline);
 }
 
 .ticketHead {
@@ -91,13 +91,14 @@
 .ticketHead span {
   padding: calc(var(--space-1) / 2) var(--space-2);
   border-radius: var(--radius-sm);
-  background: var(--surface-1);
+  background: var(--paper-sunken);
   color: var(--text-2);
   font-size: var(--font-size-label);
   font-weight: 500;
 }
 
 .note {
+  overflow-wrap: anywhere;
   color: var(--text-3);
   font-size: var(--font-size-support);
   line-height: var(--line-height-support);
@@ -119,7 +120,7 @@
   min-height: 152px;
   margin: 0;
   padding: var(--space-6);
-  border: 1px dashed var(--line);
+  border: 1px dashed var(--line-control);
   border-radius: var(--radius-md);
   color: var(--text-2);
   font-size: var(--font-size-ui);
@@ -161,20 +162,19 @@
   padding: var(--space-3);
   border: 1px solid var(--line-control);
   border-radius: var(--radius-sm);
-  background: var(--surface-1);
+  background: var(--paper-raised);
   color: var(--text);
   font: inherit;
-  color-scheme: dark;
   transition: border-color var(--motion-fast) var(--ease-standard);
 }
 .courtesy textarea {
   resize: vertical;
 }
 .courtesy :is(input, select, textarea):hover {
-  border-color: var(--text-3);
+  border-color: var(--ink-900);
 }
 .courtesy :is(input, select, textarea):focus-visible {
-  border-color: var(--accent);
+  border-color: var(--ink-900);
   outline: none;
   box-shadow: var(--ring-focus);
 }
@@ -189,20 +189,92 @@
 }
 .targetCard {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
   padding: var(--space-4);
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
-  background: var(--surface-2);
+  background: var(--paper);
 }
 .targetCard span {
+  overflow-wrap: anywhere;
   color: var(--text-2);
   font-size: var(--font-size-ui);
 }
 .form > button {
   justify-self: start;
 }
-@media (max-width: 680px) {
+/* Tabla a tarjetas. La persona, el plan o la acción (el encabezado de fila) es el título de cada
+   tarjeta y las demás celdas llevan su rótulo desde data-label. platformCss.test.ts deriva de
+   esta cifra el texto que le queda a la columna principal. */
+@container (max-width: 920px) {
+  .tableScroll {
+    border-top: 0;
+    overflow: visible;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+  }
+
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: var(--paper);
+  }
+
+  .table tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .table th,
+  .table td,
+  .table tbody tr:last-child th,
+  .table tbody tr:last-child td {
+    padding: 0;
+    border-bottom: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .table tbody th {
+    font-size: var(--font-size-subtitle);
+    line-height: var(--line-height-subtitle);
+  }
+
+  .table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--text-3);
+    font-size: var(--font-size-label);
+    letter-spacing: var(--tracking-label);
+    line-height: var(--line-height-label);
+    text-transform: uppercase;
+  }
+
+  .table td:empty {
+    display: none;
+  }
+}
+
+@container (max-width: 680px) {
   .ticket {
     padding: var(--space-4);
   }

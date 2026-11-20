@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -7,6 +10,20 @@ import { seriousAxeViolations } from "../test/axe.ts";
 import { jsonResponse, renderRoute } from "../test/render.tsx";
 
 const fetchMock = vi.fn<typeof fetch>();
+
+// jsdom no aplica CSS Modules: lo que el CSS declara se lee del disco.
+const css = readFileSync(
+  join(import.meta.dirname, "CasesPage.module.css"),
+  "utf8",
+);
+
+function rule(selector: string): string {
+  const escaped = selector.replaceAll(".", String.raw`\.`);
+  const match = new RegExp(String.raw`(?:^|\n)${escaped}\s*\{([^}]*)\}`).exec(
+    css,
+  );
+  return match?.[1] ?? "";
+}
 
 type Role = "owner" | "admin" | "lawyer" | "assistant";
 
@@ -553,13 +570,13 @@ describe("Libro de casos (HU-017)", () => {
     expect(table).toHaveFocus();
   });
 
-  it("en 900 px o menos las filas pasan a tarjetas", async () => {
+  it("en 1100 px o menos las filas pasan a tarjetas", async () => {
     vi.stubGlobal(
       "matchMedia",
       vi.fn(
         (query: string) =>
           ({
-            matches: query === "(max-width: 900px)",
+            matches: query === "(max-width: 1100px)",
             media: query,
             addEventListener: () => {},
             removeEventListener: () => {},
@@ -580,6 +597,38 @@ describe("Libro de casos (HU-017)", () => {
       }),
     ).toBeInTheDocument();
     expect(cards[0]).toHaveAccessibleName("Despido sin justa causa, Torres");
+  });
+
+  it("permite cortar nombres largos para que no desborden", () => {
+    expect(css).toMatch(/overflow-wrap:\s*anywhere/);
+    expect(rule(".title")).toMatch(/overflow-wrap:\s*anywhere/);
+  });
+
+  it("el libro y las tarjetas se elevan sobre el papel con filete y sombra de dos capas", () => {
+    for (const selector of [".book", ".card"]) {
+      const body = rule(selector);
+      expect(body, selector).toMatch(/background:\s*var\(--paper-raised\)/);
+      expect(body, selector).toMatch(/var\(--brass-hairline\)/);
+      expect(body, selector).toMatch(/var\(--shadow-card\)/);
+    }
+  });
+
+  it("la lista de tarjetas no depende de un ancho fijo de tabla", () => {
+    expect(rule(".cards")).not.toMatch(/min-width/);
+    expect(rule(".cardFacts dd")).toMatch(/min-width:\s*0/);
+  });
+
+  it("rinde un nombre de 120 caracteres sin espacios", async () => {
+    const largo = "x".repeat(120);
+    serve("lawyer", () => ({
+      ...BOOK,
+      items: [summary({ title: largo, court: largo })],
+    }));
+    await openBook();
+
+    expect(
+      await screen.findByRole("link", { name: largo }),
+    ).toBeInTheDocument();
   });
 
   it("el menú lateral lleva a Casos con el conteo de abiertos", async () => {

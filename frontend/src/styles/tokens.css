@@ -1,65 +1,53 @@
-/* Superficies neutras; el color identifica estados, no decoración. */
+/* Papel marfil y tinta profunda, con latón como acento. El sistema es de un solo modo: claro.
+   Los valores salen de la sección 7 de la especificación del rediseño del 19 de noviembre; un
+   cambio aquí es un cambio de identidad y debe pasar antes por esa especificación. */
 :root {
-  color-scheme: dark;
-  --font-editorial: "Instrument Serif", Georgia, serif;
-  --brand-dark: #08090b;
-  --gold: #f0f0f0;
-  --gold-hover: #ffffff;
-  --on-brand: #f0f0f0;
-  --brand-muted: #a1a4a5;
-  --brand-line: #282a2d;
-  --bronze: #c5ae8b;
+  --font-editorial:
+    "Fraunces Variable", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
 
-  --bg: #000000;
-  /* Un paso más oscuro que surface-1, para paneles flotantes (menús, tarjetas de
-     ilustración) que necesitan verse por delante del resto de los paneles. */
-  --surface-0: #050505;
-  --surface-1: #0e0f11;
-  /* Un paso más claro que surface-1, para los degradados de dos puntos que antes usaban
-     valores sueltos cercanos entre sí. */
-  --surface-1b: #141414;
-  --surface-2: #1a1b1e;
+  /* Papel: la escala que sube y baja. La profundidad se lee por el tono, no por el borde. */
+  --paper: #f4f1ea;
+  --paper-raised: #ffffff;
+  --paper-sunken: #e9e4d8;
 
-  --line: #252629;
+  /* Tinta: secciones oscuras a sangre completa y el botón principal. */
+  --ink-900: #071423;
+  --ink-700: #12304f;
+  --ink-500: #1e4a74;
 
-  --line-control: #686b70;
-  /* Línea de borde de las tarjetas y encabezados de sección en la landing. */
-  --line-accent: rgb(214 235 253 / 19%);
-  --text: #f0f0f0;
-  --text-2: #a1a4a5;
+  /* Latón: acento, nunca fondo. Filetes, subrayados, anillo de foco y estado activo. */
+  --brass-600: #7e5f36;
+  --brass-400: #c3a572;
 
-  --text-3: #999da3;
-  --accent: #f0f0f0;
+  --text: #111820;
+  --text-2: #49545f;
+  --text-3: #5c656f;
 
-  --accent-strong: #ffffff;
+  --on-ink: #f4f1ea;
+  --on-ink-2: #a9b6c4;
 
-  --on-accent: #08090b;
-
-  --ok: #63d4a1;
-  --warn: #e8ba75;
-  --err: #ff9999;
-
-  /* Tinte de fondo por categoría en las tarjetas del blog: distingue Integridad y Seguridad de
-     un vistazo, sin depender solo del texto de la categoría. */
-  --tint-integridad: #66351f;
-  --tint-seguridad: #163a31;
-  /* Franja del ítem activo en la navegación del espacio de trabajo. */
-  --accent-nav: #d6c1a4;
+  /* Los estados siempre van acompañados de texto: el color no es su único portador. */
+  --ok: #1f6b4a;
+  --warn: #8a5a18;
+  --err: #9b2226;
 
   --font-sans:
     "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono:
     "Geist Mono Variable", ui-monospace, "Cascadia Mono", Consolas, monospace;
 
-  --font-size-display: 56px;
-  --font-size-hero: clamp(4.5rem, 7.5vw, 6.5rem);
-  --line-height-hero: 0.98;
-  --line-height-display: 60px;
+  /* Escala fluida: los títulos crecen con el ancho de la pantalla, sin saltos por punto de
+     quiebre. El cuerpo sube a 17 px desde 900 px, en el bloque de más abajo. */
+  --font-size-display: clamp(2.75rem, 1.5rem + 6vw, 7rem);
+  --line-height-display: 0.95;
+  --tracking-display: -0.02em;
+  /* La portada usa la misma medida que el titular de display; no tiene escala propia. */
+  --font-size-hero: var(--font-size-display);
+  --line-height-hero: var(--line-height-display);
   --font-size-display-sm: 38px;
   --line-height-display-sm: 42px;
-  --tracking-display: -0.035em;
-  --font-size-section: 48px;
-  --line-height-section: 52px;
+  --font-size-section: clamp(2rem, 1.2rem + 3.2vw, 3.5rem);
+  --line-height-section: 1.05;
   --font-size-section-sm: 36px;
   --line-height-section-sm: 40px;
   --tracking-section: -0.025em;
@@ -69,16 +57,17 @@
   --font-size-subtitle: 18px;
   --line-height-subtitle: 28px;
   --tracking-subtitle: -0.01em;
-  --font-size-body: 15px;
-  --line-height-body: 24px;
-  --font-size-ui: 14px;
-  --line-height-ui: 20px;
+  --font-size-body: 16px;
+  --line-height-body: 26px;
+  --font-size-ui: 15px;
+  --line-height-ui: 22px;
 
   --font-size-control-touch: 16px;
   --font-size-support: 13px;
   --line-height-support: 18px;
   --font-size-label: 12px;
   --line-height-label: 16px;
+  --tracking-label: 0.08em;
   --font-size-mono: 13px;
   --line-height-mono: 20px;
 
@@ -92,25 +81,47 @@
   --space-16: 64px;
   --space-24: 96px;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
+  /* Radios bajos: lo muy redondeado se lee como herramienta interna gratuita. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
   --radius-pill: 999px;
 
-  --control-height: 48px;
-  --control-height-sm: 40px;
+  --control-height: 52px;
+  --control-height-sm: 44px;
+  --control-height-circular: 56px;
 
   --dot-size: 6px;
 
-  --ring-focus:
-    0 0 0 1px var(--accent),
-    0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+  /* Contorno de todo lo que se puede tocar: 3 a 1 como mínimo contra las tres superficies de papel. */
+  --line-control: #6e737a;
 
-  --shadow-float: 0 16px 48px rgb(0 0 0 / 40%);
+  --ring-focus:
+    0 0 0 1px var(--brass-600),
+    0 0 0 4px color-mix(in srgb, var(--brass-600) 22%, transparent);
+
+  /* Sombras de dos capas con tinte de tinta: una de contacto, corta y definida, y otra de
+     ambiente, larga y suave. El negro puro ensucia el marfil. */
+  --shadow-card: 0 1px 2px rgb(7 20 35 / 8%), 0 8px 24px rgb(7 20 35 / 8%);
+  --shadow-float: 0 2px 4px rgb(7 20 35 / 10%), 0 20px 48px rgb(7 20 35 / 16%);
+  /* Filete metálico de un píxel en el borde superior de las tarjetas elevadas. */
+  --brass-hairline: inset 0 1px 0
+    color-mix(in srgb, var(--brass-400) 40%, transparent);
+
+  /* Filete de tinta: el separador decorativo entre filas y secciones, hermano del filete
+     metálico. Nunca como contorno de algo que se toca; para eso está --line-control. */
+  --ink-hairline: rgb(7 20 35 / 10%);
 
   --motion-fast: 120ms;
-  --motion-base: 200ms;
-  --motion-enter: 600ms;
+  /* Estados de control: color y borde. */
+  --motion-base: 180ms;
+  /* Cambio de página: fundido de opacidad. */
+  --motion-page: 240ms;
+  /* Revelado al entrar; se escalona de a 60 ms y ocurre una sola vez. */
+  --motion-enter: 700ms;
+  --motion-stagger: 60ms;
+  /* Apertura del hero: escala de 1,06 a 1 sobre la imagen. */
+  --motion-hero: 1200ms;
 
   --motion-spin: 900ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
@@ -151,14 +162,21 @@
   --underline-offset: 3px;
 }
 
+/* Desde 900 px el cuerpo gana un punto de tamaño y dos de interlineado. */
+@media (min-width: 900px) {
+  :root {
+    --font-size-body: 17px;
+    --line-height-body: 28px;
+  }
+}
+
+/* Con base de papel casi todo el modo de impresión sobra. Queda lo que ahorra tinta: el marfil
+   y el hundido pasan a blanco, y se quitan las sombras, que en papel real salen como manchas. */
 @media print {
   :root {
-    --bg: #ffffff;
-    --surface-1: #ffffff;
-    --surface-2: #ffffff;
-    --text: #202e29;
-    --text-2: #202e29;
-    --text-3: #526159;
-    --line: #7a857b;
+    --paper: #ffffff;
+    --paper-sunken: #ffffff;
+    --shadow-card: none;
+    --shadow-float: none;
   }
 }

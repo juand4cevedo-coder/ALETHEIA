@@ -1,5 +1,7 @@
 # Revisión de la referencia y alcance del rediseño
 
+> Registro histórico. Consulte el [sistema de diseño del rediseño](identidad-y-sistema-de-diseno.md).
+
 Fecha: 12 de noviembre de 2026. Antecedente de la identidad vigente descrita en `redisenio-resend-2026-11-13.md`.
 
 ## Referencia

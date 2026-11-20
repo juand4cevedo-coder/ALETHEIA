@@ -64,36 +64,50 @@ export function PlatformPage() {
           )}
           {users.data && users.data.items.length > 0 && (
             <div className={styles.tableScroll}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th scope="col">Persona</th>
-                    <th scope="col">Correo</th>
-                    <th scope="col">Estado</th>
-                    <th scope="col">Correo verificado</th>
-                    <th scope="col">Acción</th>
+              <table className={styles.table} role="table">
+                <thead role="rowgroup">
+                  <tr role="row">
+                    <th scope="col" role="columnheader">
+                      Persona
+                    </th>
+                    <th scope="col" role="columnheader">
+                      Correo
+                    </th>
+                    <th scope="col" role="columnheader">
+                      Estado
+                    </th>
+                    <th scope="col" role="columnheader">
+                      Correo verificado
+                    </th>
+                    <th scope="col" role="columnheader">
+                      Acción
+                    </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody role="rowgroup">
                   {users.data.items.map((user) => (
-                    <tr key={user.id}>
-                      <th scope="row">{user.full_name}</th>
-                      <td translate="no">{user.email}</td>
-                      <td>
+                    <tr role="row" key={user.id}>
+                      <th scope="row" role="rowheader">
+                        {user.full_name}
+                      </th>
+                      <td role="cell" data-label="Correo" translate="no">
+                        {user.email}
+                      </td>
+                      <td role="cell" data-label="Estado">
                         <StatusBadge
                           tone={user.status === "active" ? "ok" : "error"}
                         >
                           {user.status === "active" ? "Activa" : "Bloqueada"}
                         </StatusBadge>
                       </td>
-                      <td>
+                      <td role="cell" data-label="Correo verificado">
                         <StatusBadge
                           tone={user.email_verified ? "ok" : "pending"}
                         >
                           {user.email_verified ? "Verificado" : "Pendiente"}
                         </StatusBadge>
                       </td>
-                      <td>
+                      <td role="cell">
                         {!user.platform_admin && (
                           <Button
                             size="sm"

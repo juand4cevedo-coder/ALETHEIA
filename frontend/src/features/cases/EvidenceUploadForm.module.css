@@ -1,9 +1,9 @@
 .box {
   margin-top: var(--space-8);
   padding: var(--space-6);
-  border: 1px solid var(--line);
+  border: 1px solid var(--ink-hairline);
   border-radius: var(--radius-md);
-  background: var(--surface-2);
+  background: var(--paper-sunken);
 }
 
 .box h2 {
@@ -17,8 +17,17 @@
 
 .form {
   display: grid;
+  /* Sin esta columna el campo de archivo, que mide lo que dice su texto, ensancha el formulario
+     más allá del panel en celular. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
-  margin-block: var(--space-5);
+  margin-block: var(--space-6);
+}
+
+/* Lo mismo dentro de cada campo: su cuadrícula toma el ancho del campo de archivo si nadie la
+   acota. */
+.form > div {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .hash {

@@ -1,39 +1,51 @@
+/* Menú del espacio de trabajo. Base de celular: una franja sobre el contenido que se desliza de
+   lado, en el papel hundido. Desde 900 px pasa a columna fija a la izquierda. El ítem activo se
+   marca con una franja de latón y el tono del papel, nunca solo con color. */
 .nav {
-  --text: var(--on-brand);
-  --text-2: var(--brand-muted);
-  --text-3: var(--brand-muted);
-  --surface-1: var(--brand-dark);
-  --surface-2: var(--brand-line);
-  --line: var(--brand-line);
-  --accent: var(--on-brand);
-  border-right: 1px solid var(--line);
-  background: linear-gradient(180deg, var(--surface-1b), var(--surface-1) 70%);
+  overflow-x: auto;
+  background: var(--paper-sunken);
+  /* Filete de tinta tenue en el borde que da al contenido, en lugar de un borde gris. */
+  box-shadow: inset 0 -1px 0 rgb(7 20 35 / 8%);
+  scrollbar-width: none;
 }
 
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+/* El relleno vertical deja sitio al anillo de foco, que el desplazamiento recortaría. */
 .groups {
-  position: sticky;
-  top: 0;
-  display: grid;
-  gap: var(--space-6);
-  padding: var(--space-8) var(--space-4);
+  position: relative;
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
 }
 
+/* Cada grupo conserva su ancho natural (flex: none): si se dejara encoger, sus enlaces
+   desbordarían y se dibujarían encima de los del grupo siguiente. */
 .group {
-  min-width: 0;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
 }
 
+/* En la franja los rótulos no caben ni aportan: se ocultan a la vista pero siguen en el árbol
+   de accesibilidad como encabezados de cada grupo. */
 .groupLabel {
-  margin: 0 0 var(--space-2);
-  padding: 0 var(--space-3);
-  color: var(--text-3);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .list {
-  display: grid;
+  display: flex;
   gap: var(--space-1);
   margin: 0;
   padding: 0;
@@ -44,7 +56,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: var(--control-height);
+  min-height: var(--touch-target);
   padding: 0 var(--space-3);
   border-radius: var(--radius-sm);
   color: var(--text-2);
@@ -55,86 +67,83 @@
   white-space: nowrap;
   transition:
     background-color var(--motion-fast) var(--ease-standard),
-    color var(--motion-fast) var(--ease-standard),
-    transform var(--motion-fast) var(--ease-standard);
+    color var(--motion-fast) var(--ease-standard);
 }
 
 .link:hover {
   color: var(--text);
-  background: color-mix(in srgb, var(--accent-strong) 3%, transparent);
+  background: rgb(7 20 35 / 6%);
 }
 
+/* Activo: el papel sube sobre el hundido y una franja de latón de 3 px marca el lugar. En la
+   franja de celular va abajo; en la columna, a la izquierda. */
 .active,
 .active:hover {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--accent-strong) 9%, transparent),
-    color-mix(in srgb, var(--accent-strong) 4%, transparent)
-  );
-  box-shadow: inset 2px 0 0 var(--accent-nav);
+  background: var(--paper);
+  box-shadow: inset 0 -3px 0 var(--brass-600);
   color: var(--text);
+  font-weight: 600;
 }
 
 .count {
-  margin-left: auto;
+  margin-left: 0;
   padding-left: var(--space-2);
-  color: var(--text-3);
+  color: var(--text-2);
   font-family: var(--font-mono);
   font-size: var(--font-size-label);
   font-variant-numeric: tabular-nums;
   line-height: var(--line-height-label);
 }
 
-@media (max-width: 900px) {
+@media (min-width: 900px) {
   .nav {
-    --text: var(--on-brand);
-    --text-2: var(--brand-muted);
-    --text-3: var(--brand-muted);
-    --surface-1: var(--brand-dark);
-    --surface-2: var(--brand-line);
-    --line: var(--brand-line);
-    --accent: var(--on-brand);
-    overflow-x: auto;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-    scrollbar-width: none;
-  }
-
-  .nav::-webkit-scrollbar {
-    display: none;
+    overflow-x: visible;
+    box-shadow: inset -1px 0 0 rgb(7 20 35 / 8%);
   }
 
   .groups {
-    position: static;
-    display: flex;
-    gap: var(--space-4);
-    padding: var(--space-2) var(--space-4);
+    position: sticky;
+    top: 0;
+    display: grid;
+    width: auto;
+    min-width: 0;
+    gap: var(--space-6);
+    padding: var(--space-8) var(--space-4);
   }
 
   .group {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
+    display: block;
+    flex: initial;
+    min-width: 0;
   }
 
   .groupLabel {
-    margin: 0;
-    padding: 0 var(--space-2);
-    white-space: nowrap;
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 var(--space-2);
+    padding: 0 var(--space-3);
+    overflow: visible;
+    clip-path: none;
+    color: var(--text-3);
+    font-size: var(--font-size-label);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    line-height: var(--line-height-label);
+    text-transform: uppercase;
   }
 
   .list {
-    display: flex;
-    gap: var(--space-1);
+    display: grid;
   }
 
   .count {
-    margin-left: 0;
+    margin-left: auto;
   }
 
   .active,
   .active:hover {
-    box-shadow: inset 0 -2px 0 var(--accent);
+    box-shadow: inset 3px 0 0 var(--brass-600);
   }
 }
 

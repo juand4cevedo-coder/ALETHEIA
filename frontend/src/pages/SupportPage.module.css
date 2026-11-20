@@ -23,9 +23,9 @@
 
 .ticket {
   padding: var(--space-6);
-  border: 1px solid var(--line);
+  border: 1px solid var(--ink-hairline);
   border-radius: var(--radius-md);
-  background: var(--surface-2);
+  background: var(--paper-sunken);
 }
 
 .ticketHead {
@@ -48,7 +48,7 @@
 .ticketHead span {
   padding: calc(var(--space-1) / 2) var(--space-2);
   border-radius: var(--radius-sm);
-  background: var(--surface-1);
+  background: var(--paper-raised);
   color: var(--text-2);
   font-size: var(--font-size-label);
   font-weight: 500;
@@ -76,7 +76,7 @@
   min-height: 152px;
   margin: 0;
   padding: var(--space-6);
-  border: 1px dashed var(--line);
+  border: 1px dashed var(--line-control);
   border-radius: var(--radius-md);
   color: var(--text-2);
   font-size: var(--font-size-ui);
