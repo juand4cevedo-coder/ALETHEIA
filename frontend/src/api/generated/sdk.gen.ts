@@ -35,6 +35,9 @@ import type {
   ChangeSupportTicketStatusData,
   ChangeSupportTicketStatusErrors,
   ChangeSupportTicketStatusResponses,
+  CloseAccountData,
+  CloseAccountErrors,
+  CloseAccountResponses,
   CloseCaseData,
   CloseCaseErrors,
   CloseCaseResponses,
@@ -62,6 +65,15 @@ import type {
   ForgotPasswordData,
   ForgotPasswordErrors,
   ForgotPasswordResponses,
+  GoogleCallbackData,
+  GoogleCallbackErrors,
+  GoogleCallbackResponses,
+  GoogleLinkStartData,
+  GoogleLinkStartResponses,
+  GoogleLoginStartData,
+  GoogleLoginStartResponses,
+  GoogleStatusData,
+  GoogleStatusResponses,
   GrantCourtesyData,
   GrantCourtesyErrors,
   GrantCourtesyResponses,
@@ -217,6 +229,72 @@ export const listPlans = <ThrowOnError extends boolean = false>(
     ListPlansErrors,
     ThrowOnError
   >({ url: "/api/v1/plans", ...options });
+
+/**
+ * Saber si el acceso con Google está configurado
+ */
+export const googleStatus = <ThrowOnError extends boolean = false>(
+  options?: Options<GoogleStatusData, ThrowOnError>,
+): RequestResult<GoogleStatusResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<GoogleStatusResponses, unknown, ThrowOnError>(
+    { url: "/api/v1/auth/google/status", ...options },
+  );
+
+/**
+ * Empezar el ingreso seguro con Google
+ */
+export const googleLoginStart = <ThrowOnError extends boolean = false>(
+  options?: Options<GoogleLoginStartData, ThrowOnError>,
+): RequestResult<GoogleLoginStartResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GoogleLoginStartResponses,
+    unknown,
+    ThrowOnError
+  >({ url: "/api/v1/auth/google/login", ...options });
+
+/**
+ * Vincular Google a la cuenta con sesión
+ */
+export const googleLinkStart = <ThrowOnError extends boolean = false>(
+  options?: Options<GoogleLinkStartData, ThrowOnError>,
+): RequestResult<GoogleLinkStartResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GoogleLinkStartResponses,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/auth/google/link",
+    ...options,
+  });
+
+/**
+ * Completar el ingreso o la vinculación con Google
+ */
+export const googleCallback = <ThrowOnError extends boolean = false>(
+  options?: Options<GoogleCallbackData, ThrowOnError>,
+): RequestResult<GoogleCallbackResponses, GoogleCallbackErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GoogleCallbackResponses,
+    GoogleCallbackErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Secure-aletheia_google",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/auth/google/callback",
+    ...options,
+  });
 
 /**
  * Crear una cuenta con su organización y la prueba gratis
@@ -473,6 +551,32 @@ export const changePassword = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/me/password",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Cerrar y anonimizar la cuenta sin borrar expedientes retenidos
+ */
+export const closeAccount = <ThrowOnError extends boolean = false>(
+  options: Options<CloseAccountData, ThrowOnError>,
+): RequestResult<CloseAccountResponses, CloseAccountErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CloseAccountResponses,
+    CloseAccountErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/me/account/closure",
     ...options,
     headers: {
       "Content-Type": "application/json",

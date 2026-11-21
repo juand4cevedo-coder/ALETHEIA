@@ -59,6 +59,7 @@ const SEGMENTS: readonly {
 
 /** El segmento vive en la dirección (?estado=…), para que volver de un caso lo conserve. */
 const STATUS_PARAM = "estado";
+const SEARCH_PARAM = "buscar";
 
 const STATUS_IN_URL: Record<Status, string> = {
   open: "abiertos",
@@ -141,7 +142,7 @@ export function CasesPage() {
   const me = useOutletContext<Me>();
   const [searchParams, setSearchParams] = useSearchParams();
   const status = statusFromUrl(searchParams.get(STATUS_PARAM));
-  const [filter, setFilter] = useState("");
+  const filter = searchParams.get(SEARCH_PARAM) ?? "";
   const [loadedNote, setLoadedNote] = useState("");
   const [verifying, setVerifying] = useState(false);
   const cards = useMediaQuery(CARDS_QUERY);
@@ -380,7 +381,16 @@ export function CasesPage() {
             spellCheck={false}
             value={filter}
             onChange={(event) => {
-              setFilter(event.target.value);
+              const value = event.target.value;
+              setSearchParams(
+                (current) => {
+                  const next = new URLSearchParams(current);
+                  if (value) next.set(SEARCH_PARAM, value);
+                  else next.delete(SEARCH_PARAM);
+                  return next;
+                },
+                { replace: true },
+              );
               // Al escribir solo cambia el número de coincidencias: la carga ya se anunció.
               setLoadedNote("");
             }}

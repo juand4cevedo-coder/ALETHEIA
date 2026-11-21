@@ -71,6 +71,157 @@
         }
       }
     },
+    "/api/v1/auth/google/status": {
+      "get": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Saber si el acceso con Google está configurado",
+        "operationId": "google_status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleAuthStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/google/login": {
+      "get": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Empezar el ingreso seguro con Google",
+        "operationId": "google_login_start",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/google/link": {
+      "get": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Vincular Google a la cuenta con sesión",
+        "operationId": "google_link_start",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/google/callback": {
+      "get": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Completar el ingreso o la vinculación con Google",
+        "operationId": "google_callback",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "State"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Code"
+            }
+          },
+          {
+            "name": "error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Error"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
@@ -661,6 +812,65 @@
           },
           "429": {
             "description": "Demasiados intentos fallidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/account/closure": {
+      "post": {
+        "tags": [
+          "perfil"
+        ],
+        "summary": "Cerrar y anonimizar la cuenta sin borrar expedientes retenidos",
+        "operationId": "close_account",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseAccountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "La contraseña no coincide.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La cuenta tiene una responsabilidad que debe transferirse.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4646,6 +4856,29 @@
         ],
         "title": "CheckoutOut"
       },
+      "CloseAccountRequest": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Password"
+          },
+          "confirmation": {
+            "type": "string",
+            "const": "CERRAR MI CUENTA",
+            "title": "Confirmation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "password",
+          "confirmation"
+        ],
+        "title": "CloseAccountRequest",
+        "description": "Confirmación reforzada para cerrar y anonimizar la cuenta."
+      },
       "CourtesyGrant": {
         "properties": {
           "organization_id": {
@@ -5265,6 +5498,20 @@
         "title": "ForgotPasswordRequest",
         "description": "Correo al que se envía el enlace para restablecer la contraseña (API-011)."
       },
+      "GoogleAuthStatus": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled"
+        ],
+        "title": "GoogleAuthStatus",
+        "description": "Disponibilidad pública del proveedor; nunca expone sus credenciales."
+      },
       "HealthStatus": {
         "properties": {
           "status": {
@@ -5634,6 +5881,11 @@
             "title": "Email Verified",
             "description": "Si ya verificó su correo (HU-006)."
           },
+          "google_linked": {
+            "type": "boolean",
+            "title": "Google Linked",
+            "description": "Si puede ingresar con una identidad de Google."
+          },
           "platform_admin": {
             "type": "boolean",
             "title": "Platform Admin",
@@ -5692,6 +5944,7 @@
           "full_name",
           "email",
           "email_verified",
+          "google_linked",
           "platform_admin",
           "permissions",
           "organization",
@@ -6947,17 +7200,22 @@
       }
     },
     "securitySchemes": {
-      "renovacion": {
-        "type": "apiKey",
-        "description": "Cookie de renovación que la API entrega al ingresar y en cada renovación.",
-        "in": "cookie",
-        "name": "__Secure-aletheia_refresh"
-      },
       "sesion": {
         "type": "apiKey",
         "description": "Cookie de acceso que la API entrega al ingresar.",
         "in": "cookie",
         "name": "__Host-aletheia_access"
+      },
+      "APIKeyCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Secure-aletheia_google"
+      },
+      "renovacion": {
+        "type": "apiKey",
+        "description": "Cookie de renovación que la API entrega al ingresar y en cada renovación.",
+        "in": "cookie",
+        "name": "__Secure-aletheia_refresh"
       }
     }
   }

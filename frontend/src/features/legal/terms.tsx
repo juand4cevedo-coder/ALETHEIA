@@ -315,10 +315,10 @@ export const termsOfService: LegalDocument = {
           </p>
           <p>
             Cerrar un caso lo mueve al archivo histórico: no borra archivos,
-            llaves, eventos ni registros de custodia. ALETHEIA aplica como
-            plazo operativo inicial diez años desde el cierre, salvo una
-            obligación, orden o instrucción documentada que exija otro plazo.
-            Las solicitudes de supresión se evalúan antes de ejecutarse y no
+            llaves, eventos ni registros de custodia. ALETHEIA aplica como plazo
+            operativo inicial diez años desde el cierre, salvo una obligación,
+            orden o instrucción documentada que exija otro plazo. Las
+            solicitudes de supresión se evalúan antes de ejecutarse y no
             proceden mientras exista un deber legal o contractual de conservar.
             Cuándo procede una devolución de dinero lo explica la{" "}
             <Link to={legalRoute("reembolsos")}>

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 from app.models._columns import CreatedAt, UUIDv7Pk, text_values
 
-USER_STATUSES: Final = ("active", "blocked")
+USER_STATUSES: Final = ("active", "blocked", "closed")
 
 
 def _utc_now() -> datetime.datetime:
@@ -54,6 +54,7 @@ AUDIT_ACTIONS: Final = (
     "organization_renamed",
     "case_closed",
     "case_reopened",
+    "account_closed",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.
@@ -112,6 +113,7 @@ class OAuthIdentity(Base):
         CheckConstraint("provider = 'google'", name="provider"),
         CheckConstraint("char_length(subject) BETWEEN 1 AND 255", name="subject_length"),
         Index("uq_oauth_identities_provider_subject", "provider", "subject", unique=True),
+        Index("uq_oauth_identities_provider_user", "provider", "user_id", unique=True),
     )
 
     id: Mapped[UUIDv7Pk]

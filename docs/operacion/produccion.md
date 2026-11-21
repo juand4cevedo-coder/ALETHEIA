@@ -150,6 +150,7 @@ La llave se rota al publicar v1.0.0 y ante cualquier sospecha. El procedimiento 
 | `/aletheia/prod/postgres/app-password` | SecureString (`aws/ssm`) | `aletheia_app`: API y trabajador |
 | `/aletheia/prod/postgres/support-password` | SecureString (`aws/ssm`) | `aletheia_support`: consultas de solo lectura |
 | `/aletheia/prod/app/token-signing-key` | SecureString (`aws/ssm`) | Clave de firma de los enlaces de un solo uso: API y trabajador |
+| `/aletheia/prod/google/client-secret` | SecureString (`aws/ssm`) | Secreto OIDC de Google; se crea solo al activar la integración |
 
 Las claves se generaron en CloudShell con 40 letras y números, por una tubería directo a AWS, así que nunca aparecieron en pantalla, en el historial ni como argumento de un comando. El procedimiento exacto está en el runbook interno.
 

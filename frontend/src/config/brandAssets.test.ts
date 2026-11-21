@@ -19,13 +19,16 @@ describe("recursos de la marca", () => {
     "src/assets/simbolo.svg",
     "public/brand/symbol-dark.svg",
     "public/brand/symbol-white.svg",
-  ])("%s usa el símbolo vectorial aprobado y sigue siendo escalable", (path) => {
-    const svg = asset(path).toString("utf8");
-    expect(svg).toContain('data-brand="aletheia-eye-circuit"');
-    expect(svg).toMatch(/viewBox="0 0 240 240"/);
-    expect(svg).not.toMatch(/<svg[^>]+(?:width|height)=/);
-    expect(svg).not.toMatch(/<(?:image|script)|(?:href|src)="https?:\/\//);
-  });
+  ])(
+    "%s usa el símbolo vectorial aprobado y sigue siendo escalable",
+    (path) => {
+      const svg = asset(path).toString("utf8");
+      expect(svg).toContain('data-brand="aletheia-eye-circuit"');
+      expect(svg).toMatch(/viewBox="0 0 240 240"/);
+      expect(svg).not.toMatch(/<svg[^>]+(?:width|height)=/);
+      expect(svg).not.toMatch(/<(?:image|script)|(?:href|src)="https?:\/\//);
+    },
+  );
 
   it("conserva el mismo símbolo en el favicon", () => {
     const svg = asset("public/favicon.svg").toString("utf8");
@@ -51,7 +54,9 @@ describe("recursos de la marca", () => {
 
   it("publica favicon clásico y los tamaños instalables", () => {
     const html = asset("index.html").toString("utf8");
-    const manifest = JSON.parse(asset("public/site.webmanifest").toString("utf8")) as {
+    const manifest = JSON.parse(
+      asset("public/site.webmanifest").toString("utf8"),
+    ) as {
       icons: { sizes: string; purpose?: string }[];
     };
     expect(html).toContain('href="/favicon.ico"');

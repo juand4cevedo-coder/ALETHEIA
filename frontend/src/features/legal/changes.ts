@@ -5,6 +5,11 @@ import { LEGAL_VERSION } from "../../config/legal.ts";
 // LEGAL_VERSION necesita aquí su resumen; una prueba lo exige. Solo resume: lo que rige es el
 // texto completo de cada política.
 export const LEGAL_CHANGES: Readonly<Record<string, readonly string[]>> = {
+  "2026-11-21": [
+    "Ahora puede cerrar su cuenta desde Mi cuenta con su contraseña y una confirmación expresa.",
+    "Al cerrar la cuenta se revocan las sesiones, se desvincula Google y la identidad directa se reemplaza por un seudónimo.",
+    "Los casos, evidencias, aceptaciones y registros que deban conservarse permanecen protegidos durante el plazo legal o contractual aplicable.",
+  ],
   "2026-11-20": [
     "Cerrar un caso ahora lo mueve a un archivo histórico sin borrar sus archivos, huellas ni registros de custodia.",
     "Explicamos el plazo operativo inicial de diez años y que una obligación, orden o instrucción documentada puede exigir un plazo distinto.",
@@ -16,7 +21,7 @@ export const LEGAL_CHANGES: Readonly<Record<string, readonly string[]>> = {
     "Explicamos cómo se contrata un plan, que no hay permanencia mínima y qué comprobante recibe con cada pago.",
     "Sus datos viajan a proveedores en Estados Unidos. Ellos los tratan por cuenta nuestra y con las reglas de la política.",
     "Si se arrepiente dentro de los cinco días hábiles siguientes a un pago, le devolvemos todo. El dinero vuelve en máximo quince días calendario.",
-    "Cada política puede descargarse con su huella, para comprobar que guardó la versión vigente.",
+    "Cada política puede descargarse para conservar la versión vigente.",
   ],
 };
 

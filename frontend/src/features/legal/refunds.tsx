@@ -49,9 +49,9 @@ export const refundPolicy: LegalDocument = {
       body: (
         <>
           <p>
-            La persona responsable del despacho puede cancelar la suscripción
-            en cualquier momento desde su panel, o escribiendo a {mail} desde
-            el correo de su cuenta. Al cancelar:
+            La persona responsable del despacho puede cancelar la suscripción en
+            cualquier momento desde su panel, o escribiendo a {mail} desde el
+            correo de su cuenta. Al cancelar:
           </p>
           <ul>
             <li>no se hace ningún cobro más;</li>

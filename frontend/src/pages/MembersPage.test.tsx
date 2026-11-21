@@ -158,6 +158,33 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
+  it("busca por nombre o correo, filtra por rol y conserva los filtros en la dirección", async () => {
+    serve("owner");
+    const user = userEvent.setup();
+    const { router } = await renderRoute("/app/miembros");
+    const people = (await screen.findByText("Carlos Gómez")).closest(
+      "section",
+    )!;
+
+    await user.type(
+      screen.getByRole("searchbox", {
+        name: "Buscar personas e invitaciones",
+      }),
+      "carlos",
+    );
+    expect(within(people).getByText("Carlos Gómez")).toBeInTheDocument();
+    expect(within(people).queryByText("Ana Restrepo")).not.toBeInTheDocument();
+    expect(router.state.location.search).toContain("buscar=carlos");
+
+    await user.selectOptions(
+      screen.getByLabelText("Filtrar por rol"),
+      "lawyer",
+    );
+    expect(router.state.location.search).toContain("rol=lawyer");
+    await user.click(screen.getByRole("button", { name: "Limpiar filtros" }));
+    expect(router.state.location.search).toBe("");
+  });
+
   it("invita con el correo y el rol elegidos y confirma el envío", async () => {
     serve("admin", {
       "POST /api/v1/organization/invitations": () =>

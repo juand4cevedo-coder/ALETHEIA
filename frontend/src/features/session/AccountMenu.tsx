@@ -49,7 +49,9 @@ export function AccountMenu({ me }: { me: Me }) {
   }, [open]);
 
   // La organización y el rol van en líneas separadas, no unidos por un separador.
-  const organization = me.platform_admin ? null : (me.organization?.name ?? null);
+  const organization = me.platform_admin
+    ? null
+    : (me.organization?.name ?? null);
   const role =
     !me.platform_admin && me.organization
       ? ROLE_LABELS[me.organization.role]

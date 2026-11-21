@@ -3,27 +3,40 @@ ingreso con correo y contraseña (API-005), renovación de la sesión (API-008),
 sesión actual y de todas (API-009 y API-010) y recuperación de la contraseña (API-011 y
 API-012)."""
 
-from typing import Annotated
+import hmac
+import uuid
+from typing import Annotated, Final
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response, status
+from fastapi.responses import RedirectResponse
 from fastapi.security import APIKeyCookie
 from sqlalchemy.orm import Session
 
 from app.adapters.email import REPLY_TO
+from app.adapters.google_oidc import GoogleOidc, GoogleOidcError, pkce_challenge
 from app.api.cookies import REFRESH_COOKIE, clear_session_cookies, set_session_cookies
 from app.api.deps import (
     SESSION_CHALLENGE,
     SESSION_ENDED,
     get_app_settings,
     get_client_ip,
+    get_google_oidc,
+    get_principal,
     get_principal_allowing_outdated_legal,
     get_session,
 )
 from app.core.config import Settings
 from app.core.errors import problem_response
-from app.core.tokens import InvalidLinkError
+from app.core.tokens import (
+    InvalidGoogleFlowError,
+    InvalidLinkError,
+    issue_google_flow,
+    new_opaque_token,
+    read_google_flow,
+)
 from app.schemas.auth import (
     ForgotPasswordRequest,
+    GoogleAuthStatus,
     LoginRequest,
     PasswordResetRequested,
     RegisterRequest,
@@ -35,12 +48,165 @@ from app.schemas.auth import (
 )
 from app.services import accounts as accounts_service
 from app.services import credentials as credentials_service
+from app.services import google_auth as google_auth_service
 from app.services import sessions as sessions_service
 from app.services import verification as verification_service
 from app.services.legal import LegalVersionMismatchError
 from app.services.sessions import Principal
 
 router = APIRouter(tags=["cuenta"])
+
+_GOOGLE_COOKIE: Final = "__Secure-aletheia_google"
+_GOOGLE_COOKIE_PATH: Final = "/api/v1/auth/google"
+
+
+def _set_google_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        _GOOGLE_COOKIE,
+        token,
+        max_age=600,
+        path=_GOOGLE_COOKIE_PATH,
+        secure=True,
+        httponly=True,
+        samesite="lax",
+    )
+
+
+def _clear_google_cookie(response: Response) -> None:
+    response.delete_cookie(
+        _GOOGLE_COOKIE,
+        path=_GOOGLE_COOKIE_PATH,
+        secure=True,
+        httponly=True,
+        samesite="lax",
+    )
+
+
+def _google_start(
+    settings: Settings,
+    google: GoogleOidc,
+    *,
+    mode: str,
+    user_id: uuid.UUID | None = None,
+    session_id: uuid.UUID | None = None,
+) -> RedirectResponse:
+    state = new_opaque_token()
+    nonce = new_opaque_token()
+    verifier = new_opaque_token()
+    token = issue_google_flow(
+        settings.signing_key(),
+        state=state,
+        nonce=nonce,
+        code_verifier=verifier,
+        mode=mode,
+        user_id=user_id,
+        session_id=session_id,
+    )
+    response = RedirectResponse(
+        google.authorization_url(
+            state=state,
+            nonce=nonce,
+            code_challenge=pkce_challenge(verifier),
+        ),
+        status_code=status.HTTP_303_SEE_OTHER,
+        headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"},
+    )
+    _set_google_cookie(response, token)
+    return response
+
+
+@router.get("/auth/google/status", summary="Saber si el acceso con Google está configurado")
+def google_status(
+    response: Response, settings: Annotated[Settings, Depends(get_app_settings)]
+) -> GoogleAuthStatus:
+    response.headers["Cache-Control"] = "no-store"
+    return GoogleAuthStatus(
+        enabled=settings.google_client_id is not None and settings.google_client_secret is not None
+    )
+
+
+@router.get("/auth/google/login", summary="Empezar el ingreso seguro con Google")
+def google_login_start(
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    google: Annotated[GoogleOidc, Depends(get_google_oidc)],
+) -> RedirectResponse:
+    return _google_start(settings, google, mode="login")
+
+
+@router.get("/auth/google/link", summary="Vincular Google a la cuenta con sesión")
+def google_link_start(
+    principal: Annotated[Principal, Depends(get_principal)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    google: Annotated[GoogleOidc, Depends(get_google_oidc)],
+) -> RedirectResponse:
+    return _google_start(
+        settings,
+        google,
+        mode="link",
+        user_id=principal.user_id,
+        session_id=principal.session_id,
+    )
+
+
+_google_cookie = APIKeyCookie(name=_GOOGLE_COOKIE, auto_error=False)
+
+
+@router.get("/auth/google/callback", summary="Completar el ingreso o la vinculación con Google")
+def google_callback(
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    google: Annotated[GoogleOidc, Depends(get_google_oidc)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    flow_token: Annotated[str | None, Depends(_google_cookie)],
+    state_value: Annotated[str | None, Query(alias="state", max_length=128)] = None,
+    code: Annotated[str | None, Query(max_length=4096)] = None,
+    error: Annotated[str | None, Query(max_length=100)] = None,
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> RedirectResponse:
+    fallback = "/ingresar?google=error"
+    response = RedirectResponse(fallback, status_code=status.HTTP_303_SEE_OTHER)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    _clear_google_cookie(response)
+    if flow_token is None or state_value is None or code is None or error is not None:
+        return response
+    try:
+        flow = read_google_flow(settings.signing_key(), flow_token)
+        if not hmac.compare_digest(flow.state, state_value):
+            raise InvalidGoogleFlowError
+        identity = google.exchange(code=code, code_verifier=flow.code_verifier, nonce=flow.nonce)
+        if flow.mode == "login":
+            issued = google_auth_service.login(
+                session,
+                settings,
+                identity.subject,
+                client_ip=client_ip,
+                user_agent=user_agent,
+            )
+            response.headers["location"] = "/app"
+            set_session_cookies(response, issued)
+        elif flow.user_id is not None and flow.session_id is not None:
+            google_auth_service.link(
+                session,
+                user_id=flow.user_id,
+                session_id=flow.session_id,
+                subject=identity.subject,
+                client_ip=client_ip,
+                user_agent=user_agent,
+            )
+            response.headers["location"] = "/app/cuenta?google=vinculado"
+    except google_auth_service.GoogleIdentityNotLinkedError:
+        response.headers["location"] = "/ingresar?google=sin-vinculo"
+    except google_auth_service.GoogleAccountBlockedError:
+        response.headers["location"] = "/ingresar?google=bloqueada"
+    except google_auth_service.GoogleIdentityAlreadyLinkedError:
+        response.headers["location"] = "/app/cuenta?google=ocupado"
+    except google_auth_service.GoogleLinkSessionEndedError:
+        response.headers["location"] = "/ingresar?google=sesion-vencida"
+    except InvalidGoogleFlowError, GoogleOidcError:
+        pass
+    return response
+
 
 _REGISTRATION_ACCEPTED = (
     "Si el correo puede usarse, le enviamos un enlace para verificarlo. Revise su bandeja de "

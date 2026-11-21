@@ -61,6 +61,7 @@ class Me(BaseModel):
     full_name: str = Field(description="Nombre de la persona.")
     email: str = Field(description="Correo de la cuenta.")
     email_verified: bool = Field(description="Si ya verificó su correo (HU-006).")
+    google_linked: bool = Field(description="Si puede ingresar con una identidad de Google.")
     platform_admin: bool = Field(
         description="Es la cuenta dueña de la plataforma y no pertenece a ningún despacho."
     )

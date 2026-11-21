@@ -34,6 +34,7 @@ SECURITY_ACTIONS = (
     "courtesy_revoked",
     "account_blocked",
     "account_unblocked",
+    "account_closed",
     "legal_accepted",
     "logout",
 )

@@ -384,7 +384,9 @@ function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
     ...reopenCaseMutation(),
     onSuccess: async () => {
       setConfirming(false);
-      setMessage("Caso reabierto. Su historial de cierre permanece en la cadena.");
+      setMessage(
+        "Caso reabierto. Su historial de cierre permanece en la cadena.",
+      );
       await refresh();
     },
   });
@@ -395,7 +397,9 @@ function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
     <div className={styles.lifecycle}>
       <div className={styles.lifecycleCopy}>
         <strong>
-          {detail.status === "open" ? "Expediente activo" : "Archivo de casos cerrados"}
+          {detail.status === "open"
+            ? "Expediente activo"
+            : "Archivo de casos cerrados"}
         </strong>
         <span>
           {detail.status === "open"
@@ -406,7 +410,11 @@ function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
         </span>
       </div>
       {canManage && (
-        <Button variant="secondary" size="sm" onClick={() => setConfirming(true)}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => setConfirming(true)}
+        >
           {detail.status === "open" ? "Cerrar y archivar" : "Reabrir caso"}
         </Button>
       )}
@@ -418,7 +426,11 @@ function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
       <Dialog
         open={confirming}
         onClose={() => setConfirming(false)}
-        title={detail.status === "open" ? "Cerrar y archivar el caso" : "Reabrir el caso"}
+        title={
+          detail.status === "open"
+            ? "Cerrar y archivar el caso"
+            : "Reabrir el caso"
+        }
         icon={
           detail.status === "open" ? (
             <BalanzaIcon size={24} />
@@ -449,18 +461,21 @@ function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
       >
         {detail.status === "open" ? (
           <p>
-            El caso dejará de aceptar nuevas evidencias. No se borrará ningún dato, archivo,
-            llave ni evento de custodia; podrá consultarse y exportarse desde el archivo.
+            El caso dejará de aceptar nuevas evidencias. No se borrará ningún
+            dato, archivo, llave ni evento de custodia; podrá consultarse y
+            exportarse desde el archivo.
           </p>
         ) : (
           <p>
-            El caso volverá a admitir trabajo y evidencias. El cierre anterior seguirá registrado
-            en la cadena de custodia y en la auditoría del despacho.
+            El caso volverá a admitir trabajo y evidencias. El cierre anterior
+            seguirá registrado en la cadena de custodia y en la auditoría del
+            despacho.
           </p>
         )}
         {error && (
           <Notice tone="error">
-            {apiProblem(error).detail ?? "No pudimos cambiar el estado del caso."}
+            {apiProblem(error).detail ??
+              "No pudimos cambiar el estado del caso."}
           </Notice>
         )}
       </Dialog>

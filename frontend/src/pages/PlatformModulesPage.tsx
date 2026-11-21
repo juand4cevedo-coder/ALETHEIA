@@ -182,9 +182,7 @@ function PlanAccessManager({
   const revoke = useMutation({
     ...revokeCourtesyMutation(),
     onSuccess: async () => {
-      setMessage(
-        "El acceso quedó revocado. El despacho está en solo lectura.",
-      );
+      setMessage("El acceso quedó revocado. El despacho está en solo lectura.");
       setReason("");
       await queryClient.invalidateQueries();
     },

@@ -449,16 +449,18 @@ describe("Libro de casos (HU-017)", () => {
   it("el campo de texto filtra por título, radicado o despacho sin pedir nada a la API", async () => {
     serve("lawyer", () => BOOK);
     const user = userEvent.setup();
-    await openBook();
+    const { router } = await openBook();
     const table = await screen.findByRole("table");
     const requests = fetchMock.mock.calls.length;
     const filter = screen.getByRole("searchbox", { name: /Filtrar/ });
 
     await user.type(filter, "sucesion");
+    expect(router.state.location.search).toContain("buscar=sucesion");
     expect(within(table).getAllByRole("row").slice(1)).toHaveLength(1);
     expect(within(table).getByText("Sucesión Gómez Pardo")).toBeInTheDocument();
 
     await user.clear(filter);
+    expect(router.state.location.search).not.toContain("buscar=");
     await user.type(filter, "2026 00143");
     expect(within(table).getAllByRole("row").slice(1)).toHaveLength(1);
     expect(

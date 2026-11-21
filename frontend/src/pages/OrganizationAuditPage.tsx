@@ -39,6 +39,7 @@ const ACTION_LABELS: Record<string, string> = {
   courtesy_revoked: "Cortesía revocada",
   account_blocked: "Cuenta bloqueada",
   account_unblocked: "Cuenta desbloqueada",
+  account_closed: "Cuenta cerrada y anonimizada",
   legal_accepted: "Condiciones aceptadas",
   logout: "Salida",
   google_linked: "Cuenta de Google vinculada",

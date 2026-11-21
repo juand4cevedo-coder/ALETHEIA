@@ -18,6 +18,7 @@ import {
   changePassword,
   changePlatformUserStatus,
   changeSupportTicketStatus,
+  closeAccount,
   closeCase,
   createCase,
   createCaseExport,
@@ -27,6 +28,10 @@ import {
   downloadEvidence,
   downloadExport,
   forgotPassword,
+  googleCallback,
+  googleLinkStart,
+  googleLoginStart,
+  googleStatus,
   grantCourtesy,
   health,
   inspectExport,
@@ -92,6 +97,9 @@ import type {
   ChangeSupportTicketStatusData,
   ChangeSupportTicketStatusError,
   ChangeSupportTicketStatusResponse,
+  CloseAccountData,
+  CloseAccountError,
+  CloseAccountResponse,
   CloseCaseData,
   CloseCaseError,
   CloseCaseResponse,
@@ -118,6 +126,12 @@ import type {
   ForgotPasswordData,
   ForgotPasswordError,
   ForgotPasswordResponse,
+  GoogleCallbackData,
+  GoogleCallbackError,
+  GoogleLinkStartData,
+  GoogleLoginStartData,
+  GoogleStatusData,
+  GoogleStatusResponse,
   GrantCourtesyData,
   GrantCourtesyError,
   GrantCourtesyResponse,
@@ -321,6 +335,112 @@ export const listPlansOptions = (options?: Options<ListPlansData>) =>
       return data;
     },
     queryKey: listPlansQueryKey(options),
+  });
+
+export const googleStatusQueryKey = (options?: Options<GoogleStatusData>) =>
+  createQueryKey("googleStatus", options);
+
+/**
+ * Saber si el acceso con Google está configurado
+ */
+export const googleStatusOptions = (options?: Options<GoogleStatusData>) =>
+  queryOptions<
+    GoogleStatusResponse,
+    DefaultError,
+    GoogleStatusResponse,
+    ReturnType<typeof googleStatusQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await googleStatus({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: googleStatusQueryKey(options),
+  });
+
+export const googleLoginStartQueryKey = (
+  options?: Options<GoogleLoginStartData>,
+) => createQueryKey("googleLoginStart", options);
+
+/**
+ * Empezar el ingreso seguro con Google
+ */
+export const googleLoginStartOptions = (
+  options?: Options<GoogleLoginStartData>,
+) =>
+  queryOptions<
+    unknown,
+    DefaultError,
+    unknown,
+    ReturnType<typeof googleLoginStartQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await googleLoginStart({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: googleLoginStartQueryKey(options),
+  });
+
+export const googleLinkStartQueryKey = (
+  options?: Options<GoogleLinkStartData>,
+) => createQueryKey("googleLinkStart", options);
+
+/**
+ * Vincular Google a la cuenta con sesión
+ */
+export const googleLinkStartOptions = (
+  options?: Options<GoogleLinkStartData>,
+) =>
+  queryOptions<
+    unknown,
+    DefaultError,
+    unknown,
+    ReturnType<typeof googleLinkStartQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await googleLinkStart({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: googleLinkStartQueryKey(options),
+  });
+
+export const googleCallbackQueryKey = (options?: Options<GoogleCallbackData>) =>
+  createQueryKey("googleCallback", options);
+
+/**
+ * Completar el ingreso o la vinculación con Google
+ */
+export const googleCallbackOptions = (options?: Options<GoogleCallbackData>) =>
+  queryOptions<
+    unknown,
+    GoogleCallbackError,
+    unknown,
+    ReturnType<typeof googleCallbackQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await googleCallback({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: googleCallbackQueryKey(options),
   });
 
 /**
@@ -627,6 +747,33 @@ export const changePasswordMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await changePassword({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Cerrar y anonimizar la cuenta sin borrar expedientes retenidos
+ */
+export const closeAccountMutation = (
+  options?: Partial<Options<CloseAccountData>>,
+): UseMutationOptions<
+  CloseAccountResponse,
+  CloseAccountError,
+  Options<CloseAccountData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CloseAccountResponse,
+    CloseAccountError,
+    Options<CloseAccountData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await closeAccount({
         ...options,
         ...fnOptions,
         throwOnError: true,

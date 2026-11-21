@@ -20,7 +20,6 @@ import { hasSessionHint } from "../features/session/sessionHint.ts";
 import { prefetchLikelyNext } from "../routes/lazyRoutes.ts";
 import {
   CerrarIcon,
-  ChevronAbajoIcon,
   FlechaDerechaIcon,
   MenuIcon,
 } from "../components/ui/icons.tsx";
@@ -45,6 +44,7 @@ export function PublicLayout() {
   );
   const menuRef = useRef<HTMLDialogElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileGroup, setMobileGroup] = useState<number | null>(null);
   const {
     panel: cookiePanel,
     openPanel: openCookies,
@@ -54,7 +54,11 @@ export function PublicLayout() {
   useEffect(() => {
     menuRef.current?.close();
   }, [location]);
-  const closeMenu = () => menuRef.current?.close();
+  const closeMenu = () => {
+    menuRef.current?.close();
+    setMobileGroup(null);
+  };
+  const selectedGroup = mobileGroup === null ? null : GROUPS[mobileGroup]!;
   return (
     <div className={styles.shell}>
       <a className={styles.skipLink} href="#contenido">
@@ -95,51 +99,101 @@ export function PublicLayout() {
         id="menu-movil"
         ref={menuRef}
         className={styles.sheet}
-        aria-labelledby="menu-movil-titulo"
-        onClose={() => setMenuOpen(false)}
+        aria-label="Menú"
+        onClose={() => {
+          setMenuOpen(false);
+          setMobileGroup(null);
+        }}
         onClick={(event) => {
           if (event.target === event.currentTarget) closeMenu();
         }}
       >
         <div className={styles.sheetHead}>
-          <p id="menu-movil-titulo">Menú</p>
-          <button type="button" onClick={closeMenu}>
-            <CerrarIcon size={18} />
-            Cerrar
+          {selectedGroup ? (
+            <button
+              className={styles.backButton}
+              type="button"
+              onClick={() => setMobileGroup(null)}
+            >
+              <FlechaDerechaIcon size={20} aria-hidden="true" />
+              <span className="visually-hidden">Volver al menú principal</span>
+            </button>
+          ) : (
+            <Brand />
+          )}
+          <span className={styles.mobileCta}>
+            <ButtonLink to={ROUTES.signUp} size="sm" onClick={closeMenu}>
+              {SIGN_UP_LABEL}
+            </ButtonLink>
+          </span>
+          <button
+            className={styles.closeButton}
+            type="button"
+            onClick={closeMenu}
+          >
+            <CerrarIcon size={22} aria-hidden="true" />
+            <span className="visually-hidden">Cerrar el menú</span>
           </button>
         </div>
-        <nav aria-label="Navegación móvil">
-          {GROUPS.map((group) => (
-            <details
-              key={group.title}
-              className={styles.mobileGroup}
-              name="mobile-navigation"
+        {selectedGroup ? (
+          <section
+            className={styles.mobileDetail}
+            aria-labelledby="menu-movil-titulo"
+          >
+            <Link
+              to={selectedGroup.feature.to}
+              className={styles.mobileFeature}
+              onClick={closeMenu}
             >
-              <summary>
-                {group.title}
-                <ChevronAbajoIcon size={16} aria-hidden="true" />
-              </summary>
-              <div className={styles.mobileLinks}>
-                {group.links.map((link) => (
-                  <Link key={link.to} to={link.to} onClick={closeMenu}>
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </details>
-          ))}
-          <Link to={ROUTES.pricing} onClick={closeMenu}>
-            Precios
-          </Link>
-          <Link to={access.to} onClick={closeMenu}>
-            {access.label}
-          </Link>
-        </nav>
-        <div className={styles.sheetCta}>
-          <ButtonLink to={ROUTES.signUp} onClick={closeMenu}>
-            {SIGN_UP_LABEL}
-          </ButtonLink>
-        </div>
+              <img src={selectedGroup.feature.image} alt="" />
+              <h2 id="menu-movil-titulo">{selectedGroup.title}</h2>
+              <p>{selectedGroup.feature.text}</p>
+            </Link>
+            <nav aria-label={`Opciones de ${selectedGroup.title}`}>
+              {selectedGroup.links.map((link) => (
+                <Link key={link.to} to={link.to} onClick={closeMenu}>
+                  <span>
+                    <strong>{link.label}</strong>
+                    {link.description && <small>{link.description}</small>}
+                  </span>
+                  <FlechaDerechaIcon size={18} aria-hidden="true" />
+                </Link>
+              ))}
+            </nav>
+          </section>
+        ) : (
+          <nav className={styles.mobileMenu} aria-label="Navegación móvil">
+            <p id="menu-movil-titulo" className={styles.mobileEyebrow}>
+              Para su práctica
+            </p>
+            {GROUPS.map((group, index) => (
+              <button
+                key={group.title}
+                type="button"
+                onClick={() => setMobileGroup(index)}
+              >
+                <span>
+                  <strong>{group.title}</strong>
+                  <small>{group.feature.text}</small>
+                </span>
+                <FlechaDerechaIcon size={18} aria-hidden="true" />
+              </button>
+            ))}
+            <Link aria-label="Precios" to={ROUTES.pricing} onClick={closeMenu}>
+              <span>
+                <strong>Precios</strong>
+                <small>Planes claros para trabajar con su equipo.</small>
+              </span>
+              <FlechaDerechaIcon size={18} aria-hidden="true" />
+            </Link>
+            <Link to={access.to} onClick={closeMenu}>
+              <span>
+                <strong>{access.label}</strong>
+              </span>
+              <FlechaDerechaIcon size={18} aria-hidden="true" />
+            </Link>
+          </nav>
+        )}
       </dialog>
       <main id="contenido" className={styles.main} tabIndex={-1}>
         <Outlet />

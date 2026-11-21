@@ -62,6 +62,17 @@ const SESSION_NOTICES = {
   expired: MESSAGES.sessionExpired,
 } as const;
 
+const GOOGLE_NOTICES: Record<string, string> = {
+  "sin-vinculo":
+    "Esa identidad de Google todavía no está vinculada. Ingrese con su contraseña y vincúlela desde Mi cuenta.",
+  bloqueada:
+    "La cuenta vinculada está bloqueada. Comuníquese con soporte para revisar su acceso.",
+  "sesion-vencida":
+    "La sesión usada para vincular Google terminó. Ingrese de nuevo e inténtelo desde Mi cuenta.",
+  error:
+    "No pudimos comprobar la identidad con Google. Inténtelo de nuevo; no se hizo ningún cambio en su cuenta.",
+};
+
 // Ingresar (UI-008, HU-007): un panel en la columna de acceso (ADR-029). Mientras la API
 // responde, el botón dice que trabaja; al entrar lleva a la pantalla de /app que la persona
 // intentaba abrir (NAV-003). El mensaje de error es el mismo exista o no la cuenta (RN-026).
@@ -85,6 +96,10 @@ export function SignInPage() {
 
   // Quien acaba de cerrar la sesión o cuya sesión venció recibe el aviso aquí (HU-009).
   const notice = sessionNotice(location.state);
+  const googleNotice =
+    GOOGLE_NOTICES[new URLSearchParams(location.search).get("google") ?? ""];
+  const accountClosed =
+    new URLSearchParams(location.search).get("cuenta") === "cerrada";
   const destination = destinationAfterSignIn(
     (location.state as { from?: unknown } | null)?.from,
     ROUTES.app,
@@ -191,6 +206,18 @@ export function SignInPage() {
           {notice && !problem && (
             <Notice tone={notice === "expired" ? "info" : "success"}>
               {SESSION_NOTICES[notice]}
+            </Notice>
+          )}
+
+          {googleNotice && !problem && (
+            <Notice tone="info">{googleNotice}</Notice>
+          )}
+
+          {accountClosed && !problem && (
+            <Notice tone="success">
+              Su cuenta quedó cerrada y todas sus sesiones fueron revocadas. Los
+              registros sujetos a conservación permanecen seudonimizados y
+              protegidos.
             </Notice>
           )}
 

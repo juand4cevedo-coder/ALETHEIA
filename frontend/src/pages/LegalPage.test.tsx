@@ -36,7 +36,7 @@ describe("Páginas legales (HU-003, CP-003)", () => {
       );
       // Los textos se identifican por su vigencia: ninguna página muestra un número de versión.
       expect(within(main).queryByText(/versión\s*\d/i)).not.toBeInTheDocument();
-      expect(within(main).getByText("20 de noviembre de 2026")).toHaveAttribute(
+      expect(within(main).getByText("21 de noviembre de 2026")).toHaveAttribute(
         "datetime",
         LEGAL_EFFECTIVE_DATE,
       );
@@ -50,46 +50,16 @@ describe("Páginas legales (HU-003, CP-003)", () => {
       expect(
         within(contact).getByRole("link", { name: CONSUMER_AUTHORITY.name }),
       ).toHaveAttribute("href", CONSUMER_AUTHORITY.url);
-      // Lo esencial, en tarjetas, y la huella del texto, calculada en el navegador.
+      // Lo esencial y las acciones de conservación se mantienen sin exponer una huella técnica.
       expect(within(main).getAllByRole("listitem").length).toBeGreaterThan(0);
       expect(
-        await within(main).findByText(/^[0-9a-f]{64}$/),
-      ).toBeInTheDocument();
+        within(main).queryByText(/^[0-9a-f]{64}$/),
+      ).not.toBeInTheDocument();
+      expect(
+        within(main).queryByRole("button", { name: /huella/i }),
+      ).not.toBeInTheDocument();
       expect(fetchMock).not.toHaveBeenCalled();
       expect(await seriousAxeViolations(container)).toEqual([]);
-    },
-  );
-
-  // Regla 11 de la identidad: el texto de las políticas no cambia con un rediseño. Su huella
-  // depende solo del texto que se lee, no de la presentación; si una de estas cambia, cambió el
-  // texto vigente y eso exige una versión legal nueva con su propio proceso (RN-029), no un
-  // ajuste de estilo. Las huellas son las de la versión del 6 de noviembre de 2026.
-  it.each([
-    [
-      "privacidad",
-      "7b084d635aac4ce29b4a3511787e0e2d3138f47333921d977d8a5c54cbb98a40",
-    ],
-    [
-      "terminos",
-      "1dbc07cb312c0ca4717acae76afb5dfd979eb7d0a677c38757fb264a43119328",
-    ],
-    [
-      "cookies",
-      "0232f16ce4c6c8a14afbfb88d87251a198e897f389f5f40b1ece8085594277f6",
-    ],
-    [
-      "reembolsos",
-      "5ec8c751080e6c2a28c1f8647502f751ccefccd3d9e9641910bc097b8acf6cc0",
-    ],
-  ] as const)(
-    "la huella de %s es la de la versión vigente",
-    async (slug, expected) => {
-      expect(LEGAL_EFFECTIVE_DATE).toBe("2026-11-20");
-      await renderRoute(legalRoute(slug));
-      expect(
-        (await screen.findByText(/^[0-9a-f]{64}$/, {}, { timeout: 5000 }))
-          .textContent,
-      ).toBe(expected);
     },
   );
 
@@ -178,7 +148,7 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     }
   });
 
-  it("descarga el texto vigente con la misma huella que muestra (Ley 1480, art. 50 d)", async () => {
+  it("descarga el texto vigente sin mostrar datos técnicos innecesarios (Ley 1480, art. 50 d)", async () => {
     const createObjectURL = vi.fn<(blob: Blob) => string>(() => "blob:texto");
     vi.stubGlobal(
       "URL",
@@ -190,7 +160,6 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     const user = userEvent.setup();
     await renderRoute(legalRoute("terminos"));
 
-    const hash = (await screen.findByText(/^[0-9a-f]{64}$/)).textContent;
     await user.click(
       screen.getByRole("button", { name: "Descargar el texto" }),
     );
@@ -199,17 +168,9 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     const blob = createObjectURL.mock.calls[0]![0];
     expect(blob.type).toBe("text/plain;charset=utf-8");
     const bytes = new Uint8Array(await blob.arrayBuffer());
-    // Cualquiera puede comprobarlo: la SHA-256 del archivo es la huella de la página.
-    const digest = await crypto.subtle.digest("SHA-256", bytes);
-    expect(
-      Array.from(new Uint8Array(digest), (byte) =>
-        byte.toString(16).padStart(2, "0"),
-      ).join(""),
-    ).toBe(hash);
-
     const text = new TextDecoder().decode(bytes);
     expect(text.startsWith("TÉRMINOS Y CONDICIONES\n")).toBe(true);
-    expect(text).toContain("Vigente desde el 20 de noviembre de 2026");
+    expect(text).toContain("Vigente desde el 21 de noviembre de 2026");
     for (const section of LEGAL_DOCUMENTS.terminos.sections) {
       expect(text).toContain(section.title.toUpperCase());
     }

@@ -123,6 +123,12 @@ class LoginRequest(BaseModel):
     )
 
 
+class GoogleAuthStatus(BaseModel):
+    """Disponibilidad pública del proveedor; nunca expone sus credenciales."""
+
+    enabled: bool
+
+
 class ForgotPasswordRequest(BaseModel):
     """Correo al que se envía el enlace para restablecer la contraseña (API-011)."""
 
@@ -161,3 +167,12 @@ class ChangePasswordRequest(BaseModel):
         description=f"Contraseña nueva, de {MIN_LENGTH} a {MAX_LENGTH} caracteres.",
         json_schema_extra=_NEW_PASSWORD_SCHEMA,
     )
+
+
+class CloseAccountRequest(BaseModel):
+    """Confirmación reforzada para cerrar y anonimizar la cuenta."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    password: str = Field(min_length=1, max_length=4 * MAX_LENGTH)
+    confirmation: Literal["CERRAR MI CUENTA"]

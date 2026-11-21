@@ -79,6 +79,7 @@ Abre `backend/.env` y reemplaza cada `CLAVE` por la del usuario correspondiente 
 | `ALETHEIA_DATABASE_PASSWORD_PARAMETER` y `ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER` | Solo en producción | No se definen: fuera de producción la API las rechaza |
 | `ALETHEIA_SMTP_HOST` y `ALETHEIA_SMTP_PORT` | No | `127.0.0.1` y `1025`, el Mailpit de Compose |
 | `ALETHEIA_TOKEN_SIGNING_KEY` | Sí, para los enlaces de los correos y las sesiones | Al menos 32 caracteres aleatorios: `uv run python -c "import secrets; print(secrets.token_urlsafe(48))"`. En producción se lee de Parameter Store |
+| `ALETHEIA_GOOGLE_CLIENT_ID` y `ALETHEIA_GOOGLE_CLIENT_SECRET` | Solo para activar Google | Credenciales de un cliente web; retorno exacto `http://localhost:5173/api/v1/auth/google/callback`. El secreto de producción se lee de Parameter Store |
 | `ALETHEIA_DEV_PUBLIC_URL` | No | `http://localhost:5173`, la dirección de los enlaces fuera de producción |
 | `ALETHEIA_LOCAL_KEY_PATH` | Sí, fuera de producción | `../infra/dev-key.pem`, la llave con la que se envuelven las llaves de los casos. En producción no se define: la maestra vive en AWS KMS y la API rechaza la variable |
 
@@ -278,6 +279,8 @@ En producción la API no recibe claves. Su URL llega sin clave y la API la lee d
 | `ALETHEIA_DATABASE_URL` | `postgresql+psycopg://aletheia_app@postgres:5432/aletheia` |
 | `ALETHEIA_DATABASE_PASSWORD_PARAMETER` | `/aletheia/prod/postgres/app-password` |
 | `ALETHEIA_TOKEN_SIGNING_KEY_PARAMETER` | `/aletheia/prod/app/token-signing-key` |
+| `ALETHEIA_GOOGLE_CLIENT_ID` | Identificador público del cliente web de Google, si se activa la integración |
+| `ALETHEIA_GOOGLE_CLIENT_SECRET_PARAMETER` | `/aletheia/prod/google/client-secret`, si se activa la integración |
 | `ALETHEIA_MIGRATION_DATABASE_URL` | `postgresql+psycopg://aletheia_owner@postgres:5432/aletheia` |
 | `ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER` | `/aletheia/prod/postgres/owner-password` |
 | `ALETHEIA_EVIDENCE_BUCKET` | El bucket S3 de evidencias y paquetes de exportación (`docs/operacion/produccion.md`) |

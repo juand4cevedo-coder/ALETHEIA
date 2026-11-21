@@ -666,6 +666,22 @@ export type CheckoutOut = {
 };
 
 /**
+ * CloseAccountRequest
+ *
+ * Confirmación reforzada para cerrar y anonimizar la cuenta.
+ */
+export type CloseAccountRequest = {
+  /**
+   * Password
+   */
+  password: string;
+  /**
+   * Confirmation
+   */
+  confirmation: "CERRAR MI CUENTA";
+};
+
+/**
  * CourtesyGrant
  */
 export type CourtesyGrant = {
@@ -1040,6 +1056,18 @@ export type ForgotPasswordRequest = {
 };
 
 /**
+ * GoogleAuthStatus
+ *
+ * Disponibilidad pública del proveedor; nunca expone sus credenciales.
+ */
+export type GoogleAuthStatus = {
+  /**
+   * Enabled
+   */
+  enabled: boolean;
+};
+
+/**
  * HealthStatus
  *
  * Estado del servicio y de la base de datos cuando ambos responden.
@@ -1339,6 +1367,12 @@ export type Me = {
    * Si ya verificó su correo (HU-006).
    */
   email_verified: boolean;
+  /**
+   * Google Linked
+   *
+   * Si puede ingresar con una identidad de Google.
+   */
+  google_linked: boolean;
   /**
    * Platform Admin
    *
@@ -2280,6 +2314,88 @@ export type ListPlansResponses = {
 
 export type ListPlansResponse = ListPlansResponses[keyof ListPlansResponses];
 
+export type GoogleStatusData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/google/status";
+};
+
+export type GoogleStatusResponses = {
+  /**
+   * Successful Response
+   */
+  200: GoogleAuthStatus;
+};
+
+export type GoogleStatusResponse =
+  GoogleStatusResponses[keyof GoogleStatusResponses];
+
+export type GoogleLoginStartData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/google/login";
+};
+
+export type GoogleLoginStartResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type GoogleLinkStartData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/google/link";
+};
+
+export type GoogleLinkStartResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type GoogleCallbackData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * State
+     */
+    state?: string | null;
+    /**
+     * Code
+     */
+    code?: string | null;
+    /**
+     * Error
+     */
+    error?: string | null;
+  };
+  url: "/api/v1/auth/google/callback";
+};
+
+export type GoogleCallbackErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type GoogleCallbackError =
+  GoogleCallbackErrors[keyof GoogleCallbackErrors];
+
+export type GoogleCallbackResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
 export type RegisterAccountData = {
   body: RegisterRequest;
   path?: never;
@@ -2671,6 +2787,40 @@ export type ChangePasswordResponses = {
 
 export type ChangePasswordResponse =
   ChangePasswordResponses[keyof ChangePasswordResponses];
+
+export type CloseAccountData = {
+  body: CloseAccountRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/me/account/closure";
+};
+
+export type CloseAccountErrors = {
+  /**
+   * La contraseña no coincide.
+   */
+  400: Problem;
+  /**
+   * La cuenta tiene una responsabilidad que debe transferirse.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CloseAccountError = CloseAccountErrors[keyof CloseAccountErrors];
+
+export type CloseAccountResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type CloseAccountResponse =
+  CloseAccountResponses[keyof CloseAccountResponses];
 
 export type RenameOrganizationData = {
   body: OrganizationRenameRequest;

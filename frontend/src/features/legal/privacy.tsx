@@ -200,10 +200,10 @@ export const privacyPolicy: LegalDocument = {
             </li>
             <li>
               ALETHEIA solo los guarda, calcula su huella, obtiene su sello de
-              tiempo, los archiva y los exporta para prestar el servicio. No
-              los analiza ni los usa para fines propios. Una solicitud de
-              supresión se ejecuta cuando haya sido validada y no exista un
-              deber legal o contractual de conservar la información.
+              tiempo, los archiva y los exporta para prestar el servicio. No los
+              analiza ni los usa para fines propios. Una solicitud de supresión
+              se ejecuta cuando haya sido validada y no exista un deber legal o
+              contractual de conservar la información.
             </li>
             <li>
               Cada caso se cifra con su propia llave, y el servicio no le da a
@@ -361,8 +361,11 @@ export const privacyPolicy: LegalDocument = {
         <ul>
           <li>
             Los datos de cuenta, mientras la cuenta exista. Al cerrarla se
-            eliminan, salvo lo que la ley obligue a conservar, como la prueba de
-            los pagos y de su aceptación de estos textos.
+            revocan todas las sesiones, se desvinculan los proveedores de acceso
+            y la identidad directa se reemplaza por un seudónimo. La prueba de
+            pagos, aceptaciones, autorías y demás registros que deban
+            conservarse permanece vinculada únicamente a ese seudónimo durante
+            el plazo aplicable.
           </li>
           <li>
             La dirección IP y el navegador de los registros de seguridad, 90
