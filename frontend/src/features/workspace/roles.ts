@@ -8,7 +8,7 @@ export type InvitableRole = InvitationOut["role"];
 
 // Nombres de los roles tal como los lee la persona (especificación, sección 5).
 export const ROLE_LABELS: Record<Role, string> = {
-  owner: "Propietario",
+  owner: "Responsable del despacho",
   admin: "Administrador",
   lawyer: "Abogado",
   assistant: "Asistente",

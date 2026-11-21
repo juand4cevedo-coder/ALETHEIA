@@ -22,6 +22,11 @@ from app.db.base import Base
 from app.models._columns import CreatedAt, UUIDv7Pk, text_values
 
 CASE_STATUSES: Final = ("open", "closed", "deleting")
+RETENTION_BASES: Final = (
+    "organization_policy",
+    "legal_or_contractual_duty",
+    "litigation_hold",
+)
 # Tipo que declara quien sube la evidencia; la interfaz lo muestra en español.
 DECLARED_TYPES: Final = ("chat", "email", "audio", "image", "document", "other")
 # Especialidad del caso; la interfaz la muestra en español.
@@ -51,6 +56,7 @@ CUSTODY_ACTIONS: Final = (
     "export_downloaded",
     "chain_verified",
     "case_closed",
+    "case_reopened",
     "deletion_requested",
 )
 
@@ -74,6 +80,14 @@ class Case(Base):
         CheckConstraint("char_length(court) BETWEEN 1 AND 160", name="court_length"),
         CheckConstraint(text_values("practice_area", PRACTICE_AREAS), name="practice_area"),
         CheckConstraint(text_values("status", CASE_STATUSES), name="status"),
+        CheckConstraint(
+            "retention_basis IS NULL OR " + text_values("retention_basis", RETENTION_BASES),
+            name="retention_basis",
+        ),
+        CheckConstraint(
+            "status <> 'closed' OR (retention_until IS NOT NULL AND retention_basis IS NOT NULL)",
+            name="closed_retention",
+        ),
         CheckConstraint("char_length(key_version) BETWEEN 1 AND 120", name="key_version_length"),
         CheckConstraint("custody_seq >= 0", name="custody_seq"),
         # Un caso abierto no tiene fecha de cierre; uno cerrado o en eliminación sí (RN-020).
@@ -90,6 +104,12 @@ class Case(Base):
             "filing_number",
             unique=True,
             postgresql_where=text("filing_number IS NOT NULL"),
+        ),
+        Index(
+            "ix_cases_organization_id_status_retention_until",
+            "organization_id",
+            "status",
+            "retention_until",
         ),
     )
 
@@ -110,6 +130,11 @@ class Case(Base):
     created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[CreatedAt]
     closed_at: Mapped[datetime.datetime | None]
+    # El cierre archiva: el contenido sigue cifrado y consultable hasta que corresponda revisar
+    # su conservación. Un bloqueo jurídico impide automatizar una supresión posterior.
+    retention_until: Mapped[datetime.datetime | None]
+    retention_basis: Mapped[str | None]
+    legal_hold: Mapped[bool] = mapped_column(server_default="false")
 
 
 class CaseMember(Base):

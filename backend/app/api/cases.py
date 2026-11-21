@@ -631,6 +631,84 @@ def read_case(
     )
 
 
+@router.post(
+    "/{case_id}/close",
+    response_model=CaseOut,
+    summary="Cerrar y archivar un caso sin borrar sus datos",
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "El rol no administra el ciclo de vida del caso."},
+        404: {"description": "El caso no existe o la persona no pertenece a él."},
+        409: {"description": "El caso ya está cerrado o el despacho está en solo lectura."},
+    },
+)
+def close_case(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> CaseOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        cases_service.close_case(
+            session,
+            principal,
+            case_id,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+        return _case_out(cases_service.get_case(session, principal, case_id))
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    except cases_service.NotAllowedToManageCaseError:
+        raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
+    except cases_service.CaseAlreadyInStateError:
+        raise HTTPException(409, detail="El caso ya está cerrado.", headers=_NO_STORE) from None
+    except OrganizationNotActiveError:
+        raise HTTPException(409, detail=ORGANIZATION_NOT_ACTIVE, headers=_NO_STORE) from None
+
+
+@router.post(
+    "/{case_id}/reopen",
+    response_model=CaseOut,
+    summary="Reabrir un caso conservando la historia de su archivo",
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "El rol no administra el ciclo de vida del caso."},
+        404: {"description": "El caso no existe o la persona no pertenece a él."},
+        409: {"description": "El caso ya está abierto o el despacho está en solo lectura."},
+    },
+)
+def reopen_case(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> CaseOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        cases_service.reopen_case(
+            session,
+            principal,
+            case_id,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+        return _case_out(cases_service.get_case(session, principal, case_id))
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    except cases_service.NotAllowedToManageCaseError:
+        raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
+    except cases_service.CaseAlreadyInStateError:
+        raise HTTPException(409, detail="El caso ya está abierto.", headers=_NO_STORE) from None
+    except OrganizationNotActiveError:
+        raise HTTPException(409, detail=ORGANIZATION_NOT_ACTIVE, headers=_NO_STORE) from None
+
+
 @router.get(
     "/{case_id}/available-members",
     summary="Personas disponibles para el equipo del caso",
@@ -743,6 +821,10 @@ def _case_summary_out(item: cases_service.CaseSummary) -> CaseSummaryOut:
             "internal_reference": item.internal_reference,
             "status": item.status,
             "created_at": item.created_at,
+            "closed_at": item.closed_at,
+            "retention_until": item.retention_until,
+            "retention_basis": item.retention_basis,
+            "legal_hold": item.legal_hold,
             "created_by_name": item.created_by_name,
             "member_count": item.member_count,
             "evidence_count": item.evidence_count,
@@ -775,6 +857,10 @@ def _case_out(view: cases_service.CaseView) -> CaseOut:
             "internal_reference": case.internal_reference,
             "status": case.status,
             "created_at": case.created_at,
+            "closed_at": case.closed_at,
+            "retention_until": case.retention_until,
+            "retention_basis": case.retention_basis,
+            "legal_hold": case.legal_hold,
             "created_by_name": view.created_by_name,
             "member_count": len(view.members),
         }

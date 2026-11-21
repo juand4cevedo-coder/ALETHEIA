@@ -49,8 +49,11 @@ export function AccountMenu({ me }: { me: Me }) {
   }, [open]);
 
   // La organización y el rol van en líneas separadas, no unidos por un separador.
-  const organization = me.organization?.name ?? null;
-  const role = me.organization ? ROLE_LABELS[me.organization.role] : null;
+  const organization = me.platform_admin ? null : (me.organization?.name ?? null);
+  const role =
+    !me.platform_admin && me.organization
+      ? ROLE_LABELS[me.organization.role]
+      : null;
 
   return (
     <div ref={rootRef} className={styles.root}>
@@ -88,7 +91,7 @@ export function AccountMenu({ me }: { me: Me }) {
           {organization && <p className={styles.panelRole}>{organization}</p>}
           {role && <p className={styles.panelRole}>{`Rol: ${role}`}</p>}
           {me.platform_admin && (
-            <p className={styles.panelRole}>Propietario de Aletheia</p>
+            <p className={styles.panelRole}>Dueño de la plataforma</p>
           )}
         </div>
         <ul className={styles.actions}>

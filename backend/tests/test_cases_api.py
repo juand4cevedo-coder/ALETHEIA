@@ -160,6 +160,10 @@ def test_un_abogado_abre_un_caso(dispositivo: NuevoCliente, db: Session) -> None
         "internal_reference": "EXP-2026-14",
         "status": "open",
         "created_at": cuerpo["created_at"],
+        "closed_at": None,
+        "retention_until": None,
+        "retention_basis": None,
+        "legal_hold": False,
         "created_by_name": abogado.full_name,
         "member_count": 1,
     }

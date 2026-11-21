@@ -145,7 +145,7 @@ export function PlatformBillingPage() {
                   </table>
                 </div>
               </Panel>
-              <CourtesyManager plans={billing.data.plans} />
+              <PlanAccessManager plans={billing.data.plans} />
             </>
           )}
         </>
@@ -154,7 +154,7 @@ export function PlatformBillingPage() {
   );
 }
 
-function CourtesyManager({
+function PlanAccessManager({
   plans,
 }: {
   plans: { code: string; name: string }[];
@@ -173,22 +173,22 @@ function CourtesyManager({
   const grant = useMutation({
     ...grantCourtesyMutation(),
     onSuccess: async () => {
-      setMessage("La cortesía quedó registrada.");
+      setMessage("El acceso al plan quedó registrado.");
       setReason("");
       await queryClient.invalidateQueries();
     },
-    onError: () => setMessage("No pudimos registrar la cortesía."),
+    onError: () => setMessage("No pudimos registrar el acceso al plan."),
   });
   const revoke = useMutation({
     ...revokeCourtesyMutation(),
     onSuccess: async () => {
       setMessage(
-        "La cortesía quedó revocada. El despacho está en solo lectura.",
+        "El acceso quedó revocado. El despacho está en solo lectura.",
       );
       setReason("");
       await queryClient.invalidateQueries();
     },
-    onError: () => setMessage("No pudimos revocar la cortesía."),
+    onError: () => setMessage("No pudimos revocar el acceso."),
   });
   const selectedPlan = plans.find((plan) => plan.code === planCode);
   const busy = grant.isPending || revoke.isPending;
@@ -235,7 +235,7 @@ function CourtesyManager({
     }
     if (
       !window.confirm(
-        `Revocar la cortesía de ${target.data.organization_name}? El despacho pasará a solo lectura.`,
+        `¿Revocar el acceso de ${target.data.organization_name}? El despacho pasará a solo lectura.`,
       )
     )
       return;
@@ -251,13 +251,13 @@ function CourtesyManager({
 
   return (
     <Panel
-      title="Planes de cortesía"
-      description="Conceda acceso sin registrar un pago."
+      title="Asignación de planes"
+      description="Otorgue, cambie o revoque el plan de cualquier despacho registrado, sin entrar a sus casos."
     >
       <div className={styles.courtesy}>
         <form className={styles.form} onSubmit={search}>
           <label htmlFor="courtesy-email">
-            Correo del titular del despacho
+            Correo del responsable del despacho
           </label>
           <div className={styles.inlineForm}>
             <input
@@ -267,13 +267,13 @@ function CourtesyManager({
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
-            <Button type="submit">Buscar despacho</Button>
+            <Button type="submit">Buscar cuenta</Button>
           </div>
         </form>
         {target.isPending && searched && <p role="status">Buscando despacho</p>}
         {target.isError && (
           <Notice tone="error">
-            No encontramos un despacho con ese titular.
+            No encontramos un despacho asociado a esa cuenta responsable.
           </Notice>
         )}
         {target.data && (
@@ -293,7 +293,7 @@ function CourtesyManager({
               <span>
                 Acceso:{" "}
                 {target.data.access_source === "courtesy"
-                  ? "Cortesía"
+                  ? "Asignado por la plataforma"
                   : target.data.access_source === "trial"
                     ? "Prueba"
                     : "Otro"}
@@ -315,7 +315,7 @@ function CourtesyManager({
               )}
             </div>
             <form className={styles.form} onSubmit={submit}>
-              <label htmlFor="courtesy-plan">Plan a conceder</label>
+              <label htmlFor="courtesy-plan">Plan que tendrá el despacho</label>
               <select
                 id="courtesy-plan"
                 required
@@ -350,7 +350,7 @@ function CourtesyManager({
               />
               <div className={styles.inlineForm}>
                 <Button type="submit" busy={busy}>
-                  Conceder o renovar
+                  Asignar o renovar plan
                 </Button>
                 {target.data.access_source === "courtesy" &&
                   target.data.status === "active" && (
@@ -359,7 +359,7 @@ function CourtesyManager({
                       busy={busy}
                       onClick={revokeCurrent}
                     >
-                      Revocar cortesía
+                      Revocar acceso
                     </Button>
                   )}
               </div>

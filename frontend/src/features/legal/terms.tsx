@@ -131,9 +131,10 @@ export const termsOfService: LegalDocument = {
             inmediato a {mail}.
           </p>
           <p>
-            Cada organización tiene un propietario, que contrata el plan, invita
-            a los miembros y les asigna un rol. Cada rol solo puede hacer lo que
-            le corresponde, y ese límite lo aplica el servidor.
+            Cada organización tiene una persona responsable del despacho, que
+            contrata el plan, invita a los miembros y les asigna un rol. Cada
+            rol solo puede hacer lo que le corresponde, y ese límite lo aplica
+            el servidor.
           </p>
         </>
       ),
@@ -199,7 +200,8 @@ export const termsOfService: LegalDocument = {
           </p>
           <ol>
             <li>
-              El propietario elige el plan y la periodicidad, mensual o anual.
+              La persona responsable del despacho elige el plan y la
+              periodicidad, mensual o anual.
             </li>
             <li>
               Antes de pagar ve un resumen con el plan, el periodo, el valor
@@ -301,22 +303,24 @@ export const termsOfService: LegalDocument = {
     },
     {
       id: "cancelacion",
-      title: "Cancelación y eliminación",
+      title: "Cancelación, archivo y conservación",
       body: (
         <>
           <p>
-            El propietario puede cancelar la suscripción cuando quiera, desde su
-            panel o escribiendo a {mail}. Después de cancelar no se hacen más
-            cobros y el plan sigue activo hasta el final del periodo pagado. A
-            partir de ahí, la cuenta queda 30 días en solo lectura para que
-            pueda exportar sus casos. Pasado ese plazo, los casos se eliminan
-            destruyendo sus llaves de cifrado y le enviamos una constancia de
-            eliminación por correo.
+            La persona responsable del despacho puede cancelar la suscripción
+            cuando quiera, desde su panel o escribiendo a {mail}. Después de
+            cancelar no se hacen más cobros y el plan sigue activo hasta el
+            final del periodo pagado. A partir de ahí, la cuenta queda en solo
+            lectura para consultar y exportar la información conservada.
           </p>
           <p>
-            El propietario o un administrador también pueden cerrar y eliminar
-            un caso en cualquier momento, con su constancia. Cuándo procede una
-            devolución de dinero lo explica la{" "}
+            Cerrar un caso lo mueve al archivo histórico: no borra archivos,
+            llaves, eventos ni registros de custodia. ALETHEIA aplica como
+            plazo operativo inicial diez años desde el cierre, salvo una
+            obligación, orden o instrucción documentada que exija otro plazo.
+            Las solicitudes de supresión se evalúan antes de ejecutarse y no
+            proceden mientras exista un deber legal o contractual de conservar.
+            Cuándo procede una devolución de dinero lo explica la{" "}
             <Link to={legalRoute("reembolsos")}>
               política de reembolsos y cancelación
             </Link>

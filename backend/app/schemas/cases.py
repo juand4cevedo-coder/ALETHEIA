@@ -99,7 +99,7 @@ class CaseCreate(BaseModel):
 
 
 class CaseOut(BaseModel):
-    """Un caso abierto."""
+    """Un caso activo o archivado."""
 
     id: uuid.UUID = Field(description="Identificador del caso.")
     title: str = Field(description="Título del caso.")
@@ -109,6 +109,14 @@ class CaseOut(BaseModel):
     internal_reference: str | None = Field(description="Referencia interna de la oficina.")
     status: Literal["open", "closed"] = Field(description="Si el caso sigue abierto.")
     created_at: datetime.datetime = Field(description="Cuándo se abrió.")
+    closed_at: datetime.datetime | None = Field(description="Cuándo se archivó, si está cerrado.")
+    retention_until: datetime.datetime | None = Field(
+        description="Fecha mínima para revisar si la conservación debe continuar."
+    )
+    retention_basis: (
+        Literal["organization_policy", "legal_or_contractual_duty", "litigation_hold"] | None
+    ) = Field(description="Fundamento operativo de la conservación.")
+    legal_hold: bool = Field(description="Si existe un bloqueo jurídico que impide suprimir.")
     created_by_name: str = Field(description="Nombre de quien lo abrió.")
     member_count: int = Field(description="Personas asignadas al caso.")
 

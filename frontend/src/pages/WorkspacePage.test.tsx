@@ -108,7 +108,7 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
 
     await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
     expect(
-      screen.getByText("Ruiz & Asociados, Propietario"),
+      screen.getByText("Ruiz & Asociados, Responsable del despacho"),
     ).toBeInTheDocument();
 
     const overview = screen.getByRole("region", {

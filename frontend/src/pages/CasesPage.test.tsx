@@ -28,7 +28,7 @@ function rule(selector: string): string {
 type Role = "owner" | "admin" | "lawyer" | "assistant";
 
 const ASSISTANT_EMPTY =
-  "Los casos los abre un abogado, el administrador o el propietario. Cuando lo asignen a uno, aparecerá aquí";
+  "Los casos los abre un abogado, el administrador o la persona responsable del despacho. Cuando lo asignen a uno, aparecerá aquí";
 
 function me(role: Role, emailVerified = true) {
   return {
@@ -345,7 +345,7 @@ describe("Libro de casos (HU-017)", () => {
     ).toBeInTheDocument();
   });
 
-  it("el segmento Cerrados vuelve a pedir la lista con status=closed", async () => {
+  it("el segmento Archivo vuelve a pedir la lista con status=closed", async () => {
     serve("lawyer", (query) =>
       query.get("status") === "closed"
         ? { items: [ARCHIVED], next_cursor: null, totals: TOTALS }
@@ -364,7 +364,7 @@ describe("Libro de casos (HU-017)", () => {
     expect(open).toBeChecked();
     expect(open.closest("label")).toHaveTextContent("3");
     const closed = within(segments).getByRole("radio", {
-      name: "Cerrados, 1 caso",
+      name: "Archivo, 1 caso",
     });
     expect(closed.closest("label")).toHaveTextContent("1");
     expect(
@@ -373,7 +373,12 @@ describe("Libro de casos (HU-017)", () => {
 
     await user.click(closed);
 
-    const table = await screen.findByRole("table", { name: /Casos cerrados/ });
+    expect(
+      screen.getByText(/Cerrar(?:los)? no elimina archivos ni eventos/i),
+    ).toBeVisible();
+    const table = await screen.findByRole("table", {
+      name: /Archivo histórico de casos/,
+    });
     expect(
       await within(table).findByText("Restitución de inmueble, Ortiz"),
     ).toBeInTheDocument();
@@ -418,10 +423,10 @@ describe("Libro de casos (HU-017)", () => {
     await renderRoute("/app/casos?estado=cerrados");
 
     expect(
-      await screen.findByRole("radio", { name: "Cerrados, 1 caso" }),
+      await screen.findByRole("radio", { name: "Archivo, 1 caso" }),
     ).toBeChecked();
     expect(
-      await screen.findByRole("table", { name: /Casos cerrados/ }),
+      await screen.findByRole("table", { name: /Archivo histórico de casos/ }),
     ).toBeInTheDocument();
     expect(bookRequests().map((query) => query.get("status"))).toEqual([
       "closed",

@@ -119,7 +119,7 @@ export function WorkspacePage() {
               }
             />
             <StatTile
-              label="Casos cerrados"
+              label="En archivo histórico"
               value={
                 caseTotals?.closed ??
                 (totals.isPending ? "Cargando" : "No disponible")

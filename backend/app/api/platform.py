@@ -50,7 +50,7 @@ def _courtesy_result(response: Response, view: courtesy.CourtesyView) -> Courtes
     return CourtesyTarget.model_validate(view, from_attributes=True)
 
 
-@router.get("/courtesy", summary="Buscar un despacho por correo de su titular")
+@router.get("/courtesy", summary="Buscar un despacho por su cuenta responsable")
 def lookup_courtesy(
     response: Response,
     principal: Annotated[Principal, Depends(get_platform_admin)],
@@ -61,11 +61,11 @@ def lookup_courtesy(
         return _courtesy_result(response, courtesy.lookup(session, principal.user_id, owner_email))
     except courtesy.OwnerNotFound:
         raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail="No encontramos ese despacho."
+            status.HTTP_404_NOT_FOUND, detail="No encontramos un despacho asociado a esa cuenta."
         ) from None
 
 
-@router.post("/courtesy", summary="Conceder o renovar un plan de cortesía")
+@router.post("/courtesy", summary="Asignar o renovar el plan de un despacho")
 def grant_courtesy(
     change: CourtesyGrant,
     response: Response,
@@ -87,11 +87,11 @@ def grant_courtesy(
         return _courtesy_result(response, view)
     except courtesy.OwnerNotFound:
         raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail="No encontramos ese despacho."
+            status.HTTP_404_NOT_FOUND, detail="No encontramos un despacho asociado a esa cuenta."
         ) from None
     except courtesy.CourtesyConflict:
         raise HTTPException(
-            status.HTTP_409_CONFLICT, detail="No se puede conceder este plan."
+            status.HTTP_409_CONFLICT, detail="No se puede asignar este plan."
         ) from None
     except PermissionError:
         raise HTTPException(
@@ -99,7 +99,7 @@ def grant_courtesy(
         ) from None
 
 
-@router.post("/courtesy/revoke", summary="Revocar un plan de cortesía")
+@router.post("/courtesy/revoke", summary="Revocar el acceso comercial de un despacho")
 def revoke_courtesy(
     change: CourtesyRevoke,
     response: Response,
@@ -119,11 +119,11 @@ def revoke_courtesy(
         return _courtesy_result(response, view)
     except courtesy.OwnerNotFound:
         raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail="No encontramos ese despacho."
+            status.HTTP_404_NOT_FOUND, detail="No encontramos un despacho asociado a esa cuenta."
         ) from None
     except courtesy.CourtesyConflict:
         raise HTTPException(
-            status.HTTP_409_CONFLICT, detail="No hay una cortesía activa."
+            status.HTTP_409_CONFLICT, detail="No hay un acceso asignado por la plataforma."
         ) from None
     except PermissionError:
         raise HTTPException(

@@ -67,6 +67,8 @@ def _caso(
             title=titulo,
             status=estado,
             closed_at=None if estado == "open" else _AHORA,
+            retention_until=(None if estado == "open" else _AHORA + datetime.timedelta(days=3650)),
+            retention_basis=None if estado == "open" else "organization_policy",
             wrapped_key=os.urandom(40),
             key_version="prueba",
             created_by=creador.id,

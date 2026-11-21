@@ -35,6 +35,9 @@ import type {
   ChangeSupportTicketStatusData,
   ChangeSupportTicketStatusErrors,
   ChangeSupportTicketStatusResponses,
+  CloseCaseData,
+  CloseCaseErrors,
+  CloseCaseResponses,
   CreateCaseData,
   CreateCaseErrors,
   CreateCaseExportData,
@@ -136,6 +139,9 @@ import type {
   RenameOrganizationData,
   RenameOrganizationErrors,
   RenameOrganizationResponses,
+  ReopenCaseData,
+  ReopenCaseErrors,
+  ReopenCaseResponses,
   ResendVerificationData,
   ResendVerificationErrors,
   ResendVerificationResponses,
@@ -922,6 +928,50 @@ export const readCase = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Cerrar y archivar un caso sin borrar sus datos
+ */
+export const closeCase = <ThrowOnError extends boolean = false>(
+  options: Options<CloseCaseData, ThrowOnError>,
+): RequestResult<CloseCaseResponses, CloseCaseErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CloseCaseResponses,
+    CloseCaseErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/close",
+    ...options,
+  });
+
+/**
+ * Reabrir un caso conservando la historia de su archivo
+ */
+export const reopenCase = <ThrowOnError extends boolean = false>(
+  options: Options<ReopenCaseData, ThrowOnError>,
+): RequestResult<ReopenCaseResponses, ReopenCaseErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    ReopenCaseResponses,
+    ReopenCaseErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/reopen",
+    ...options,
+  });
+
+/**
  * Personas disponibles para el equipo del caso
  */
 export const availableCaseMembers = <ThrowOnError extends boolean = false>(
@@ -1113,7 +1163,7 @@ export const readCaseExport = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Buscar un despacho por correo de su titular
+ * Buscar un despacho por su cuenta responsable
  */
 export const lookupCourtesy = <ThrowOnError extends boolean = false>(
   options: Options<LookupCourtesyData, ThrowOnError>,
@@ -1135,7 +1185,7 @@ export const lookupCourtesy = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Conceder o renovar un plan de cortesía
+ * Asignar o renovar el plan de un despacho
  */
 export const grantCourtesy = <ThrowOnError extends boolean = false>(
   options: Options<GrantCourtesyData, ThrowOnError>,
@@ -1161,7 +1211,7 @@ export const grantCourtesy = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Revocar un plan de cortesía
+ * Revocar el acceso comercial de un despacho
  */
 export const revokeCourtesy = <ThrowOnError extends boolean = false>(
   options: Options<RevokeCourtesyData, ThrowOnError>,

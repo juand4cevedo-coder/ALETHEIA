@@ -49,7 +49,7 @@ const SEGMENTS: readonly {
   count: (totals: CaseTotalsOut) => number;
 }[] = [
   { value: "open", label: "Abiertos", count: (totals) => totals.open },
-  { value: "closed", label: "Cerrados", count: (totals) => totals.closed },
+  { value: "closed", label: "Archivo", count: (totals) => totals.closed },
   {
     value: "all",
     label: "Todos",
@@ -80,19 +80,19 @@ function casesCount(count: number): string {
 
 const CAPTIONS: Record<Status, string> = {
   open: "Casos abiertos",
-  closed: "Casos cerrados",
+  closed: "Archivo histórico de casos",
   all: "Todos los casos",
 };
 
 const NONE_IN_SEGMENT: Record<Status, string> = {
   open: "No tiene casos abiertos.",
-  closed: "No tiene casos cerrados.",
+  closed: "No tiene casos en el archivo histórico.",
   all: "No tiene casos.",
 };
 
 /** Texto exacto para quien no abre casos (especificación, 5.2). */
 const ASSISTANT_EMPTY =
-  "Los casos los abre un abogado, el administrador o el propietario. Cuando lo asignen a uno, aparecerá aquí";
+  "Los casos los abre un abogado, el administrador o la persona responsable del despacho. Cuando lo asignen a uno, aparecerá aquí";
 
 // En 1100 px o menos la tabla pasa a tarjetas apiladas: con el menú lateral de 240 px, antes de ahí
 // la columna del título no llega a 240 px de texto (especificación, 5.2).
@@ -315,6 +315,13 @@ export function CasesPage() {
       {header(mayOpen ? openCase("Abrir un caso") : undefined)}
 
       <CustodyStrip totals={totals} />
+
+      {status === "closed" && (
+        <p className={styles.archiveNote}>
+          Los casos cerrados permanecen cifrados y consultables con su cadena de
+          custodia. Cerrarlos no elimina archivos ni eventos.
+        </p>
+      )}
 
       <div className={styles.tools}>
         <div

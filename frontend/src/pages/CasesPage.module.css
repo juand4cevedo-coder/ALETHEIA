@@ -6,6 +6,15 @@
   min-width: 0;
 }
 
+.archiveNote {
+  max-width: var(--measure);
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+  text-wrap: pretty;
+}
+
 .loading {
   display: inline-flex;
   align-items: center;

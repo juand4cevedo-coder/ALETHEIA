@@ -26,6 +26,7 @@ def test_administrar_plataforma_no_da_acceso_a_otro_despacho(role: str) -> None:
     assert "cases.create" not in effective
     assert "cases.read_assigned" not in effective
     assert "cases.manage_members" not in effective
+    assert "cases.manage_lifecycle" not in effective
     assert "cases.download_evidence" not in effective
     # Administrar la plataforma no hace que se cobre el propio despacho (RN-010).
     assert "billing.manage" not in effective
@@ -43,6 +44,8 @@ def test_permisos_actuales_por_rol() -> None:
     assert not has_permission("assistant", "cases.create")
     assert has_permission("lawyer", "cases.manage_members")
     assert not has_permission("assistant", "cases.manage_members")
+    assert has_permission("lawyer", "cases.manage_lifecycle")
+    assert not has_permission("assistant", "cases.manage_lifecycle")
     assert has_permission("lawyer", "cases.download_evidence")
     assert not has_permission("assistant", "cases.download_evidence")
     for role in MEMBER_ROLES:

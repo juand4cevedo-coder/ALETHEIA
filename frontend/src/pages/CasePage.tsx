@@ -12,13 +12,16 @@ import {
   addCaseMemberMutation,
   availableCaseMembersOptions,
   availableCaseMembersQueryKey,
+  closeCaseMutation,
   listCasesQueryKey,
   readCaseOptions,
   readCaseQueryKey,
   removeCaseMemberMutation,
+  reopenCaseMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
+import { Dialog } from "../components/ui/Dialog.tsx";
 import { FilingNumber } from "../components/ui/FilingNumber.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
@@ -37,7 +40,11 @@ import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { initialsOf } from "../features/session/initials.ts";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./CasePage.module.css";
-import { CargandoIcon } from "../components/ui/icons.tsx";
+import {
+  BalanzaIcon,
+  CargandoIcon,
+  CarpetaAbiertaIcon,
+} from "../components/ui/icons.tsx";
 
 type TabKey = "chain" | "team" | "evidence" | "export";
 const TAB_ORDER: readonly TabKey[] = ["chain", "team", "evidence", "export"];
@@ -246,6 +253,7 @@ function CaseView({
             {detail.court && <li className={styles.chip}>{detail.court}</li>}
             <li className={styles.chip}>{opened}</li>
           </ul>
+          <CaseLifecycle detail={detail} me={me} />
 
           <div
             className={styles.tabs}
@@ -347,6 +355,115 @@ function CaseView({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
+  const queryClient = useQueryClient();
+  const role = me.organization?.role;
+  const canManage = role === "owner" || role === "admin" || role === "lawyer";
+  const [confirming, setConfirming] = useState(false);
+  const [message, setMessage] = useState("");
+  const path = { case_id: detail.id };
+  const refresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: readCaseQueryKey({ path }) }),
+      queryClient.invalidateQueries({ queryKey: listCasesQueryKey() }),
+    ]);
+  };
+  const close = useMutation({
+    ...closeCaseMutation(),
+    onSuccess: async () => {
+      setConfirming(false);
+      setMessage("Caso cerrado y trasladado al archivo.");
+      await refresh();
+    },
+  });
+  const reopen = useMutation({
+    ...reopenCaseMutation(),
+    onSuccess: async () => {
+      setConfirming(false);
+      setMessage("Caso reabierto. Su historial de cierre permanece en la cadena.");
+      await refresh();
+    },
+  });
+  const mutation = detail.status === "open" ? close : reopen;
+  const error = mutation.error;
+
+  return (
+    <div className={styles.lifecycle}>
+      <div className={styles.lifecycleCopy}>
+        <strong>
+          {detail.status === "open" ? "Expediente activo" : "Archivo de casos cerrados"}
+        </strong>
+        <span>
+          {detail.status === "open"
+            ? "Al cerrarlo, el expediente y su cadena permanecen conservados y consultables."
+            : detail.retention_until
+              ? `Conservación programada, como mínimo, hasta el ${formatColombiaTime(detail.retention_until)}.`
+              : "El expediente permanece conservado con toda su trazabilidad."}
+        </span>
+      </div>
+      {canManage && (
+        <Button variant="secondary" size="sm" onClick={() => setConfirming(true)}>
+          {detail.status === "open" ? "Cerrar y archivar" : "Reabrir caso"}
+        </Button>
+      )}
+      {message && (
+        <span className={styles.lifecycleMessage} role="status">
+          {message}
+        </span>
+      )}
+      <Dialog
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title={detail.status === "open" ? "Cerrar y archivar el caso" : "Reabrir el caso"}
+        icon={
+          detail.status === "open" ? (
+            <BalanzaIcon size={24} />
+          ) : (
+            <CarpetaAbiertaIcon size={24} />
+          )
+        }
+        busy={mutation.isPending}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              data-autofocus
+              onClick={() => setConfirming(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              busy={mutation.isPending}
+              onClick={() => mutation.mutate({ path })}
+            >
+              {detail.status === "open" ? "Cerrar y conservar" : "Reabrir"}
+            </Button>
+          </>
+        }
+      >
+        {detail.status === "open" ? (
+          <p>
+            El caso dejará de aceptar nuevas evidencias. No se borrará ningún dato, archivo,
+            llave ni evento de custodia; podrá consultarse y exportarse desde el archivo.
+          </p>
+        ) : (
+          <p>
+            El caso volverá a admitir trabajo y evidencias. El cierre anterior seguirá registrado
+            en la cadena de custodia y en la auditoría del despacho.
+          </p>
+        )}
+        {error && (
+          <Notice tone="error">
+            {apiProblem(error).detail ?? "No pudimos cambiar el estado del caso."}
+          </Notice>
+        )}
+      </Dialog>
     </div>
   );
 }

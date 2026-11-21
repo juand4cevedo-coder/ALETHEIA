@@ -25,13 +25,17 @@ from app.models import (
 )
 from app.services import custody_chain
 from app.services.cases import (
+    CaseAlreadyInStateError,
     CaseNotFoundError,
     EmailNotVerifiedError,
     FilingNumberTakenError,
     NewCase,
     NotAllowedToCreateCasesError,
+    NotAllowedToManageCaseError,
+    close_case,
     create_case,
     get_case,
+    reopen_case,
 )
 from app.services.members import OrganizationNotActiveError
 from app.services.sessions import Principal
@@ -493,3 +497,92 @@ def test_el_detalle_trae_el_equipo_y_el_primer_evento(
     assert evento.actor_name == abogado.full_name
     assert evento.occurred_at is not None
     assert len(evento.event_hash) == 32
+
+
+# --- Cierre, archivo y reapertura ------------------------------------------------------------
+
+
+def test_cerrar_conserva_el_caso_y_registra_retencion(
+    db: Session, envoltorio: EnvoltorioDePrueba
+) -> None:
+    oficina = crear_oficina(db)
+    abogado = _persona(db, oficina, "lawyer")
+    principal = _principal(oficina, abogado, "lawyer")
+    caso = _abrir(db, principal, envoltorio)
+
+    cerrado = close_case(db, principal, caso.id, client_ip=_IP, user_agent=_AGENTE)
+
+    assert cerrado.status == "closed"
+    assert cerrado.closed_at is not None
+    assert cerrado.retention_until is not None
+    assert cerrado.retention_until >= cerrado.closed_at + datetime.timedelta(days=3650)
+    assert cerrado.retention_basis == "organization_policy"
+    assert not cerrado.legal_hold
+    detalle = get_case(db, principal, caso.id)
+    assert detalle.case.id == caso.id
+    assert [event.action for event in detalle.recent_events][:2] == [
+        "case_closed",
+        "case_created",
+    ]
+
+
+def test_cerrar_dos_veces_no_duplica_la_cadena(db: Session, envoltorio: EnvoltorioDePrueba) -> None:
+    oficina = crear_oficina(db)
+    abogado = _persona(db, oficina, "lawyer")
+    principal = _principal(oficina, abogado, "lawyer")
+    caso = _abrir(db, principal, envoltorio)
+    close_case(db, principal, caso.id, client_ip=_IP, user_agent=_AGENTE)
+
+    with pytest.raises(CaseAlreadyInStateError):
+        close_case(db, principal, caso.id, client_ip=_IP, user_agent=_AGENTE)
+
+    assert [event.action for event in get_case(db, principal, caso.id).recent_events].count(
+        "case_closed"
+    ) == 1
+
+
+def test_reabrir_restaura_el_trabajo_sin_borrar_la_historia(
+    db: Session, envoltorio: EnvoltorioDePrueba
+) -> None:
+    oficina = crear_oficina(db)
+    propietario = _persona(db, oficina, "owner")
+    principal = _principal(oficina, propietario, "owner")
+    caso = _abrir(db, principal, envoltorio)
+    close_case(db, principal, caso.id, client_ip=_IP, user_agent=_AGENTE)
+
+    reabierto = reopen_case(db, principal, caso.id, client_ip=_IP, user_agent=_AGENTE)
+
+    assert reabierto.status == "open"
+    assert reabierto.closed_at is None
+    assert reabierto.retention_until is None
+    assert reabierto.retention_basis is None
+    assert [event.action for event in get_case(db, principal, caso.id).recent_events][:3] == [
+        "case_reopened",
+        "case_closed",
+        "case_created",
+    ]
+
+
+def test_asistente_no_cierra_casos(db: Session, envoltorio: EnvoltorioDePrueba) -> None:
+    oficina = crear_oficina(db)
+    abogado = _persona(db, oficina, "lawyer")
+    asistente = _persona(db, oficina, "assistant")
+    caso = _abrir(db, _principal(oficina, abogado, "lawyer"), envoltorio)
+    db.add(
+        CaseMember(
+            case_id=caso.id,
+            user_id=asistente.id,
+            organization_id=oficina.organization_id,
+            added_by=abogado.id,
+        )
+    )
+    db.flush()
+
+    with pytest.raises(NotAllowedToManageCaseError):
+        close_case(
+            db,
+            _principal(oficina, asistente, "assistant"),
+            caso.id,
+            client_ip=_IP,
+            user_agent=_AGENTE,
+        )

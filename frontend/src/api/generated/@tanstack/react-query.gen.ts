@@ -18,6 +18,7 @@ import {
   changePassword,
   changePlatformUserStatus,
   changeSupportTicketStatus,
+  closeCase,
   createCase,
   createCaseExport,
   createCheckout,
@@ -53,6 +54,7 @@ import {
   removeCaseMember,
   removeMember,
   renameOrganization,
+  reopenCase,
   resendVerification,
   resetPassword,
   revokeCourtesy,
@@ -90,6 +92,9 @@ import type {
   ChangeSupportTicketStatusData,
   ChangeSupportTicketStatusError,
   ChangeSupportTicketStatusResponse,
+  CloseCaseData,
+  CloseCaseError,
+  CloseCaseResponse,
   CreateCaseData,
   CreateCaseError,
   CreateCaseExportData,
@@ -190,6 +195,9 @@ import type {
   RenameOrganizationData,
   RenameOrganizationError,
   RenameOrganizationResponse,
+  ReopenCaseData,
+  ReopenCaseError,
+  ReopenCaseResponse,
   ResendVerificationData,
   ResendVerificationError,
   ResendVerificationResponse,
@@ -1456,6 +1464,60 @@ export const readCaseOptions = (options: Options<ReadCaseData>) =>
     queryKey: readCaseQueryKey(options),
   });
 
+/**
+ * Cerrar y archivar un caso sin borrar sus datos
+ */
+export const closeCaseMutation = (
+  options?: Partial<Options<CloseCaseData>>,
+): UseMutationOptions<
+  CloseCaseResponse,
+  CloseCaseError,
+  Options<CloseCaseData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CloseCaseResponse,
+    CloseCaseError,
+    Options<CloseCaseData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await closeCase({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Reabrir un caso conservando la historia de su archivo
+ */
+export const reopenCaseMutation = (
+  options?: Partial<Options<ReopenCaseData>>,
+): UseMutationOptions<
+  ReopenCaseResponse,
+  ReopenCaseError,
+  Options<ReopenCaseData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ReopenCaseResponse,
+    ReopenCaseError,
+    Options<ReopenCaseData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await reopenCase({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 export const availableCaseMembersQueryKey = (
   options: Options<AvailableCaseMembersData>,
 ) => createQueryKey("availableCaseMembers", options);
@@ -1676,7 +1738,7 @@ export const lookupCourtesyQueryKey = (options: Options<LookupCourtesyData>) =>
   createQueryKey("lookupCourtesy", options);
 
 /**
- * Buscar un despacho por correo de su titular
+ * Buscar un despacho por su cuenta responsable
  */
 export const lookupCourtesyOptions = (options: Options<LookupCourtesyData>) =>
   queryOptions<
@@ -1698,7 +1760,7 @@ export const lookupCourtesyOptions = (options: Options<LookupCourtesyData>) =>
   });
 
 /**
- * Conceder o renovar un plan de cortesía
+ * Asignar o renovar el plan de un despacho
  */
 export const grantCourtesyMutation = (
   options?: Partial<Options<GrantCourtesyData>>,
@@ -1725,7 +1787,7 @@ export const grantCourtesyMutation = (
 };
 
 /**
- * Revocar un plan de cortesía
+ * Revocar el acceso comercial de un despacho
  */
 export const revokeCourtesyMutation = (
   options?: Partial<Options<RevokeCourtesyData>>,

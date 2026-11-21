@@ -2,6 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { CaseDetail } from "../api/generated";
 import { LEGAL_VERSION } from "../config/legal.ts";
 import { seriousAxeViolations } from "../test/axe.ts";
 import { jsonResponse, renderRoute } from "../test/render.tsx";
@@ -30,7 +31,7 @@ const ME = {
   },
 };
 
-const DETAIL = {
+const DETAIL: CaseDetail = {
   id: CASE_ID,
   title: "Despido sin justa causa, Torres",
   filing_number: RADICADO,
@@ -39,6 +40,10 @@ const DETAIL = {
   internal_reference: "RA-2026-031",
   status: "open",
   created_at: "2026-11-10T15:32:07Z",
+  closed_at: null,
+  retention_until: null,
+  retention_basis: null,
+  legal_hold: false,
   created_by_name: "Laura Gómez",
   member_count: 1,
   members: [
@@ -129,6 +134,73 @@ beforeEach(() => {
 });
 
 describe("Página del caso (HU-015)", () => {
+  it("cierra y archiva sin presentar la acción como eliminación", async () => {
+    let current = DETAIL;
+    serve(() => jsonResponse(current));
+    const original = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) => {
+      const request = input as Request;
+      const path = new URL(request.url).pathname;
+      if (
+        request.method === "POST" &&
+        path === `/api/v1/cases/${CASE_ID}/close`
+      ) {
+        current = {
+          ...DETAIL,
+          status: "closed",
+          closed_at: "2026-11-20T20:00:00Z",
+          retention_until: "2036-11-20T20:00:00Z",
+          retention_basis: "organization_policy",
+        };
+        return jsonResponse(current);
+      }
+      return original(input, init);
+    });
+    await openCase();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Cerrar y archivar" }),
+    );
+    const dialog = screen.getByRole("dialog", {
+      name: "Cerrar y archivar el caso",
+    });
+    expect(within(dialog).getByText(/No se borrará ningún dato/)).toBeVisible();
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: "Cerrar y conservar" }),
+    );
+
+    expect(
+      await screen.findByText("Caso cerrado y trasladado al archivo."),
+    ).toBeVisible();
+    expect(screen.getByText("Archivo de casos cerrados")).toBeVisible();
+    expect(
+      fetchMock.mock.calls.some(
+        ([input]) => (input as Request).method === "POST",
+      ),
+    ).toBe(true);
+  });
+
+  it("el asistente consulta el archivo pero no cambia el ciclo de vida", async () => {
+    serve(() => jsonResponse(DETAIL));
+    const assistant = {
+      ...ME,
+      organization: { ...ME.organization, role: "assistant" },
+    };
+    const original = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) => {
+      const request = input as Request;
+      if (new URL(request.url).pathname === "/api/v1/me") {
+        return jsonResponse(assistant);
+      }
+      return original(input, init);
+    });
+    await openCase();
+
+    expect(
+      screen.queryByRole("button", { name: "Cerrar y archivar" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("solicita el paquete y muestra el enlace al terminar", async () => {
     sessionStorage.clear();
     serve(() => jsonResponse(DETAIL));

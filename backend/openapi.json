@@ -2229,6 +2229,182 @@
         }
       }
     },
+    "/api/v1/cases/{case_id}/close": {
+      "post": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Cerrar y archivar un caso sin borrar sus datos",
+        "operationId": "close_case",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no administra el ciclo de vida del caso.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El caso no existe o la persona no pertenece a él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El caso ya está cerrado o el despacho está en solo lectura.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/reopen": {
+      "post": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Reabrir un caso conservando la historia de su archivo",
+        "operationId": "reopen_case",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no administra el ciclo de vida del caso.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El caso no existe o la persona no pertenece a él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El caso ya está abierto o el despacho está en solo lectura.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cases/{case_id}/available-members": {
       "get": {
         "tags": [
@@ -2809,7 +2985,7 @@
         "tags": [
           "plataforma"
         ],
-        "summary": "Buscar un despacho por correo de su titular",
+        "summary": "Buscar un despacho por su cuenta responsable",
         "operationId": "lookup_courtesy",
         "security": [
           {
@@ -2854,7 +3030,7 @@
         "tags": [
           "plataforma"
         ],
-        "summary": "Conceder o renovar un plan de cortesía",
+        "summary": "Asignar o renovar el plan de un despacho",
         "operationId": "grant_courtesy",
         "security": [
           {
@@ -2900,7 +3076,7 @@
         "tags": [
           "plataforma"
         ],
-        "summary": "Revocar un plan de cortesía",
+        "summary": "Revocar el acceso comercial de un despacho",
         "operationId": "revoke_courtesy",
         "requestBody": {
           "content": {
@@ -3741,6 +3917,54 @@
             "title": "Created At",
             "description": "Cuándo se abrió."
           },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At",
+            "description": "Cuándo se archivó, si está cerrado."
+          },
+          "retention_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Until",
+            "description": "Fecha mínima para revisar si la conservación debe continuar."
+          },
+          "retention_basis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "organization_policy",
+                  "legal_or_contractual_duty",
+                  "litigation_hold"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Basis",
+            "description": "Fundamento operativo de la conservación."
+          },
+          "legal_hold": {
+            "type": "boolean",
+            "title": "Legal Hold",
+            "description": "Si existe un bloqueo jurídico que impide suprimir."
+          },
           "created_by_name": {
             "type": "string",
             "title": "Created By Name",
@@ -3778,6 +4002,10 @@
           "internal_reference",
           "status",
           "created_at",
+          "closed_at",
+          "retention_until",
+          "retention_basis",
+          "legal_hold",
           "created_by_name",
           "member_count",
           "members",
@@ -3935,6 +4163,54 @@
             "title": "Created At",
             "description": "Cuándo se abrió."
           },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At",
+            "description": "Cuándo se archivó, si está cerrado."
+          },
+          "retention_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Until",
+            "description": "Fecha mínima para revisar si la conservación debe continuar."
+          },
+          "retention_basis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "organization_policy",
+                  "legal_or_contractual_duty",
+                  "litigation_hold"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Basis",
+            "description": "Fundamento operativo de la conservación."
+          },
+          "legal_hold": {
+            "type": "boolean",
+            "title": "Legal Hold",
+            "description": "Si existe un bloqueo jurídico que impide suprimir."
+          },
           "created_by_name": {
             "type": "string",
             "title": "Created By Name",
@@ -3956,11 +4232,15 @@
           "internal_reference",
           "status",
           "created_at",
+          "closed_at",
+          "retention_until",
+          "retention_basis",
+          "legal_hold",
           "created_by_name",
           "member_count"
         ],
         "title": "CaseOut",
-        "description": "Un caso abierto."
+        "description": "Un caso activo o archivado."
       },
       "CasePage": {
         "properties": {
@@ -4084,6 +4364,54 @@
             "title": "Created At",
             "description": "Cuándo se abrió."
           },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At",
+            "description": "Cuándo se archivó, si está cerrado."
+          },
+          "retention_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Until",
+            "description": "Fecha mínima para revisar si la conservación debe continuar."
+          },
+          "retention_basis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "organization_policy",
+                  "legal_or_contractual_duty",
+                  "litigation_hold"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Basis",
+            "description": "Fundamento operativo de la conservación."
+          },
+          "legal_hold": {
+            "type": "boolean",
+            "title": "Legal Hold",
+            "description": "Si existe un bloqueo jurídico que impide suprimir."
+          },
           "created_by_name": {
             "type": "string",
             "title": "Created By Name",
@@ -4163,6 +4491,10 @@
           "internal_reference",
           "status",
           "created_at",
+          "closed_at",
+          "retention_until",
+          "retention_basis",
+          "legal_hold",
           "created_by_name",
           "member_count",
           "evidence_count",
@@ -5305,7 +5637,7 @@
           "platform_admin": {
             "type": "boolean",
             "title": "Platform Admin",
-            "description": "Puede administrar la plataforma; no concede acceso a otros despachos."
+            "description": "Es la cuenta dueña de la plataforma y no pertenece a ningún despacho."
           },
           "permissions": {
             "items": {
@@ -5319,13 +5651,14 @@
                 "cases.read_assigned",
                 "cases.create",
                 "cases.manage_members",
+                "cases.manage_lifecycle",
                 "cases.upload_evidence",
                 "cases.download_evidence"
               ]
             },
             "type": "array",
             "title": "Permissions",
-            "description": "Capacidades vigentes en su despacho y, por separado, en la plataforma."
+            "description": "Capacidades vigentes en su despacho o, de forma excluyente, en la plataforma."
           },
           "organization": {
             "anyOf": [

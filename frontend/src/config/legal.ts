@@ -3,7 +3,7 @@
 // momento en que cada persona aceptó los textos, así que se cambia aquí y en ningún otro lugar,
 // y también en backend/app/core/legal.py. Un cambio que altere derechos u obligaciones lleva una
 // fecha nueva. La página la muestra como fecha, nunca como un número de versión.
-export const LEGAL_VERSION = "2026-11-06";
+export const LEGAL_VERSION = "2026-11-20";
 export const LEGAL_EFFECTIVE_DATE = LEGAL_VERSION;
 
 // Responsable del tratamiento y proveedor del servicio. El Decreto 1377 de 2013 (art. 13,

@@ -15,7 +15,7 @@ export const privacyPolicy: LegalDocument = {
   slug: "privacidad",
   title: "Política de tratamiento de datos personales",
   description:
-    "Qué datos personales recoge ALETHEIA, para qué los usa, con quién los comparte, cómo los protege y cómo puede consultarlos, corregirlos o pedir que se eliminen.",
+    "Qué datos personales recoge ALETHEIA, para qué los usa, con quién los comparte, cómo los protege y cómo puede consultarlos, corregirlos o solicitar su supresión.",
   keyPoints: [
     {
       title: "Solo para prestarle el servicio",
@@ -140,8 +140,8 @@ export const privacyPolicy: LegalDocument = {
             </li>
             <li>
               Prestar el servicio: guardar sus evidencias, registrar su cadena
-              de custodia, generar paquetes de exportación y constancias de
-              eliminación.
+              de custodia, archivar los casos cerrados y generar paquetes de
+              exportación.
             </li>
             <li>
               Enviarle los correos propios del servicio: verificación de su
@@ -200,8 +200,10 @@ export const privacyPolicy: LegalDocument = {
             </li>
             <li>
               ALETHEIA solo los guarda, calcula su huella, obtiene su sello de
-              tiempo, los exporta y los elimina cuando usted lo ordena. No los
-              analiza, no los usa para fines propios y no los comparte.
+              tiempo, los archiva y los exporta para prestar el servicio. No
+              los analiza ni los usa para fines propios. Una solicitud de
+              supresión se ejecuta cuando haya sido validada y no exista un
+              deber legal o contractual de conservar la información.
             </li>
             <li>
               Cada caso se cifra con su propia llave, y el servicio no le da a
@@ -367,16 +369,21 @@ export const privacyPolicy: LegalDocument = {
             días. Después se anonimizan.
           </li>
           <li>
-            El contenido de los casos, hasta que usted los elimine o hasta 30
-            días después de terminar su suscripción.
+            Los casos cerrados pasan a un archivo histórico sin perder sus
+            archivos, huellas ni eventos de custodia. El plazo operativo inicial
+            es de diez años contados desde el cierre, salvo que una obligación,
+            una orden de autoridad o una instrucción documentada del responsable
+            exija conservarlos por un plazo diferente.
           </li>
           <li>
-            Las copias de respaldo, siete días. Pasado ese plazo, lo eliminado
-            ya no se puede recuperar en ninguna parte.
+            Las copias de respaldo siguen el ciclo técnico documentado del
+            servicio y no sustituyen el archivo histórico. Una supresión
+            autorizada se propaga a esas copias conforme a ese ciclo.
           </li>
           <li>
-            Las constancias de eliminación, de forma permanente. No contienen
-            archivos, solo conteos, huellas y fechas.
+            Los registros de auditoría, aceptaciones y operaciones de
+            conservación se mantienen durante el plazo necesario para demostrar
+            el cumplimiento y atender reclamaciones u órdenes de autoridad.
           </li>
           <li>
             Los mensajes que nos envía, el tiempo necesario para atenderlos.

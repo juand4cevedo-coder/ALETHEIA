@@ -190,6 +190,34 @@ export type CaseDetail = {
    */
   created_at: string;
   /**
+   * Closed At
+   *
+   * Cuándo se archivó, si está cerrado.
+   */
+  closed_at: string | null;
+  /**
+   * Retention Until
+   *
+   * Fecha mínima para revisar si la conservación debe continuar.
+   */
+  retention_until: string | null;
+  /**
+   * Retention Basis
+   *
+   * Fundamento operativo de la conservación.
+   */
+  retention_basis:
+    | "organization_policy"
+    | "legal_or_contractual_duty"
+    | "litigation_hold"
+    | null;
+  /**
+   * Legal Hold
+   *
+   * Si existe un bloqueo jurídico que impide suprimir.
+   */
+  legal_hold: boolean;
+  /**
    * Created By Name
    *
    * Nombre de quien lo abrió.
@@ -268,7 +296,7 @@ export type CaseMemberOut = {
 /**
  * CaseOut
  *
- * Un caso abierto.
+ * Un caso activo o archivado.
  */
 export type CaseOut = {
   /**
@@ -328,6 +356,34 @@ export type CaseOut = {
    * Cuándo se abrió.
    */
   created_at: string;
+  /**
+   * Closed At
+   *
+   * Cuándo se archivó, si está cerrado.
+   */
+  closed_at: string | null;
+  /**
+   * Retention Until
+   *
+   * Fecha mínima para revisar si la conservación debe continuar.
+   */
+  retention_until: string | null;
+  /**
+   * Retention Basis
+   *
+   * Fundamento operativo de la conservación.
+   */
+  retention_basis:
+    | "organization_policy"
+    | "legal_or_contractual_duty"
+    | "litigation_hold"
+    | null;
+  /**
+   * Legal Hold
+   *
+   * Si existe un bloqueo jurídico que impide suprimir.
+   */
+  legal_hold: boolean;
   /**
    * Created By Name
    *
@@ -429,6 +485,34 @@ export type CaseSummaryOut = {
    * Cuándo se abrió.
    */
   created_at: string;
+  /**
+   * Closed At
+   *
+   * Cuándo se archivó, si está cerrado.
+   */
+  closed_at: string | null;
+  /**
+   * Retention Until
+   *
+   * Fecha mínima para revisar si la conservación debe continuar.
+   */
+  retention_until: string | null;
+  /**
+   * Retention Basis
+   *
+   * Fundamento operativo de la conservación.
+   */
+  retention_basis:
+    | "organization_policy"
+    | "legal_or_contractual_duty"
+    | "litigation_hold"
+    | null;
+  /**
+   * Legal Hold
+   *
+   * Si existe un bloqueo jurídico que impide suprimir.
+   */
+  legal_hold: boolean;
   /**
    * Created By Name
    *
@@ -1258,13 +1342,13 @@ export type Me = {
   /**
    * Platform Admin
    *
-   * Puede administrar la plataforma; no concede acceso a otros despachos.
+   * Es la cuenta dueña de la plataforma y no pertenece a ningún despacho.
    */
   platform_admin: boolean;
   /**
    * Permissions
    *
-   * Capacidades vigentes en su despacho y, por separado, en la plataforma.
+   * Capacidades vigentes en su despacho o, de forma excluyente, en la plataforma.
    */
   permissions: Array<
     | "platform.manage"
@@ -1275,6 +1359,7 @@ export type Me = {
     | "cases.read_assigned"
     | "cases.create"
     | "cases.manage_members"
+    | "cases.manage_lifecycle"
     | "cases.upload_evidence"
     | "cases.download_evidence"
   >;
@@ -3388,6 +3473,98 @@ export type ReadCaseResponses = {
 };
 
 export type ReadCaseResponse = ReadCaseResponses[keyof ReadCaseResponses];
+
+export type CloseCaseData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/close";
+};
+
+export type CloseCaseErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no administra el ciclo de vida del caso.
+   */
+  403: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * El caso ya está cerrado o el despacho está en solo lectura.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CloseCaseError = CloseCaseErrors[keyof CloseCaseErrors];
+
+export type CloseCaseResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseOut;
+};
+
+export type CloseCaseResponse = CloseCaseResponses[keyof CloseCaseResponses];
+
+export type ReopenCaseData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/reopen";
+};
+
+export type ReopenCaseErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no administra el ciclo de vida del caso.
+   */
+  403: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * El caso ya está abierto o el despacho está en solo lectura.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ReopenCaseError = ReopenCaseErrors[keyof ReopenCaseErrors];
+
+export type ReopenCaseResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseOut;
+};
+
+export type ReopenCaseResponse = ReopenCaseResponses[keyof ReopenCaseResponses];
 
 export type AvailableCaseMembersData = {
   body?: never;

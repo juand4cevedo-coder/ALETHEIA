@@ -495,11 +495,9 @@ def test_el_perfil_distingue_administracion_de_plataforma_y_despacho(
 
     assert perfil["id"] == str(user.id)
     assert perfil["platform_admin"] is True
-    assert perfil["organization"]["role"] == "assistant"
-    assert perfil["permissions"] == [
-        "organization.view",
-        "platform.manage",
-    ]
+    assert perfil["organization"] is None
+    assert perfil["subscription"] is None
+    assert perfil["permissions"] == ["platform.manage"]
 
 
 # --- Registros sin secretos --------------------------------------------------------------

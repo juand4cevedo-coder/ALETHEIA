@@ -36,7 +36,7 @@ describe("Páginas legales (HU-003, CP-003)", () => {
       );
       // Los textos se identifican por su vigencia: ninguna página muestra un número de versión.
       expect(within(main).queryByText(/versión\s*\d/i)).not.toBeInTheDocument();
-      expect(within(main).getByText("6 de noviembre de 2026")).toHaveAttribute(
+      expect(within(main).getByText("20 de noviembre de 2026")).toHaveAttribute(
         "datetime",
         LEGAL_EFFECTIVE_DATE,
       );
@@ -67,24 +67,24 @@ describe("Páginas legales (HU-003, CP-003)", () => {
   it.each([
     [
       "privacidad",
-      "25d7fbe978a96ad9d5355bf5e16c3847fea6ed2de1572fff146a1e1dd36fdc0b",
+      "7b084d635aac4ce29b4a3511787e0e2d3138f47333921d977d8a5c54cbb98a40",
     ],
     [
       "terminos",
-      "753e9d2945e9666089357cbc4ba5e72b08631057b4d99400cb8051b67cf0760e",
+      "1dbc07cb312c0ca4717acae76afb5dfd979eb7d0a677c38757fb264a43119328",
     ],
     [
       "cookies",
-      "b7e6feb1d7472d45bbd44b4c05985f866297d205d9067be23666fa364a695558",
+      "0232f16ce4c6c8a14afbfb88d87251a198e897f389f5f40b1ece8085594277f6",
     ],
     [
       "reembolsos",
-      "6efa3998739d8cefd14dcff7260f64634041f4175657c22aae199e3fc0e8e52e",
+      "5ec8c751080e6c2a28c1f8647502f751ccefccd3d9e9641910bc097b8acf6cc0",
     ],
   ] as const)(
     "la huella de %s es la de la versión vigente",
     async (slug, expected) => {
-      expect(LEGAL_EFFECTIVE_DATE).toBe("2026-11-06");
+      expect(LEGAL_EFFECTIVE_DATE).toBe("2026-11-20");
       await renderRoute(legalRoute(slug));
       expect(
         (await screen.findByText(/^[0-9a-f]{64}$/, {}, { timeout: 5000 }))
@@ -209,7 +209,7 @@ describe("Páginas legales (HU-003, CP-003)", () => {
 
     const text = new TextDecoder().decode(bytes);
     expect(text.startsWith("TÉRMINOS Y CONDICIONES\n")).toBe(true);
-    expect(text).toContain("Vigente desde el 6 de noviembre de 2026");
+    expect(text).toContain("Vigente desde el 20 de noviembre de 2026");
     for (const section of LEGAL_DOCUMENTS.terminos.sections) {
       expect(text).toContain(section.title.toUpperCase());
     }
