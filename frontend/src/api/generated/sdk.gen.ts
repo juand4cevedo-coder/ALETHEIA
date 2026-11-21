@@ -181,6 +181,9 @@ import type {
   SignOutEverywhereErrors,
   SignOutEverywhereResponses,
   SignOutResponses,
+  TaskInboxData,
+  TaskInboxErrors,
+  TaskInboxResponses,
   UpdateCaseRetentionData,
   UpdateCaseRetentionErrors,
   UpdateCaseRetentionResponses,
@@ -1297,6 +1300,28 @@ export const updateCaseTaskStatus = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+/**
+ * Consultar la bandeja de tareas activa
+ */
+export const taskInbox = <ThrowOnError extends boolean = false>(
+  options?: Options<TaskInboxData, ThrowOnError>,
+): RequestResult<TaskInboxResponses, TaskInboxErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    TaskInboxResponses,
+    TaskInboxErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/tasks",
+    ...options,
   });
 
 /**

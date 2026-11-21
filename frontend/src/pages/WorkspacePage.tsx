@@ -14,6 +14,7 @@ import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import { EmailStatus } from "../features/session/EmailStatus.tsx";
+import { TaskInbox } from "../features/workspace/TaskInbox.tsx";
 import {
   managesOrganization,
   managesTeam,
@@ -162,6 +163,8 @@ export function WorkspacePage() {
               perder el acceso.
             </Notice>
           )}
+
+          <TaskInbox me={me} />
 
           <Panel title="Actividad reciente">
             {recent.isPending && (

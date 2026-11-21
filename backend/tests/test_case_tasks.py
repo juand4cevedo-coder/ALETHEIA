@@ -166,3 +166,57 @@ def test_un_caso_archivado_conserva_tareas_en_solo_lectura(
         ).status_code
         == 409
     )
+
+
+def test_bandeja_filtra_en_backend_y_limita_al_asistente_a_sus_tareas(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office = crear_oficina(db)
+    assistant = crear_miembro(db, office, "asistente.bandeja@example.com", "assistant")
+    owner_client = _session(dispositivo, db, office.owner)
+    case_id = owner_client.post(_CASES, json={"title": "Audiencia de familia"}).json()["id"]
+    owner_client.post(f"{_CASES}/{case_id}/members", json={"user_id": str(assistant.id)})
+    tomorrow = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
+    later = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=10)
+    assistant_task = owner_client.post(
+        f"{_CASES}/{case_id}/tasks",
+        json={
+            "title": "Preparar audiencia",
+            "priority": "urgent",
+            "due_at": tomorrow.isoformat(),
+            "assigned_to": str(assistant.id),
+        },
+    ).json()
+    owner_client.post(
+        f"{_CASES}/{case_id}/tasks",
+        json={
+            "title": "Revisar estrategia",
+            "priority": "normal",
+            "due_at": later.isoformat(),
+            "assigned_to": str(office.owner.id),
+        },
+    )
+
+    assistant_client = _session(dispositivo, db, assistant)
+    own_inbox = assistant_client.get("/api/v1/tasks", params={"assigned_to": str(office.owner.id)})
+    assert own_inbox.status_code == 200, own_inbox.text
+    assert [item["id"] for item in own_inbox.json()["items"]] == [assistant_task["id"]]
+    assert own_inbox.headers["Cache-Control"] == "no-store"
+
+    filtered = owner_client.get(
+        "/api/v1/tasks",
+        params={
+            "priority": "urgent",
+            "search": "familia",
+            "due_before": (tomorrow + datetime.timedelta(hours=1)).isoformat(),
+        },
+    )
+    assert filtered.status_code == 200, filtered.text
+    payload = filtered.json()
+    assert [item["id"] for item in payload["items"]] == [assistant_task["id"]]
+    assert payload["items"][0]["case_title"] == "Audiencia de familia"
+    assert payload["active"] == 1
+    assert payload["due_soon"] == 1
+
+    assert owner_client.post(f"{_CASES}/{case_id}/close").status_code == 200
+    assert owner_client.get("/api/v1/tasks").json()["items"] == []

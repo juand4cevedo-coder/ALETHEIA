@@ -52,3 +52,15 @@ class CaseTaskOut(BaseModel):
 class CaseTaskPage(BaseModel):
     items: list[CaseTaskOut]
     next_cursor: uuid.UUID | None
+
+
+class TaskInboxItem(CaseTaskOut):
+    case_title: str
+    case_status: Literal["open", "closed"]
+
+
+class TaskInboxOut(BaseModel):
+    items: list[TaskInboxItem]
+    active: int
+    overdue: int
+    due_soon: int

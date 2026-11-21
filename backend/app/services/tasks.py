@@ -4,7 +4,7 @@ import datetime
 import uuid
 from dataclasses import dataclass
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from app.core.permissions import has_permission
@@ -39,6 +39,22 @@ class ClosedCaseTaskError(Exception):
 class TaskView:
     task: CaseTask
     assignee_name: str
+
+
+@dataclass(frozen=True, slots=True)
+class InboxTaskView:
+    task: CaseTask
+    assignee_name: str
+    case_title: str
+    case_status: str
+
+
+@dataclass(frozen=True, slots=True)
+class TaskInbox:
+    items: list[InboxTaskView]
+    active: int
+    overdue: int
+    due_soon: int
 
 
 def _member_case(session: Session, principal: Principal, case_id: uuid.UUID, *, lock: bool) -> Case:
@@ -99,6 +115,77 @@ def list_tasks(
     page = rows[:limit]
     next_cursor = page[-1][0].id if len(rows) > limit else None
     return [TaskView(task, name) for task, name in page], next_cursor
+
+
+def list_task_inbox(
+    session: Session,
+    principal: Principal,
+    *,
+    assigned_to: uuid.UUID | None,
+    priority: str | None,
+    due_before: datetime.datetime | None,
+    search: str | None,
+    limit: int,
+) -> TaskInbox:
+    """Trabajo activo de casos visibles; el asistente solo consulta su propia cola."""
+    organization_id = principal.organization_id
+    if organization_id is None:
+        return TaskInbox([], 0, 0, 0)
+    effective_assignee = principal.user_id if principal.role == "assistant" else assigned_to
+    now = datetime.datetime.now(datetime.UTC)
+    conditions = [
+        CaseTask.organization_id == organization_id,
+        Case.status == "open",
+        CaseTask.status.in_(("pending", "in_progress")),
+        CaseMember.user_id == principal.user_id,
+    ]
+    if effective_assignee is not None:
+        conditions.append(CaseTask.assigned_to == effective_assignee)
+    if priority is not None:
+        conditions.append(CaseTask.priority == priority)
+    if due_before is not None:
+        conditions.append(CaseTask.due_at <= due_before)
+    normalized = (search or "").strip().casefold()
+    if normalized:
+        conditions.append(
+            func.lower(CaseTask.title).contains(normalized)
+            | func.lower(Case.title).contains(normalized)
+        )
+    scope = (
+        select(CaseTask.id)
+        .join(Case, Case.id == CaseTask.case_id)
+        .join(
+            CaseMember,
+            and_(
+                CaseMember.case_id == Case.id,
+                CaseMember.organization_id == Case.organization_id,
+            ),
+        )
+        .where(*conditions)
+    )
+    totals = session.execute(
+        select(
+            func.count(CaseTask.id),
+            func.count(CaseTask.id).filter(CaseTask.due_at < now),
+            func.count(CaseTask.id).filter(
+                and_(CaseTask.due_at >= now, CaseTask.due_at <= now + datetime.timedelta(days=7))
+            ),
+        ).where(CaseTask.id.in_(scope))
+    ).one()
+    rows = session.execute(
+        select(CaseTask, User.full_name, Case.title, Case.status)
+        .join(User, User.id == CaseTask.assigned_to)
+        .join(Case, Case.id == CaseTask.case_id)
+        .where(CaseTask.id.in_(scope))
+        .order_by(CaseTask.due_at.asc().nulls_last(), CaseTask.id.desc())
+        .limit(limit)
+    ).all()
+    return TaskInbox(
+        items=[InboxTaskView(task, name, title, status) for task, name, title, status in rows],
+        active=totals[0],
+        overdue=totals[1],
+        due_soon=totals[2],
+    )
 
 
 def create_task(

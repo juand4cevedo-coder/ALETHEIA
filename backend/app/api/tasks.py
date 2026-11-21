@@ -1,5 +1,6 @@
 """Tareas y plazos de los casos."""
 
+import datetime
 import uuid
 from typing import Annotated, Literal, cast
 
@@ -8,13 +9,26 @@ from sqlalchemy.orm import Session
 
 from app.api.cases import get_case_worker
 from app.api.deps import get_client_ip, get_principal, get_session
-from app.schemas.tasks import CaseTaskCreate, CaseTaskOut, CaseTaskPage, CaseTaskStatusUpdate
+from app.schemas.tasks import (
+    CaseTaskCreate,
+    CaseTaskOut,
+    CaseTaskPage,
+    CaseTaskStatusUpdate,
+    TaskInboxItem,
+    TaskInboxOut,
+)
 from app.services import tasks as task_service
 from app.services.members import OrganizationNotActiveError
 from app.services.sessions import Principal
 
 router = APIRouter(
     prefix="/cases",
+    tags=["tareas"],
+    dependencies=[Depends(get_case_worker)],
+)
+
+inbox_router = APIRouter(
+    prefix="/tasks",
     tags=["tareas"],
     dependencies=[Depends(get_case_worker)],
 )
@@ -36,6 +50,43 @@ def _out(view: task_service.TaskView) -> CaseTaskOut:
         created_at=task.created_at,
         updated_at=task.updated_at,
         completed_at=task.completed_at,
+    )
+
+
+def _inbox_item(view: task_service.InboxTaskView) -> TaskInboxItem:
+    return TaskInboxItem(
+        **_out(task_service.TaskView(view.task, view.assignee_name)).model_dump(),
+        case_title=view.case_title,
+        case_status=cast(Literal["open", "closed"], view.case_status),
+    )
+
+
+@inbox_router.get("", summary="Consultar la bandeja de tareas activa")
+def task_inbox(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    assigned_to: uuid.UUID | None = None,
+    priority: Literal["low", "normal", "high", "urgent"] | None = None,
+    due_before: datetime.datetime | None = None,
+    search: Annotated[str | None, Query(min_length=1, max_length=120)] = None,
+    limit: Annotated[int, Query(ge=1, le=50)] = 8,
+) -> TaskInboxOut:
+    response.headers["Cache-Control"] = "no-store"
+    inbox = task_service.list_task_inbox(
+        session,
+        principal,
+        assigned_to=assigned_to,
+        priority=priority,
+        due_before=due_before,
+        search=search,
+        limit=limit,
+    )
+    return TaskInboxOut(
+        items=[_inbox_item(item) for item in inbox.items],
+        active=inbox.active,
+        overdue=inbox.overdue,
+        due_soon=inbox.due_soon,
     )
 
 

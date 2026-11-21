@@ -41,6 +41,12 @@ class CaseTask(Base):
         ),
         Index("ix_case_tasks_case_id_id", "case_id", "id"),
         Index("ix_case_tasks_assigned_to_status_due_at", "assigned_to", "status", "due_at"),
+        Index(
+            "ix_case_tasks_organization_status_due_at",
+            "organization_id",
+            "status",
+            "due_at",
+        ),
     )
 
     id: Mapped[UUIDv7Pk]

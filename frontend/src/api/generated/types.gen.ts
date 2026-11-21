@@ -2274,6 +2274,94 @@ export type SupportTicketStatusChange = {
 };
 
 /**
+ * TaskInboxItem
+ */
+export type TaskInboxItem = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Case Id
+   */
+  case_id: string;
+  /**
+   * Title
+   */
+  title: string;
+  /**
+   * Description
+   */
+  description: string | null;
+  /**
+   * Priority
+   */
+  priority: "low" | "normal" | "high" | "urgent";
+  /**
+   * Status
+   */
+  status: "pending" | "in_progress" | "completed" | "canceled";
+  /**
+   * Due At
+   */
+  due_at: string | null;
+  /**
+   * Assigned To
+   */
+  assigned_to: string;
+  /**
+   * Assignee Name
+   */
+  assignee_name: string;
+  /**
+   * Created By
+   */
+  created_by: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Updated At
+   */
+  updated_at: string;
+  /**
+   * Completed At
+   */
+  completed_at: string | null;
+  /**
+   * Case Title
+   */
+  case_title: string;
+  /**
+   * Case Status
+   */
+  case_status: "open" | "closed";
+};
+
+/**
+ * TaskInboxOut
+ */
+export type TaskInboxOut = {
+  /**
+   * Items
+   */
+  items: Array<TaskInboxItem>;
+  /**
+   * Active
+   */
+  active: number;
+  /**
+   * Overdue
+   */
+  overdue: number;
+  /**
+   * Due Soon
+   */
+  due_soon: number;
+};
+
+/**
  * UserStatusChange
  */
 export type UserStatusChange = {
@@ -4297,6 +4385,52 @@ export type UpdateCaseTaskStatusResponses = {
 
 export type UpdateCaseTaskStatusResponse =
   UpdateCaseTaskStatusResponses[keyof UpdateCaseTaskStatusResponses];
+
+export type TaskInboxData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Assigned To
+     */
+    assigned_to?: string | null;
+    /**
+     * Priority
+     */
+    priority?: "low" | "normal" | "high" | "urgent" | null;
+    /**
+     * Due Before
+     */
+    due_before?: string | null;
+    /**
+     * Search
+     */
+    search?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+  };
+  url: "/api/v1/tasks";
+};
+
+export type TaskInboxErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type TaskInboxError = TaskInboxErrors[keyof TaskInboxErrors];
+
+export type TaskInboxResponses = {
+  /**
+   * Successful Response
+   */
+  200: TaskInboxOut;
+};
+
+export type TaskInboxResponse = TaskInboxResponses[keyof TaskInboxResponses];
 
 export type InspectExportData = {
   body: ExportInspectRequest;

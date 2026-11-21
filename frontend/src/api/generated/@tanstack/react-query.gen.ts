@@ -69,6 +69,7 @@ import {
   signIn,
   signOut,
   signOutEverywhere,
+  taskInbox,
   updateCaseRetention,
   updateCaseTaskStatus,
   uploadEvidence,
@@ -243,6 +244,9 @@ import type {
   SignOutEverywhereError,
   SignOutEverywhereResponse,
   SignOutResponse,
+  TaskInboxData,
+  TaskInboxError,
+  TaskInboxResponse,
   UpdateCaseRetentionData,
   UpdateCaseRetentionError,
   UpdateCaseRetentionResponse,
@@ -1949,6 +1953,31 @@ export const updateCaseTaskStatusMutation = (
   };
   return mutationOptions;
 };
+
+export const taskInboxQueryKey = (options?: Options<TaskInboxData>) =>
+  createQueryKey("taskInbox", options);
+
+/**
+ * Consultar la bandeja de tareas activa
+ */
+export const taskInboxOptions = (options?: Options<TaskInboxData>) =>
+  queryOptions<
+    TaskInboxResponse,
+    TaskInboxError,
+    TaskInboxResponse,
+    ReturnType<typeof taskInboxQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await taskInbox({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: taskInboxQueryKey(options),
+  });
 
 /**
  * Comprobar si un enlace de paquete sigue vigente
