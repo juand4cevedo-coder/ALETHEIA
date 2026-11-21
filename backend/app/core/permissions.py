@@ -17,6 +17,8 @@ Permission = Literal[
     "cases.manage_members",
     "cases.manage_lifecycle",
     "cases.manage_retention",
+    "cases.manage_tasks",
+    "cases.complete_assigned_tasks",
     "cases.upload_evidence",
     "cases.download_evidence",
 ]
@@ -33,6 +35,8 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.manage_members",
             "cases.manage_lifecycle",
             "cases.manage_retention",
+            "cases.manage_tasks",
+            "cases.complete_assigned_tasks",
             "cases.upload_evidence",
             "cases.download_evidence",
         }
@@ -46,6 +50,8 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.manage_members",
             "cases.manage_lifecycle",
             "cases.manage_retention",
+            "cases.manage_tasks",
+            "cases.complete_assigned_tasks",
             "cases.upload_evidence",
             "cases.download_evidence",
         }
@@ -57,11 +63,20 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.create",
             "cases.manage_members",
             "cases.manage_lifecycle",
+            "cases.manage_tasks",
+            "cases.complete_assigned_tasks",
             "cases.upload_evidence",
             "cases.download_evidence",
         }
     ),
-    "assistant": frozenset({"organization.view", "cases.read_assigned", "cases.upload_evidence"}),
+    "assistant": frozenset(
+        {
+            "organization.view",
+            "cases.read_assigned",
+            "cases.upload_evidence",
+            "cases.complete_assigned_tasks",
+        }
+    ),
 }
 
 

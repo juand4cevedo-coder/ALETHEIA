@@ -15,12 +15,14 @@ from app.models.jobs import Job
 from app.models.limits import RateLimitEvent
 from app.models.organization import Invitation, Membership, Organization
 from app.models.support import SupportTicket
+from app.models.tasks import CaseTask
 
 __all__ = [
     "AuditLog",
     "Base",
     "Case",
     "CaseMember",
+    "CaseTask",
     "CustodyEvent",
     "DeletionRecord",
     "Evidence",

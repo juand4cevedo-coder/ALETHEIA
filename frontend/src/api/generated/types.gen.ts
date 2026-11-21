@@ -581,6 +581,114 @@ export type CaseSummaryOut = {
 };
 
 /**
+ * CaseTaskCreate
+ */
+export type CaseTaskCreate = {
+  /**
+   * Title
+   */
+  title: string;
+  /**
+   * Description
+   */
+  description?: string | null;
+  /**
+   * Priority
+   */
+  priority?: "low" | "normal" | "high" | "urgent";
+  /**
+   * Due At
+   */
+  due_at?: string | null;
+  /**
+   * Assigned To
+   */
+  assigned_to: string;
+};
+
+/**
+ * CaseTaskOut
+ */
+export type CaseTaskOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Case Id
+   */
+  case_id: string;
+  /**
+   * Title
+   */
+  title: string;
+  /**
+   * Description
+   */
+  description: string | null;
+  /**
+   * Priority
+   */
+  priority: "low" | "normal" | "high" | "urgent";
+  /**
+   * Status
+   */
+  status: "pending" | "in_progress" | "completed" | "canceled";
+  /**
+   * Due At
+   */
+  due_at: string | null;
+  /**
+   * Assigned To
+   */
+  assigned_to: string;
+  /**
+   * Assignee Name
+   */
+  assignee_name: string;
+  /**
+   * Created By
+   */
+  created_by: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Updated At
+   */
+  updated_at: string;
+  /**
+   * Completed At
+   */
+  completed_at: string | null;
+};
+
+/**
+ * CaseTaskPage
+ */
+export type CaseTaskPage = {
+  /**
+   * Items
+   */
+  items: Array<CaseTaskOut>;
+  /**
+   * Next Cursor
+   */
+  next_cursor: string | null;
+};
+
+/**
+ * CaseTaskStatusUpdate
+ */
+export type CaseTaskStatusUpdate = {
+  /**
+   * Status
+   */
+  status: "pending" | "in_progress" | "completed" | "canceled";
+};
+
+/**
  * CaseTotalsOut
  *
  * Totales de los casos donde la persona es miembro, sin importar el filtro.
@@ -1412,6 +1520,8 @@ export type Me = {
     | "cases.manage_members"
     | "cases.manage_lifecycle"
     | "cases.manage_retention"
+    | "cases.manage_tasks"
+    | "cases.complete_assigned_tasks"
     | "cases.upload_evidence"
     | "cases.download_evidence"
   >;
@@ -4067,6 +4177,126 @@ export type DownloadEvidenceResponses = {
    */
   200: unknown;
 };
+
+export type ListCaseTasksData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: {
+    /**
+     * Cursor
+     */
+    cursor?: string | null;
+    /**
+     * Status
+     */
+    status?: "pending" | "in_progress" | "completed" | "canceled" | null;
+    /**
+     * Assigned To
+     */
+    assigned_to?: string | null;
+    /**
+     * Search
+     */
+    search?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+  };
+  url: "/api/v1/cases/{case_id}/tasks";
+};
+
+export type ListCaseTasksErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListCaseTasksError = ListCaseTasksErrors[keyof ListCaseTasksErrors];
+
+export type ListCaseTasksResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseTaskPage;
+};
+
+export type ListCaseTasksResponse =
+  ListCaseTasksResponses[keyof ListCaseTasksResponses];
+
+export type CreateCaseTaskData = {
+  body: CaseTaskCreate;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/tasks";
+};
+
+export type CreateCaseTaskErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CreateCaseTaskError =
+  CreateCaseTaskErrors[keyof CreateCaseTaskErrors];
+
+export type CreateCaseTaskResponses = {
+  /**
+   * Successful Response
+   */
+  201: CaseTaskOut;
+};
+
+export type CreateCaseTaskResponse =
+  CreateCaseTaskResponses[keyof CreateCaseTaskResponses];
+
+export type UpdateCaseTaskStatusData = {
+  body: CaseTaskStatusUpdate;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Task Id
+     */
+    task_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/tasks/{task_id}/status";
+};
+
+export type UpdateCaseTaskStatusErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type UpdateCaseTaskStatusError =
+  UpdateCaseTaskStatusErrors[keyof UpdateCaseTaskStatusErrors];
+
+export type UpdateCaseTaskStatusResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseTaskOut;
+};
+
+export type UpdateCaseTaskStatusResponse =
+  UpdateCaseTaskStatusResponses[keyof UpdateCaseTaskStatusResponses];
 
 export type InspectExportData = {
   body: ExportInspectRequest;

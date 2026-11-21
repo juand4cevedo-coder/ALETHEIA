@@ -483,6 +483,8 @@ const ACTION_LABELS: Record<string, string> = {
   case_closed: "Caso cerrado y archivado",
   case_reopened: "Caso reabierto",
   case_retention_updated: "Conservación del caso actualizada",
+  case_task_created: "Tarea de caso creada",
+  case_task_status_changed: "Estado de tarea actualizado",
   account_blocked: "Cuenta bloqueada",
   account_unblocked: "Cuenta desbloqueada",
   platform_admin_granted: "Propietario asignado",

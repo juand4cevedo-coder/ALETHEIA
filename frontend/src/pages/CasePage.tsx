@@ -36,6 +36,7 @@ import { apiProblem } from "../features/auth/apiProblem.ts";
 import { CustodySection } from "../features/cases/CustodySection.tsx";
 import { EvidenceSection } from "../features/cases/EvidenceSection.tsx";
 import { ExportSection } from "../features/cases/ExportSection.tsx";
+import { TaskSection } from "../features/cases/TaskSection.tsx";
 import { formatColombiaTime } from "../features/cases/dates.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { initialsOf } from "../features/session/initials.ts";
@@ -47,8 +48,14 @@ import {
   CarpetaAbiertaIcon,
 } from "../components/ui/icons.tsx";
 
-type TabKey = "chain" | "team" | "evidence" | "export";
-const TAB_ORDER: readonly TabKey[] = ["chain", "team", "evidence", "export"];
+type TabKey = "chain" | "team" | "tasks" | "evidence" | "export";
+const TAB_ORDER: readonly TabKey[] = [
+  "chain",
+  "team",
+  "tasks",
+  "evidence",
+  "export",
+];
 
 /** El caso no existe, es de otra organización o su id no es válido: MSG-011 en los tres casos. */
 function isMissing(error: unknown): boolean {
@@ -167,7 +174,11 @@ function CaseView({
 }) {
   const location = useLocation();
   const [tab, setTab] = useState<TabKey>(
-    location.hash === "#evidencias" ? "evidence" : "chain",
+    location.hash === "#evidencias"
+      ? "evidence"
+      : location.hash === "#tareas"
+        ? "tasks"
+        : "chain",
   );
   const canExport = ["owner", "admin", "lawyer"].includes(
     me.organization?.role ?? "",
@@ -178,12 +189,14 @@ function CaseView({
   const tabRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({
     chain: null,
     team: null,
+    tasks: null,
     evidence: null,
     export: null,
   });
   const ids = {
     chain: useId(),
     team: useId(),
+    tasks: useId(),
     evidence: useId(),
     export: useId(),
   };
@@ -224,6 +237,7 @@ function CaseView({
         count: detail.member_count,
         unit: detail.member_count === 1 ? "persona" : "personas",
       },
+      { key: "tasks", label: "Tareas y plazos" },
       { key: "evidence", label: "Evidencias" },
       ...(canExport ? [{ key: "export" as const, label: "Paquete" }] : []),
     ];
@@ -327,6 +341,24 @@ function CaseView({
             Quienes trabajan en este caso y ven sus datos.
           </p>
           {tab === "team" && <TeamList detail={detail} me={me} />}
+        </div>
+        <div
+          role="tabpanel"
+          id={`${ids.tasks}-panel`}
+          aria-labelledby={`${ids.tasks}-tab`}
+          className={styles.tabPanel}
+          tabIndex={0}
+          hidden={tab !== "tasks"}
+        >
+          {tab === "tasks" && (
+            <TaskSection
+              caseId={detail.id}
+              members={detail.members}
+              role={me.organization?.role}
+              currentUserId={me.id}
+              caseOpen={detail.status === "open"}
+            />
+          )}
         </div>
         <div
           role="tabpanel"

@@ -22,6 +22,7 @@ import {
   closeCase,
   createCase,
   createCaseExport,
+  createCaseTask,
   createCheckout,
   createInvitation,
   createSupportTicket,
@@ -36,6 +37,7 @@ import {
   health,
   inspectExport,
   listCases,
+  listCaseTasks,
   listCustodyEvents,
   listEvidences,
   listInvitations,
@@ -68,6 +70,7 @@ import {
   signOut,
   signOutEverywhere,
   updateCaseRetention,
+  updateCaseTaskStatus,
   uploadEvidence,
   verifyCustody,
   verifyEmail,
@@ -110,6 +113,9 @@ import type {
   CreateCaseExportError,
   CreateCaseExportResponse,
   CreateCaseResponse,
+  CreateCaseTaskData,
+  CreateCaseTaskError,
+  CreateCaseTaskResponse,
   CreateCheckoutData,
   CreateCheckoutError,
   CreateCheckoutResponse,
@@ -145,6 +151,9 @@ import type {
   ListCasesData,
   ListCasesError,
   ListCasesResponse,
+  ListCaseTasksData,
+  ListCaseTasksError,
+  ListCaseTasksResponse,
   ListCustodyEventsData,
   ListCustodyEventsError,
   ListCustodyEventsResponse,
@@ -237,6 +246,9 @@ import type {
   UpdateCaseRetentionData,
   UpdateCaseRetentionError,
   UpdateCaseRetentionResponse,
+  UpdateCaseTaskStatusData,
+  UpdateCaseTaskStatusError,
+  UpdateCaseTaskStatusResponse,
   UploadEvidenceData,
   UploadEvidenceError,
   UploadEvidenceResponse,
@@ -1805,6 +1817,138 @@ export const downloadEvidenceOptions = (
     },
     queryKey: downloadEvidenceQueryKey(options),
   });
+
+export const listCaseTasksQueryKey = (options: Options<ListCaseTasksData>) =>
+  createQueryKey("listCaseTasks", options);
+
+/**
+ * Listar tareas y plazos de un caso
+ */
+export const listCaseTasksOptions = (options: Options<ListCaseTasksData>) =>
+  queryOptions<
+    ListCaseTasksResponse,
+    ListCaseTasksError,
+    ListCaseTasksResponse,
+    ReturnType<typeof listCaseTasksQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listCaseTasks({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listCaseTasksQueryKey(options),
+  });
+
+export const listCaseTasksInfiniteQueryKey = (
+  options: Options<ListCaseTasksData>,
+): QueryKey<Options<ListCaseTasksData>> =>
+  createQueryKey("listCaseTasks", options, true);
+
+/**
+ * Listar tareas y plazos de un caso
+ */
+export const listCaseTasksInfiniteOptions = (
+  options: Options<ListCaseTasksData>,
+) => {
+  const opts = infiniteQueryOptions<
+    ListCaseTasksResponse,
+    ListCaseTasksError,
+    InfiniteData<ListCaseTasksResponse>,
+    QueryKey<Options<ListCaseTasksData>>,
+    | string
+    | null
+    | Pick<
+        QueryKey<Options<ListCaseTasksData>>[0],
+        "body" | "headers" | "path" | "query"
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<ListCaseTasksData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  cursor: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listCaseTasks({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: listCaseTasksInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+/**
+ * Crear y asignar una tarea del caso
+ */
+export const createCaseTaskMutation = (
+  options?: Partial<Options<CreateCaseTaskData>>,
+): UseMutationOptions<
+  CreateCaseTaskResponse,
+  CreateCaseTaskError,
+  Options<CreateCaseTaskData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateCaseTaskResponse,
+    CreateCaseTaskError,
+    Options<CreateCaseTaskData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createCaseTask({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Actualizar el estado de una tarea del caso
+ */
+export const updateCaseTaskStatusMutation = (
+  options?: Partial<Options<UpdateCaseTaskStatusData>>,
+): UseMutationOptions<
+  UpdateCaseTaskStatusResponse,
+  UpdateCaseTaskStatusError,
+  Options<UpdateCaseTaskStatusData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    UpdateCaseTaskStatusResponse,
+    UpdateCaseTaskStatusError,
+    Options<UpdateCaseTaskStatusData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await updateCaseTaskStatus({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 /**
  * Comprobar si un enlace de paquete sigue vigente

@@ -51,6 +51,9 @@ def test_permisos_actuales_por_rol() -> None:
     assert has_permission("admin", "cases.manage_retention")
     assert not has_permission("lawyer", "cases.manage_retention")
     assert not has_permission("assistant", "cases.manage_retention")
+    assert has_permission("lawyer", "cases.manage_tasks")
+    assert not has_permission("assistant", "cases.manage_tasks")
+    assert has_permission("assistant", "cases.complete_assigned_tasks")
     assert has_permission("lawyer", "cases.download_evidence")
     assert not has_permission("assistant", "cases.download_evidence")
     for role in MEMBER_ROLES:

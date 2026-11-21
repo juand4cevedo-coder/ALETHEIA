@@ -47,6 +47,9 @@ import type {
   CreateCaseExportErrors,
   CreateCaseExportResponses,
   CreateCaseResponses,
+  CreateCaseTaskData,
+  CreateCaseTaskErrors,
+  CreateCaseTaskResponses,
   CreateCheckoutData,
   CreateCheckoutErrors,
   CreateCheckoutResponses,
@@ -86,6 +89,9 @@ import type {
   ListCasesData,
   ListCasesErrors,
   ListCasesResponses,
+  ListCaseTasksData,
+  ListCaseTasksErrors,
+  ListCaseTasksResponses,
   ListCustodyEventsData,
   ListCustodyEventsErrors,
   ListCustodyEventsResponses,
@@ -178,6 +184,9 @@ import type {
   UpdateCaseRetentionData,
   UpdateCaseRetentionErrors,
   UpdateCaseRetentionResponses,
+  UpdateCaseTaskStatusData,
+  UpdateCaseTaskStatusErrors,
+  UpdateCaseTaskStatusResponses,
   UploadEvidenceData,
   UploadEvidenceErrors,
   UploadEvidenceResponses,
@@ -1210,6 +1219,84 @@ export const downloadEvidence = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/download",
     ...options,
+  });
+
+/**
+ * Listar tareas y plazos de un caso
+ */
+export const listCaseTasks = <ThrowOnError extends boolean = false>(
+  options: Options<ListCaseTasksData, ThrowOnError>,
+): RequestResult<ListCaseTasksResponses, ListCaseTasksErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    ListCaseTasksResponses,
+    ListCaseTasksErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/tasks",
+    ...options,
+  });
+
+/**
+ * Crear y asignar una tarea del caso
+ */
+export const createCaseTask = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCaseTaskData, ThrowOnError>,
+): RequestResult<CreateCaseTaskResponses, CreateCaseTaskErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CreateCaseTaskResponses,
+    CreateCaseTaskErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/tasks",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Actualizar el estado de una tarea del caso
+ */
+export const updateCaseTaskStatus = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateCaseTaskStatusData, ThrowOnError>,
+): RequestResult<
+  UpdateCaseTaskStatusResponses,
+  UpdateCaseTaskStatusErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).patch<
+    UpdateCaseTaskStatusResponses,
+    UpdateCaseTaskStatusErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/tasks/{task_id}/status",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**
