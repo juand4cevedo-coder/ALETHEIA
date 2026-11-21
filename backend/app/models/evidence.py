@@ -259,6 +259,12 @@ class Export(Base):
             "AND expires_at IS NOT NULL)",
             name="ready",
         ),
+        CheckConstraint(
+            "(anchor_seq IS NULL AND anchor_hash IS NULL AND anchor_token IS NULL "
+            "AND anchor_time IS NULL) OR (anchor_seq >= 1 AND octet_length(anchor_hash) = 32 "
+            "AND octet_length(anchor_token) > 0 AND anchor_time IS NOT NULL)",
+            name="anchor_complete",
+        ),
         ForeignKeyConstraint(*_SAME_ORGANIZATION_AS_CASE),
         Index("ix_exports_case_id_id", "case_id", "id"),
     )
@@ -269,6 +275,10 @@ class Export(Base):
     requested_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     status: Mapped[str] = mapped_column(server_default="queued")
     manifest_sha256: Mapped[bytes | None]
+    anchor_seq: Mapped[int | None]
+    anchor_hash: Mapped[bytes | None]
+    anchor_token: Mapped[bytes | None]
+    anchor_time: Mapped[datetime.datetime | None]
     storage_key: Mapped[str | None]
     expires_at: Mapped[datetime.datetime | None]
     created_at: Mapped[CreatedAt]
