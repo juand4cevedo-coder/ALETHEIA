@@ -1,6 +1,6 @@
 # Integraciones externas pendientes: acceso y sellado de tiempo
 
-La versión v0.5.1 incluye exportación de paquetes, sellado por evidencia mediante un trabajador y el flujo OIDC de Google para cuentas previamente vinculadas. Su activación en producción sigue pendiente de crear y verificar el cliente en Google Cloud; Microsoft quedó fuera del alcance por decisión del proyecto. La validación operativa del proveedor de sellado y del ciclo completo de preservación se registra en DEP-04, HU-020 y HU-025.
+La versión v0.6.0 incluye exportación de paquetes, sellado por evidencia mediante un trabajador y el flujo OIDC de Google para cuentas previamente vinculadas. La activación de Google en producción sigue pendiente de crear y verificar el cliente en Google Cloud; Microsoft quedó fuera del alcance por decisión del proyecto. La validación operativa del proveedor de sellado y del ciclo completo de preservación se registra en DEP-04, HU-020 y HU-025.
 
 ## Google: HU-008 / DEP-01
 
