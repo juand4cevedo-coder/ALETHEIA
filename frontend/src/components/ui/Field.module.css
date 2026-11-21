@@ -10,9 +10,9 @@
   color: var(--text);
   font-size: var(--font-size-label);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   line-height: var(--line-height-label);
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .control {
@@ -21,7 +21,7 @@
   align-items: center;
   height: var(--control-height);
   border: 1px solid var(--line-control);
-  border-radius: var(--radius-sm);
+  border-radius: 16px;
   background: var(--paper-raised);
   transition:
     border-color var(--motion-fast) var(--ease-standard),
