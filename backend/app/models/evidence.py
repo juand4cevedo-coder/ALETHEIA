@@ -242,6 +242,28 @@ class CustodyEvent(Base):
     event_hash: Mapped[bytes] = mapped_column(server_default=FetchedValue())
 
 
+class CustodyAnchor(Base):
+    """Sello RFC 3161 de una cabeza concreta de la cadena; es inmutable."""
+
+    __tablename__ = "custody_anchors"
+    __table_args__ = (
+        CheckConstraint("seq >= 1", name="seq"),
+        CheckConstraint("octet_length(head_hash) = 32", name="head_hash_length"),
+        CheckConstraint("octet_length(tsa_token) > 0", name="tsa_token_not_empty"),
+        ForeignKeyConstraint(*_SAME_ORGANIZATION_AS_CASE),
+        UniqueConstraint("case_id", "seq"),
+    )
+
+    id: Mapped[UUIDv7Pk]
+    organization_id: Mapped[uuid.UUID]
+    case_id: Mapped[uuid.UUID]
+    seq: Mapped[int]
+    head_hash: Mapped[bytes]
+    tsa_token: Mapped[bytes]
+    tsa_time: Mapped[datetime.datetime]
+    created_at: Mapped[CreatedAt]
+
+
 class Export(Base):
     """Paquete de preservación de un caso; su enlace vence a las 24 horas (DAT-16, RN-021)."""
 

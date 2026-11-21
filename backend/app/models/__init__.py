@@ -1,10 +1,12 @@
 """Modelos de ALETHEIA. Importar este paquete registra todas las tablas en Base.metadata."""
 
 from app.db.base import Base
+from app.models import custody_hooks as _custody_hooks  # noqa: F401
 from app.models.billing import PaymentEvent, Plan, Subscription
 from app.models.evidence import (
     Case,
     CaseMember,
+    CustodyAnchor,
     CustodyEvent,
     DeletionRecord,
     Evidence,
@@ -23,6 +25,7 @@ __all__ = [
     "Case",
     "CaseMember",
     "CaseTask",
+    "CustodyAnchor",
     "CustodyEvent",
     "DeletionRecord",
     "Evidence",

@@ -20,6 +20,7 @@ JOB_KINDS: Final = (
     "export_expire",
     "audit_anonymize",
     "subscription_expire",
+    "custody_anchor",
 )
 JOB_STATUSES: Final = ("queued", "running", "done", "dead")
 
