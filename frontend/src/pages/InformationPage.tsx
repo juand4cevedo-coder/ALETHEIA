@@ -211,7 +211,7 @@ export function InformationPage() {
       <link rel="canonical" href={SITE_URL + pathname} />
       <header className={styles.centerHead}>
         <div className={styles.brandTile}>
-          <img src={logo} width={48} height={48} alt="" />
+          <img src={logo} width={84} height={84} alt="" />
         </div>
         <h1>{title}</h1>
         <p>{lead}</p>
@@ -252,17 +252,18 @@ export function InformationPage() {
           <div className={styles.prose}>
             <h2>El símbolo de Aletheia</h2>
             <p>
-              El símbolo es un sello con las manecillas de un reloj: el momento
-              exacto en que una evidencia queda registrada. Sus dos versiones,
-              clara y oscura, permiten conservar el contraste sobre diferentes
-              superficies. Utilice el archivo vectorial para mantener la nitidez
-              en cualquier tamaño.
+              El símbolo combina un campo circular, un ojo y líneas digitales.
+              El círculo expresa resguardo y continuidad; el ojo, observación
+              cuidadosa y búsqueda de claridad; los circuitos representan la
+              trazabilidad técnica de la información. Sus versiones clara y
+              oscura conservan el contraste sobre cualquier superficie.
             </p>
             <h2>Uso del nombre</h2>
             <p>
-              Se escribe Aletheia. Mantenga el símbolo proporcionado, con
-              espacio alrededor y contraste suficiente. No añada sombras ni
-              estire la imagen.
+              Se escribe Aletheia. Mantenga el símbolo proporcionado, con un
+              espacio libre mínimo equivalente a la pupila y contraste
+              suficiente. No cambie sus proporciones ni añada fondos, sombras,
+              inclinaciones o elementos alrededor del círculo.
             </p>
             <a href="/brand/symbol-white.svg" download="aletheia-blanco.svg">
               Descargar símbolo blanco (SVG)

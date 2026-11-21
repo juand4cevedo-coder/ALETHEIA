@@ -76,7 +76,7 @@
   padding: var(--space-3);
   border-top: 1px solid var(--ink-hairline);
   vertical-align: middle;
-  /* Solo como último recurso: un agente de navegador es una sola cadena larga. */
+  /* Como último recurso, una identificación de navegador puede ser una cadena larga. */
   overflow-wrap: break-word;
 }
 

@@ -30,6 +30,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 function Brand() {
   return (
     <Link to={ROUTES.home} className={styles.brand} aria-label={WORDMARK}>
+      <img src="/brand/symbol-dark.svg" alt="" width="32" height="32" />
       <span aria-hidden="true">{WORDMARK}</span>
     </Link>
   );
