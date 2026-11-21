@@ -160,18 +160,18 @@
   }
 }
 
-/* Tarjeta elevada: tono claro, sombra de dos capas y filete metálico arriba. La franja de error
-   a la izquierda va siempre acompañada del texto del mensaje. */
+/* El estado de error se distingue por un tinte y un contorno tenue. El texto y role="alert"
+   comunican el estado sin depender de una franja decorativa lateral. */
 .failure {
   display: grid;
   gap: var(--space-3);
   justify-items: start;
   max-width: var(--measure);
   padding: var(--space-4);
-  border-left: 3px solid var(--err);
+  border: 1px solid color-mix(in srgb, var(--err) 24%, transparent);
   border-radius: var(--radius-md);
-  background: var(--paper-raised);
-  box-shadow: var(--brass-hairline), var(--shadow-card);
+  background: color-mix(in srgb, var(--err) 4%, var(--paper-raised));
+  box-shadow: var(--shadow-card);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
 }
