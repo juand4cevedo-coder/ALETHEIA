@@ -1866,6 +1866,12 @@ export type PlatformAuditPage = {
    * Next Cursor
    */
   next_cursor: string | null;
+  /**
+   * Total
+   *
+   * Eventos que coinciden con los filtros, sin limitar por página.
+   */
+  total: number;
 };
 
 /**
@@ -4799,6 +4805,28 @@ export type PlatformAuditData = {
      * Cursor
      */
     cursor?: string | null;
+    /**
+     * Search
+     *
+     * Nombre o correo del actor, organización o UUID del objeto.
+     */
+    search?: string | null;
+    /**
+     * Action
+     */
+    action?: string | null;
+    /**
+     * Created From
+     *
+     * Inicio inclusivo del periodo, con zona horaria.
+     */
+    created_from?: string | null;
+    /**
+     * Created To
+     *
+     * Fin exclusivo del periodo, con zona horaria.
+     */
+    created_to?: string | null;
   };
   url: "/api/v1/platform/audit";
 };

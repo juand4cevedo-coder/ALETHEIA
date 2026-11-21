@@ -128,6 +128,80 @@ def test_la_auditoria_resuelve_nombres_en_vez_de_ids_crudos(
     assert event["organization_name"] == "Restrepo Abogados"
 
 
+def test_la_auditoria_transversal_busca_y_filtra_en_el_servidor(
+    app: FastAPI, owner_db: Session, dispositivo: NuevoCliente
+) -> None:
+    admin = _user(owner_db, "owner@example.com", platform_admin=True)
+    admin.full_name = "Ana Restrepo"
+    tenant = create_tenant(owner_db, "Gómez Legal")
+    first = datetime.datetime(2026, 11, 20, 14, 0, tzinfo=datetime.UTC)
+    second = datetime.datetime(2026, 11, 21, 14, 0, tzinfo=datetime.UTC)
+    target_id = uuid.uuid7()
+    owner_db.add_all(
+        [
+            AuditLog(
+                organization_id=None,
+                actor_user_id=admin.id,
+                action="login",
+                target_id=None,
+                ip=None,
+                user_agent=None,
+                created_at=first,
+            ),
+            AuditLog(
+                organization_id=tenant.organization_id,
+                actor_user_id=admin.id,
+                action="case_closed",
+                target_id=target_id,
+                ip=None,
+                user_agent=None,
+                created_at=second,
+            ),
+        ]
+    )
+    owner_db.flush()
+    app.dependency_overrides[get_session] = lambda: owner_db
+    app.dependency_overrides[get_principal] = lambda: _principal(admin)
+    client = dispositivo()
+
+    by_organization = client.get("/api/v1/platform/audit", params={"search": "gÓmEz"})
+    assert by_organization.status_code == 200, by_organization.text
+    assert [item["target_id"] for item in by_organization.json()["items"]] == [str(target_id)]
+    assert by_organization.json()["total"] == 1
+
+    filtered = client.get(
+        "/api/v1/platform/audit",
+        params={
+            "search": str(target_id),
+            "action": "case_closed",
+            "created_from": "2026-11-21T00:00:00Z",
+            "created_to": "2026-11-22T00:00:00Z",
+        },
+    )
+    assert filtered.status_code == 200, filtered.text
+    assert [item["target_id"] for item in filtered.json()["items"]] == [str(target_id)]
+    assert filtered.json()["total"] == 1
+    assert "ip" not in filtered.text
+    assert "user_agent" not in filtered.text
+
+    assert (
+        client.get(
+            "/api/v1/platform/audit",
+            params={
+                "created_from": "2026-11-22T00:00:00Z",
+                "created_to": "2026-11-21T00:00:00Z",
+            },
+        ).status_code
+        == 422
+    )
+    assert (
+        client.get(
+            "/api/v1/platform/audit", params={"created_from": "2026-11-21T00:00:00"}
+        ).status_code
+        == 422
+    )
+
+
 def test_solicitud_de_soporte_y_resolucion_dejan_auditoria(
     app: FastAPI, owner_db: Session, dispositivo: NuevoCliente
 ) -> None:

@@ -4250,6 +4250,84 @@
               ],
               "title": "Cursor"
             }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120,
+                  "pattern": ".*\\S.*"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nombre o correo del actor, organización o UUID del objeto.",
+              "title": "Search"
+            },
+            "description": "Nombre o correo del actor, organización o UUID del objeto."
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[a-z_]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Action"
+            }
+          },
+          {
+            "name": "created_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inicio inclusivo del periodo, con zona horaria.",
+              "title": "Created From"
+            },
+            "description": "Inicio inclusivo del periodo, con zona horaria."
+          },
+          {
+            "name": "created_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fin exclusivo del periodo, con zona horaria.",
+              "title": "Created To"
+            },
+            "description": "Fin exclusivo del periodo, con zona horaria."
           }
         ],
         "responses": {
@@ -7460,12 +7538,18 @@
               }
             ],
             "title": "Next Cursor"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Eventos que coinciden con los filtros, sin limitar por página."
           }
         },
         "type": "object",
         "required": [
           "items",
-          "next_cursor"
+          "next_cursor",
+          "total"
         ],
         "title": "PlatformAuditPage"
       },

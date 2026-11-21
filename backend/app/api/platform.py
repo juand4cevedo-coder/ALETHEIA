@@ -2,11 +2,13 @@
 
 import datetime
 import uuid
+from contextlib import suppress
 from typing import Annotated, Literal, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.elements import ColumnElement
 
 from app.api.deps import get_client_ip, get_principal, get_session
 from app.models import AuditLog, Organization, PaymentEvent, Plan, Subscription, User
@@ -286,26 +288,85 @@ def platform_audit(
     principal: Annotated[Principal, Depends(get_platform_admin)],
     session: Annotated[Session, Depends(get_session)],
     cursor: uuid.UUID | None = None,
+    search: Annotated[
+        str | None,
+        Query(
+            min_length=1,
+            max_length=120,
+            pattern=r".*\S.*",
+            description="Nombre o correo del actor, organización o UUID del objeto.",
+        ),
+    ] = None,
+    action: Annotated[str | None, Query(min_length=1, max_length=64, pattern=r"^[a-z_]+$")] = None,
+    created_from: Annotated[
+        datetime.datetime | None,
+        Query(description="Inicio inclusivo del periodo, con zona horaria."),
+    ] = None,
+    created_to: Annotated[
+        datetime.datetime | None,
+        Query(description="Fin exclusivo del periodo, con zona horaria."),
+    ] = None,
 ) -> PlatformAuditPage:
     del principal
     response.headers["Cache-Control"] = "no-store"
-    query = select(AuditLog).order_by(AuditLog.id.desc()).limit(51)
+    for boundary in (created_from, created_to):
+        if boundary is not None and boundary.tzinfo is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="Las fechas de auditoría deben incluir zona horaria.",
+            )
+    if created_from is not None and created_to is not None and created_from >= created_to:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="El inicio del periodo debe ser anterior al final.",
+        )
+
+    filters: list[ColumnElement[bool]] = []
+    if search is not None:
+        term = search.strip().lower()
+        matching_actor_ids = select(User.id).where(
+            or_(
+                func.lower(User.full_name).contains(term, autoescape=True),
+                func.lower(User.email).contains(term, autoescape=True),
+            )
+        )
+        matching_organization_ids = select(Organization.id).where(
+            func.lower(Organization.name).contains(term, autoescape=True)
+        )
+        matches: list[ColumnElement[bool]] = [
+            AuditLog.actor_user_id.in_(matching_actor_ids),
+            AuditLog.organization_id.in_(matching_organization_ids),
+        ]
+        with suppress(ValueError):
+            matches.append(AuditLog.target_id == uuid.UUID(term))
+        filters.append(or_(*matches))
+    if action is not None:
+        filters.append(AuditLog.action == action)
+    if created_from is not None:
+        filters.append(AuditLog.created_at >= created_from)
+    if created_to is not None:
+        filters.append(AuditLog.created_at < created_to)
+
+    total = session.scalar(select(func.count()).select_from(AuditLog).where(*filters)) or 0
+    query = select(AuditLog).where(*filters).order_by(AuditLog.id.desc()).limit(51)
     if cursor is not None:
         query = query.where(AuditLog.id < cursor)
     events = list(session.scalars(query))
     page = events[:50]
 
     # Una sola consulta por tabla para toda la página, en vez de una por fila.
-    actor_ids = {event.actor_user_id for event in page if event.actor_user_id is not None}
-    organization_ids = {
+    page_actor_ids = {event.actor_user_id for event in page if event.actor_user_id is not None}
+    page_organization_ids = {
         event.organization_id for event in page if event.organization_id is not None
     }
     actor_names = dict(
-        session.execute(select(User.id, User.full_name).where(User.id.in_(actor_ids))).all()
+        session.execute(select(User.id, User.full_name).where(User.id.in_(page_actor_ids))).all()
     )
     organization_names = dict(
         session.execute(
-            select(Organization.id, Organization.name).where(Organization.id.in_(organization_ids))
+            select(Organization.id, Organization.name).where(
+                Organization.id.in_(page_organization_ids)
+            )
         ).all()
     )
     return PlatformAuditPage(
@@ -325,4 +386,5 @@ def platform_audit(
             for event in page
         ],
         next_cursor=events[49].id if len(events) > 50 else None,
+        total=total,
     )

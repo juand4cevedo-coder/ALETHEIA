@@ -45,7 +45,8 @@ El atributo `is_platform_admin` habilita la sección `/app/plataforma` y las rut
 dueño de la plataforma no recibe contexto de despacho ni puede invitar miembros, abrir casos o
 consultar expedientes. La consola busca y filtra cuentas en el servidor por nombre, correo,
 estado, verificación y ámbito; muestra la cantidad total de coincidencias y permite bloquearlas
-o desbloquearlas. Bloquear revoca
+o desbloquearlas. La auditoría transversal permite investigar por persona, organización,
+objeto, acción y periodo, siempre sin exponer el contenido de los expedientes. Bloquear revoca
 sus sesiones y ambos cambios dejan auditoría. También muestra el resumen de planes y estados de
 suscripción, la bandeja de solicitudes de soporte y los eventos de auditoría sin contenido de
 expedientes. Cada cuenta autenticada puede abrir y consultar sus propias solicitudes; solo quien
