@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 
+import { Button } from "../components/ui/Button.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { SITE_URL, pageTitle } from "../config/site.ts";
 import {
@@ -9,34 +10,32 @@ import {
 } from "../features/verifier/manifest.ts";
 import styles from "./VerifierPage.module.css";
 
-type Result = { expected: string; actual: string; matches: boolean };
-type WorkerMessage =
-  | { type: "progress"; bytes: number }
-  | { type: "complete"; digest: string }
-  | { type: "error" };
+import { useFileHash } from "../features/verifier/useFileHash.ts";
 
 export function VerifierPage() {
   const [manifest, setManifest] = useState<PreservationManifest | null>(null);
   const [selectedId, setSelectedId] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState("");
-  const [progress, setProgress] = useState<number | null>(null);
-  const [result, setResult] = useState<Result | null>(null);
-  const workerRef = useRef<Worker | null>(null);
+  const hash = useFileHash();
+  const manifestRead = useRef(0);
   const selected = manifest?.evidences.find((item) => item.id === selectedId);
 
-  useEffect(() => () => workerRef.current?.terminate(), []);
+  useEffect(
+    () => () => {
+      manifestRead.current += 1;
+    },
+    [],
+  );
 
   function clearRun() {
-    workerRef.current?.terminate();
-    workerRef.current = null;
-    setProgress(null);
-    setResult(null);
+    hash.reset();
     setError("");
   }
 
   async function loadManifest(chosen: File | undefined) {
     clearRun();
+    const read = ++manifestRead.current;
     setManifest(null);
     setSelectedId("");
     if (!chosen) return;
@@ -45,10 +44,13 @@ export function VerifierPage() {
       return;
     }
     try {
-      const parsed = parseManifest(await chosen.text());
+      const text = await chosen.text();
+      if (read !== manifestRead.current) return;
+      const parsed = parseManifest(text);
       setManifest(parsed);
       if (parsed.evidences.length === 1) setSelectedId(parsed.evidences[0].id);
     } catch (reason) {
+      if (read !== manifestRead.current) return;
       setError(
         reason instanceof Error
           ? reason.message
@@ -58,47 +60,16 @@ export function VerifierPage() {
   }
 
   function verify() {
-    clearRun();
     if (!file || !selected) return;
+    setError("");
     if (file.size !== selected.size_bytes) {
+      hash.reset();
       setError(
         `El tamaño difiere del manifiesto (${selected.size_bytes.toLocaleString("es-CO")} bytes esperados). Seleccione el archivo correspondiente.`,
       );
       return;
     }
-    const worker = new Worker(
-      new URL("../features/verifier/hash.worker.ts", import.meta.url),
-      { type: "module" },
-    );
-    workerRef.current = worker;
-    setProgress(0);
-    worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
-      const message = event.data;
-      if (message.type === "progress") {
-        setProgress(message.bytes);
-      } else if (message.type === "complete") {
-        setProgress(null);
-        setResult({
-          expected: selected.sha256,
-          actual: message.digest,
-          matches: message.digest === selected.sha256,
-        });
-        worker.terminate();
-        workerRef.current = null;
-      } else {
-        setProgress(null);
-        setError("No se pudo calcular la huella. Inténtelo de nuevo.");
-        worker.terminate();
-        workerRef.current = null;
-      }
-    };
-    worker.onerror = () => {
-      setProgress(null);
-      setError("No se pudo calcular la huella. Inténtelo de nuevo.");
-      worker.terminate();
-      workerRef.current = null;
-    };
-    worker.postMessage({ file });
+    hash.start(file);
   }
 
   return (
@@ -169,37 +140,35 @@ export function VerifierPage() {
                 }}
               />
             </label>
-            <button
+            <Button
               type="button"
               onClick={verify}
-              disabled={!selected || !file || progress !== null}
+              disabled={!selected || !file || hash.progress !== null}
             >
               Comparar huellas
-            </button>
-            {progress !== null && file && (
-              <p role="status">
-                Calculando: {Math.round((progress / file.size) * 100)} %
-              </p>
+            </Button>
+            {hash.progress !== null && (
+              <p role="status">Calculando: {hash.progress} %</p>
             )}
-            {error && (
+            {(error || hash.failed) && (
               <p className={styles.error} role="alert">
-                {error}
+                {error || "No se pudo calcular la huella. Inténtelo de nuevo."}
               </p>
             )}
           </div>
 
-          {result && (
+          {hash.digest && selected && (
             <section className={styles.result} aria-live="polite">
               <h2>
-                {result.matches
+                {hash.digest === selected.sha256
                   ? "Las huellas coinciden"
                   : "Las huellas no coinciden"}
               </h2>
               <dl>
                 <dt>Huella del manifiesto</dt>
-                <dd>{result.expected}</dd>
+                <dd>{selected.sha256}</dd>
                 <dt>Huella calculada</dt>
-                <dd>{result.actual}</dd>
+                <dd>{hash.digest}</dd>
               </dl>
             </section>
           )}

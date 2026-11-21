@@ -37,6 +37,24 @@ it("ofrece siete opciones y cambia el panel con el puntero", async () => {
   );
 });
 
+it("mantiene el panel al primer clic del ratón y lo cierra al segundo", async () => {
+  const user = userEvent.setup();
+  render(
+    <MemoryRouter>
+      <PublicNavigation />
+    </MemoryRouter>,
+  );
+  const trigger = screen.getByRole("button", { name: "Producto" });
+  await user.click(trigger);
+  expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await user.click(trigger);
+  expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await user.unhover(trigger);
+  await user.hover(trigger);
+  fireEvent.keyDown(document.body, { key: "Escape" });
+  expect(trigger).toHaveAttribute("aria-expanded", "false");
+});
+
 it("permite entrar al panel con el teclado y regresar al disparador con Escape", async () => {
   const user = userEvent.setup();
   const { container } = render(

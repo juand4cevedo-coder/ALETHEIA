@@ -6,7 +6,7 @@ import uuid
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import AuditLog, Membership, Organization, Plan, Subscription, User
+from app.models import AuditLog, Membership, OAuthIdentity, Organization, Plan, Subscription, User
 
 
 def user_by_email(session: Session, email: str) -> User | None:
@@ -53,3 +53,22 @@ def membership_of(session: Session, user_id: uuid.UUID) -> Membership | None:
     ya tiene a esa persona en su contexto.
     """
     return session.scalar(select(Membership).where(Membership.user_id == user_id))
+
+
+def google_identity_by_subject(session: Session, subject: str) -> OAuthIdentity | None:
+    return session.scalar(
+        select(OAuthIdentity).where(
+            OAuthIdentity.provider == "google", OAuthIdentity.subject == subject
+        )
+    )
+
+
+def has_google_identity(session: Session, user_id: uuid.UUID) -> bool:
+    return (
+        session.scalar(
+            select(OAuthIdentity.id).where(
+                OAuthIdentity.provider == "google", OAuthIdentity.user_id == user_id
+            )
+        )
+        is not None
+    )

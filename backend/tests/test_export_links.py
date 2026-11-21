@@ -6,13 +6,14 @@ from pathlib import Path
 
 import pytest
 from fastapi import FastAPI
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.adapters import export_storage
 from app.adapters.export_storage import export_storage_key
 from app.core.config import Settings
 from app.core.tokens import InvalidExportLinkError
-from app.models import Export
+from app.models import Case, Export
 from app.services.export_links import link_for_export, resolve_export_link
 from tests.conftest import NuevoCliente, create_tenant
 
@@ -130,3 +131,18 @@ def test_api_entrega_zip_solo_con_enlace_vigente(
     row.status = "expired"
     db.flush()
     assert client.post("/api/v1/exports/inspect", json={"token": token}).status_code == 404
+
+    row.status = "ready"
+    db.execute(
+        update(Case)
+        .where(Case.id == tenant.case_id)
+        .values(status="deleting", closed_at=datetime.datetime.now(datetime.UTC), wrapped_key=None)
+    )
+    assert client.post("/api/v1/exports/inspect", json={"token": token}).status_code == 404
+    revoked = client.post(
+        "/api/v1/exports/download",
+        data={"token": token},
+        headers={"Origin": settings.public_url, "Sec-Fetch-Site": "same-origin"},
+    )
+    assert revoked.status_code == 404
+    assert revoked.headers["Cache-Control"] == "no-store"

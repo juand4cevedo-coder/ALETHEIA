@@ -1,5 +1,27 @@
-<!-- Símbolo en tinta (#071423, el token ink-900). Fondo previsto: papel (#f4f1ea) o cualquier superficie clara. Sobre tinta no se ve: allí se usa public/brand/symbol-white.svg. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="#071423">
-  <path fill-rule="evenodd" d="M22 3 h11 l12 12 v17 a3 3 0 0 1 -3 3 H22 a3 3 0 0 1 -3 -3 V6 a3 3 0 0 1 3 -3 Z M33 3 v9 a3 3 0 0 0 3 3 h9 Z"/>
-  <path d="M28.4 35 h7.2 v9 h5.4 v4.8 h-5.4 v3.4 h4.4 v4.8 h-4.4 v3 h-7.2 Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" data-brand="aletheia-eye-circuit" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <defs><clipPath id="disc"><circle cx="120" cy="120" r="103"/></clipPath></defs>
+  <circle cx="120" cy="120" r="104" fill="#f4f1ea" stroke="#7a858a" stroke-width="3"/>
+  <g clip-path="url(#disc)" stroke="#707c82" stroke-width="5.5">
+    <path d="M120 30h15c14 16 29 23 48 28l29 5"/>
+    <path d="M99 83V47M119 83V51"/>
+    <path d="M48 72h27l10 10h11"/>
+    <path d="M145 73h66"/>
+    <path d="M45 96h28c5 0 8-3 8-8h15"/>
+    <path d="M195 96h-18c-5 0-8 3-8 8h-14"/>
+    <path d="M44 120h24M196 120h-24"/>
+    <path d="M45 145h22c5 0 8-3 8-8h18"/>
+    <path d="M195 145h-16c-5 0-8 3-8 8h-15"/>
+    <path d="M48 169h29l10-10h10"/>
+    <path d="M143 162h12l10 10h47"/>
+    <path d="M99 160v35M119 160v54M143 162v56"/>
+  </g>
+  <g fill="#f4f1ea" stroke="#707c82" stroke-width="5.5">
+    <circle cx="84" cy="72" r="6"/><circle cx="119" cy="51" r="6"/><circle cx="145" cy="73" r="6"/>
+    <circle cx="81" cy="96" r="6"/><circle cx="169" cy="96" r="6"/><circle cx="68" cy="120" r="6"/>
+    <circle cx="172" cy="120" r="6"/><circle cx="75" cy="145" r="6"/><circle cx="171" cy="145" r="6"/>
+    <circle cx="87" cy="169" r="6"/><circle cx="119" cy="195" r="6"/><circle cx="143" cy="162" r="6"/>
+  </g>
+  <path d="M61 119c17-19 35-28 59-28s42 9 59 28c-17 20-35 29-59 29s-42-9-59-29Z" fill="#414b50" stroke="#414b50" stroke-width="3"/>
+  <circle cx="120" cy="119" r="29" fill="#cbd1d3" stroke="#414b50" stroke-width="4"/>
+  <circle cx="120" cy="109" r="7" fill="#414b50" stroke="none"/>
 </svg>

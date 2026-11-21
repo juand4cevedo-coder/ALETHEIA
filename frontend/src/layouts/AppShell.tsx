@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import {
   Link,
@@ -40,6 +40,7 @@ function isUnauthorized(error: unknown): boolean {
 // dispositivo o de todos.
 export function AppShell() {
   const location = useLocation();
+  const queryClient = useQueryClient();
   // Sin reintentos ni copia vieja: la respuesta dice si la sesión sigue viva ahora.
   const me = useQuery({ ...readMeOptions(), retry: false, staleTime: 0 });
   const signedIn = me.isSuccess;
@@ -48,16 +49,19 @@ export function AppShell() {
   // El sitio público muestra «Ir a mis casos» mientras haya sesión (sessionHint.ts).
   useEffect(() => {
     if (signedIn) rememberSession();
-    if (sessionEnded) forgetSession();
-  }, [signedIn, sessionEnded]);
+    if (sessionEnded) {
+      forgetSession();
+      queryClient.clear();
+    }
+  }, [queryClient, signedIn, sessionEnded]);
 
   // Con textos legales nuevos sin aceptar, la pantalla para aceptarlos reemplaza al espacio de
   // trabajo: la API tampoco responde el resto hasta entonces (TT-012, RN-029).
-  if (me.data?.legal.acceptance_required) {
+  if (signedIn && me.data.legal.acceptance_required) {
     return <LegalRenewal me={me.data} />;
   }
 
-  if (me.isError && isUnauthorized(me.error)) {
+  if (sessionEnded) {
     // Si el perfil ya había cargado, había una sesión y venció: la pantalla de ingreso lo
     // explica con MSG-012 (NAV-004). Una visita sin sesión llega a ingresar sin aviso.
     return (
@@ -85,11 +89,11 @@ export function AppShell() {
           <img src={logoUrl} alt="" width={28} height={28} />
           <span>{WORDMARK}</span>
         </Link>
-        {me.data && <AccountMenu me={me.data} />}
+        {signedIn && <AccountMenu me={me.data} />}
       </header>
 
       <div className={styles.body}>
-        {me.data && <WorkspaceNav me={me.data} />}
+        {signedIn && <WorkspaceNav me={me.data} />}
         <main
           id="contenido"
           className={styles.main}
@@ -123,7 +127,7 @@ export function AppShell() {
               </Button>
             </div>
           )}
-          {me.data && <Outlet context={me.data} />}
+          {signedIn && <Outlet context={me.data} />}
         </main>
       </div>
       <ScrollRestoration />

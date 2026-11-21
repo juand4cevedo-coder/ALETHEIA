@@ -22,6 +22,11 @@ from app.db.base import Base
 from app.models._columns import CreatedAt, UUIDv7Pk, text_values
 
 CASE_STATUSES: Final = ("open", "closed", "deleting")
+RETENTION_BASES: Final = (
+    "organization_policy",
+    "legal_or_contractual_duty",
+    "litigation_hold",
+)
 # Tipo que declara quien sube la evidencia; la interfaz lo muestra en español.
 DECLARED_TYPES: Final = ("chat", "email", "audio", "image", "document", "other")
 # Especialidad del caso; la interfaz la muestra en español.
@@ -51,6 +56,8 @@ CUSTODY_ACTIONS: Final = (
     "export_downloaded",
     "chain_verified",
     "case_closed",
+    "case_reopened",
+    "case_retention_updated",
     "deletion_requested",
 )
 
@@ -74,6 +81,14 @@ class Case(Base):
         CheckConstraint("char_length(court) BETWEEN 1 AND 160", name="court_length"),
         CheckConstraint(text_values("practice_area", PRACTICE_AREAS), name="practice_area"),
         CheckConstraint(text_values("status", CASE_STATUSES), name="status"),
+        CheckConstraint(
+            "retention_basis IS NULL OR " + text_values("retention_basis", RETENTION_BASES),
+            name="retention_basis",
+        ),
+        CheckConstraint(
+            "status <> 'closed' OR (retention_until IS NOT NULL AND retention_basis IS NOT NULL)",
+            name="closed_retention",
+        ),
         CheckConstraint("char_length(key_version) BETWEEN 1 AND 120", name="key_version_length"),
         CheckConstraint("custody_seq >= 0", name="custody_seq"),
         # Un caso abierto no tiene fecha de cierre; uno cerrado o en eliminación sí (RN-020).
@@ -90,6 +105,18 @@ class Case(Base):
             "filing_number",
             unique=True,
             postgresql_where=text("filing_number IS NOT NULL"),
+        ),
+        Index(
+            "ix_cases_organization_id_status_retention_until",
+            "organization_id",
+            "status",
+            "retention_until",
+        ),
+        Index(
+            "ix_cases_organization_id_status_closed_at",
+            "organization_id",
+            "status",
+            "closed_at",
         ),
     )
 
@@ -110,6 +137,11 @@ class Case(Base):
     created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[CreatedAt]
     closed_at: Mapped[datetime.datetime | None]
+    # El cierre archiva: el contenido sigue cifrado y consultable hasta que corresponda revisar
+    # su conservación. Un bloqueo jurídico impide automatizar una supresión posterior.
+    retention_until: Mapped[datetime.datetime | None]
+    retention_basis: Mapped[str | None]
+    legal_hold: Mapped[bool] = mapped_column(server_default="false")
 
 
 class CaseMember(Base):
@@ -210,6 +242,28 @@ class CustodyEvent(Base):
     event_hash: Mapped[bytes] = mapped_column(server_default=FetchedValue())
 
 
+class CustodyAnchor(Base):
+    """Sello RFC 3161 de una cabeza concreta de la cadena; es inmutable."""
+
+    __tablename__ = "custody_anchors"
+    __table_args__ = (
+        CheckConstraint("seq >= 1", name="seq"),
+        CheckConstraint("octet_length(head_hash) = 32", name="head_hash_length"),
+        CheckConstraint("octet_length(tsa_token) > 0", name="tsa_token_not_empty"),
+        ForeignKeyConstraint(*_SAME_ORGANIZATION_AS_CASE),
+        UniqueConstraint("case_id", "seq"),
+    )
+
+    id: Mapped[UUIDv7Pk]
+    organization_id: Mapped[uuid.UUID]
+    case_id: Mapped[uuid.UUID]
+    seq: Mapped[int]
+    head_hash: Mapped[bytes]
+    tsa_token: Mapped[bytes]
+    tsa_time: Mapped[datetime.datetime]
+    created_at: Mapped[CreatedAt]
+
+
 class Export(Base):
     """Paquete de preservación de un caso; su enlace vence a las 24 horas (DAT-16, RN-021)."""
 
@@ -227,6 +281,12 @@ class Export(Base):
             "AND expires_at IS NOT NULL)",
             name="ready",
         ),
+        CheckConstraint(
+            "(anchor_seq IS NULL AND anchor_hash IS NULL AND anchor_token IS NULL "
+            "AND anchor_time IS NULL) OR (anchor_seq >= 1 AND octet_length(anchor_hash) = 32 "
+            "AND octet_length(anchor_token) > 0 AND anchor_time IS NOT NULL)",
+            name="anchor_complete",
+        ),
         ForeignKeyConstraint(*_SAME_ORGANIZATION_AS_CASE),
         Index("ix_exports_case_id_id", "case_id", "id"),
     )
@@ -237,6 +297,10 @@ class Export(Base):
     requested_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
     status: Mapped[str] = mapped_column(server_default="queued")
     manifest_sha256: Mapped[bytes | None]
+    anchor_seq: Mapped[int | None]
+    anchor_hash: Mapped[bytes | None]
+    anchor_token: Mapped[bytes | None]
+    anchor_time: Mapped[datetime.datetime | None]
     storage_key: Mapped[str | None]
     expires_at: Mapped[datetime.datetime | None]
     created_at: Mapped[CreatedAt]

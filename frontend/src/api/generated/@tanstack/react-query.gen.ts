@@ -18,18 +18,26 @@ import {
   changePassword,
   changePlatformUserStatus,
   changeSupportTicketStatus,
+  closeAccount,
+  closeCase,
   createCase,
   createCaseExport,
+  createCaseTask,
   createCheckout,
   createInvitation,
   createSupportTicket,
   downloadEvidence,
   downloadExport,
   forgotPassword,
+  googleCallback,
+  googleLinkStart,
+  googleLoginStart,
+  googleStatus,
   grantCourtesy,
   health,
   inspectExport,
   listCases,
+  listCaseTasks,
   listCustodyEvents,
   listEvidences,
   listInvitations,
@@ -53,6 +61,7 @@ import {
   removeCaseMember,
   removeMember,
   renameOrganization,
+  reopenCase,
   resendVerification,
   resetPassword,
   revokeCourtesy,
@@ -60,6 +69,9 @@ import {
   signIn,
   signOut,
   signOutEverywhere,
+  taskInbox,
+  updateCaseRetention,
+  updateCaseTaskStatus,
   uploadEvidence,
   verifyCustody,
   verifyEmail,
@@ -90,12 +102,21 @@ import type {
   ChangeSupportTicketStatusData,
   ChangeSupportTicketStatusError,
   ChangeSupportTicketStatusResponse,
+  CloseAccountData,
+  CloseAccountError,
+  CloseAccountResponse,
+  CloseCaseData,
+  CloseCaseError,
+  CloseCaseResponse,
   CreateCaseData,
   CreateCaseError,
   CreateCaseExportData,
   CreateCaseExportError,
   CreateCaseExportResponse,
   CreateCaseResponse,
+  CreateCaseTaskData,
+  CreateCaseTaskError,
+  CreateCaseTaskResponse,
   CreateCheckoutData,
   CreateCheckoutError,
   CreateCheckoutResponse,
@@ -113,6 +134,12 @@ import type {
   ForgotPasswordData,
   ForgotPasswordError,
   ForgotPasswordResponse,
+  GoogleCallbackData,
+  GoogleCallbackError,
+  GoogleLinkStartData,
+  GoogleLoginStartData,
+  GoogleStatusData,
+  GoogleStatusResponse,
   GrantCourtesyData,
   GrantCourtesyError,
   GrantCourtesyResponse,
@@ -125,6 +152,9 @@ import type {
   ListCasesData,
   ListCasesError,
   ListCasesResponse,
+  ListCaseTasksData,
+  ListCaseTasksError,
+  ListCaseTasksResponse,
   ListCustodyEventsData,
   ListCustodyEventsError,
   ListCustodyEventsResponse,
@@ -190,6 +220,9 @@ import type {
   RenameOrganizationData,
   RenameOrganizationError,
   RenameOrganizationResponse,
+  ReopenCaseData,
+  ReopenCaseError,
+  ReopenCaseResponse,
   ResendVerificationData,
   ResendVerificationError,
   ResendVerificationResponse,
@@ -211,6 +244,15 @@ import type {
   SignOutEverywhereError,
   SignOutEverywhereResponse,
   SignOutResponse,
+  TaskInboxData,
+  TaskInboxError,
+  TaskInboxResponse,
+  UpdateCaseRetentionData,
+  UpdateCaseRetentionError,
+  UpdateCaseRetentionResponse,
+  UpdateCaseTaskStatusData,
+  UpdateCaseTaskStatusError,
+  UpdateCaseTaskStatusResponse,
   UploadEvidenceData,
   UploadEvidenceError,
   UploadEvidenceResponse,
@@ -313,6 +355,112 @@ export const listPlansOptions = (options?: Options<ListPlansData>) =>
       return data;
     },
     queryKey: listPlansQueryKey(options),
+  });
+
+export const googleStatusQueryKey = (options?: Options<GoogleStatusData>) =>
+  createQueryKey("googleStatus", options);
+
+/**
+ * Saber si el acceso con Google está configurado
+ */
+export const googleStatusOptions = (options?: Options<GoogleStatusData>) =>
+  queryOptions<
+    GoogleStatusResponse,
+    DefaultError,
+    GoogleStatusResponse,
+    ReturnType<typeof googleStatusQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await googleStatus({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: googleStatusQueryKey(options),
+  });
+
+export const googleLoginStartQueryKey = (
+  options?: Options<GoogleLoginStartData>,
+) => createQueryKey("googleLoginStart", options);
+
+/**
+ * Empezar el ingreso seguro con Google
+ */
+export const googleLoginStartOptions = (
+  options?: Options<GoogleLoginStartData>,
+) =>
+  queryOptions<
+    unknown,
+    DefaultError,
+    unknown,
+    ReturnType<typeof googleLoginStartQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await googleLoginStart({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: googleLoginStartQueryKey(options),
+  });
+
+export const googleLinkStartQueryKey = (
+  options?: Options<GoogleLinkStartData>,
+) => createQueryKey("googleLinkStart", options);
+
+/**
+ * Vincular Google a la cuenta con sesión
+ */
+export const googleLinkStartOptions = (
+  options?: Options<GoogleLinkStartData>,
+) =>
+  queryOptions<
+    unknown,
+    DefaultError,
+    unknown,
+    ReturnType<typeof googleLinkStartQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await googleLinkStart({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: googleLinkStartQueryKey(options),
+  });
+
+export const googleCallbackQueryKey = (options?: Options<GoogleCallbackData>) =>
+  createQueryKey("googleCallback", options);
+
+/**
+ * Completar el ingreso o la vinculación con Google
+ */
+export const googleCallbackOptions = (options?: Options<GoogleCallbackData>) =>
+  queryOptions<
+    unknown,
+    GoogleCallbackError,
+    unknown,
+    ReturnType<typeof googleCallbackQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await googleCallback({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: googleCallbackQueryKey(options),
   });
 
 /**
@@ -619,6 +767,33 @@ export const changePasswordMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await changePassword({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Cerrar y anonimizar la cuenta sin borrar expedientes retenidos
+ */
+export const closeAccountMutation = (
+  options?: Partial<Options<CloseAccountData>>,
+): UseMutationOptions<
+  CloseAccountResponse,
+  CloseAccountError,
+  Options<CloseAccountData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CloseAccountResponse,
+    CloseAccountError,
+    Options<CloseAccountData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await closeAccount({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -1456,6 +1631,87 @@ export const readCaseOptions = (options: Options<ReadCaseData>) =>
     queryKey: readCaseQueryKey(options),
   });
 
+/**
+ * Cerrar y archivar un caso sin borrar sus datos
+ */
+export const closeCaseMutation = (
+  options?: Partial<Options<CloseCaseData>>,
+): UseMutationOptions<
+  CloseCaseResponse,
+  CloseCaseError,
+  Options<CloseCaseData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CloseCaseResponse,
+    CloseCaseError,
+    Options<CloseCaseData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await closeCase({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Reabrir un caso conservando la historia de su archivo
+ */
+export const reopenCaseMutation = (
+  options?: Partial<Options<ReopenCaseData>>,
+): UseMutationOptions<
+  ReopenCaseResponse,
+  ReopenCaseError,
+  Options<ReopenCaseData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ReopenCaseResponse,
+    ReopenCaseError,
+    Options<ReopenCaseData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await reopenCase({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Actualizar el fundamento y bloqueo jurídico de un caso archivado
+ */
+export const updateCaseRetentionMutation = (
+  options?: Partial<Options<UpdateCaseRetentionData>>,
+): UseMutationOptions<
+  UpdateCaseRetentionResponse,
+  UpdateCaseRetentionError,
+  Options<UpdateCaseRetentionData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    UpdateCaseRetentionResponse,
+    UpdateCaseRetentionError,
+    Options<UpdateCaseRetentionData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await updateCaseRetention({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 export const availableCaseMembersQueryKey = (
   options: Options<AvailableCaseMembersData>,
 ) => createQueryKey("availableCaseMembers", options);
@@ -1564,6 +1820,163 @@ export const downloadEvidenceOptions = (
       return data;
     },
     queryKey: downloadEvidenceQueryKey(options),
+  });
+
+export const listCaseTasksQueryKey = (options: Options<ListCaseTasksData>) =>
+  createQueryKey("listCaseTasks", options);
+
+/**
+ * Listar tareas y plazos de un caso
+ */
+export const listCaseTasksOptions = (options: Options<ListCaseTasksData>) =>
+  queryOptions<
+    ListCaseTasksResponse,
+    ListCaseTasksError,
+    ListCaseTasksResponse,
+    ReturnType<typeof listCaseTasksQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listCaseTasks({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listCaseTasksQueryKey(options),
+  });
+
+export const listCaseTasksInfiniteQueryKey = (
+  options: Options<ListCaseTasksData>,
+): QueryKey<Options<ListCaseTasksData>> =>
+  createQueryKey("listCaseTasks", options, true);
+
+/**
+ * Listar tareas y plazos de un caso
+ */
+export const listCaseTasksInfiniteOptions = (
+  options: Options<ListCaseTasksData>,
+) => {
+  const opts = infiniteQueryOptions<
+    ListCaseTasksResponse,
+    ListCaseTasksError,
+    InfiniteData<ListCaseTasksResponse>,
+    QueryKey<Options<ListCaseTasksData>>,
+    | string
+    | null
+    | Pick<
+        QueryKey<Options<ListCaseTasksData>>[0],
+        "body" | "headers" | "path" | "query"
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<ListCaseTasksData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  cursor: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listCaseTasks({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: listCaseTasksInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+/**
+ * Crear y asignar una tarea del caso
+ */
+export const createCaseTaskMutation = (
+  options?: Partial<Options<CreateCaseTaskData>>,
+): UseMutationOptions<
+  CreateCaseTaskResponse,
+  CreateCaseTaskError,
+  Options<CreateCaseTaskData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateCaseTaskResponse,
+    CreateCaseTaskError,
+    Options<CreateCaseTaskData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createCaseTask({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Actualizar el estado de una tarea del caso
+ */
+export const updateCaseTaskStatusMutation = (
+  options?: Partial<Options<UpdateCaseTaskStatusData>>,
+): UseMutationOptions<
+  UpdateCaseTaskStatusResponse,
+  UpdateCaseTaskStatusError,
+  Options<UpdateCaseTaskStatusData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    UpdateCaseTaskStatusResponse,
+    UpdateCaseTaskStatusError,
+    Options<UpdateCaseTaskStatusData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await updateCaseTaskStatus({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const taskInboxQueryKey = (options?: Options<TaskInboxData>) =>
+  createQueryKey("taskInbox", options);
+
+/**
+ * Consultar la bandeja de tareas activa
+ */
+export const taskInboxOptions = (options?: Options<TaskInboxData>) =>
+  queryOptions<
+    TaskInboxResponse,
+    TaskInboxError,
+    TaskInboxResponse,
+    ReturnType<typeof taskInboxQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await taskInbox({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: taskInboxQueryKey(options),
   });
 
 /**
@@ -1676,7 +2089,7 @@ export const lookupCourtesyQueryKey = (options: Options<LookupCourtesyData>) =>
   createQueryKey("lookupCourtesy", options);
 
 /**
- * Buscar un despacho por correo de su titular
+ * Buscar un despacho por su cuenta responsable
  */
 export const lookupCourtesyOptions = (options: Options<LookupCourtesyData>) =>
   queryOptions<
@@ -1698,7 +2111,7 @@ export const lookupCourtesyOptions = (options: Options<LookupCourtesyData>) =>
   });
 
 /**
- * Conceder o renovar un plan de cortesía
+ * Asignar o renovar el plan de un despacho
  */
 export const grantCourtesyMutation = (
   options?: Partial<Options<GrantCourtesyData>>,
@@ -1725,7 +2138,7 @@ export const grantCourtesyMutation = (
 };
 
 /**
- * Revocar un plan de cortesía
+ * Revocar el acceso comercial de un despacho
  */
 export const revokeCourtesyMutation = (
   options?: Partial<Options<RevokeCourtesyData>>,

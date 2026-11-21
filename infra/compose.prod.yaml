@@ -103,6 +103,10 @@ services:
       ALETHEIA_DATABASE_PASSWORD_PARAMETER: /aletheia/prod/postgres/app-password
       # Clave de firma de los enlaces de los correos; el trabajador la recibe por el ancla.
       ALETHEIA_TOKEN_SIGNING_KEY_PARAMETER: /aletheia/prod/app/token-signing-key
+      # Opcionales hasta crear el cliente en Google Cloud. Compose deja ambos vacíos y la
+      # configuración los ignora; cuando se activa, deben aparecer juntos.
+      ALETHEIA_GOOGLE_CLIENT_ID: ${ALETHEIA_GOOGLE_CLIENT_ID:-}
+      ALETHEIA_GOOGLE_CLIENT_SECRET_PARAMETER: ${ALETHEIA_GOOGLE_CLIENT_SECRET_PARAMETER:-}
       # No es secreto: solo nombra el bucket, la clave sigue siendo el rol de la máquina.
       # El valor real vive en /etc/aletheia/entorno.env (ver la cabecera del archivo).
       ALETHEIA_EVIDENCE_BUCKET: ${ALETHEIA_EVIDENCE_BUCKET}

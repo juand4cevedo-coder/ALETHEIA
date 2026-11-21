@@ -145,7 +145,7 @@ export function PlatformBillingPage() {
                   </table>
                 </div>
               </Panel>
-              <CourtesyManager plans={billing.data.plans} />
+              <PlanAccessManager plans={billing.data.plans} />
             </>
           )}
         </>
@@ -154,7 +154,7 @@ export function PlatformBillingPage() {
   );
 }
 
-function CourtesyManager({
+function PlanAccessManager({
   plans,
 }: {
   plans: { code: string; name: string }[];
@@ -173,22 +173,20 @@ function CourtesyManager({
   const grant = useMutation({
     ...grantCourtesyMutation(),
     onSuccess: async () => {
-      setMessage("La cortesía quedó registrada.");
+      setMessage("El acceso al plan quedó registrado.");
       setReason("");
       await queryClient.invalidateQueries();
     },
-    onError: () => setMessage("No pudimos registrar la cortesía."),
+    onError: () => setMessage("No pudimos registrar el acceso al plan."),
   });
   const revoke = useMutation({
     ...revokeCourtesyMutation(),
     onSuccess: async () => {
-      setMessage(
-        "La cortesía quedó revocada. El despacho está en solo lectura.",
-      );
+      setMessage("El acceso quedó revocado. El despacho está en solo lectura.");
       setReason("");
       await queryClient.invalidateQueries();
     },
-    onError: () => setMessage("No pudimos revocar la cortesía."),
+    onError: () => setMessage("No pudimos revocar el acceso."),
   });
   const selectedPlan = plans.find((plan) => plan.code === planCode);
   const busy = grant.isPending || revoke.isPending;
@@ -235,7 +233,7 @@ function CourtesyManager({
     }
     if (
       !window.confirm(
-        `Revocar la cortesía de ${target.data.organization_name}? El despacho pasará a solo lectura.`,
+        `¿Revocar el acceso de ${target.data.organization_name}? El despacho pasará a solo lectura.`,
       )
     )
       return;
@@ -251,13 +249,13 @@ function CourtesyManager({
 
   return (
     <Panel
-      title="Planes de cortesía"
-      description="Conceda acceso sin registrar un pago."
+      title="Asignación de planes"
+      description="Otorgue, cambie o revoque el plan de cualquier despacho registrado, sin entrar a sus casos."
     >
       <div className={styles.courtesy}>
         <form className={styles.form} onSubmit={search}>
           <label htmlFor="courtesy-email">
-            Correo del titular del despacho
+            Correo del responsable del despacho
           </label>
           <div className={styles.inlineForm}>
             <input
@@ -267,13 +265,13 @@ function CourtesyManager({
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
-            <Button type="submit">Buscar despacho</Button>
+            <Button type="submit">Buscar cuenta</Button>
           </div>
         </form>
         {target.isPending && searched && <p role="status">Buscando despacho</p>}
         {target.isError && (
           <Notice tone="error">
-            No encontramos un despacho con ese titular.
+            No encontramos un despacho asociado a esa cuenta responsable.
           </Notice>
         )}
         {target.data && (
@@ -293,7 +291,7 @@ function CourtesyManager({
               <span>
                 Acceso:{" "}
                 {target.data.access_source === "courtesy"
-                  ? "Cortesía"
+                  ? "Asignado por la plataforma"
                   : target.data.access_source === "trial"
                     ? "Prueba"
                     : "Otro"}
@@ -315,7 +313,7 @@ function CourtesyManager({
               )}
             </div>
             <form className={styles.form} onSubmit={submit}>
-              <label htmlFor="courtesy-plan">Plan a conceder</label>
+              <label htmlFor="courtesy-plan">Plan que tendrá el despacho</label>
               <select
                 id="courtesy-plan"
                 required
@@ -350,7 +348,7 @@ function CourtesyManager({
               />
               <div className={styles.inlineForm}>
                 <Button type="submit" busy={busy}>
-                  Conceder o renovar
+                  Asignar o renovar plan
                 </Button>
                 {target.data.access_source === "courtesy" &&
                   target.data.status === "active" && (
@@ -359,7 +357,7 @@ function CourtesyManager({
                       busy={busy}
                       onClick={revokeCurrent}
                     >
-                      Revocar cortesía
+                      Revocar acceso
                     </Button>
                   )}
               </div>
@@ -476,12 +474,24 @@ const ACTION_LABELS: Record<string, string> = {
   email_verified: "Correo verificado",
   login: "Ingreso",
   login_failed: "Ingreso fallido",
+  google_linked: "Google vinculado",
+  session_reuse_detected: "Reutilización de sesión detectada",
   password_reset: "Contraseña restablecida",
   password_changed: "Contraseña cambiada",
   sessions_revoked: "Sesiones cerradas",
+  invitation_sent: "Invitación enviada",
+  invitation_revoked: "Invitación revocada",
+  invitation_accepted: "Invitación aceptada",
   role_changed: "Rol cambiado",
   member_removed: "Miembro retirado",
+  plan_changed: "Plan cambiado",
+  subscription_canceled: "Suscripción cancelada",
   case_created: "Caso abierto",
+  case_closed: "Caso cerrado y archivado",
+  case_reopened: "Caso reabierto",
+  case_retention_updated: "Conservación del caso actualizada",
+  case_task_created: "Tarea de caso creada",
+  case_task_status_changed: "Estado de tarea actualizado",
   account_blocked: "Cuenta bloqueada",
   account_unblocked: "Cuenta desbloqueada",
   platform_admin_granted: "Propietario asignado",
@@ -492,16 +502,79 @@ const ACTION_LABELS: Record<string, string> = {
   courtesy_renewed: "Cortesía renovada",
   courtesy_revoked: "Cortesía revocada",
   subscription_expired: "Suscripción vencida",
+  legal_accepted: "Textos legales aceptados",
+  logout: "Sesión cerrada",
+  payment_approved: "Pago aprobado",
+  payment_declined: "Pago rechazado",
+  organization_renamed: "Organización renombrada",
+  account_closed: "Cuenta cerrada",
+};
+
+type AuditFilters = {
+  search: string;
+  action: string;
+  createdFrom: string;
+  createdTo: string;
+};
+
+const EMPTY_AUDIT_FILTERS: AuditFilters = {
+  search: "",
+  action: "",
+  createdFrom: "",
+  createdTo: "",
 };
 
 export function PlatformAuditPage() {
   const me = useOutletContext<Me>();
+  const [filters, setFilters] = useState<AuditFilters>(EMPTY_AUDIT_FILTERS);
+  const [appliedFilters, setAppliedFilters] =
+    useState<AuditFilters>(EMPTY_AUDIT_FILTERS);
+  const [filterError, setFilterError] = useState("");
   const [cursor, setCursor] = useState<string | undefined>();
   const [previous, setPrevious] = useState<(string | undefined)[]>([]);
+  const auditQuery = {
+    search: appliedFilters.search || undefined,
+    action: appliedFilters.action || undefined,
+    created_from: appliedFilters.createdFrom
+      ? new Date(appliedFilters.createdFrom).toISOString()
+      : undefined,
+    created_to: appliedFilters.createdTo
+      ? new Date(appliedFilters.createdTo).toISOString()
+      : undefined,
+    cursor,
+  };
   const audit = useQuery({
-    ...platformAuditOptions({ query: cursor ? { cursor } : {} }),
+    ...platformAuditOptions({ query: auditQuery }),
     enabled: me.platform_admin,
   });
+
+  function resetPagination() {
+    setCursor(undefined);
+    setPrevious([]);
+  }
+
+  function applyFilters(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const from = filters.createdFrom
+      ? new Date(filters.createdFrom)
+      : undefined;
+    const to = filters.createdTo ? new Date(filters.createdTo) : undefined;
+    if (from && to && from >= to) {
+      setFilterError("El inicio del periodo debe ser anterior al final.");
+      return;
+    }
+    setFilterError("");
+    resetPagination();
+    setAppliedFilters({ ...filters, search: filters.search.trim() });
+  }
+
+  function clearFilters() {
+    setFilterError("");
+    resetPagination();
+    setFilters(EMPTY_AUDIT_FILTERS);
+    setAppliedFilters(EMPTY_AUDIT_FILTERS);
+  }
+
   return (
     <div className={styles.screen}>
       <title>{pageTitle("Auditoría de la plataforma")}</title>
@@ -514,12 +587,101 @@ export function PlatformAuditPage() {
         <Restricted />
       ) : (
         <Panel title="Eventos">
+          <form
+            className={styles.accountFilters}
+            aria-label="Filtrar auditoría"
+            onSubmit={applyFilters}
+          >
+            <label className={styles.filterField}>
+              <span>Persona, organización u objeto</span>
+              <input
+                type="search"
+                maxLength={120}
+                value={filters.search}
+                placeholder="Nombre, correo o UUID"
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    search: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <label className={styles.filterField}>
+              <span>Acción</span>
+              <select
+                value={filters.action}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    action: event.target.value,
+                  }))
+                }
+              >
+                <option value="">Todas</option>
+                {Object.entries(ACTION_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={styles.filterField}>
+              <span>Desde</span>
+              <input
+                type="datetime-local"
+                value={filters.createdFrom}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    createdFrom: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <label className={styles.filterField}>
+              <span>Hasta</span>
+              <input
+                type="datetime-local"
+                value={filters.createdTo}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    createdTo: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <div className={styles.filterActions}>
+              <Button size="sm" type="submit">
+                Aplicar filtros
+              </Button>
+              <Button
+                size="sm"
+                type="button"
+                variant="secondary"
+                onClick={clearFilters}
+              >
+                Limpiar
+              </Button>
+            </div>
+          </form>
+          {filterError && <Notice tone="error">{filterError}</Notice>}
           {audit.isPending && <p role="status">Cargando eventos</p>}
           {audit.isError && (
             <Notice tone="error">No pudimos cargar los eventos.</Notice>
           )}
           {audit.data?.items.length === 0 && (
-            <p className={styles.empty}>No hay eventos en esta página.</p>
+            <p className={styles.empty}>
+              No hay eventos que coincidan con los filtros.
+            </p>
+          )}
+          {audit.data && (
+            <p className={styles.resultCount} role="status">
+              {audit.data.total === 1
+                ? "1 evento encontrado"
+                : `${audit.data.total} eventos encontrados`}
+            </p>
           )}
           {audit.data && audit.data.items.length > 0 && (
             <div className={styles.tableScroll}>

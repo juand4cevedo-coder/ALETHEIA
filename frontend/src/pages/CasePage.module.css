@@ -95,6 +95,45 @@
   overflow-wrap: anywhere;
 }
 
+.lifecycle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
+  margin-top: var(--space-5);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--ink-hairline);
+}
+
+.lifecycleCopy {
+  display: grid;
+  flex: 1 1 32rem;
+  gap: var(--space-1);
+}
+
+.lifecycleCopy strong {
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}
+
+.lifecycleCopy span,
+.lifecycleMessage {
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.lifecycleCopy .retentionStatus {
+  display: flex;
+  margin-top: var(--space-1);
+}
+
+.lifecycleMessage {
+  flex-basis: 100%;
+  color: var(--success-text);
+}
+
 /* El desplazamiento horizontal recorta lo que sale de la caja: el relleno deja sitio al anillo de
    foco (2px de borde a 2px de distancia) y el margen negativo conserva la posición de las
    pestañas. */

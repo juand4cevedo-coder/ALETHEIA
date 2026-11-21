@@ -658,7 +658,7 @@ Desde 900 px, fotografía a sangre a la izquierda y formulario sobre papel a la 
 
 - [ ] **Paso 2: bajar los proveedores inactivos**
 
-En `SocialAccess`, mover los botones de Google y Microsoft debajo del formulario de correo. Conservar su texto que explica que todavía no están disponibles y su estado deshabilitado.
+En `SocialAccess`, mover el botón de Google debajo del formulario de correo. Conservar el texto que explica que todavía no está disponible y su estado deshabilitado. Microsoft queda fuera del alcance y no se muestra.
 
 - [ ] **Paso 3: verificar**
 

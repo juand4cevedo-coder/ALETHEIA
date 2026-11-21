@@ -23,7 +23,7 @@ falla() {
 # Cabeceras de una respuesta, sin retornos de carro y en minúsculas para compararlas sin
 # depender de mayúsculas. No sigue redirecciones.
 cabeceras() {
-    curl --silent --show-error --max-time 10 --output /dev/null --dump-header - "$@" \
+    curl --silent --show-error --suppress-connect-headers --max-time 10 --output /dev/null --dump-header - "$@" \
         | tr -d '\r' | tr '[:upper:]' '[:lower:]'
 }
 
@@ -53,6 +53,7 @@ revisar_cabeceras() {
     exigir "$bloque" referrer-policy strict-origin-when-cross-origin "$donde"
     exigir "$bloque" permissions-policy "camera=()" "$donde"
     exigir "$bloque" cross-origin-opener-policy same-origin "$donde"
+    exigir "$bloque" cross-origin-resource-policy same-origin "$donde"
     if grep --quiet '^server:' <<<"$bloque"; then
         falla "$donde: anuncia la cabecera server"
     else
@@ -63,11 +64,12 @@ revisar_cabeceras() {
 echo "Prueba de humo en https://$DOMINIO"
 
 # 1. Salud. Los reintentos cubren los segundos que tardan el DNS o el primer certificado.
-if curl --silent --show-error --fail --max-time 10 --retry 10 --retry-delay 3 \
-    --retry-all-errors --output /dev/null "https://$DOMINIO/api/v1/health"; then
+if salud="$(curl --silent --show-error --fail --max-time 10 --retry 10 --retry-delay 3 \
+    --retry-all-errors "https://$DOMINIO/api/v1/health")" && \
+    python3 -c 'import json,sys; data=json.load(sys.stdin); sys.exit(data.get("status") != "ok" or data.get("database") != "ok")' <<<"$salud"; then
     ok "salud de la API y la base"
 else
-    falla "salud: /api/v1/health no respondió 200"
+    falla "salud: la API no confirmó la disponibilidad de la base"
 fi
 
 # El catálogo público alimenta la portada y la página de precios. Comprobar la respuesta
@@ -81,8 +83,13 @@ else
 fi
 
 # 2. Cabeceras en la página principal y en un error.
-revisar_cabeceras "$(cabeceras "https://$DOMINIO/")" "página principal"
-revisar_cabeceras "$(cabeceras "https://$DOMINIO/assets/no-existe.js")" "error 404"
+portada="$(cabeceras "https://$DOMINIO/")"
+if grep -Eq '^http/[^ ]+ 200( |$)' <<<"$portada"; then ok "portada disponible"; else falla "la portada no respondió 200"; fi
+exigir "$portada" content-type "text/html" "página principal"
+revisar_cabeceras "$portada" "página principal"
+ausente="$(cabeceras "https://$DOMINIO/assets/no-existe.js")"
+if grep -Eq '^http/[^ ]+ 404( |$)' <<<"$ausente"; then ok "recurso ausente"; else falla "el recurso ausente no respondió 404"; fi
+revisar_cabeceras "$ausente" "error 404"
 
 # 3. HTTP pasa a HTTPS, y www al dominio principal conservando la ruta.
 read -r codigo destino <<<"$(respuesta "http://$DOMINIO/prueba?x=1")"

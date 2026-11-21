@@ -12,13 +12,17 @@ import {
   addCaseMemberMutation,
   availableCaseMembersOptions,
   availableCaseMembersQueryKey,
+  closeCaseMutation,
   listCasesQueryKey,
   readCaseOptions,
   readCaseQueryKey,
   removeCaseMemberMutation,
+  reopenCaseMutation,
+  updateCaseRetentionMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
+import { Dialog } from "../components/ui/Dialog.tsx";
 import { FilingNumber } from "../components/ui/FilingNumber.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
@@ -32,15 +36,26 @@ import { apiProblem } from "../features/auth/apiProblem.ts";
 import { CustodySection } from "../features/cases/CustodySection.tsx";
 import { EvidenceSection } from "../features/cases/EvidenceSection.tsx";
 import { ExportSection } from "../features/cases/ExportSection.tsx";
+import { TaskSection } from "../features/cases/TaskSection.tsx";
 import { formatColombiaTime } from "../features/cases/dates.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { initialsOf } from "../features/session/initials.ts";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./CasePage.module.css";
-import { CargandoIcon } from "../components/ui/icons.tsx";
+import {
+  BalanzaIcon,
+  CargandoIcon,
+  CarpetaAbiertaIcon,
+} from "../components/ui/icons.tsx";
 
-type TabKey = "chain" | "team" | "evidence" | "export";
-const TAB_ORDER: readonly TabKey[] = ["chain", "team", "evidence", "export"];
+type TabKey = "chain" | "team" | "tasks" | "evidence" | "export";
+const TAB_ORDER: readonly TabKey[] = [
+  "chain",
+  "team",
+  "tasks",
+  "evidence",
+  "export",
+];
 
 /** El caso no existe, es de otra organización o su id no es válido: MSG-011 en los tres casos. */
 function isMissing(error: unknown): boolean {
@@ -159,7 +174,11 @@ function CaseView({
 }) {
   const location = useLocation();
   const [tab, setTab] = useState<TabKey>(
-    location.hash === "#evidencias" ? "evidence" : "chain",
+    location.hash === "#evidencias"
+      ? "evidence"
+      : location.hash === "#tareas"
+        ? "tasks"
+        : "chain",
   );
   const canExport = ["owner", "admin", "lawyer"].includes(
     me.organization?.role ?? "",
@@ -170,12 +189,14 @@ function CaseView({
   const tabRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({
     chain: null,
     team: null,
+    tasks: null,
     evidence: null,
     export: null,
   });
   const ids = {
     chain: useId(),
     team: useId(),
+    tasks: useId(),
     evidence: useId(),
     export: useId(),
   };
@@ -216,6 +237,7 @@ function CaseView({
         count: detail.member_count,
         unit: detail.member_count === 1 ? "persona" : "personas",
       },
+      { key: "tasks", label: "Tareas y plazos" },
       { key: "evidence", label: "Evidencias" },
       ...(canExport ? [{ key: "export" as const, label: "Paquete" }] : []),
     ];
@@ -246,6 +268,7 @@ function CaseView({
             {detail.court && <li className={styles.chip}>{detail.court}</li>}
             <li className={styles.chip}>{opened}</li>
           </ul>
+          <CaseLifecycle detail={detail} me={me} />
 
           <div
             className={styles.tabs}
@@ -321,6 +344,24 @@ function CaseView({
         </div>
         <div
           role="tabpanel"
+          id={`${ids.tasks}-panel`}
+          aria-labelledby={`${ids.tasks}-tab`}
+          className={styles.tabPanel}
+          tabIndex={0}
+          hidden={tab !== "tasks"}
+        >
+          {tab === "tasks" && (
+            <TaskSection
+              caseId={detail.id}
+              members={detail.members}
+              role={me.organization?.role}
+              currentUserId={me.id}
+              caseOpen={detail.status === "open"}
+            />
+          )}
+        </div>
+        <div
+          role="tabpanel"
           id={`${ids.evidence}-panel`}
           aria-labelledby={`${ids.evidence}-tab`}
           className={styles.tabPanel}
@@ -347,6 +388,240 @@ function CaseView({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
+  const queryClient = useQueryClient();
+  const role = me.organization?.role;
+  const canManage = role === "owner" || role === "admin" || role === "lawyer";
+  const canManageRetention = role === "owner" || role === "admin";
+  const [confirming, setConfirming] = useState(false);
+  const [managingRetention, setManagingRetention] = useState(false);
+  const [retentionBasis, setRetentionBasis] = useState<
+    NonNullable<CaseDetail["retention_basis"]>
+  >(detail.retention_basis ?? "organization_policy");
+  const [message, setMessage] = useState("");
+  const path = { case_id: detail.id };
+  const refresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: readCaseQueryKey({ path }) }),
+      queryClient.invalidateQueries({ queryKey: listCasesQueryKey() }),
+    ]);
+  };
+  const close = useMutation({
+    ...closeCaseMutation(),
+    onSuccess: async () => {
+      setConfirming(false);
+      setMessage("Caso cerrado y trasladado al archivo.");
+      await refresh();
+    },
+  });
+  const reopen = useMutation({
+    ...reopenCaseMutation(),
+    onSuccess: async () => {
+      setConfirming(false);
+      setMessage(
+        "Caso reabierto. Su historial de cierre permanece en la cadena.",
+      );
+      await refresh();
+    },
+  });
+  const retention = useMutation({
+    ...updateCaseRetentionMutation(),
+    onSuccess: async () => {
+      setManagingRetention(false);
+      setMessage("Conservación actualizada y registrada en la trazabilidad.");
+      await refresh();
+    },
+  });
+  const mutation = detail.status === "open" ? close : reopen;
+  const error = mutation.error;
+
+  return (
+    <div className={styles.lifecycle}>
+      <div className={styles.lifecycleCopy}>
+        <strong>
+          {detail.status === "open"
+            ? "Expediente activo"
+            : "Archivo de casos cerrados"}
+        </strong>
+        <span>
+          {detail.status === "open"
+            ? "Al cerrarlo, el expediente y su cadena permanecen conservados y consultables."
+            : detail.retention_until
+              ? `Conservación programada, como mínimo, hasta el ${formatColombiaTime(detail.retention_until)}.`
+              : "El expediente permanece conservado con toda su trazabilidad."}
+        </span>
+        {detail.status === "closed" && (
+          <span className={styles.retentionStatus}>
+            <StatusBadge tone={detail.legal_hold ? "closed" : "muted"}>
+              {detail.legal_hold
+                ? "Bloqueo jurídico activo"
+                : detail.retention_basis === "legal_or_contractual_duty"
+                  ? "Deber legal o contractual"
+                  : "Política del despacho"}
+            </StatusBadge>
+          </span>
+        )}
+      </div>
+      {canManage && (
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => setConfirming(true)}
+        >
+          {detail.status === "open" ? "Cerrar y archivar" : "Reabrir caso"}
+        </Button>
+      )}
+      {detail.status === "closed" && canManageRetention && (
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            setRetentionBasis(detail.retention_basis ?? "organization_policy");
+            setManagingRetention(true);
+          }}
+        >
+          Gestionar conservación
+        </Button>
+      )}
+      {message && (
+        <span className={styles.lifecycleMessage} role="status">
+          {message}
+        </span>
+      )}
+      <Dialog
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title={
+          detail.status === "open"
+            ? "Cerrar y archivar el caso"
+            : "Reabrir el caso"
+        }
+        icon={
+          detail.status === "open" ? (
+            <BalanzaIcon size={24} />
+          ) : (
+            <CarpetaAbiertaIcon size={24} />
+          )
+        }
+        busy={mutation.isPending}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              data-autofocus
+              onClick={() => setConfirming(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              busy={mutation.isPending}
+              onClick={() => mutation.mutate({ path })}
+            >
+              {detail.status === "open" ? "Cerrar y conservar" : "Reabrir"}
+            </Button>
+          </>
+        }
+      >
+        {detail.status === "open" ? (
+          <p>
+            El caso dejará de aceptar nuevas evidencias. No se borrará ningún
+            dato, archivo, llave ni evento de custodia; podrá consultarse y
+            exportarse desde el archivo.
+          </p>
+        ) : (
+          <p>
+            El caso volverá a admitir trabajo y evidencias. El cierre anterior
+            seguirá registrado en la cadena de custodia y en la auditoría del
+            despacho.
+          </p>
+        )}
+        {error && (
+          <Notice tone="error">
+            {apiProblem(error).detail ??
+              "No pudimos cambiar el estado del caso."}
+          </Notice>
+        )}
+      </Dialog>
+      <Dialog
+        open={managingRetention}
+        onClose={() => setManagingRetention(false)}
+        title="Gestionar conservación"
+        icon={<BalanzaIcon size={24} />}
+        busy={retention.isPending}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              data-autofocus
+              onClick={() => setManagingRetention(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              busy={retention.isPending}
+              onClick={() =>
+                retention.mutate({
+                  path,
+                  body: {
+                    retention_basis: retentionBasis,
+                    legal_hold: retentionBasis === "litigation_hold",
+                  },
+                })
+              }
+            >
+              Guardar y registrar
+            </Button>
+          </>
+        }
+      >
+        <p>
+          El cambio quedará en la cadena de custodia y en la auditoría del
+          despacho. Un bloqueo jurídico impide cualquier proceso de supresión
+          mientras permanezca activo.
+        </p>
+        <Select
+          label="Fundamento de conservación"
+          value={retentionBasis}
+          onChange={(event) =>
+            setRetentionBasis(
+              event.target.value as NonNullable<CaseDetail["retention_basis"]>,
+            )
+          }
+          options={[
+            {
+              value: "organization_policy",
+              label: "Política del despacho",
+            },
+            {
+              value: "legal_or_contractual_duty",
+              label: "Deber legal o contractual",
+            },
+            {
+              value: "litigation_hold",
+              label: "Bloqueo jurídico por litigio",
+            },
+          ]}
+          help={
+            retentionBasis === "litigation_hold"
+              ? "Activa el bloqueo jurídico del expediente."
+              : "Mantiene la fecha mínima de revisión ya registrada."
+          }
+        />
+        {retention.error && (
+          <Notice tone="error">
+            {apiProblem(retention.error).detail ??
+              "No pudimos actualizar la conservación."}
+          </Notice>
+        )}
+      </Dialog>
     </div>
   );
 }

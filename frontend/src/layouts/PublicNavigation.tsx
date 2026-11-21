@@ -11,6 +11,7 @@ import styles from "./PublicNavigation.module.css";
 /** Un solo panel evita saltos al recorrer las categorías con el puntero. */
 export function PublicNavigation() {
   const [active, setActive] = useState<number | null>(null);
+  const pinned = useRef<number | null>(null);
   const root = useRef<HTMLElement>(null);
   const triggers = useRef<(HTMLButtonElement | null)[]>([]);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -22,17 +23,23 @@ export function PublicNavigation() {
   }
   function close() {
     cancelClose();
+    pinned.current = null;
     setActive(null);
   }
 
   useEffect(() => {
     function outside(event: PointerEvent) {
       if (event.target instanceof Node && !root.current?.contains(event.target))
-        setActive(null);
+        close();
+    }
+    function dismiss(event: KeyboardEvent) {
+      if (event.key === "Escape") close();
     }
     document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", dismiss);
     return () => {
       document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", dismiss);
       clearTimeout(closeTimer.current);
     };
   }, []);
@@ -44,8 +51,14 @@ export function PublicNavigation() {
       aria-label="Principal"
       onPointerEnter={cancelClose}
       onPointerLeave={(event) => {
-        if (event.pointerType === "mouse")
-          closeTimer.current = setTimeout(() => setActive(null), 160);
+        if (
+          event.pointerType === "mouse" &&
+          pinned.current === null &&
+          !root.current
+            ?.querySelector("#navigation-panel")
+            ?.contains(document.activeElement)
+        )
+          closeTimer.current = setTimeout(close, 160);
       }}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) close();
@@ -72,12 +85,17 @@ export function PublicNavigation() {
               onPointerEnter={(event) => {
                 if (event.pointerType === "mouse") {
                   cancelClose();
+                  if (active !== index) pinned.current = null;
                   setActive(index);
                 }
               }}
               onClick={() => {
                 cancelClose();
-                setActive(active === index ? null : index);
+                if (pinned.current === index) close();
+                else {
+                  pinned.current = index;
+                  setActive(index);
+                }
               }}
               onKeyDown={(event) => {
                 if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
@@ -88,14 +106,20 @@ export function PublicNavigation() {
                       NAVIGATION.length) %
                     NAVIGATION.length;
                   triggers.current[next]?.focus();
-                  if (active !== null) setActive(next);
+                  if (active !== null) {
+                    pinned.current = next;
+                    setActive(next);
+                  }
                 }
                 if (event.key === "ArrowDown") {
                   event.preventDefault();
+                  pinned.current = index;
                   setActive(index);
                   requestAnimationFrame(() =>
                     root.current
-                      ?.querySelector<HTMLAnchorElement>("#navigation-panel a")
+                      ?.querySelector<HTMLAnchorElement>(
+                        `#navigation-panel .${styles.links} a`,
+                      )
                       ?.focus(),
                   );
                 }
@@ -119,6 +143,15 @@ export function PublicNavigation() {
           aria-labelledby={`nav-trigger-${active}`}
         >
           <div className={styles.panelContent} key={group.title}>
+            <Link
+              to={group.feature.to}
+              className={styles.feature}
+              onClick={close}
+            >
+              <img src={group.feature.image} alt="" />
+              <span className={styles.featureTitle}>{group.title}</span>
+              <small>{group.feature.text}</small>
+            </Link>
             <div className={styles.links}>
               {group.links.map((link) => (
                 <Link key={link.to} to={link.to} onClick={close}>
@@ -130,33 +163,6 @@ export function PublicNavigation() {
                 </Link>
               ))}
             </div>
-            <Link
-              to={group.feature.to}
-              className={styles.feature}
-              onClick={close}
-            >
-              <span className={styles.featureTitle}>
-                {group.feature.title}
-                <FlechaDerechaIcon size={14} />
-              </span>
-              <small>{group.feature.text}</small>
-              <div
-                className={styles.illustration}
-                data-art={group.feature.illustration}
-                aria-hidden="true"
-              >
-                <i />
-                <i />
-                <i />
-                <span>
-                  {group.feature.illustration === "brand"
-                    ? "A"
-                    : group.feature.illustration === "journal"
-                      ? "Aa"
-                      : ""}
-                </span>
-              </div>
-            </Link>
           </div>
         </div>
       )}

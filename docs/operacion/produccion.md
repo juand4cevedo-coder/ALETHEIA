@@ -114,7 +114,7 @@ La política de correo aún nombra todas las identidades de la cuenta: se config
 
 Desde HU-015 la API llama a `Encrypt` de KMS cada vez que se abre un caso. HU-018, publicada en v0.4.4, usa `Decrypt` para abrir la llave de ese caso antes de cifrar una evidencia. Si KMS no responde o niega la operación, la API devuelve 503 sin registrar la evidencia; al abrir un caso también evita dejar filas incompletas.
 
-El sello externo RFC 3161 de cada evidencia (HU-020) ya pide el sello a DigiCert, con Sectigo como respaldo, en una tarea `tsa_stamp` que se encola al subir la evidencia (`app/adapters/stamping.py`, `app/services/evidence_stamp.py`). Falta sellar también la cabeza de la cadena de custodia al exportar el paquete y, después, una vez al día si la cadena cambió (ADR-037); eso necesita un disparador recurrente que todavía no existe.
+El sello externo RFC 3161 de cada evidencia (HU-020) ya pide el sello a DigiCert, con Sectigo como respaldo, en una tarea `tsa_stamp` que se encola al subir la evidencia (`app/adapters/stamping.py`, `app/services/evidence_stamp.py`). La construcción de cada paquete también sella la cabeza exacta de la cadena que incorpora, persiste el token con su número de evento y huella, y lo incluye como `custody/head.tsr`. Además, cada nuevo evento programa atómicamente un trabajo `custody_anchor` para 24 horas después; el trabajador sella la cabeza más reciente y omite la operación si esa versión ya está anclada. La migración 0033 programa de inmediato los casos preexistentes.
 
 La versión `v1` de la política administrada `aletheia-prod-acceso` nombra el ARN de la llave, restringe el algoritmo a `RSAES_OAEP_SHA_256` y autoriza `Encrypt` y `Decrypt`. Se comprobó en AWS el 13/11/2026. `Encrypt` recibe el alias como `KeyId`; `Decrypt` recibe el ARN guardado con cada caso.
 
@@ -150,6 +150,7 @@ La llave se rota al publicar v1.0.0 y ante cualquier sospecha. El procedimiento 
 | `/aletheia/prod/postgres/app-password` | SecureString (`aws/ssm`) | `aletheia_app`: API y trabajador |
 | `/aletheia/prod/postgres/support-password` | SecureString (`aws/ssm`) | `aletheia_support`: consultas de solo lectura |
 | `/aletheia/prod/app/token-signing-key` | SecureString (`aws/ssm`) | Clave de firma de los enlaces de un solo uso: API y trabajador |
+| `/aletheia/prod/google/client-secret` | SecureString (`aws/ssm`) | Secreto OIDC de Google; se crea solo al activar la integración |
 
 Las claves se generaron en CloudShell con 40 letras y números, por una tubería directo a AWS, así que nunca aparecieron en pantalla, en el historial ni como argumento de un comando. El procedimiento exacto está en el runbook interno.
 
@@ -201,13 +202,15 @@ Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy
 
 ## Despliegue
 
-Se publica una versión subiendo una etiqueta firmada sobre main, al cerrar una rama `release/`. El workflow `.github/workflows/publicar.yml` hace el resto:
+Al integrar la rama `release/X.Y.Z` en `develop`, se crea y se sube una etiqueta firmada sobre el commit integrado. La publicación sigue estos pasos en `.github/workflows/publicar.yml`.
 
-1. Comprueba que la etiqueta tenga la forma `vX.Y.Z`, que esté sobre main y que coincida con la versión de `backend/pyproject.toml` y `frontend/package.json`.
-2. Construye las dos imágenes para linux/amd64, las publica en GHCR y toma del registro sus digests.
+1. Comprueba que la etiqueta tenga la forma `vX.Y.Z`, que su commit pertenezca al historial de `develop` y que coincida con la versión de `backend/pyproject.toml` y `frontend/package.json`.
+2. Comprueba que GitHub haya verificado la firma de la etiqueta anotada. Construye las dos imágenes para linux/amd64, las publica en GHCR y obtiene sus digests de los metadatos de cada compilación.
 3. Espera la aprobación del administrador en el entorno `production`, que solo admite etiquetas `v*`.
 4. Envía el documento `aletheia-desplegar` con `infra/prod/ssm/enviar.sh` y muestra la salida del servidor.
 5. Ejecuta `infra/prod/prueba-de-humo.sh` desde internet. Si falla, envía la misma orden con la acción `revertir`.
+
+Tras verificar la publicación, se sincroniza `main` mediante un pull request para que su contenido corresponda al código desplegado.
 
 En el servidor, el documento trae la etiqueta, comprueba su firma y deja `/opt/aletheia` en ella antes de ejecutar `infra/prod/desplegar.sh`. El script descarga las imágenes, aplica las migraciones, actualiza los contenedores y consulta la salud por HTTPS desde la misma máquina. Si algo falla, vuelve solo a la versión anterior.
 

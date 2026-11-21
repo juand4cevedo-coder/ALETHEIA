@@ -113,7 +113,17 @@ def with_token_signing_key(settings: Settings, client: SSMClient | None = None) 
     return settings.model_copy(update={"token_signing_key": Secret[str](key)})
 
 
+def with_google_client_secret(settings: Settings, client: SSMClient | None = None) -> Settings:
+    """Agrega el secreto OIDC si Google está configurado en producción."""
+    name = settings.google_client_secret_parameter
+    if name is None:
+        return settings
+    secret = read_secure_parameter(name, client or _default_client())
+    return settings.model_copy(update={"google_client_secret": Secret[str](secret)})
+
+
 def with_production_secrets(settings: Settings, client: SSMClient | None = None) -> Settings:
-    """La configuración de producción completa, con las dos claves leídas de un mismo cliente."""
+    """Configuración de producción con los secretos leídos mediante un mismo cliente."""
     client = client or _default_client()
-    return with_token_signing_key(with_database_password(settings, client), client)
+    loaded = with_token_signing_key(with_database_password(settings, client), client)
+    return with_google_client_secret(loaded, client)

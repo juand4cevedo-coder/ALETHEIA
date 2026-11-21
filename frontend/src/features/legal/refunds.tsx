@@ -49,7 +49,7 @@ export const refundPolicy: LegalDocument = {
       body: (
         <>
           <p>
-            El propietario de la organización puede cancelar la suscripción en
+            La persona responsable del despacho puede cancelar la suscripción en
             cualquier momento desde su panel, o escribiendo a {mail} desde el
             correo de su cuenta. Al cancelar:
           </p>
@@ -57,12 +57,12 @@ export const refundPolicy: LegalDocument = {
             <li>no se hace ningún cobro más;</li>
             <li>el plan sigue activo hasta el final del periodo ya pagado;</li>
             <li>
-              después, la cuenta queda 30 días en solo lectura para exportar sus
-              casos;
+              después, la cuenta queda en solo lectura para consultar y exportar
+              sus casos;
             </li>
             <li>
-              y al terminar ese plazo los casos se eliminan y le enviamos una
-              constancia de eliminación por correo.
+              los casos cerrados permanecen en el archivo histórico durante el
+              plazo de conservación aplicable; cancelar un plan no los elimina.
             </li>
           </ul>
         </>

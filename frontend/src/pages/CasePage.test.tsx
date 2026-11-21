@@ -2,6 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { CaseDetail, CaseTaskOut } from "../api/generated";
 import { LEGAL_VERSION } from "../config/legal.ts";
 import { seriousAxeViolations } from "../test/axe.ts";
 import { jsonResponse, renderRoute } from "../test/render.tsx";
@@ -30,7 +31,7 @@ const ME = {
   },
 };
 
-const DETAIL = {
+const DETAIL: CaseDetail = {
   id: CASE_ID,
   title: "Despido sin justa causa, Torres",
   filing_number: RADICADO,
@@ -39,6 +40,10 @@ const DETAIL = {
   internal_reference: "RA-2026-031",
   status: "open",
   created_at: "2026-11-10T15:32:07Z",
+  closed_at: null,
+  retention_until: null,
+  retention_basis: null,
+  legal_hold: false,
   created_by_name: "Laura Gómez",
   member_count: 1,
   members: [
@@ -61,6 +66,23 @@ const DETAIL = {
   ],
 };
 
+const TASK_ID = "01890a5d-ac96-774b-bcce-b302099a8095";
+const TASK: CaseTaskOut = {
+  id: TASK_ID,
+  case_id: CASE_ID,
+  title: "Preparar audiencia inicial",
+  description: "Consolidar el cuestionario y los anexos necesarios.",
+  priority: "high",
+  status: "pending",
+  due_at: "2026-11-25T19:30:00Z",
+  assigned_to: ME.id,
+  assignee_name: "Laura Gómez",
+  created_by: ME.id,
+  created_at: "2026-11-21T14:00:00Z",
+  updated_at: "2026-11-21T14:00:00Z",
+  completed_at: null,
+};
+
 function serve(
   caseResponse: () => Response,
   evidenceResponse: (request: Request) => Response = () =>
@@ -74,6 +96,7 @@ function serve(
       broken_at: null,
       reason: null,
       head_hash: EVENT_HASH,
+      latest_anchor: null,
     }),
 ) {
   fetchMock.mockImplementation(async (input) => {
@@ -129,6 +152,161 @@ beforeEach(() => {
 });
 
 describe("Página del caso (HU-015)", () => {
+  it("cierra y archiva sin presentar la acción como eliminación", async () => {
+    let current = DETAIL;
+    serve(() => jsonResponse(current));
+    const original = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) => {
+      const request = input as Request;
+      const path = new URL(request.url).pathname;
+      if (
+        request.method === "POST" &&
+        path === `/api/v1/cases/${CASE_ID}/close`
+      ) {
+        current = {
+          ...DETAIL,
+          status: "closed",
+          closed_at: "2026-11-20T20:00:00Z",
+          retention_until: "2036-11-20T20:00:00Z",
+          retention_basis: "organization_policy",
+        };
+        return jsonResponse(current);
+      }
+      return original(input, init);
+    });
+    await openCase();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Cerrar y archivar" }),
+    );
+    const dialog = screen.getByRole("dialog", {
+      name: "Cerrar y archivar el caso",
+    });
+    expect(within(dialog).getByText(/No se borrará ningún dato/)).toBeVisible();
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: "Cerrar y conservar" }),
+    );
+
+    expect(
+      await screen.findByText("Caso cerrado y trasladado al archivo."),
+    ).toBeVisible();
+    expect(screen.getByText("Archivo de casos cerrados")).toBeVisible();
+    expect(
+      fetchMock.mock.calls.some(
+        ([input]) => (input as Request).method === "POST",
+      ),
+    ).toBe(true);
+  });
+
+  it("el asistente consulta el archivo pero no cambia el ciclo de vida", async () => {
+    serve(() => jsonResponse(DETAIL));
+    const assistant = {
+      ...ME,
+      organization: { ...ME.organization, role: "assistant" },
+    };
+    const original = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) => {
+      const request = input as Request;
+      if (new URL(request.url).pathname === "/api/v1/me") {
+        return jsonResponse(assistant);
+      }
+      return original(input, init);
+    });
+    await openCase();
+
+    expect(
+      screen.queryByRole("button", { name: "Cerrar y archivar" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("el propietario gestiona el bloqueo jurídico y el abogado no", async () => {
+    let current: CaseDetail = {
+      ...DETAIL,
+      status: "closed",
+      closed_at: "2026-11-20T20:00:00Z",
+      retention_until: "2036-11-20T20:00:00Z",
+      retention_basis: "organization_policy",
+    };
+    serve(() => jsonResponse(current));
+    const original = fetchMock.getMockImplementation()!;
+    const owner = {
+      ...ME,
+      organization: { ...ME.organization, role: "owner" },
+    };
+    let sentBody: unknown;
+    fetchMock.mockImplementation(async (input, init) => {
+      const request = input as Request;
+      const path = new URL(request.url).pathname;
+      if (path === "/api/v1/me") return jsonResponse(owner);
+      if (
+        request.method === "PATCH" &&
+        path === `/api/v1/cases/${CASE_ID}/retention`
+      ) {
+        sentBody = await request.json();
+        current = {
+          ...current,
+          legal_hold: true,
+          retention_basis: "litigation_hold",
+        };
+        return jsonResponse(current);
+      }
+      return original(input, init);
+    });
+    const user = userEvent.setup();
+    await openCase();
+
+    expect(
+      screen.getByText("Política del despacho", { selector: "[data-tone]" }),
+    ).toBeVisible();
+    await user.click(
+      screen.getByRole("button", { name: "Gestionar conservación" }),
+    );
+    const dialog = screen.getByRole("dialog", {
+      name: "Gestionar conservación",
+    });
+    await user.selectOptions(
+      within(dialog).getByLabelText("Fundamento de conservación"),
+      "litigation_hold",
+    );
+    expect(
+      within(dialog).getByText("Activa el bloqueo jurídico del expediente."),
+    ).toBeVisible();
+    await user.click(
+      within(dialog).getByRole("button", { name: "Guardar y registrar" }),
+    );
+
+    expect(sentBody).toEqual({
+      legal_hold: true,
+      retention_basis: "litigation_hold",
+    });
+    expect(
+      await screen.findByText(
+        "Conservación actualizada y registrada en la trazabilidad.",
+      ),
+    ).toBeVisible();
+    expect(screen.getByText("Bloqueo jurídico activo")).toBeVisible();
+  });
+
+  it("el abogado ve la conservación pero no puede gestionarla", async () => {
+    serve(() =>
+      jsonResponse({
+        ...DETAIL,
+        status: "closed",
+        closed_at: "2026-11-20T20:00:00Z",
+        retention_until: "2036-11-20T20:00:00Z",
+        retention_basis: "organization_policy",
+      }),
+    );
+    await openCase();
+
+    expect(
+      screen.getByText("Política del despacho", { selector: "[data-tone]" }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Gestionar conservación" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("solicita el paquete y muestra el enlace al terminar", async () => {
     sessionStorage.clear();
     serve(() => jsonResponse(DETAIL));
@@ -282,6 +460,7 @@ describe("Página del caso (HU-015)", () => {
           broken_at: 1,
           reason: "event_hash",
           head_hash: "0".repeat(64),
+          latest_anchor: null,
         }),
     );
     await openCase();
@@ -307,6 +486,35 @@ describe("Página del caso (HU-015)", () => {
     ).toBeInTheDocument();
   });
 
+  it("muestra hasta qué evento llega el anclaje externo", async () => {
+    const user = userEvent.setup();
+    serve(
+      () => jsonResponse(DETAIL),
+      undefined,
+      undefined,
+      () =>
+        jsonResponse({
+          intact: true,
+          events_checked: 1,
+          broken_at: null,
+          reason: null,
+          head_hash: EVENT_HASH,
+          latest_anchor: {
+            seq: 1,
+            head_hash: EVENT_HASH,
+            tsa_time: "2026-11-21T17:30:00Z",
+          },
+        }),
+    );
+    await openCase();
+    await screen.findByText("Sin verificar");
+    await user.click(screen.getByRole("button", { name: "Verificar cadena" }));
+    expect(
+      await screen.findByText(/anclaje externo cubre la cabeza actual/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/hasta el evento #1/)).toBeInTheDocument();
+  });
+
   it("muestra el equipo con quien abrió el caso", async () => {
     serve(() => jsonResponse(DETAIL));
     const user = userEvent.setup();
@@ -325,6 +533,166 @@ describe("Página del caso (HU-015)", () => {
     expect(within(member).getByText("laura@example.com")).toBeInTheDocument();
     expect(within(member).getByText("Abogado")).toBeInTheDocument();
     expect(within(member).getByText("Abrió el caso")).toBeInTheDocument();
+  });
+
+  it("el abogado crea y asigna tareas con plazo y prioridad", async () => {
+    const user = userEvent.setup();
+    let tasks: CaseTaskOut[] = [];
+    let sentBody: unknown;
+    serve(() => jsonResponse(DETAIL));
+    const original = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) => {
+      const request = input as Request;
+      const path = new URL(request.url).pathname;
+      if (path === `/api/v1/cases/${CASE_ID}/tasks`) {
+        if (request.method === "GET") {
+          return jsonResponse({ items: tasks, next_cursor: null });
+        }
+        if (request.method === "POST") {
+          sentBody = await request.json();
+          tasks = [{ ...TASK, ...(sentBody as object) }];
+          return jsonResponse(tasks[0], 201);
+        }
+      }
+      return original(input, init);
+    });
+
+    await openCase();
+    await user.click(screen.getByRole("tab", { name: "Tareas y plazos" }));
+    expect(
+      await screen.findByText("Este caso todavía no tiene tareas asignadas."),
+    ).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Nueva tarea" }));
+    const dialog = screen.getByRole("dialog", {
+      name: "Nueva tarea del caso",
+    });
+    await user.type(within(dialog).getByLabelText("Tarea"), TASK.title);
+    await user.type(
+      within(dialog).getByLabelText("Instrucciones"),
+      TASK.description!,
+    );
+    await user.selectOptions(
+      within(dialog).getByLabelText("Prioridad"),
+      "high",
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Crear y asignar" }),
+    );
+
+    expect(sentBody).toEqual({
+      title: TASK.title,
+      description: TASK.description,
+      priority: "high",
+      assigned_to: ME.id,
+      due_at: null,
+    });
+    expect(await screen.findByText(TASK.title)).toBeVisible();
+    expect(screen.getByText("Prioridad alta")).toBeVisible();
+  });
+
+  it("el asistente completa solo su tarea y no puede crearla ni cancelarla", async () => {
+    const user = userEvent.setup();
+    let current = TASK;
+    let sentBody: unknown;
+    const assistant = {
+      ...ME,
+      organization: { ...ME.organization, role: "assistant" },
+    };
+    serve(() => jsonResponse(DETAIL));
+    const original = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) => {
+      const request = input as Request;
+      const path = new URL(request.url).pathname;
+      if (path === "/api/v1/me") return jsonResponse(assistant);
+      if (
+        request.method === "GET" &&
+        path === `/api/v1/cases/${CASE_ID}/tasks`
+      ) {
+        return jsonResponse({ items: [current], next_cursor: null });
+      }
+      if (
+        request.method === "PATCH" &&
+        path === `/api/v1/cases/${CASE_ID}/tasks/${TASK_ID}/status`
+      ) {
+        sentBody = await request.json();
+        current = {
+          ...current,
+          status: "completed",
+          completed_at: "2026-11-21T15:00:00Z",
+          updated_at: "2026-11-21T15:00:00Z",
+        };
+        return jsonResponse(current);
+      }
+      return original(input, init);
+    });
+
+    await openCase();
+    await user.click(screen.getByRole("tab", { name: "Tareas y plazos" }));
+    expect(await screen.findByText(TASK.title)).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Nueva tarea" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Cancelar tarea" }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Completar" }));
+
+    expect(sentBody).toEqual({ status: "completed" });
+    expect(
+      await within(
+        screen.getByRole("list", { name: "Tareas del caso" }),
+      ).findByText("Completada"),
+    ).toBeVisible();
+  });
+
+  it("filtra tareas en el servidor y conserva el historial cerrado en consulta", async () => {
+    const user = userEvent.setup();
+    const closed: CaseDetail = {
+      ...DETAIL,
+      status: "closed",
+      closed_at: "2026-11-20T20:00:00Z",
+      retention_until: "2036-11-20T20:00:00Z",
+      retention_basis: "organization_policy",
+    };
+    const requests: URL[] = [];
+    serve(() => jsonResponse(closed));
+    const original = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) => {
+      const request = input as Request;
+      const url = new URL(request.url);
+      if (
+        request.method === "GET" &&
+        url.pathname === `/api/v1/cases/${CASE_ID}/tasks`
+      ) {
+        requests.push(url);
+        return jsonResponse({ items: [TASK], next_cursor: null });
+      }
+      return original(input, init);
+    });
+
+    await openCase();
+    await user.click(screen.getByRole("tab", { name: "Tareas y plazos" }));
+    expect(await screen.findByText(TASK.title)).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Nueva tarea" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Completar" }),
+    ).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText("Buscar tarea"), "audiencia");
+    await user.selectOptions(screen.getByLabelText("Estado"), "pending");
+    await user.selectOptions(screen.getByLabelText("Persona asignada"), ME.id);
+    await waitFor(() => {
+      expect(
+        requests.some(
+          (url) =>
+            url.searchParams.get("search") === "audiencia" &&
+            url.searchParams.get("status") === "pending" &&
+            url.searchParams.get("assigned_to") === ME.id,
+        ),
+      ).toBe(true);
+    });
   });
 
   it("asigna y retira a una persona del caso sin quitarla del despacho", async () => {

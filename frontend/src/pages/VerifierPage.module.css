@@ -53,24 +53,7 @@
   font: inherit;
 }
 
-.form button {
-  min-height: 48px;
-  padding: 0 var(--space-6);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--ink-900);
-  color: var(--on-ink);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.form button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.form :is(input, select, button):focus-visible,
+.form :is(input, select):focus-visible,
 .scope a:focus-visible {
   outline: 2px solid var(--ink-500);
   outline-offset: 3px;

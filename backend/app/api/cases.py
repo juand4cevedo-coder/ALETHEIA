@@ -6,13 +6,15 @@ servicio lo comprueba y esta capa traduce sus errores. Las respuestas llevan dat
 expediente, así que ningún intermediario guarda una copia, tampoco las de error.
 """
 
+import datetime
 import logging
 import uuid
 from typing import Annotated, Any, Final, Literal
 from urllib.parse import quote
+from zoneinfo import ZoneInfo
 
 import tink
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import select
@@ -43,8 +45,10 @@ from app.schemas.cases import (
     CaseMemberOut,
     CaseOut,
     CasePage,
+    CaseRetentionUpdate,
     CaseSummaryOut,
     CaseTotalsOut,
+    CustodyAnchorOut,
     CustodyEventOut,
     CustodyPage,
     CustodyVerificationOut,
@@ -94,6 +98,17 @@ router = APIRouter(prefix="/cases", tags=["casos"], dependencies=[Depends(get_ca
 download_router = APIRouter(
     prefix="/cases", tags=["casos"], dependencies=[Depends(get_case_worker_for_download)]
 )
+
+_BOGOTA = ZoneInfo("America/Bogota")
+
+
+def _archive_boundary(value: datetime.date, *, next_day: bool = False) -> datetime.datetime:
+    if next_day:
+        value += datetime.timedelta(days=1)
+    return datetime.datetime.combine(value, datetime.time.min, tzinfo=_BOGOTA).astimezone(
+        datetime.UTC
+    )
+
 
 EMAIL_NOT_VERIFIED: Final = (
     "Verifique su correo para abrir casos. Le enviamos un enlace al crear la cuenta; si "
@@ -182,15 +197,26 @@ def verify_custody(
 ) -> CustodyVerificationOut:
     response.headers["Cache-Control"] = "no-store"
     try:
-        report = custody_verification.verify_case(session, principal, case_id)
+        result = custody_verification.verify_case(session, principal, case_id)
     except cases_service.CaseNotFoundError:
         raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    report = result.report
+    anchor = result.latest_anchor
     return CustodyVerificationOut(
         intact=report.intact,
         events_checked=report.events_checked,
         broken_at=report.broken_at,
         reason=report.reason,
         head_hash=report.head_hash.hex(),
+        latest_anchor=(
+            CustodyAnchorOut(
+                seq=anchor.seq,
+                head_hash=anchor.head_hash.hex(),
+                tsa_time=anchor.tsa_time,
+            )
+            if anchor is not None
+            else None
+        ),
     )
 
 
@@ -320,6 +346,7 @@ def download_evidence(
         raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
     except (
         KeyWrapperError,
+        BotoCoreError,
         ClientError,
         OSError,
         ValueError,
@@ -554,11 +581,59 @@ def list_cases(
     limit: Annotated[
         int, Query(ge=1, le=CASE_PAGE_SIZE_MAX, description="Casos por página.")
     ] = CASE_PAGE_SIZE_DEFAULT,
+    search: Annotated[
+        str | None,
+        Query(
+            min_length=1,
+            max_length=120,
+            description="Título, radicado, referencia interna o despacho.",
+        ),
+    ] = None,
+    closed_from: Annotated[
+        datetime.date | None, Query(description="Fecha inicial de cierre en Colombia.")
+    ] = None,
+    closed_to: Annotated[
+        datetime.date | None, Query(description="Fecha final de cierre en Colombia.")
+    ] = None,
+    retention_basis: Annotated[
+        Literal["organization_policy", "legal_or_contractual_duty", "litigation_hold"] | None,
+        Query(description="Fundamento de conservación."),
+    ] = None,
+    legal_hold: Annotated[
+        bool | None, Query(description="Si el caso tiene bloqueo jurídico.")
+    ] = None,
+    retention_review: Annotated[
+        Literal["due", "upcoming"] | None,
+        Query(description="Conservación vencida para revisión o todavía vigente."),
+    ] = None,
 ) -> CasePage:
     response.headers["Cache-Control"] = "no-store"
+    archive_filters = (closed_from, closed_to, retention_basis, legal_hold, retention_review)
+    if any(value is not None for value in archive_filters) and case_status != "closed":
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Los filtros de conservación solo se aplican al archivo de casos cerrados.",
+        )
+    if closed_from is not None and closed_to is not None and closed_from > closed_to:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="La fecha inicial de cierre no puede ser posterior a la final.",
+        )
     try:
         listing = cases_service.list_cases(
-            session, principal, status=case_status, cursor=cursor, limit=limit
+            session,
+            principal,
+            status=case_status,
+            cursor=cursor,
+            limit=limit,
+            search=search,
+            closed_from=(_archive_boundary(closed_from) if closed_from is not None else None),
+            closed_to=(
+                _archive_boundary(closed_to, next_day=True) if closed_to is not None else None
+            ),
+            retention_basis=retention_basis,
+            legal_hold=legal_hold,
+            retention_review=retention_review,
         )
     except cases_service.InvalidCursorError:
         raise HTTPException(
@@ -628,6 +703,130 @@ def read_case(
             for event in view.recent_events
         ],
     )
+
+
+@router.post(
+    "/{case_id}/close",
+    response_model=CaseOut,
+    summary="Cerrar y archivar un caso sin borrar sus datos",
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "El rol no administra el ciclo de vida del caso."},
+        404: {"description": "El caso no existe o la persona no pertenece a él."},
+        409: {"description": "El caso ya está cerrado o el despacho está en solo lectura."},
+    },
+)
+def close_case(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> CaseOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        cases_service.close_case(
+            session,
+            principal,
+            case_id,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+        return _case_out(cases_service.get_case(session, principal, case_id))
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    except cases_service.NotAllowedToManageCaseError:
+        raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
+    except cases_service.CaseAlreadyInStateError:
+        raise HTTPException(409, detail="El caso ya está cerrado.", headers=_NO_STORE) from None
+    except OrganizationNotActiveError:
+        raise HTTPException(409, detail=ORGANIZATION_NOT_ACTIVE, headers=_NO_STORE) from None
+
+
+@router.post(
+    "/{case_id}/reopen",
+    response_model=CaseOut,
+    summary="Reabrir un caso conservando la historia de su archivo",
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "El rol no administra el ciclo de vida del caso."},
+        404: {"description": "El caso no existe o la persona no pertenece a él."},
+        409: {"description": "El caso ya está abierto o el despacho está en solo lectura."},
+    },
+)
+def reopen_case(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> CaseOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        cases_service.reopen_case(
+            session,
+            principal,
+            case_id,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+        return _case_out(cases_service.get_case(session, principal, case_id))
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    except cases_service.NotAllowedToManageCaseError:
+        raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
+    except cases_service.CaseAlreadyInStateError:
+        raise HTTPException(409, detail="El caso ya está abierto.", headers=_NO_STORE) from None
+    except OrganizationNotActiveError:
+        raise HTTPException(409, detail=ORGANIZATION_NOT_ACTIVE, headers=_NO_STORE) from None
+
+
+@router.patch(
+    "/{case_id}/retention",
+    response_model=CaseOut,
+    summary="Actualizar el fundamento y bloqueo jurídico de un caso archivado",
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "Solo el propietario o administrador gestiona la conservación."},
+        404: {"description": "El caso no existe o la persona no pertenece a él."},
+        409: {"description": "El caso no está archivado o el despacho está en solo lectura."},
+    },
+)
+def update_case_retention(
+    case_id: uuid.UUID,
+    data: CaseRetentionUpdate,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> CaseOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        cases_service.update_case_retention(
+            session,
+            principal,
+            case_id,
+            legal_hold=data.legal_hold,
+            retention_basis=data.retention_basis,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+        return _case_out(cases_service.get_case(session, principal, case_id))
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    except cases_service.NotAllowedToManageCaseError:
+        raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
+    except cases_service.CaseRetentionUnavailableError:
+        raise HTTPException(
+            409,
+            detail="Solo puede gestionar la conservación de un caso archivado.",
+            headers=_NO_STORE,
+        ) from None
+    except OrganizationNotActiveError:
+        raise HTTPException(409, detail=ORGANIZATION_NOT_ACTIVE, headers=_NO_STORE) from None
 
 
 @router.get(
@@ -742,6 +941,10 @@ def _case_summary_out(item: cases_service.CaseSummary) -> CaseSummaryOut:
             "internal_reference": item.internal_reference,
             "status": item.status,
             "created_at": item.created_at,
+            "closed_at": item.closed_at,
+            "retention_until": item.retention_until,
+            "retention_basis": item.retention_basis,
+            "legal_hold": item.legal_hold,
             "created_by_name": item.created_by_name,
             "member_count": item.member_count,
             "evidence_count": item.evidence_count,
@@ -774,6 +977,10 @@ def _case_out(view: cases_service.CaseView) -> CaseOut:
             "internal_reference": case.internal_reference,
             "status": case.status,
             "created_at": case.created_at,
+            "closed_at": case.closed_at,
+            "retention_until": case.retention_until,
+            "retention_basis": case.retention_basis,
+            "legal_hold": case.legal_hold,
             "created_by_name": view.created_by_name,
             "member_count": len(view.members),
         }

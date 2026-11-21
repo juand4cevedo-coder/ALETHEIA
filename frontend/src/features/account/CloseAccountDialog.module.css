@@ -1,0 +1,14 @@
+.explanation {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.explanation p {
+  margin: 0;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}

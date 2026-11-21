@@ -105,12 +105,6 @@ def open_export(settings: Settings, key: str) -> Iterator[BinaryIO]:
             yield stream
 
 
-def export_chunks(settings: Settings, key: str) -> Iterator[bytes]:
-    with open_export(settings, key) as source:
-        while chunk := source.read(READ_CHUNK_BYTES):
-            yield chunk
-
-
 def delete_export(settings: Settings, key: str) -> None:
     _checked_key(key)
     if settings.environment == "production":

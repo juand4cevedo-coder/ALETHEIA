@@ -22,6 +22,7 @@ from app.core.config import Settings
 # Registran las plantillas de correo: sin estos imports, el trabajador no las conoce.
 from app.services import account_emails as _account_emails  # noqa: F401
 from app.services import (
+    custody_anchor,
     evidence_stamp,
     export_build,
     export_expiration,
@@ -117,6 +118,15 @@ def stamp_evidence(run: JobRun) -> None:
     evidence_stamp.stamp(run.open_session, evidence_id, case_id, organization_id)
 
 
+def anchor_custody(run: JobRun) -> None:
+    try:
+        case_id = uuid.UUID(str(run.payload["case_id"]))
+        organization_id = uuid.UUID(str(run.payload["organization_id"]))
+    except (KeyError, ValueError, TypeError) as exc:
+        raise PermanentJobError("Identificadores de custodia inválidos.") from exc
+    custody_anchor.anchor(run.open_session, case_id, organization_id)
+
+
 def reconcile_payment(run: JobRun) -> None:
     """payment_reconcile (EVT-007): si el webhook de Wompi ya activó o rechazó el cobro, esto
     encuentra la misma clave de deduplicación y no hace nada; si nunca llegó, lo resuelve con
@@ -148,5 +158,6 @@ HANDLERS: Final[Mapping[str, Handler]] = {
     "export_build": build_export,
     "export_expire": expire_export,
     "tsa_stamp": stamp_evidence,
+    "custody_anchor": anchor_custody,
     "payment_reconcile": reconcile_payment,
 }

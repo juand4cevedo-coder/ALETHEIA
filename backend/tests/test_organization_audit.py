@@ -1,5 +1,6 @@
 """HU-014: la auditoría de seguridad se limita al despacho y a sus gestores."""
 
+import datetime
 import uuid
 
 from fastapi.testclient import TestClient
@@ -7,10 +8,16 @@ from sqlalchemy.orm import Session
 
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, User
+from app.schemas.organization import OrganizationAuditAction
+from app.services.organization_audit import SECURITY_ACTIONS
 from tests.conftest import NuevoCliente
 from tests.organizations import CLAVE, crear_miembro, crear_oficina
 
 PATH = "/api/v1/organization/audit"
+
+
+def test_el_filtro_expone_exactamente_las_acciones_de_seguridad() -> None:
+    assert {action.value for action in OrganizationAuditAction} == set(SECURITY_ACTIONS)
 
 
 def _login(dispositivo: NuevoCliente, user: User) -> TestClient:
@@ -105,3 +112,52 @@ def test_auditoria_paginas_y_limita_el_tamano(dispositivo: NuevoCliente, db: Ses
         {row["id"] for row in first.json()["items"]} & {row["id"] for row in second.json()["items"]}
     )
     assert client.get(PATH, params={"limit": 101}).status_code == 422
+
+
+def test_auditoria_filtra_en_el_servidor_por_accion_persona_y_periodo(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office = crear_oficina(db)
+    admin = crear_miembro(db, office, "admin-filtros@example.com", "admin")
+    client = _login(dispositivo, office.owner)
+    start = datetime.datetime(2026, 11, 10, tzinfo=datetime.UTC)
+    for offset, action, actor in (
+        (0, "login", office.owner.id),
+        (1, "role_changed", admin.id),
+        (2, "role_changed", office.owner.id),
+    ):
+        db.add(
+            AuditLog(
+                organization_id=office.organization_id,
+                actor_user_id=actor,
+                action=action,
+                created_at=start + datetime.timedelta(days=offset),
+            )
+        )
+    db.flush()
+
+    response = client.get(
+        PATH,
+        params={
+            "action": "role_changed",
+            "actor": str(admin.id),
+            "created_from": "2026-11-10T00:00:00Z",
+            "created_to": "2026-11-12T00:00:00Z",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    assert [(item["action"], item["actor_user_id"]) for item in response.json()["items"]] == [
+        ("role_changed", str(admin.id))
+    ]
+    assert client.get(PATH, params={"action": "case_created"}).status_code == 422
+    assert (
+        client.get(
+            PATH,
+            params={
+                "created_from": "2026-11-12T00:00:00Z",
+                "created_to": "2026-11-10T00:00:00Z",
+            },
+        ).status_code
+        == 422
+    )

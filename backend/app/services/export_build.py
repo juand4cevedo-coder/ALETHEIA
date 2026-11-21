@@ -13,12 +13,13 @@ from tink import streaming_aead
 
 from app.adapters.export_storage import export_storage_key, new_export_sink
 from app.adapters.keys import KeyWrapper, WrappedKey
+from app.adapters.stamping import SelloDeTiempo, SelloInvalidoError, pedir_sello_de_tiempo
 from app.core.case_keys import open_case_key
 from app.core.config import Settings
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import Case, CustodyEvent, Evidence, Export
 from app.services import jobs
-from app.services.custody_chain import ChainEvent, load
+from app.services.custody_chain import ChainEvent, load, verify
 from app.services.evidence_download import PreparedDownload
 from app.services.evidence_upload import ASSOCIATED_PREFIX
 from app.services.export_manifest import EvidenceFile
@@ -44,6 +45,10 @@ class ExportSnapshot:
     organization_id: uuid.UUID
     wrapped_key: bytes
     key_version: str
+    custody_seq: int
+    anchor_hash: bytes | None
+    anchor_token: bytes | None
+    anchor_time: datetime.datetime | None
     evidences: list[EvidenceSnapshot]
     events: list[ChainEvent]
 
@@ -71,6 +76,10 @@ def _snapshot(
     )
     if case is None or case.wrapped_key is None or case.status == "deleting":
         raise PermanentJobError("El caso no permite construir el paquete.")
+    if export.anchor_seq is not None and case.custody_seq != export.anchor_seq:
+        raise PermanentJobError(
+            "La cadena cambió después del anclaje; debe solicitarse un paquete nuevo."
+        )
     export.status = "building"
     evidences = session.scalars(
         select(Evidence)
@@ -78,12 +87,17 @@ def _snapshot(
         .order_by(Evidence.id)
     ).all()
     events = load(session, case.id)
+    custody_seq = export.anchor_seq or case.custody_seq
     return ExportSnapshot(
         export_id=export.id,
         case_id=case.id,
         organization_id=organization_id,
         wrapped_key=case.wrapped_key,
         key_version=case.key_version,
+        custody_seq=custody_seq,
+        anchor_hash=export.anchor_hash,
+        anchor_token=export.anchor_token,
+        anchor_time=export.anchor_time,
         evidences=[
             EvidenceSnapshot(
                 id=row.id,
@@ -98,6 +112,56 @@ def _snapshot(
         ],
         events=events,
     )
+
+
+def _store_anchor(
+    open_session: Callable[[], Session],
+    snapshot: ExportSnapshot,
+    head_hash: bytes,
+    stamp: SelloDeTiempo,
+) -> bytes:
+    """Persiste una vez el anclaje; un reintento reutiliza exactamente el mismo token."""
+    with open_session() as session, session.begin():
+        set_tenant(session, TenantContext(organization_id=snapshot.organization_id))
+        export = session.scalar(
+            select(Export)
+            .where(
+                Export.id == snapshot.export_id,
+                Export.organization_id == snapshot.organization_id,
+            )
+            .with_for_update()
+        )
+        if export is None or export.status != "building":
+            raise PermanentJobError("La exportación cambió mientras se sellaba la cadena.")
+        if export.anchor_token is not None:
+            if export.anchor_seq != snapshot.custody_seq or export.anchor_hash != head_hash:
+                raise PermanentJobError("El anclaje guardado no corresponde a esta cadena.")
+            return export.anchor_token
+        export.anchor_seq = snapshot.custody_seq
+        export.anchor_hash = head_hash
+        export.anchor_token = stamp.token
+        export.anchor_time = stamp.hora
+        session.flush()
+        return stamp.token
+
+
+def _anchor(
+    open_session: Callable[[], Session],
+    snapshot: ExportSnapshot,
+    stamp_head: Callable[[bytes], SelloDeTiempo],
+) -> bytes:
+    report = verify(snapshot.events, expected_count=snapshot.custody_seq)
+    if not report.intact or report.events_checked < 1:
+        raise PermanentJobError("La cadena de custodia no está íntegra.")
+    if snapshot.anchor_token is not None:
+        if snapshot.anchor_hash != report.head_hash or snapshot.anchor_time is None:
+            raise PermanentJobError("El anclaje guardado no corresponde a esta cadena.")
+        return snapshot.anchor_token
+    try:
+        stamp = stamp_head(report.head_hash)
+    except SelloInvalidoError as exc:
+        raise PermanentJobError(str(exc)) from exc
+    return _store_anchor(open_session, snapshot, report.head_hash, stamp)
 
 
 def _files(
@@ -208,6 +272,7 @@ def build(
     export_id: uuid.UUID,
     organization_id: uuid.UUID,
     renew_lease: Callable[[], None],
+    stamp_head: Callable[[bytes], SelloDeTiempo] = pedir_sello_de_tiempo,
 ) -> None:
     """Una tarea repetida deja intacto un paquete listo; los demás intentos reconstruyen."""
     with open_session() as session, session.begin():
@@ -228,6 +293,8 @@ def build(
         maybe_renew(force=True)
         cipher = open_case_key(wrapper, WrappedKey(snapshot.wrapped_key, snapshot.key_version))
         primitive = cipher.primitive(streaming_aead.StreamingAead)
+        anchor_token = _anchor(open_session, snapshot, stamp_head)
+        maybe_renew(force=True)
         sink = new_export_sink(settings, export_id)
         manifest = build_package(
             cast(BinaryIO, sink),
@@ -236,6 +303,8 @@ def build(
             generated_at=datetime.datetime.now(datetime.UTC),
             evidences=_files(snapshot, primitive, settings, maybe_renew),
             custody_events=snapshot.events,
+            custody_seq=snapshot.custody_seq,
+            anchor_token=anchor_token,
         )
         maybe_renew(force=True)
         sink.commit()

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useOutletContext } from "react-router";
 
 import type { Me, PlatformUser } from "../api/generated";
@@ -16,8 +16,25 @@ import { StatusBadge } from "../components/ui/StatusBadge.tsx";
 import { pageTitle } from "../config/site.ts";
 import styles from "./PlatformPage.module.css";
 
+type AccountFilters = {
+  search: string;
+  status: "" | "active" | "blocked";
+  verification: "" | "verified" | "pending";
+  accountType: "" | "platform" | "workspace";
+};
+
+const EMPTY_FILTERS: AccountFilters = {
+  search: "",
+  status: "",
+  verification: "",
+  accountType: "",
+};
+
 export function PlatformPage() {
   const me = useOutletContext<Me>();
+  const [filters, setFilters] = useState<AccountFilters>(EMPTY_FILTERS);
+  const [appliedFilters, setAppliedFilters] =
+    useState<AccountFilters>(EMPTY_FILTERS);
   const [cursor, setCursor] = useState<string | undefined>();
   const [previousCursors, setPreviousCursors] = useState<
     (string | undefined)[]
@@ -25,8 +42,21 @@ export function PlatformPage() {
   const [target, setTarget] = useState<PlatformUser | null>(null);
   const [failed, setFailed] = useState(false);
   const queryClient = useQueryClient();
+  const accountQuery = {
+    search: appliedFilters.search || undefined,
+    status: appliedFilters.status || undefined,
+    email_verified:
+      appliedFilters.verification === ""
+        ? undefined
+        : appliedFilters.verification === "verified",
+    platform_admin:
+      appliedFilters.accountType === ""
+        ? undefined
+        : appliedFilters.accountType === "platform",
+    cursor,
+  };
   const users = useQuery({
-    ...listPlatformUsersOptions({ query: cursor ? { cursor } : {} }),
+    ...listPlatformUsersOptions({ query: accountQuery }),
     enabled: me.platform_admin,
     staleTime: 0,
   });
@@ -39,6 +69,23 @@ export function PlatformPage() {
     },
     onError: () => setFailed(true),
   });
+
+  function resetPagination() {
+    setCursor(undefined);
+    setPreviousCursors([]);
+  }
+
+  function applyFilters(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    resetPagination();
+    setAppliedFilters({ ...filters, search: filters.search.trim() });
+  }
+
+  function clearFilters() {
+    resetPagination();
+    setFilters(EMPTY_FILTERS);
+    setAppliedFilters(EMPTY_FILTERS);
+  }
 
   return (
     <div className={styles.screen}>
@@ -55,12 +102,105 @@ export function PlatformPage() {
           title="Cuentas"
           description="Bloquear una cuenta cierra sus sesiones en todos los dispositivos."
         >
+          <form
+            className={styles.accountFilters}
+            aria-label="Filtrar cuentas"
+            onSubmit={applyFilters}
+          >
+            <label className={styles.filterField}>
+              <span>Nombre o correo</span>
+              <input
+                type="search"
+                value={filters.search}
+                maxLength={120}
+                placeholder="Ej. carlos@example.com"
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    search: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <label className={styles.filterField}>
+              <span>Estado</span>
+              <select
+                value={filters.status}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    status: event.target.value as AccountFilters["status"],
+                  }))
+                }
+              >
+                <option value="">Todos</option>
+                <option value="active">Activas</option>
+                <option value="blocked">Bloqueadas</option>
+              </select>
+            </label>
+            <label className={styles.filterField}>
+              <span>Verificación</span>
+              <select
+                value={filters.verification}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    verification: event.target
+                      .value as AccountFilters["verification"],
+                  }))
+                }
+              >
+                <option value="">Todas</option>
+                <option value="verified">Verificadas</option>
+                <option value="pending">Pendientes</option>
+              </select>
+            </label>
+            <label className={styles.filterField}>
+              <span>Ámbito</span>
+              <select
+                value={filters.accountType}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    accountType: event.target
+                      .value as AccountFilters["accountType"],
+                  }))
+                }
+              >
+                <option value="">Todos</option>
+                <option value="workspace">Despachos</option>
+                <option value="platform">Plataforma</option>
+              </select>
+            </label>
+            <div className={styles.filterActions}>
+              <Button size="sm" type="submit">
+                Aplicar filtros
+              </Button>
+              <Button
+                size="sm"
+                type="button"
+                variant="secondary"
+                onClick={clearFilters}
+              >
+                Limpiar
+              </Button>
+            </div>
+          </form>
           {users.isPending && <p role="status">Cargando cuentas</p>}
           {users.isError && (
             <Notice tone="error">No pudimos cargar las cuentas.</Notice>
           )}
           {users.data?.items.length === 0 && (
-            <p className={styles.empty}>No hay cuentas en esta página.</p>
+            <p className={styles.empty}>
+              No hay cuentas que coincidan con los filtros.
+            </p>
+          )}
+          {users.data && (
+            <p className={styles.resultCount} role="status">
+              {users.data.total === 1
+                ? "1 cuenta encontrada"
+                : `${users.data.total} cuentas encontradas`}
+            </p>
           )}
           {users.data && users.data.items.length > 0 && (
             <div className={styles.tableScroll}>
@@ -72,6 +212,9 @@ export function PlatformPage() {
                     </th>
                     <th scope="col" role="columnheader">
                       Correo
+                    </th>
+                    <th scope="col" role="columnheader">
+                      Ámbito
                     </th>
                     <th scope="col" role="columnheader">
                       Estado
@@ -92,6 +235,11 @@ export function PlatformPage() {
                       </th>
                       <td role="cell" data-label="Correo" translate="no">
                         {user.email}
+                      </td>
+                      <td role="cell" data-label="Ámbito">
+                        <StatusBadge tone="muted">
+                          {user.platform_admin ? "Plataforma" : "Despacho"}
+                        </StatusBadge>
                       </td>
                       <td role="cell" data-label="Estado">
                         <StatusBadge
@@ -129,29 +277,33 @@ export function PlatformPage() {
               </table>
             </div>
           )}
-          {previousCursors.length > 0 && (
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                setCursor(previousCursors.at(-1));
-                setPreviousCursors((current) => current.slice(0, -1));
-              }}
-            >
-              Volver a la página anterior
-            </Button>
-          )}
-          {users.data?.next_cursor && (
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                setPreviousCursors((current) => [...current, cursor]);
-                setCursor(users.data.next_cursor ?? undefined);
-              }}
-            >
-              Ver más cuentas
-            </Button>
+          {(previousCursors.length > 0 || users.data?.next_cursor) && (
+            <div className={styles.pager}>
+              {previousCursors.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    setCursor(previousCursors.at(-1));
+                    setPreviousCursors((current) => current.slice(0, -1));
+                  }}
+                >
+                  Volver a la página anterior
+                </Button>
+              )}
+              {users.data?.next_cursor && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    setPreviousCursors((current) => [...current, cursor]);
+                    setCursor(users.data.next_cursor ?? undefined);
+                  }}
+                >
+                  Ver más cuentas
+                </Button>
+              )}
+            </div>
           )}
         </Panel>
       )}

@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { useOutletContext } from "react-router";
+import { useOutletContext, useSearchParams } from "react-router";
 
-import type { Me } from "../api/generated";
+import type { Me, OrganizationAuditAction } from "../api/generated";
 import {
   listMembersOptions,
   organizationAuditPageOptions,
@@ -39,6 +39,7 @@ const ACTION_LABELS: Record<string, string> = {
   courtesy_revoked: "Cortesía revocada",
   account_blocked: "Cuenta bloqueada",
   account_unblocked: "Cuenta desbloqueada",
+  account_closed: "Cuenta cerrada y anonimizada",
   legal_accepted: "Condiciones aceptadas",
   logout: "Salida",
   google_linked: "Cuenta de Google vinculada",
@@ -47,21 +48,47 @@ const ACTION_LABELS: Record<string, string> = {
 // Cuando el id ya no corresponde a ningún miembro actual (la persona salió del despacho), se
 // muestra este texto en vez del identificador crudo.
 const PERSON_GONE = "Persona que ya no está en el despacho";
+const ACTIONS = Object.keys(ACTION_LABELS) as OrganizationAuditAction[];
+
+function auditBoundary(date: string, endExclusive = false): string | undefined {
+  if (!date) return undefined;
+  const boundary = new Date(`${date}T00:00:00-05:00`);
+  if (endExclusive) boundary.setUTCDate(boundary.getUTCDate() + 1);
+  return boundary.toISOString();
+}
 
 export function OrganizationAuditPage() {
   const me = useOutletContext<Me>();
   const allowed = managesTeam(me.organization?.role);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cursor, setCursor] = useState<string | undefined>();
   const [previous, setPrevious] = useState<(string | undefined)[]>([]);
+  const actionValue = searchParams.get("accion") ?? "";
+  const action = ACTIONS.includes(actionValue as OrganizationAuditAction)
+    ? (actionValue as OrganizationAuditAction)
+    : undefined;
+  const actor = searchParams.get("persona") || undefined;
+  const from = searchParams.get("desde") ?? "";
+  const to = searchParams.get("hasta") ?? "";
+  const filtering = Boolean(action || actor || from || to);
   const audit = useQuery({
-    ...organizationAuditPageOptions({ query: cursor ? { cursor } : {} }),
+    ...organizationAuditPageOptions({
+      query: {
+        cursor,
+        action,
+        actor,
+        created_from: auditBoundary(from),
+        created_to: auditBoundary(to, true),
+      },
+    }),
     enabled: allowed,
+    placeholderData: keepPreviousData,
   });
 
   // Solo trae la primera página de miembros: alcanza para resolver nombres en un despacho normal.
   // Si el volumen de miembros crece mucho, esto debería paginar también o resolver por lote.
   const members = useQuery({
-    ...listMembersOptions({ query: {} }),
+    ...listMembersOptions({ query: { limit: 100 } }),
     enabled: allowed,
   });
   const memberNames = useMemo(() => {
@@ -71,6 +98,20 @@ export function OrganizationAuditPage() {
     }
     return map;
   }, [members.data]);
+
+  function setFilter(name: string, value: string) {
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (value) next.set(name, value);
+        else next.delete(name);
+        return next;
+      },
+      { replace: true },
+    );
+    setCursor(undefined);
+    setPrevious([]);
+  }
 
   return (
     <div className={styles.screen}>
@@ -84,6 +125,67 @@ export function OrganizationAuditPage() {
         <Notice tone="error">Esta cuenta no administra el despacho.</Notice>
       ) : (
         <Panel title="Eventos de seguridad">
+          <div className={styles.filters} aria-label="Filtros de auditoría">
+            <label>
+              <span>Acción</span>
+              <select
+                value={action ?? ""}
+                onChange={(event) => setFilter("accion", event.target.value)}
+              >
+                <option value="">Todas las acciones</option>
+                {ACTIONS.map((value) => (
+                  <option key={value} value={value}>
+                    {ACTION_LABELS[value]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Persona</span>
+              <select
+                value={actor ?? ""}
+                onChange={(event) => setFilter("persona", event.target.value)}
+              >
+                <option value="">Todas las personas</option>
+                {(members.data?.items ?? []).map((member) => (
+                  <option key={member.user_id} value={member.user_id}>
+                    {member.full_name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Desde</span>
+              <input
+                type="date"
+                value={from}
+                max={to || undefined}
+                onChange={(event) => setFilter("desde", event.target.value)}
+              />
+            </label>
+            <label>
+              <span>Hasta</span>
+              <input
+                type="date"
+                value={to}
+                min={from || undefined}
+                onChange={(event) => setFilter("hasta", event.target.value)}
+              />
+            </label>
+            {filtering && (
+              <Button
+                size="sm"
+                variant="text"
+                onClick={() => {
+                  setSearchParams({}, { replace: true });
+                  setCursor(undefined);
+                  setPrevious([]);
+                }}
+              >
+                Limpiar filtros
+              </Button>
+            )}
+          </div>
           {audit.isPending && (
             <div className={styles.loading}>
               <p role="status" className={styles.status}>
@@ -98,7 +200,11 @@ export function OrganizationAuditPage() {
             <Notice tone="error">No pudimos cargar los eventos.</Notice>
           )}
           {audit.data?.items.length === 0 && (
-            <p className={styles.empty}>No hay eventos en esta página.</p>
+            <p className={styles.empty}>
+              {filtering
+                ? "No encontramos eventos con estos filtros."
+                : "No hay eventos en esta página."}
+            </p>
           )}
           {audit.data && audit.data.items.length > 0 && (
             <div className={styles.tableScroll}>

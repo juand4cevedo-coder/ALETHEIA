@@ -33,6 +33,12 @@ export function CustodyTimeline({
 }: CustodyTimelineProps) {
   const chronological = [...events].sort((a, b) => a.seq - b.seq);
   const last = chronological.at(-1);
+  const anchor = verification === null ? null : verification.latest_anchor;
+  const anchorCoversHead =
+    verification?.intact === true &&
+    anchor !== null &&
+    anchor.seq === verification.events_checked &&
+    anchor.head_hash.toLowerCase() === verification.head_hash.toLowerCase();
 
   return (
     <div className={styles.timeline} data-just-opened={justOpened || undefined}>
@@ -94,9 +100,23 @@ export function CustodyTimeline({
         ) : verification.intact ? (
           <>
             <StatusBadge tone="ok">Integridad comprobada</StatusBadge>
-            <p>
-              {`Coinciden los ${verification.events_checked} eventos guardados. Esta comprobación no incluye un anclaje externo.`}
-            </p>
+            {anchor === null ? (
+              <p>
+                {`Coinciden los ${verification.events_checked} eventos guardados. Esta comprobación no incluye un anclaje externo.`}
+              </p>
+            ) : anchorCoversHead ? (
+              <p>
+                {`Coinciden los ${verification.events_checked} eventos guardados. El anclaje externo cubre la cabeza actual, hasta el evento #${anchor.seq}. Sello recibido el ${formatColombiaTime(anchor.tsa_time, { seconds: true })}.`}
+              </p>
+            ) : anchor.seq < verification.events_checked ? (
+              <p>
+                {`Coinciden los ${verification.events_checked} eventos guardados. El anclaje externo cubre hasta el evento #${anchor.seq}; los eventos posteriores aún no están anclados. Sello recibido el ${formatColombiaTime(anchor.tsa_time, { seconds: true })}.`}
+              </p>
+            ) : (
+              <p>
+                {`Coinciden los ${verification.events_checked} eventos guardados, pero el anclaje registrado para el evento #${anchor.seq} no coincide con la cabeza recalculada. Revise esta inconsistencia antes de usar el historial.`}
+              </p>
+            )}
           </>
         ) : (
           <>

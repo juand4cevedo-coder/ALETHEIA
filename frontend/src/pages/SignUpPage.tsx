@@ -1,5 +1,4 @@
 import { Link } from "react-router";
-import { SocialAccess } from "../features/auth/SocialAccess.tsx";
 import { useMutation } from "@tanstack/react-query";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
@@ -305,7 +304,6 @@ export function SignUpPage() {
             </div>
           </form>
         )}
-        {!sentTo && <SocialAccess />}
       </div>
     </>
   );

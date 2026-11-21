@@ -55,11 +55,27 @@ def _chain(db: Session, tenant: Tenant, length: int) -> bytes:
     return prev_hash
 
 
-def _mark_for_deletion(db: Session, tenant: Tenant) -> None:
+def _mark_for_deletion(
+    db: Session,
+    tenant: Tenant,
+    *,
+    retention_elapsed: bool = True,
+    legal_hold: bool = False,
+) -> None:
+    review_at = func.now() - datetime.timedelta(days=1)
+    if not retention_elapsed:
+        review_at = func.now() + datetime.timedelta(days=3650)
     db.execute(
         update(Case)
         .where(Case.id == tenant.case_id)
-        .values(status="deleting", closed_at=func.now(), wrapped_key=None)
+        .values(
+            status="deleting",
+            closed_at=func.now(),
+            wrapped_key=None,
+            retention_until=review_at,
+            retention_basis="organization_policy",
+            legal_hold=legal_hold,
+        )
     )
 
 
@@ -125,22 +141,38 @@ def test_purge_case_exige_un_caso_marcado_para_eliminar(db: Session) -> None:
         _purge(db, tenant, uuid.uuid7())
 
 
-def test_purge_case_deja_constancia_y_borra_el_caso(db: Session) -> None:
-    tenant = create_tenant(db, "Firma")
-    add_evidence(db, tenant, b"primera conversacion")
-    add_evidence(db, tenant, b"segunda conversacion")
-    _chain(db, tenant, 2)
-    db.execute(
+def test_purge_case_respeta_el_plazo_de_conservacion(owner_db: Session) -> None:
+    tenant = create_tenant(owner_db, "Firma")
+    _mark_for_deletion(owner_db, tenant, retention_elapsed=False)
+
+    with rejected(owner_db, ObjectNotInPrerequisiteState):
+        _purge(owner_db, tenant, uuid.uuid7())
+
+
+def test_purge_case_respeta_el_bloqueo_juridico(owner_db: Session) -> None:
+    tenant = create_tenant(owner_db, "Firma")
+    _mark_for_deletion(owner_db, tenant, legal_hold=True)
+
+    with rejected(owner_db, ObjectNotInPrerequisiteState):
+        _purge(owner_db, tenant, uuid.uuid7())
+
+
+def test_purge_case_deja_constancia_y_borra_el_caso(owner_db: Session) -> None:
+    tenant = create_tenant(owner_db, "Firma")
+    add_evidence(owner_db, tenant, b"primera conversacion")
+    add_evidence(owner_db, tenant, b"segunda conversacion")
+    _chain(owner_db, tenant, 2)
+    owner_db.execute(
         update(Organization)
         .where(Organization.id == tenant.organization_id)
         .values(storage_used_bytes=40)
     )
-    _mark_for_deletion(db, tenant)
+    _mark_for_deletion(owner_db, tenant)
     record_id = uuid.uuid7()
 
-    assert _purge(db, tenant, record_id) == record_id
+    assert _purge(owner_db, tenant, record_id) == record_id
 
-    record = db.get_one(DeletionRecord, record_id)
+    record = owner_db.get_one(DeletionRecord, record_id)
     assert record.case_id == tenant.case_id
     assert record.evidence_count == 2
     assert record.total_bytes == 40
@@ -149,28 +181,28 @@ def test_purge_case_deja_constancia_y_borra_el_caso(db: Session) -> None:
         for content in (b"primera conversacion", b"segunda conversacion")
     )
     assert record.backups_expire_at - record.key_destroyed_at == datetime.timedelta(days=7)
-    assert db.get(Case, tenant.case_id) is None
+    assert owner_db.get(Case, tenant.case_id) is None
     for model in (Evidence, CustodyEvent):
-        assert db.scalar(select(func.count()).select_from(model)) == 0
-    storage = db.scalar(
+        assert owner_db.scalar(select(func.count()).select_from(model)) == 0
+    storage = owner_db.scalar(
         select(Organization.storage_used_bytes).where(Organization.id == tenant.organization_id)
     )
     assert storage == 0
 
 
-def test_purge_case_repetido_devuelve_la_misma_constancia(db: Session) -> None:
-    tenant = create_tenant(db, "Firma")
-    _mark_for_deletion(db, tenant)
-    first = _purge(db, tenant, uuid.uuid7())
+def test_purge_case_repetido_devuelve_la_misma_constancia(owner_db: Session) -> None:
+    tenant = create_tenant(owner_db, "Firma")
+    _mark_for_deletion(owner_db, tenant)
+    first = _purge(owner_db, tenant, uuid.uuid7())
 
-    assert _purge(db, tenant, uuid.uuid7()) == first
-    assert db.scalar(select(func.count()).select_from(DeletionRecord)) == 1
+    assert _purge(owner_db, tenant, uuid.uuid7()) == first
+    assert owner_db.scalar(select(func.count()).select_from(DeletionRecord)) == 1
 
 
 def test_la_constancia_de_eliminacion_no_se_modifica(db: Session, owner_db: Session) -> None:
-    tenant = create_tenant(db, "Firma")
-    _mark_for_deletion(db, tenant)
-    _purge(db, tenant, uuid.uuid7())
+    tenant = create_tenant(owner_db, "Firma")
+    _mark_for_deletion(owner_db, tenant)
+    _purge(owner_db, tenant, uuid.uuid7())
 
     with rejected(db, InsufficientPrivilege):
         db.execute(text("UPDATE deletion_records SET evidence_count = 0"))
@@ -293,21 +325,21 @@ def test_el_verificador_detecta_huecos_y_eslabones_cambiados() -> None:
 
 
 def test_purge_case_rechaza_un_solicitante_que_no_es_la_persona_de_la_sesion(
-    db: Session,
+    owner_db: Session,
 ) -> None:
-    tenant = create_tenant(db, "Firma")
-    _mark_for_deletion(db, tenant)
+    tenant = create_tenant(owner_db, "Firma")
+    _mark_for_deletion(owner_db, tenant)
 
-    with rejected(db, InsufficientPrivilege):
-        db.scalar(
+    with rejected(owner_db, InsufficientPrivilege):
+        owner_db.scalar(
             text("SELECT purge_case(:case_id, :record_id, :user_id, '7 days')"),
             {"case_id": tenant.case_id, "record_id": uuid.uuid7(), "user_id": uuid.uuid7()},
         )
-    assert db.get(Case, tenant.case_id) is not None
+    assert owner_db.get(Case, tenant.case_id) is not None
 
 
-def test_purge_case_rechaza_a_un_abogado_de_la_organizacion(db: Session) -> None:
-    tenant = create_tenant(db, "Firma")
+def test_purge_case_rechaza_a_un_abogado_de_la_organizacion(owner_db: Session) -> None:
+    tenant = create_tenant(owner_db, "Firma")
     abogado = User(
         email=f"{uuid.uuid4().hex}@example.com",
         full_name="Carlos Gómez",
@@ -315,15 +347,17 @@ def test_purge_case_rechaza_a_un_abogado_de_la_organizacion(db: Session) -> None
         privacy_version="1.0",
         consented_at=datetime.datetime.now(datetime.UTC),
     )
-    db.add(abogado)
-    db.flush()
-    db.add(Membership(organization_id=tenant.organization_id, user_id=abogado.id, role="lawyer"))
-    _mark_for_deletion(db, tenant)
-    db.flush()
-    set_tenant(db, TenantContext(organization_id=tenant.organization_id, user_id=abogado.id))
+    owner_db.add(abogado)
+    owner_db.flush()
+    owner_db.add(
+        Membership(organization_id=tenant.organization_id, user_id=abogado.id, role="lawyer")
+    )
+    _mark_for_deletion(owner_db, tenant)
+    owner_db.flush()
+    set_tenant(owner_db, TenantContext(organization_id=tenant.organization_id, user_id=abogado.id))
 
-    with rejected(db, InsufficientPrivilege):
-        db.scalar(
+    with rejected(owner_db, InsufficientPrivilege):
+        owner_db.scalar(
             text("SELECT purge_case(:case_id, :record_id, :user_id, '7 days')"),
             {"case_id": tenant.case_id, "record_id": uuid.uuid7(), "user_id": abogado.id},
         )

@@ -122,14 +122,14 @@ describe("redacción de la interfaz", () => {
   });
 
   it("el título y la descripción de index.html tampoco los llevan", () => {
-    const html = readFileSync(join(SRC, "..", "index.html"), "utf8").replace(
-      /<!--[\s\S]*?-->/g,
-      "",
-    );
+    const html = readFileSync(join(SRC, "..", "index.html"), "utf8");
+    const head = new DOMParser().parseFromString(html, "text/html").head;
     const texts = [
-      ...html.matchAll(/<title>([^<]*)<\/title>/g),
-      ...html.matchAll(/content="([^"]*)"/g),
-    ].map((match) => decodeEntities(match[1]!));
+      head.querySelector("title")!.textContent,
+      ...Array.from(head.querySelectorAll("meta[content]"), (meta) =>
+        meta.getAttribute("content")!,
+      ),
+    ];
     expect(texts.filter((text) => offenders(text).length > 0)).toEqual([]);
   });
 

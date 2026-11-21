@@ -48,6 +48,31 @@ const TOTALS = {
   custody_events: 42,
 };
 
+const TASK_INBOX = {
+  active: 2,
+  overdue: 1,
+  due_soon: 1,
+  items: [
+    {
+      id: "01890a5d-ac96-774b-bcce-b302099a8095",
+      case_id: "01890a5d-ac96-774b-bcce-b302099a8090",
+      case_title: "Despido sin justa causa, Torres",
+      case_status: "open",
+      title: "Preparar audiencia inicial",
+      description: null,
+      priority: "high",
+      status: "pending",
+      due_at: "2026-11-25T19:30:00Z",
+      assigned_to: "01890a5d-ac96-774b-bcce-b302099a8057",
+      assignee_name: "Laura Gómez",
+      created_by: "01890a5d-ac96-774b-bcce-b302099a8057",
+      created_at: "2026-11-21T14:00:00Z",
+      updated_at: "2026-11-21T14:00:00Z",
+      completed_at: null,
+    },
+  ],
+};
+
 function caseItem(overrides: Record<string, unknown> = {}) {
   return {
     id: "01890a5d-ac96-774b-bcce-b302099a8090",
@@ -92,6 +117,9 @@ function serve(role: Role, meOverrides: Record<string, unknown> = {}) {
         totals: TOTALS,
       });
     }
+    if (url.pathname === "/api/v1/tasks") {
+      return jsonResponse(TASK_INBOX);
+    }
     throw new Error(`Ruta inesperada: ${request.method} ${url.pathname}`);
   });
 }
@@ -108,7 +136,7 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
 
     await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
     expect(
-      screen.getByText("Ruiz & Asociados, Propietario"),
+      screen.getByText("Ruiz & Asociados, Responsable del despacho"),
     ).toBeInTheDocument();
 
     const overview = screen.getByRole("region", {
@@ -121,10 +149,16 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     ).toBeInTheDocument();
 
     expect(
-      await screen.findByText("Despido sin justa causa, Torres"),
-    ).toBeInTheDocument();
+      await screen.findAllByText("Despido sin justa causa, Torres"),
+    ).toHaveLength(2);
     expect(screen.getByText("Evidencia subida")).toBeInTheDocument();
     expect(screen.getByText(/por Laura Gómez/)).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Seguimiento de tareas del equipo"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Preparar audiencia inicial")).toBeInTheDocument();
+    expect(screen.getByText("Próximos 7 días")).toBeInTheDocument();
 
     const quickLinks = screen.getByText("Accesos rápidos").closest("section")!;
     expect(
@@ -151,6 +185,17 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     expect(
       screen.queryByRole("link", { name: /Equipo/ }),
     ).not.toBeInTheDocument();
+    expect(screen.getByText("Mis tareas asignadas")).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(([input]) => {
+        const url = new URL((input as Request).url);
+        return (
+          url.pathname === "/api/v1/tasks" &&
+          url.searchParams.get("assigned_to") ===
+            "01890a5d-ac96-774b-bcce-b302099a8057"
+        );
+      }),
+    ).toBe(true);
   });
 
   it("avisa cuando la prueba está por vencer y enlaza a Mi cuenta", async () => {
@@ -183,6 +228,9 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
           totals: { ...TOTALS, open: 0, closed: 0, pending_stamps: 0 },
         });
       }
+      if (url.pathname === "/api/v1/tasks") {
+        return jsonResponse({ ...TASK_INBOX, items: [] });
+      }
       throw new Error("ruta inesperada");
     });
     await renderRoute("/app");
@@ -199,6 +247,9 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     fetchMock.mockImplementation(async (input) => {
       const url = new URL((input as Request).url);
       if (url.pathname === "/api/v1/me") return jsonResponse(me("owner"));
+      if (url.pathname === "/api/v1/tasks") {
+        return jsonResponse({ ...TASK_INBOX, items: [] });
+      }
       throw new Error("ruta inesperada");
     });
     await renderRoute("/app");

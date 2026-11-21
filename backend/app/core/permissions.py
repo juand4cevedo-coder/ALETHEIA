@@ -15,6 +15,10 @@ Permission = Literal[
     "cases.read_assigned",
     "cases.create",
     "cases.manage_members",
+    "cases.manage_lifecycle",
+    "cases.manage_retention",
+    "cases.manage_tasks",
+    "cases.complete_assigned_tasks",
     "cases.upload_evidence",
     "cases.download_evidence",
 ]
@@ -29,6 +33,10 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.read_assigned",
             "cases.create",
             "cases.manage_members",
+            "cases.manage_lifecycle",
+            "cases.manage_retention",
+            "cases.manage_tasks",
+            "cases.complete_assigned_tasks",
             "cases.upload_evidence",
             "cases.download_evidence",
         }
@@ -40,6 +48,10 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.read_assigned",
             "cases.create",
             "cases.manage_members",
+            "cases.manage_lifecycle",
+            "cases.manage_retention",
+            "cases.manage_tasks",
+            "cases.complete_assigned_tasks",
             "cases.upload_evidence",
             "cases.download_evidence",
         }
@@ -50,30 +62,29 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.read_assigned",
             "cases.create",
             "cases.manage_members",
+            "cases.manage_lifecycle",
+            "cases.manage_tasks",
+            "cases.complete_assigned_tasks",
             "cases.upload_evidence",
             "cases.download_evidence",
         }
     ),
-    "assistant": frozenset({"organization.view", "cases.read_assigned", "cases.upload_evidence"}),
+    "assistant": frozenset(
+        {
+            "organization.view",
+            "cases.read_assigned",
+            "cases.upload_evidence",
+            "cases.complete_assigned_tasks",
+        }
+    ),
 }
 
 
 def permissions_for(role: str | None, *, platform_admin: bool = False) -> frozenset[Permission]:
     """Da permisos de la membresía actual y, por separado, de la plataforma."""
-    organization_permissions = ROLE_PERMISSIONS.get(role, frozenset()) if role else frozenset()
     if platform_admin:
-        return (
-            organization_permissions
-            - {
-                "billing.manage",
-                "cases.read_assigned",
-                "cases.create",
-                "cases.manage_members",
-                "cases.upload_evidence",
-                "cases.download_evidence",
-            }
-        ) | {"platform.manage"}
-    return organization_permissions
+        return frozenset({"platform.manage"})
+    return ROLE_PERMISSIONS.get(role, frozenset()) if role else frozenset()
 
 
 def has_permission(role: str | None, permission: Permission) -> bool:

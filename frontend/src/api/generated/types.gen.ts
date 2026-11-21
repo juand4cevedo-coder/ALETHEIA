@@ -190,6 +190,34 @@ export type CaseDetail = {
    */
   created_at: string;
   /**
+   * Closed At
+   *
+   * Cuándo se archivó, si está cerrado.
+   */
+  closed_at: string | null;
+  /**
+   * Retention Until
+   *
+   * Fecha mínima para revisar si la conservación debe continuar.
+   */
+  retention_until: string | null;
+  /**
+   * Retention Basis
+   *
+   * Fundamento operativo de la conservación.
+   */
+  retention_basis:
+    | "organization_policy"
+    | "legal_or_contractual_duty"
+    | "litigation_hold"
+    | null;
+  /**
+   * Legal Hold
+   *
+   * Si existe un bloqueo jurídico que impide suprimir.
+   */
+  legal_hold: boolean;
+  /**
    * Created By Name
    *
    * Nombre de quien lo abrió.
@@ -268,7 +296,7 @@ export type CaseMemberOut = {
 /**
  * CaseOut
  *
- * Un caso abierto.
+ * Un caso activo o archivado.
  */
 export type CaseOut = {
   /**
@@ -329,6 +357,34 @@ export type CaseOut = {
    */
   created_at: string;
   /**
+   * Closed At
+   *
+   * Cuándo se archivó, si está cerrado.
+   */
+  closed_at: string | null;
+  /**
+   * Retention Until
+   *
+   * Fecha mínima para revisar si la conservación debe continuar.
+   */
+  retention_until: string | null;
+  /**
+   * Retention Basis
+   *
+   * Fundamento operativo de la conservación.
+   */
+  retention_basis:
+    | "organization_policy"
+    | "legal_or_contractual_duty"
+    | "litigation_hold"
+    | null;
+  /**
+   * Legal Hold
+   *
+   * Si existe un bloqueo jurídico que impide suprimir.
+   */
+  legal_hold: boolean;
+  /**
    * Created By Name
    *
    * Nombre de quien lo abrió.
@@ -364,6 +420,23 @@ export type CasePage = {
    * Totales de los casos de la persona.
    */
   totals: CaseTotalsOut;
+};
+
+/**
+ * CaseRetentionUpdate
+ *
+ * Fundamento operativo y bloqueo de un expediente archivado.
+ */
+export type CaseRetentionUpdate = {
+  /**
+   * Legal Hold
+   */
+  legal_hold: boolean;
+  /**
+   * Retention Basis
+   */
+  retention_basis:
+    "organization_policy" | "legal_or_contractual_duty" | "litigation_hold";
 };
 
 /**
@@ -430,6 +503,34 @@ export type CaseSummaryOut = {
    */
   created_at: string;
   /**
+   * Closed At
+   *
+   * Cuándo se archivó, si está cerrado.
+   */
+  closed_at: string | null;
+  /**
+   * Retention Until
+   *
+   * Fecha mínima para revisar si la conservación debe continuar.
+   */
+  retention_until: string | null;
+  /**
+   * Retention Basis
+   *
+   * Fundamento operativo de la conservación.
+   */
+  retention_basis:
+    | "organization_policy"
+    | "legal_or_contractual_duty"
+    | "litigation_hold"
+    | null;
+  /**
+   * Legal Hold
+   *
+   * Si existe un bloqueo jurídico que impide suprimir.
+   */
+  legal_hold: boolean;
+  /**
    * Created By Name
    *
    * Nombre de quien lo abrió.
@@ -477,6 +578,114 @@ export type CaseSummaryOut = {
    * Hora del último evento de la cadena; por ella se ordena la lista.
    */
   last_activity_at: string;
+};
+
+/**
+ * CaseTaskCreate
+ */
+export type CaseTaskCreate = {
+  /**
+   * Title
+   */
+  title: string;
+  /**
+   * Description
+   */
+  description?: string | null;
+  /**
+   * Priority
+   */
+  priority?: "low" | "normal" | "high" | "urgent";
+  /**
+   * Due At
+   */
+  due_at?: string | null;
+  /**
+   * Assigned To
+   */
+  assigned_to: string;
+};
+
+/**
+ * CaseTaskOut
+ */
+export type CaseTaskOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Case Id
+   */
+  case_id: string;
+  /**
+   * Title
+   */
+  title: string;
+  /**
+   * Description
+   */
+  description: string | null;
+  /**
+   * Priority
+   */
+  priority: "low" | "normal" | "high" | "urgent";
+  /**
+   * Status
+   */
+  status: "pending" | "in_progress" | "completed" | "canceled";
+  /**
+   * Due At
+   */
+  due_at: string | null;
+  /**
+   * Assigned To
+   */
+  assigned_to: string;
+  /**
+   * Assignee Name
+   */
+  assignee_name: string;
+  /**
+   * Created By
+   */
+  created_by: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Updated At
+   */
+  updated_at: string;
+  /**
+   * Completed At
+   */
+  completed_at: string | null;
+};
+
+/**
+ * CaseTaskPage
+ */
+export type CaseTaskPage = {
+  /**
+   * Items
+   */
+  items: Array<CaseTaskOut>;
+  /**
+   * Next Cursor
+   */
+  next_cursor: string | null;
+};
+
+/**
+ * CaseTaskStatusUpdate
+ */
+export type CaseTaskStatusUpdate = {
+  /**
+   * Status
+   */
+  status: "pending" | "in_progress" | "completed" | "canceled";
 };
 
 /**
@@ -582,6 +791,22 @@ export type CheckoutOut = {
 };
 
 /**
+ * CloseAccountRequest
+ *
+ * Confirmación reforzada para cerrar y anonimizar la cuenta.
+ */
+export type CloseAccountRequest = {
+  /**
+   * Password
+   */
+  password: string;
+  /**
+   * Confirmation
+   */
+  confirmation: "CERRAR MI CUENTA";
+};
+
+/**
  * CourtesyGrant
  */
 export type CourtesyGrant = {
@@ -672,6 +897,32 @@ export type CourtesyTarget = {
 };
 
 /**
+ * CustodyAnchorOut
+ *
+ * Alcance de un anclaje externo, sin exponer su token criptográfico.
+ */
+export type CustodyAnchorOut = {
+  /**
+   * Seq
+   *
+   * Último evento cubierto por el sello externo.
+   */
+  seq: number;
+  /**
+   * Head Hash
+   *
+   * Huella de la cabeza sellada, en hexadecimal.
+   */
+  head_hash: string;
+  /**
+   * Tsa Time
+   *
+   * Hora declarada por la autoridad de sellado.
+   */
+  tsa_time: string;
+};
+
+/**
  * CustodyEventOut
  *
  * Un evento de la cadena de custodia del caso.
@@ -755,6 +1006,10 @@ export type CustodyVerificationOut = {
    * Huella del último evento válido, en hexadecimal.
    */
   head_hash: string;
+  /**
+   * Última cabeza con sello externo, o null si todavía no existe.
+   */
+  latest_anchor: CustodyAnchorOut | null;
 };
 
 /**
@@ -953,6 +1208,18 @@ export type ForgotPasswordRequest = {
    * Correo de la cuenta.
    */
   email: string;
+};
+
+/**
+ * GoogleAuthStatus
+ *
+ * Disponibilidad pública del proveedor; nunca expone sus credenciales.
+ */
+export type GoogleAuthStatus = {
+  /**
+   * Enabled
+   */
+  enabled: boolean;
 };
 
 /**
@@ -1256,15 +1523,21 @@ export type Me = {
    */
   email_verified: boolean;
   /**
+   * Google Linked
+   *
+   * Si puede ingresar con una identidad de Google.
+   */
+  google_linked: boolean;
+  /**
    * Platform Admin
    *
-   * Puede administrar la plataforma; no concede acceso a otros despachos.
+   * Es la cuenta dueña de la plataforma y no pertenece a ningún despacho.
    */
   platform_admin: boolean;
   /**
    * Permissions
    *
-   * Capacidades vigentes en su despacho y, por separado, en la plataforma.
+   * Capacidades vigentes en su despacho o, de forma excluyente, en la plataforma.
    */
   permissions: Array<
     | "platform.manage"
@@ -1275,6 +1548,10 @@ export type Me = {
     | "cases.read_assigned"
     | "cases.create"
     | "cases.manage_members"
+    | "cases.manage_lifecycle"
+    | "cases.manage_retention"
+    | "cases.manage_tasks"
+    | "cases.complete_assigned_tasks"
     | "cases.upload_evidence"
     | "cases.download_evidence"
   >;
@@ -1372,6 +1649,38 @@ export type MySubscription = {
    */
   ends_at: string | null;
 };
+
+/**
+ * OrganizationAuditAction
+ *
+ * Acciones de seguridad que un gestor puede consultar explícitamente.
+ */
+export type OrganizationAuditAction =
+  | "user_registered"
+  | "email_verified"
+  | "login"
+  | "login_failed"
+  | "google_linked"
+  | "session_reuse_detected"
+  | "sessions_revoked"
+  | "password_reset"
+  | "password_changed"
+  | "invitation_sent"
+  | "invitation_revoked"
+  | "invitation_accepted"
+  | "role_changed"
+  | "member_removed"
+  | "plan_changed"
+  | "subscription_canceled"
+  | "subscription_expired"
+  | "courtesy_granted"
+  | "courtesy_renewed"
+  | "courtesy_revoked"
+  | "account_blocked"
+  | "account_unblocked"
+  | "account_closed"
+  | "legal_accepted"
+  | "logout";
 
 /**
  * OrganizationAuditEvent
@@ -1557,6 +1866,12 @@ export type PlatformAuditPage = {
    * Next Cursor
    */
   next_cursor: string | null;
+  /**
+   * Total
+   *
+   * Eventos que coinciden con los filtros, sin limitar por página.
+   */
+  total: number;
 };
 
 /**
@@ -1659,6 +1974,12 @@ export type PlatformUserPage = {
    * Next Cursor
    */
   next_cursor: string | null;
+  /**
+   * Total
+   *
+   * Cuentas que coinciden con los filtros, sin limitar por página.
+   */
+  total: number;
 };
 
 /**
@@ -1995,6 +2316,94 @@ export type SupportTicketStatusChange = {
 };
 
 /**
+ * TaskInboxItem
+ */
+export type TaskInboxItem = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Case Id
+   */
+  case_id: string;
+  /**
+   * Title
+   */
+  title: string;
+  /**
+   * Description
+   */
+  description: string | null;
+  /**
+   * Priority
+   */
+  priority: "low" | "normal" | "high" | "urgent";
+  /**
+   * Status
+   */
+  status: "pending" | "in_progress" | "completed" | "canceled";
+  /**
+   * Due At
+   */
+  due_at: string | null;
+  /**
+   * Assigned To
+   */
+  assigned_to: string;
+  /**
+   * Assignee Name
+   */
+  assignee_name: string;
+  /**
+   * Created By
+   */
+  created_by: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Updated At
+   */
+  updated_at: string;
+  /**
+   * Completed At
+   */
+  completed_at: string | null;
+  /**
+   * Case Title
+   */
+  case_title: string;
+  /**
+   * Case Status
+   */
+  case_status: "open" | "closed";
+};
+
+/**
+ * TaskInboxOut
+ */
+export type TaskInboxOut = {
+  /**
+   * Items
+   */
+  items: Array<TaskInboxItem>;
+  /**
+   * Active
+   */
+  active: number;
+  /**
+   * Overdue
+   */
+  overdue: number;
+  /**
+   * Due Soon
+   */
+  due_soon: number;
+};
+
+/**
  * UserStatusChange
  */
 export type UserStatusChange = {
@@ -2194,6 +2603,88 @@ export type ListPlansResponses = {
 };
 
 export type ListPlansResponse = ListPlansResponses[keyof ListPlansResponses];
+
+export type GoogleStatusData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/google/status";
+};
+
+export type GoogleStatusResponses = {
+  /**
+   * Successful Response
+   */
+  200: GoogleAuthStatus;
+};
+
+export type GoogleStatusResponse =
+  GoogleStatusResponses[keyof GoogleStatusResponses];
+
+export type GoogleLoginStartData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/google/login";
+};
+
+export type GoogleLoginStartResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type GoogleLinkStartData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/google/link";
+};
+
+export type GoogleLinkStartResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type GoogleCallbackData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * State
+     */
+    state?: string | null;
+    /**
+     * Code
+     */
+    code?: string | null;
+    /**
+     * Error
+     */
+    error?: string | null;
+  };
+  url: "/api/v1/auth/google/callback";
+};
+
+export type GoogleCallbackErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type GoogleCallbackError =
+  GoogleCallbackErrors[keyof GoogleCallbackErrors];
+
+export type GoogleCallbackResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
 
 export type RegisterAccountData = {
   body: RegisterRequest;
@@ -2587,6 +3078,40 @@ export type ChangePasswordResponses = {
 export type ChangePasswordResponse =
   ChangePasswordResponses[keyof ChangePasswordResponses];
 
+export type CloseAccountData = {
+  body: CloseAccountRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/me/account/closure";
+};
+
+export type CloseAccountErrors = {
+  /**
+   * La contraseña no coincide.
+   */
+  400: Problem;
+  /**
+   * La cuenta tiene una responsabilidad que debe transferirse.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CloseAccountError = CloseAccountErrors[keyof CloseAccountErrors];
+
+export type CloseAccountResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type CloseAccountResponse =
+  CloseAccountResponses[keyof CloseAccountResponses];
+
 export type RenameOrganizationData = {
   body: OrganizationRenameRequest;
   path?: never;
@@ -2905,6 +3430,30 @@ export type OrganizationAuditPageData = {
      * Limit
      */
     limit?: number;
+    /**
+     * Action
+     *
+     * Acción de seguridad exacta.
+     */
+    action?: OrganizationAuditAction | null;
+    /**
+     * Actor
+     *
+     * Persona que originó el evento.
+     */
+    actor?: string | null;
+    /**
+     * Created From
+     *
+     * Inicio inclusivo del periodo, con zona horaria.
+     */
+    created_from?: string | null;
+    /**
+     * Created To
+     *
+     * Fin exclusivo del periodo, con zona horaria.
+     */
+    created_to?: string | null;
   };
   url: "/api/v1/organization/audit";
 };
@@ -3284,6 +3833,46 @@ export type ListCasesData = {
      * Casos por página.
      */
     limit?: number;
+    /**
+     * Search
+     *
+     * Título, radicado, referencia interna o despacho.
+     */
+    search?: string | null;
+    /**
+     * Closed From
+     *
+     * Fecha inicial de cierre en Colombia.
+     */
+    closed_from?: string | null;
+    /**
+     * Closed To
+     *
+     * Fecha final de cierre en Colombia.
+     */
+    closed_to?: string | null;
+    /**
+     * Retention Basis
+     *
+     * Fundamento de conservación.
+     */
+    retention_basis?:
+      | "organization_policy"
+      | "legal_or_contractual_duty"
+      | "litigation_hold"
+      | null;
+    /**
+     * Legal Hold
+     *
+     * Si el caso tiene bloqueo jurídico.
+     */
+    legal_hold?: boolean | null;
+    /**
+     * Retention Review
+     *
+     * Conservación vencida para revisión o todavía vigente.
+     */
+    retention_review?: "due" | "upcoming" | null;
   };
   url: "/api/v1/cases";
 };
@@ -3388,6 +3977,146 @@ export type ReadCaseResponses = {
 };
 
 export type ReadCaseResponse = ReadCaseResponses[keyof ReadCaseResponses];
+
+export type CloseCaseData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/close";
+};
+
+export type CloseCaseErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no administra el ciclo de vida del caso.
+   */
+  403: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * El caso ya está cerrado o el despacho está en solo lectura.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CloseCaseError = CloseCaseErrors[keyof CloseCaseErrors];
+
+export type CloseCaseResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseOut;
+};
+
+export type CloseCaseResponse = CloseCaseResponses[keyof CloseCaseResponses];
+
+export type ReopenCaseData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/reopen";
+};
+
+export type ReopenCaseErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no administra el ciclo de vida del caso.
+   */
+  403: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * El caso ya está abierto o el despacho está en solo lectura.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ReopenCaseError = ReopenCaseErrors[keyof ReopenCaseErrors];
+
+export type ReopenCaseResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseOut;
+};
+
+export type ReopenCaseResponse = ReopenCaseResponses[keyof ReopenCaseResponses];
+
+export type UpdateCaseRetentionData = {
+  body: CaseRetentionUpdate;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/retention";
+};
+
+export type UpdateCaseRetentionErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * Solo el propietario o administrador gestiona la conservación.
+   */
+  403: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * El caso no está archivado o el despacho está en solo lectura.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type UpdateCaseRetentionError =
+  UpdateCaseRetentionErrors[keyof UpdateCaseRetentionErrors];
+
+export type UpdateCaseRetentionResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseOut;
+};
+
+export type UpdateCaseRetentionResponse =
+  UpdateCaseRetentionResponses[keyof UpdateCaseRetentionResponses];
 
 export type AvailableCaseMembersData = {
   body?: never;
@@ -3578,6 +4307,172 @@ export type DownloadEvidenceResponses = {
    */
   200: unknown;
 };
+
+export type ListCaseTasksData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: {
+    /**
+     * Cursor
+     */
+    cursor?: string | null;
+    /**
+     * Status
+     */
+    status?: "pending" | "in_progress" | "completed" | "canceled" | null;
+    /**
+     * Assigned To
+     */
+    assigned_to?: string | null;
+    /**
+     * Search
+     */
+    search?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+  };
+  url: "/api/v1/cases/{case_id}/tasks";
+};
+
+export type ListCaseTasksErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListCaseTasksError = ListCaseTasksErrors[keyof ListCaseTasksErrors];
+
+export type ListCaseTasksResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseTaskPage;
+};
+
+export type ListCaseTasksResponse =
+  ListCaseTasksResponses[keyof ListCaseTasksResponses];
+
+export type CreateCaseTaskData = {
+  body: CaseTaskCreate;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/tasks";
+};
+
+export type CreateCaseTaskErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CreateCaseTaskError =
+  CreateCaseTaskErrors[keyof CreateCaseTaskErrors];
+
+export type CreateCaseTaskResponses = {
+  /**
+   * Successful Response
+   */
+  201: CaseTaskOut;
+};
+
+export type CreateCaseTaskResponse =
+  CreateCaseTaskResponses[keyof CreateCaseTaskResponses];
+
+export type UpdateCaseTaskStatusData = {
+  body: CaseTaskStatusUpdate;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Task Id
+     */
+    task_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/tasks/{task_id}/status";
+};
+
+export type UpdateCaseTaskStatusErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type UpdateCaseTaskStatusError =
+  UpdateCaseTaskStatusErrors[keyof UpdateCaseTaskStatusErrors];
+
+export type UpdateCaseTaskStatusResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseTaskOut;
+};
+
+export type UpdateCaseTaskStatusResponse =
+  UpdateCaseTaskStatusResponses[keyof UpdateCaseTaskStatusResponses];
+
+export type TaskInboxData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Assigned To
+     */
+    assigned_to?: string | null;
+    /**
+     * Priority
+     */
+    priority?: "low" | "normal" | "high" | "urgent" | null;
+    /**
+     * Due Before
+     */
+    due_before?: string | null;
+    /**
+     * Search
+     */
+    search?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+  };
+  url: "/api/v1/tasks";
+};
+
+export type TaskInboxErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type TaskInboxError = TaskInboxErrors[keyof TaskInboxErrors];
+
+export type TaskInboxResponses = {
+  /**
+   * Successful Response
+   */
+  200: TaskInboxOut;
+};
+
+export type TaskInboxResponse = TaskInboxResponses[keyof TaskInboxResponses];
 
 export type InspectExportData = {
   body: ExportInspectRequest;
@@ -3805,6 +4700,30 @@ export type ListPlatformUsersData = {
      * Cursor
      */
     cursor?: string | null;
+    /**
+     * Search
+     *
+     * Nombre o correo de la cuenta.
+     */
+    search?: string | null;
+    /**
+     * Status
+     *
+     * Estado actual de la cuenta.
+     */
+    status?: "active" | "blocked" | null;
+    /**
+     * Email Verified
+     *
+     * Si la cuenta confirmó su correo.
+     */
+    email_verified?: boolean | null;
+    /**
+     * Platform Admin
+     *
+     * Si la cuenta administra la plataforma.
+     */
+    platform_admin?: boolean | null;
   };
   url: "/api/v1/platform/users";
 };
@@ -3886,6 +4805,28 @@ export type PlatformAuditData = {
      * Cursor
      */
     cursor?: string | null;
+    /**
+     * Search
+     *
+     * Nombre o correo del actor, organización o UUID del objeto.
+     */
+    search?: string | null;
+    /**
+     * Action
+     */
+    action?: string | null;
+    /**
+     * Created From
+     *
+     * Inicio inclusivo del periodo, con zona horaria.
+     */
+    created_from?: string | null;
+    /**
+     * Created To
+     *
+     * Fin exclusivo del periodo, con zona horaria.
+     */
+    created_to?: string | null;
   };
   url: "/api/v1/platform/audit";
 };

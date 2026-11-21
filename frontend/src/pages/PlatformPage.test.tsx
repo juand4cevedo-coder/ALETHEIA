@@ -46,6 +46,7 @@ function serve(platformAdmin: boolean) {
           },
         ],
         next_cursor: null,
+        total: 1,
       });
     if (
       path === `/api/v1/platform/users/${OTHER_ID}/status` &&
@@ -95,6 +96,36 @@ it("confirma el bloqueo y actualiza el estado de la cuenta", async () => {
         (input as Request).url.includes(`/platform/users/${OTHER_ID}/status`),
     ),
   ).toBe(true);
+});
+
+it("envía la búsqueda y los filtros de cuentas al backend", async () => {
+  serve(true);
+  const user = userEvent.setup();
+  await renderRoute("/app/plataforma");
+  await screen.findByText("carlos@example.com");
+
+  await user.type(screen.getByLabelText("Nombre o correo"), "Carlos Gómez");
+  await user.selectOptions(screen.getByLabelText("Estado"), "blocked");
+  await user.selectOptions(screen.getByLabelText("Verificación"), "pending");
+  await user.selectOptions(screen.getByLabelText("Ámbito"), "workspace");
+  await user.click(screen.getByRole("button", { name: "Aplicar filtros" }));
+
+  await waitFor(() =>
+    expect(
+      fetchMock.mock.calls.some(([input]) => {
+        const request = input as Request;
+        const url = new URL(request.url);
+        return (
+          request.method === "GET" &&
+          url.pathname === "/api/v1/platform/users" &&
+          url.searchParams.get("search") === "Carlos Gómez" &&
+          url.searchParams.get("status") === "blocked" &&
+          url.searchParams.get("email_verified") === "false" &&
+          url.searchParams.get("platform_admin") === "false"
+        );
+      }),
+    ).toBe(true),
+  );
 });
 
 // jsdom no aplica CSS Modules: lo que sostiene el celular se lee del disco.
@@ -168,8 +199,9 @@ it("mide el corte contra el contenedor y no contra la ventana", () => {
 
 it("cuando la tabla aparece, la persona conserva 150 px de texto", () => {
   // Medido en el navegador con la tabla de cuentas, la más ancha: el correo habitual (260 px),
-  // el estado (95), la verificación (95) y la acción (120), cada columna con 24 px de relleno.
+  // el ámbito (100), el estado (95), la verificación (95) y la acción (120), con relleno.
   const CORREO = 260 + 24;
+  const AMBITO = 100 + 24;
   const ESTADO = 95 + 24;
   const VERIFICADO = 95 + 24;
   const ACCION = 120 + 24;
@@ -177,7 +209,7 @@ it("cuando la tabla aparece, la persona conserva 150 px de texto", () => {
   const corte = Number(/@container \(max-width: (\d+)px\)/.exec(css)?.[1]);
   const tabla = corte + 1 - PANEL_PADDING;
   expect(
-    tabla - CORREO - ESTADO - VERIFICADO - ACCION - 24,
+    tabla - CORREO - AMBITO - ESTADO - VERIFICADO - ACCION - 24,
   ).toBeGreaterThanOrEqual(150);
 });
 
@@ -272,6 +304,7 @@ it("rotula cada celda de la tabla para la tarjeta del celular", async () => {
   const celdas = [...document.querySelectorAll("tbody td")];
   expect(celdas.map((celda) => celda.getAttribute("data-label"))).toEqual([
     "Correo",
+    "Ámbito",
     "Estado",
     "Correo verificado",
     null,

@@ -8,6 +8,7 @@ from fastapi.security import APIKeyCookie
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
+from app.adapters.google_oidc import GoogleOidcClient, GoogleOidcUnavailableError
 from app.adapters.keys import KeyWrapper
 from app.api.cookies import ACCESS_COOKIE
 from app.core.config import Settings
@@ -42,6 +43,17 @@ def get_app_settings(request: Request) -> Settings:
     """La configuración de la aplicación que atiende la petición."""
     settings: Settings = request.app.state.settings
     return settings
+
+
+def get_google_oidc(settings: Annotated[Settings, Depends(get_app_settings)]) -> GoogleOidcClient:
+    try:
+        return GoogleOidcClient.from_settings(settings)
+    except GoogleOidcUnavailableError:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="El acceso con Google todavía no está configurado.",
+            headers={"Cache-Control": "no-store"},
+        ) from None
 
 
 def get_client_ip(request: Request) -> str:

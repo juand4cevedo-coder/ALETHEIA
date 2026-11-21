@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { NavLink, useParams } from "react-router";
 
 import { buttonClassName } from "../components/ui/buttonStyles.ts";
@@ -16,34 +16,25 @@ import {
 } from "../config/site.ts";
 import { findLegalDocument } from "../features/legal/documents.ts";
 import { formatEffectiveDate } from "../features/legal/format.ts";
-import { extractPlainText, sha256Hex } from "../features/legal/plainText.ts";
+import { extractPlainText } from "../features/legal/plainText.ts";
 import type { LegalDocument } from "../features/legal/types.ts";
 import { useActiveSection } from "../features/legal/useActiveSection.ts";
 import { NotFoundPage } from "./NotFoundPage.tsx";
 import styles from "./LegalPage.module.css";
 import {
   BalanzaIcon,
-  CopiarIcon,
   DescargarIcon,
   EscudoVistoIcon,
   GalletaIcon,
-  HuellaIcon,
   ImprimirIcon,
   InstitucionIcon,
   MenuIcon,
   ReciboIcon,
-  VistoIcon,
   type IconComponent,
 } from "../components/ui/icons.tsx";
 
 // Destino del índice para el bloque de contacto que cierra cada política.
 const CONTACT_ID = "contacto";
-
-// Palabras por minuto de una lectura atenta, para estimar el tiempo de lectura.
-const WORDS_PER_MINUTE = 200;
-
-// Cuánto se muestra el aviso de huella copiada.
-const COPIED_FOR_MS = 2000;
 
 const POLICY_ICONS: Record<LegalSlug, IconComponent> = {
   privacidad: EscudoVistoIcon,
@@ -58,80 +49,29 @@ export function LegalPage() {
   const { pagina } = useParams();
   const legalDocument = findLegalDocument(pagina);
   if (!legalDocument) return <NotFoundPage />;
-  // La clave reinicia el índice, su resaltado y la huella al pasar de una política a otra.
+  // La clave reinicia el índice y su resaltado al pasar de una política a otra.
   return <LegalDocumentView key={legalDocument.slug} doc={legalDocument} />;
-}
-
-type Fingerprint = { text: string; hash: string | null; minutes: number };
-
-/**
- * Texto plano de la política tal como se lee en pantalla y su huella SHA-256. Se calcula en el
- * navegador después de pintar el texto, así que la huella corresponde exactamente a lo que la
- * persona tiene delante y al archivo que descarga.
- */
-function useFingerprint(
-  doc: LegalDocument,
-  article: RefObject<HTMLElement | null>,
-): Fingerprint | null {
-  const [fingerprint, setFingerprint] = useState<Fingerprint | null>(null);
-
-  useEffect(() => {
-    if (!article.current) return;
-    const text = [
-      doc.title.toUpperCase(),
-      `${SITE_NAME} (${SITE_URL.replace(/^https?:\/\//, "")})`,
-      `Vigente desde el ${formatEffectiveDate()}`,
-      "",
-      extractPlainText(article.current),
-    ].join("\n");
-    const minutes = Math.max(
-      1,
-      Math.round(text.split(/\s+/).length / WORDS_PER_MINUTE),
-    );
-    let cancelled = false;
-    void sha256Hex(text).then((hash) => {
-      if (!cancelled) setFingerprint({ text, hash, minutes });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [doc, article]);
-
-  return fingerprint;
 }
 
 function LegalDocumentView({ doc }: { doc: LegalDocument }) {
   const [indexOpen, setIndexOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
-  const fingerprint = useFingerprint(doc, articleRef);
   const sectionIds = useMemo(
     () => [...doc.sections.map((section) => section.id), CONTACT_ID],
     [doc],
   );
   const active = useActiveSection(sectionIds);
 
-  useEffect(() => {
-    if (!copied) return;
-    const timer = window.setTimeout(() => setCopied(false), COPIED_FOR_MS);
-    return () => window.clearTimeout(timer);
-  }, [copied]);
-
-  async function copyHash() {
-    if (!fingerprint?.hash) return;
-    try {
-      await navigator.clipboard.writeText(fingerprint.hash);
-      setCopied(true);
-    } catch {
-      // Sin permiso para el portapapeles la huella sigue a la vista para copiarla a mano.
-    }
-  }
-
   function download() {
-    if (!fingerprint) return;
-    // Sin BOM ni conversión de saltos de línea: el archivo tiene los mismos bytes que se
-    // usaron para calcular la huella.
-    const blob = new Blob([fingerprint.text], {
+    if (!articleRef.current) return;
+    const text = [
+      doc.title.toUpperCase(),
+      `${SITE_NAME} (${SITE_URL.replace(/^https?:\/\//, "")})`,
+      `Vigente desde el ${formatEffectiveDate()}`,
+      "",
+      extractPlainText(articleRef.current),
+    ].join("\n");
+    const blob = new Blob([text], {
       type: "text/plain;charset=utf-8",
     });
     const url = URL.createObjectURL(blob);
@@ -182,35 +122,21 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
                   </dd>
                 </div>
                 <div>
-                  <dt>Lectura</dt>
-                  <dd>
-                    {fingerprint ? `${fingerprint.minutes} min` : "Calculando"}
-                  </dd>
-                </div>
-                <div>
                   <dt>Responsable</dt>
                   <dd>{DATA_CONTROLLER.name}</dd>
                 </div>
               </dl>
             </div>
 
-            <section className={styles.seal} aria-labelledby="huella-titulo">
-              <p id="huella-titulo" className={styles.sealLabel}>
-                <HuellaIcon size={16} aria-hidden="true" />
-                Huella SHA-256 de este texto
+            <section className={styles.tools} aria-labelledby="acciones-titulo">
+              <p id="acciones-titulo" className={styles.toolsTitle}>
+                Guardar una copia
               </p>
-              <p className={styles.sealHash} aria-live="polite">
-                {fingerprint === null
-                  ? "Calculando la huella"
-                  : (fingerprint.hash ??
-                    "Su navegador no permite calcular la huella.")}
+              <p className={styles.toolsNote}>
+                Puede descargar o imprimir el texto vigente para conservarlo y
+                consultarlo sin conexión.
               </p>
-              <p className={styles.sealNote}>
-                Se calcula en su navegador sobre el texto que está leyendo. Si
-                descarga el texto y su huella coincide con esta, guardó
-                exactamente la versión vigente.
-              </p>
-              <div className={styles.sealActions}>
+              <div className={styles.toolActions}>
                 <button
                   type="button"
                   className={buttonClassName({
@@ -218,26 +144,9 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
                     size: "sm",
                   })}
                   onClick={download}
-                  disabled={!fingerprint}
                 >
                   <DescargarIcon size={16} aria-hidden="true" />
                   Descargar el texto
-                </button>
-                <button
-                  type="button"
-                  className={buttonClassName({
-                    variant: "secondary",
-                    size: "sm",
-                  })}
-                  onClick={copyHash}
-                  disabled={!fingerprint?.hash}
-                >
-                  {copied ? (
-                    <VistoIcon size={16} aria-hidden="true" />
-                  ) : (
-                    <CopiarIcon size={16} aria-hidden="true" />
-                  )}
-                  {copied ? "Huella copiada" : "Copiar huella"}
                 </button>
                 <button
                   type="button"

@@ -132,8 +132,6 @@ function useOpenCases(enabled: boolean): number | undefined {
 export function WorkspaceNav({ me }: { me: Me }) {
   const groups = GROUPS.map((group) => ({
     ...group,
-    label:
-      group.label === "Despacho" && me.platform_admin ? "Equipo" : group.label,
     items: group.items.filter((item) => item.visible?.(me) ?? true),
   })).filter((group) => group.items.length > 0);
   // Sin organización no hay casos que contar.

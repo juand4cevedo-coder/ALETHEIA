@@ -83,6 +83,32 @@ beforeEach(() => {
 });
 
 describe("Ingresar (HU-007, CP-007)", () => {
+  it("habilita Google solo cuando el backend confirma la configuración", async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const url = typeof input === "string" ? input : (input as Request).url;
+      const path = new URL(url, "http://localhost").pathname;
+      if (path === "/api/v1/auth/google/status")
+        return jsonResponse({ enabled: true });
+      throw new Error(`Ruta inesperada: ${path}`);
+    });
+
+    await renderRoute("/ingresar");
+
+    expect(
+      await screen.findByRole("link", { name: "Continuar con Google" }),
+    ).toHaveAttribute("href", "/api/v1/auth/google/login");
+  });
+
+  it("explica cuando la identidad de Google todavía no está vinculada", async () => {
+    fetchMock.mockImplementation(async () => jsonResponse({ enabled: true }));
+
+    await renderRoute("/ingresar?google=sin-vinculo");
+
+    expect(
+      await screen.findByText(/todavía no está vinculada/),
+    ).toBeInTheDocument();
+  });
+
   it("lleva a la cuenta administradora a la consola de plataforma", async () => {
     serve({
       me: () =>
@@ -116,6 +142,12 @@ describe("Ingresar (HU-007, CP-007)", () => {
     expect(
       screen.getByRole("link", { name: "Crear una cuenta" }),
     ).toHaveAttribute("href", "/registro");
+    expect(
+      screen.getByRole("button", { name: "Continuar con Google" }),
+    ).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: /Microsoft/i }),
+    ).not.toBeInTheDocument();
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
@@ -206,6 +238,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Hizo varios intentos seguidos. Espere 15 minutos e inténtelo de nuevo.",
     );
+    expect(screen.getByRole("alert")).toHaveFocus();
   });
 
   it("muestra el aviso de cuenta bloqueada que da la API", async () => {
@@ -232,14 +265,18 @@ describe("Ingresar (HU-007, CP-007)", () => {
 });
 
 describe("Acceso con una sesión abierta (Diseño UX/UI, 4.2)", () => {
-  it("sin pista de sesión muestra el formulario y no consulta la API", async () => {
+  it("sin pista de sesión muestra el formulario y no consulta el perfil", async () => {
     fetchMock.mockImplementation(async () => problem(401));
     await renderRoute("/ingresar");
 
     expect(
       await screen.findByRole("heading", { name: "Ingrese a su cuenta" }),
     ).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(
+      fetchMock.mock.calls.some(([input]) =>
+        (input as Request).url.endsWith("/api/v1/me"),
+      ),
+    ).toBe(false);
   });
 
   it("con una sesión válida lleva al espacio de trabajo", async () => {
