@@ -38,7 +38,7 @@ describe("Página de inicio (HU-001)", () => {
     const main = screen.getByRole("main");
     expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(within(main).getByRole("heading", { level: 1 })).toHaveTextContent(
-      /Su trabajo\.\s*Con claridad\./,
+      /Sus casos cambian\.\s*Su control también\./,
     );
     expect(
       within(main).getByRole("heading", {

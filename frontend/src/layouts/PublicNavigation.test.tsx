@@ -5,7 +5,7 @@ import { expect, it } from "vitest";
 import { PublicNavigation } from "./PublicNavigation.tsx";
 import { seriousAxeViolations } from "../test/axe.ts";
 
-it("ofrece siete opciones y cambia el panel con el puntero", async () => {
+it("ofrece cinco opciones y cambia el panel con el puntero", async () => {
   const user = userEvent.setup();
   render(
     <MemoryRouter>
@@ -13,7 +13,7 @@ it("ofrece siete opciones y cambia el panel con el puntero", async () => {
     </MemoryRouter>,
   );
   const nav = screen.getByRole("navigation", { name: "Principal" });
-  expect(within(nav).getAllByRole("button")).toHaveLength(6);
+  expect(within(nav).getAllByRole("button")).toHaveLength(4);
   expect(within(nav).getByRole("link", { name: "Precios" })).toHaveAttribute(
     "href",
     "/precios",
@@ -24,14 +24,14 @@ it("ofrece siete opciones y cambia el panel con el puntero", async () => {
       name: /Gestión de casos/,
     }),
   ).toHaveAttribute("href", "/#como-funciona");
-  await user.hover(screen.getByRole("button", { name: "Docs" }));
+  await user.hover(screen.getByRole("button", { name: "Recursos" }));
   expect(screen.queryByText("Gestión de casos")).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: /Introducción/ })).toHaveAttribute(
+  expect(screen.getByRole("link", { name: /Documentación/ })).toHaveAttribute(
     "href",
     "/docs",
   );
   fireEvent.pointerDown(document.body);
-  expect(screen.getByRole("button", { name: "Docs" })).toHaveAttribute(
+  expect(screen.getByRole("button", { name: "Recursos" })).toHaveAttribute(
     "aria-expanded",
     "false",
   );
@@ -65,18 +65,20 @@ it("permite entrar al panel con el teclado y regresar al disparador con Escape",
   const product = screen.getByRole("button", { name: "Producto" });
   product.focus();
   await user.keyboard("{Enter}{ArrowRight}");
-  const company = screen.getByRole("button", { name: "Compañía" });
-  expect(company).toHaveFocus();
-  expect(company).toHaveAttribute("aria-expanded", "true");
+  const teams = screen.getByRole("button", { name: "Equipos" });
+  expect(teams).toHaveFocus();
+  expect(teams).toHaveAttribute("aria-expanded", "true");
   await user.keyboard("{ArrowDown}");
-  await screen.findByRole("link", { name: "Sobre Aletheia" });
+  await screen.findByRole("link", { name: "Para firmas jurídicas" });
   // El foco del primer enlace se aplica en el próximo frame, después de montar el panel.
   const { waitFor } = await import("@testing-library/react");
   await waitFor(() =>
-    expect(screen.getByRole("link", { name: "Sobre Aletheia" })).toHaveFocus(),
+    expect(
+      screen.getByRole("link", { name: "Para firmas jurídicas" }),
+    ).toHaveFocus(),
   );
   await user.keyboard("{Escape}");
-  expect(company).toHaveFocus();
-  expect(company).toHaveAttribute("aria-expanded", "false");
+  expect(teams).toHaveFocus();
+  expect(teams).toHaveAttribute("aria-expanded", "false");
   expect(await seriousAxeViolations(container)).toEqual([]);
 });

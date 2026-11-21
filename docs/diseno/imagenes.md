@@ -8,6 +8,24 @@
 
 ## 1. Fotografías
 
+### Campaña pública desde el 21 de noviembre
+
+La dirección pública abandona las imágenes monocromas y documentales del primer
+rediseño. Usa fotografía real, con personas y color, para acercarse al ritmo de
+una campaña de producto contemporánea sin copiar recursos de otra marca.
+
+| Archivo | Uso | Autor y licencia | Fuente |
+| --- | --- | --- | --- |
+| `campaign/hero-real.jpg` | Hero de la portada | Vitaly Gariev, Unsplash License | [Colleagues collaborating at a modern office desk](https://unsplash.com/photos/colleagues-collaborating-at-a-modern-office-desk-0iTp1WNlMGc) |
+| `campaign/producto-real.jpg` | Explicación del producto | Vitaly Gariev, Unsplash License | [Personas que trabajan en oficinas modernas](https://unsplash.com/es/fotos/personas-que-trabajan-en-oficinas-modernas-kT5IXQVyUtU) |
+| `campaign/equipo-real.jpg` | Recurso reservado para páginas de equipos | Yusuf Çelik, Pexels License | [Young Professionals Collaborating in Modern Office](https://www.pexels.com/photo/young-professionals-collaborating-in-modern-office-31120848/) |
+
+Los originales descargados se guardan con el producto para no entregar a un
+tercero la dirección IP de los visitantes. Las exploraciones descartadas no se
+incorporan al producto.
+
+### Primera dirección visual
+
 Las cuatro provienen de Unsplash bajo su licencia gratuita, que permite el uso comercial sin pedir permiso ni pagar, y que no exige atribución aunque sí la recomienda. Esta tabla la registra de todos modos: cuesta nada y es lo correcto.
 
 Se descartaron las imágenes de Unsplash+, que es el servicio de pago. Se distinguen por el dominio desde el que se sirven, `plus.unsplash.com` frente a `images.unsplash.com`, y no por su apariencia en los resultados de búsqueda, así que conviene revisarlo antes de usar una.

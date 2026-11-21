@@ -1,97 +1,175 @@
 .hero {
   position: relative;
+  min-height: min(760px, calc(100dvh - var(--header-height)));
   overflow: hidden;
+  background: #21152c;
+  color: #fff;
+  isolation: isolate;
 }
-.scene {
+
+.photo,
+.scrim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.photo {
+  z-index: -2;
+  object-fit: cover;
+  object-position: 50% 48%;
+  filter: saturate(1.2) contrast(1.04);
+  transform: scale(1.04);
+  animation: hero-open 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.scrim {
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgb(24 6 36 / 4%) 20%, rgb(24 6 36 / 78%) 100%),
+    linear-gradient(90deg, rgb(43 4 66 / 56%), transparent 72%);
+}
+
+.content {
   display: grid;
-  align-items: center;
-  gap: var(--space-8);
-  max-width: var(--content-width);
-  margin: auto;
-  padding: var(--space-12) var(--space-6);
+  align-content: end;
+  width: min(100%, 1180px);
+  min-height: min(760px, calc(100dvh - var(--header-height)));
+  margin: 0 auto;
+  padding: 96px 32px 24px;
 }
-@media (min-width: 900px) {
-  .scene {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    padding-block: var(--space-16);
+
+.title {
+  max-width: 840px;
+  margin: 0 0 24px;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: clamp(2.75rem, 5.5vw, 5.25rem);
+  font-weight: 650;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+  animation: rise-in 720ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.panel {
+  width: min(100%, 990px);
+  padding: 24px;
+  border-radius: 28px;
+  background: #fff;
+  color: #111;
+  box-shadow: 0 24px 80px rgb(22 8 31 / 32%);
+  animation: rise-in 720ms 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.panelTitle {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.lead {
+  max-width: 66ch;
+  margin-top: 8px;
+  color: #4b4b4b;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.actions > :first-child {
+  justify-content: space-between;
+  min-height: 56px;
+  border-radius: 999px;
+  padding-inline: 24px;
+}
+
+.actions > :last-child {
+  align-self: center;
+  padding-inline: 18px;
+  color: #5f007d;
+}
+
+.next {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  transform: rotate(90deg);
+  transition: transform 180ms ease-out;
+}
+
+.next:hover {
+  transform: rotate(90deg) translateX(3px);
+}
+
+@keyframes hero-open {
+  from {
+    opacity: 0.75;
+    transform: scale(1.1);
   }
 }
-.intro {
-  position: relative;
-  z-index: 1;
-  animation: introIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.title {
-  font-family: var(--font-editorial);
-  font-size: var(--font-size-display);
-  font-weight: 400;
-  line-height: var(--line-height-display);
-  letter-spacing: var(--tracking-display);
-  color: var(--ink-900);
-}
-.lead {
-  font-size: 18px;
-  line-height: 1.6;
-  color: var(--text-2);
-  max-width: 450px;
-  margin-top: 24px;
-}
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 32px;
-}
-.benefits {
-  position: relative;
-  max-width: var(--content-width);
-  margin: auto;
-  padding: 56px 24px 88px;
-  text-align: center;
-  color: var(--text-3);
-  font-size: 13px;
-}
-.benefits ul {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 24px 64px;
-  padding: 28px 0 0;
-  margin: 0;
-  list-style: none;
-  font-size: 20px;
-  color: var(--text-2);
-  letter-spacing: -0.03em;
-}
-@keyframes introIn {
+
+@keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(24px);
   }
 }
+
 @media (max-width: 760px) {
-  .intro {
-    text-align: center;
+  .hero,
+  .content {
+    min-height: calc(100dvh - var(--header-height));
   }
-  .lead {
-    font-size: 16px;
-    margin: 22px auto 0;
+
+  .photo {
+    object-position: 45% 50%;
   }
+
+  .content {
+    padding: 84px 16px 16px;
+  }
+
+  .title {
+    margin-bottom: 18px;
+    font-size: clamp(2.5rem, 12vw, 4rem);
+  }
+
+  .panel {
+    padding: 20px;
+    border-radius: 24px;
+  }
+
   .actions {
-    justify-content: center;
-    margin-top: 26px;
-    gap: 4px;
+    grid-template-columns: 1fr;
   }
-  .benefits {
-    padding: 24px 24px 64px;
+
+  .actions > :last-child {
+    justify-self: start;
   }
-  .benefits ul {
-    gap: 12px 24px;
-    font-size: 15px;
+
+  .next {
+    display: none;
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .intro {
+  .photo,
+  .title,
+  .panel {
     animation: none;
   }
 }
