@@ -2430,6 +2430,107 @@
               "title": "Search"
             },
             "description": "Título, radicado, referencia interna o despacho."
+          },
+          {
+            "name": "closed_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha inicial de cierre en Colombia.",
+              "title": "Closed From"
+            },
+            "description": "Fecha inicial de cierre en Colombia."
+          },
+          {
+            "name": "closed_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha final de cierre en Colombia.",
+              "title": "Closed To"
+            },
+            "description": "Fecha final de cierre en Colombia."
+          },
+          {
+            "name": "retention_basis",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "organization_policy",
+                    "legal_or_contractual_duty",
+                    "litigation_hold"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fundamento de conservación.",
+              "title": "Retention Basis"
+            },
+            "description": "Fundamento de conservación."
+          },
+          {
+            "name": "legal_hold",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Si el caso tiene bloqueo jurídico.",
+              "title": "Legal Hold"
+            },
+            "description": "Si el caso tiene bloqueo jurídico."
+          },
+          {
+            "name": "retention_review",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "due",
+                    "upcoming"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Conservación vencida para revisión o todavía vigente.",
+              "title": "Retention Review"
+            },
+            "description": "Conservación vencida para revisión o todavía vigente."
           }
         ],
         "responses": {

@@ -234,6 +234,12 @@ def _member_cases(
     statuses: Sequence[str],
     *,
     search: str | None = None,
+    closed_from: datetime.datetime | None = None,
+    closed_to: datetime.datetime | None = None,
+    retention_basis: str | None = None,
+    legal_hold: bool | None = None,
+    retention_review: str | None = None,
+    review_at: datetime.datetime | None = None,
 ) -> Select[Case]:
     # Los casos de la organización donde la persona es miembro, en los estados pedidos.
     query = (
@@ -246,6 +252,20 @@ def _member_cases(
         )
         .where(Case.organization_id == organization_id, Case.status.in_(statuses))
     )
+    if closed_from is not None:
+        query = query.where(Case.closed_at >= closed_from)
+    if closed_to is not None:
+        query = query.where(Case.closed_at < closed_to)
+    if retention_basis is not None:
+        query = query.where(Case.retention_basis == retention_basis)
+    if legal_hold is not None:
+        query = query.where(Case.legal_hold.is_(legal_hold))
+    if retention_review is not None and review_at is not None:
+        query = query.where(
+            Case.retention_until <= review_at
+            if retention_review == "due"
+            else Case.retention_until > review_at
+        )
     folded = _fold_search(search or "")
     if not folded:
         return query
@@ -272,6 +292,12 @@ def member_cases(
     limit: int,
     recent_actions: int,
     search: str | None = None,
+    closed_from: datetime.datetime | None = None,
+    closed_to: datetime.datetime | None = None,
+    retention_basis: str | None = None,
+    legal_hold: bool | None = None,
+    retention_review: str | None = None,
+    review_at: datetime.datetime | None = None,
 ) -> list[CaseActivityRow]:
     """Una página de los casos de la persona, de la actividad más reciente a la más antigua.
 
@@ -347,7 +373,18 @@ def member_cases(
     # Primero la página: ordenar exige la última actividad de todos los casos de la persona,
     # pero solo los de la página pagan los conteos de evidencias, equipo y acciones.
     page_ids = (
-        _member_cases(organization_id, user_id, statuses, search=search)
+        _member_cases(
+            organization_id,
+            user_id,
+            statuses,
+            search=search,
+            closed_from=closed_from,
+            closed_to=closed_to,
+            retention_basis=retention_basis,
+            legal_hold=legal_hold,
+            retention_review=retention_review,
+            review_at=review_at,
+        )
         .with_only_columns(
             Case.id,
             last_event.c.action.label("last_action"),

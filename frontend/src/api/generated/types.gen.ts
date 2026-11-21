@@ -3581,6 +3581,40 @@ export type ListCasesData = {
      * Título, radicado, referencia interna o despacho.
      */
     search?: string | null;
+    /**
+     * Closed From
+     *
+     * Fecha inicial de cierre en Colombia.
+     */
+    closed_from?: string | null;
+    /**
+     * Closed To
+     *
+     * Fecha final de cierre en Colombia.
+     */
+    closed_to?: string | null;
+    /**
+     * Retention Basis
+     *
+     * Fundamento de conservación.
+     */
+    retention_basis?:
+      | "organization_policy"
+      | "legal_or_contractual_duty"
+      | "litigation_hold"
+      | null;
+    /**
+     * Legal Hold
+     *
+     * Si el caso tiene bloqueo jurídico.
+     */
+    legal_hold?: boolean | null;
+    /**
+     * Retention Review
+     *
+     * Conservación vencida para revisión o todavía vigente.
+     */
+    retention_review?: "due" | "upcoming" | null;
   };
   url: "/api/v1/cases";
 };

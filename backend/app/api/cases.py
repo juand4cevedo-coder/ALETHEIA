@@ -6,10 +6,12 @@ servicio lo comprueba y esta capa traduce sus errores. Las respuestas llevan dat
 expediente, así que ningún intermediario guarda una copia, tampoco las de error.
 """
 
+import datetime
 import logging
 import uuid
 from typing import Annotated, Any, Final, Literal
 from urllib.parse import quote
+from zoneinfo import ZoneInfo
 
 import tink
 from botocore.exceptions import BotoCoreError, ClientError
@@ -94,6 +96,17 @@ router = APIRouter(prefix="/cases", tags=["casos"], dependencies=[Depends(get_ca
 download_router = APIRouter(
     prefix="/cases", tags=["casos"], dependencies=[Depends(get_case_worker_for_download)]
 )
+
+_BOGOTA = ZoneInfo("America/Bogota")
+
+
+def _archive_boundary(value: datetime.date, *, next_day: bool = False) -> datetime.datetime:
+    if next_day:
+        value += datetime.timedelta(days=1)
+    return datetime.datetime.combine(value, datetime.time.min, tzinfo=_BOGOTA).astimezone(
+        datetime.UTC
+    )
+
 
 EMAIL_NOT_VERIFIED: Final = (
     "Verifique su correo para abrir casos. Le enviamos un enlace al crear la cuenta; si "
@@ -563,8 +576,36 @@ def list_cases(
             description="Título, radicado, referencia interna o despacho.",
         ),
     ] = None,
+    closed_from: Annotated[
+        datetime.date | None, Query(description="Fecha inicial de cierre en Colombia.")
+    ] = None,
+    closed_to: Annotated[
+        datetime.date | None, Query(description="Fecha final de cierre en Colombia.")
+    ] = None,
+    retention_basis: Annotated[
+        Literal["organization_policy", "legal_or_contractual_duty", "litigation_hold"] | None,
+        Query(description="Fundamento de conservación."),
+    ] = None,
+    legal_hold: Annotated[
+        bool | None, Query(description="Si el caso tiene bloqueo jurídico.")
+    ] = None,
+    retention_review: Annotated[
+        Literal["due", "upcoming"] | None,
+        Query(description="Conservación vencida para revisión o todavía vigente."),
+    ] = None,
 ) -> CasePage:
     response.headers["Cache-Control"] = "no-store"
+    archive_filters = (closed_from, closed_to, retention_basis, legal_hold, retention_review)
+    if any(value is not None for value in archive_filters) and case_status != "closed":
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Los filtros de conservación solo se aplican al archivo de casos cerrados.",
+        )
+    if closed_from is not None and closed_to is not None and closed_from > closed_to:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="La fecha inicial de cierre no puede ser posterior a la final.",
+        )
     try:
         listing = cases_service.list_cases(
             session,
@@ -573,6 +614,13 @@ def list_cases(
             cursor=cursor,
             limit=limit,
             search=search,
+            closed_from=(_archive_boundary(closed_from) if closed_from is not None else None),
+            closed_to=(
+                _archive_boundary(closed_to, next_day=True) if closed_to is not None else None
+            ),
+            retention_basis=retention_basis,
+            legal_hold=legal_hold,
+            retention_review=retention_review,
         )
     except cases_service.InvalidCursorError:
         raise HTTPException(

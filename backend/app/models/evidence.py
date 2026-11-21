@@ -111,6 +111,12 @@ class Case(Base):
             "status",
             "retention_until",
         ),
+        Index(
+            "ix_cases_organization_id_status_closed_at",
+            "organization_id",
+            "status",
+            "closed_at",
+        ),
     )
 
     id: Mapped[UUIDv7Pk]

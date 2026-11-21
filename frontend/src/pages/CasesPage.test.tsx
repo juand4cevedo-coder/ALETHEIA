@@ -58,6 +58,10 @@ function summary(overrides: Record<string, unknown>) {
     practice_area: "labor",
     internal_reference: null,
     status: "open",
+    closed_at: null,
+    retention_until: null,
+    retention_basis: null,
+    legal_hold: false,
     created_at: "2026-11-03T15:00:00Z",
     created_by_name: "Laura Gómez",
     member_count: 2,
@@ -105,6 +109,10 @@ const ARCHIVED = summary({
   id: "01890a5d-ac96-774b-bcce-b302099a8093",
   title: "Restitución de inmueble, Ortiz",
   status: "closed",
+  closed_at: "2026-11-03T15:00:00Z",
+  retention_until: "2036-11-03T15:00:00Z",
+  retention_basis: "legal_or_contractual_duty",
+  legal_hold: true,
 });
 
 const TOTALS = {
@@ -382,10 +390,62 @@ describe("Libro de casos (HU-017)", () => {
     expect(
       await within(table).findByText("Restitución de inmueble, Ortiz"),
     ).toBeInTheDocument();
+    expect(
+      within(table).getByRole("columnheader", { name: "Conservación" }),
+    ).toBeInTheDocument();
+    expect(within(table).getByText("Bloqueo jurídico")).toBeInTheDocument();
+    expect(
+      within(table).getByText("Deber legal o contractual"),
+    ).toBeInTheDocument();
+    expect(within(table).getByText(/Cerrado el/)).toBeInTheDocument();
+    expect(within(table).getByText(/Revisar desde/)).toBeInTheDocument();
     expect(bookRequests().map((query) => query.get("status"))).toEqual([
       "open",
       "closed",
     ]);
+  });
+
+  it("filtra el archivo en el servidor, conserva la dirección y permite limpiar", async () => {
+    serve("lawyer", (query) =>
+      query.get("status") === "closed"
+        ? { items: [ARCHIVED], next_cursor: null, totals: TOTALS }
+        : BOOK,
+    );
+    const user = userEvent.setup();
+    const { router } = await openBook();
+    await user.click(
+      await screen.findByRole("radio", { name: "Archivo, 1 caso" }),
+    );
+
+    await user.type(screen.getByLabelText("Cierre desde"), "2026-01-01");
+    await user.type(screen.getByLabelText("Cierre hasta"), "2026-12-31");
+    await user.selectOptions(
+      screen.getByLabelText("Fundamento"),
+      "legal_or_contractual_duty",
+    );
+    await user.selectOptions(screen.getByLabelText("Bloqueo jurídico"), "si");
+    await user.selectOptions(
+      screen.getByLabelText("Revisión de conservación"),
+      "upcoming",
+    );
+
+    await waitFor(() => {
+      const query = bookRequests().at(-1)!;
+      expect(query.get("closed_from")).toBe("2026-01-01");
+      expect(query.get("closed_to")).toBe("2026-12-31");
+      expect(query.get("retention_basis")).toBe("legal_or_contractual_duty");
+      expect(query.get("legal_hold")).toBe("true");
+      expect(query.get("retention_review")).toBe("upcoming");
+    });
+    expect(router.state.location.search).toContain("cierre_desde=2026-01-01");
+    expect(router.state.location.search).toContain("bloqueo=si");
+
+    await user.click(screen.getByRole("button", { name: "Limpiar filtros" }));
+    await waitFor(() =>
+      expect(bookRequests().at(-1)?.has("closed_from")).toBe(false),
+    );
+    expect(router.state.location.search).toBe("?estado=cerrados");
+    expect(screen.getByLabelText("Fundamento")).toHaveValue("");
   });
 
   it("el segmento queda en la dirección y se conserva al volver de un caso", async () => {

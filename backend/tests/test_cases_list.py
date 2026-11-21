@@ -52,6 +52,10 @@ def _caso(
     radicado: str | None = None,
     despacho: str | None = None,
     referencia: str | None = None,
+    cerrado_en: datetime.datetime | None = None,
+    retencion_hasta: datetime.datetime | None = None,
+    fundamento: str = "organization_policy",
+    bloqueo: bool = False,
     acciones: tuple[str, ...] = (),
     evidencias: tuple[tuple[str, str], ...] = (),
 ) -> uuid.UUID:
@@ -72,9 +76,14 @@ def _caso(
             court=despacho,
             internal_reference=referencia,
             status=estado,
-            closed_at=None if estado == "open" else _AHORA,
-            retention_until=(None if estado == "open" else _AHORA + datetime.timedelta(days=3650)),
-            retention_basis=None if estado == "open" else "organization_policy",
+            closed_at=None if estado == "open" else cerrado_en or _AHORA,
+            retention_until=(
+                None
+                if estado == "open"
+                else retencion_hasta or _AHORA + datetime.timedelta(days=3650)
+            ),
+            retention_basis=None if estado == "open" else fundamento,
+            legal_hold=bloqueo,
             wrapped_key=os.urandom(40),
             key_version="prueba",
             created_by=creador.id,
@@ -313,6 +322,59 @@ def test_busca_en_todos_los_casos_y_conserva_los_totales(db: Session) -> None:
     assert ids("no existe") == []
 
 
+def test_el_archivo_filtra_por_cierre_conservacion_y_bloqueo(db: Session) -> None:
+    oficina = crear_oficina(db)
+    principal = _principal(oficina, oficina.owner)
+    anterior = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        estado="closed",
+        cerrado_en=_AHORA - datetime.timedelta(days=400),
+        retencion_hasta=_AHORA - datetime.timedelta(days=1),
+        fundamento="legal_or_contractual_duty",
+    )
+    bloqueado = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        estado="closed",
+        cerrado_en=_AHORA - datetime.timedelta(days=20),
+        fundamento="litigation_hold",
+        bloqueo=True,
+    )
+    vigente = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        estado="closed",
+        cerrado_en=_AHORA - datetime.timedelta(days=10),
+    )
+
+    def ids(**filters: Any) -> list[uuid.UUID]:
+        listing = list_cases(
+            db,
+            principal,
+            status="closed",
+            cursor=None,
+            limit=25,
+            **filters,
+        )
+        assert listing.totals.closed == 3
+        return [item.id for item in listing.items]
+
+    assert set(
+        ids(
+            closed_from=_AHORA - datetime.timedelta(days=30),
+            closed_to=_AHORA,
+        )
+    ) == {bloqueado, vigente}
+    assert ids(retention_basis="legal_or_contractual_duty") == [anterior]
+    assert ids(legal_hold=True) == [bloqueado]
+    assert ids(retention_review="due") == [anterior]
+    assert set(ids(retention_review="upcoming")) == {bloqueado, vigente}
+
+
 def test_los_totales_cuentan_por_estado(db: Session) -> None:
     oficina = crear_oficina(db)
     abogada = crear_miembro(db, oficina, "abogada@example.com", "lawyer")
@@ -508,6 +570,26 @@ def test_la_busqueda_de_la_ruta_no_acepta_texto_excesivo(
     cliente = _sesion(dispositivo, oficina.owner)
 
     assert cliente.get(_CASOS, params={"search": "x" * 121}).status_code == 422
+
+
+def test_la_ruta_valida_los_filtros_del_archivo(dispositivo: NuevoCliente, db: Session) -> None:
+    oficina = crear_oficina(db)
+    cliente = _sesion(dispositivo, oficina.owner)
+
+    solo_archivo = cliente.get(_CASOS, params={"status": "open", "legal_hold": True})
+    rango_invalido = cliente.get(
+        _CASOS,
+        params={
+            "status": "closed",
+            "closed_from": "2026-11-20",
+            "closed_to": "2026-11-01",
+        },
+    )
+
+    assert solo_archivo.status_code == 422
+    assert "solo se aplican al archivo" in solo_archivo.json()["detail"]
+    assert rango_invalido.status_code == 422
+    assert "no puede ser posterior" in rango_invalido.json()["detail"]
 
 
 def test_sin_sesion_responde_401(dispositivo: NuevoCliente) -> None:
