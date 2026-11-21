@@ -114,7 +114,7 @@ La política de correo aún nombra todas las identidades de la cuenta: se config
 
 Desde HU-015 la API llama a `Encrypt` de KMS cada vez que se abre un caso. HU-018, publicada en v0.4.4, usa `Decrypt` para abrir la llave de ese caso antes de cifrar una evidencia. Si KMS no responde o niega la operación, la API devuelve 503 sin registrar la evidencia; al abrir un caso también evita dejar filas incompletas.
 
-El sello externo RFC 3161 de cada evidencia (HU-020) ya pide el sello a DigiCert, con Sectigo como respaldo, en una tarea `tsa_stamp` que se encola al subir la evidencia (`app/adapters/stamping.py`, `app/services/evidence_stamp.py`). Falta sellar también la cabeza de la cadena de custodia al exportar el paquete y, después, una vez al día si la cadena cambió (ADR-037); eso necesita un disparador recurrente que todavía no existe.
+El sello externo RFC 3161 de cada evidencia (HU-020) ya pide el sello a DigiCert, con Sectigo como respaldo, en una tarea `tsa_stamp` que se encola al subir la evidencia (`app/adapters/stamping.py`, `app/services/evidence_stamp.py`). La construcción de cada paquete también sella la cabeza exacta de la cadena que incorpora, persiste el token con su número de evento y huella, y lo incluye como `custody/head.tsr`. Además, cada nuevo evento programa atómicamente un trabajo `custody_anchor` para 24 horas después; el trabajador sella la cabeza más reciente y omite la operación si esa versión ya está anclada. La migración 0033 programa de inmediato los casos preexistentes.
 
 La versión `v1` de la política administrada `aletheia-prod-acceso` nombra el ARN de la llave, restringe el algoritmo a `RSAES_OAEP_SHA_256` y autoriza `Encrypt` y `Decrypt`. Se comprobó en AWS el 13/11/2026. `Encrypt` recibe el alias como `KeyId`; `Decrypt` recibe el ARN guardado con cada caso.
 
@@ -150,6 +150,7 @@ La llave se rota al publicar v1.0.0 y ante cualquier sospecha. El procedimiento 
 | `/aletheia/prod/postgres/app-password` | SecureString (`aws/ssm`) | `aletheia_app`: API y trabajador |
 | `/aletheia/prod/postgres/support-password` | SecureString (`aws/ssm`) | `aletheia_support`: consultas de solo lectura |
 | `/aletheia/prod/app/token-signing-key` | SecureString (`aws/ssm`) | Clave de firma de los enlaces de un solo uso: API y trabajador |
+| `/aletheia/prod/google/client-secret` | SecureString (`aws/ssm`) | Secreto OIDC de Google; se crea solo al activar la integración |
 
 Las claves se generaron en CloudShell con 40 letras y números, por una tubería directo a AWS, así que nunca aparecieron en pantalla, en el historial ni como argumento de un comando. El procedimiento exacto está en el runbook interno.
 

@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.cookies import clear_session_cookies
 from app.api.deps import (
     get_client_ip,
     get_principal,
@@ -23,7 +24,8 @@ from app.api.deps import (
 from app.core.legal import LEGAL_VERSION
 from app.core.permissions import permissions_for
 from app.models import Plan, Subscription
-from app.schemas.auth import ChangePasswordRequest
+from app.repositories import accounts as accounts_repository
+from app.schemas.auth import ChangePasswordRequest, CloseAccountRequest
 from app.schemas.me import (
     LegalAcceptanceRequest,
     LegalStatus,
@@ -31,6 +33,7 @@ from app.schemas.me import (
     MySubscription,
     OrganizationMembership,
 )
+from app.services import account_closure as account_closure_service
 from app.services import accounts as accounts_service
 from app.services import credentials as credentials_service
 from app.services import legal as legal_service
@@ -86,6 +89,7 @@ def read_me(
         full_name=profile.user.full_name,
         email=profile.user.email,
         email_verified=profile.user.email_verified_at is not None,
+        google_linked=accounts_repository.has_google_identity(session, profile.user.id),
         platform_admin=profile.user.is_platform_admin,
         permissions=sorted(
             permissions_for(principal.role, platform_admin=profile.user.is_platform_admin)
@@ -184,3 +188,55 @@ def change_password(
             status.HTTP_400_BAD_REQUEST,
             detail="La contraseña nueva debe ser distinta de la actual.",
         ) from None
+
+
+@router.post(
+    "/me/account/closure",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Cerrar y anonimizar la cuenta sin borrar expedientes retenidos",
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"description": "La contraseña no coincide."},
+        status.HTTP_409_CONFLICT: {
+            "description": "La cuenta tiene una responsabilidad que debe transferirse."
+        },
+    },
+)
+def close_account(
+    request: CloseAccountRequest,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> None:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        account_closure_service.close_account(
+            session,
+            principal,
+            request.password,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except account_closure_service.WrongPasswordError:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña no coincide. Revísela e inténtelo de nuevo.",
+        ) from None
+    except account_closure_service.OwnerTransferRequiredError:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail=(
+                "Antes de cerrar su cuenta debe dejar el despacho a cargo de otra persona "
+                "o retirar a sus demás miembros."
+            ),
+        ) from None
+    except account_closure_service.PlatformOwnerCannotCloseError:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail=(
+                "La cuenta dueña de la plataforma no se puede cerrar desde aquí. "
+                "Primero debe transferirse esa responsabilidad."
+            ),
+        ) from None
+    clear_session_cookies(response)

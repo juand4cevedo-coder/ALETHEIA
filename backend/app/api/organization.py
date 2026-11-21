@@ -5,6 +5,7 @@ demás roles antes de tocar la base. Las respuestas llevan datos personales, as�
 intermediario guarda una copia.
 """
 
+import datetime
 import uuid
 from typing import Annotated, Any, Final
 
@@ -22,6 +23,7 @@ from app.schemas.organization import (
     InvitationRequest,
     MemberOut,
     MemberPage,
+    OrganizationAuditAction,
     OrganizationAuditEvent,
     OrganizationAuditPage,
     OrganizationOut,
@@ -343,9 +345,45 @@ def organization_audit_page(
         uuid.UUID | None, Query(description="next_cursor de la página anterior.")
     ] = None,
     limit: Annotated[int, Query(ge=1, le=PAGE_SIZE_MAX)] = PAGE_SIZE_DEFAULT,
+    action: Annotated[
+        OrganizationAuditAction | None,
+        Query(description="Acción de seguridad exacta."),
+    ] = None,
+    actor: Annotated[
+        uuid.UUID | None,
+        Query(description="Persona que originó el evento."),
+    ] = None,
+    created_from: Annotated[
+        datetime.datetime | None,
+        Query(description="Inicio inclusivo del periodo, con zona horaria."),
+    ] = None,
+    created_to: Annotated[
+        datetime.datetime | None,
+        Query(description="Fin exclusivo del periodo, con zona horaria."),
+    ] = None,
 ) -> OrganizationAuditPage:
     response.headers["Cache-Control"] = "no-store"
-    rows = organization_audit.events(session, principal, after=cursor, limit=limit + 1)
+    for boundary in (created_from, created_to):
+        if boundary is not None and boundary.tzinfo is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="Las fechas de auditoría deben incluir zona horaria.",
+            )
+    if created_from is not None and created_to is not None and created_from >= created_to:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="El inicio del periodo debe ser anterior al final.",
+        )
+    rows = organization_audit.events(
+        session,
+        principal,
+        after=cursor,
+        limit=limit + 1,
+        action=action.value if action is not None else None,
+        actor=actor,
+        created_from=created_from,
+        created_to=created_to,
+    )
     page = rows[:limit]
     return OrganizationAuditPage(
         items=[

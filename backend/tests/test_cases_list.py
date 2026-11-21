@@ -49,6 +49,13 @@ def _caso(
     hace: int = 0,
     titulo: str = "Despido de María Pérez",
     estado: str = "open",
+    radicado: str | None = None,
+    despacho: str | None = None,
+    referencia: str | None = None,
+    cerrado_en: datetime.datetime | None = None,
+    retencion_hasta: datetime.datetime | None = None,
+    fundamento: str = "organization_policy",
+    bloqueo: bool = False,
     acciones: tuple[str, ...] = (),
     evidencias: tuple[tuple[str, str], ...] = (),
 ) -> uuid.UUID:
@@ -65,8 +72,18 @@ def _caso(
             id=caso_id,
             organization_id=oficina.organization_id,
             title=titulo,
+            filing_number=radicado,
+            court=despacho,
+            internal_reference=referencia,
             status=estado,
-            closed_at=None if estado == "open" else _AHORA,
+            closed_at=None if estado == "open" else cerrado_en or _AHORA,
+            retention_until=(
+                None
+                if estado == "open"
+                else retencion_hasta or _AHORA + datetime.timedelta(days=3650)
+            ),
+            retention_basis=None if estado == "open" else fundamento,
+            legal_hold=bloqueo,
             wrapped_key=os.urandom(40),
             key_version="prueba",
             created_by=creador.id,
@@ -267,6 +284,97 @@ def test_filtra_por_estado(db: Session) -> None:
     assert ids("all") == [abierto, cerrado]
 
 
+def test_busca_en_todos_los_casos_y_conserva_los_totales(db: Session) -> None:
+    oficina = crear_oficina(db)
+    sucesion = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        titulo="Sucesión Gómez Pardo",
+        despacho="Juzgado Segundo de Medellín",
+    )
+    radicado = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        titulo="Despido de Torres",
+        radicado="05001310500120260014300",
+    )
+    otro = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        titulo="Responsabilidad contractual",
+        referencia="INT-ALFA-42",
+    )
+    principal = _principal(oficina, oficina.owner)
+
+    def ids(search: str) -> list[uuid.UUID]:
+        listing = list_cases(db, principal, status="all", cursor=None, limit=25, search=search)
+        # La franja de totales describe el archivo completo, no solo la búsqueda.
+        assert listing.totals.open == 3
+        return [item.id for item in listing.items]
+
+    assert ids("sucesion") == [sucesion]
+    assert ids("medellin") == [sucesion]
+    assert ids("2026 00143") == [radicado]
+    assert ids("alfa-42") == [otro]
+    assert ids("no existe") == []
+
+
+def test_el_archivo_filtra_por_cierre_conservacion_y_bloqueo(db: Session) -> None:
+    oficina = crear_oficina(db)
+    principal = _principal(oficina, oficina.owner)
+    anterior = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        estado="closed",
+        cerrado_en=_AHORA - datetime.timedelta(days=400),
+        retencion_hasta=_AHORA - datetime.timedelta(days=1),
+        fundamento="legal_or_contractual_duty",
+    )
+    bloqueado = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        estado="closed",
+        cerrado_en=_AHORA - datetime.timedelta(days=20),
+        fundamento="litigation_hold",
+        bloqueo=True,
+    )
+    vigente = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        estado="closed",
+        cerrado_en=_AHORA - datetime.timedelta(days=10),
+    )
+
+    def ids(**filters: Any) -> list[uuid.UUID]:
+        listing = list_cases(
+            db,
+            principal,
+            status="closed",
+            cursor=None,
+            limit=25,
+            **filters,
+        )
+        assert listing.totals.closed == 3
+        return [item.id for item in listing.items]
+
+    assert set(
+        ids(
+            closed_from=_AHORA - datetime.timedelta(days=30),
+            closed_to=_AHORA,
+        )
+    ) == {bloqueado, vigente}
+    assert ids(retention_basis="legal_or_contractual_duty") == [anterior]
+    assert ids(legal_hold=True) == [bloqueado]
+    assert ids(retention_review="due") == [anterior]
+    assert set(ids(retention_review="upcoming")) == {bloqueado, vigente}
+
+
 def test_los_totales_cuentan_por_estado(db: Session) -> None:
     oficina = crear_oficina(db)
     abogada = crear_miembro(db, oficina, "abogada@example.com", "lawyer")
@@ -453,6 +561,35 @@ def test_el_limite_va_de_1_a_50(dispositivo: NuevoCliente, db: Session, limite: 
     respuesta = _sesion(dispositivo, oficina.owner).get(_CASOS, params={"limit": limite})
 
     assert respuesta.status_code == 422
+
+
+def test_la_busqueda_de_la_ruta_no_acepta_texto_excesivo(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    oficina = crear_oficina(db)
+    cliente = _sesion(dispositivo, oficina.owner)
+
+    assert cliente.get(_CASOS, params={"search": "x" * 121}).status_code == 422
+
+
+def test_la_ruta_valida_los_filtros_del_archivo(dispositivo: NuevoCliente, db: Session) -> None:
+    oficina = crear_oficina(db)
+    cliente = _sesion(dispositivo, oficina.owner)
+
+    solo_archivo = cliente.get(_CASOS, params={"status": "open", "legal_hold": True})
+    rango_invalido = cliente.get(
+        _CASOS,
+        params={
+            "status": "closed",
+            "closed_from": "2026-11-20",
+            "closed_to": "2026-11-01",
+        },
+    )
+
+    assert solo_archivo.status_code == 422
+    assert "solo se aplican al archivo" in solo_archivo.json()["detail"]
+    assert rango_invalido.status_code == 422
+    assert "no puede ser posterior" in rango_invalido.json()["detail"]
 
 
 def test_sin_sesion_responde_401(dispositivo: NuevoCliente) -> None:

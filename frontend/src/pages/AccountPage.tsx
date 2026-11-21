@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { type FormEvent, useRef, useState } from "react";
-import { useOutletContext } from "react-router";
+import { useLocation, useOutletContext } from "react-router";
 
 import type { Me } from "../api/generated";
 import { changePasswordMutation } from "../api/generated/@tanstack/react-query.gen.ts";
@@ -15,7 +15,9 @@ import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { newPasswordError } from "../features/auth/newPassword.ts";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
+import { SocialAccess } from "../features/auth/SocialAccess.tsx";
 import { PASSWORD_MAX_LENGTH } from "../features/auth/signUp.ts";
+import { CloseAccountDialog } from "../features/account/CloseAccountDialog.tsx";
 import { EmailStatus } from "../features/session/EmailStatus.tsx";
 import { SignOutEverywhereDialog } from "../features/session/SignOutEverywhereDialog.tsx";
 import { useSignOut } from "../features/session/useSignOut.ts";
@@ -39,6 +41,7 @@ type Failure =
 // API cierra las sesiones de los demás dispositivos y conserva esta.
 export function AccountPage() {
   const me = useOutletContext<Me>();
+  const googleResult = new URLSearchParams(useLocation().search).get("google");
 
   return (
     <div className={styles.screen}>
@@ -97,9 +100,61 @@ export function AccountPage() {
         </Panel>
       )}
 
+      <Panel
+        title="Acceso con Google"
+        description="Vincule su identidad de forma explícita. Aletheia nunca une cuentas solo porque tengan el mismo correo."
+      >
+        {googleResult === "vinculado" && (
+          <Notice tone="success">Google quedó vinculado a su cuenta.</Notice>
+        )}
+        {googleResult === "ocupado" && (
+          <Notice tone="error">
+            Esa identidad de Google ya pertenece a otra cuenta de Aletheia.
+          </Notice>
+        )}
+        <SocialAccess mode="link" linked={me.google_linked} />
+      </Panel>
+
       <PasswordCard />
       <SessionsCard />
+      <AccountClosureCard me={me} />
     </div>
+  );
+}
+
+function AccountClosureCard({ me }: { me: Me }) {
+  const [confirming, setConfirming] = useState(false);
+  const closesOrganization = me.organization?.role === "owner";
+
+  return (
+    <Panel
+      title="Cierre de cuenta"
+      description="Revoca su acceso y elimina su identidad directa sin destruir la trazabilidad que deba conservarse."
+    >
+      {me.platform_admin ? (
+        <Notice tone="info">
+          La cuenta dueña de la plataforma no puede cerrarse desde aquí. Antes
+          debe transferirse esa responsabilidad para evitar dejar la operación
+          sin administración.
+        </Notice>
+      ) : (
+        <>
+          <p className={styles.closureCopy}>
+            Esta acción es definitiva. Los expedientes y registros sujetos a
+            conservación legal o contractual permanecen seudonimizados y
+            protegidos.
+          </p>
+          <Button variant="secondary" onClick={() => setConfirming(true)}>
+            Cerrar mi cuenta
+          </Button>
+          <CloseAccountDialog
+            open={confirming}
+            onClose={() => setConfirming(false)}
+            closesOrganization={closesOrganization}
+          />
+        </>
+      )}
+    </Panel>
   );
 }
 

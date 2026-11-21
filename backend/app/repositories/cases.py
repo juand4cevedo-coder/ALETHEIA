@@ -6,11 +6,13 @@ sus filas, y los filtros por organización y por miembro de cada consulta son un
 """
 
 import datetime
+import re
+import unicodedata
 import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from sqlalchemy import Select, func, select, true, tuple_
+from sqlalchemy import Select, func, or_, select, true, tuple_
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from sqlalchemy.orm import Session, aliased, defer
 
@@ -218,11 +220,29 @@ class CaseTotalsRow:
     custody_events: int
 
 
+def _fold_search(value: str) -> str:
+    return "".join(
+        character
+        for character in unicodedata.normalize("NFD", value.casefold())
+        if unicodedata.category(character) != "Mn"
+    ).strip()
+
+
 def _member_cases(
-    organization_id: uuid.UUID, user_id: uuid.UUID, statuses: Sequence[str]
+    organization_id: uuid.UUID,
+    user_id: uuid.UUID,
+    statuses: Sequence[str],
+    *,
+    search: str | None = None,
+    closed_from: datetime.datetime | None = None,
+    closed_to: datetime.datetime | None = None,
+    retention_basis: str | None = None,
+    legal_hold: bool | None = None,
+    retention_review: str | None = None,
+    review_at: datetime.datetime | None = None,
 ) -> Select[Case]:
     # Los casos de la organización donde la persona es miembro, en los estados pedidos.
-    return (
+    query = (
         select(Case)
         .join(
             CaseMember,
@@ -232,6 +252,34 @@ def _member_cases(
         )
         .where(Case.organization_id == organization_id, Case.status.in_(statuses))
     )
+    if closed_from is not None:
+        query = query.where(Case.closed_at >= closed_from)
+    if closed_to is not None:
+        query = query.where(Case.closed_at < closed_to)
+    if retention_basis is not None:
+        query = query.where(Case.retention_basis == retention_basis)
+    if legal_hold is not None:
+        query = query.where(Case.legal_hold.is_(legal_hold))
+    if retention_review is not None and review_at is not None:
+        query = query.where(
+            Case.retention_until <= review_at
+            if retention_review == "due"
+            else Case.retention_until > review_at
+        )
+    folded = _fold_search(search or "")
+    if not folded:
+        return query
+    # PostgreSQL compara la versión normalizada de los campos para que «sucesion» encuentre
+    # «Sucesión». El radicado se compara solo por sus dígitos, sin exigir separadores.
+    normalized_fields = (
+        func.translate(func.lower(column), "áéíóúüñ", "aeiouun").contains(folded, autoescape=True)
+        for column in (Case.title, Case.court, Case.internal_reference)
+    )
+    predicates = list(normalized_fields)
+    digits = re.sub(r"\D", "", search or "")
+    if digits:
+        predicates.append(Case.filing_number.contains(digits))
+    return query.where(or_(*predicates))
 
 
 def member_cases(
@@ -243,6 +291,13 @@ def member_cases(
     after: tuple[datetime.datetime, uuid.UUID] | None,
     limit: int,
     recent_actions: int,
+    search: str | None = None,
+    closed_from: datetime.datetime | None = None,
+    closed_to: datetime.datetime | None = None,
+    retention_basis: str | None = None,
+    legal_hold: bool | None = None,
+    retention_review: str | None = None,
+    review_at: datetime.datetime | None = None,
 ) -> list[CaseActivityRow]:
     """Una página de los casos de la persona, de la actividad más reciente a la más antigua.
 
@@ -318,7 +373,18 @@ def member_cases(
     # Primero la página: ordenar exige la última actividad de todos los casos de la persona,
     # pero solo los de la página pagan los conteos de evidencias, equipo y acciones.
     page_ids = (
-        _member_cases(organization_id, user_id, statuses)
+        _member_cases(
+            organization_id,
+            user_id,
+            statuses,
+            search=search,
+            closed_from=closed_from,
+            closed_to=closed_to,
+            retention_basis=retention_basis,
+            legal_hold=legal_hold,
+            retention_review=retention_review,
+            review_at=review_at,
+        )
         .with_only_columns(
             Case.id,
             last_event.c.action.label("last_action"),

@@ -5,7 +5,7 @@ import re
 import uuid
 from typing import Final, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.schemas.me import MemberRole
 
@@ -23,6 +23,7 @@ PracticeArea = Literal[
 
 # Los mismos valores de evidences.declared_type.
 DeclaredType = Literal["chat", "email", "audio", "image", "document", "other"]
+RetentionBasis = Literal["organization_policy", "legal_or_contractual_duty", "litigation_hold"]
 
 
 class EvidenceUploadOut(BaseModel):
@@ -98,8 +99,25 @@ class CaseCreate(BaseModel):
         return digits
 
 
+class CaseRetentionUpdate(BaseModel):
+    """Fundamento operativo y bloqueo de un expediente archivado."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    legal_hold: bool
+    retention_basis: RetentionBasis
+
+    @model_validator(mode="after")
+    def _basis_matches_hold(self) -> CaseRetentionUpdate:
+        if self.legal_hold != (self.retention_basis == "litigation_hold"):
+            raise ValueError(
+                "El bloqueo jurídico exige el fundamento de bloqueo por litigio y viceversa."
+            )
+        return self
+
+
 class CaseOut(BaseModel):
-    """Un caso abierto."""
+    """Un caso activo o archivado."""
 
     id: uuid.UUID = Field(description="Identificador del caso.")
     title: str = Field(description="Título del caso.")
@@ -109,6 +127,14 @@ class CaseOut(BaseModel):
     internal_reference: str | None = Field(description="Referencia interna de la oficina.")
     status: Literal["open", "closed"] = Field(description="Si el caso sigue abierto.")
     created_at: datetime.datetime = Field(description="Cuándo se abrió.")
+    closed_at: datetime.datetime | None = Field(description="Cuándo se archivó, si está cerrado.")
+    retention_until: datetime.datetime | None = Field(
+        description="Fecha mínima para revisar si la conservación debe continuar."
+    )
+    retention_basis: RetentionBasis | None = Field(
+        description="Fundamento operativo de la conservación."
+    )
+    legal_hold: bool = Field(description="Si existe un bloqueo jurídico que impide suprimir.")
     created_by_name: str = Field(description="Nombre de quien lo abrió.")
     member_count: int = Field(description="Personas asignadas al caso.")
 
@@ -156,6 +182,14 @@ class CustodyPage(BaseModel):
     next_cursor: int | None = Field(description="Secuencia anterior a la última mostrada.")
 
 
+class CustodyAnchorOut(BaseModel):
+    """Alcance de un anclaje externo, sin exponer su token criptográfico."""
+
+    seq: int = Field(description="Último evento cubierto por el sello externo.")
+    head_hash: str = Field(description="Huella de la cabeza sellada, en hexadecimal.")
+    tsa_time: datetime.datetime = Field(description="Hora declarada por la autoridad de sellado.")
+
+
 class CustodyVerificationOut(BaseModel):
     """Resultado del recálculo independiente de la cadena guardada."""
 
@@ -164,6 +198,9 @@ class CustodyVerificationOut(BaseModel):
     broken_at: int | None
     reason: Literal["sequence", "previous_hash", "event_hash"] | None
     head_hash: str = Field(description="Huella del último evento válido, en hexadecimal.")
+    latest_anchor: CustodyAnchorOut | None = Field(
+        description="Última cabeza con sello externo, o null si todavía no existe."
+    )
 
 
 class EvidenceDetailOut(EvidenceSummaryOut):

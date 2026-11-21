@@ -188,9 +188,9 @@ export const DOCUMENTATION: DocArticle[] = [
       },
       {
         id: "proveedores",
-        title: "Google y Microsoft",
+        title: "Acceso con Google",
         paragraphs: [
-          "El acceso con Google y Microsoft todavía no está disponible. Mientras se completa su activación, puede crear una cuenta e ingresar con su correo y contraseña.",
+          "El acceso con Google todavía no está disponible. Mientras se completa su activación, puede crear una cuenta e ingresar con su correo y contraseña.",
         ],
       },
     ],

@@ -30,13 +30,13 @@ from dataclasses import dataclass
 from typing import Final, Literal
 
 from psycopg import errors as pg_errors
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.adapters.keys import KeyWrapper
 from app.core.case_keys import new_wrapped_case_key
-from app.core.permissions import has_permission
+from app.core.permissions import Permission, has_permission
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, Case, CaseMember, CustodyEvent, Membership, Organization, User
 from app.repositories import cases as cases_repository
@@ -47,6 +47,10 @@ from app.services.members import OrganizationNotActiveError
 from app.services.sessions import Principal
 
 CASE_CREATED: Final = "case_created"
+CASE_CLOSED: Final = "case_closed"
+CASE_REOPENED: Final = "case_reopened"
+CASE_RETENTION_UPDATED: Final = "case_retention_updated"
+DEFAULT_RETENTION_YEARS: Final = 10
 # Eventos de la cadena que trae el detalle del caso.
 RECENT_EVENTS: Final = 20
 # Acciones de la cadena que trae cada caso de la lista.
@@ -80,6 +84,14 @@ class CaseNotFoundError(Exception):
 
 class NotAllowedToManageCaseError(Exception):
     """El rol no puede cambiar el equipo de un caso."""
+
+
+class CaseAlreadyInStateError(Exception):
+    """El caso ya está abierto o cerrado; no se duplica el cambio en su historia."""
+
+
+class CaseRetentionUnavailableError(Exception):
+    """Solo un caso archivado admite cambios en su conservación."""
 
 
 class CaseMemberNotFoundError(Exception):
@@ -143,6 +155,10 @@ class CaseSummary:
     internal_reference: str | None
     status: str
     created_at: datetime.datetime
+    closed_at: datetime.datetime | None
+    retention_until: datetime.datetime | None
+    retention_basis: str | None
+    legal_hold: bool
     created_by_name: str
     member_count: int
     evidence_count: int
@@ -300,7 +316,12 @@ def get_case(session: Session, principal: Principal, case_id: uuid.UUID) -> Case
     )
 
 
-def _manage_case(session: Session, principal: Principal, case_id: uuid.UUID) -> Case:
+def _manage_case(
+    session: Session,
+    principal: Principal,
+    case_id: uuid.UUID,
+    permission: Permission = "cases.manage_members",
+) -> Case:
     organization_id = principal.organization_id
     if organization_id is None:
         raise CaseNotFoundError
@@ -315,7 +336,7 @@ def _manage_case(session: Session, principal: Principal, case_id: uuid.UUID) -> 
         )
         .with_for_update(read=True)
     )
-    if not has_permission(role, "cases.manage_members"):
+    if not has_permission(role, permission):
         raise NotAllowedToManageCaseError
     return case
 
@@ -351,6 +372,229 @@ def _record_member_change(
         )
     )
     session.flush()
+
+
+def _record_case_lifecycle(
+    session: Session,
+    case: Case,
+    principal: Principal,
+    *,
+    action: Literal["case_closed", "case_reopened"],
+    occurred_at: datetime.datetime,
+    client_ip: str,
+    user_agent: str | None,
+) -> None:
+    previous = session.scalar(
+        select(CustodyEvent.event_hash).where(
+            CustodyEvent.case_id == case.id, CustodyEvent.seq == case.custody_seq
+        )
+    )
+    if previous is None:
+        msg = "El caso no tiene un último evento de custodia"
+        raise LookupError(msg)
+    details = (
+        {
+            "retention_until": case.retention_until.isoformat()
+            if case.retention_until is not None
+            else None,
+            "retention_basis": case.retention_basis,
+        }
+        if action == CASE_CLOSED
+        else None
+    )
+    session.add_all(
+        [
+            CustodyEvent(
+                organization_id=case.organization_id,
+                case_id=case.id,
+                seq=case.custody_seq + 1,
+                actor_user_id=principal.user_id,
+                action=action,
+                details=details,
+                occurred_at=occurred_at,
+                prev_hash=previous,
+            ),
+            AuditLog(
+                organization_id=case.organization_id,
+                actor_user_id=principal.user_id,
+                action=action,
+                target_id=case.id,
+                details=details,
+                ip=audit_ip(client_ip),
+                user_agent=audit_user_agent(user_agent),
+                created_at=occurred_at,
+            ),
+        ]
+    )
+    session.flush()
+
+
+def close_case(
+    session: Session,
+    principal: Principal,
+    case_id: uuid.UUID,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> Case:
+    """Archiva un caso sin borrar datos y fija la primera revisión de conservación."""
+    session.commit()
+    with session.begin():
+        case = _manage_case(session, principal, case_id, "cases.manage_lifecycle")
+        organization_status = session.scalar(
+            select(Organization.status).where(Organization.id == case.organization_id)
+        )
+        if organization_status != "active":
+            raise OrganizationNotActiveError
+        if case.status != "open":
+            raise CaseAlreadyInStateError
+        now = datetime.datetime.now(datetime.UTC)
+        session.scalar(
+            select(
+                func.transition_case_lifecycle(
+                    case.id,
+                    case.organization_id,
+                    principal.user_id,
+                    "closed",
+                    now,
+                )
+            )
+        )
+        session.refresh(case)
+        _record_case_lifecycle(
+            session,
+            case,
+            principal,
+            action=CASE_CLOSED,
+            occurred_at=now,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    return case
+
+
+def reopen_case(
+    session: Session,
+    principal: Principal,
+    case_id: uuid.UUID,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> Case:
+    """Devuelve un caso archivado al trabajo activo y conserva los eventos de cierre."""
+    session.commit()
+    with session.begin():
+        case = _manage_case(session, principal, case_id, "cases.manage_lifecycle")
+        organization_status = session.scalar(
+            select(Organization.status).where(Organization.id == case.organization_id)
+        )
+        if organization_status != "active":
+            raise OrganizationNotActiveError
+        if case.status != "closed":
+            raise CaseAlreadyInStateError
+        now = datetime.datetime.now(datetime.UTC)
+        session.scalar(
+            select(
+                func.transition_case_lifecycle(
+                    case.id,
+                    case.organization_id,
+                    principal.user_id,
+                    "open",
+                    now,
+                )
+            )
+        )
+        session.refresh(case)
+        _record_case_lifecycle(
+            session,
+            case,
+            principal,
+            action=CASE_REOPENED,
+            occurred_at=now,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    return case
+
+
+def update_case_retention(
+    session: Session,
+    principal: Principal,
+    case_id: uuid.UUID,
+    *,
+    legal_hold: bool,
+    retention_basis: Literal["organization_policy", "legal_or_contractual_duty", "litigation_hold"],
+    client_ip: str,
+    user_agent: str | None,
+) -> Case:
+    """Actualiza la conservación de un caso cerrado y registra el cambio en ambas trazas."""
+    if legal_hold != (retention_basis == "litigation_hold"):
+        raise ValueError("El fundamento de conservación no corresponde al bloqueo jurídico")
+    session.commit()
+    with session.begin():
+        case = _manage_case(session, principal, case_id, "cases.manage_retention")
+        organization_status = session.scalar(
+            select(Organization.status).where(Organization.id == case.organization_id)
+        )
+        if organization_status != "active":
+            raise OrganizationNotActiveError
+        if case.status != "closed":
+            raise CaseRetentionUnavailableError
+
+        previous = session.scalar(
+            select(CustodyEvent.event_hash).where(
+                CustodyEvent.case_id == case.id,
+                CustodyEvent.seq == case.custody_seq,
+            )
+        )
+        if previous is None:
+            msg = "El caso no tiene un último evento de custodia"
+            raise LookupError(msg)
+        occurred_at = datetime.datetime.now(datetime.UTC)
+        details = {
+            "previous_legal_hold": case.legal_hold,
+            "legal_hold": legal_hold,
+            "previous_retention_basis": case.retention_basis,
+            "retention_basis": retention_basis,
+        }
+        session.scalar(
+            select(
+                func.transition_case_retention(
+                    case.id,
+                    case.organization_id,
+                    principal.user_id,
+                    legal_hold,
+                    retention_basis,
+                )
+            )
+        )
+        session.refresh(case)
+        session.add_all(
+            [
+                CustodyEvent(
+                    organization_id=case.organization_id,
+                    case_id=case.id,
+                    seq=case.custody_seq + 1,
+                    actor_user_id=principal.user_id,
+                    action=CASE_RETENTION_UPDATED,
+                    details=details,
+                    occurred_at=occurred_at,
+                    prev_hash=previous,
+                ),
+                AuditLog(
+                    organization_id=case.organization_id,
+                    actor_user_id=principal.user_id,
+                    action=CASE_RETENTION_UPDATED,
+                    target_id=case.id,
+                    details=details,
+                    ip=audit_ip(client_ip),
+                    user_agent=audit_user_agent(user_agent),
+                    created_at=occurred_at,
+                ),
+            ]
+        )
+        session.flush()
+    return case
 
 
 def add_case_member(
@@ -416,6 +660,12 @@ def list_cases(
     status: Literal["open", "closed", "all"],
     cursor: str | None,
     limit: int,
+    search: str | None = None,
+    closed_from: datetime.datetime | None = None,
+    closed_to: datetime.datetime | None = None,
+    retention_basis: str | None = None,
+    legal_hold: bool | None = None,
+    retention_review: Literal["due", "upcoming"] | None = None,
 ) -> CaseListing:
     """Los casos donde la persona es miembro, de la actividad más reciente a la más antigua.
 
@@ -436,6 +686,13 @@ def list_cases(
         after=after,
         limit=limit + 1,
         recent_actions=RECENT_ACTIONS,
+        search=search,
+        closed_from=closed_from,
+        closed_to=closed_to,
+        retention_basis=retention_basis,
+        legal_hold=legal_hold,
+        retention_review=retention_review,
+        review_at=datetime.datetime.now(datetime.UTC),
     )
     totals = cases_repository.member_case_totals(
         session, organization_id, principal.user_id, statuses=STATUS_FILTERS["all"]
@@ -489,6 +746,10 @@ def _case_summary(row: cases_repository.CaseActivityRow) -> CaseSummary:
         internal_reference=case.internal_reference,
         status=case.status,
         created_at=case.created_at,
+        closed_at=case.closed_at,
+        retention_until=case.retention_until,
+        retention_basis=case.retention_basis,
+        legal_hold=case.legal_hold,
         created_by_name=row.created_by_name,
         member_count=row.member_count,
         evidence_count=sum(row.evidence_by_type.values()),

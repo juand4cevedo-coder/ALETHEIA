@@ -35,12 +35,21 @@ import type {
   ChangeSupportTicketStatusData,
   ChangeSupportTicketStatusErrors,
   ChangeSupportTicketStatusResponses,
+  CloseAccountData,
+  CloseAccountErrors,
+  CloseAccountResponses,
+  CloseCaseData,
+  CloseCaseErrors,
+  CloseCaseResponses,
   CreateCaseData,
   CreateCaseErrors,
   CreateCaseExportData,
   CreateCaseExportErrors,
   CreateCaseExportResponses,
   CreateCaseResponses,
+  CreateCaseTaskData,
+  CreateCaseTaskErrors,
+  CreateCaseTaskResponses,
   CreateCheckoutData,
   CreateCheckoutErrors,
   CreateCheckoutResponses,
@@ -59,6 +68,15 @@ import type {
   ForgotPasswordData,
   ForgotPasswordErrors,
   ForgotPasswordResponses,
+  GoogleCallbackData,
+  GoogleCallbackErrors,
+  GoogleCallbackResponses,
+  GoogleLinkStartData,
+  GoogleLinkStartResponses,
+  GoogleLoginStartData,
+  GoogleLoginStartResponses,
+  GoogleStatusData,
+  GoogleStatusResponses,
   GrantCourtesyData,
   GrantCourtesyErrors,
   GrantCourtesyResponses,
@@ -71,6 +89,9 @@ import type {
   ListCasesData,
   ListCasesErrors,
   ListCasesResponses,
+  ListCaseTasksData,
+  ListCaseTasksErrors,
+  ListCaseTasksResponses,
   ListCustodyEventsData,
   ListCustodyEventsErrors,
   ListCustodyEventsResponses,
@@ -136,6 +157,9 @@ import type {
   RenameOrganizationData,
   RenameOrganizationErrors,
   RenameOrganizationResponses,
+  ReopenCaseData,
+  ReopenCaseErrors,
+  ReopenCaseResponses,
   ResendVerificationData,
   ResendVerificationErrors,
   ResendVerificationResponses,
@@ -157,6 +181,15 @@ import type {
   SignOutEverywhereErrors,
   SignOutEverywhereResponses,
   SignOutResponses,
+  TaskInboxData,
+  TaskInboxErrors,
+  TaskInboxResponses,
+  UpdateCaseRetentionData,
+  UpdateCaseRetentionErrors,
+  UpdateCaseRetentionResponses,
+  UpdateCaseTaskStatusData,
+  UpdateCaseTaskStatusErrors,
+  UpdateCaseTaskStatusResponses,
   UploadEvidenceData,
   UploadEvidenceErrors,
   UploadEvidenceResponses,
@@ -211,6 +244,72 @@ export const listPlans = <ThrowOnError extends boolean = false>(
     ListPlansErrors,
     ThrowOnError
   >({ url: "/api/v1/plans", ...options });
+
+/**
+ * Saber si el acceso con Google está configurado
+ */
+export const googleStatus = <ThrowOnError extends boolean = false>(
+  options?: Options<GoogleStatusData, ThrowOnError>,
+): RequestResult<GoogleStatusResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<GoogleStatusResponses, unknown, ThrowOnError>(
+    { url: "/api/v1/auth/google/status", ...options },
+  );
+
+/**
+ * Empezar el ingreso seguro con Google
+ */
+export const googleLoginStart = <ThrowOnError extends boolean = false>(
+  options?: Options<GoogleLoginStartData, ThrowOnError>,
+): RequestResult<GoogleLoginStartResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GoogleLoginStartResponses,
+    unknown,
+    ThrowOnError
+  >({ url: "/api/v1/auth/google/login", ...options });
+
+/**
+ * Vincular Google a la cuenta con sesión
+ */
+export const googleLinkStart = <ThrowOnError extends boolean = false>(
+  options?: Options<GoogleLinkStartData, ThrowOnError>,
+): RequestResult<GoogleLinkStartResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GoogleLinkStartResponses,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/auth/google/link",
+    ...options,
+  });
+
+/**
+ * Completar el ingreso o la vinculación con Google
+ */
+export const googleCallback = <ThrowOnError extends boolean = false>(
+  options?: Options<GoogleCallbackData, ThrowOnError>,
+): RequestResult<GoogleCallbackResponses, GoogleCallbackErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GoogleCallbackResponses,
+    GoogleCallbackErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Secure-aletheia_google",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/auth/google/callback",
+    ...options,
+  });
 
 /**
  * Crear una cuenta con su organización y la prueba gratis
@@ -467,6 +566,32 @@ export const changePassword = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/me/password",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Cerrar y anonimizar la cuenta sin borrar expedientes retenidos
+ */
+export const closeAccount = <ThrowOnError extends boolean = false>(
+  options: Options<CloseAccountData, ThrowOnError>,
+): RequestResult<CloseAccountResponses, CloseAccountErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CloseAccountResponses,
+    CloseAccountErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/me/account/closure",
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -922,6 +1047,80 @@ export const readCase = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Cerrar y archivar un caso sin borrar sus datos
+ */
+export const closeCase = <ThrowOnError extends boolean = false>(
+  options: Options<CloseCaseData, ThrowOnError>,
+): RequestResult<CloseCaseResponses, CloseCaseErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CloseCaseResponses,
+    CloseCaseErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/close",
+    ...options,
+  });
+
+/**
+ * Reabrir un caso conservando la historia de su archivo
+ */
+export const reopenCase = <ThrowOnError extends boolean = false>(
+  options: Options<ReopenCaseData, ThrowOnError>,
+): RequestResult<ReopenCaseResponses, ReopenCaseErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    ReopenCaseResponses,
+    ReopenCaseErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/reopen",
+    ...options,
+  });
+
+/**
+ * Actualizar el fundamento y bloqueo jurídico de un caso archivado
+ */
+export const updateCaseRetention = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateCaseRetentionData, ThrowOnError>,
+): RequestResult<
+  UpdateCaseRetentionResponses,
+  UpdateCaseRetentionErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).patch<
+    UpdateCaseRetentionResponses,
+    UpdateCaseRetentionErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/retention",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
  * Personas disponibles para el equipo del caso
  */
 export const availableCaseMembers = <ThrowOnError extends boolean = false>(
@@ -1026,6 +1225,106 @@ export const downloadEvidence = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Listar tareas y plazos de un caso
+ */
+export const listCaseTasks = <ThrowOnError extends boolean = false>(
+  options: Options<ListCaseTasksData, ThrowOnError>,
+): RequestResult<ListCaseTasksResponses, ListCaseTasksErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    ListCaseTasksResponses,
+    ListCaseTasksErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/tasks",
+    ...options,
+  });
+
+/**
+ * Crear y asignar una tarea del caso
+ */
+export const createCaseTask = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCaseTaskData, ThrowOnError>,
+): RequestResult<CreateCaseTaskResponses, CreateCaseTaskErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CreateCaseTaskResponses,
+    CreateCaseTaskErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/tasks",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Actualizar el estado de una tarea del caso
+ */
+export const updateCaseTaskStatus = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateCaseTaskStatusData, ThrowOnError>,
+): RequestResult<
+  UpdateCaseTaskStatusResponses,
+  UpdateCaseTaskStatusErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).patch<
+    UpdateCaseTaskStatusResponses,
+    UpdateCaseTaskStatusErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/tasks/{task_id}/status",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Consultar la bandeja de tareas activa
+ */
+export const taskInbox = <ThrowOnError extends boolean = false>(
+  options?: Options<TaskInboxData, ThrowOnError>,
+): RequestResult<TaskInboxResponses, TaskInboxErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    TaskInboxResponses,
+    TaskInboxErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/tasks",
+    ...options,
+  });
+
+/**
  * Comprobar si un enlace de paquete sigue vigente
  */
 export const inspectExport = <ThrowOnError extends boolean = false>(
@@ -1113,7 +1412,7 @@ export const readCaseExport = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Buscar un despacho por correo de su titular
+ * Buscar un despacho por su cuenta responsable
  */
 export const lookupCourtesy = <ThrowOnError extends boolean = false>(
   options: Options<LookupCourtesyData, ThrowOnError>,
@@ -1135,7 +1434,7 @@ export const lookupCourtesy = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Conceder o renovar un plan de cortesía
+ * Asignar o renovar el plan de un despacho
  */
 export const grantCourtesy = <ThrowOnError extends boolean = false>(
   options: Options<GrantCourtesyData, ThrowOnError>,
@@ -1161,7 +1460,7 @@ export const grantCourtesy = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Revocar un plan de cortesía
+ * Revocar el acceso comercial de un despacho
  */
 export const revokeCourtesy = <ThrowOnError extends boolean = false>(
   options: Options<RevokeCourtesyData, ThrowOnError>,

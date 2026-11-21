@@ -1,0 +1,115 @@
+"""Vinculación y acceso con una identidad de Google ya verificada por OIDC."""
+
+import datetime
+import uuid
+
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from app.core.config import Settings
+from app.db.tenancy import TenantContext, set_tenant
+from app.models import AuditLog, OAuthIdentity, User
+from app.repositories import accounts as accounts_repository
+from app.repositories import sessions as sessions_repository
+from app.services.audit import audit_ip, audit_user_agent
+from app.services.sessions import IssuedSession, start_session
+
+
+class GoogleIdentityNotLinkedError(Exception):
+    pass
+
+
+class GoogleIdentityAlreadyLinkedError(Exception):
+    pass
+
+
+class GoogleLinkSessionEndedError(Exception):
+    pass
+
+
+class GoogleAccountBlockedError(Exception):
+    pass
+
+
+def login(
+    session: Session,
+    settings: Settings,
+    subject: str,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> IssuedSession:
+    identity = accounts_repository.google_identity_by_subject(session, subject)
+    if identity is None:
+        raise GoogleIdentityNotLinkedError
+    user = session.get(User, identity.user_id)
+    if user is None:
+        raise GoogleIdentityNotLinkedError
+    if user.status != "active":
+        raise GoogleAccountBlockedError
+    set_tenant(session, TenantContext(user_id=user.id))
+    membership = (
+        None if user.is_platform_admin else accounts_repository.membership_of(session, user.id)
+    )
+    organization_id = membership.organization_id if membership is not None else None
+    set_tenant(
+        session,
+        TenantContext(organization_id=organization_id, user_id=user.id),
+    )
+    now = datetime.datetime.now(datetime.UTC)
+    issued = start_session(
+        session,
+        settings,
+        user.id,
+        organization_id,
+        client_ip=client_ip,
+        user_agent=user_agent,
+        now=now,
+    )
+    session.commit()
+    return issued
+
+
+def link(
+    session: Session,
+    *,
+    user_id: uuid.UUID,
+    session_id: uuid.UUID,
+    subject: str,
+    client_ip: str,
+    user_agent: str | None,
+) -> None:
+    if sessions_repository.accepted_legal_version(session, user_id, session_id) is None:
+        raise GoogleLinkSessionEndedError
+    existing = accounts_repository.google_identity_by_subject(session, subject)
+    if existing is not None:
+        if existing.user_id == user_id:
+            return
+        raise GoogleIdentityAlreadyLinkedError
+    if accounts_repository.has_google_identity(session, user_id):
+        return
+    set_tenant(session, TenantContext(user_id=user_id))
+    membership = accounts_repository.membership_of(session, user_id)
+    organization_id = membership.organization_id if membership is not None else None
+    set_tenant(
+        session,
+        TenantContext(organization_id=organization_id, user_id=user_id),
+    )
+    now = datetime.datetime.now(datetime.UTC)
+    session.add(OAuthIdentity(user_id=user_id, provider="google", subject=subject))
+    session.add(
+        AuditLog(
+            organization_id=organization_id,
+            actor_user_id=user_id,
+            action="google_linked",
+            target_id=user_id,
+            ip=audit_ip(client_ip),
+            user_agent=audit_user_agent(user_agent),
+            created_at=now,
+        )
+    )
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise GoogleIdentityAlreadyLinkedError from None

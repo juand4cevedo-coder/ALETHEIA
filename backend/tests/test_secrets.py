@@ -19,6 +19,7 @@ from app.core.config import MigrationSettings, Settings, get_settings
 from app.core.secrets import (
     SecretUnavailableError,
     with_database_password,
+    with_google_client_secret,
     with_token_signing_key,
 )
 
@@ -37,6 +38,9 @@ _VARIABLES = (
     "MIGRATION_DATABASE_PASSWORD_PARAMETER",
     "TOKEN_SIGNING_KEY",
     "TOKEN_SIGNING_KEY_PARAMETER",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GOOGLE_CLIENT_SECRET_PARAMETER",
 )
 
 
@@ -66,6 +70,7 @@ def cliente() -> SSMClient:
 
 _PARAMETRO_FIRMA = "/aletheia/prod/app/token-signing-key"
 _CLAVE_FIRMA = "k" * 48
+_PARAMETRO_GOOGLE = "/aletheia/prod/google/client-secret"
 
 
 def _respuesta(valor: str) -> dict[str, object]:
@@ -239,6 +244,32 @@ def test_un_parametro_de_firma_corto_se_rechaza(cliente: SSMClient) -> None:
         stub.add_response("get_parameter", _respuesta("corta"))
         with pytest.raises(SecretUnavailableError, match="demasiado corto"):
             with_token_signing_key(_produccion(), cliente)
+
+
+def test_el_secreto_de_google_se_lee_solo_si_la_integracion_esta_configurada(
+    cliente: SSMClient,
+) -> None:
+    settings = _produccion(
+        google_client_id="cliente.apps.googleusercontent.com",
+        google_client_secret_parameter=_PARAMETRO_GOOGLE,
+    )
+    with Stubber(cliente) as stub:
+        stub.add_response(
+            "get_parameter",
+            _respuesta("secreto-google"),
+            {"Name": _PARAMETRO_GOOGLE, "WithDecryption": True},
+        )
+        loaded = with_google_client_secret(settings, cliente)
+    assert loaded.google_client_secret is not None
+    assert loaded.google_client_secret.get_secret_value() == "secreto-google"
+
+
+def test_google_en_produccion_no_admite_el_secreto_en_variable() -> None:
+    with pytest.raises(ValidationError, match="secreto de Google no puede venir"):
+        _produccion(
+            google_client_id="cliente.apps.googleusercontent.com",
+            google_client_secret="secreto-google",  # noqa: S106 -- valor ficticio
+        )
 
 
 @pytest.mark.parametrize("entorno", ["development", "test"])

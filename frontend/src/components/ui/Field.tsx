@@ -15,7 +15,7 @@ type FieldProps = Omit<
 > & {
   /** Etiqueta del campo, siempre visible encima de él. */
   label: string;
-  type?: "text" | "email" | "password";
+  type?: "text" | "email" | "password" | "datetime-local";
   /** Ayuda fija bajo el campo. El error la reemplaza mientras exista. */
   help?: string;
   /** Qué pasó y cómo corregirlo. */

@@ -18,6 +18,9 @@ def _entorno_limpio(monkeypatch: pytest.MonkeyPatch) -> None:
         "DATABASE_PASSWORD_PARAMETER",
         "MIGRATION_DATABASE_URL",
         "MIGRATION_DATABASE_PASSWORD_PARAMETER",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_CLIENT_SECRET_PARAMETER",
     ):
         monkeypatch.delenv(f"ALETHEIA_{nombre}", raising=False)
 
@@ -70,6 +73,29 @@ def test_debug_solo_en_desarrollo(monkeypatch: pytest.MonkeyPatch, entorno: str)
 
     with pytest.raises(ValidationError, match="DEBUG solo se permite"):
         _cargar()
+
+
+def test_google_exige_id_y_secreto_juntos_fuera_de_produccion() -> None:
+    with pytest.raises(ValidationError, match="GOOGLE_CLIENT_SECRET"):
+        Settings.model_validate(
+            {
+                "environment": "test",
+                "log_level": "INFO",
+                "database_url": _URL,
+                "google_client_id": "cliente.apps",
+            }
+        )
+
+    settings = Settings.model_validate(
+        {
+            "environment": "test",
+            "log_level": "INFO",
+            "database_url": _URL,
+            "google_client_id": "cliente.apps",
+            "google_client_secret": "secreto",
+        }
+    )
+    assert settings.google_callback_url == "http://localhost:5173/api/v1/auth/google/callback"
 
 
 def test_migraciones_no_usan_la_url_de_la_api(monkeypatch: pytest.MonkeyPatch) -> None:

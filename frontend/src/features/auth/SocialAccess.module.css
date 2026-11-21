@@ -7,7 +7,8 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
-.providers button {
+.providers button,
+.provider {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,7 +22,20 @@
   font: inherit;
   font-size: 13px;
   font-weight: 500;
+  text-decoration: none;
+}
+.providers button {
   cursor: not-allowed;
+}
+.provider {
+  cursor: pointer;
+  color: var(--text);
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+.provider:hover {
+  border-color: var(--ink-900);
 }
 .providers svg {
   flex: none;
@@ -32,8 +46,7 @@
   line-height: 1.6;
   color: var(--text-3);
 }
-@media (min-width: 600px) {
-  .providers {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.connected {
+  margin: 0;
+  color: var(--text);
 }

@@ -24,7 +24,7 @@ from app.api.cases import (
 from app.api.deps import NOT_ALLOWED, get_key_wrapper, get_session
 from app.api.organization import NOT_FOUND
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import Case, Organization, User
+from app.models import Case, CustodyAnchor, CustodyEvent, Organization, User
 from app.schemas.cases import INVALID_FILING_NUMBER
 from app.services import cases as cases_service
 from tests.conftest import NuevoCliente
@@ -106,6 +106,35 @@ def test_verificacion_de_custodia_detecta_evento_alterado(
     assert intacta.json()["events_checked"] == 1
     assert intacta.json()["broken_at"] is None
     assert len(intacta.json()["head_hash"]) == 64
+    assert intacta.json()["latest_anchor"] is None
+
+    case_id = uuid.UUID(creado.json()["id"])
+    head = owner_db.scalar(
+        select(CustodyEvent.event_hash).where(
+            CustodyEvent.case_id == case_id, CustodyEvent.seq == 1
+        )
+    )
+    assert head is not None
+    anchor_time = datetime.datetime(2026, 11, 21, 12, 30, tzinfo=datetime.UTC)
+    owner_db.add(
+        CustodyAnchor(
+            organization_id=oficina.organization_id,
+            case_id=case_id,
+            seq=1,
+            head_hash=head,
+            tsa_token=b"token-privado",
+            tsa_time=anchor_time,
+        )
+    )
+    owner_db.flush()
+    anclada = cliente.get(path)
+    assert anclada.status_code == 200, anclada.text
+    assert anclada.json()["latest_anchor"] == {
+        "seq": 1,
+        "head_hash": head.hex(),
+        "tsa_time": "2026-11-21T12:30:00Z",
+    }
+    assert "token" not in anclada.text
     assert cliente.get(f"{_CASOS}/{uuid.uuid7()}/custody-verification").status_code == 404
 
     owner_db.execute(text("ALTER TABLE custody_events DISABLE TRIGGER custody_events_append_only"))
@@ -121,6 +150,11 @@ def test_verificacion_de_custodia_detecta_evento_alterado(
         "broken_at": 1,
         "reason": "event_hash",
         "head_hash": "0" * 64,
+        "latest_anchor": {
+            "seq": 1,
+            "head_hash": head.hex(),
+            "tsa_time": "2026-11-21T12:30:00Z",
+        },
     }
     owner_db.execute(
         text("DELETE FROM custody_events WHERE case_id = :id"), {"id": creado.json()["id"]}
@@ -160,6 +194,10 @@ def test_un_abogado_abre_un_caso(dispositivo: NuevoCliente, db: Session) -> None
         "internal_reference": "EXP-2026-14",
         "status": "open",
         "created_at": cuerpo["created_at"],
+        "closed_at": None,
+        "retention_until": None,
+        "retention_basis": None,
+        "legal_hold": False,
         "created_by_name": abogado.full_name,
         "member_count": 1,
     }
@@ -210,6 +248,30 @@ def test_campos_extra_responden_422(dispositivo: NuevoCliente, db: Session) -> N
     respuesta = cliente.post(_CASOS, json=_datos(status="closed"))
 
     assert respuesta.status_code == 422
+
+
+def test_el_propietario_actualiza_la_conservacion_de_un_caso_archivado(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    _, cliente = _como_dueno(dispositivo, db)
+    creado = cliente.post(_CASOS, json=_datos())
+    caso_id = creado.json()["id"]
+    assert cliente.post(f"{_CASOS}/{caso_id}/close").status_code == 200
+
+    respuesta = cliente.patch(
+        f"{_CASOS}/{caso_id}/retention",
+        json={"legal_hold": True, "retention_basis": "litigation_hold"},
+    )
+
+    assert respuesta.status_code == 200, respuesta.text
+    assert respuesta.headers["Cache-Control"] == "no-store"
+    assert respuesta.json()["legal_hold"] is True
+    assert respuesta.json()["retention_basis"] == "litigation_hold"
+    incoherente = cliente.patch(
+        f"{_CASOS}/{caso_id}/retention",
+        json={"legal_hold": False, "retention_basis": "litigation_hold"},
+    )
+    assert incoherente.status_code == 422
 
 
 def test_el_asistente_recibe_403(dispositivo: NuevoCliente, db: Session) -> None:

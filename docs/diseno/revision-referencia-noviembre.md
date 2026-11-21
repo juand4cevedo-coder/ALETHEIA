@@ -27,9 +27,9 @@ Carga de evidencia, sellado, exportación, webhooks, automatizaciones y pagos re
 
 ## Acceso con proveedores
 
-Las aplicaciones de Google Cloud y Microsoft Entra todavía no están registradas. El acceso por contraseña se conserva. La activación social necesita clientes registrados, URI de retorno exactas, secretos fuera del repositorio y prueba completa por proveedor. No se vinculan cuentas automáticamente por coincidencia de correo. Se validan firma, emisor, destinatario, vencimiento, estado y nonce; el identificador estable procede del proveedor.
+La aplicación de Google Cloud todavía no está registrada. Microsoft quedó fuera del alcance por decisión del proyecto. El acceso por contraseña se conserva. La activación con Google necesita un cliente registrado, una URI de retorno exacta, secretos fuera del repositorio y una prueba completa. No se vinculan cuentas automáticamente por coincidencia de correo. Se validan firma, emisor, destinatario, vencimiento, estado y nonce; el identificador estable procede del proveedor.
 
-Fuentes: [Google OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect), [validación de Microsoft](https://learn.microsoft.com/en-us/entra/identity-platform/claims-validation).
+Fuente: [Google OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect).
 
 ## Información legal
 

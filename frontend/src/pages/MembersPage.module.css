@@ -80,6 +80,67 @@
   background: var(--text);
 }
 
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.searchField {
+  position: relative;
+  display: flex;
+  flex: 1 1 18rem;
+  align-items: center;
+}
+
+.searchField svg {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+.searchField input,
+.roleFilter select {
+  width: 100%;
+  min-height: var(--control-height);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-md);
+  background: var(--paper-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--font-size-ui);
+}
+
+.searchField input {
+  padding: 0 var(--space-3) 0
+    calc(var(--space-3) + var(--space-4) + var(--space-2));
+}
+
+.searchField input::placeholder {
+  color: var(--text-3);
+}
+
+.searchField input:focus-visible,
+.roleFilter select:focus-visible {
+  border-color: var(--brass-600);
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+.roleFilter {
+  display: grid;
+  flex: 0 1 15rem;
+  gap: var(--space-1);
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+}
+
+.roleFilter select {
+  padding: 0 var(--space-3);
+}
+
 /* Persona, rol, fecha y acciones; las invitaciones no llevan fecha de ingreso. */
 .rows {
   display: grid;

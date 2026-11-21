@@ -84,7 +84,8 @@ class Principal:
     """Quién hace la petición, desde qué sesión y con qué rol en su organización.
 
     La organización y el rol faltan si la persona ya no pertenece a ninguna, por ejemplo
-    después de que la retiren (HU-013).
+    después de que la retiren (HU-013). También faltan para la cuenta dueña de la
+    plataforma: administra Aletheia, no un despacho ni sus casos.
     """
 
     user_id: uuid.UUID
@@ -369,6 +370,11 @@ def _enter_organization(session: Session, user_id: uuid.UUID) -> Membership | No
     después el de su organización, para leer y escribir en ella el resto de la transacción.
     """
     set_tenant(session, TenantContext(user_id=user_id))
+    user = session.get(User, user_id)
+    if user is not None and user.is_platform_admin:
+        # Separación de funciones: aunque la cuenta se hubiera creado originalmente desde
+        # el registro de un despacho, su sesión de plataforma nunca entra a ese contexto.
+        return None
     membership = accounts_repository.membership_of(session, user_id)
     if membership is not None:
         set_tenant(

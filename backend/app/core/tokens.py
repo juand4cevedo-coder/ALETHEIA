@@ -51,6 +51,8 @@ _ACCESS_USE: Final = "session:access"
 _ACCESS_AUDIENCE: Final = "session"
 _EXPORT_USE: Final = "link:export_download"
 _EXPORT_AUDIENCE: Final = "export_download"
+_GOOGLE_FLOW_USE: Final = "oauth:google"
+_GOOGLE_FLOW_AUDIENCE: Final = "google_oauth"
 
 
 class LinkPurpose(StrEnum):
@@ -98,6 +100,20 @@ class ExportDownloadClaims:
 
 class InvalidExportLinkError(Exception):
     """El enlace no sirve, sin revelar si existe un paquete o de qué organización es."""
+
+
+class InvalidGoogleFlowError(Exception):
+    """La autorización de Google falta, fue alterada o venció."""
+
+
+@dataclass(frozen=True, slots=True)
+class GoogleFlowClaims:
+    state: str
+    nonce: str
+    code_verifier: str
+    mode: str
+    user_id: uuid.UUID | None
+    session_id: uuid.UUID | None
 
 
 def _subkey(master_key: str, use: str) -> bytes:
@@ -196,6 +212,63 @@ def read_access_token(master_key: str, token: str) -> AccessClaims:
         return AccessClaims(subject=uuid.UUID(claims["sub"]), session_id=uuid.UUID(claims["sid"]))
     except jwt.PyJWTError, ValueError, TypeError:
         raise InvalidAccessTokenError from None
+
+
+def issue_google_flow(
+    master_key: str,
+    *,
+    state: str,
+    nonce: str,
+    code_verifier: str,
+    mode: str,
+    user_id: uuid.UUID | None = None,
+    session_id: uuid.UUID | None = None,
+    now: datetime.datetime | None = None,
+) -> str:
+    """Firma el contexto corto que vuelve desde Google en una cookie HttpOnly."""
+    issued_at = now or datetime.datetime.now(datetime.UTC)
+    claims = {
+        "iss": _ISSUER,
+        "aud": _GOOGLE_FLOW_AUDIENCE,
+        "iat": issued_at,
+        "exp": issued_at + datetime.timedelta(minutes=10),
+        "st": state,
+        "nonce": nonce,
+        "cv": code_verifier,
+        "mode": mode,
+    }
+    if user_id is not None and session_id is not None:
+        claims.update({"sub": str(user_id), "sid": str(session_id)})
+    return jwt.encode(claims, _subkey(master_key, _GOOGLE_FLOW_USE), algorithm=_ALGORITHM)
+
+
+def read_google_flow(master_key: str, token: str) -> GoogleFlowClaims:
+    if len(token) > MAX_TOKEN_LENGTH:
+        raise InvalidGoogleFlowError
+    try:
+        claims = jwt.decode(
+            token,
+            _subkey(master_key, _GOOGLE_FLOW_USE),
+            algorithms=[_ALGORITHM],
+            audience=_GOOGLE_FLOW_AUDIENCE,
+            issuer=_ISSUER,
+            options={"require": ["iss", "aud", "iat", "exp", "st", "nonce", "cv", "mode"]},
+        )
+        user_id = uuid.UUID(claims["sub"]) if "sub" in claims else None
+        session_id = uuid.UUID(claims["sid"]) if "sid" in claims else None
+        mode = str(claims["mode"])
+        if mode not in {"login", "link"} or (user_id is None) != (session_id is None):
+            raise ValueError
+        return GoogleFlowClaims(
+            state=str(claims["st"]),
+            nonce=str(claims["nonce"]),
+            code_verifier=str(claims["cv"]),
+            mode=mode,
+            user_id=user_id,
+            session_id=session_id,
+        )
+    except jwt.PyJWTError, ValueError, TypeError, KeyError:
+        raise InvalidGoogleFlowError from None
 
 
 def issue_export_download_link(

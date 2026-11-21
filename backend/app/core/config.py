@@ -30,6 +30,8 @@ class DatabaseSettings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
         frozen=True,
+        # Compose representa las variables opcionales ausentes como texto vacío.
+        env_ignore_empty=True,
         # Un valor inválido no se repite en el mensaje de error: puede ser un secreto.
         hide_input_in_errors=True,
     )
@@ -94,6 +96,16 @@ class Settings(DatabaseSettings):
         default=None,
         pattern=_PARAMETER_PATTERN,
         description="Parámetro SecureString con la clave de firma de los tokens.",
+    )
+
+    # OpenID Connect de Google. El identificador es público; el secreto nunca sale del
+    # backend y, en producción, se obtiene de Parameter Store como las demás credenciales.
+    google_client_id: str | None = Field(default=None, min_length=1, max_length=255)
+    google_client_secret: Secret[str] | None = None
+    google_client_secret_parameter: str | None = Field(
+        default=None,
+        pattern=_PARAMETER_PATTERN,
+        description="Parámetro SecureString con el secreto OAuth de Google.",
     )
 
     # Llave RSA-3072 en PEM con la que se envuelven las llaves de los casos fuera de producción
@@ -162,6 +174,13 @@ class Settings(DatabaseSettings):
             raise ValueError(msg)
         return value
 
+    @field_validator("google_client_secret")
+    @classmethod
+    def _nonempty_google_secret(cls, value: Secret[str] | None) -> Secret[str] | None:
+        if value is not None and not value.get_secret_value():
+            raise ValueError("no puede estar vacío")
+        return value
+
     @model_validator(mode="after")
     def _debug_only_in_development(self) -> Self:
         # El nivel DEBUG puede volcar datos internos: solo se permite en desarrollo.
@@ -216,6 +235,35 @@ class Settings(DatabaseSettings):
             msg = "la clave de firma solo se lee de Parameter Store con environment production"
             raise ValueError(msg)
         return self
+
+    @model_validator(mode="after")
+    def _google_credentials_from_one_place(self) -> Self:
+        configured = self.google_client_id is not None
+        if not configured and (
+            self.google_client_secret is not None or self.google_client_secret_parameter is not None
+        ):
+            msg = "el secreto de Google exige ALETHEIA_GOOGLE_CLIENT_ID"
+            raise ValueError(msg)
+        if self.environment == "production":
+            if self.google_client_secret is not None:
+                msg = "en production el secreto de Google no puede venir en una variable"
+                raise ValueError(msg)
+            if configured and self.google_client_secret_parameter is None:
+                msg = "en production el secreto de Google se lee de Parameter Store"
+                raise ValueError(msg)
+        else:
+            if self.google_client_secret_parameter is not None:
+                msg = "el secreto de Google solo se lee de Parameter Store en production"
+                raise ValueError(msg)
+            if configured and self.google_client_secret is None:
+                msg = "falta ALETHEIA_GOOGLE_CLIENT_SECRET"
+                raise ValueError(msg)
+        return self
+
+    @property
+    def google_callback_url(self) -> str:
+        """URI exacta que se registra en Google Cloud."""
+        return f"{self.public_url}/api/v1/auth/google/callback"
 
 
 class MigrationSettings(DatabaseSettings):

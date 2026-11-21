@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 
@@ -18,6 +18,7 @@ function ownerEnPrueba() {
     full_name: "Ana Restrepo",
     email: "ana@example.com",
     email_verified: true,
+    google_linked: false,
     platform_admin: false,
     permissions: ["billing.manage"],
     organization: {
@@ -117,6 +118,49 @@ it("permite a la propietaria en prueba pagar el plan con Nequi", async () => {
       acceptance_token: "token-acc",
       accept_personal_auth: "token-datos",
     });
+  });
+});
+
+it("cierra la cuenta solo después de una confirmación explícita", async () => {
+  let closureBody: Record<string, unknown> | null = null;
+  fetchMock.mockImplementation(async (input) => {
+    const request = input as Request;
+    const path = new URL(request.url).pathname;
+    if (path === "/api/v1/me") return jsonResponse(ownerEnPrueba());
+    if (path === "/api/v1/auth/google/status")
+      return jsonResponse({ configured: false });
+    if (path === "/api/v1/me/account/closure" && request.method === "POST") {
+      closureBody = (await request.json()) as Record<string, unknown>;
+      return new Response(null, { status: 204 });
+    }
+    throw new Error(`Ruta inesperada: ${request.method} ${path}`);
+  });
+  const user = userEvent.setup();
+  await renderRoute("/app/cuenta");
+
+  await user.click(
+    await screen.findByRole("button", { name: "Cerrar mi cuenta" }),
+  );
+  expect(
+    screen.getByText(/Los casos, evidencias, aceptaciones/),
+  ).toBeInTheDocument();
+  await user.type(
+    screen.getByLabelText("Confirme su contraseña actual"),
+    "clave-segura",
+  );
+  await user.type(screen.getByLabelText(/Para confirmar/), "CERRAR MI CUENTA");
+  await user.click(
+    within(screen.getByRole("dialog")).getByRole("button", {
+      name: "Cerrar mi cuenta",
+    }),
+  );
+
+  expect(
+    await screen.findByText(/Su cuenta quedó cerrada/),
+  ).toBeInTheDocument();
+  expect(closureBody).toEqual({
+    password: "clave-segura",
+    confirmation: "CERRAR MI CUENTA",
   });
 });
 

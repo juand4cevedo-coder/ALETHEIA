@@ -259,7 +259,7 @@ def test_el_plan_firma_admite_usuarios_adicionales(dispositivo: NuevoCliente, db
     assert cupo["extra_user_price_cop"] is not None
 
 
-def test_dueno_de_plataforma_invita_aunque_su_plan_este_lleno(
+def test_dueno_de_plataforma_no_administra_miembros_de_un_despacho(
     app: FastAPI, dispositivo: NuevoCliente, owner_db: Session
 ) -> None:
     db = owner_db
@@ -270,14 +270,8 @@ def test_dueno_de_plataforma_invita_aunque_su_plan_este_lleno(
     crear_miembro(db, oficina, "segundo@example.com", "lawyer")
     cliente = _sesion(dispositivo, oficina.owner)
 
-    antes = cliente.get(_MIEMBROS).json()["seats"]
-    assert antes["owner_exempt"] is True
-    assert antes["full"] is False
-    respuesta = _invitar(cliente, "tercero@example.com")
-    assert respuesta.status_code == 201, respuesta.text
-    despues = cliente.get(_MIEMBROS).json()["seats"]
-    assert despues["used"] == 3
-    assert despues["full"] is False
+    assert cliente.get(_MIEMBROS).status_code == 403
+    assert _invitar(cliente, "tercero@example.com").status_code == 403
 
 
 def test_el_tope_de_invitaciones_frena_los_envios_en_masa(

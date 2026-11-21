@@ -61,11 +61,12 @@ class Me(BaseModel):
     full_name: str = Field(description="Nombre de la persona.")
     email: str = Field(description="Correo de la cuenta.")
     email_verified: bool = Field(description="Si ya verificó su correo (HU-006).")
+    google_linked: bool = Field(description="Si puede ingresar con una identidad de Google.")
     platform_admin: bool = Field(
-        description="Puede administrar la plataforma; no concede acceso a otros despachos."
+        description="Es la cuenta dueña de la plataforma y no pertenece a ningún despacho."
     )
     permissions: list[Permission] = Field(
-        description="Capacidades vigentes en su despacho y, por separado, en la plataforma."
+        description="Capacidades vigentes en su despacho o, de forma excluyente, en la plataforma."
     )
     organization: OrganizationMembership | None = Field(
         description="Su organización, o null si ya no pertenece a ninguna."

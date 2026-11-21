@@ -4,7 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { type ReactNode, useId, useState } from "react";
-import { Link, useOutletContext } from "react-router";
+import { Link, useOutletContext, useSearchParams } from "react-router";
 
 import type { InvitationOut, Me, MemberOut, SeatsOut } from "../api/generated";
 import {
@@ -30,7 +30,7 @@ import { RemoveMemberDialog } from "../features/members/RemoveMemberDialog.tsx";
 import { RevokeInvitationDialog } from "../features/members/RevokeInvitationDialog.tsx";
 import { managesTeam, ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./MembersPage.module.css";
-import { CorreoIcon } from "../components/ui/icons.tsx";
+import { BuscarIcon, CorreoIcon } from "../components/ui/icons.tsx";
 
 // MSG-010 del catálogo de mensajes.
 const NOT_ALLOWED =
@@ -79,6 +79,7 @@ function Header({ action }: { action?: ReactNode }) {
 
 function Team({ currentUserId }: { currentUserId: string }) {
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [inviting, setInviting] = useState(false);
   const [sent, setSent] = useState<InvitationOut | null>(null);
   const [revoking, setRevoking] = useState<InvitationOut | null>(null);
@@ -144,6 +145,34 @@ function Team({ currentUserId }: { currentUserId: string }) {
   const memberRows = members.data?.pages.flatMap((page) => page.items) ?? [];
   const invitationRows =
     invitations.data?.pages.flatMap((page) => page.items) ?? [];
+  const search = searchParams.get("buscar") ?? "";
+  const role = searchParams.get("rol") ?? "todos";
+  const foldedSearch = fold(search.trim());
+  const memberMatches = memberRows.filter(
+    (member) =>
+      (role === "todos" || member.role === role) &&
+      (!foldedSearch ||
+        fold(member.full_name).includes(foldedSearch) ||
+        fold(member.email).includes(foldedSearch)),
+  );
+  const invitationMatches = invitationRows.filter(
+    (invitation) =>
+      (role === "todos" || invitation.role === role) &&
+      (!foldedSearch || fold(invitation.email).includes(foldedSearch)),
+  );
+  const filtering = foldedSearch.length > 0 || role !== "todos";
+
+  function setFilter(name: "buscar" | "rol", value: string) {
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (value && value !== "todos") next.set(name, value);
+        else next.delete(name);
+        return next;
+      },
+      { replace: true },
+    );
+  }
 
   // Invitar es la acción que se espera aquí: va arriba, como «Abrir un caso» en Casos. Mientras
   // carga el cupo o con el plan lleno no se ofrece; el aviso del cupo dice cómo seguir.
@@ -182,6 +211,49 @@ function Team({ currentUserId }: { currentUserId: string }) {
 
       <SeatsBar seats={seats} loading={members.isPending} />
 
+      <div className={styles.filters}>
+        <label className={styles.searchField}>
+          <span className="visually-hidden">
+            Buscar personas e invitaciones
+          </span>
+          <BuscarIcon size={16} aria-hidden="true" />
+          <input
+            type="search"
+            placeholder="Nombre o correo"
+            autoComplete="off"
+            spellCheck={false}
+            value={search}
+            onChange={(event) => setFilter("buscar", event.target.value)}
+          />
+        </label>
+        <label className={styles.roleFilter}>
+          <span>Filtrar por rol</span>
+          <select
+            value={role}
+            onChange={(event) => setFilter("rol", event.target.value)}
+          >
+            <option value="todos">Todos los roles</option>
+            <option value="owner">Responsable del despacho</option>
+            <option value="admin">Administrador</option>
+            <option value="lawyer">Abogado</option>
+            <option value="assistant">Asistente</option>
+          </select>
+        </label>
+        {filtering && (
+          <Button
+            variant="text"
+            size="sm"
+            onClick={() => setSearchParams({}, { replace: true })}
+          >
+            Limpiar filtros
+          </Button>
+        )}
+        <p className="visually-hidden" aria-live="polite" aria-atomic="true">
+          {memberMatches.length} personas y {invitationMatches.length}{" "}
+          invitaciones coinciden.
+        </p>
+      </div>
+
       <Panel title="Personas">
         {members.isError ? (
           <LoadError
@@ -190,9 +262,13 @@ function Team({ currentUserId }: { currentUserId: string }) {
           />
         ) : members.isPending ? (
           <p className={styles.loading}>Cargando las personas</p>
+        ) : memberMatches.length === 0 ? (
+          <p className={styles.empty}>
+            Ninguna persona cargada coincide con los filtros.
+          </p>
         ) : (
           <ul className={styles.rows}>
-            {memberRows.map((member) => (
+            {memberMatches.map((member) => (
               <li
                 key={member.user_id}
                 className={styles.row}
@@ -266,9 +342,13 @@ function Team({ currentUserId }: { currentUserId: string }) {
             No hay invitaciones pendientes. Cuando invite a alguien, aparecerá
             aquí hasta que acepte.
           </p>
+        ) : invitationMatches.length === 0 ? (
+          <p className={styles.empty}>
+            Ninguna invitación cargada coincide con los filtros.
+          </p>
         ) : (
           <ul className={styles.rows} data-kind="invitations">
-            {invitationRows.map((invitation) => (
+            {invitationMatches.map((invitation) => (
               <li key={invitation.id} className={styles.row}>
                 <span className={styles.who}>
                   <span className={styles.name} translate="no">
@@ -357,6 +437,13 @@ function Team({ currentUserId }: { currentUserId: string }) {
       />
     </>
   );
+}
+
+function fold(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
 }
 
 // El propietario no se cambia ni se retira (RN-010), y nadie se gestiona a sí mismo desde aquí:

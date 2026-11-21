@@ -9,7 +9,12 @@ import {
 } from "react";
 import { Link, useOutletContext, useSearchParams } from "react-router";
 
-import type { CaseSummaryOut, CaseTotalsOut, Me } from "../api/generated";
+import type {
+  CaseSummaryOut,
+  CaseTotalsOut,
+  ListCasesData,
+  Me,
+} from "../api/generated";
 import { listCasesQueryKey } from "../api/generated/@tanstack/react-query.gen.ts";
 import { listCases } from "../api/generated/sdk.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
@@ -29,7 +34,6 @@ import { custodyActionLabel } from "../features/cases/custodyActions.ts";
 import { CustodyStrip } from "../features/cases/CustodyStrip.tsx";
 import { formatRecentActivity } from "../features/cases/dates.ts";
 import { describeEvidenceByType } from "../features/cases/evidenceTypes.ts";
-import { normalizeFilingNumber } from "../features/cases/filingNumber.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { canOpenCases } from "../features/cases/roles.ts";
 import { VerifyEmailDialog } from "../features/cases/VerifyEmailDialog.tsx";
@@ -49,7 +53,7 @@ const SEGMENTS: readonly {
   count: (totals: CaseTotalsOut) => number;
 }[] = [
   { value: "open", label: "Abiertos", count: (totals) => totals.open },
-  { value: "closed", label: "Cerrados", count: (totals) => totals.closed },
+  { value: "closed", label: "Archivo", count: (totals) => totals.closed },
   {
     value: "all",
     label: "Todos",
@@ -59,6 +63,41 @@ const SEGMENTS: readonly {
 
 /** El segmento vive en la dirección (?estado=…), para que volver de un caso lo conserve. */
 const STATUS_PARAM = "estado";
+const SEARCH_PARAM = "buscar";
+const CLOSED_FROM_PARAM = "cierre_desde";
+const CLOSED_TO_PARAM = "cierre_hasta";
+const RETENTION_BASIS_PARAM = "fundamento";
+const LEGAL_HOLD_PARAM = "bloqueo";
+const RETENTION_REVIEW_PARAM = "revision";
+
+type CaseListQuery = NonNullable<ListCasesData["query"]>;
+type RetentionBasis = NonNullable<CaseListQuery["retention_basis"]>;
+type RetentionReview = NonNullable<CaseListQuery["retention_review"]>;
+
+const RETENTION_BASIS_LABELS: Record<RetentionBasis, string> = {
+  organization_policy: "Política del despacho",
+  legal_or_contractual_duty: "Deber legal o contractual",
+  litigation_hold: "Bloqueo por litigio",
+};
+
+const RETENTION_BASES = Object.keys(RETENTION_BASIS_LABELS) as RetentionBasis[];
+const ARCHIVE_PARAMS = [
+  CLOSED_FROM_PARAM,
+  CLOSED_TO_PARAM,
+  RETENTION_BASIS_PARAM,
+  LEGAL_HOLD_PARAM,
+  RETENTION_REVIEW_PARAM,
+] as const;
+
+function retentionBasisFromUrl(value: string | null) {
+  return RETENTION_BASES.find((basis) => basis === value);
+}
+
+function retentionReviewFromUrl(
+  value: string | null,
+): RetentionReview | undefined {
+  return value === "due" || value === "upcoming" ? value : undefined;
+}
 
 const STATUS_IN_URL: Record<Status, string> = {
   open: "abiertos",
@@ -80,44 +119,23 @@ function casesCount(count: number): string {
 
 const CAPTIONS: Record<Status, string> = {
   open: "Casos abiertos",
-  closed: "Casos cerrados",
+  closed: "Archivo histórico de casos",
   all: "Todos los casos",
 };
 
 const NONE_IN_SEGMENT: Record<Status, string> = {
   open: "No tiene casos abiertos.",
-  closed: "No tiene casos cerrados.",
+  closed: "No tiene casos en el archivo histórico.",
   all: "No tiene casos.",
 };
 
 /** Texto exacto para quien no abre casos (especificación, 5.2). */
 const ASSISTANT_EMPTY =
-  "Los casos los abre un abogado, el administrador o el propietario. Cuando lo asignen a uno, aparecerá aquí";
+  "Los casos los abre un abogado, el administrador o la persona responsable del despacho. Cuando lo asignen a uno, aparecerá aquí";
 
 // En 1100 px o menos la tabla pasa a tarjetas apiladas: con el menú lateral de 240 px, antes de ahí
 // la columna del título no llega a 240 px de texto (especificación, 5.2).
 const CARDS_QUERY = "(max-width: 1100px)";
-
-/** Sin tildes ni mayúsculas: «sucesion» encuentra «Sucesión». */
-function fold(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase();
-}
-
-/** El filtro local busca en el título, en el radicado (solo sus dígitos, sin importar cómo se
- * escriban los espacios) y en el despacho de los casos ya cargados; no consulta la API. */
-function matchesFilter(item: CaseSummaryOut, query: string): boolean {
-  const text = fold(query.trim());
-  if (!text) return true;
-  if (fold(item.title).includes(text)) return true;
-  if (item.court && fold(item.court).includes(text)) return true;
-  const digits = normalizeFilingNumber(query);
-  return (
-    /^[0-9]+$/.test(digits) && (item.filing_number?.includes(digits) ?? false)
-  );
-}
 
 /** Cada carga dice también el total, para que el texto cambie siempre: dos páginas completas
  * seguidas darían el mismo «Se cargaron 25 casos más.» y el lector de pantalla no anunciaría
@@ -141,7 +159,24 @@ export function CasesPage() {
   const me = useOutletContext<Me>();
   const [searchParams, setSearchParams] = useSearchParams();
   const status = statusFromUrl(searchParams.get(STATUS_PARAM));
-  const [filter, setFilter] = useState("");
+  const filter = searchParams.get(SEARCH_PARAM) ?? "";
+  const normalizedFilter = filter.trim();
+  const closedFrom = searchParams.get(CLOSED_FROM_PARAM) ?? "";
+  const closedTo = searchParams.get(CLOSED_TO_PARAM) ?? "";
+  const retentionBasis = retentionBasisFromUrl(
+    searchParams.get(RETENTION_BASIS_PARAM),
+  );
+  const legalHoldValue = searchParams.get(LEGAL_HOLD_PARAM);
+  const legalHold =
+    legalHoldValue === "si"
+      ? true
+      : legalHoldValue === "no"
+        ? false
+        : undefined;
+  const retentionReview = retentionReviewFromUrl(
+    searchParams.get(RETENTION_REVIEW_PARAM),
+  );
+  const [serverSearch, setServerSearch] = useState(normalizedFilter);
   const [loadedNote, setLoadedNote] = useState("");
   const [verifying, setVerifying] = useState(false);
   const cards = useMediaQuery(CARDS_QUERY);
@@ -149,6 +184,31 @@ export function CasesPage() {
   // Casos recién cargados que deben recibir el foco cuando el botón desaparece.
   const pendingFocus = useRef<string[] | null>(null);
   const filterId = useId();
+  const archiveQuery: CaseListQuery =
+    status === "closed"
+      ? {
+          closed_from: closedFrom || undefined,
+          closed_to: closedTo || undefined,
+          retention_basis: retentionBasis,
+          legal_hold: legalHold,
+          retention_review: retentionReview,
+        }
+      : {};
+  const listQuery: CaseListQuery = {
+    status,
+    search: serverSearch || undefined,
+    ...archiveQuery,
+  };
+
+  // La dirección cambia de inmediato, pero la consulta espera una pausa breve: escribir una
+  // palabra no debe disparar una solicitud por cada tecla.
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setServerSearch(normalizedFilter),
+      300,
+    );
+    return () => window.clearTimeout(timer);
+  }, [normalizedFilter]);
 
   // Tras pintar la última página, el foco pasa al primer caso nuevo que se vea. Si el filtro los
   // oculta todos, va a la tabla o a la lista, para no perderse con el botón que ya no está.
@@ -169,11 +229,16 @@ export function CasesPage() {
 
   const book = useInfiniteQuery({
     queryKey: [
-      { ...listCasesQueryKey({ query: { status } })[0], _infinite: true },
+      {
+        ...listCasesQueryKey({
+          query: listQuery,
+        })[0],
+        _infinite: true,
+      },
     ],
     queryFn: async ({ pageParam, signal }) => {
       const { data } = await listCases({
-        query: pageParam ? { status, cursor: pageParam } : { status },
+        query: pageParam ? { ...listQuery, cursor: pageParam } : listQuery,
         signal,
         throwOnError: true,
       });
@@ -292,10 +357,33 @@ export function CasesPage() {
   }
 
   const loaded = pages.flatMap((page) => page.items);
-  const loadingSegment = book.isPlaceholderData;
-  const visible = loaded.filter((item) => matchesFilter(item, filter));
-  const filtering = filter.trim().length > 0;
+  const loadingSegment =
+    book.isPlaceholderData || normalizedFilter !== serverSearch;
+  const visible = loaded;
+  const archiveFiltering =
+    status === "closed" &&
+    Boolean(
+      closedFrom ||
+      closedTo ||
+      retentionBasis ||
+      legalHold !== undefined ||
+      retentionReview,
+    );
+  const filtering = normalizedFilter.length > 0 || archiveFiltering;
   const caption = CAPTIONS[status];
+
+  function setArchiveFilter(name: string, value: string) {
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (value) next.set(name, value);
+        else next.delete(name);
+        return next;
+      },
+      { replace: true },
+    );
+    setLoadedNote("");
+  }
 
   async function loadMore() {
     const result = await book.fetchNextPage();
@@ -316,6 +404,13 @@ export function CasesPage() {
 
       <CustodyStrip totals={totals} />
 
+      {status === "closed" && (
+        <p className={styles.archiveNote}>
+          Los casos cerrados permanecen cifrados y consultables con su cadena de
+          custodia. Cerrarlos no elimina archivos ni eventos.
+        </p>
+      )}
+
       <div className={styles.tools}>
         <div
           className={styles.segments}
@@ -335,6 +430,11 @@ export function CasesPage() {
                     (current) => {
                       const next = new URLSearchParams(current);
                       next.set(STATUS_PARAM, STATUS_IN_URL[segment.value]);
+                      if (segment.value !== "closed") {
+                        ARCHIVE_PARAMS.forEach((parameter) =>
+                          next.delete(parameter),
+                        );
+                      }
                       return next;
                     },
                     { replace: true },
@@ -373,7 +473,16 @@ export function CasesPage() {
             spellCheck={false}
             value={filter}
             onChange={(event) => {
-              setFilter(event.target.value);
+              const value = event.target.value;
+              setSearchParams(
+                (current) => {
+                  const next = new URLSearchParams(current);
+                  if (value) next.set(SEARCH_PARAM, value);
+                  else next.delete(SEARCH_PARAM);
+                  return next;
+                },
+                { replace: true },
+              );
               // Al escribir solo cambia el número de coincidencias: la carga ya se anunció.
               setLoadedNote("");
             }}
@@ -384,6 +493,94 @@ export function CasesPage() {
           Ordenados por <b>última actividad</b>
         </p>
       </div>
+
+      {status === "closed" && (
+        <fieldset className={styles.archiveFilters}>
+          <legend>Filtrar archivo histórico</legend>
+          <label>
+            <span>Cierre desde</span>
+            <input
+              type="date"
+              value={closedFrom}
+              max={closedTo || undefined}
+              onChange={(event) =>
+                setArchiveFilter(CLOSED_FROM_PARAM, event.target.value)
+              }
+            />
+          </label>
+          <label>
+            <span>Cierre hasta</span>
+            <input
+              type="date"
+              value={closedTo}
+              min={closedFrom || undefined}
+              onChange={(event) =>
+                setArchiveFilter(CLOSED_TO_PARAM, event.target.value)
+              }
+            />
+          </label>
+          <label>
+            <span>Fundamento</span>
+            <select
+              value={retentionBasis ?? ""}
+              onChange={(event) =>
+                setArchiveFilter(RETENTION_BASIS_PARAM, event.target.value)
+              }
+            >
+              <option value="">Todos</option>
+              {RETENTION_BASES.map((basis) => (
+                <option key={basis} value={basis}>
+                  {RETENTION_BASIS_LABELS[basis]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Bloqueo jurídico</span>
+            <select
+              value={legalHoldValue ?? ""}
+              onChange={(event) =>
+                setArchiveFilter(LEGAL_HOLD_PARAM, event.target.value)
+              }
+            >
+              <option value="">Todos</option>
+              <option value="si">Con bloqueo</option>
+              <option value="no">Sin bloqueo</option>
+            </select>
+          </label>
+          <label>
+            <span>Revisión de conservación</span>
+            <select
+              value={retentionReview ?? ""}
+              onChange={(event) =>
+                setArchiveFilter(RETENTION_REVIEW_PARAM, event.target.value)
+              }
+            >
+              <option value="">Todas</option>
+              <option value="upcoming">Conservación vigente</option>
+              <option value="due">Requiere revisión</option>
+            </select>
+          </label>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={!archiveFiltering}
+            onClick={() => {
+              setSearchParams(
+                (current) => {
+                  const next = new URLSearchParams(current);
+                  ARCHIVE_PARAMS.forEach((parameter) => next.delete(parameter));
+                  return next;
+                },
+                { replace: true },
+              );
+              setLoadedNote("");
+            }}
+          >
+            Limpiar filtros
+          </Button>
+        </fieldset>
+      )}
 
       <div
         ref={bookRef}
@@ -399,16 +596,26 @@ export function CasesPage() {
             />
             Cargando sus casos
           </p>
+        ) : filtering && loaded.length === 0 ? (
+          <p className={styles.none} tabIndex={-1} data-book-focus="">
+            {normalizedFilter
+              ? `Ningún caso coincide con «${normalizedFilter}».`
+              : "Ningún caso del archivo coincide con estos filtros."}
+          </p>
         ) : loaded.length === 0 ? (
           <p className={styles.none}>{NONE_IN_SEGMENT[status]}</p>
-        ) : visible.length === 0 ? (
-          <p className={styles.none} tabIndex={-1} data-book-focus="">
-            {`Ningún caso cargado coincide con «${filter.trim()}».`}
-          </p>
         ) : cards ? (
-          <CaseCards items={visible} caption={caption} />
+          <CaseCards
+            items={visible}
+            caption={caption}
+            showRetention={status === "closed"}
+          />
         ) : (
-          <CaseTable items={visible} caption={caption} />
+          <CaseTable
+            items={visible}
+            caption={caption}
+            showRetention={status === "closed"}
+          />
         )}
       </div>
 
@@ -436,11 +643,6 @@ export function CasesPage() {
           >
             Cargar más casos
           </Button>
-          {filtering && (
-            <p className={styles.moreNote}>
-              El filtro busca solo en los casos cargados.
-            </p>
-          )}
         </div>
       )}
 
@@ -480,13 +682,17 @@ function Principles() {
   );
 }
 
-type ListProps = { items: CaseSummaryOut[]; caption: string };
+type ListProps = {
+  items: CaseSummaryOut[];
+  caption: string;
+  showRetention: boolean;
+};
 
 // Escritorio: una tabla real. Toda la fila lleva al caso, pero el único enlace es el título.
-function CaseTable({ items, caption }: ListProps) {
+function CaseTable({ items, caption, showRetention }: ListProps) {
   return (
     <table
-      className={styles.table}
+      className={`${styles.table} ${showRetention ? styles.retentionTable : ""}`}
       data-layout="table"
       tabIndex={-1}
       data-book-focus=""
@@ -500,7 +706,7 @@ function CaseTable({ items, caption }: ListProps) {
           <th scope="col">Despacho</th>
           <th scope="col">Evidencias</th>
           <th scope="col">Cadena de custodia</th>
-          <th scope="col">Integridad</th>
+          <th scope="col">{showRetention ? "Conservación" : "Integridad"}</th>
         </tr>
       </thead>
       <tbody>
@@ -519,8 +725,16 @@ function CaseTable({ items, caption }: ListProps) {
               <ChainCell item={item} />
             </td>
             <td className={styles.integrityCell}>
-              <span className={styles.integrity}>
-                <StatusBadge tone="muted">Sin verificar</StatusBadge>
+              <span
+                className={
+                  showRetention ? styles.retentionCell : styles.integrity
+                }
+              >
+                {showRetention ? (
+                  <RetentionCell item={item} />
+                ) : (
+                  <StatusBadge tone="muted">Sin verificar</StatusBadge>
+                )}
                 <ChevronDerechaIcon
                   className={styles.chevron}
                   size={16}
@@ -537,7 +751,7 @@ function CaseTable({ items, caption }: ListProps) {
 
 // 1100 px o menos: tarjetas apiladas con los mismos datos, cada una con su título como encabezado
 // y los demás datos como una lista de definiciones.
-function CaseCards({ items, caption }: ListProps) {
+function CaseCards({ items, caption, showRetention }: ListProps) {
   return (
     <ul
       className={styles.cards}
@@ -548,14 +762,20 @@ function CaseCards({ items, caption }: ListProps) {
     >
       {items.map((item) => (
         <li key={item.id}>
-          <CaseCard item={item} />
+          <CaseCard item={item} showRetention={showRetention} />
         </li>
       ))}
     </ul>
   );
 }
 
-function CaseCard({ item }: { item: CaseSummaryOut }) {
+function CaseCard({
+  item,
+  showRetention,
+}: {
+  item: CaseSummaryOut;
+  showRetention: boolean;
+}) {
   const titleId = useId();
   return (
     <article className={styles.card} aria-labelledby={titleId}>
@@ -580,9 +800,13 @@ function CaseCard({ item }: { item: CaseSummaryOut }) {
           </dd>
         </div>
         <div className={styles.cardWide}>
-          <dt>Integridad</dt>
+          <dt>{showRetention ? "Conservación" : "Integridad"}</dt>
           <dd>
-            <StatusBadge tone="muted">Sin verificar</StatusBadge>
+            {showRetention ? (
+              <RetentionCell item={item} />
+            ) : (
+              <StatusBadge tone="muted">Sin verificar</StatusBadge>
+            )}
           </dd>
         </div>
       </dl>
@@ -697,6 +921,52 @@ function ChainCell({ item }: { item: CaseSummaryOut }) {
         ) : (
           "Sin actividad registrada"
         )}
+      </span>
+    </span>
+  );
+}
+
+const ARCHIVE_DATE = new Intl.DateTimeFormat("es-CO", {
+  dateStyle: "medium",
+  timeZone: "America/Bogota",
+});
+
+function archiveDate(value: string | null | undefined): string {
+  return value ? ARCHIVE_DATE.format(new Date(value)) : "Sin fecha registrada";
+}
+
+function RetentionCell({ item }: { item: CaseSummaryOut }) {
+  const [reviewAt] = useState(() => Date.now());
+  const reviewDue =
+    Boolean(item.retention_until) &&
+    new Date(item.retention_until!).getTime() <= reviewAt;
+  return (
+    <span className={styles.retention}>
+      <StatusBadge
+        tone={item.legal_hold ? "closed" : reviewDue ? "pending" : "muted"}
+      >
+        {item.legal_hold
+          ? "Bloqueo jurídico"
+          : reviewDue
+            ? "Requiere revisión"
+            : "Conservación vigente"}
+      </StatusBadge>
+      <span>
+        Cerrado el{" "}
+        <time dateTime={item.closed_at ?? undefined}>
+          {archiveDate(item.closed_at)}
+        </time>
+      </span>
+      <span>
+        Revisar desde{" "}
+        <time dateTime={item.retention_until ?? undefined}>
+          {archiveDate(item.retention_until)}
+        </time>
+      </span>
+      <span>
+        {item.retention_basis
+          ? RETENTION_BASIS_LABELS[item.retention_basis]
+          : "Fundamento no registrado"}
       </span>
     </span>
   );

@@ -8,7 +8,7 @@ export type NavigationLink = {
 export type NavigationGroup = {
   title: string;
   links: NavigationLink[];
-  feature: { to: string; title: string; text: string; illustration: string };
+  feature: { to: string; title: string; text: string; image: string };
 };
 
 export const NAVIGATION: NavigationGroup[] = [
@@ -40,7 +40,7 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/#recorrido",
       title: "Su espacio de trabajo",
       text: "Conozca Aletheia por dentro.",
-      illustration: "workspace",
+      image: "/media/producto-actividad.webp",
     },
   },
   {
@@ -55,7 +55,7 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/filosofia",
       title: "La claridad empieza aquí",
       text: "El propósito detrás de Aletheia.",
-      illustration: "brand",
+      image: "/media/cierre-800.webp",
     },
   },
   {
@@ -70,7 +70,7 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/empresa",
       title: "Un mismo contexto",
       text: "Personas, casos y responsabilidades.",
-      illustration: "team",
+      image: "/media/producto-resumen.webp",
     },
   },
   {
@@ -85,7 +85,7 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/ayuda/recuperar-el-acceso",
       title: "Encuentre una respuesta",
       text: "Una guía para cada primer paso.",
-      illustration: "help",
+      image: "/media/acceso-800.webp",
     },
   },
   {
@@ -116,7 +116,7 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/docs",
       title: "De la idea al primer caso",
       text: "Documentación en español.",
-      illustration: "docs",
+      image: "/media/producto-casos.webp",
     },
   },
   {
@@ -134,7 +134,7 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/blog",
       title: "Cada detalle cuenta",
       text: "Lecturas para su práctica diaria.",
-      illustration: "journal",
+      image: "/media/seguridad-800.webp",
     },
   },
 ];

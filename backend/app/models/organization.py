@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 from app.models._columns import CreatedAt, UUIDv7Pk, text_values
 
-ORGANIZATION_STATUSES: Final = ("active", "read_only", "suspended")
+ORGANIZATION_STATUSES: Final = ("active", "read_only", "suspended", "closed")
 MEMBER_ROLES: Final = ("owner", "admin", "lawyer", "assistant")
 # El propietario no se invita: nace con la organización (RN-010).
 INVITABLE_ROLES: Final = ("admin", "lawyer", "assistant")

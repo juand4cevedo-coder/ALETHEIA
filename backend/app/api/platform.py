@@ -2,11 +2,13 @@
 
 import datetime
 import uuid
+from contextlib import suppress
 from typing import Annotated, Literal, cast
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy import func, select
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.elements import ColumnElement
 
 from app.api.deps import get_client_ip, get_principal, get_session
 from app.models import AuditLog, Organization, PaymentEvent, Plan, Subscription, User
@@ -50,7 +52,7 @@ def _courtesy_result(response: Response, view: courtesy.CourtesyView) -> Courtes
     return CourtesyTarget.model_validate(view, from_attributes=True)
 
 
-@router.get("/courtesy", summary="Buscar un despacho por correo de su titular")
+@router.get("/courtesy", summary="Buscar un despacho por su cuenta responsable")
 def lookup_courtesy(
     response: Response,
     principal: Annotated[Principal, Depends(get_platform_admin)],
@@ -61,11 +63,11 @@ def lookup_courtesy(
         return _courtesy_result(response, courtesy.lookup(session, principal.user_id, owner_email))
     except courtesy.OwnerNotFound:
         raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail="No encontramos ese despacho."
+            status.HTTP_404_NOT_FOUND, detail="No encontramos un despacho asociado a esa cuenta."
         ) from None
 
 
-@router.post("/courtesy", summary="Conceder o renovar un plan de cortesía")
+@router.post("/courtesy", summary="Asignar o renovar el plan de un despacho")
 def grant_courtesy(
     change: CourtesyGrant,
     response: Response,
@@ -87,11 +89,11 @@ def grant_courtesy(
         return _courtesy_result(response, view)
     except courtesy.OwnerNotFound:
         raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail="No encontramos ese despacho."
+            status.HTTP_404_NOT_FOUND, detail="No encontramos un despacho asociado a esa cuenta."
         ) from None
     except courtesy.CourtesyConflict:
         raise HTTPException(
-            status.HTTP_409_CONFLICT, detail="No se puede conceder este plan."
+            status.HTTP_409_CONFLICT, detail="No se puede asignar este plan."
         ) from None
     except PermissionError:
         raise HTTPException(
@@ -99,7 +101,7 @@ def grant_courtesy(
         ) from None
 
 
-@router.post("/courtesy/revoke", summary="Revocar un plan de cortesía")
+@router.post("/courtesy/revoke", summary="Revocar el acceso comercial de un despacho")
 def revoke_courtesy(
     change: CourtesyRevoke,
     response: Response,
@@ -119,11 +121,11 @@ def revoke_courtesy(
         return _courtesy_result(response, view)
     except courtesy.OwnerNotFound:
         raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail="No encontramos ese despacho."
+            status.HTTP_404_NOT_FOUND, detail="No encontramos un despacho asociado a esa cuenta."
         ) from None
     except courtesy.CourtesyConflict:
         raise HTTPException(
-            status.HTTP_409_CONFLICT, detail="No hay una cortesía activa."
+            status.HTTP_409_CONFLICT, detail="No hay un acceso asignado por la plataforma."
         ) from None
     except PermissionError:
         raise HTTPException(
@@ -149,16 +151,57 @@ def list_platform_users(
     principal: Annotated[Principal, Depends(get_platform_admin)],
     session: Annotated[Session, Depends(get_session)],
     cursor: uuid.UUID | None = None,
+    search: Annotated[
+        str | None,
+        Query(
+            min_length=1,
+            max_length=120,
+            pattern=r".*\S.*",
+            description="Nombre o correo de la cuenta.",
+        ),
+    ] = None,
+    user_status: Annotated[
+        Literal["active", "blocked"] | None,
+        Query(alias="status", description="Estado actual de la cuenta."),
+    ] = None,
+    email_verified: Annotated[
+        bool | None, Query(description="Si la cuenta confirmó su correo.")
+    ] = None,
+    platform_admin: Annotated[
+        bool | None, Query(description="Si la cuenta administra la plataforma.")
+    ] = None,
 ) -> PlatformUserPage:
     del principal
     response.headers["Cache-Control"] = "no-store"
-    query = select(User).order_by(User.id.desc()).limit(51)
+    filters = []
+    if search is not None:
+        term = search.strip().lower()
+        filters.append(
+            or_(
+                func.lower(User.full_name).contains(term, autoescape=True),
+                func.lower(User.email).contains(term, autoescape=True),
+            )
+        )
+    if user_status is not None:
+        filters.append(User.status == user_status)
+    if email_verified is not None:
+        filters.append(
+            User.email_verified_at.is_not(None)
+            if email_verified
+            else User.email_verified_at.is_(None)
+        )
+    if platform_admin is not None:
+        filters.append(User.is_platform_admin.is_(platform_admin))
+
+    total = session.scalar(select(func.count()).select_from(User).where(*filters)) or 0
+    query = select(User).where(*filters).order_by(User.id.desc()).limit(51)
     if cursor is not None:
         query = query.where(User.id < cursor)
     users = list(session.scalars(query))
     return PlatformUserPage(
         items=[_public_user(user) for user in users[:50]],
         next_cursor=users[49].id if len(users) > 50 else None,
+        total=total,
     )
 
 
@@ -245,26 +288,85 @@ def platform_audit(
     principal: Annotated[Principal, Depends(get_platform_admin)],
     session: Annotated[Session, Depends(get_session)],
     cursor: uuid.UUID | None = None,
+    search: Annotated[
+        str | None,
+        Query(
+            min_length=1,
+            max_length=120,
+            pattern=r".*\S.*",
+            description="Nombre o correo del actor, organización o UUID del objeto.",
+        ),
+    ] = None,
+    action: Annotated[str | None, Query(min_length=1, max_length=64, pattern=r"^[a-z_]+$")] = None,
+    created_from: Annotated[
+        datetime.datetime | None,
+        Query(description="Inicio inclusivo del periodo, con zona horaria."),
+    ] = None,
+    created_to: Annotated[
+        datetime.datetime | None,
+        Query(description="Fin exclusivo del periodo, con zona horaria."),
+    ] = None,
 ) -> PlatformAuditPage:
     del principal
     response.headers["Cache-Control"] = "no-store"
-    query = select(AuditLog).order_by(AuditLog.id.desc()).limit(51)
+    for boundary in (created_from, created_to):
+        if boundary is not None and boundary.tzinfo is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="Las fechas de auditoría deben incluir zona horaria.",
+            )
+    if created_from is not None and created_to is not None and created_from >= created_to:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="El inicio del periodo debe ser anterior al final.",
+        )
+
+    filters: list[ColumnElement[bool]] = []
+    if search is not None:
+        term = search.strip().lower()
+        matching_actor_ids = select(User.id).where(
+            or_(
+                func.lower(User.full_name).contains(term, autoescape=True),
+                func.lower(User.email).contains(term, autoescape=True),
+            )
+        )
+        matching_organization_ids = select(Organization.id).where(
+            func.lower(Organization.name).contains(term, autoescape=True)
+        )
+        matches: list[ColumnElement[bool]] = [
+            AuditLog.actor_user_id.in_(matching_actor_ids),
+            AuditLog.organization_id.in_(matching_organization_ids),
+        ]
+        with suppress(ValueError):
+            matches.append(AuditLog.target_id == uuid.UUID(term))
+        filters.append(or_(*matches))
+    if action is not None:
+        filters.append(AuditLog.action == action)
+    if created_from is not None:
+        filters.append(AuditLog.created_at >= created_from)
+    if created_to is not None:
+        filters.append(AuditLog.created_at < created_to)
+
+    total = session.scalar(select(func.count()).select_from(AuditLog).where(*filters)) or 0
+    query = select(AuditLog).where(*filters).order_by(AuditLog.id.desc()).limit(51)
     if cursor is not None:
         query = query.where(AuditLog.id < cursor)
     events = list(session.scalars(query))
     page = events[:50]
 
     # Una sola consulta por tabla para toda la página, en vez de una por fila.
-    actor_ids = {event.actor_user_id for event in page if event.actor_user_id is not None}
-    organization_ids = {
+    page_actor_ids = {event.actor_user_id for event in page if event.actor_user_id is not None}
+    page_organization_ids = {
         event.organization_id for event in page if event.organization_id is not None
     }
     actor_names = dict(
-        session.execute(select(User.id, User.full_name).where(User.id.in_(actor_ids))).all()
+        session.execute(select(User.id, User.full_name).where(User.id.in_(page_actor_ids))).all()
     )
     organization_names = dict(
         session.execute(
-            select(Organization.id, Organization.name).where(Organization.id.in_(organization_ids))
+            select(Organization.id, Organization.name).where(
+                Organization.id.in_(page_organization_ids)
+            )
         ).all()
     )
     return PlatformAuditPage(
@@ -284,4 +386,5 @@ def platform_audit(
             for event in page
         ],
         next_cursor=events[49].id if len(events) > 50 else None,
+        total=total,
     )

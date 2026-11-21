@@ -1,19 +1,19 @@
 # Roles y permisos vigentes
 
-La identidad de plataforma y la pertenencia a un despacho son ámbitos distintos. El usuario que
-administra Aletheia puede gestionar las cuentas desde la consola de plataforma; ese atributo
-no abre los casos, la facturación ni los miembros de otro despacho.
+La identidad de plataforma y la pertenencia a un despacho son ámbitos excluyentes durante una
+sesión. La cuenta que administra Aletheia gestiona el servicio desde la consola de plataforma;
+ese atributo no abre casos, facturación ni miembros de ningún despacho.
 Cada petición de datos de un despacho conserva el contexto de organización y persona en la
 base de datos. Una cuenta pertenece a un solo despacho en la versión actual.
 
-La cuenta propietaria de la plataforma administra el servicio aunque también figure como
-propietaria de un despacho. En esa cuenta no se habilitan los casos: no crea expedientes ni
-consulta los asignados. La gestión de miembros de su propio despacho sigue disponible para
-administrar accesos. Los roles jurídicos y su trabajo en casos corresponden a las demás cuentas.
+Aunque una cuenta de plataforma conserve una membresía histórica en la base, al autenticarse no
+entra al contexto de ese despacho: `/me` devuelve organización y suscripción vacías y solo la
+capacidad `platform.manage`. Los roles jurídicos y el trabajo en expedientes corresponden a las
+cuentas del despacho.
 
 ## Capacidades implementadas
 
-| Capacidad | Propietario del despacho | Administrador | Abogado | Asistente | Administrador de plataforma sin membresía |
+| Capacidad | Responsable del despacho (`owner`) | Administrador | Abogado | Asistente | Dueño de la plataforma |
 | --- | :---: | :---: | :---: | :---: | :---: |
 | Ver su despacho | Sí | Sí | Sí | Sí | No |
 | Gestionar miembros e invitaciones | Sí | Sí | No | No | No |
@@ -21,13 +21,14 @@ administrar accesos. Los roles jurídicos y su trabajo en casos corresponden a l
 | Abrir casos | Sí | Sí | Sí | No | No |
 | Ver los casos asignados | Sí | Sí | Sí | Sí | No |
 | Asignar y retirar personas de un caso asignado | Sí | Sí | Sí | No | No |
+| Cerrar, archivar y reabrir un caso asignado | Sí | Sí | Sí | No | No |
 | Subir evidencia a un caso asignado y abierto | Sí | Sí | Sí | Sí | No |
 | Consultar los metadatos de evidencia de un caso asignado | Sí | Sí | Sí | Sí | No |
 | Descargar el original de una evidencia del caso asignado | Sí | Sí | Sí | No | No |
-| Bloquear y desbloquear cuentas de la plataforma | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
+| Bloquear y desbloquear cuentas de la plataforma | No | No | No | No | Sí |
 | Abrir y consultar solicitudes propias de soporte | Sí | Sí | Sí | Sí | No; atiende desde la consola |
-| Resolver solicitudes de soporte | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
-| Ver resumen comercial y auditoría transversal | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Solo si se le asigna | Sí |
+| Resolver solicitudes de soporte | No | No | No | No | Sí |
+| Ver resumen comercial y auditoría transversal | No | No | No | No | Sí |
 
 El propietario nace al crear el despacho y no se puede invitar, cambiar ni retirar desde la
 gestión de miembros. El administrador del despacho puede gestionar el equipo, pero no convertirse
@@ -41,9 +42,11 @@ La dirección IP y el agente de usuario se anonimizan después de 90 días (RN-0
 
 El atributo `is_platform_admin` habilita la sección `/app/plataforma` y las rutas de cuentas
 `/api/v1/platform/users`. La API comprueba ese atributo en la base en cada petición. El
-propietario de la plataforma puede invitar miembros a su propio despacho sin el tope de usuarios
-de su plan; el límite de envíos por cuenta y los permisos del despacho siguen vigentes. La consola
-lista cuentas, muestra la verificación del correo y permite bloquearlas o desbloquearlas; bloquear revoca
+dueño de la plataforma no recibe contexto de despacho ni puede invitar miembros, abrir casos o
+consultar expedientes. La consola busca y filtra cuentas en el servidor por nombre, correo,
+estado, verificación y ámbito; muestra la cantidad total de coincidencias y permite bloquearlas
+o desbloquearlas. La auditoría transversal permite investigar por persona, organización,
+objeto, acción y periodo, siempre sin exponer el contenido de los expedientes. Bloquear revoca
 sus sesiones y ambos cambios dejan auditoría. También muestra el resumen de planes y estados de
 suscripción, la bandeja de solicitudes de soporte y los eventos de auditoría sin contenido de
 expedientes. Cada cuenta autenticada puede abrir y consultar sus propias solicitudes; solo quien
@@ -59,17 +62,21 @@ esquema, después de verificar que la cuenta existe y su correo está confirmado
 personal no va en el código ni en una migración. El usuario técnico de la aplicación no puede
 insertar ni actualizar ese atributo.
 
-## Módulos siguientes
+## Controles de los módulos implementados
 
-HU-016 permite que el propietario, administrador o abogado asignado a un caso agregue a una
+HU-016 permite que la persona responsable, el administrador o el abogado asignado a un caso agregue a una
 persona activa de su mismo despacho. La lista de candidatos no incluye a quien ya está en el
 caso ni a la cuenta propietaria de plataforma. Retirar a una persona del caso no la retira del
 despacho; nadie se retira a sí mismo desde esa pantalla. Cada cambio deja un evento inmutable
 en la cadena de custodia del caso. La API responde igual por una cuenta de otro despacho y por
 una inexistente.
 
-Los demás permisos para evidencias, cadena de custodia, configuración, cobros y facturas
-se definirán junto con las rutas de cada módulo. Ninguno se concede anticipadamente por la
-presencia de un rol en esta tabla. En particular, el acceso a la plataforma no puede saltarse el
-aislamiento de los despachos. Cada ruta nueva requiere una regla de autorización en backend y
-pruebas de acceso permitido, denegado y entre despachos.
+Cerrar un caso lo mueve al archivo histórico, fija una primera revisión de conservación y agrega
+eventos a la cadena y a la auditoría. No destruye archivos, llaves ni eventos. La base rechaza una
+purga antes de `retention_until` o mientras `legal_hold` esté activo; la supresión posterior sigue
+exigiendo la autorización propia de `purge_case` y deja una constancia inmutable.
+
+Ningún permiso se concede anticipadamente por la presencia de un rol en esta tabla. En particular,
+el acceso a la plataforma no puede saltarse el aislamiento de los despachos. Cada ruta nueva
+requiere una regla de autorización en backend y pruebas de acceso permitido, denegado y entre
+despachos.

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
 from app.models._columns import CreatedAt, UUIDv7Pk, text_values
 
-USER_STATUSES: Final = ("active", "blocked")
+USER_STATUSES: Final = ("active", "blocked", "closed")
 
 
 def _utc_now() -> datetime.datetime:
@@ -52,6 +52,12 @@ AUDIT_ACTIONS: Final = (
     "payment_approved",
     "payment_declined",
     "organization_renamed",
+    "case_closed",
+    "case_reopened",
+    "case_retention_updated",
+    "case_task_created",
+    "case_task_status_changed",
+    "account_closed",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.
@@ -110,6 +116,7 @@ class OAuthIdentity(Base):
         CheckConstraint("provider = 'google'", name="provider"),
         CheckConstraint("char_length(subject) BETWEEN 1 AND 255", name="subject_length"),
         Index("uq_oauth_identities_provider_subject", "provider", "subject", unique=True),
+        Index("uq_oauth_identities_provider_user", "provider", "user_id", unique=True),
     )
 
     id: Mapped[UUIDv7Pk]
@@ -148,6 +155,18 @@ class AuditLog(Base):
         CheckConstraint("char_length(user_agent) <= 300", name="user_agent_length"),
         # Auditoría de una organización ordenada por fecha (IDX-011).
         Index("ix_audit_log_organization_id_created_at", "organization_id", "created_at"),
+        Index(
+            "ix_audit_log_organization_action_created_at",
+            "organization_id",
+            "action",
+            "created_at",
+        ),
+        Index(
+            "ix_audit_log_organization_actor_created_at",
+            "organization_id",
+            "actor_user_id",
+            "created_at",
+        ),
     )
 
     id: Mapped[UUIDv7Pk]

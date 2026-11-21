@@ -69,20 +69,51 @@ def test_construccion_publica_zip_y_es_idempotente(
         nonlocal renewals
         renewals += 1
 
-    export_build.build(lambda: db, settings, wrapper, export_id, tenant.organization_id, renew)
+    anchor_token = b"anclaje-rfc3161"
+    anchor_calls = 0
+
+    def stamp_head(digest: bytes) -> SelloDeTiempo:
+        nonlocal anchor_calls
+        anchor_calls += 1
+        assert len(digest) == 32
+        return SelloDeTiempo(
+            token=anchor_token,
+            hora=datetime.datetime(2026, 11, 21, 13, tzinfo=datetime.UTC),
+        )
+
+    export_build.build(
+        lambda: db,
+        settings,
+        wrapper,
+        export_id,
+        tenant.organization_id,
+        renew,
+        stamp_head,
+    )
     row = db.get(Export, export_id)
     assert row is not None
     assert row.status == "ready"
     assert row.storage_key == export_storage_key(export_id)
     assert row.expires_at is not None
+    assert row.anchor_seq == 1
+    assert row.anchor_token == anchor_token
+    assert row.anchor_hash is not None
+    assert row.anchor_time is not None
+    assert anchor_calls == 1
     assert renewals >= 2
     path = tmp_path / row.storage_key
     with zipfile.ZipFile(path) as package:
         assert set(package.namelist()) == {
             "custody/events.json",
+            "custody/head.tsr",
             "manifest.json",
             "report.pdf",
         }
+        assert package.read("custody/head.tsr") == anchor_token
+        manifest = json.loads(package.read("manifest.json"))
+        assert manifest["custody"]["head_seq"] == row.anchor_seq
+        assert manifest["custody"]["head_sha256"] == row.anchor_hash.hex()
+        assert manifest["custody"]["anchor_token_path"] == "custody/head.tsr"  # noqa: S105
         assert hashlib.sha256(package.read("manifest.json")).digest() == row.manifest_sha256
     events = db.scalars(
         select(CustodyEvent)
@@ -95,7 +126,16 @@ def test_construccion_publica_zip_y_es_idempotente(
     assert expiry_job.kind == "export_expire"
 
     db.commit()
-    export_build.build(lambda: db, settings, wrapper, export_id, tenant.organization_id, renew)
+    export_build.build(
+        lambda: db,
+        settings,
+        wrapper,
+        export_id,
+        tenant.organization_id,
+        renew,
+        stamp_head,
+    )
+    assert anchor_calls == 1
     assert (
         len(db.scalars(select(CustodyEvent).where(CustodyEvent.case_id == tenant.case_id)).all())
         == 2
@@ -124,6 +164,10 @@ def test_fallo_de_llave_no_publica_paquete(db: Session, settings: Settings) -> N
             export_id,
             tenant.organization_id,
             lambda: None,
+            lambda _digest: SelloDeTiempo(
+                token=b"no-debe-usarse",
+                hora=datetime.datetime.now(datetime.UTC),
+            ),
         )
 
     row = db.get(Export, export_id)
@@ -131,6 +175,86 @@ def test_fallo_de_llave_no_publica_paquete(db: Session, settings: Settings) -> N
     assert row.status == "failed"
     assert row.storage_key is None
     assert row.manifest_sha256 is None
+
+
+def test_reintento_reutiliza_el_anclaje_aunque_falle_el_almacenamiento(
+    db: Session, settings: Settings, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    tenant = create_tenant(db, "Anclaje reintentable")
+
+    class EmptyKeyset:
+        def primitive(self, _kind: object) -> object:
+            return object()
+
+    class FailingSink(LocalExportSink):
+        def commit(self) -> None:
+            raise RuntimeError("almacenamiento no disponible")
+
+    monkeypatch.setattr(export_build, "open_case_key", lambda _wrapper, _wrapped: EmptyKeyset())
+    db.add(
+        CustodyEvent(
+            organization_id=tenant.organization_id,
+            case_id=tenant.case_id,
+            seq=1,
+            actor_user_id=tenant.user_id,
+            action="case_created",
+            details={"test": True},
+            occurred_at=datetime.datetime.now(datetime.UTC),
+            prev_hash=ZERO_HASH,
+        )
+    )
+    export_id = uuid.uuid7()
+    db.add(
+        Export(
+            id=export_id,
+            organization_id=tenant.organization_id,
+            case_id=tenant.case_id,
+            requested_by=tenant.user_id,
+            status="queued",
+        )
+    )
+    db.commit()
+    sinks = 0
+
+    def new_sink(_settings: Settings, target_id: uuid.UUID) -> LocalExportSink:
+        nonlocal sinks
+        sinks += 1
+        sink_type = FailingSink if sinks == 1 else LocalExportSink
+        return sink_type(export_storage_key(target_id), root=tmp_path)
+
+    monkeypatch.setattr(export_build, "new_export_sink", new_sink)
+    stamp_calls = 0
+
+    def stamp_head(_digest: bytes) -> SelloDeTiempo:
+        nonlocal stamp_calls
+        stamp_calls += 1
+        return SelloDeTiempo(
+            token=b"anclaje-persistente",
+            hora=datetime.datetime(2026, 11, 21, 14, tzinfo=datetime.UTC),
+        )
+
+    arguments = (
+        lambda: db,
+        settings,
+        build_key_wrapper(settings),
+        export_id,
+        tenant.organization_id,
+        lambda: None,
+        stamp_head,
+    )
+    with pytest.raises(RuntimeError, match="almacenamiento"):
+        export_build.build(*arguments)
+    failed = db.get(Export, export_id)
+    assert failed is not None
+    assert failed.status == "failed"
+    assert failed.anchor_token == b"anclaje-persistente"
+
+    db.commit()
+    export_build.build(*arguments)
+    ready = db.get(Export, export_id)
+    assert ready is not None
+    assert ready.status == "ready"
+    assert stamp_calls == 1
 
 
 def test_paquete_conserva_original_y_sello_registrados_por_el_trabajador(
@@ -175,7 +299,16 @@ def test_paquete_conserva_original_y_sello_registrados_por_el_trabajador(
     monkeypatch.setattr(evidence_stamp, "pedir_sello_de_tiempo", stamp_digest)
     evidence_stamp.stamp(lambda: db, evidence_id, tenant.case_id, tenant.organization_id)
     export_build.build(
-        lambda: db, settings, wrapper, export_id, tenant.organization_id, lambda: None
+        lambda: db,
+        settings,
+        wrapper,
+        export_id,
+        tenant.organization_id,
+        lambda: None,
+        lambda _digest: SelloDeTiempo(
+            token=b"anclaje-de-cadena",
+            hora=datetime.datetime(2026, 11, 17, 13, tzinfo=datetime.UTC),
+        ),
     )
 
     export = db.get(Export, export_id)
@@ -189,6 +322,7 @@ def test_paquete_conserva_original_y_sello_registrados_por_el_trabajador(
         assert item["sha256"] == hashlib.sha256(content).hexdigest()
         assert item["tsa_status"] == "stamped"
         assert archive.read(item["tsa_token_path"]) == token
+        assert archive.read("custody/head.tsr") == b"anclaje-de-cadena"
         events = json.loads(archive.read("custody/events.json"))["events"]
         assert events[-1]["action"] == "evidence_stamped"
         assert events[-1]["evidence_id"] == str(evidence_id)

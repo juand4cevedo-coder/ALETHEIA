@@ -14,6 +14,7 @@ import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import { EmailStatus } from "../features/session/EmailStatus.tsx";
+import { TaskInbox } from "../features/workspace/TaskInbox.tsx";
 import {
   managesOrganization,
   managesTeam,
@@ -38,6 +39,7 @@ const ACTION_TONE: Record<string, "ok" | "pending" | "error" | "muted"> = {
   chain_verified: "ok",
   evidence_stamp_failed: "error",
   case_closed: "muted",
+  case_retention_updated: "muted",
   export_ready: "ok",
 };
 
@@ -119,7 +121,7 @@ export function WorkspacePage() {
               }
             />
             <StatTile
-              label="Casos cerrados"
+              label="En archivo histórico"
               value={
                 caseTotals?.closed ??
                 (totals.isPending ? "Cargando" : "No disponible")
@@ -161,6 +163,8 @@ export function WorkspacePage() {
               perder el acceso.
             </Notice>
           )}
+
+          <TaskInbox me={me} />
 
           <Panel title="Actividad reciente">
             {recent.isPending && (

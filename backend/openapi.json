@@ -71,6 +71,157 @@
         }
       }
     },
+    "/api/v1/auth/google/status": {
+      "get": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Saber si el acceso con Google está configurado",
+        "operationId": "google_status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleAuthStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/google/login": {
+      "get": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Empezar el ingreso seguro con Google",
+        "operationId": "google_login_start",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/google/link": {
+      "get": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Vincular Google a la cuenta con sesión",
+        "operationId": "google_link_start",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/google/callback": {
+      "get": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Completar el ingreso o la vinculación con Google",
+        "operationId": "google_callback",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "State"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 4096
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Code"
+            }
+          },
+          {
+            "name": "error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Error"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
@@ -661,6 +812,65 @@
           },
           "429": {
             "description": "Demasiados intentos fallidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/account/closure": {
+      "post": {
+        "tags": [
+          "perfil"
+        ],
+        "summary": "Cerrar y anonimizar la cuenta sin borrar expedientes retenidos",
+        "operationId": "close_account",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseAccountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "La contraseña no coincide.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La cuenta tiene una responsabilidad que debe transferirse.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -1290,6 +1500,81 @@
               "default": 50,
               "title": "Limit"
             }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/OrganizationAuditAction"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Acción de seguridad exacta.",
+              "title": "Action"
+            },
+            "description": "Acción de seguridad exacta."
+          },
+          {
+            "name": "actor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Persona que originó el evento.",
+              "title": "Actor"
+            },
+            "description": "Persona que originó el evento."
+          },
+          {
+            "name": "created_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inicio inclusivo del periodo, con zona horaria.",
+              "title": "Created From"
+            },
+            "description": "Inicio inclusivo del periodo, con zona horaria."
+          },
+          {
+            "name": "created_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fin exclusivo del periodo, con zona horaria.",
+              "title": "Created To"
+            },
+            "description": "Fin exclusivo del periodo, con zona horaria."
           }
         ],
         "responses": {
@@ -2125,6 +2410,127 @@
               "title": "Limit"
             },
             "description": "Casos por página."
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Título, radicado, referencia interna o despacho.",
+              "title": "Search"
+            },
+            "description": "Título, radicado, referencia interna o despacho."
+          },
+          {
+            "name": "closed_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha inicial de cierre en Colombia.",
+              "title": "Closed From"
+            },
+            "description": "Fecha inicial de cierre en Colombia."
+          },
+          {
+            "name": "closed_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha final de cierre en Colombia.",
+              "title": "Closed To"
+            },
+            "description": "Fecha final de cierre en Colombia."
+          },
+          {
+            "name": "retention_basis",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "organization_policy",
+                    "legal_or_contractual_duty",
+                    "litigation_hold"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fundamento de conservación.",
+              "title": "Retention Basis"
+            },
+            "description": "Fundamento de conservación."
+          },
+          {
+            "name": "legal_hold",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Si el caso tiene bloqueo jurídico.",
+              "title": "Legal Hold"
+            },
+            "description": "Si el caso tiene bloqueo jurídico."
+          },
+          {
+            "name": "retention_review",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "due",
+                    "upcoming"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Conservación vencida para revisión o todavía vigente.",
+              "title": "Retention Review"
+            },
+            "description": "Conservación vencida para revisión o todavía vigente."
           }
         ],
         "responses": {
@@ -2208,6 +2614,280 @@
           },
           "404": {
             "description": "El caso no existe o la persona no es miembro de él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/close": {
+      "post": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Cerrar y archivar un caso sin borrar sus datos",
+        "operationId": "close_case",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no administra el ciclo de vida del caso.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El caso no existe o la persona no pertenece a él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El caso ya está cerrado o el despacho está en solo lectura.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/reopen": {
+      "post": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Reabrir un caso conservando la historia de su archivo",
+        "operationId": "reopen_case",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no administra el ciclo de vida del caso.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El caso no existe o la persona no pertenece a él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El caso ya está abierto o el despacho está en solo lectura.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/retention": {
+      "patch": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Actualizar el fundamento y bloqueo jurídico de un caso archivado",
+        "operationId": "update_case_retention",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseRetentionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Solo el propietario o administrador gestiona la conservación.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El caso no existe o la persona no pertenece a él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El caso no está archivado o el despacho está en solo lectura.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2585,6 +3265,388 @@
         }
       }
     },
+    "/api/v1/cases/{case_id}/tasks": {
+      "get": {
+        "tags": [
+          "tareas"
+        ],
+        "summary": "Listar tareas y plazos de un caso",
+        "operationId": "list_case_tasks",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "pending",
+                    "in_progress",
+                    "completed",
+                    "canceled"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Assigned To"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 25,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseTaskPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "tareas"
+        ],
+        "summary": "Crear y asignar una tarea del caso",
+        "operationId": "create_case_task",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseTaskCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseTaskOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/tasks/{task_id}/status": {
+      "patch": {
+        "tags": [
+          "tareas"
+        ],
+        "summary": "Actualizar el estado de una tarea del caso",
+        "operationId": "update_case_task_status",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseTaskStatusUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseTaskOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks": {
+      "get": {
+        "tags": [
+          "tareas"
+        ],
+        "summary": "Consultar la bandeja de tareas activa",
+        "operationId": "task_inbox",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Assigned To"
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "low",
+                    "normal",
+                    "high",
+                    "urgent"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Priority"
+            }
+          },
+          {
+            "name": "due_before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Due Before"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 8,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskInboxOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/exports/inspect": {
       "post": {
         "tags": [
@@ -2809,7 +3871,7 @@
         "tags": [
           "plataforma"
         ],
-        "summary": "Buscar un despacho por correo de su titular",
+        "summary": "Buscar un despacho por su cuenta responsable",
         "operationId": "lookup_courtesy",
         "security": [
           {
@@ -2854,7 +3916,7 @@
         "tags": [
           "plataforma"
         ],
-        "summary": "Conceder o renovar un plan de cortesía",
+        "summary": "Asignar o renovar el plan de un despacho",
         "operationId": "grant_courtesy",
         "security": [
           {
@@ -2900,7 +3962,7 @@
         "tags": [
           "plataforma"
         ],
-        "summary": "Revocar un plan de cortesía",
+        "summary": "Revocar el acceso comercial de un despacho",
         "operationId": "revoke_courtesy",
         "requestBody": {
           "content": {
@@ -2970,6 +4032,85 @@
               ],
               "title": "Cursor"
             }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120,
+                  "pattern": ".*\\S.*"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nombre o correo de la cuenta.",
+              "title": "Search"
+            },
+            "description": "Nombre o correo de la cuenta."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "active",
+                    "blocked"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Estado actual de la cuenta.",
+              "title": "Status"
+            },
+            "description": "Estado actual de la cuenta."
+          },
+          {
+            "name": "email_verified",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Si la cuenta confirmó su correo.",
+              "title": "Email Verified"
+            },
+            "description": "Si la cuenta confirmó su correo."
+          },
+          {
+            "name": "platform_admin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Si la cuenta administra la plataforma.",
+              "title": "Platform Admin"
+            },
+            "description": "Si la cuenta administra la plataforma."
           }
         ],
         "responses": {
@@ -3109,6 +4250,84 @@
               ],
               "title": "Cursor"
             }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120,
+                  "pattern": ".*\\S.*"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nombre o correo del actor, organización o UUID del objeto.",
+              "title": "Search"
+            },
+            "description": "Nombre o correo del actor, organización o UUID del objeto."
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[a-z_]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Action"
+            }
+          },
+          {
+            "name": "created_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inicio inclusivo del periodo, con zona horaria.",
+              "title": "Created From"
+            },
+            "description": "Inicio inclusivo del periodo, con zona horaria."
+          },
+          {
+            "name": "created_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fin exclusivo del periodo, con zona horaria.",
+              "title": "Created To"
+            },
+            "description": "Fin exclusivo del periodo, con zona horaria."
           }
         ],
         "responses": {
@@ -3741,6 +4960,54 @@
             "title": "Created At",
             "description": "Cuándo se abrió."
           },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At",
+            "description": "Cuándo se archivó, si está cerrado."
+          },
+          "retention_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Until",
+            "description": "Fecha mínima para revisar si la conservación debe continuar."
+          },
+          "retention_basis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "organization_policy",
+                  "legal_or_contractual_duty",
+                  "litigation_hold"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Basis",
+            "description": "Fundamento operativo de la conservación."
+          },
+          "legal_hold": {
+            "type": "boolean",
+            "title": "Legal Hold",
+            "description": "Si existe un bloqueo jurídico que impide suprimir."
+          },
           "created_by_name": {
             "type": "string",
             "title": "Created By Name",
@@ -3778,6 +5045,10 @@
           "internal_reference",
           "status",
           "created_at",
+          "closed_at",
+          "retention_until",
+          "retention_basis",
+          "legal_hold",
           "created_by_name",
           "member_count",
           "members",
@@ -3935,6 +5206,54 @@
             "title": "Created At",
             "description": "Cuándo se abrió."
           },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At",
+            "description": "Cuándo se archivó, si está cerrado."
+          },
+          "retention_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Until",
+            "description": "Fecha mínima para revisar si la conservación debe continuar."
+          },
+          "retention_basis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "organization_policy",
+                  "legal_or_contractual_duty",
+                  "litigation_hold"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Basis",
+            "description": "Fundamento operativo de la conservación."
+          },
+          "legal_hold": {
+            "type": "boolean",
+            "title": "Legal Hold",
+            "description": "Si existe un bloqueo jurídico que impide suprimir."
+          },
           "created_by_name": {
             "type": "string",
             "title": "Created By Name",
@@ -3956,11 +5275,15 @@
           "internal_reference",
           "status",
           "created_at",
+          "closed_at",
+          "retention_until",
+          "retention_basis",
+          "legal_hold",
           "created_by_name",
           "member_count"
         ],
         "title": "CaseOut",
-        "description": "Un caso abierto."
+        "description": "Un caso activo o archivado."
       },
       "CasePage": {
         "properties": {
@@ -3997,6 +5320,31 @@
         ],
         "title": "CasePage",
         "description": "Una página de los casos de la persona y los totales (API-023)."
+      },
+      "CaseRetentionUpdate": {
+        "properties": {
+          "legal_hold": {
+            "type": "boolean",
+            "title": "Legal Hold"
+          },
+          "retention_basis": {
+            "type": "string",
+            "enum": [
+              "organization_policy",
+              "legal_or_contractual_duty",
+              "litigation_hold"
+            ],
+            "title": "Retention Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "legal_hold",
+          "retention_basis"
+        ],
+        "title": "CaseRetentionUpdate",
+        "description": "Fundamento operativo y bloqueo de un expediente archivado."
       },
       "CaseSummaryOut": {
         "properties": {
@@ -4084,6 +5432,54 @@
             "title": "Created At",
             "description": "Cuándo se abrió."
           },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At",
+            "description": "Cuándo se archivó, si está cerrado."
+          },
+          "retention_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Until",
+            "description": "Fecha mínima para revisar si la conservación debe continuar."
+          },
+          "retention_basis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "organization_policy",
+                  "legal_or_contractual_duty",
+                  "litigation_hold"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Basis",
+            "description": "Fundamento operativo de la conservación."
+          },
+          "legal_hold": {
+            "type": "boolean",
+            "title": "Legal Hold",
+            "description": "Si existe un bloqueo jurídico que impide suprimir."
+          },
           "created_by_name": {
             "type": "string",
             "title": "Created By Name",
@@ -4163,6 +5559,10 @@
           "internal_reference",
           "status",
           "created_at",
+          "closed_at",
+          "retention_until",
+          "retention_basis",
+          "legal_hold",
           "created_by_name",
           "member_count",
           "evidence_count",
@@ -4174,6 +5574,227 @@
         ],
         "title": "CaseSummaryOut",
         "description": "Un caso de la lista con su actividad (API-023)."
+      },
+      "CaseTaskCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "normal",
+              "high",
+              "urgent"
+            ],
+            "title": "Priority",
+            "default": "normal"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "assigned_to": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Assigned To"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "assigned_to"
+        ],
+        "title": "CaseTaskCreate"
+      },
+      "CaseTaskOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Case Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "normal",
+              "high",
+              "urgent"
+            ],
+            "title": "Priority"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "canceled"
+            ],
+            "title": "Status"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "assigned_to": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Assigned To"
+          },
+          "assignee_name": {
+            "type": "string",
+            "title": "Assignee Name"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "case_id",
+          "title",
+          "description",
+          "priority",
+          "status",
+          "due_at",
+          "assigned_to",
+          "assignee_name",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "completed_at"
+        ],
+        "title": "CaseTaskOut"
+      },
+      "CaseTaskPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CaseTaskOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "CaseTaskPage"
+      },
+      "CaseTaskStatusUpdate": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "canceled"
+            ],
+            "title": "Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "CaseTaskStatusUpdate"
       },
       "CaseTotalsOut": {
         "properties": {
@@ -4313,6 +5934,29 @@
           "status"
         ],
         "title": "CheckoutOut"
+      },
+      "CloseAccountRequest": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Password"
+          },
+          "confirmation": {
+            "type": "string",
+            "const": "CERRAR MI CUENTA",
+            "title": "Confirmation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "password",
+          "confirmation"
+        ],
+        "title": "CloseAccountRequest",
+        "description": "Confirmación reforzada para cerrar y anonimizar la cuenta."
       },
       "CourtesyGrant": {
         "properties": {
@@ -4468,6 +6112,34 @@
         ],
         "title": "CourtesyTarget"
       },
+      "CustodyAnchorOut": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq",
+            "description": "Último evento cubierto por el sello externo."
+          },
+          "head_hash": {
+            "type": "string",
+            "title": "Head Hash",
+            "description": "Huella de la cabeza sellada, en hexadecimal."
+          },
+          "tsa_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Tsa Time",
+            "description": "Hora declarada por la autoridad de sellado."
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "head_hash",
+          "tsa_time"
+        ],
+        "title": "CustodyAnchorOut",
+        "description": "Alcance de un anclaje externo, sin exponer su token criptográfico."
+      },
       "CustodyEventOut": {
         "properties": {
           "seq": {
@@ -4586,6 +6258,17 @@
             "type": "string",
             "title": "Head Hash",
             "description": "Huella del último evento válido, en hexadecimal."
+          },
+          "latest_anchor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CustodyAnchorOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Última cabeza con sello externo, o null si todavía no existe."
           }
         },
         "type": "object",
@@ -4594,7 +6277,8 @@
           "events_checked",
           "broken_at",
           "reason",
-          "head_hash"
+          "head_hash",
+          "latest_anchor"
         ],
         "title": "CustodyVerificationOut",
         "description": "Resultado del recálculo independiente de la cadena guardada."
@@ -4932,6 +6616,20 @@
         ],
         "title": "ForgotPasswordRequest",
         "description": "Correo al que se envía el enlace para restablecer la contraseña (API-011)."
+      },
+      "GoogleAuthStatus": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled"
+        ],
+        "title": "GoogleAuthStatus",
+        "description": "Disponibilidad pública del proveedor; nunca expone sus credenciales."
       },
       "HealthStatus": {
         "properties": {
@@ -5302,10 +7000,15 @@
             "title": "Email Verified",
             "description": "Si ya verificó su correo (HU-006)."
           },
+          "google_linked": {
+            "type": "boolean",
+            "title": "Google Linked",
+            "description": "Si puede ingresar con una identidad de Google."
+          },
           "platform_admin": {
             "type": "boolean",
             "title": "Platform Admin",
-            "description": "Puede administrar la plataforma; no concede acceso a otros despachos."
+            "description": "Es la cuenta dueña de la plataforma y no pertenece a ningún despacho."
           },
           "permissions": {
             "items": {
@@ -5319,13 +7022,17 @@
                 "cases.read_assigned",
                 "cases.create",
                 "cases.manage_members",
+                "cases.manage_lifecycle",
+                "cases.manage_retention",
+                "cases.manage_tasks",
+                "cases.complete_assigned_tasks",
                 "cases.upload_evidence",
                 "cases.download_evidence"
               ]
             },
             "type": "array",
             "title": "Permissions",
-            "description": "Capacidades vigentes en su despacho y, por separado, en la plataforma."
+            "description": "Capacidades vigentes en su despacho o, de forma excluyente, en la plataforma."
           },
           "organization": {
             "anyOf": [
@@ -5359,6 +7066,7 @@
           "full_name",
           "email",
           "email_verified",
+          "google_linked",
           "platform_admin",
           "permissions",
           "organization",
@@ -5486,6 +7194,38 @@
           "ends_at"
         ],
         "title": "MySubscription"
+      },
+      "OrganizationAuditAction": {
+        "type": "string",
+        "enum": [
+          "user_registered",
+          "email_verified",
+          "login",
+          "login_failed",
+          "google_linked",
+          "session_reuse_detected",
+          "sessions_revoked",
+          "password_reset",
+          "password_changed",
+          "invitation_sent",
+          "invitation_revoked",
+          "invitation_accepted",
+          "role_changed",
+          "member_removed",
+          "plan_changed",
+          "subscription_canceled",
+          "subscription_expired",
+          "courtesy_granted",
+          "courtesy_renewed",
+          "courtesy_revoked",
+          "account_blocked",
+          "account_unblocked",
+          "account_closed",
+          "legal_accepted",
+          "logout"
+        ],
+        "title": "OrganizationAuditAction",
+        "description": "Acciones de seguridad que un gestor puede consultar explícitamente."
       },
       "OrganizationAuditEvent": {
         "properties": {
@@ -5798,12 +7538,18 @@
               }
             ],
             "title": "Next Cursor"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Eventos que coinciden con los filtros, sin limitar por página."
           }
         },
         "type": "object",
         "required": [
           "items",
-          "next_cursor"
+          "next_cursor",
+          "total"
         ],
         "title": "PlatformAuditPage"
       },
@@ -5962,12 +7708,18 @@
               }
             ],
             "title": "Next Cursor"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Cuentas que coinciden con los filtros, sin limitar por página."
           }
         },
         "type": "object",
         "required": [
           "items",
-          "next_cursor"
+          "next_cursor",
+          "total"
         ],
         "title": "PlatformUserPage"
       },
@@ -6436,6 +8188,165 @@
         ],
         "title": "SupportTicketStatusChange"
       },
+      "TaskInboxItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Case Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "normal",
+              "high",
+              "urgent"
+            ],
+            "title": "Priority"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "in_progress",
+              "completed",
+              "canceled"
+            ],
+            "title": "Status"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "assigned_to": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Assigned To"
+          },
+          "assignee_name": {
+            "type": "string",
+            "title": "Assignee Name"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "case_title": {
+            "type": "string",
+            "title": "Case Title"
+          },
+          "case_status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed"
+            ],
+            "title": "Case Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "case_id",
+          "title",
+          "description",
+          "priority",
+          "status",
+          "due_at",
+          "assigned_to",
+          "assignee_name",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "completed_at",
+          "case_title",
+          "case_status"
+        ],
+        "title": "TaskInboxItem"
+      },
+      "TaskInboxOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TaskInboxItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "active": {
+            "type": "integer",
+            "title": "Active"
+          },
+          "overdue": {
+            "type": "integer",
+            "title": "Overdue"
+          },
+          "due_soon": {
+            "type": "integer",
+            "title": "Due Soon"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "active",
+          "overdue",
+          "due_soon"
+        ],
+        "title": "TaskInboxOut"
+      },
       "UserStatusChange": {
         "properties": {
           "status": {
@@ -6614,17 +8525,22 @@
       }
     },
     "securitySchemes": {
-      "renovacion": {
-        "type": "apiKey",
-        "description": "Cookie de renovación que la API entrega al ingresar y en cada renovación.",
-        "in": "cookie",
-        "name": "__Secure-aletheia_refresh"
-      },
       "sesion": {
         "type": "apiKey",
         "description": "Cookie de acceso que la API entrega al ingresar.",
         "in": "cookie",
         "name": "__Host-aletheia_access"
+      },
+      "APIKeyCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Secure-aletheia_google"
+      },
+      "renovacion": {
+        "type": "apiKey",
+        "description": "Cookie de renovación que la API entrega al ingresar y en cada renovación.",
+        "in": "cookie",
+        "name": "__Secure-aletheia_refresh"
       }
     }
   }

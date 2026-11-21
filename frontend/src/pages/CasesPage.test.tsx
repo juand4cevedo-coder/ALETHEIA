@@ -28,7 +28,7 @@ function rule(selector: string): string {
 type Role = "owner" | "admin" | "lawyer" | "assistant";
 
 const ASSISTANT_EMPTY =
-  "Los casos los abre un abogado, el administrador o el propietario. Cuando lo asignen a uno, aparecerá aquí";
+  "Los casos los abre un abogado, el administrador o la persona responsable del despacho. Cuando lo asignen a uno, aparecerá aquí";
 
 function me(role: Role, emailVerified = true) {
   return {
@@ -58,6 +58,10 @@ function summary(overrides: Record<string, unknown>) {
     practice_area: "labor",
     internal_reference: null,
     status: "open",
+    closed_at: null,
+    retention_until: null,
+    retention_basis: null,
+    legal_hold: false,
     created_at: "2026-11-03T15:00:00Z",
     created_by_name: "Laura Gómez",
     member_count: 2,
@@ -105,6 +109,10 @@ const ARCHIVED = summary({
   id: "01890a5d-ac96-774b-bcce-b302099a8093",
   title: "Restitución de inmueble, Ortiz",
   status: "closed",
+  closed_at: "2026-11-03T15:00:00Z",
+  retention_until: "2036-11-03T15:00:00Z",
+  retention_basis: "legal_or_contractual_duty",
+  legal_hold: true,
 });
 
 const TOTALS = {
@@ -345,7 +353,7 @@ describe("Libro de casos (HU-017)", () => {
     ).toBeInTheDocument();
   });
 
-  it("el segmento Cerrados vuelve a pedir la lista con status=closed", async () => {
+  it("el segmento Archivo vuelve a pedir la lista con status=closed", async () => {
     serve("lawyer", (query) =>
       query.get("status") === "closed"
         ? { items: [ARCHIVED], next_cursor: null, totals: TOTALS }
@@ -364,7 +372,7 @@ describe("Libro de casos (HU-017)", () => {
     expect(open).toBeChecked();
     expect(open.closest("label")).toHaveTextContent("3");
     const closed = within(segments).getByRole("radio", {
-      name: "Cerrados, 1 caso",
+      name: "Archivo, 1 caso",
     });
     expect(closed.closest("label")).toHaveTextContent("1");
     expect(
@@ -373,14 +381,71 @@ describe("Libro de casos (HU-017)", () => {
 
     await user.click(closed);
 
-    const table = await screen.findByRole("table", { name: /Casos cerrados/ });
+    expect(
+      screen.getByText(/Cerrar(?:los)? no elimina archivos ni eventos/i),
+    ).toBeVisible();
+    const table = await screen.findByRole("table", {
+      name: /Archivo histórico de casos/,
+    });
     expect(
       await within(table).findByText("Restitución de inmueble, Ortiz"),
     ).toBeInTheDocument();
+    expect(
+      within(table).getByRole("columnheader", { name: "Conservación" }),
+    ).toBeInTheDocument();
+    expect(within(table).getByText("Bloqueo jurídico")).toBeInTheDocument();
+    expect(
+      within(table).getByText("Deber legal o contractual"),
+    ).toBeInTheDocument();
+    expect(within(table).getByText(/Cerrado el/)).toBeInTheDocument();
+    expect(within(table).getByText(/Revisar desde/)).toBeInTheDocument();
     expect(bookRequests().map((query) => query.get("status"))).toEqual([
       "open",
       "closed",
     ]);
+  });
+
+  it("filtra el archivo en el servidor, conserva la dirección y permite limpiar", async () => {
+    serve("lawyer", (query) =>
+      query.get("status") === "closed"
+        ? { items: [ARCHIVED], next_cursor: null, totals: TOTALS }
+        : BOOK,
+    );
+    const user = userEvent.setup();
+    const { router } = await openBook();
+    await user.click(
+      await screen.findByRole("radio", { name: "Archivo, 1 caso" }),
+    );
+
+    await user.type(screen.getByLabelText("Cierre desde"), "2026-01-01");
+    await user.type(screen.getByLabelText("Cierre hasta"), "2026-12-31");
+    await user.selectOptions(
+      screen.getByLabelText("Fundamento"),
+      "legal_or_contractual_duty",
+    );
+    await user.selectOptions(screen.getByLabelText("Bloqueo jurídico"), "si");
+    await user.selectOptions(
+      screen.getByLabelText("Revisión de conservación"),
+      "upcoming",
+    );
+
+    await waitFor(() => {
+      const query = bookRequests().at(-1)!;
+      expect(query.get("closed_from")).toBe("2026-01-01");
+      expect(query.get("closed_to")).toBe("2026-12-31");
+      expect(query.get("retention_basis")).toBe("legal_or_contractual_duty");
+      expect(query.get("legal_hold")).toBe("true");
+      expect(query.get("retention_review")).toBe("upcoming");
+    });
+    expect(router.state.location.search).toContain("cierre_desde=2026-01-01");
+    expect(router.state.location.search).toContain("bloqueo=si");
+
+    await user.click(screen.getByRole("button", { name: "Limpiar filtros" }));
+    await waitFor(() =>
+      expect(bookRequests().at(-1)?.has("closed_from")).toBe(false),
+    );
+    expect(router.state.location.search).toBe("?estado=cerrados");
+    expect(screen.getByLabelText("Fundamento")).toHaveValue("");
   });
 
   it("el segmento queda en la dirección y se conserva al volver de un caso", async () => {
@@ -418,10 +483,10 @@ describe("Libro de casos (HU-017)", () => {
     await renderRoute("/app/casos?estado=cerrados");
 
     expect(
-      await screen.findByRole("radio", { name: "Cerrados, 1 caso" }),
+      await screen.findByRole("radio", { name: "Archivo, 1 caso" }),
     ).toBeChecked();
     expect(
-      await screen.findByRole("table", { name: /Casos cerrados/ }),
+      await screen.findByRole("table", { name: /Archivo histórico de casos/ }),
     ).toBeInTheDocument();
     expect(bookRequests().map((query) => query.get("status"))).toEqual([
       "closed",
@@ -441,36 +506,63 @@ describe("Libro de casos (HU-017)", () => {
     ]);
   });
 
-  it("el campo de texto filtra por título, radicado o despacho sin pedir nada a la API", async () => {
-    serve("lawyer", () => BOOK);
+  it("busca por título, radicado o despacho en el servidor y conserva el filtro en la dirección", async () => {
+    serve("lawyer", (query) => {
+      const search = query.get("search");
+      if (search === "sucesion")
+        return { items: [GOMEZ], next_cursor: null, totals: TOTALS };
+      if (search === "2026 00143" || search === "medellín")
+        return { items: [TORRES], next_cursor: null, totals: TOTALS };
+      if (search === "nada que ver")
+        return { items: [], next_cursor: null, totals: TOTALS };
+      return BOOK;
+    });
     const user = userEvent.setup();
-    await openBook();
-    const table = await screen.findByRole("table");
-    const requests = fetchMock.mock.calls.length;
+    const { router } = await openBook();
+    await screen.findByRole("table");
     const filter = screen.getByRole("searchbox", { name: /Filtrar/ });
 
     await user.type(filter, "sucesion");
-    expect(within(table).getAllByRole("row").slice(1)).toHaveLength(1);
-    expect(within(table).getByText("Sucesión Gómez Pardo")).toBeInTheDocument();
+    expect(router.state.location.search).toContain("buscar=sucesion");
+    await waitFor(() =>
+      expect(bookRequests().at(-1)?.get("search")).toBe("sucesion"),
+    );
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("table")).getAllByRole("row").slice(1),
+      ).toHaveLength(1),
+    );
+    expect(screen.getByText("Sucesión Gómez Pardo")).toBeInTheDocument();
 
     await user.clear(filter);
+    expect(router.state.location.search).not.toContain("buscar=");
     await user.type(filter, "2026 00143");
-    expect(within(table).getAllByRole("row").slice(1)).toHaveLength(1);
+    await waitFor(() =>
+      expect(bookRequests().at(-1)?.get("search")).toBe("2026 00143"),
+    );
     expect(
-      within(table).getByText("Despido sin justa causa, Torres"),
+      await screen.findByText("Despido sin justa causa, Torres"),
     ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("table")).getAllByRole("row").slice(1),
+      ).toHaveLength(1),
+    );
 
     await user.clear(filter);
     await user.type(filter, "medellín");
-    expect(within(table).getAllByRole("row").slice(1)).toHaveLength(1);
+    await waitFor(() =>
+      expect(bookRequests().at(-1)?.get("search")).toBe("medellín"),
+    );
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("table")).getAllByRole("row").slice(1),
+      ).toHaveLength(1),
+    );
 
     await user.clear(filter);
     await user.type(filter, "nada que ver");
-    expect(
-      screen.getByText(/Ningún caso cargado coincide/),
-    ).toBeInTheDocument();
-
-    expect(fetchMock.mock.calls.length).toBe(requests);
+    expect(await screen.findByText(/Ningún caso coincide/)).toBeInTheDocument();
   });
 
   it("«Cargar más casos» pide la página siguiente y anuncia cuántos llegaron", async () => {
@@ -543,18 +635,23 @@ describe("Libro de casos (HU-017)", () => {
     expect(within(table).getAllByRole("row").slice(1)).toHaveLength(75);
   });
 
-  it("con el filtro activo anuncia la carga y las coincidencias, y el foco no se pierde", async () => {
-    serve("lawyer", (query) =>
-      query.get("cursor") === "c2"
-        ? { items: [CONTRERAS], next_cursor: null, totals: TOTALS }
-        : { items: [TORRES, GOMEZ], next_cursor: "c2", totals: TOTALS },
-    );
+  it("pagina los resultados de una búsqueda sin volver al filtrado local", async () => {
+    const secondTorres = summary({
+      id: "01890a5d-ac96-774b-bcce-b302099a8098",
+      title: "Torres, segunda actuación",
+    });
+    serve("lawyer", (query) => {
+      if (query.get("search") !== "torres") return BOOK;
+      return query.get("cursor") === "c2"
+        ? { items: [secondTorres], next_cursor: null, totals: TOTALS }
+        : { items: [TORRES], next_cursor: "c2", totals: TOTALS };
+    });
     const user = userEvent.setup();
     await openBook();
-    const table = await screen.findByRole("table");
-    await user.type(
-      screen.getByRole("searchbox", { name: /Filtrar/ }),
-      "torres",
+    const search = await screen.findByRole("searchbox", { name: /Filtrar/ });
+    await user.type(search, "torres");
+    await waitFor(() =>
+      expect(bookRequests().at(-1)?.get("search")).toBe("torres"),
     );
 
     await user.click(screen.getByRole("button", { name: "Cargar más casos" }));
@@ -562,12 +659,13 @@ describe("Libro de casos (HU-017)", () => {
     await waitFor(() =>
       expect(
         screen.getByText(
-          "Se cargó 1 caso más; 3 en total. 1 de 3 casos cargados coincide.",
+          "Se cargó 1 caso más; 2 en total. 2 de 2 casos cargados coinciden.",
         ),
       ).toBeInTheDocument(),
     );
-    // El caso nuevo no coincide con el filtro: el foco va a la tabla, no se pierde.
-    expect(table).toHaveFocus();
+    expect(
+      screen.getByRole("link", { name: "Torres, segunda actuación" }),
+    ).toHaveFocus();
   });
 
   it("en 1100 px o menos las filas pasan a tarjetas", async () => {
