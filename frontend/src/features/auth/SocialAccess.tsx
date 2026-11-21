@@ -1,7 +1,7 @@
 import { useId } from "react";
 import styles from "./SocialAccess.module.css";
 
-/** Los proveedores no se anuncian activos hasta disponer de un flujo OIDC completo. */
+/** Google no se anuncia activo hasta disponer de un flujo OIDC completo. */
 export function SocialAccess() {
   const id = useId();
   return (
@@ -16,18 +16,9 @@ export function SocialAccess() {
           </svg>
           Continuar con Google
         </button>
-        <button type="button" disabled>
-          <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
-            <path
-              fill="currentColor"
-              d="M1 1h8v8H1zM11 1h8v8h-8zM1 11h8v8H1zM11 11h8v8h-8z"
-            />
-          </svg>
-          Continuar con Microsoft
-        </button>
       </div>
       <p id={id} className={styles.pending}>
-        Google y Microsoft estarán disponibles próximamente.
+        El acceso con Google estará disponible cuando termine su verificación.
       </p>
     </div>
   );

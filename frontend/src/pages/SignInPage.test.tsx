@@ -116,6 +116,12 @@ describe("Ingresar (HU-007, CP-007)", () => {
     expect(
       screen.getByRole("link", { name: "Crear una cuenta" }),
     ).toHaveAttribute("href", "/registro");
+    expect(
+      screen.getByRole("button", { name: "Continuar con Google" }),
+    ).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: /Microsoft/i }),
+    ).not.toBeInTheDocument();
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 

@@ -1,6 +1,6 @@
 # Integraciones externas pendientes: acceso y sellado de tiempo
 
-La versión v0.5.0 incluye exportación de paquetes y sellado por evidencia mediante un trabajador. El inicio de sesión con Google y Microsoft sigue pendiente. La validación operativa del proveedor de sellado y del ciclo completo de preservación se registra en DEP-04, HU-020 y HU-025.
+La versión v0.5.0 incluye exportación de paquetes y sellado por evidencia mediante un trabajador. El inicio de sesión con Google sigue pendiente; Microsoft quedó fuera del alcance por decisión del proyecto. La validación operativa del proveedor de sellado y del ciclo completo de preservación se registra en DEP-04, HU-020 y HU-025.
 
 ## Google: HU-008 / DEP-01
 
@@ -9,14 +9,6 @@ La versión v0.5.0 incluye exportación de paquetes y sellado por evidencia medi
 3. El ID del cliente y su secreto se guardan en el gestor de secretos del entorno, nunca en Git ni en el navegador. Se prueba alta, ingreso, revocación, correo ya existente, rechazo de `state`/`nonce` y retorno desde el dominio real antes de mostrar el botón en producción.
 
 El registro básico de un cliente no justifica contratar servicios de Google Cloud. Antes de activar, la persona administradora debe comprobar en la consola los cargos y requisitos vigentes del proyecto. Los permisos sensibles o restringidos de otras API quedan fuera de este alcance. [Guía OIDC](https://developers.google.com/identity/openid-connect/openid-connect), [política OAuth](https://developers.google.com/identity/protocols/oauth2/policies).
-
-## Microsoft: configuración e historia por definir
-
-1. La persona administradora crea o usa un tenant Microsoft Entra ID Free y registra una aplicación web. Para permitir cuentas de trabajo o escuela y cuentas personales, elige el tipo de cuentas admitidas correspondiente y configura la URI de retorno exacta de producción; usa una aplicación separada para pruebas.
-2. La implementación seguirá OIDC con código de autorización, PKCE, `state` y `nonce`. El backend validará firma, emisor, audiencia y vencimiento del ID token. La clave de vínculo incluirá el emisor y el identificador estable del usuario; el correo no bastará para unir cuentas. Se solicitarán únicamente los permisos mínimos de inicio de sesión.
-3. Se guardarán las credenciales en el gestor de secretos y se probarán cuentas personales y organizacionales, consentimiento, correo ya existente, cancelación y errores. Solo después se habilitará el botón público.
-
-Microsoft documenta Entra ID Free sin cargo para sus funciones básicas, pero la persona administradora debe revisar las condiciones y cualquier servicio adicional elegido antes de activarlo. El inicio con Microsoft todavía no tiene historia implementada ni registro de aplicación confirmado. [Registro de aplicación](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app), [tipos de cuentas](https://learn.microsoft.com/en-us/security/zero-trust/develop/identity-supported-account-types), [Entra ID Free](https://learn.microsoft.com/en-us/azure/cost-management-billing/manage/microsoft-entra-id-free).
 
 ## Fecha y hora externa: HU-020 / DEP-04
 

@@ -32,8 +32,3 @@
   line-height: 1.6;
   color: var(--text-3);
 }
-@media (min-width: 600px) {
-  .providers {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
