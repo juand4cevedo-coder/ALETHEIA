@@ -1500,6 +1500,81 @@
               "default": 50,
               "title": "Limit"
             }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/OrganizationAuditAction"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Acción de seguridad exacta.",
+              "title": "Action"
+            },
+            "description": "Acción de seguridad exacta."
+          },
+          {
+            "name": "actor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Persona que originó el evento.",
+              "title": "Actor"
+            },
+            "description": "Persona que originó el evento."
+          },
+          {
+            "name": "created_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inicio inclusivo del periodo, con zona horaria.",
+              "title": "Created From"
+            },
+            "description": "Inicio inclusivo del periodo, con zona horaria."
+          },
+          {
+            "name": "created_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fin exclusivo del periodo, con zona horaria.",
+              "title": "Created To"
+            },
+            "description": "Fin exclusivo del periodo, con zona horaria."
           }
         ],
         "responses": {
@@ -2335,6 +2410,26 @@
               "title": "Limit"
             },
             "description": "Casos por página."
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Título, radicado, referencia interna o despacho.",
+              "title": "Search"
+            },
+            "description": "Título, radicado, referencia interna o despacho."
           }
         ],
         "responses": {
@@ -6072,6 +6167,38 @@
           "ends_at"
         ],
         "title": "MySubscription"
+      },
+      "OrganizationAuditAction": {
+        "type": "string",
+        "enum": [
+          "user_registered",
+          "email_verified",
+          "login",
+          "login_failed",
+          "google_linked",
+          "session_reuse_detected",
+          "sessions_revoked",
+          "password_reset",
+          "password_changed",
+          "invitation_sent",
+          "invitation_revoked",
+          "invitation_accepted",
+          "role_changed",
+          "member_removed",
+          "plan_changed",
+          "subscription_canceled",
+          "subscription_expired",
+          "courtesy_granted",
+          "courtesy_renewed",
+          "courtesy_revoked",
+          "account_blocked",
+          "account_unblocked",
+          "account_closed",
+          "legal_accepted",
+          "logout"
+        ],
+        "title": "OrganizationAuditAction",
+        "description": "Acciones de seguridad que un gestor puede consultar explícitamente."
       },
       "OrganizationAuditEvent": {
         "properties": {

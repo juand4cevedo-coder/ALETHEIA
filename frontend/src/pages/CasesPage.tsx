@@ -29,7 +29,6 @@ import { custodyActionLabel } from "../features/cases/custodyActions.ts";
 import { CustodyStrip } from "../features/cases/CustodyStrip.tsx";
 import { formatRecentActivity } from "../features/cases/dates.ts";
 import { describeEvidenceByType } from "../features/cases/evidenceTypes.ts";
-import { normalizeFilingNumber } from "../features/cases/filingNumber.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { canOpenCases } from "../features/cases/roles.ts";
 import { VerifyEmailDialog } from "../features/cases/VerifyEmailDialog.tsx";
@@ -99,27 +98,6 @@ const ASSISTANT_EMPTY =
 // la columna del título no llega a 240 px de texto (especificación, 5.2).
 const CARDS_QUERY = "(max-width: 1100px)";
 
-/** Sin tildes ni mayúsculas: «sucesion» encuentra «Sucesión». */
-function fold(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase();
-}
-
-/** El filtro local busca en el título, en el radicado (solo sus dígitos, sin importar cómo se
- * escriban los espacios) y en el despacho de los casos ya cargados; no consulta la API. */
-function matchesFilter(item: CaseSummaryOut, query: string): boolean {
-  const text = fold(query.trim());
-  if (!text) return true;
-  if (fold(item.title).includes(text)) return true;
-  if (item.court && fold(item.court).includes(text)) return true;
-  const digits = normalizeFilingNumber(query);
-  return (
-    /^[0-9]+$/.test(digits) && (item.filing_number?.includes(digits) ?? false)
-  );
-}
-
 /** Cada carga dice también el total, para que el texto cambie siempre: dos páginas completas
  * seguidas darían el mismo «Se cargaron 25 casos más.» y el lector de pantalla no anunciaría
  * la segunda. */
@@ -143,6 +121,8 @@ export function CasesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const status = statusFromUrl(searchParams.get(STATUS_PARAM));
   const filter = searchParams.get(SEARCH_PARAM) ?? "";
+  const normalizedFilter = filter.trim();
+  const [serverSearch, setServerSearch] = useState(normalizedFilter);
   const [loadedNote, setLoadedNote] = useState("");
   const [verifying, setVerifying] = useState(false);
   const cards = useMediaQuery(CARDS_QUERY);
@@ -150,6 +130,16 @@ export function CasesPage() {
   // Casos recién cargados que deben recibir el foco cuando el botón desaparece.
   const pendingFocus = useRef<string[] | null>(null);
   const filterId = useId();
+
+  // La dirección cambia de inmediato, pero la consulta espera una pausa breve: escribir una
+  // palabra no debe disparar una solicitud por cada tecla.
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setServerSearch(normalizedFilter),
+      300,
+    );
+    return () => window.clearTimeout(timer);
+  }, [normalizedFilter]);
 
   // Tras pintar la última página, el foco pasa al primer caso nuevo que se vea. Si el filtro los
   // oculta todos, va a la tabla o a la lista, para no perderse con el botón que ya no está.
@@ -170,11 +160,18 @@ export function CasesPage() {
 
   const book = useInfiniteQuery({
     queryKey: [
-      { ...listCasesQueryKey({ query: { status } })[0], _infinite: true },
+      {
+        ...listCasesQueryKey({
+          query: { status, search: serverSearch || undefined },
+        })[0],
+        _infinite: true,
+      },
     ],
     queryFn: async ({ pageParam, signal }) => {
       const { data } = await listCases({
-        query: pageParam ? { status, cursor: pageParam } : { status },
+        query: pageParam
+          ? { status, cursor: pageParam, search: serverSearch || undefined }
+          : { status, search: serverSearch || undefined },
         signal,
         throwOnError: true,
       });
@@ -293,9 +290,10 @@ export function CasesPage() {
   }
 
   const loaded = pages.flatMap((page) => page.items);
-  const loadingSegment = book.isPlaceholderData;
-  const visible = loaded.filter((item) => matchesFilter(item, filter));
-  const filtering = filter.trim().length > 0;
+  const loadingSegment =
+    book.isPlaceholderData || normalizedFilter !== serverSearch;
+  const visible = loaded;
+  const filtering = normalizedFilter.length > 0;
   const caption = CAPTIONS[status];
 
   async function loadMore() {
@@ -416,12 +414,12 @@ export function CasesPage() {
             />
             Cargando sus casos
           </p>
+        ) : filtering && loaded.length === 0 ? (
+          <p className={styles.none} tabIndex={-1} data-book-focus="">
+            {`Ningún caso coincide con «${normalizedFilter}».`}
+          </p>
         ) : loaded.length === 0 ? (
           <p className={styles.none}>{NONE_IN_SEGMENT[status]}</p>
-        ) : visible.length === 0 ? (
-          <p className={styles.none} tabIndex={-1} data-book-focus="">
-            {`Ningún caso cargado coincide con «${filter.trim()}».`}
-          </p>
         ) : cards ? (
           <CaseCards items={visible} caption={caption} />
         ) : (
@@ -453,11 +451,6 @@ export function CasesPage() {
           >
             Cargar más casos
           </Button>
-          {filtering && (
-            <p className={styles.moreNote}>
-              El filtro busca solo en los casos cargados.
-            </p>
-          )}
         </div>
       )}
 

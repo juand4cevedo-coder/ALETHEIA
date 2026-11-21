@@ -49,6 +49,9 @@ def _caso(
     hace: int = 0,
     titulo: str = "Despido de María Pérez",
     estado: str = "open",
+    radicado: str | None = None,
+    despacho: str | None = None,
+    referencia: str | None = None,
     acciones: tuple[str, ...] = (),
     evidencias: tuple[tuple[str, str], ...] = (),
 ) -> uuid.UUID:
@@ -65,6 +68,9 @@ def _caso(
             id=caso_id,
             organization_id=oficina.organization_id,
             title=titulo,
+            filing_number=radicado,
+            court=despacho,
+            internal_reference=referencia,
             status=estado,
             closed_at=None if estado == "open" else _AHORA,
             retention_until=(None if estado == "open" else _AHORA + datetime.timedelta(days=3650)),
@@ -269,6 +275,44 @@ def test_filtra_por_estado(db: Session) -> None:
     assert ids("all") == [abierto, cerrado]
 
 
+def test_busca_en_todos_los_casos_y_conserva_los_totales(db: Session) -> None:
+    oficina = crear_oficina(db)
+    sucesion = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        titulo="Sucesión Gómez Pardo",
+        despacho="Juzgado Segundo de Medellín",
+    )
+    radicado = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        titulo="Despido de Torres",
+        radicado="05001310500120260014300",
+    )
+    otro = _caso(
+        db,
+        oficina,
+        [oficina.owner],
+        titulo="Responsabilidad contractual",
+        referencia="INT-ALFA-42",
+    )
+    principal = _principal(oficina, oficina.owner)
+
+    def ids(search: str) -> list[uuid.UUID]:
+        listing = list_cases(db, principal, status="all", cursor=None, limit=25, search=search)
+        # La franja de totales describe el archivo completo, no solo la búsqueda.
+        assert listing.totals.open == 3
+        return [item.id for item in listing.items]
+
+    assert ids("sucesion") == [sucesion]
+    assert ids("medellin") == [sucesion]
+    assert ids("2026 00143") == [radicado]
+    assert ids("alfa-42") == [otro]
+    assert ids("no existe") == []
+
+
 def test_los_totales_cuentan_por_estado(db: Session) -> None:
     oficina = crear_oficina(db)
     abogada = crear_miembro(db, oficina, "abogada@example.com", "lawyer")
@@ -455,6 +499,15 @@ def test_el_limite_va_de_1_a_50(dispositivo: NuevoCliente, db: Session, limite: 
     respuesta = _sesion(dispositivo, oficina.owner).get(_CASOS, params={"limit": limite})
 
     assert respuesta.status_code == 422
+
+
+def test_la_busqueda_de_la_ruta_no_acepta_texto_excesivo(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    oficina = crear_oficina(db)
+    cliente = _sesion(dispositivo, oficina.owner)
+
+    assert cliente.get(_CASOS, params={"search": "x" * 121}).status_code == 422
 
 
 def test_sin_sesion_responde_401(dispositivo: NuevoCliente) -> None:

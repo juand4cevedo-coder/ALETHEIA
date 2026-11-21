@@ -1,5 +1,6 @@
 """Consulta de eventos de seguridad del despacho (HU-014)."""
 
+import datetime
 import uuid
 
 from sqlalchemy import select
@@ -41,7 +42,15 @@ SECURITY_ACTIONS = (
 
 
 def events(
-    session: Session, principal: Principal, *, after: uuid.UUID | None, limit: int
+    session: Session,
+    principal: Principal,
+    *,
+    after: uuid.UUID | None,
+    limit: int,
+    action: str | None = None,
+    actor: uuid.UUID | None = None,
+    created_from: datetime.datetime | None = None,
+    created_to: datetime.datetime | None = None,
 ) -> list[AuditLog]:
     """Pagina eventos de la organización del gestor; RLS refuerza el mismo límite."""
     organization_id = organization_of_manager(principal)
@@ -56,4 +65,12 @@ def events(
     )
     if after is not None:
         query = query.where(AuditLog.id < after)
+    if action is not None:
+        query = query.where(AuditLog.action == action)
+    if actor is not None:
+        query = query.where(AuditLog.actor_user_id == actor)
+    if created_from is not None:
+        query = query.where(AuditLog.created_at >= created_from)
+    if created_to is not None:
+        query = query.where(AuditLog.created_at < created_to)
     return list(session.scalars(query))

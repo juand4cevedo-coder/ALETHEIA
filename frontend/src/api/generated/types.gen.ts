@@ -1493,6 +1493,38 @@ export type MySubscription = {
 };
 
 /**
+ * OrganizationAuditAction
+ *
+ * Acciones de seguridad que un gestor puede consultar explícitamente.
+ */
+export type OrganizationAuditAction =
+  | "user_registered"
+  | "email_verified"
+  | "login"
+  | "login_failed"
+  | "google_linked"
+  | "session_reuse_detected"
+  | "sessions_revoked"
+  | "password_reset"
+  | "password_changed"
+  | "invitation_sent"
+  | "invitation_revoked"
+  | "invitation_accepted"
+  | "role_changed"
+  | "member_removed"
+  | "plan_changed"
+  | "subscription_canceled"
+  | "subscription_expired"
+  | "courtesy_granted"
+  | "courtesy_renewed"
+  | "courtesy_revoked"
+  | "account_blocked"
+  | "account_unblocked"
+  | "account_closed"
+  | "legal_accepted"
+  | "logout";
+
+/**
  * OrganizationAuditEvent
  *
  * Evento de seguridad del despacho, sin contenido de casos ni datos internos.
@@ -3140,6 +3172,30 @@ export type OrganizationAuditPageData = {
      * Limit
      */
     limit?: number;
+    /**
+     * Action
+     *
+     * Acción de seguridad exacta.
+     */
+    action?: OrganizationAuditAction | null;
+    /**
+     * Actor
+     *
+     * Persona que originó el evento.
+     */
+    actor?: string | null;
+    /**
+     * Created From
+     *
+     * Inicio inclusivo del periodo, con zona horaria.
+     */
+    created_from?: string | null;
+    /**
+     * Created To
+     *
+     * Fin exclusivo del periodo, con zona horaria.
+     */
+    created_to?: string | null;
   };
   url: "/api/v1/organization/audit";
 };
@@ -3519,6 +3575,12 @@ export type ListCasesData = {
      * Casos por página.
      */
     limit?: number;
+    /**
+     * Search
+     *
+     * Título, radicado, referencia interna o despacho.
+     */
+    search?: string | null;
   };
   url: "/api/v1/cases";
 };

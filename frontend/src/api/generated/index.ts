@@ -265,6 +265,7 @@ export type {
   MemberOut,
   MemberPage,
   MySubscription,
+  OrganizationAuditAction,
   OrganizationAuditEvent,
   OrganizationAuditPage,
   OrganizationAuditPageData,

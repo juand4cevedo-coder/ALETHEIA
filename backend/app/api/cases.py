@@ -555,11 +555,24 @@ def list_cases(
     limit: Annotated[
         int, Query(ge=1, le=CASE_PAGE_SIZE_MAX, description="Casos por página.")
     ] = CASE_PAGE_SIZE_DEFAULT,
+    search: Annotated[
+        str | None,
+        Query(
+            min_length=1,
+            max_length=120,
+            description="Título, radicado, referencia interna o despacho.",
+        ),
+    ] = None,
 ) -> CasePage:
     response.headers["Cache-Control"] = "no-store"
     try:
         listing = cases_service.list_cases(
-            session, principal, status=case_status, cursor=cursor, limit=limit
+            session,
+            principal,
+            status=case_status,
+            cursor=cursor,
+            limit=limit,
+            search=search,
         )
     except cases_service.InvalidCursorError:
         raise HTTPException(

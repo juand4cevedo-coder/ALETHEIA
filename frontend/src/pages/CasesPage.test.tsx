@@ -446,38 +446,63 @@ describe("Libro de casos (HU-017)", () => {
     ]);
   });
 
-  it("el campo de texto filtra por título, radicado o despacho sin pedir nada a la API", async () => {
-    serve("lawyer", () => BOOK);
+  it("busca por título, radicado o despacho en el servidor y conserva el filtro en la dirección", async () => {
+    serve("lawyer", (query) => {
+      const search = query.get("search");
+      if (search === "sucesion")
+        return { items: [GOMEZ], next_cursor: null, totals: TOTALS };
+      if (search === "2026 00143" || search === "medellín")
+        return { items: [TORRES], next_cursor: null, totals: TOTALS };
+      if (search === "nada que ver")
+        return { items: [], next_cursor: null, totals: TOTALS };
+      return BOOK;
+    });
     const user = userEvent.setup();
     const { router } = await openBook();
-    const table = await screen.findByRole("table");
-    const requests = fetchMock.mock.calls.length;
+    await screen.findByRole("table");
     const filter = screen.getByRole("searchbox", { name: /Filtrar/ });
 
     await user.type(filter, "sucesion");
     expect(router.state.location.search).toContain("buscar=sucesion");
-    expect(within(table).getAllByRole("row").slice(1)).toHaveLength(1);
-    expect(within(table).getByText("Sucesión Gómez Pardo")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(bookRequests().at(-1)?.get("search")).toBe("sucesion"),
+    );
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("table")).getAllByRole("row").slice(1),
+      ).toHaveLength(1),
+    );
+    expect(screen.getByText("Sucesión Gómez Pardo")).toBeInTheDocument();
 
     await user.clear(filter);
     expect(router.state.location.search).not.toContain("buscar=");
     await user.type(filter, "2026 00143");
-    expect(within(table).getAllByRole("row").slice(1)).toHaveLength(1);
+    await waitFor(() =>
+      expect(bookRequests().at(-1)?.get("search")).toBe("2026 00143"),
+    );
     expect(
-      within(table).getByText("Despido sin justa causa, Torres"),
+      await screen.findByText("Despido sin justa causa, Torres"),
     ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("table")).getAllByRole("row").slice(1),
+      ).toHaveLength(1),
+    );
 
     await user.clear(filter);
     await user.type(filter, "medellín");
-    expect(within(table).getAllByRole("row").slice(1)).toHaveLength(1);
+    await waitFor(() =>
+      expect(bookRequests().at(-1)?.get("search")).toBe("medellín"),
+    );
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("table")).getAllByRole("row").slice(1),
+      ).toHaveLength(1),
+    );
 
     await user.clear(filter);
     await user.type(filter, "nada que ver");
-    expect(
-      screen.getByText(/Ningún caso cargado coincide/),
-    ).toBeInTheDocument();
-
-    expect(fetchMock.mock.calls.length).toBe(requests);
+    expect(await screen.findByText(/Ningún caso coincide/)).toBeInTheDocument();
   });
 
   it("«Cargar más casos» pide la página siguiente y anuncia cuántos llegaron", async () => {
@@ -550,18 +575,23 @@ describe("Libro de casos (HU-017)", () => {
     expect(within(table).getAllByRole("row").slice(1)).toHaveLength(75);
   });
 
-  it("con el filtro activo anuncia la carga y las coincidencias, y el foco no se pierde", async () => {
-    serve("lawyer", (query) =>
-      query.get("cursor") === "c2"
-        ? { items: [CONTRERAS], next_cursor: null, totals: TOTALS }
-        : { items: [TORRES, GOMEZ], next_cursor: "c2", totals: TOTALS },
-    );
+  it("pagina los resultados de una búsqueda sin volver al filtrado local", async () => {
+    const secondTorres = summary({
+      id: "01890a5d-ac96-774b-bcce-b302099a8098",
+      title: "Torres, segunda actuación",
+    });
+    serve("lawyer", (query) => {
+      if (query.get("search") !== "torres") return BOOK;
+      return query.get("cursor") === "c2"
+        ? { items: [secondTorres], next_cursor: null, totals: TOTALS }
+        : { items: [TORRES], next_cursor: "c2", totals: TOTALS };
+    });
     const user = userEvent.setup();
     await openBook();
-    const table = await screen.findByRole("table");
-    await user.type(
-      screen.getByRole("searchbox", { name: /Filtrar/ }),
-      "torres",
+    const search = await screen.findByRole("searchbox", { name: /Filtrar/ });
+    await user.type(search, "torres");
+    await waitFor(() =>
+      expect(bookRequests().at(-1)?.get("search")).toBe("torres"),
     );
 
     await user.click(screen.getByRole("button", { name: "Cargar más casos" }));
@@ -569,12 +599,13 @@ describe("Libro de casos (HU-017)", () => {
     await waitFor(() =>
       expect(
         screen.getByText(
-          "Se cargó 1 caso más; 3 en total. 1 de 3 casos cargados coincide.",
+          "Se cargó 1 caso más; 2 en total. 2 de 2 casos cargados coinciden.",
         ),
       ).toBeInTheDocument(),
     );
-    // El caso nuevo no coincide con el filtro: el foco va a la tabla, no se pierde.
-    expect(table).toHaveFocus();
+    expect(
+      screen.getByRole("link", { name: "Torres, segunda actuación" }),
+    ).toHaveFocus();
   });
 
   it("en 1100 px o menos las filas pasan a tarjetas", async () => {

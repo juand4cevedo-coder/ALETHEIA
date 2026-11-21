@@ -575,6 +575,7 @@ def list_cases(
     status: Literal["open", "closed", "all"],
     cursor: str | None,
     limit: int,
+    search: str | None = None,
 ) -> CaseListing:
     """Los casos donde la persona es miembro, de la actividad más reciente a la más antigua.
 
@@ -595,6 +596,7 @@ def list_cases(
         after=after,
         limit=limit + 1,
         recent_actions=RECENT_ACTIONS,
+        search=search,
     )
     totals = cases_repository.member_case_totals(
         session, organization_id, principal.user_id, statuses=STATUS_FILTERS["all"]

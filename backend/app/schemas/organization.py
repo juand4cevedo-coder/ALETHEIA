@@ -2,6 +2,7 @@
 
 import datetime
 import uuid
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -11,6 +12,36 @@ from app.schemas.me import MemberRole
 
 # Los mismos roles de invitations.role: el propietario no se invita, nace con la organización.
 InvitableRole = Literal["admin", "lawyer", "assistant"]
+
+
+class OrganizationAuditAction(StrEnum):
+    """Acciones de seguridad que un gestor puede consultar explícitamente."""
+
+    USER_REGISTERED = "user_registered"
+    EMAIL_VERIFIED = "email_verified"
+    LOGIN = "login"
+    LOGIN_FAILED = "login_failed"
+    GOOGLE_LINKED = "google_linked"
+    SESSION_REUSE_DETECTED = "session_reuse_detected"
+    SESSIONS_REVOKED = "sessions_revoked"
+    PASSWORD_RESET = "password_reset"  # noqa: S105 -- nombre de evento, no una clave
+    PASSWORD_CHANGED = "password_changed"  # noqa: S105 -- nombre de evento, no una clave
+    INVITATION_SENT = "invitation_sent"
+    INVITATION_REVOKED = "invitation_revoked"
+    INVITATION_ACCEPTED = "invitation_accepted"
+    ROLE_CHANGED = "role_changed"
+    MEMBER_REMOVED = "member_removed"
+    PLAN_CHANGED = "plan_changed"
+    SUBSCRIPTION_CANCELED = "subscription_canceled"
+    SUBSCRIPTION_EXPIRED = "subscription_expired"
+    COURTESY_GRANTED = "courtesy_granted"
+    COURTESY_RENEWED = "courtesy_renewed"
+    COURTESY_REVOKED = "courtesy_revoked"
+    ACCOUNT_BLOCKED = "account_blocked"
+    ACCOUNT_UNBLOCKED = "account_unblocked"
+    ACCOUNT_CLOSED = "account_closed"
+    LEGAL_ACCEPTED = "legal_accepted"
+    LOGOUT = "logout"
 
 
 # Tamaño de página por defecto y máximo de las listas paginadas por cursor.

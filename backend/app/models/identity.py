@@ -152,6 +152,18 @@ class AuditLog(Base):
         CheckConstraint("char_length(user_agent) <= 300", name="user_agent_length"),
         # Auditoría de una organización ordenada por fecha (IDX-011).
         Index("ix_audit_log_organization_id_created_at", "organization_id", "created_at"),
+        Index(
+            "ix_audit_log_organization_action_created_at",
+            "organization_id",
+            "action",
+            "created_at",
+        ),
+        Index(
+            "ix_audit_log_organization_actor_created_at",
+            "organization_id",
+            "actor_user_id",
+            "created_at",
+        ),
     )
 
     id: Mapped[UUIDv7Pk]
