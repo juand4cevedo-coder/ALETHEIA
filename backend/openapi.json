@@ -4032,6 +4032,85 @@
               ],
               "title": "Cursor"
             }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120,
+                  "pattern": ".*\\S.*"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nombre o correo de la cuenta.",
+              "title": "Search"
+            },
+            "description": "Nombre o correo de la cuenta."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "active",
+                    "blocked"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Estado actual de la cuenta.",
+              "title": "Status"
+            },
+            "description": "Estado actual de la cuenta."
+          },
+          {
+            "name": "email_verified",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Si la cuenta confirmó su correo.",
+              "title": "Email Verified"
+            },
+            "description": "Si la cuenta confirmó su correo."
+          },
+          {
+            "name": "platform_admin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Si la cuenta administra la plataforma.",
+              "title": "Platform Admin"
+            },
+            "description": "Si la cuenta administra la plataforma."
           }
         ],
         "responses": {
@@ -7545,12 +7624,18 @@
               }
             ],
             "title": "Next Cursor"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Cuentas que coinciden con los filtros, sin limitar por página."
           }
         },
         "type": "object",
         "required": [
           "items",
-          "next_cursor"
+          "next_cursor",
+          "total"
         ],
         "title": "PlatformUserPage"
       },

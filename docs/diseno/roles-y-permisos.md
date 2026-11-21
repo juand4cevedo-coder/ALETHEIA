@@ -43,7 +43,9 @@ La dirección IP y el agente de usuario se anonimizan después de 90 días (RN-0
 El atributo `is_platform_admin` habilita la sección `/app/plataforma` y las rutas de cuentas
 `/api/v1/platform/users`. La API comprueba ese atributo en la base en cada petición. El
 dueño de la plataforma no recibe contexto de despacho ni puede invitar miembros, abrir casos o
-consultar expedientes. La consola lista cuentas, muestra la verificación del correo y permite bloquearlas o desbloquearlas; bloquear revoca
+consultar expedientes. La consola busca y filtra cuentas en el servidor por nombre, correo,
+estado, verificación y ámbito; muestra la cantidad total de coincidencias y permite bloquearlas
+o desbloquearlas. Bloquear revoca
 sus sesiones y ambos cambios dejan auditoría. También muestra el resumen de planes y estados de
 suscripción, la bandeja de solicitudes de soporte y los eventos de auditoría sin contenido de
 expedientes. Cada cuenta autenticada puede abrir y consultar sus propias solicitudes; solo quien

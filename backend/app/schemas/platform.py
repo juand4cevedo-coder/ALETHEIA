@@ -20,6 +20,7 @@ class PlatformUser(BaseModel):
 class PlatformUserPage(BaseModel):
     items: list[PlatformUser]
     next_cursor: uuid.UUID | None
+    total: int = Field(description="Cuentas que coinciden con los filtros, sin limitar por página.")
 
 
 class UserStatusChange(BaseModel):

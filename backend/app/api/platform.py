@@ -4,8 +4,8 @@ import datetime
 import uuid
 from typing import Annotated, Literal, cast
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy import func, select
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_client_ip, get_principal, get_session
@@ -149,16 +149,57 @@ def list_platform_users(
     principal: Annotated[Principal, Depends(get_platform_admin)],
     session: Annotated[Session, Depends(get_session)],
     cursor: uuid.UUID | None = None,
+    search: Annotated[
+        str | None,
+        Query(
+            min_length=1,
+            max_length=120,
+            pattern=r".*\S.*",
+            description="Nombre o correo de la cuenta.",
+        ),
+    ] = None,
+    user_status: Annotated[
+        Literal["active", "blocked"] | None,
+        Query(alias="status", description="Estado actual de la cuenta."),
+    ] = None,
+    email_verified: Annotated[
+        bool | None, Query(description="Si la cuenta confirmó su correo.")
+    ] = None,
+    platform_admin: Annotated[
+        bool | None, Query(description="Si la cuenta administra la plataforma.")
+    ] = None,
 ) -> PlatformUserPage:
     del principal
     response.headers["Cache-Control"] = "no-store"
-    query = select(User).order_by(User.id.desc()).limit(51)
+    filters = []
+    if search is not None:
+        term = search.strip().lower()
+        filters.append(
+            or_(
+                func.lower(User.full_name).contains(term, autoescape=True),
+                func.lower(User.email).contains(term, autoescape=True),
+            )
+        )
+    if user_status is not None:
+        filters.append(User.status == user_status)
+    if email_verified is not None:
+        filters.append(
+            User.email_verified_at.is_not(None)
+            if email_verified
+            else User.email_verified_at.is_(None)
+        )
+    if platform_admin is not None:
+        filters.append(User.is_platform_admin.is_(platform_admin))
+
+    total = session.scalar(select(func.count()).select_from(User).where(*filters)) or 0
+    query = select(User).where(*filters).order_by(User.id.desc()).limit(51)
     if cursor is not None:
         query = query.where(User.id < cursor)
     users = list(session.scalars(query))
     return PlatformUserPage(
         items=[_public_user(user) for user in users[:50]],
         next_cursor=users[49].id if len(users) > 50 else None,
+        total=total,
     )
 
 

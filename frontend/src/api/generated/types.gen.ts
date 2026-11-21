@@ -1968,6 +1968,12 @@ export type PlatformUserPage = {
    * Next Cursor
    */
   next_cursor: string | null;
+  /**
+   * Total
+   *
+   * Cuentas que coinciden con los filtros, sin limitar por página.
+   */
+  total: number;
 };
 
 /**
@@ -4688,6 +4694,30 @@ export type ListPlatformUsersData = {
      * Cursor
      */
     cursor?: string | null;
+    /**
+     * Search
+     *
+     * Nombre o correo de la cuenta.
+     */
+    search?: string | null;
+    /**
+     * Status
+     *
+     * Estado actual de la cuenta.
+     */
+    status?: "active" | "blocked" | null;
+    /**
+     * Email Verified
+     *
+     * Si la cuenta confirmó su correo.
+     */
+    email_verified?: boolean | null;
+    /**
+     * Platform Admin
+     *
+     * Si la cuenta administra la plataforma.
+     */
+    platform_admin?: boolean | null;
   };
   url: "/api/v1/platform/users";
 };

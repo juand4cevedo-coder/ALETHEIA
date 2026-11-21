@@ -16,6 +16,58 @@
   border-top: 1px solid var(--ink-hairline);
 }
 
+.accountFilters {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(140px, 1fr));
+  gap: var(--space-4);
+  align-items: end;
+  padding: 0 0 var(--space-5);
+}
+
+.filterField {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--text);
+  font-size: var(--font-size-support);
+  font-weight: 500;
+}
+
+.filterField :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-sm);
+  background: var(--paper-raised);
+  color: var(--text);
+  font: inherit;
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+
+.filterField :is(input, select):hover {
+  border-color: var(--ink-900);
+}
+
+.filterField :is(input, select):focus-visible {
+  border-color: var(--ink-900);
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+.filterActions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: var(--space-2);
+}
+
+.resultCount {
+  margin: 0 0 var(--space-3);
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -207,7 +259,11 @@
 /* Tabla a tarjetas. La persona, el plan o la acción (el encabezado de fila) es el título de cada
    tarjeta y las demás celdas llevan su rótulo desde data-label. platformCss.test.ts deriva de
    esta cifra el texto que le queda a la columna principal. */
-@container (max-width: 920px) {
+@container (max-width: 1040px) {
+  .accountFilters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .tableScroll {
     border-top: 0;
     overflow: visible;
@@ -275,6 +331,10 @@
 }
 
 @container (max-width: 680px) {
+  .accountFilters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .ticket {
     padding: var(--space-4);
   }
