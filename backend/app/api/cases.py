@@ -45,6 +45,7 @@ from app.schemas.cases import (
     CaseMemberOut,
     CaseOut,
     CasePage,
+    CaseRetentionUpdate,
     CaseSummaryOut,
     CaseTotalsOut,
     CustodyEventOut,
@@ -766,6 +767,52 @@ def reopen_case(
         raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
     except cases_service.CaseAlreadyInStateError:
         raise HTTPException(409, detail="El caso ya está abierto.", headers=_NO_STORE) from None
+    except OrganizationNotActiveError:
+        raise HTTPException(409, detail=ORGANIZATION_NOT_ACTIVE, headers=_NO_STORE) from None
+
+
+@router.patch(
+    "/{case_id}/retention",
+    response_model=CaseOut,
+    summary="Actualizar el fundamento y bloqueo jurídico de un caso archivado",
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "Solo el propietario o administrador gestiona la conservación."},
+        404: {"description": "El caso no existe o la persona no pertenece a él."},
+        409: {"description": "El caso no está archivado o el despacho está en solo lectura."},
+    },
+)
+def update_case_retention(
+    case_id: uuid.UUID,
+    data: CaseRetentionUpdate,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> CaseOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        cases_service.update_case_retention(
+            session,
+            principal,
+            case_id,
+            legal_hold=data.legal_hold,
+            retention_basis=data.retention_basis,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+        return _case_out(cases_service.get_case(session, principal, case_id))
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    except cases_service.NotAllowedToManageCaseError:
+        raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
+    except cases_service.CaseRetentionUnavailableError:
+        raise HTTPException(
+            409,
+            detail="Solo puede gestionar la conservación de un caso archivado.",
+            headers=_NO_STORE,
+        ) from None
     except OrganizationNotActiveError:
         raise HTTPException(409, detail=ORGANIZATION_NOT_ACTIVE, headers=_NO_STORE) from None
 

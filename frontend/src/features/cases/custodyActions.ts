@@ -15,6 +15,7 @@ export const CUSTODY_ACTION_LABELS: Record<string, string> = {
   chain_verified: "Cadena verificada",
   case_closed: "Caso cerrado",
   case_reopened: "Caso reabierto",
+  case_retention_updated: "Conservación actualizada",
   deletion_requested: "Eliminación solicitada",
 };
 

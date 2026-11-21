@@ -2811,6 +2811,104 @@
         }
       }
     },
+    "/api/v1/cases/{case_id}/retention": {
+      "patch": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Actualizar el fundamento y bloqueo jurídico de un caso archivado",
+        "operationId": "update_case_retention",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseRetentionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Solo el propietario o administrador gestiona la conservación.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El caso no existe o la persona no pertenece a él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El caso no está archivado o el despacho está en solo lectura.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cases/{case_id}/available-members": {
       "get": {
         "tags": [
@@ -4684,6 +4782,31 @@
         "title": "CasePage",
         "description": "Una página de los casos de la persona y los totales (API-023)."
       },
+      "CaseRetentionUpdate": {
+        "properties": {
+          "legal_hold": {
+            "type": "boolean",
+            "title": "Legal Hold"
+          },
+          "retention_basis": {
+            "type": "string",
+            "enum": [
+              "organization_policy",
+              "legal_or_contractual_duty",
+              "litigation_hold"
+            ],
+            "title": "Retention Basis"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "legal_hold",
+          "retention_basis"
+        ],
+        "title": "CaseRetentionUpdate",
+        "description": "Fundamento operativo y bloqueo de un expediente archivado."
+      },
       "CaseSummaryOut": {
         "properties": {
           "id": {
@@ -6100,6 +6223,7 @@
                 "cases.create",
                 "cases.manage_members",
                 "cases.manage_lifecycle",
+                "cases.manage_retention",
                 "cases.upload_evidence",
                 "cases.download_evidence"
               ]

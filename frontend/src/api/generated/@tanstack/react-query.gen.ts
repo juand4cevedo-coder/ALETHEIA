@@ -67,6 +67,7 @@ import {
   signIn,
   signOut,
   signOutEverywhere,
+  updateCaseRetention,
   uploadEvidence,
   verifyCustody,
   verifyEmail,
@@ -233,6 +234,9 @@ import type {
   SignOutEverywhereError,
   SignOutEverywhereResponse,
   SignOutResponse,
+  UpdateCaseRetentionData,
+  UpdateCaseRetentionError,
+  UpdateCaseRetentionResponse,
   UploadEvidenceData,
   UploadEvidenceError,
   UploadEvidenceResponse,
@@ -1655,6 +1659,33 @@ export const reopenCaseMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await reopenCase({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Actualizar el fundamento y bloqueo jurídico de un caso archivado
+ */
+export const updateCaseRetentionMutation = (
+  options?: Partial<Options<UpdateCaseRetentionData>>,
+): UseMutationOptions<
+  UpdateCaseRetentionResponse,
+  UpdateCaseRetentionError,
+  Options<UpdateCaseRetentionData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    UpdateCaseRetentionResponse,
+    UpdateCaseRetentionError,
+    Options<UpdateCaseRetentionData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await updateCaseRetention({
         ...options,
         ...fnOptions,
         throwOnError: true,

@@ -27,6 +27,7 @@ from app.services import custody_chain
 from app.services.cases import (
     CaseAlreadyInStateError,
     CaseNotFoundError,
+    CaseRetentionUnavailableError,
     EmailNotVerifiedError,
     FilingNumberTakenError,
     NewCase,
@@ -36,6 +37,7 @@ from app.services.cases import (
     create_case,
     get_case,
     reopen_case,
+    update_case_retention,
 )
 from app.services.members import OrganizationNotActiveError
 from app.services.sessions import Principal
@@ -583,6 +585,78 @@ def test_asistente_no_cierra_casos(db: Session, envoltorio: EnvoltorioDePrueba) 
             db,
             _principal(oficina, asistente, "assistant"),
             caso.id,
+            client_ip=_IP,
+            user_agent=_AGENTE,
+        )
+
+
+def test_propietario_gestiona_el_bloqueo_y_deja_doble_trazabilidad(
+    db: Session, envoltorio: EnvoltorioDePrueba
+) -> None:
+    oficina = crear_oficina(db)
+    _verificar(db, oficina.owner)
+    principal = _principal(oficina, oficina.owner, "owner")
+    caso = _abrir(db, principal, envoltorio)
+    close_case(db, principal, caso.id, client_ip=_IP, user_agent=_AGENTE)
+
+    actualizado = update_case_retention(
+        db,
+        principal,
+        caso.id,
+        legal_hold=True,
+        retention_basis="litigation_hold",
+        client_ip=_IP,
+        user_agent=_AGENTE,
+    )
+
+    assert actualizado.legal_hold
+    assert actualizado.retention_basis == "litigation_hold"
+    detalle = get_case(db, principal, caso.id)
+    assert detalle.recent_events[0].action == "case_retention_updated"
+    audit = db.scalars(
+        select(AuditLog).where(
+            AuditLog.target_id == caso.id,
+            AuditLog.action == "case_retention_updated",
+        )
+    ).one()
+    assert audit.details == {
+        "previous_legal_hold": False,
+        "legal_hold": True,
+        "previous_retention_basis": "organization_policy",
+        "retention_basis": "litigation_hold",
+    }
+
+
+def test_abogado_no_gestiona_retencion_y_un_caso_abierto_no_la_admite(
+    db: Session, envoltorio: EnvoltorioDePrueba
+) -> None:
+    oficina = crear_oficina(db)
+    abogado = _persona(db, oficina, "lawyer")
+    principal_abogado = _principal(oficina, abogado, "lawyer")
+    caso_abogado = _abrir(db, principal_abogado, envoltorio)
+    close_case(db, principal_abogado, caso_abogado.id, client_ip=_IP, user_agent=_AGENTE)
+
+    with pytest.raises(NotAllowedToManageCaseError):
+        update_case_retention(
+            db,
+            principal_abogado,
+            caso_abogado.id,
+            legal_hold=True,
+            retention_basis="litigation_hold",
+            client_ip=_IP,
+            user_agent=_AGENTE,
+        )
+
+    principal_owner = _principal(oficina, oficina.owner, "owner")
+    _verificar(db, oficina.owner)
+    abierto = _abrir(db, principal_owner, envoltorio)
+    with pytest.raises(CaseRetentionUnavailableError):
+        update_case_retention(
+            db,
+            principal_owner,
+            abierto.id,
+            legal_hold=False,
+            retention_basis="organization_policy",
             client_ip=_IP,
             user_agent=_AGENTE,
         )

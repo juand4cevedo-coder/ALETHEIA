@@ -175,6 +175,9 @@ import type {
   SignOutEverywhereErrors,
   SignOutEverywhereResponses,
   SignOutResponses,
+  UpdateCaseRetentionData,
+  UpdateCaseRetentionErrors,
+  UpdateCaseRetentionResponses,
   UploadEvidenceData,
   UploadEvidenceErrors,
   UploadEvidenceResponses,
@@ -1073,6 +1076,36 @@ export const reopenCase = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/cases/{case_id}/reopen",
     ...options,
+  });
+
+/**
+ * Actualizar el fundamento y bloqueo jurídico de un caso archivado
+ */
+export const updateCaseRetention = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateCaseRetentionData, ThrowOnError>,
+): RequestResult<
+  UpdateCaseRetentionResponses,
+  UpdateCaseRetentionErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).patch<
+    UpdateCaseRetentionResponses,
+    UpdateCaseRetentionErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/retention",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**

@@ -124,6 +124,11 @@
   line-height: var(--line-height-support);
 }
 
+.lifecycleCopy .retentionStatus {
+  display: flex;
+  margin-top: var(--space-1);
+}
+
 .lifecycleMessage {
   flex-basis: 100%;
   color: var(--success-text);

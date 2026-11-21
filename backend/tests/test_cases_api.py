@@ -216,6 +216,30 @@ def test_campos_extra_responden_422(dispositivo: NuevoCliente, db: Session) -> N
     assert respuesta.status_code == 422
 
 
+def test_el_propietario_actualiza_la_conservacion_de_un_caso_archivado(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    _, cliente = _como_dueno(dispositivo, db)
+    creado = cliente.post(_CASOS, json=_datos())
+    caso_id = creado.json()["id"]
+    assert cliente.post(f"{_CASOS}/{caso_id}/close").status_code == 200
+
+    respuesta = cliente.patch(
+        f"{_CASOS}/{caso_id}/retention",
+        json={"legal_hold": True, "retention_basis": "litigation_hold"},
+    )
+
+    assert respuesta.status_code == 200, respuesta.text
+    assert respuesta.headers["Cache-Control"] == "no-store"
+    assert respuesta.json()["legal_hold"] is True
+    assert respuesta.json()["retention_basis"] == "litigation_hold"
+    incoherente = cliente.patch(
+        f"{_CASOS}/{caso_id}/retention",
+        json={"legal_hold": False, "retention_basis": "litigation_hold"},
+    )
+    assert incoherente.status_code == 422
+
+
 def test_el_asistente_recibe_403(dispositivo: NuevoCliente, db: Session) -> None:
     oficina = crear_oficina(db)
     asistente = crear_miembro(db, oficina, "asistente@example.com", "assistant")

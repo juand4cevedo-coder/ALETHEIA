@@ -423,6 +423,23 @@ export type CasePage = {
 };
 
 /**
+ * CaseRetentionUpdate
+ *
+ * Fundamento operativo y bloqueo de un expediente archivado.
+ */
+export type CaseRetentionUpdate = {
+  /**
+   * Legal Hold
+   */
+  legal_hold: boolean;
+  /**
+   * Retention Basis
+   */
+  retention_basis:
+    "organization_policy" | "legal_or_contractual_duty" | "litigation_hold";
+};
+
+/**
  * CaseSummaryOut
  *
  * Un caso de la lista con su actividad (API-023).
@@ -1394,6 +1411,7 @@ export type Me = {
     | "cases.create"
     | "cases.manage_members"
     | "cases.manage_lifecycle"
+    | "cases.manage_retention"
     | "cases.upload_evidence"
     | "cases.download_evidence"
   >;
@@ -3811,6 +3829,54 @@ export type ReopenCaseResponses = {
 };
 
 export type ReopenCaseResponse = ReopenCaseResponses[keyof ReopenCaseResponses];
+
+export type UpdateCaseRetentionData = {
+  body: CaseRetentionUpdate;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/retention";
+};
+
+export type UpdateCaseRetentionErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * Solo el propietario o administrador gestiona la conservación.
+   */
+  403: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * El caso no está archivado o el despacho está en solo lectura.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type UpdateCaseRetentionError =
+  UpdateCaseRetentionErrors[keyof UpdateCaseRetentionErrors];
+
+export type UpdateCaseRetentionResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseOut;
+};
+
+export type UpdateCaseRetentionResponse =
+  UpdateCaseRetentionResponses[keyof UpdateCaseRetentionResponses];
 
 export type AvailableCaseMembersData = {
   body?: never;

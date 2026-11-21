@@ -201,6 +201,94 @@ describe("Página del caso (HU-015)", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("el propietario gestiona el bloqueo jurídico y el abogado no", async () => {
+    let current: CaseDetail = {
+      ...DETAIL,
+      status: "closed",
+      closed_at: "2026-11-20T20:00:00Z",
+      retention_until: "2036-11-20T20:00:00Z",
+      retention_basis: "organization_policy",
+    };
+    serve(() => jsonResponse(current));
+    const original = fetchMock.getMockImplementation()!;
+    const owner = {
+      ...ME,
+      organization: { ...ME.organization, role: "owner" },
+    };
+    let sentBody: unknown;
+    fetchMock.mockImplementation(async (input, init) => {
+      const request = input as Request;
+      const path = new URL(request.url).pathname;
+      if (path === "/api/v1/me") return jsonResponse(owner);
+      if (
+        request.method === "PATCH" &&
+        path === `/api/v1/cases/${CASE_ID}/retention`
+      ) {
+        sentBody = await request.json();
+        current = {
+          ...current,
+          legal_hold: true,
+          retention_basis: "litigation_hold",
+        };
+        return jsonResponse(current);
+      }
+      return original(input, init);
+    });
+    const user = userEvent.setup();
+    await openCase();
+
+    expect(
+      screen.getByText("Política del despacho", { selector: "[data-tone]" }),
+    ).toBeVisible();
+    await user.click(
+      screen.getByRole("button", { name: "Gestionar conservación" }),
+    );
+    const dialog = screen.getByRole("dialog", {
+      name: "Gestionar conservación",
+    });
+    await user.selectOptions(
+      within(dialog).getByLabelText("Fundamento de conservación"),
+      "litigation_hold",
+    );
+    expect(
+      within(dialog).getByText("Activa el bloqueo jurídico del expediente."),
+    ).toBeVisible();
+    await user.click(
+      within(dialog).getByRole("button", { name: "Guardar y registrar" }),
+    );
+
+    expect(sentBody).toEqual({
+      legal_hold: true,
+      retention_basis: "litigation_hold",
+    });
+    expect(
+      await screen.findByText(
+        "Conservación actualizada y registrada en la trazabilidad.",
+      ),
+    ).toBeVisible();
+    expect(screen.getByText("Bloqueo jurídico activo")).toBeVisible();
+  });
+
+  it("el abogado ve la conservación pero no puede gestionarla", async () => {
+    serve(() =>
+      jsonResponse({
+        ...DETAIL,
+        status: "closed",
+        closed_at: "2026-11-20T20:00:00Z",
+        retention_until: "2036-11-20T20:00:00Z",
+        retention_basis: "organization_policy",
+      }),
+    );
+    await openCase();
+
+    expect(
+      screen.getByText("Política del despacho", { selector: "[data-tone]" }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Gestionar conservación" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("solicita el paquete y muestra el enlace al terminar", async () => {
     sessionStorage.clear();
     serve(() => jsonResponse(DETAIL));

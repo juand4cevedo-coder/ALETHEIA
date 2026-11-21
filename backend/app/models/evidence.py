@@ -57,6 +57,7 @@ CUSTODY_ACTIONS: Final = (
     "chain_verified",
     "case_closed",
     "case_reopened",
+    "case_retention_updated",
     "deletion_requested",
 )
 

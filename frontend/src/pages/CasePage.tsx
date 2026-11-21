@@ -18,6 +18,7 @@ import {
   readCaseQueryKey,
   removeCaseMemberMutation,
   reopenCaseMutation,
+  updateCaseRetentionMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
@@ -363,7 +364,12 @@ function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
   const queryClient = useQueryClient();
   const role = me.organization?.role;
   const canManage = role === "owner" || role === "admin" || role === "lawyer";
+  const canManageRetention = role === "owner" || role === "admin";
   const [confirming, setConfirming] = useState(false);
+  const [managingRetention, setManagingRetention] = useState(false);
+  const [retentionBasis, setRetentionBasis] = useState<
+    NonNullable<CaseDetail["retention_basis"]>
+  >(detail.retention_basis ?? "organization_policy");
   const [message, setMessage] = useState("");
   const path = { case_id: detail.id };
   const refresh = async () => {
@@ -390,6 +396,14 @@ function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
       await refresh();
     },
   });
+  const retention = useMutation({
+    ...updateCaseRetentionMutation(),
+    onSuccess: async () => {
+      setManagingRetention(false);
+      setMessage("Conservación actualizada y registrada en la trazabilidad.");
+      await refresh();
+    },
+  });
   const mutation = detail.status === "open" ? close : reopen;
   const error = mutation.error;
 
@@ -408,6 +422,17 @@ function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
               ? `Conservación programada, como mínimo, hasta el ${formatColombiaTime(detail.retention_until)}.`
               : "El expediente permanece conservado con toda su trazabilidad."}
         </span>
+        {detail.status === "closed" && (
+          <span className={styles.retentionStatus}>
+            <StatusBadge tone={detail.legal_hold ? "closed" : "muted"}>
+              {detail.legal_hold
+                ? "Bloqueo jurídico activo"
+                : detail.retention_basis === "legal_or_contractual_duty"
+                  ? "Deber legal o contractual"
+                  : "Política del despacho"}
+            </StatusBadge>
+          </span>
+        )}
       </div>
       {canManage && (
         <Button
@@ -416,6 +441,18 @@ function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
           onClick={() => setConfirming(true)}
         >
           {detail.status === "open" ? "Cerrar y archivar" : "Reabrir caso"}
+        </Button>
+      )}
+      {detail.status === "closed" && canManageRetention && (
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            setRetentionBasis(detail.retention_basis ?? "organization_policy");
+            setManagingRetention(true);
+          }}
+        >
+          Gestionar conservación
         </Button>
       )}
       {message && (
@@ -476,6 +513,80 @@ function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
           <Notice tone="error">
             {apiProblem(error).detail ??
               "No pudimos cambiar el estado del caso."}
+          </Notice>
+        )}
+      </Dialog>
+      <Dialog
+        open={managingRetention}
+        onClose={() => setManagingRetention(false)}
+        title="Gestionar conservación"
+        icon={<BalanzaIcon size={24} />}
+        busy={retention.isPending}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              data-autofocus
+              onClick={() => setManagingRetention(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              busy={retention.isPending}
+              onClick={() =>
+                retention.mutate({
+                  path,
+                  body: {
+                    retention_basis: retentionBasis,
+                    legal_hold: retentionBasis === "litigation_hold",
+                  },
+                })
+              }
+            >
+              Guardar y registrar
+            </Button>
+          </>
+        }
+      >
+        <p>
+          El cambio quedará en la cadena de custodia y en la auditoría del
+          despacho. Un bloqueo jurídico impide cualquier proceso de supresión
+          mientras permanezca activo.
+        </p>
+        <Select
+          label="Fundamento de conservación"
+          value={retentionBasis}
+          onChange={(event) =>
+            setRetentionBasis(
+              event.target.value as NonNullable<CaseDetail["retention_basis"]>,
+            )
+          }
+          options={[
+            {
+              value: "organization_policy",
+              label: "Política del despacho",
+            },
+            {
+              value: "legal_or_contractual_duty",
+              label: "Deber legal o contractual",
+            },
+            {
+              value: "litigation_hold",
+              label: "Bloqueo jurídico por litigio",
+            },
+          ]}
+          help={
+            retentionBasis === "litigation_hold"
+              ? "Activa el bloqueo jurídico del expediente."
+              : "Mantiene la fecha mínima de revisión ya registrada."
+          }
+        />
+        {retention.error && (
+          <Notice tone="error">
+            {apiProblem(retention.error).detail ??
+              "No pudimos actualizar la conservación."}
           </Notice>
         )}
       </Dialog>

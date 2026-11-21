@@ -54,6 +54,7 @@ AUDIT_ACTIONS: Final = (
     "organization_renamed",
     "case_closed",
     "case_reopened",
+    "case_retention_updated",
     "account_closed",
 )
 

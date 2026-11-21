@@ -5,7 +5,7 @@ import re
 import uuid
 from typing import Final, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.schemas.me import MemberRole
 
@@ -23,6 +23,7 @@ PracticeArea = Literal[
 
 # Los mismos valores de evidences.declared_type.
 DeclaredType = Literal["chat", "email", "audio", "image", "document", "other"]
+RetentionBasis = Literal["organization_policy", "legal_or_contractual_duty", "litigation_hold"]
 
 
 class EvidenceUploadOut(BaseModel):
@@ -98,6 +99,23 @@ class CaseCreate(BaseModel):
         return digits
 
 
+class CaseRetentionUpdate(BaseModel):
+    """Fundamento operativo y bloqueo de un expediente archivado."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    legal_hold: bool
+    retention_basis: RetentionBasis
+
+    @model_validator(mode="after")
+    def _basis_matches_hold(self) -> CaseRetentionUpdate:
+        if self.legal_hold != (self.retention_basis == "litigation_hold"):
+            raise ValueError(
+                "El bloqueo jurídico exige el fundamento de bloqueo por litigio y viceversa."
+            )
+        return self
+
+
 class CaseOut(BaseModel):
     """Un caso activo o archivado."""
 
@@ -113,9 +131,9 @@ class CaseOut(BaseModel):
     retention_until: datetime.datetime | None = Field(
         description="Fecha mínima para revisar si la conservación debe continuar."
     )
-    retention_basis: (
-        Literal["organization_policy", "legal_or_contractual_duty", "litigation_hold"] | None
-    ) = Field(description="Fundamento operativo de la conservación.")
+    retention_basis: RetentionBasis | None = Field(
+        description="Fundamento operativo de la conservación."
+    )
     legal_hold: bool = Field(description="Si existe un bloqueo jurídico que impide suprimir.")
     created_by_name: str = Field(description="Nombre de quien lo abrió.")
     member_count: int = Field(description="Personas asignadas al caso.")

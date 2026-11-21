@@ -38,6 +38,7 @@ const ACTION_TONE: Record<string, "ok" | "pending" | "error" | "muted"> = {
   chain_verified: "ok",
   evidence_stamp_failed: "error",
   case_closed: "muted",
+  case_retention_updated: "muted",
   export_ready: "ok",
 };
 

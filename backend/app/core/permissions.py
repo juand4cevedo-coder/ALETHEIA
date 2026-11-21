@@ -16,6 +16,7 @@ Permission = Literal[
     "cases.create",
     "cases.manage_members",
     "cases.manage_lifecycle",
+    "cases.manage_retention",
     "cases.upload_evidence",
     "cases.download_evidence",
 ]
@@ -31,6 +32,7 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.create",
             "cases.manage_members",
             "cases.manage_lifecycle",
+            "cases.manage_retention",
             "cases.upload_evidence",
             "cases.download_evidence",
         }
@@ -43,6 +45,7 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.create",
             "cases.manage_members",
             "cases.manage_lifecycle",
+            "cases.manage_retention",
             "cases.upload_evidence",
             "cases.download_evidence",
         }
