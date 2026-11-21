@@ -96,6 +96,7 @@ function serve(
       broken_at: null,
       reason: null,
       head_hash: EVENT_HASH,
+      latest_anchor: null,
     }),
 ) {
   fetchMock.mockImplementation(async (input) => {
@@ -459,6 +460,7 @@ describe("Página del caso (HU-015)", () => {
           broken_at: 1,
           reason: "event_hash",
           head_hash: "0".repeat(64),
+          latest_anchor: null,
         }),
     );
     await openCase();
@@ -482,6 +484,35 @@ describe("Página del caso (HU-015)", () => {
     expect(
       screen.getByText(/no incluye un anclaje externo/),
     ).toBeInTheDocument();
+  });
+
+  it("muestra hasta qué evento llega el anclaje externo", async () => {
+    const user = userEvent.setup();
+    serve(
+      () => jsonResponse(DETAIL),
+      undefined,
+      undefined,
+      () =>
+        jsonResponse({
+          intact: true,
+          events_checked: 1,
+          broken_at: null,
+          reason: null,
+          head_hash: EVENT_HASH,
+          latest_anchor: {
+            seq: 1,
+            head_hash: EVENT_HASH,
+            tsa_time: "2026-11-21T17:30:00Z",
+          },
+        }),
+    );
+    await openCase();
+    await screen.findByText("Sin verificar");
+    await user.click(screen.getByRole("button", { name: "Verificar cadena" }));
+    expect(
+      await screen.findByText(/anclaje externo cubre la cabeza actual/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/hasta el evento #1/)).toBeInTheDocument();
   });
 
   it("muestra el equipo con quien abrió el caso", async () => {

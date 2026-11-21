@@ -5955,6 +5955,34 @@
         ],
         "title": "CourtesyTarget"
       },
+      "CustodyAnchorOut": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq",
+            "description": "Último evento cubierto por el sello externo."
+          },
+          "head_hash": {
+            "type": "string",
+            "title": "Head Hash",
+            "description": "Huella de la cabeza sellada, en hexadecimal."
+          },
+          "tsa_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Tsa Time",
+            "description": "Hora declarada por la autoridad de sellado."
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "head_hash",
+          "tsa_time"
+        ],
+        "title": "CustodyAnchorOut",
+        "description": "Alcance de un anclaje externo, sin exponer su token criptográfico."
+      },
       "CustodyEventOut": {
         "properties": {
           "seq": {
@@ -6073,6 +6101,17 @@
             "type": "string",
             "title": "Head Hash",
             "description": "Huella del último evento válido, en hexadecimal."
+          },
+          "latest_anchor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CustodyAnchorOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Última cabeza con sello externo, o null si todavía no existe."
           }
         },
         "type": "object",
@@ -6081,7 +6120,8 @@
           "events_checked",
           "broken_at",
           "reason",
-          "head_hash"
+          "head_hash",
+          "latest_anchor"
         ],
         "title": "CustodyVerificationOut",
         "description": "Resultado del recálculo independiente de la cadena guardada."

@@ -48,6 +48,7 @@ from app.schemas.cases import (
     CaseRetentionUpdate,
     CaseSummaryOut,
     CaseTotalsOut,
+    CustodyAnchorOut,
     CustodyEventOut,
     CustodyPage,
     CustodyVerificationOut,
@@ -196,15 +197,26 @@ def verify_custody(
 ) -> CustodyVerificationOut:
     response.headers["Cache-Control"] = "no-store"
     try:
-        report = custody_verification.verify_case(session, principal, case_id)
+        result = custody_verification.verify_case(session, principal, case_id)
     except cases_service.CaseNotFoundError:
         raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    report = result.report
+    anchor = result.latest_anchor
     return CustodyVerificationOut(
         intact=report.intact,
         events_checked=report.events_checked,
         broken_at=report.broken_at,
         reason=report.reason,
         head_hash=report.head_hash.hex(),
+        latest_anchor=(
+            CustodyAnchorOut(
+                seq=anchor.seq,
+                head_hash=anchor.head_hash.hex(),
+                tsa_time=anchor.tsa_time,
+            )
+            if anchor is not None
+            else None
+        ),
     )
 
 

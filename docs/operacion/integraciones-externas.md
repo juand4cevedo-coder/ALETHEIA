@@ -12,7 +12,7 @@ El registro básico de un cliente no justifica contratar servicios de Google Clo
 
 ## Fecha y hora externa: HU-020 / DEP-04
 
-El trabajador solicita un token RFC 3161 a DigiCert y usa Sectigo como respaldo ante indisponibilidad. La aplicación verifica el token antes de registrar el sello. El ZIP incorpora el token si existe y el manifiesto indica el estado de cada evidencia. El anclaje externo de la cabeza de custodia permanece pendiente. La integración técnica no acredita autorización de uso documental ni continuidad del servicio.
+El trabajador solicita un token RFC 3161 a DigiCert y usa Sectigo como respaldo ante indisponibilidad. La aplicación verifica el token antes de registrar el sello. El ZIP incorpora el token si existe y el manifiesto indica el estado de cada evidencia. La cabeza de custodia se ancla al preparar una exportación y también mediante una tarea periódica, como máximo 24 horas después de incorporar un nuevo evento. La pantalla de verificación muestra hasta qué evento llega el último anclaje, pero nunca entrega el token criptográfico. La integración técnica no acredita autorización de uso documental ni continuidad del servicio; el proveedor y el ciclo completo todavía deben validarse en producción.
 
 ### Alternativas gratuitas y abiertas
 
@@ -22,7 +22,7 @@ El trabajador solicita un token RFC 3161 a DigiCert y usa Sectigo como respaldo 
 | FreeTSA, RFC 3161 | Que una autoridad firmó la huella y declaró una hora; el token se verifica con su cadena publicada. | Raíz propia que el verificador debe instalar explícitamente, sin SLA y con límite de uso. La confianza depende de esa entidad y de su reloj. |
 | Registrar solo hashes o fechas en nuestra base | Que los datos conservados coinciden con los hashes calculados hoy. | Un administrador de la misma base podría reescribir historia y hashes; no hay testigo externo. |
 
-ADR-037 prevé sellar la cabeza de custodia mediante RFC 3161 al exportar y una vez al día si la cadena cambia. Ese anclaje sigue pendiente. OpenTimestamps se contempla como testigo adicional por lotes. Su incorporación requeriría guardar la prueba pendiente, actualizarla y comprobar su confirmación antes de mostrar un número de bloque. El manifiesto y el informe deben distinguir la hora de recepción, el sello por evidencia y la prueba externa de la cabeza de custodia.
+ADR-037 dispone sellar la cabeza de custodia mediante RFC 3161 al exportar y como máximo una vez al día si la cadena cambia. Ese mecanismo ya está implementado: cada evento programa una tarea idempotente y la base conserva una sola constancia inmutable por caso y secuencia. OpenTimestamps se contempla como testigo adicional por lotes. Su incorporación requeriría guardar la prueba pendiente, actualizarla y comprobar su confirmación antes de mostrar un número de bloque. El manifiesto y el informe distinguen la hora de recepción, el sello por evidencia y la prueba externa de la cabeza de custodia. La disponibilidad real de DigiCert o Sectigo y su cadena de confianza continúan sujetas a la validación operativa de DEP-04.
 
 [OpenTimestamps: funcionamiento y calendarios](https://opentimestamps.org/), [cliente: prueba pendiente, actualización y verificación](https://github.com/opentimestamps/opentimestamps-client), [protocolo RFC 3161](https://www.rfc-editor.org/info/rfc3161/).
 

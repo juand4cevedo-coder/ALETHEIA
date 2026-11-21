@@ -897,6 +897,32 @@ export type CourtesyTarget = {
 };
 
 /**
+ * CustodyAnchorOut
+ *
+ * Alcance de un anclaje externo, sin exponer su token criptográfico.
+ */
+export type CustodyAnchorOut = {
+  /**
+   * Seq
+   *
+   * Último evento cubierto por el sello externo.
+   */
+  seq: number;
+  /**
+   * Head Hash
+   *
+   * Huella de la cabeza sellada, en hexadecimal.
+   */
+  head_hash: string;
+  /**
+   * Tsa Time
+   *
+   * Hora declarada por la autoridad de sellado.
+   */
+  tsa_time: string;
+};
+
+/**
  * CustodyEventOut
  *
  * Un evento de la cadena de custodia del caso.
@@ -980,6 +1006,10 @@ export type CustodyVerificationOut = {
    * Huella del último evento válido, en hexadecimal.
    */
   head_hash: string;
+  /**
+   * Última cabeza con sello externo, o null si todavía no existe.
+   */
+  latest_anchor: CustodyAnchorOut | null;
 };
 
 /**

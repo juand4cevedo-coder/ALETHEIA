@@ -24,7 +24,7 @@ from app.api.cases import (
 from app.api.deps import NOT_ALLOWED, get_key_wrapper, get_session
 from app.api.organization import NOT_FOUND
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import Case, Organization, User
+from app.models import Case, CustodyAnchor, CustodyEvent, Organization, User
 from app.schemas.cases import INVALID_FILING_NUMBER
 from app.services import cases as cases_service
 from tests.conftest import NuevoCliente
@@ -106,6 +106,35 @@ def test_verificacion_de_custodia_detecta_evento_alterado(
     assert intacta.json()["events_checked"] == 1
     assert intacta.json()["broken_at"] is None
     assert len(intacta.json()["head_hash"]) == 64
+    assert intacta.json()["latest_anchor"] is None
+
+    case_id = uuid.UUID(creado.json()["id"])
+    head = owner_db.scalar(
+        select(CustodyEvent.event_hash).where(
+            CustodyEvent.case_id == case_id, CustodyEvent.seq == 1
+        )
+    )
+    assert head is not None
+    anchor_time = datetime.datetime(2026, 11, 21, 12, 30, tzinfo=datetime.UTC)
+    owner_db.add(
+        CustodyAnchor(
+            organization_id=oficina.organization_id,
+            case_id=case_id,
+            seq=1,
+            head_hash=head,
+            tsa_token=b"token-privado",
+            tsa_time=anchor_time,
+        )
+    )
+    owner_db.flush()
+    anclada = cliente.get(path)
+    assert anclada.status_code == 200, anclada.text
+    assert anclada.json()["latest_anchor"] == {
+        "seq": 1,
+        "head_hash": head.hex(),
+        "tsa_time": "2026-11-21T12:30:00Z",
+    }
+    assert "token" not in anclada.text
     assert cliente.get(f"{_CASOS}/{uuid.uuid7()}/custody-verification").status_code == 404
 
     owner_db.execute(text("ALTER TABLE custody_events DISABLE TRIGGER custody_events_append_only"))
@@ -121,6 +150,11 @@ def test_verificacion_de_custodia_detecta_evento_alterado(
         "broken_at": 1,
         "reason": "event_hash",
         "head_hash": "0" * 64,
+        "latest_anchor": {
+            "seq": 1,
+            "head_hash": head.hex(),
+            "tsa_time": "2026-11-21T12:30:00Z",
+        },
     }
     owner_db.execute(
         text("DELETE FROM custody_events WHERE case_id = :id"), {"id": creado.json()["id"]}

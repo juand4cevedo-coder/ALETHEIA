@@ -182,6 +182,14 @@ class CustodyPage(BaseModel):
     next_cursor: int | None = Field(description="Secuencia anterior a la última mostrada.")
 
 
+class CustodyAnchorOut(BaseModel):
+    """Alcance de un anclaje externo, sin exponer su token criptográfico."""
+
+    seq: int = Field(description="Último evento cubierto por el sello externo.")
+    head_hash: str = Field(description="Huella de la cabeza sellada, en hexadecimal.")
+    tsa_time: datetime.datetime = Field(description="Hora declarada por la autoridad de sellado.")
+
+
 class CustodyVerificationOut(BaseModel):
     """Resultado del recálculo independiente de la cadena guardada."""
 
@@ -190,6 +198,9 @@ class CustodyVerificationOut(BaseModel):
     broken_at: int | None
     reason: Literal["sequence", "previous_hash", "event_hash"] | None
     head_hash: str = Field(description="Huella del último evento válido, en hexadecimal.")
+    latest_anchor: CustodyAnchorOut | None = Field(
+        description="Última cabeza con sello externo, o null si todavía no existe."
+    )
 
 
 class EvidenceDetailOut(EvidenceSummaryOut):

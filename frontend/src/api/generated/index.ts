@@ -173,6 +173,7 @@ export type {
   CreateSupportTicketErrors,
   CreateSupportTicketResponse,
   CreateSupportTicketResponses,
+  CustodyAnchorOut,
   CustodyEventOut,
   CustodyPage,
   CustodyVerificationOut,
