@@ -152,6 +152,7 @@ describe("Página de inicio (HU-001)", () => {
     expect(headings.map((heading) => heading.textContent)).toEqual([
       "Todo tiene su lugar.",
       "Un poco de orden. Mucho más espacio para pensar.",
+      "Mucho más que ordenar expedientes.",
       "Saber qué ocurre. Decidir quién participa.",
       "Una herramienta precisa. Un alcance claro.",
       "La confianza también se comprueba.",

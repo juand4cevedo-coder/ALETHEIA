@@ -3,9 +3,9 @@
    marca con una franja de latón y el tono del papel, nunca solo con color. */
 .nav {
   overflow-x: auto;
-  background: var(--paper-sunken);
+  background: #f4f0f6;
   /* Filete de tinta tenue en el borde que da al contenido, en lugar de un borde gris. */
-  box-shadow: inset 0 -1px 0 rgb(7 20 35 / 8%);
+  box-shadow: inset 0 -1px 0 rgb(17 17 17 / 8%);
   scrollbar-width: none;
 }
 
@@ -58,7 +58,7 @@
   gap: var(--space-2);
   min-height: var(--touch-target);
   padding: 0 var(--space-3);
-  border-radius: var(--radius-sm);
+  border-radius: 14px;
   color: var(--text-2);
   font-size: var(--font-size-ui);
   font-weight: 500;
@@ -71,17 +71,17 @@
 }
 
 .link:hover {
-  color: var(--text);
-  background: rgb(7 20 35 / 6%);
+  color: var(--ink-900);
+  background: rgb(130 10 209 / 8%);
 }
 
 /* Activo: el papel sube sobre el hundido y una franja de latón de 3 px marca el lugar. En la
    franja de celular va abajo; en la columna, a la izquierda. */
 .active,
 .active:hover {
-  background: var(--paper);
-  box-shadow: inset 0 -3px 0 var(--brass-600);
-  color: var(--text);
+  background: #fff;
+  box-shadow: inset 0 -3px 0 var(--ink-900);
+  color: var(--ink-700);
   font-weight: 600;
 }
 
@@ -98,7 +98,7 @@
 @media (min-width: 900px) {
   .nav {
     overflow-x: visible;
-    box-shadow: inset -1px 0 0 rgb(7 20 35 / 8%);
+    box-shadow: inset -1px 0 0 rgb(17 17 17 / 8%);
   }
 
   .groups {
@@ -143,7 +143,7 @@
 
   .active,
   .active:hover {
-    box-shadow: inset 3px 0 0 var(--brass-600);
+    box-shadow: inset 4px 0 0 var(--ink-900);
   }
 }
 

@@ -6,9 +6,9 @@ El sitio público adopta como referencia la claridad, escala, energía y fluidez
 `nu.com.co`, adaptadas a la identidad y al producto de Aletheia. No se copian textos,
 fotografías, ilustraciones ni signos distintivos de Nu.
 
-Esta dirección reemplaza, para las páginas públicas, la estética editorial sobria de
-marfil, azul oscuro y tipografía con serif definida el 19 de noviembre. La aplicación
-autenticada conserva por ahora su sistema actual.
+Esta dirección reemplaza la estética editorial sobria de marfil, azul oscuro y tipografía
+con serif definida el 19 de noviembre. Se aplica tanto a las páginas públicas como al
+espacio autenticado: no se mantienen paneles internos de la generación visual anterior.
 
 ## Principios visuales
 

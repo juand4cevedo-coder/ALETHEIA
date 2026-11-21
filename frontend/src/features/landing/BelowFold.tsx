@@ -5,6 +5,7 @@ import { useLocation } from "react-router";
 import { ClosingSection } from "./ClosingSection.tsx";
 import { FaqSection } from "./FaqSection.tsx";
 import { HowItWorks } from "./HowItWorks.tsx";
+import { HighlightsCarousel } from "./HighlightsCarousel.tsx";
 import { PlansSection } from "./PlansSection.tsx";
 import { ScopeSection } from "./ScopeSection.tsx";
 import { StandardsSection } from "./StandardsSection.tsx";
@@ -36,6 +37,9 @@ export function BelowFold() {
       </Reveal>
       <Reveal>
         <HowItWorks />
+      </Reveal>
+      <Reveal>
+        <HighlightsCarousel />
       </Reveal>
       <Reveal>
         <StandardsSection />
