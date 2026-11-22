@@ -17,7 +17,7 @@ export function LegalConsent({ checked, error, ref, onChange }: Props) {
   return (
     <Checkbox
       ref={ref}
-      name="acepta"
+      name="accepts_legal_terms"
       required
       checked={checked}
       error={error}
@@ -31,8 +31,7 @@ export function LegalConsent({ checked, error, ref, onChange }: Props) {
       <NewTabLink to={legalRoute("privacidad")}>
         política de privacidad
       </NewTabLink>
-      . Mi contraseña se guarda como un resumen irreversible que nadie en
-      ALETHEIA puede leer.
+      .
     </Checkbox>
   );
 }

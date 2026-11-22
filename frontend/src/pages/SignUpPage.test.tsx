@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -10,328 +10,107 @@ const fetchMock = vi.fn<typeof fetch>();
 
 beforeEach(() => {
   fetchMock.mockReset();
+  fetchMock.mockResolvedValue(jsonResponse({ enabled: true }));
   vi.stubGlobal("fetch", fetchMock);
 });
 
-const ACCEPTED = {
-  detail:
-    "Si el correo puede usarse, le enviamos un enlace para verificarlo. Revise su bandeja de entrada y la carpeta de spam.",
-};
-
-function problem(status: number, extra: Record<string, unknown> = {}) {
-  return jsonResponse(
-    {
-      type: "about:blank",
-      title: "Error",
-      status,
-      instance: "/api/v1/auth/register",
-      ...extra,
-    },
-    status,
-  );
-}
-
-async function fillForm(
-  user: ReturnType<typeof userEvent.setup>,
-  password = "una frase larga y fácil",
-  confirmPassword = password,
-) {
-  await user.type(screen.getByLabelText("Nombre completo"), "Ana Restrepo");
-  await user.type(
-    screen.getByLabelText("Correo electrónico"),
-    "ana@example.com",
-  );
-  await user.type(screen.getByLabelText("Contraseña"), password);
-  await user.type(
-    screen.getByLabelText("Confirmar contraseña"),
-    confirmPassword,
-  );
-  await user.click(screen.getByRole("checkbox"));
-}
-
-async function submit(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole("button", { name: "Crear la cuenta" }));
-}
-
-describe("Crear cuenta (HU-005, CP-005)", () => {
-  it("tiene etiquetas visibles y no tiene errores graves de accesibilidad", async () => {
+describe("Crear cuenta con Google", () => {
+  it("presenta solo Google y no pide correo ni contraseña", async () => {
     const { container } = await renderRoute("/registro");
 
     expect(
-      screen.getByRole("heading", {
-        level: 1,
-        name: "Cree su cuenta",
-      }),
+      screen.getByRole("heading", { level: 1, name: "Cree su cuenta" }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("Contraseña")).toHaveAttribute(
-      "autocomplete",
-      "new-password",
-    );
+    expect(
+      await screen.findByRole("button", { name: "Crear cuenta con Google" }),
+    ).toBeEnabled();
+    expect(
+      screen.queryByLabelText("Correo electrónico"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Ingresar" })).toHaveAttribute(
       "href",
       "/ingresar",
     );
-    expect(
-      screen.getByRole("button", { name: "Configurar cookies" }),
-    ).toBeInTheDocument();
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
-  it("guía la contraseña por su longitud, sin reglas de composición", async () => {
+  it("no presume la aceptación legal y enfoca la casilla", async () => {
     const user = userEvent.setup();
     await renderRoute("/registro");
-    const contrasena = screen.getByLabelText("Contraseña");
+    const submit = await screen.findByRole("button", {
+      name: "Crear cuenta con Google",
+    });
 
-    expect(contrasena).toHaveAccessibleDescription(
-      "Al menos 12 caracteres. Una frase funciona bien.",
-    );
-    await user.type(contrasena, "aaaaaaaaaaaaaaaa");
-    expect(contrasena).toHaveAccessibleDescription(
-      "Use caracteres más variados.",
-    );
-    await user.clear(contrasena);
-    await user.type(contrasena, "mi perro se llama Ron");
-    expect(contrasena).toHaveAccessibleDescription("Muy buena contraseña.");
-  });
+    await user.click(submit);
 
-  it("marca los campos vacíos, enfoca el primero y no llama a la API", async () => {
-    const user = userEvent.setup();
-    await renderRoute("/registro");
-
-    await submit(user);
-
-    const nombre = screen.getByLabelText("Nombre completo");
-    expect(nombre).toHaveFocus();
-    expect(nombre).toHaveAttribute("aria-invalid", "true");
-    expect(nombre).toHaveAccessibleDescription("Escriba su nombre.");
-    expect(screen.getByRole("checkbox")).toHaveAccessibleDescription(
+    const consent = screen.getByRole("checkbox");
+    expect(consent).toHaveFocus();
+    expect(consent).toHaveAccessibleDescription(
       "Para abrir la cuenta debe aceptar los términos y autorizar el tratamiento de sus datos.",
     );
-    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("pide al menos 12 caracteres en la contraseña (MSG-005)", async () => {
+  it("envía el tipo personal y la versión legal al inicio OIDC", async () => {
     const user = userEvent.setup();
-    await renderRoute("/registro");
+    const { container } = await renderRoute("/registro");
+    const form = container.querySelector("form");
+    expect(form).not.toBeNull();
+    form!.addEventListener("submit", (event) => event.preventDefault());
 
-    await fillForm(user, "corta");
-    await submit(user);
-
-    const contrasena = screen.getByLabelText("Contraseña");
-    expect(contrasena).toHaveFocus();
-    expect(contrasena).toHaveAccessibleDescription(
-      expect.stringContaining(
-        "La contraseña debe tener al menos 12 caracteres.",
-      ),
-    );
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it("exige confirmar la contraseña y enfoca ese campo si queda vacío", async () => {
-    const user = userEvent.setup();
-    await renderRoute("/registro");
-
-    await user.type(screen.getByLabelText("Nombre completo"), "Ana Restrepo");
-    await user.type(
-      screen.getByLabelText("Correo electrónico"),
-      "ana@example.com",
-    );
-    await user.type(
-      screen.getByLabelText("Contraseña"),
-      "una frase larga y fácil",
-    );
     await user.click(screen.getByRole("checkbox"));
-    await submit(user);
-
-    const confirmar = screen.getByLabelText("Confirmar contraseña");
-    expect(confirmar).toHaveFocus();
-    expect(confirmar).toHaveAccessibleDescription(
-      "Las contraseñas no coinciden.",
+    await user.click(
+      await screen.findByRole("button", { name: "Crear cuenta con Google" }),
     );
-    expect(fetchMock).not.toHaveBeenCalled();
+
+    expect(form).toHaveAttribute("method", "post");
+    expect(form).toHaveAttribute("action", "/api/v1/auth/google/register");
+    const data = new FormData(form!);
+    expect(data.get("account_type")).toBe("individual");
+    expect(data.get("legal_version")).toBe(LEGAL_VERSION);
+    expect(data.get("accepts_legal_terms")).toBe("on");
   });
 
-  it("avisa si la confirmación no coincide y no llama a la API", async () => {
+  it("exige el nombre de la firma y luego lo incluye", async () => {
     const user = userEvent.setup();
-    await renderRoute("/registro");
-
-    await fillForm(user, "una frase larga y fácil", "otra frase distinta");
-    await submit(user);
-
-    const confirmar = screen.getByLabelText("Confirmar contraseña");
-    expect(confirmar).toHaveFocus();
-    expect(confirmar).toHaveAccessibleDescription(
-      "Las contraseñas no coinciden.",
-    );
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it("permite ver la contraseña escrita", async () => {
-    const user = userEvent.setup();
-    await renderRoute("/registro");
-    const contrasena = screen.getByLabelText("Contraseña");
-    const mostrar = screen.getByRole("button", {
-      name: "Mostrar contraseña",
-    });
-
-    expect(contrasena).toHaveAttribute("type", "password");
-    await user.click(mostrar);
-    expect(contrasena).toHaveAttribute("type", "text");
-    expect(mostrar).toHaveAttribute("aria-pressed", "true");
-  });
-
-  it("abre las políticas en otra pestaña para no perder lo escrito", async () => {
-    await renderRoute("/registro");
-
-    expect(
-      screen.getByRole("link", { name: /términos y condiciones/ }),
-    ).toHaveAttribute("target", "_blank");
-    expect(
-      screen.getByRole("link", { name: /política de privacidad/ }),
-    ).toHaveAttribute("href", "/legal/privacidad");
-  });
-
-  it("envía la versión legal vigente y pide revisar el correo (CA-HU-005-01)", async () => {
-    fetchMock.mockResolvedValue(jsonResponse(ACCEPTED, 202));
-    const user = userEvent.setup();
-    await renderRoute("/registro");
-
-    await fillForm(user);
-    await submit(user);
-
-    const aviso = await screen.findByRole("heading", {
-      level: 2,
-      name: "Revise su correo",
-    });
-    expect(aviso).toHaveFocus();
-    expect(screen.getByText("ana@example.com")).toBeInTheDocument();
-    // El formulario da paso al aviso: ya no se puede volver a enviar, y la contraseña no
-    // queda en ningún campo de la página.
-    expect(screen.queryByLabelText("Nombre completo")).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "Crear la cuenta" }),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument();
-
-    const request = fetchMock.mock.calls[0]![0] as Request;
-    expect(request.method).toBe("POST");
-    expect(new URL(request.url).pathname).toBe("/api/v1/auth/register");
-    expect(await request.json()).toEqual({
-      account_type: "individual",
-      full_name: "Ana Restrepo",
-      email: "ana@example.com",
-      password: "una frase larga y fácil",
-      legal_version: LEGAL_VERSION,
-      accepts_legal_terms: true,
-    });
-  });
-
-  it("por defecto la cuenta es personal y no pide oficina", async () => {
-    await renderRoute("/registro");
-
-    expect(screen.getByRole("radio", { name: "Independiente" })).toBeChecked();
-    expect(
-      screen.queryByLabelText("Nombre de la oficina o firma"),
-    ).not.toBeInTheDocument();
-  });
-
-  it("para una firma pide el nombre de la oficina y lo envía", async () => {
-    fetchMock.mockResolvedValue(jsonResponse(ACCEPTED, 202));
-    const user = userEvent.setup();
-    await renderRoute("/registro");
-
+    const { container } = await renderRoute("/registro");
+    const form = container.querySelector("form")!;
+    form.addEventListener("submit", (event) => event.preventDefault());
     await user.click(screen.getByRole("radio", { name: "Oficina o firma" }));
-    await fillForm(user);
-    await submit(user);
-
-    // Sin el nombre de la oficina, el formulario no se envía.
-    const oficina = screen.getByLabelText("Nombre de la oficina o firma");
-    expect(oficina).toHaveFocus();
-    expect(fetchMock).not.toHaveBeenCalled();
-
-    await user.type(oficina, "Restrepo Abogados");
-    await submit(user);
-
-    await screen.findByRole("heading", { level: 2, name: "Revise su correo" });
-    const request = fetchMock.mock.calls[0]![0] as Request;
-    expect(await request.json()).toMatchObject({
-      account_type: "firm",
-      organization_name: "Restrepo Abogados",
+    await user.click(screen.getByRole("checkbox"));
+    const submit = await screen.findByRole("button", {
+      name: "Crear cuenta con Google",
     });
+
+    await user.click(submit);
+    const organization = screen.getByLabelText("Nombre de la oficina o firma");
+    expect(organization).toHaveFocus();
+    expect(organization).toHaveAccessibleDescription(
+      "Escriba el nombre de su oficina o firma.",
+    );
+
+    await user.type(organization, "Restrepo Abogados");
+    await user.click(submit);
+    const data = new FormData(form);
+    expect(data.get("account_type")).toBe("firm");
+    expect(data.get("organization_name")).toBe("Restrepo Abogados");
   });
 
-  it("pide recargar si los textos legales cambiaron", async () => {
-    fetchMock.mockResolvedValue(problem(409));
-    const user = userEvent.setup();
-    await renderRoute("/registro");
-
-    await fillForm(user);
-    await submit(user);
+  it("explica por qué un correo existente no se enlaza automáticamente", async () => {
+    await renderRoute("/registro?google=correo-en-uso");
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Los términos o la política de privacidad cambiaron mientras llenaba el formulario.",
+      "Ya existe una cuenta con ese correo. Ingrese y vincule Google desde Mi cuenta.",
     );
+  });
+
+  it("mantiene deshabilitado Google cuando faltan sus credenciales", async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ enabled: false }));
+    await renderRoute("/registro");
+
     expect(
-      screen.getByRole("button", { name: "Recargar la página" }),
-    ).toBeInTheDocument();
-  });
-
-  it("avisa cuando hay demasiados intentos (MSG-004)", async () => {
-    fetchMock.mockResolvedValue(problem(429));
-    const user = userEvent.setup();
-    await renderRoute("/registro");
-
-    await fillForm(user);
-    await submit(user);
-
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Hizo varios intentos seguidos. Espere 15 minutos e inténtelo de nuevo.",
-    );
-  });
-
-  it("muestra junto al campo un error de validación de la API", async () => {
-    fetchMock.mockResolvedValue(
-      problem(422, {
-        errors: [{ loc: ["body", "email"], msg: "invalid", type: "x" }],
-      }),
-    );
-    const user = userEvent.setup();
-    await renderRoute("/registro");
-
-    await fillForm(user);
-    await submit(user);
-
-    const correo = screen.getByLabelText("Correo electrónico");
-    await waitFor(() => expect(correo).toHaveFocus());
-    expect(correo).toHaveAccessibleDescription(
-      "Escriba un correo válido, por ejemplo nombre@dominio.com.",
-    );
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-  });
-
-  it("ante una falla da el código de la solicitud (MSG-019)", async () => {
-    fetchMock.mockResolvedValue(problem(500, { request_id: "01a1-codigo" }));
-    const user = userEvent.setup();
-    await renderRoute("/registro");
-
-    await fillForm(user);
-    await submit(user);
-
-    const alerta = await screen.findByRole("alert");
-    expect(alerta).toHaveTextContent("No pudimos completar la operación.");
-    expect(alerta).toHaveTextContent("01a1-codigo");
-  });
-
-  it("ante una falla de red no inventa un código", async () => {
-    fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
-    const user = userEvent.setup();
-    await renderRoute("/registro");
-
-    await fillForm(user);
-    await submit(user);
-
-    const alerta = await screen.findByRole("alert");
-    expect(alerta).toHaveTextContent("No pudimos completar la operación.");
-    expect(alerta).not.toHaveTextContent("código");
+      await screen.findByRole("button", { name: "Crear cuenta con Google" }),
+    ).toBeDisabled();
+    expect(screen.getByText(/termine su configuración/)).toBeInTheDocument();
   });
 });

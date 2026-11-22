@@ -10,6 +10,7 @@ import {
 
 type AccountTypeChoiceProps = {
   value: AccountType;
+  name?: string;
   disabled?: boolean;
   onChange: (value: AccountType) => void;
 };
@@ -27,10 +28,11 @@ const OPTIONS = [
 // aspecto: se recorren con las flechas y el lector de pantalla los anuncia como un grupo.
 export function AccountTypeChoice({
   value,
+  name,
   disabled = false,
   onChange,
 }: AccountTypeChoiceProps) {
-  const name = useId();
+  const generatedName = useId();
 
   return (
     <fieldset className={styles.choice} disabled={disabled}>
@@ -44,7 +46,7 @@ export function AccountTypeChoice({
           >
             <input
               type="radio"
-              name={name}
+              name={name ?? generatedName}
               value={option}
               checked={value === option}
               onChange={() => onChange(option)}

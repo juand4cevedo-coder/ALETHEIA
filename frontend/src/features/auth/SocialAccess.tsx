@@ -3,7 +3,7 @@ import styles from "./SocialAccess.module.css";
 
 const STATUS_URL = "/api/v1/auth/google/status";
 
-type Props = { mode?: "login" | "link"; linked?: boolean };
+type Props = { mode?: "login" | "link" | "register"; linked?: boolean };
 
 /** Solo habilita Google cuando el backend confirma que tiene credenciales OIDC. */
 export function SocialAccess({ mode = "login", linked = false }: Props) {
@@ -40,12 +40,22 @@ export function SocialAccess({ mode = "login", linked = false }: Props) {
     );
   }
 
-  const label = mode === "link" ? "Vincular Google" : "Continuar con Google";
+  const label =
+    mode === "link"
+      ? "Vincular Google"
+      : mode === "register"
+        ? "Crear cuenta con Google"
+        : "Continuar con Google";
   const href = `/api/v1/auth/google/${mode}`;
   return (
     <div className={styles.social}>
       <div className={styles.providers} aria-describedby={id}>
-        {enabled ? (
+        {enabled && mode === "register" ? (
+          <button type="submit" className={styles.provider}>
+            <GoogleIcon />
+            {label}
+          </button>
+        ) : enabled ? (
           <a href={href} className={styles.provider}>
             <GoogleIcon />
             {label}
@@ -63,7 +73,9 @@ export function SocialAccess({ mode = "login", linked = false }: Props) {
           : enabled
             ? mode === "link"
               ? "Aletheia no vincula cuentas solo porque coincida el correo."
-              : "Disponible para cuentas que ya vincularon Google."
+              : mode === "register"
+                ? "Google verificará su identidad antes de crear la cuenta."
+                : "Disponible para cuentas que ya vincularon Google."
             : "El acceso con Google estará disponible cuando termine su configuración."}
       </p>
     </div>

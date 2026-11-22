@@ -2,6 +2,7 @@
 
 import io
 import urllib.error
+from email.message import Message
 from typing import Any
 
 import pytest
@@ -82,7 +83,7 @@ def test_un_error_de_wompi_no_expone_el_cuerpo_de_la_respuesta(
         "https://sandbox.wompi.co/v1/transactions",
         codigo,
         "error",
-        hdrs=None,
+        hdrs=Message(),
         fp=io.BytesIO(dato_sensible),
     )
 

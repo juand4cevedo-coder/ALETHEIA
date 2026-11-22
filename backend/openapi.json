@@ -111,6 +111,45 @@
         }
       }
     },
+    "/api/v1/auth/google/register": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Crear una cuenta mediante Google",
+        "operationId": "google_register_start",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/GoogleRegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/google/link": {
       "get": {
         "tags": [
@@ -6630,6 +6669,49 @@
         ],
         "title": "GoogleAuthStatus",
         "description": "Disponibilidad pública del proveedor; nunca expone sus credenciales."
+      },
+      "GoogleRegisterRequest": {
+        "properties": {
+          "account_type": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "firm"
+            ],
+            "title": "Account Type"
+          },
+          "organization_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Name"
+          },
+          "legal_version": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Legal Version"
+          },
+          "accepts_legal_terms": {
+            "type": "boolean",
+            "title": "Accepts Legal Terms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "account_type",
+          "legal_version",
+          "accepts_legal_terms"
+        ],
+        "title": "GoogleRegisterRequest",
+        "description": "Datos elegidos antes de crear una cuenta mediante una identidad de Google."
       },
       "HealthStatus": {
         "properties": {

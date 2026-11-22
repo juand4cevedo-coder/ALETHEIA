@@ -1223,6 +1223,30 @@ export type GoogleAuthStatus = {
 };
 
 /**
+ * GoogleRegisterRequest
+ *
+ * Datos elegidos antes de crear una cuenta mediante una identidad de Google.
+ */
+export type GoogleRegisterRequest = {
+  /**
+   * Account Type
+   */
+  account_type: "individual" | "firm";
+  /**
+   * Organization Name
+   */
+  organization_name?: string | null;
+  /**
+   * Legal Version
+   */
+  legal_version: string;
+  /**
+   * Accepts Legal Terms
+   */
+  accepts_legal_terms: boolean;
+};
+
+/**
  * HealthStatus
  *
  * Estado del servicio y de la base de datos cuando ambos responden.
@@ -2629,6 +2653,30 @@ export type GoogleLoginStartData = {
 };
 
 export type GoogleLoginStartResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type GoogleRegisterStartData = {
+  body: GoogleRegisterRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/google/register";
+};
+
+export type GoogleRegisterStartErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type GoogleRegisterStartError =
+  GoogleRegisterStartErrors[keyof GoogleRegisterStartErrors];
+
+export type GoogleRegisterStartResponses = {
   /**
    * Successful Response
    */

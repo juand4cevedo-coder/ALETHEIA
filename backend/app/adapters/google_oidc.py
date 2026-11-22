@@ -32,6 +32,7 @@ class GoogleIdentity:
     subject: str
     email: str
     email_verified: bool
+    full_name: str
 
 
 class GoogleOidc(Protocol):
@@ -120,6 +121,7 @@ class GoogleOidcClient:
                         "nonce",
                         "email",
                         "email_verified",
+                        "name",
                     ]
                 },
             )
@@ -127,9 +129,20 @@ class GoogleOidcClient:
                 raise GoogleOidcError
             subject = str(claims["sub"])
             email = str(claims["email"])
-            if not 1 <= len(subject) <= 255 or not email:
+            full_name = str(claims["name"]).strip()
+            if (
+                not 1 <= len(subject) <= 255
+                or not 3 <= len(email) <= 254
+                or "@" not in email
+                or not 1 <= len(full_name) <= 120
+            ):
                 raise GoogleOidcError
-            return GoogleIdentity(subject=subject, email=email, email_verified=True)
+            return GoogleIdentity(
+                subject=subject,
+                email=email,
+                email_verified=True,
+                full_name=full_name,
+            )
         except (
             GoogleOidcError,
             KeyError,

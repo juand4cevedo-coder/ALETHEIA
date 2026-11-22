@@ -114,6 +114,9 @@ class GoogleFlowClaims:
     mode: str
     user_id: uuid.UUID | None
     session_id: uuid.UUID | None
+    account_type: str | None
+    organization_name: str | None
+    legal_version: str | None
 
 
 def _subkey(master_key: str, use: str) -> bytes:
@@ -223,6 +226,9 @@ def issue_google_flow(
     mode: str,
     user_id: uuid.UUID | None = None,
     session_id: uuid.UUID | None = None,
+    account_type: str | None = None,
+    organization_name: str | None = None,
+    legal_version: str | None = None,
     now: datetime.datetime | None = None,
 ) -> str:
     """Firma el contexto corto que vuelve desde Google en una cookie HttpOnly."""
@@ -239,6 +245,10 @@ def issue_google_flow(
     }
     if user_id is not None and session_id is not None:
         claims.update({"sub": str(user_id), "sid": str(session_id)})
+    if mode == "register":
+        claims.update({"account_type": account_type, "legal": legal_version})
+        if organization_name is not None:
+            claims["organization"] = organization_name
     return jwt.encode(claims, _subkey(master_key, _GOOGLE_FLOW_USE), algorithm=_ALGORITHM)
 
 
@@ -257,7 +267,23 @@ def read_google_flow(master_key: str, token: str) -> GoogleFlowClaims:
         user_id = uuid.UUID(claims["sub"]) if "sub" in claims else None
         session_id = uuid.UUID(claims["sid"]) if "sid" in claims else None
         mode = str(claims["mode"])
-        if mode not in {"login", "link"} or (user_id is None) != (session_id is None):
+        account_type = str(claims["account_type"]) if "account_type" in claims else None
+        organization_name = str(claims["organization"]) if "organization" in claims else None
+        legal_version = str(claims["legal"]) if "legal" in claims else None
+        valid_link = mode == "link" and user_id is not None and session_id is not None
+        valid_login = mode == "login" and user_id is None and session_id is None
+        valid_registration = (
+            mode == "register"
+            and user_id is None
+            and session_id is None
+            and account_type in {"individual", "firm"}
+            and legal_version is not None
+            and (
+                (account_type == "individual" and organization_name is None)
+                or (account_type == "firm" and organization_name is not None)
+            )
+        )
+        if not (valid_login or valid_link or valid_registration):
             raise ValueError
         return GoogleFlowClaims(
             state=str(claims["st"]),
@@ -266,6 +292,9 @@ def read_google_flow(master_key: str, token: str) -> GoogleFlowClaims:
             mode=mode,
             user_id=user_id,
             session_id=session_id,
+            account_type=account_type,
+            organization_name=organization_name,
+            legal_version=legal_version,
         )
     except jwt.PyJWTError, ValueError, TypeError, KeyError:
         raise InvalidGoogleFlowError from None
