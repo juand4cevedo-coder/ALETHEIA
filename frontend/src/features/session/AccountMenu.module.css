@@ -11,7 +11,7 @@
   max-width: min(var(--measure-menu), 70vw);
   padding: 0 var(--space-2) 0 var(--space-1);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--text);
   font: inherit;
@@ -36,8 +36,8 @@
   height: calc(var(--touch-target) - var(--space-3));
   border: 1px solid var(--brass-400);
   border-radius: 50%;
-  background: var(--ink-900);
-  color: var(--on-ink);
+  background: var(--violet-700);
+  color: white;
   font-size: var(--font-size-label);
   font-weight: 600;
   line-height: var(--line-height-label);
@@ -84,9 +84,9 @@
   z-index: 20;
   width: min(var(--menu-width), calc(100vw - 2 * var(--space-4)));
   padding: var(--space-2);
-  border-radius: var(--radius-lg);
+  border-radius: 22px;
   background: var(--paper-raised);
-  box-shadow: var(--brass-hairline), var(--shadow-float);
+  box-shadow: var(--shadow-float);
   animation: unfold var(--motion-fast) var(--ease-standard);
 }
 
@@ -144,7 +144,7 @@
   min-height: var(--touch-target);
   padding: var(--space-3);
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: 14px;
   background: none;
   color: var(--text);
   font: inherit;
@@ -188,8 +188,9 @@
 
 .failure {
   margin: var(--space-2) var(--space-3) var(--space-1);
-  padding-left: var(--space-3);
-  border-left: 2px solid var(--err);
+  padding: var(--space-3);
+  border-radius: 12px;
+  background: rgb(185 28 28 / 8%);
   color: var(--text);
   font-size: var(--font-size-support);
   line-height: var(--line-height-support);

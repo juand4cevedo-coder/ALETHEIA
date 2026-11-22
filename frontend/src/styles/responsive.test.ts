@@ -28,4 +28,27 @@ describe("contrato responsive", () => {
       /\.sidebar nav\s*\{[^}]*width:\s*100%[^}]*max-width:\s*100%[^}]*min-width:\s*0/s,
     );
   });
+
+  it("reordena las superficies operativas en móvil y tablet", () => {
+    const platform = css("pages/PlatformPage.module.css");
+    const newCase = css("pages/NewCasePage.module.css");
+    const taskSection = css("features/cases/TaskSection.module.css");
+    const dialog = css("components/ui/Dialog.module.css");
+
+    expect(platform).toMatch(
+      /@container \(max-width: 1040px\)[\s\S]*\.table[\s\S]*display:\s*block/,
+    );
+    expect(platform).toMatch(
+      /@container \(max-width: 680px\)[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\)/,
+    );
+    expect(newCase).toMatch(
+      /@media \(max-width: 900px\)[\s\S]*\.compose[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\)/,
+    );
+    expect(taskSection).toMatch(
+      /@media \(max-width: 700px\)[\s\S]*\.filters,[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\)/,
+    );
+    expect(dialog).toMatch(
+      /@media \(max-width: 560px\)[\s\S]*\.dialog[\s\S]*width:\s*100%[\s\S]*height:\s*100%/,
+    );
+  });
 });
