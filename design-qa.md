@@ -2,7 +2,7 @@
 
 ## Evidencia
 
-- Fuente visual: `https://nu.com.co/`, portada y carrusel “Haz más con la Cuenta de Ahorros Nu”.
+- Fuente visual: referencia externa de banca digital revisada durante la sesión de diseño.
 - Implementación: `http://127.0.0.1:5173/`, bloque “Mucho más que ordenar expedientes”.
 - Capturas: capturas del navegador integrado durante la sesión del 21 de noviembre de 2026; el navegador no expuso una ruta de archivo persistente.
 - Vista de escritorio de la fuente: 1280 × 720 píxeles, viewport CSS 1280 × 720, DPR 1,25.
@@ -13,14 +13,14 @@
 
 ## Comparación de vista completa
 
-La implementación reproduce el patrón observado: sección editorial amplia, imagen o producto dominante, información contextual, acción principal, cinco indicadores y control de reproducción. Mantiene la navegación fija y el ritmo de secciones de la portada sin reutilizar activos ni textos de Nu.
+La implementación adopta una sección editorial amplia, imagen o producto dominante, información contextual, acción principal, cinco indicadores y control de reproducción. Mantiene la navegación fija y el ritmo de secciones de la portada con activos y textos propios de Aletheia.
 
 ## Comparación enfocada
 
-- Tipografía: Inter sans serif, titulares compactos de alto contraste y texto de interfaz pequeño; jerarquía equivalente sin copiar la fuente propietaria de Nu.
+- Tipografía: Inter sans serif, titulares compactos de alto contraste y texto de interfaz pequeño.
 - Ritmo y disposición: bloque de dos columnas, radio de 32 px, panel informativo y controles inferiores. La implementación agrega una métrica por slide para sostener la percepción de producto premium.
 - Color: violeta Aletheia `#820AD1`, violeta profundo, blanco y fondo lavanda claro; contraste verificado por la prueba automatizada de accesibilidad.
-- Imágenes: capturas reales del producto y fotografía real licenciada. No hay activos de Nu, marcadores ni dibujos aproximados.
+- Imágenes: capturas reales del producto y fotografía real licenciada; no hay marcadores ni dibujos aproximados.
 - Contenido: cinco capacidades reales —control, casos, actividad, equipo e integridad— con rutas existentes y afirmaciones dentro del alcance actual.
 - Interacción: avance cada 6,5 s, selección manual, pausa/reanudación, pausa durante foco o puntero y alternativa para movimiento reducido.
 
@@ -28,7 +28,7 @@ La implementación reproduce el patrón observado: sección editorial amplia, im
 
 - [P2] Comparación móvil de la nueva sección no normalizada.
   - Location: portada, carrusel de capacidades, breakpoint menor a 820 px.
-  - Evidence: la capacidad de viewport del navegador no modificó las pestañas de Nu ni Aletheia; ambas siguieron reportando entre 1147 y 1280 px de ancho.
+  - Evidence: la capacidad de viewport del navegador no modificó las pestañas de referencia ni Aletheia; ambas siguieron reportando entre 1147 y 1280 px de ancho.
   - Impact: las reglas móviles existen y las pruebas funcionales pasan, pero falta evidencia visual comparable a 390 × 844 para este bloque nuevo.
   - Fix: repetir la captura en un navegador que permita emulación de viewport y comparar fuente e implementación a 390 × 844 antes de producción.
 

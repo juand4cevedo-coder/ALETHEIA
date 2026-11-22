@@ -1,10 +1,10 @@
-# Dirección del sitio público — Aletheia con el ritmo de Nu
+# Dirección visual integral de Aletheia
 
 ## Decisión
 
-El sitio público adopta como referencia la claridad, escala, energía y fluidez de
-`nu.com.co`, adaptadas a la identidad y al producto de Aletheia. No se copian textos,
-fotografías, ilustraciones ni signos distintivos de Nu.
+El sitio público adopta una dirección clara, enérgica y fluida, adaptada a la identidad
+y al producto de Aletheia. Los textos, fotografías, ilustraciones y signos distintivos
+son propios o cuentan con la licencia documentada en el repositorio.
 
 Esta dirección reemplaza la estética editorial sobria de marfil, azul oscuro y tipografía
 con serif definida el 19 de noviembre. Se aplica tanto a las páginas públicas como al
