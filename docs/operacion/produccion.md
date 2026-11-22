@@ -217,12 +217,14 @@ En el servidor, el documento trae la etiqueta, comprueba su firma y deja `/opt/a
 | Archivo en el servidor | Contenido |
 | --- | --- |
 | `/etc/aletheia/firmantes-permitidos` | La llave pública que firma las etiquetas. Sin ella, ningún despliegue pasa |
-| `/etc/aletheia/entorno.env` | Configuración fija del servidor que no cambia con cada despliegue (`ALETHEIA_EVIDENCE_BUCKET`). La deja una sola vez el administrador; `desplegar.sh` no la escribe ni la toca |
+| `/etc/aletheia/entorno.env` | Configuración fija del servidor: `ALETHEIA_EVIDENCE_BUCKET`, `ALETHEIA_GOOGLE_CLIENT_ID` y `ALETHEIA_GOOGLE_CLIENT_SECRET_PARAMETER`. La deja una sola vez el administrador; `desplegar.sh` no la escribe ni la toca |
 | `/var/lib/aletheia/despliegue.env` | Versión y digests de lo que está corriendo |
 | `/var/lib/aletheia/despliegue.anterior.env` | La versión a la que se vuelve si la nueva falla |
 | `/var/lib/aletheia/despliegue.fallido.env` | La última versión que falló, para revisarla |
 
-Sin `/etc/aletheia/entorno.env`, `desplegar.sh` se niega a desplegar con un mensaje claro en vez de levantar los contenedores con el bucket vacío.
+Sin `/etc/aletheia/entorno.env`, o si falta el bucket o cualquiera de los dos valores de Google, `desplegar.sh` se niega a desplegar. Después de levantar los contenedores también exige que `/api/v1/auth/google/status` responda con la integración habilitada; si no lo hace, revierte el despliegue.
+
+El cliente web de Google Cloud debe registrar exactamente `https://aletheia.sbs/api/v1/auth/google/callback` como URI de redirección autorizada. El secreto se guarda en `/aletheia/prod/google/client-secret` como `SecureString`; el archivo de entorno solo contiene el ID público del cliente y el nombre de ese parámetro.
 
 Las migraciones nunca se revierten. Cada una debe dejar funcionando la versión anterior de la API: primero se amplía el esquema y, en una versión posterior, se retira lo que sobra.
 

@@ -279,8 +279,8 @@ En producción la API no recibe claves. Su URL llega sin clave y la API la lee d
 | `ALETHEIA_DATABASE_URL` | `postgresql+psycopg://aletheia_app@postgres:5432/aletheia` |
 | `ALETHEIA_DATABASE_PASSWORD_PARAMETER` | `/aletheia/prod/postgres/app-password` |
 | `ALETHEIA_TOKEN_SIGNING_KEY_PARAMETER` | `/aletheia/prod/app/token-signing-key` |
-| `ALETHEIA_GOOGLE_CLIENT_ID` | Identificador público del cliente web de Google, si se activa la integración |
-| `ALETHEIA_GOOGLE_CLIENT_SECRET_PARAMETER` | `/aletheia/prod/google/client-secret`, si se activa la integración |
+| `ALETHEIA_GOOGLE_CLIENT_ID` | Identificador público del cliente web de Google; obligatorio en producción |
+| `ALETHEIA_GOOGLE_CLIENT_SECRET_PARAMETER` | `/aletheia/prod/google/client-secret`; obligatorio en producción |
 | `ALETHEIA_MIGRATION_DATABASE_URL` | `postgresql+psycopg://aletheia_owner@postgres:5432/aletheia` |
 | `ALETHEIA_MIGRATION_DATABASE_PASSWORD_PARAMETER` | `/aletheia/prod/postgres/owner-password` |
 | `ALETHEIA_EVIDENCE_BUCKET` | El bucket S3 de evidencias y paquetes de exportación (`docs/operacion/produccion.md`) |

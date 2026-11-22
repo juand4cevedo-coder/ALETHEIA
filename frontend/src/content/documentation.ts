@@ -190,7 +190,8 @@ export const DOCUMENTATION: DocArticle[] = [
         id: "proveedores",
         title: "Acceso con Google",
         paragraphs: [
-          "El acceso con Google todavía no está disponible. Mientras se completa su activación, puede crear una cuenta e ingresar con su correo y contraseña.",
+          "Puede crear su cuenta, ingresar o vincular una cuenta existente mediante Google. Aletheia recibe su nombre, correo verificado e identificador estable; nunca recibe su contraseña de Google.",
+          "Si ya tiene una cuenta de Aletheia, ingrese primero con su contraseña y vincule Google desde Mi cuenta. Por seguridad, una coincidencia de correo no vincula cuentas automáticamente.",
         ],
       },
     ],
