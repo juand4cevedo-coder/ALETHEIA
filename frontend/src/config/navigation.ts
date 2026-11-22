@@ -40,7 +40,7 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/#recorrido",
       title: "Su espacio de trabajo",
       text: "Conozca Aletheia por dentro.",
-      image: "/media/campaign/producto-real.jpg",
+      image: "/media/campaign/producto-real-640.webp",
     },
   },
   {
@@ -55,7 +55,7 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/empresa",
       title: "Un mismo contexto",
       text: "Personas, casos y responsabilidades.",
-      image: "/media/campaign/equipo-real.jpg",
+      image: "/media/campaign/equipo-real-640.webp",
     },
   },
   {
@@ -74,7 +74,7 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/docs",
       title: "Del primer paso al caso",
       text: "Guías, respuestas y recursos en español.",
-      image: "/media/campaign/producto-real.jpg",
+      image: "/media/campaign/producto-real-640.webp",
     },
   },
   {
@@ -89,7 +89,7 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/nosotros",
       title: "La claridad empieza aquí",
       text: "Conozca el propósito detrás de Aletheia.",
-      image: "/media/campaign/hero-real.jpg",
+      image: "/media/campaign/hero-real-640.webp",
     },
   },
 ];

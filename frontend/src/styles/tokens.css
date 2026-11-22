@@ -2,8 +2,8 @@
    Los valores salen de la sección 7 de la especificación del rediseño del 19 de noviembre; un
    cambio aquí es un cambio de identidad y debe pasar antes por esa especificación. */
 :root {
-  --font-editorial:
-    "Fraunces Variable", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  /* Un solo tipo de letra en todo el producto: la dirección visual vigente no usa serif. */
+  --font-editorial: var(--font-sans);
 
   /* Papel: la escala que sube y baja. La profundidad se lee por el tono, no por el borde. */
   --paper: #f4f1ea;

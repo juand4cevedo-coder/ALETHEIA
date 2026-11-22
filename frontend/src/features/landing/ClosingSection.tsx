@@ -5,6 +5,7 @@ import { usePlanCatalog } from "../billing/catalog.tsx";
 import { trialDays } from "../billing/plans.ts";
 import styles from "./ClosingSection.module.css";
 import section from "./Section.module.css";
+import { photoProps } from "../../config/media.ts";
 
 // Cierre del inicio: una sola acción. Los días de prueba salen del catálogo; sin él, la frase no
 // da una cifra.
@@ -18,7 +19,7 @@ export function ClosingSection() {
       aria-labelledby="titulo-cierre"
     >
       <img
-        src="/media/campaign/producto-real.jpg"
+        {...photoProps("producto-real", "100vw")}
         alt=""
         width={2000}
         height={1125}

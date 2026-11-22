@@ -23,6 +23,7 @@ import {
   MenuIcon,
 } from "../components/ui/icons.tsx";
 import styles from "./PublicLayout.module.css";
+import { photoProps } from "../config/media.ts";
 
 const CURRENT_YEAR = new Date().getFullYear();
 function Brand() {
@@ -199,7 +200,7 @@ export function PublicLayout() {
       </main>
       <footer className={styles.footer}>
         <img
-          src="/media/campaign/equipo-real.jpg"
+          {...photoProps("equipo-real", "100vw")}
           alt=""
           width={2000}
           height={1333}

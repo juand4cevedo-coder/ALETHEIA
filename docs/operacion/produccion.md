@@ -198,9 +198,17 @@ Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy
 - HTTP redirige a HTTPS con 308, y `www` al dominio principal con 301, conservando la ruta.
 - Cabeceras en todas las respuestas, también en los errores: CSP solo con `'self'` y `frame-ancestors 'none'`, HSTS de un año con `includeSubDomains` y sin `preload`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, COOP y CORP. No envía la cabecera `Server`.
 - Sin API de administración y sin HTTP/3: el grupo de seguridad solo abre el 443 por TCP.
-- `/api/*` va a la API; `/assets/*` se guarda un año en el navegador; lo demás es la aplicación de una sola página, que se revalida en cada visita.
+- `/api/*` va a la API con un tope de 1 MiB por cuerpo: solo la subida de evidencias (`POST /api/v1/cases/<id>/evidences`) admite cuerpos de hasta 2,2 GB, con plazos de lectura y escritura de 15 minutos, y la API aplica además el tope exacto del plan de cada cuenta mientras recibe el archivo.
+- `/assets/*` se guarda un año en el navegador. `/media/*` y `/brand/*` (nombres sin huella) se guardan una semana con revalidación en segundo plano durante un día más. Lo demás es la aplicación de una sola página, que se revalida en cada visita.
+- `/.well-known/security.txt` publica el contacto de seguridad (RFC 9116); su campo `Expires` se renueva cada año.
 
-## Despliegue
+### Rendimiento
+
+- Las fotografías de campaña se publican en tres anchos WebP (640, 1280 y 1920 px) y el navegador elige el más cercano con `srcset`. Un original JPG de unos 350 KB pasó a 17 a 70 KB. Para sumar una fotografía se genera con los mismos tres anchos y se declara en `frontend/src/config/media.ts`.
+- El producto usa un solo tipo de letra de interfaz (Inter) y una de código (Geist Mono); no se descarga ninguna fuente con serif.
+- El pool de conexiones de la API es de 10 más 10 de rebose, con espera máxima de 10 s (`backend/app/db/session.py`). Sumado al trabajador queda por debajo de las 100 conexiones de PostgreSQL.
+- Quien ya tiene sesión precarga en reposo las piezas del espacio de trabajo desde las páginas públicas (`prefetchWorkspace`).
+
 
 Al integrar la rama `release/X.Y.Z` en `develop`, se crea y se sube una etiqueta firmada sobre el commit integrado. La publicación sigue estos pasos en `.github/workflows/publicar.yml`.
 

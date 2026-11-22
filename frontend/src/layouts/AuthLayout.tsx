@@ -16,6 +16,7 @@ import { SITE_NAME, WORDMARK } from "../config/site.ts";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import styles from "./AuthLayout.module.css";
+import { photoProps } from "../config/media.ts";
 
 /** Cambio a la otra pantalla de acceso, declarado en la ruta: va debajo del formulario. */
 export type AuthSwitch = { question: string; label: string; to: string };
@@ -96,7 +97,7 @@ export function AuthLayout() {
 
       <section className={styles.visual} aria-label="Trabajo colaborativo">
         <img
-          src="/media/campaign/equipo-real.jpg"
+          {...photoProps("equipo-real", "(min-width: 900px) 50vw, 100vw")}
           alt="Equipo profesional colaborando en un espacio contemporáneo"
           width={2000}
           height={1333}

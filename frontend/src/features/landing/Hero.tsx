@@ -3,12 +3,13 @@ import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 import { ROUTES } from "../../config/routes.ts";
 import { SIGN_UP_LABEL } from "../../config/site.ts";
 import styles from "./Hero.module.css";
+import { photoProps } from "../../config/media.ts";
 
 export function Hero() {
   return (
     <section className={styles.hero} aria-labelledby="titulo-inicio">
       <img
-        src="/media/campaign/hero-real.jpg"
+        {...photoProps("hero-real", "100vw")}
         alt="Profesionales colaborando en una oficina"
         className={styles.photo}
         fetchPriority="high"

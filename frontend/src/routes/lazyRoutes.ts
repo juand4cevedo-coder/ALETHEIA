@@ -100,3 +100,20 @@ export function prefetchLikelyNext(): () => void {
   const handle = window.setTimeout(run, 1500);
   return () => window.clearTimeout(handle);
 }
+
+/** Quien ya tiene sesión casi siempre va de la página pública a su espacio de trabajo. Con el
+ * navegador desocupado se descargan sus piezas más usadas, así el clic en «Ir a mis casos» no
+ * espera la red. No se ejecuta nada: solo se calienta la caché de módulos. */
+export function prefetchWorkspace(): void {
+  const warm = () => {
+    void loadQueryRoot();
+    void loadAppShell();
+    void loadWorkspacePage();
+    void loadCasesPage();
+  };
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(warm, { timeout: 4000 });
+  } else {
+    setTimeout(warm, 2000);
+  }
+}

@@ -32,6 +32,15 @@ def create_db_engine(settings: Settings) -> Engine:
         settings.database_url.get_secret_value().encoded_string(),
         # Descarta conexiones caídas del pool antes de entregarlas.
         pool_pre_ping=True,
+        # Las rutas son síncronas y FastAPI las corre en hilos: con el pool por defecto (5 más
+        # 10 de rebose) una ráfaga de subidas largas deja sin conexión a las demás peticiones.
+        # El tope total (20) queda muy por debajo de max_connections de PostgreSQL aun sumando
+        # el trabajador. Quien no consigue conexión espera 10 s y recibe un error claro, no
+        # los 30 s por defecto. Reciclar cada 30 minutos evita conexiones viejas tras un reinicio.
+        pool_size=10,
+        max_overflow=10,
+        pool_timeout=10,
+        pool_recycle=1800,
         # Un error de SQL no repite los valores de la consulta: sin esto, la traza que queda en
         # los registros traería correos, nombres o hashes de contraseña de esa petición.
         hide_parameters=True,

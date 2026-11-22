@@ -4,6 +4,7 @@ import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 import styles from "./HowItWorks.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
+import { photoProps } from "../../config/media.ts";
 
 const STEPS = [
   {
@@ -35,7 +36,7 @@ export function HowItWorks() {
         />
         <div className={styles.layout}>
           <img
-            src="/media/campaign/producto-real.jpg"
+            {...photoProps("producto-real", "(min-width: 900px) 50vw, 100vw")}
             alt="Personas trabajando en una oficina colorida"
             className={styles.photo}
             loading="lazy"
