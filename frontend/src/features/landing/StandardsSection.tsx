@@ -1,4 +1,3 @@
-import { Foto } from "../../components/ui/Foto.tsx";
 import { ChainDemo } from "./ChainDemo.tsx";
 import { HashDemo } from "./HashDemo.tsx";
 import { StampCard } from "./StampCard.tsx";
@@ -18,7 +17,15 @@ export function StandardsSection() {
       className={`${section.section} ${styles.section} on-ink`}
       aria-labelledby="titulo-estandares"
     >
-      <Foto nombre="seguridad" alt="" className={styles.photo} />
+      <img
+        src="/media/campaign/hero-real.jpg"
+        alt=""
+        width={2400}
+        height={1350}
+        loading="lazy"
+        decoding="async"
+        className={styles.photo}
+      />
       <div className={section.inner}>
         <SectionHeading
           id="titulo-estandares"

@@ -14,10 +14,10 @@
   justify-content: center;
   gap: 10px;
   padding: 12px 10px;
-  min-height: 48px;
-  border: 1px solid var(--ink-hairline);
-  border-radius: 15px;
-  background: linear-gradient(115deg, var(--paper-raised), var(--paper-sunken));
+  min-height: 52px;
+  border: 1px solid #d8d8d8;
+  border-radius: 999px;
+  background: var(--paper-raised);
   color: var(--text-2);
   font: inherit;
   font-size: 13px;
@@ -32,10 +32,14 @@
   color: var(--text);
   transition:
     border-color 160ms ease,
-    background-color 160ms ease;
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 .provider:hover {
   border-color: var(--ink-900);
+  box-shadow: 0 8px 24px rgb(49 10 68 / 10%);
+  transform: translateY(-1px);
 }
 .providers svg {
   flex: none;

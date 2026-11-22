@@ -13,6 +13,7 @@ html {
      encabezado fijo. */
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-height) + var(--space-4));
+  overflow-x: clip;
 }
 
 /* Mientras un diálogo modal está abierto, la página de fondo no se desplaza. */
@@ -30,6 +31,7 @@ body {
   color: var(--text);
   background: var(--paper);
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
 }
 
 h1,

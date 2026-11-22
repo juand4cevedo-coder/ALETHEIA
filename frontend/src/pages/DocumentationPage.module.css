@@ -1,6 +1,7 @@
 .layout {
   display: grid;
   grid-template-columns: 240px minmax(0, 680px) 170px;
+  min-width: 0;
   max-width: 1280px;
   gap: 56px;
   padding: 48px 28px 100px;
@@ -8,6 +9,7 @@
 }
 .sidebar,
 .contents {
+  min-width: 0;
   align-self: start;
   position: sticky;
   top: 100px;
@@ -229,6 +231,9 @@
   }
   .sidebar nav {
     display: flex;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     gap: 8px;
     overflow-x: auto;
     padding-bottom: 12px;
@@ -236,6 +241,10 @@
   .group {
     flex: none;
     margin: 0;
+  }
+
+  .article {
+    min-width: 0;
   }
   .group p,
   .support {

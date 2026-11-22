@@ -4,6 +4,7 @@
    cambia la clase .on-ink, de modo que estos controles lo heredan sin repetirlo. */
 .button {
   display: inline-flex;
+  max-width: 100%;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
@@ -26,6 +27,13 @@
     color var(--motion-base) var(--ease-standard),
     background-size var(--motion-base) var(--ease-standard),
     transform var(--motion-base) var(--ease-standard);
+}
+
+@media (max-width: 360px) {
+  .button {
+    white-space: normal;
+    text-align: center;
+  }
 }
 
 .button svg {
