@@ -1439,7 +1439,7 @@ export const readCaseExport = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Buscar un despacho por su cuenta responsable
+ * Buscar un despacho por cualquiera de sus cuentas
  */
 export const lookupCourtesy = <ThrowOnError extends boolean = false>(
   options: Options<LookupCourtesyData, ThrowOnError>,

@@ -50,8 +50,8 @@ class PlatformBilling(BaseModel):
 class CourtesyTarget(BaseModel):
     organization_id: uuid.UUID
     organization_name: str
-    owner_email: str
-    owner_name: str
+    account_email: str
+    account_name: str
     plan_code: str
     status: str
     access_source: str
@@ -64,7 +64,7 @@ class CourtesyGrant(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     organization_id: uuid.UUID
-    owner_email: str
+    account_email: str
     plan_code: str
     reason: str = Field(min_length=10, max_length=500)
     ends_at: AwareDatetime | None = None
@@ -74,7 +74,7 @@ class CourtesyRevoke(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     organization_id: uuid.UUID
-    owner_email: str
+    account_email: str
     reason: str = Field(min_length=10, max_length=500)
 
 

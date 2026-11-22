@@ -167,7 +167,7 @@ function PlanAccessManager({
   const [message, setMessage] = useState("");
   const queryClient = useQueryClient();
   const target = useQuery({
-    ...lookupCourtesyOptions({ query: { owner_email: searched } }),
+    ...lookupCourtesyOptions({ query: { account_email: searched } }),
     enabled: Boolean(searched),
   });
   const grant = useMutation({
@@ -210,7 +210,7 @@ function PlanAccessManager({
       : "sin vencimiento";
     if (
       !window.confirm(
-        `Confirma ${selectedPlan.name} para ${target.data.organization_name} (${target.data.owner_email}), ${deadline}?`,
+        `Confirma ${selectedPlan.name} para ${target.data.organization_name} (${target.data.account_email}), ${deadline}?`,
       )
     )
       return;
@@ -218,7 +218,7 @@ function PlanAccessManager({
     grant.mutate({
       body: {
         organization_id: target.data.organization_id,
-        owner_email: target.data.owner_email,
+        account_email: target.data.account_email,
         plan_code: selectedPlan.code,
         reason: reason.trim(),
         ends_at: endsAt?.toISOString() ?? null,
@@ -241,7 +241,7 @@ function PlanAccessManager({
     revoke.mutate({
       body: {
         organization_id: target.data.organization_id,
-        owner_email: target.data.owner_email,
+        account_email: target.data.account_email,
         reason: reason.trim(),
       },
     });
@@ -254,9 +254,7 @@ function PlanAccessManager({
     >
       <div className={styles.courtesy}>
         <form className={styles.form} onSubmit={search}>
-          <label htmlFor="courtesy-email">
-            Correo del responsable del despacho
-          </label>
+          <label htmlFor="courtesy-email">Correo de cualquier miembro</label>
           <div className={styles.inlineForm}>
             <input
               id="courtesy-email"
@@ -271,7 +269,7 @@ function PlanAccessManager({
         {target.isPending && searched && <p role="status">Buscando despacho</p>}
         {target.isError && (
           <Notice tone="error">
-            No encontramos un despacho asociado a esa cuenta responsable.
+            No encontramos un despacho asociado a esa cuenta.
           </Notice>
         )}
         {target.data && (
@@ -279,7 +277,7 @@ function PlanAccessManager({
             <div className={styles.targetCard}>
               <strong>{target.data.organization_name}</strong>
               <span>
-                {target.data.owner_name}, {target.data.owner_email}
+                {target.data.account_name}, {target.data.account_email}
               </span>
               <span>
                 Plan actual:{" "}

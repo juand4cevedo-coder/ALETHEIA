@@ -52,16 +52,18 @@ def _courtesy_result(response: Response, view: courtesy.CourtesyView) -> Courtes
     return CourtesyTarget.model_validate(view, from_attributes=True)
 
 
-@router.get("/courtesy", summary="Buscar un despacho por su cuenta responsable")
+@router.get("/courtesy", summary="Buscar un despacho por cualquiera de sus cuentas")
 def lookup_courtesy(
     response: Response,
     principal: Annotated[Principal, Depends(get_platform_admin)],
     session: Annotated[Session, Depends(get_session)],
-    owner_email: str,
+    account_email: str,
 ) -> CourtesyTarget:
     try:
-        return _courtesy_result(response, courtesy.lookup(session, principal.user_id, owner_email))
-    except courtesy.OwnerNotFound:
+        return _courtesy_result(
+            response, courtesy.lookup(session, principal.user_id, account_email)
+        )
+    except courtesy.AccountNotFound:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail="No encontramos un despacho asociado a esa cuenta."
         ) from None
@@ -80,14 +82,14 @@ def grant_courtesy(
             session,
             principal.user_id,
             change.organization_id,
-            change.owner_email,
+            change.account_email,
             change.plan_code,
             change.reason.strip(),
             change.ends_at,
             client_ip,
         )
         return _courtesy_result(response, view)
-    except courtesy.OwnerNotFound:
+    except courtesy.AccountNotFound:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail="No encontramos un despacho asociado a esa cuenta."
         ) from None
@@ -114,12 +116,12 @@ def revoke_courtesy(
             session,
             principal.user_id,
             change.organization_id,
-            change.owner_email,
+            change.account_email,
             change.reason.strip(),
             client_ip,
         )
         return _courtesy_result(response, view)
-    except courtesy.OwnerNotFound:
+    except courtesy.AccountNotFound:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail="No encontramos un despacho asociado a esa cuenta."
         ) from None

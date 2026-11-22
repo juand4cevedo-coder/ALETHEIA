@@ -2119,7 +2119,7 @@ export const lookupCourtesyQueryKey = (options: Options<LookupCourtesyData>) =>
   createQueryKey("lookupCourtesy", options);
 
 /**
- * Buscar un despacho por su cuenta responsable
+ * Buscar un despacho por cualquiera de sus cuentas
  */
 export const lookupCourtesyOptions = (options: Options<LookupCourtesyData>) =>
   queryOptions<

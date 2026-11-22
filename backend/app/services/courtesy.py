@@ -13,7 +13,7 @@ from app.services import subscription_expiration
 from app.services.audit import audit_ip
 
 
-class OwnerNotFound(Exception):
+class AccountNotFound(Exception):
     pass
 
 
@@ -25,8 +25,8 @@ class CourtesyConflict(Exception):
 class CourtesyView:
     organization_id: uuid.UUID
     organization_name: str
-    owner_email: str
-    owner_name: str
+    account_email: str
+    account_name: str
     plan_code: str
     status: str
     access_source: str
@@ -35,20 +35,20 @@ class CourtesyView:
     revoked_at: datetime.datetime | None
 
 
-def _owner(session: Session, admin_id: uuid.UUID, email: str) -> tuple[User, uuid.UUID]:
+def _account(session: Session, admin_id: uuid.UUID, email: str) -> tuple[User, uuid.UUID]:
     set_tenant(session, TenantContext(user_id=admin_id))
     row = session.execute(
         select(User, Membership.organization_id)
         .join(Membership, Membership.user_id == User.id)
-        .where(func.lower(User.email) == email.strip().lower(), Membership.role == "owner")
+        .where(func.lower(User.email) == email.strip().lower())
     ).one_or_none()
     if row is None:
-        raise OwnerNotFound
+        raise AccountNotFound
     return row[0], row[1]
 
 
-def _view(session: Session, owner: User, organization_id: uuid.UUID) -> CourtesyView:
-    set_tenant(session, TenantContext(organization_id, owner.id))
+def _view(session: Session, account: User, organization_id: uuid.UUID) -> CourtesyView:
+    set_tenant(session, TenantContext(organization_id, account.id))
     row = session.execute(
         select(Organization, Subscription, Plan.code)
         .join(Subscription, Subscription.organization_id == Organization.id)
@@ -56,13 +56,13 @@ def _view(session: Session, owner: User, organization_id: uuid.UUID) -> Courtesy
         .where(Organization.id == organization_id)
     ).one_or_none()
     if row is None:
-        raise OwnerNotFound
+        raise AccountNotFound
     organization, subscription, plan_code = row
     return CourtesyView(
         organization_id=organization.id,
         organization_name=organization.name,
-        owner_email=owner.email,
-        owner_name=owner.full_name,
+        account_email=account.email,
+        account_name=account.full_name,
         plan_code=plan_code,
         status=subscription.status,
         access_source=subscription.access_source,
@@ -77,8 +77,8 @@ def _view(session: Session, owner: User, organization_id: uuid.UUID) -> Courtesy
 
 
 def lookup(session: Session, admin_id: uuid.UUID, email: str) -> CourtesyView:
-    owner, organization_id = _owner(session, admin_id, email)
-    return _view(session, owner, organization_id)
+    account, organization_id = _account(session, admin_id, email)
+    return _view(session, account, organization_id)
 
 
 def _admin_locked(session: Session, admin_id: uuid.UUID) -> None:
@@ -93,11 +93,11 @@ def _admin_locked(session: Session, admin_id: uuid.UUID) -> None:
 
 
 def _target_locked(
-    session: Session, admin_id: uuid.UUID, owner_email: str, organization_id: uuid.UUID
+    session: Session, admin_id: uuid.UUID, account_email: str, organization_id: uuid.UUID
 ) -> tuple[User, Organization, Subscription]:
-    owner, actual_id = _owner(session, admin_id, owner_email)
+    account, actual_id = _account(session, admin_id, account_email)
     if actual_id != organization_id:
-        raise OwnerNotFound
+        raise AccountNotFound
     set_tenant(session, TenantContext(organization_id, admin_id))
     organization = session.scalar(
         select(Organization).where(Organization.id == organization_id).with_for_update()
@@ -108,15 +108,15 @@ def _target_locked(
         .with_for_update()
     )
     if organization is None or subscription is None:
-        raise OwnerNotFound
-    return owner, organization, subscription
+        raise AccountNotFound
+    return account, organization, subscription
 
 
 def grant(
     session: Session,
     admin_id: uuid.UUID,
     organization_id: uuid.UUID,
-    owner_email: str,
+    account_email: str,
     plan_code: str,
     reason: str,
     ends_at: datetime.datetime | None,
@@ -127,8 +127,8 @@ def grant(
     session.commit()  # La lectura de autenticación termina antes de la escritura.
     with session.begin():
         _admin_locked(session, admin_id)
-        owner, organization, subscription = _target_locked(
-            session, admin_id, owner_email, organization_id
+        account, organization, subscription = _target_locked(
+            session, admin_id, account_email, organization_id
         )
         if organization.status == "suspended" or subscription.gateway_subscription_id is not None:
             raise CourtesyConflict
@@ -172,14 +172,14 @@ def grant(
                 created_at=now,
             )
         )
-        return _view(session, owner, organization_id)
+        return _view(session, account, organization_id)
 
 
 def revoke(
     session: Session,
     admin_id: uuid.UUID,
     organization_id: uuid.UUID,
-    owner_email: str,
+    account_email: str,
     reason: str,
     client_ip: str,
 ) -> CourtesyView:
@@ -188,8 +188,8 @@ def revoke(
     session.commit()
     with session.begin():
         _admin_locked(session, admin_id)
-        owner, organization, subscription = _target_locked(
-            session, admin_id, owner_email, organization_id
+        account, organization, subscription = _target_locked(
+            session, admin_id, account_email, organization_id
         )
         if subscription.access_source != "courtesy" or subscription.status != "active":
             raise CourtesyConflict
@@ -220,4 +220,4 @@ def revoke(
                 created_at=now,
             )
         )
-        return _view(session, owner, organization_id)
+        return _view(session, account, organization_id)

@@ -815,9 +815,9 @@ export type CourtesyGrant = {
    */
   organization_id: string;
   /**
-   * Owner Email
+   * Account Email
    */
-  owner_email: string;
+  account_email: string;
   /**
    * Plan Code
    */
@@ -841,9 +841,9 @@ export type CourtesyRevoke = {
    */
   organization_id: string;
   /**
-   * Owner Email
+   * Account Email
    */
-  owner_email: string;
+  account_email: string;
   /**
    * Reason
    */
@@ -863,13 +863,13 @@ export type CourtesyTarget = {
    */
   organization_name: string;
   /**
-   * Owner Email
+   * Account Email
    */
-  owner_email: string;
+  account_email: string;
   /**
-   * Owner Name
+   * Account Name
    */
-  owner_name: string;
+  account_name: string;
   /**
    * Plan Code
    */
@@ -4660,9 +4660,9 @@ export type LookupCourtesyData = {
   path?: never;
   query: {
     /**
-     * Owner Email
+     * Account Email
      */
-    owner_email: string;
+    account_email: string;
   };
   url: "/api/v1/platform/courtesy";
 };

@@ -3910,7 +3910,7 @@
         "tags": [
           "plataforma"
         ],
-        "summary": "Buscar un despacho por su cuenta responsable",
+        "summary": "Buscar un despacho por cualquiera de sus cuentas",
         "operationId": "lookup_courtesy",
         "security": [
           {
@@ -3919,12 +3919,12 @@
         ],
         "parameters": [
           {
-            "name": "owner_email",
+            "name": "account_email",
             "in": "query",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Owner Email"
+              "title": "Account Email"
             }
           }
         ],
@@ -6004,9 +6004,9 @@
             "format": "uuid",
             "title": "Organization Id"
           },
-          "owner_email": {
+          "account_email": {
             "type": "string",
-            "title": "Owner Email"
+            "title": "Account Email"
           },
           "plan_code": {
             "type": "string",
@@ -6035,7 +6035,7 @@
         "type": "object",
         "required": [
           "organization_id",
-          "owner_email",
+          "account_email",
           "plan_code",
           "reason"
         ],
@@ -6048,9 +6048,9 @@
             "format": "uuid",
             "title": "Organization Id"
           },
-          "owner_email": {
+          "account_email": {
             "type": "string",
-            "title": "Owner Email"
+            "title": "Account Email"
           },
           "reason": {
             "type": "string",
@@ -6063,7 +6063,7 @@
         "type": "object",
         "required": [
           "organization_id",
-          "owner_email",
+          "account_email",
           "reason"
         ],
         "title": "CourtesyRevoke"
@@ -6079,13 +6079,13 @@
             "type": "string",
             "title": "Organization Name"
           },
-          "owner_email": {
+          "account_email": {
             "type": "string",
-            "title": "Owner Email"
+            "title": "Account Email"
           },
-          "owner_name": {
+          "account_name": {
             "type": "string",
-            "title": "Owner Name"
+            "title": "Account Name"
           },
           "plan_code": {
             "type": "string",
@@ -6140,8 +6140,8 @@
         "required": [
           "organization_id",
           "organization_name",
-          "owner_email",
-          "owner_name",
+          "account_email",
+          "account_name",
           "plan_code",
           "status",
           "access_source",
