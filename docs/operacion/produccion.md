@@ -201,8 +201,32 @@ Las imágenes base van fijadas por digest en `backend/Dockerfile` e `infra/caddy
 - `/api/*` va a la API con un tope de 1 MiB por cuerpo: solo la subida de evidencias (`POST /api/v1/cases/<id>/evidences`) admite cuerpos de hasta 2,2 GB, con plazos de lectura y escritura de 15 minutos, y la API aplica además el tope exacto del plan de cada cuenta mientras recibe el archivo.
 - `/assets/*` se guarda un año en el navegador. `/media/*` y `/brand/*` (nombres sin huella) se guardan una semana con revalidación en segundo plano durante un día más. Lo demás es la aplicación de una sola página, que se revalida en cada visita.
 - `/.well-known/security.txt` publica el contacto de seguridad (RFC 9116); su campo `Expires` se renueva cada año.
+## Respaldos de PostgreSQL
 
-### Rendimiento
+`infra/prod/respaldar.sh` genera una copia con `pg_dump` en formato personalizado, comprueba que se pueda leer con `pg_restore --list` y la sube al bucket de respaldos con cifrado SSE-S3 y su SHA-256. El rol de la máquina puede escribir pero no borrar; la regla de ciclo de vida descarta cada copia a los 7 días. Un temporizador de systemd la lanza cada día a las 03:30 UTC (22:30 en Colombia).
+
+Instalación, una sola vez y como root en el servidor:
+
+1. Agregar `ALETHEIA_BACKUP_BUCKET=<bucket de respaldos>` a `/etc/aletheia/entorno.env`.
+2. `cp /opt/aletheia/infra/prod/systemd/aletheia-respaldo.* /etc/systemd/system/`
+3. `systemctl daemon-reload && systemctl enable --now aletheia-respaldo.timer`
+4. Probar a mano con `systemctl start aletheia-respaldo.service` y revisar `journalctl -u aletheia-respaldo`.
+
+`respaldar.sh --revisar` sale con error si la última copia tiene más de 26 horas; sirve para una alarma o una comprobación periódica.
+
+Restaurar en una base vacía, con una copia descargada del bucket (por ejemplo desde CloudShell) y verificada contra su `.sha256`:
+
+1. `sha256sum -c aletheia-<fecha>.dump.sha256`
+2. Copiar el archivo al contenedor y ejecutar `pg_restore --username aletheia --dbname <base nueva> --no-owner --role aletheia_owner <archivo>`.
+3. Comprobar con `alembic current` que la versión del esquema es la esperada y con la verificación de cadena de un caso conocido.
+
+Un respaldo que nunca se restauró no es una garantía: la restauración se ensaya en una base de pruebas al menos una vez por trimestre y el resultado se anota aquí.
+
+## Revisión de la cuenta de AWS
+
+`infra/prod/auditar-aws.sh` es de solo lectura y se ejecuta desde CloudShell. Comprueba IMDSv2, discos cifrados, puertos abiertos, buckets privados y cifrados con su ciclo de vida, la antigüedad de la última copia de PostgreSQL, los parámetros de Parameter Store (solo los nombres), las alarmas de CloudWatch y el presupuesto. Se ejecuta antes de cada versión y después de cualquier cambio en AWS.
+
+## Rendimiento
 
 - Las fotografías de campaña se publican en tres anchos WebP (640, 1280 y 1920 px) y el navegador elige el más cercano con `srcset`. Un original JPG de unos 350 KB pasó a 17 a 70 KB. Para sumar una fotografía se genera con los mismos tres anchos y se declara en `frontend/src/config/media.ts`.
 - El producto usa un solo tipo de letra de interfaz (Inter) y una de código (Geist Mono); no se descarga ninguna fuente con serif.
@@ -225,7 +249,7 @@ En el servidor, el documento trae la etiqueta, comprueba su firma y deja `/opt/a
 | Archivo en el servidor | Contenido |
 | --- | --- |
 | `/etc/aletheia/firmantes-permitidos` | La llave pública que firma las etiquetas. Sin ella, ningún despliegue pasa |
-| `/etc/aletheia/entorno.env` | Configuración fija del servidor: `ALETHEIA_EVIDENCE_BUCKET`, `ALETHEIA_GOOGLE_CLIENT_ID` y `ALETHEIA_GOOGLE_CLIENT_SECRET_PARAMETER`. La deja una sola vez el administrador; `desplegar.sh` no la escribe ni la toca |
+| `/etc/aletheia/entorno.env` | Configuración fija del servidor: `ALETHEIA_EVIDENCE_BUCKET`, `ALETHEIA_BACKUP_BUCKET`, `ALETHEIA_GOOGLE_CLIENT_ID` y `ALETHEIA_GOOGLE_CLIENT_SECRET_PARAMETER`. La deja una sola vez el administrador; `desplegar.sh` no la escribe ni la toca |
 | `/var/lib/aletheia/despliegue.env` | Versión y digests de lo que está corriendo |
 | `/var/lib/aletheia/despliegue.anterior.env` | La versión a la que se vuelve si la nueva falla |
 | `/var/lib/aletheia/despliegue.fallido.env` | La última versión que falló, para revisarla |

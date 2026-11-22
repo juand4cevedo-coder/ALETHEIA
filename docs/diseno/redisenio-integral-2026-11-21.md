@@ -24,10 +24,7 @@ espacio autenticado: no se mantienen paneles internos de la generación visual a
 
 ## Marca
 
-Se preserva sin cambios la geometría aprobada del símbolo circular de ojo y circuito.
-Solo cambia el color: violeta sobre blanco para superficies claras y blanco sobre
-violeta para superficies de marca. El cambio de color no autoriza variantes nuevas del
-símbolo.
+El símbolo es un ojo blanco sobre un recuadro violeta de esquinas redondeadas, con una variante invertida y otra reducida para 16 y 32 px. Reemplaza al círculo con circuitos, que dejaba de leerse por debajo de 40 px (ADR-049). El detalle de los archivos está en [Identidad y sistema de diseño](identidad-y-sistema-de-diseno.md).
 
 ## Arquitectura pública
 

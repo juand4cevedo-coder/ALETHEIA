@@ -252,25 +252,21 @@ export function InformationPage() {
           <div className={styles.prose}>
             <h2>El símbolo de Aletheia</h2>
             <p>
-              El símbolo combina un campo circular, un ojo y líneas digitales.
-              El círculo expresa resguardo y continuidad; el ojo, observación
-              cuidadosa y búsqueda de claridad; los circuitos representan la
-              trazabilidad técnica de la información. Sus versiones clara y
-              oscura conservan el contraste sobre cualquier superficie.
+              El símbolo es un ojo dentro de un recuadro de esquinas redondeadas. El ojo expresa observación cuidadosa y búsqueda de claridad; el iris, el punto exacto en que se fija la huella de cada archivo. La versión violeta sirve sobre superficies claras y la blanca sobre superficies de marca.
             </p>
             <h2>Uso del nombre</h2>
             <p>
               Se escribe Aletheia. Mantenga el símbolo proporcionado, con un
-              espacio libre mínimo equivalente a la pupila y contraste
-              suficiente. No cambie sus proporciones ni añada fondos, sombras,
-              inclinaciones o elementos alrededor del círculo.
+              espacio libre mínimo equivalente al ancho del iris y contraste
+              suficiente. No cambie sus proporciones ni añada sombras,
+              inclinaciones o elementos alrededor del recuadro.
             </p>
             <a href="/brand/symbol-white.svg" download="aletheia-blanco.svg">
               Descargar símbolo blanco (SVG)
             </a>
             <p>
               <a href="/brand/symbol-dark.svg" download="aletheia.svg">
-                Descargar símbolo oscuro (SVG)
+                Descargar símbolo violeta (SVG)
               </a>
             </p>
           </div>

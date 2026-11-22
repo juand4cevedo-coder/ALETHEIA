@@ -206,11 +206,11 @@ El código del frontend se organiza así (ADR-021):
 
 El acceso y el espacio de trabajo piden los datos de la API con TanStack Query y las opciones que genera Hey API, por ejemplo `useQuery(readMeOptions())`. El proveedor lo monta `src/routes/QueryRoot.tsx`, que se descarga con esas pantallas. El sitio público no usa TanStack Query: el inicio y la página de precios leen el catálogo de planes con `usePlanCatalog()` (`src/features/billing/catalog.tsx`), un `fetch` pequeño que la landing carga sin el resto del cliente.
 
-Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css` (ADR-043). Una prueba falla si algún archivo usa los nombres del sistema anterior, como `--color-ink-900`. Al imprimir, `tokens.css` cambia los tonos de texto, enlaces y estados a tinta oscura sobre blanco.
+Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css` (ADR-049). Una prueba falla si algún archivo usa los nombres del sistema anterior, como `--color-ink-900`. Al imprimir, `tokens.css` cambia los tonos de texto, enlaces y estados a tinta oscura sobre blanco.
 
 Los íconos se importan solo de `src/components/ui/icons.tsx`: Phosphor en peso regular, copiado en `src/components/ui/icons/` con un archivo por ícono, más cuatro propios (huella, sello, cadena y paquete). Para agregar uno, se copia su trazado regular de Phosphor en un archivo nuevo de esa carpeta, igual a los demás, y se exporta desde `icons.tsx`. Como cada ícono vive en su archivo, cada pantalla descarga solo los que dibuja.
 
-Las fuentes son Inter, Fraunces y Geist Mono, alojadas en el propio sitio con subconjunto latino (`src/styles/fonts.css`). Mientras cargan se ve la fuente del sistema, e Inter se precarga en `index.html`.
+Las fuentes son Inter y Geist Mono, alojadas en el propio sitio con subconjunto latino (`src/styles/fonts.css`). Mientras cargan se ve la fuente del sistema, e Inter se precarga en `index.html`.
 
 La landing tiene un presupuesto de carga (especificación de identidad, sección 8): menos de 120 KB de JavaScript inicial comprimido y menos de 36 KB de CSS. El script `frontend/scripts/check-bundle-budget.mjs` mide la entrada y sus dependencias estáticas al ejecutar `pnpm build`; las secciones debajo del primer pantallazo llegan aparte (`src/features/landing/BelowFold.tsx`). La escena criptográfica del inicio usa SVG y CSS, sin WebGL.
 

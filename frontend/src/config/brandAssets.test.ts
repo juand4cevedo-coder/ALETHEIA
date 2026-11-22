@@ -23,8 +23,8 @@ describe("recursos de la marca", () => {
     "%s usa el símbolo vectorial aprobado y sigue siendo escalable",
     (path) => {
       const svg = asset(path).toString("utf8");
-      expect(svg).toContain('data-brand="aletheia-eye-circuit"');
-      expect(svg).toMatch(/viewBox="0 0 240 240"/);
+      expect(svg).toContain('data-brand="aletheia-eye"');
+      expect(svg).toMatch(/viewBox="0 0 64 64"/);
       expect(svg).not.toMatch(/<svg[^>]+(?:width|height)=/);
       expect(svg).not.toMatch(/<(?:image|script)|(?:href|src)="https?:\/\//);
     },
@@ -32,10 +32,9 @@ describe("recursos de la marca", () => {
 
   it("conserva el mismo símbolo en el favicon", () => {
     const svg = asset("public/favicon.svg").toString("utf8");
-    expect(svg).toContain('data-brand="aletheia-eye-circuit"');
+    expect(svg).toContain('data-brand="aletheia-eye"');
     expect(svg).toContain('data-variant="small"');
-    expect(svg).toMatch(/viewBox="0 0 240 240"/);
-    expect(svg).not.toContain("<rect");
+    expect(svg).toMatch(/viewBox="0 0 64 64"/);
   });
 
   it.each([
