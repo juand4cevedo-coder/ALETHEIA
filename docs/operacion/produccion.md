@@ -224,7 +224,9 @@ Un respaldo que nunca se restauró no es una garantía: la restauración se ensa
 
 ## Revisión de la cuenta de AWS
 
-`infra/prod/auditar-aws.sh` es de solo lectura y se ejecuta desde CloudShell. Comprueba IMDSv2, discos cifrados, puertos abiertos, buckets privados y cifrados con su ciclo de vida, la antigüedad de la última copia de PostgreSQL, los parámetros de Parameter Store (solo los nombres), las alarmas de CloudWatch y el presupuesto. Se ejecuta antes de cada versión y después de cualquier cambio en AWS.
+La organización de las credenciales y su rotación están en [Credenciales de AWS](credenciales-aws.md).
+
+`infra/prod/auditar-aws.sh` es de solo lectura y se ejecuta desde CloudShell. Comprueba IMDSv2, discos cifrados, puertos abiertos, buckets privados y cifrados con su ciclo de vida, la antigüedad de la última copia de PostgreSQL, los parámetros de Parameter Store (solo los nombres), las alarmas de CloudWatch y el presupuesto. También revisa las credenciales de IAM: raíz sin llaves y con MFA, MFA para cada persona con consola y llaves de menos de 90 días. Se ejecuta antes de cada versión y después de cualquier cambio en AWS.
 
 ## Rendimiento
 

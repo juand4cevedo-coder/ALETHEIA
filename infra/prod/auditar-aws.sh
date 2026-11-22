@@ -7,7 +7,7 @@
 # Comprueba lo que docs/operacion/produccion.md dice que existe: acceso por SSH restringido,
 # IMDSv2, discos cifrados, buckets privados y cifrados con su regla de ciclo de vida, una copia
 # de PostgreSQL de menos de 26 horas, los parámetros de Parameter Store, las alarmas y el
-# presupuesto. Muestra todas las fallas antes de terminar, no solo la primera.
+# presupuesto, y las credenciales de IAM (raíz, MFA y rotación de llaves). Muestra todas las fallas antes de terminar, no solo la primera.
 set -uo pipefail
 
 readonly REGION=us-east-2
@@ -98,6 +98,34 @@ alarmas="$(aws_ cloudwatch describe-alarms --query 'MetricAlarms[].AlarmName')"
 presupuesto="$(aws --output text budgets describe-budgets --account-id "$cuenta" --query 'Budgets[].BudgetName' 2>/dev/null)"
 [[ -n $presupuesto ]] && ok "presupuesto: $presupuesto" || aviso "no hay un presupuesto con alertas"
 
+
+# 6. Credenciales de IAM: la raíz sin llaves y con MFA, cada persona con MFA y ninguna llave
+# activa con más de 90 días sin rotar. Los datos salen del informe de credenciales de IAM.
+resumen="$(aws_ iam get-account-summary --query 'SummaryMap.[AccountAccessKeysPresent,AccountMFAEnabled]')"
+read -r llaves_raiz mfa_raiz <<<"$resumen"
+[[ ${llaves_raiz:-1} == 0 ]] && ok "la cuenta raíz no tiene llaves de acceso" || falla "la cuenta raíz tiene llaves de acceso"
+[[ ${mfa_raiz:-0} == 1 ]] && ok "la cuenta raíz tiene MFA" || falla "la cuenta raíz no tiene MFA"
+
+aws iam generate-credential-report >/dev/null 2>&1
+sleep 3
+informe="$(aws --output text iam get-credential-report --query Content 2>/dev/null | base64 -d 2>/dev/null)"
+if [[ -z $informe ]]; then
+    aviso "no se pudo leer el informe de credenciales de IAM"
+else
+    hoy="$(date +%s)"
+    while IFS=, read -r usuario _ _ clave _ _ _ mfa llave1 rotada1 llave2 rotada2 _; do
+        [[ $usuario == user || $usuario == '<root_account>' ]] && continue
+        [[ $clave == true && $mfa == false ]] && falla "el usuario $usuario entra a la consola sin MFA"
+        for par in "$llave1:$rotada1" "$llave2:$rotada2"; do
+            activa="${par%%:*}"
+            rotada="${par#*:}"
+            [[ $activa == true && $rotada != N/A ]] || continue
+            dias=$(((hoy - $(date -d "$rotada" +%s)) / 86400))
+            ((dias > 90)) && falla "el usuario $usuario tiene una llave de acceso de $dias días sin rotar"
+        done
+    done <<<"$informe"
+    ok "informe de credenciales revisado"
+fi
 echo
 echo "$fallas fallas y $avisos avisos."
 ((fallas == 0))
