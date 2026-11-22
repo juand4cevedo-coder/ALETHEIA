@@ -13,7 +13,9 @@
 .tableScroll {
   min-width: 0;
   overflow-x: auto;
-  border-top: 1px solid var(--ink-hairline);
+  border: 1px solid var(--ink-hairline);
+  border-radius: 20px;
+  background: var(--paper-raised);
 }
 
 .accountFilters {
@@ -21,7 +23,9 @@
   grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(140px, 1fr));
   gap: var(--space-4);
   align-items: end;
-  padding: 0 0 var(--space-5);
+  padding: var(--space-5);
+  border-radius: 20px;
+  background: var(--paper-sunken);
 }
 
 .filterField {
@@ -37,8 +41,8 @@
   width: 100%;
   min-width: 0;
   padding: var(--space-3);
-  border: 1px solid var(--line-control);
-  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  border-radius: 14px;
   background: var(--paper-raised);
   color: var(--text);
   font: inherit;
@@ -63,7 +67,7 @@
 }
 
 .resultCount {
-  margin: 0 0 var(--space-3);
+  margin: 0;
   color: var(--text-3);
   font-size: var(--font-size-support);
 }
@@ -83,11 +87,11 @@
 }
 
 .table thead th {
+  background: var(--paper-sunken);
   color: var(--text-3);
   font-size: var(--font-size-label);
-  font-weight: 500;
-  letter-spacing: 0.075em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .table tbody th {
@@ -101,7 +105,7 @@
   transition: background-color var(--motion-fast) var(--ease-standard);
 }
 .table tbody tr:hover {
-  background: var(--paper);
+  background: #faf4fe;
 }
 .table tbody tr:last-child th,
 .table tbody tr:last-child td {
@@ -116,10 +120,10 @@
 
 .ticket {
   padding: var(--space-6);
-  border-radius: var(--radius-md);
-  background: var(--paper);
+  border-radius: 24px;
+  background: var(--paper-raised);
   border: 1px solid transparent;
-  box-shadow: var(--brass-hairline);
+  box-shadow: var(--shadow-card);
 }
 
 .ticketHead {
@@ -135,16 +139,16 @@
   margin: 0;
   color: var(--text);
   font-size: var(--font-size-subtitle);
-  font-weight: 500;
+  font-weight: 650;
   letter-spacing: var(--tracking-subtitle);
   line-height: 1.35;
 }
 
 .ticketHead span {
-  padding: calc(var(--space-1) / 2) var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--paper-sunken);
-  color: var(--text-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--ink-900);
+  color: white;
   font-size: var(--font-size-label);
   font-weight: 500;
 }
@@ -213,7 +217,7 @@
   min-width: 0;
   padding: var(--space-3);
   border: 1px solid var(--line-control);
-  border-radius: var(--radius-sm);
+  border-radius: 14px;
   background: var(--paper-raised);
   color: var(--text);
   font: inherit;
@@ -245,8 +249,8 @@
   gap: var(--space-2);
   padding: var(--space-4);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  background: var(--paper);
+  border-radius: 18px;
+  background: var(--paper-sunken);
 }
 .targetCard span {
   overflow-wrap: anywhere;
@@ -292,8 +296,8 @@
     margin-bottom: var(--space-3);
     padding: var(--space-4);
     border: 1px solid transparent;
-    border-radius: var(--radius-md);
-    background: var(--paper);
+    border-radius: 18px;
+    background: var(--paper-raised);
   }
 
   .table tbody tr:last-child {

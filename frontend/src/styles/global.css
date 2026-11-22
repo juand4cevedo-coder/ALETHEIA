@@ -13,6 +13,7 @@ html {
      encabezado fijo. */
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-height) + var(--space-4));
+  overflow-x: clip;
 }
 
 /* Mientras un diálogo modal está abierto, la página de fondo no se desplaza. */
@@ -30,6 +31,7 @@ body {
   color: var(--text);
   background: var(--paper);
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
 }
 
 h1,
@@ -95,6 +97,20 @@ a {
   }
   to {
     transform: translateY(6%);
+  }
+}
+
+/* Entrada de página: cada cambio de ruta monta un <main> nuevo que aparece con un fundido y un
+   desplazamiento corto. Una sola vez por visita a la ruta; con movimiento reducido solo queda
+   el cambio de opacidad (ver más abajo). */
+.page-enter {
+  animation: page-in var(--motion-page) var(--ease-out) both;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
 }
 

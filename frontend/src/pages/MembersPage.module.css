@@ -14,9 +14,9 @@
   gap: var(--space-3);
   padding: var(--space-4) var(--space-6);
   border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  background: var(--paper-raised);
-  box-shadow: var(--brass-hairline), var(--shadow-card);
+  border-radius: 24px;
+  background: var(--ink-900);
+  box-shadow: var(--shadow-float);
 }
 
 /* Mientras carga, el panel vacío reserva el alto del cupo para que la página no salte: la cifra
@@ -40,13 +40,13 @@
 
 .seatsCount {
   margin: 0;
-  color: var(--text-2);
+  color: var(--on-ink-2);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
 }
 
 .seatsCount strong {
-  color: var(--text);
+  color: var(--on-ink);
   font-size: var(--font-size-subtitle);
   font-variant-numeric: tabular-nums;
   font-weight: 600;
@@ -55,7 +55,7 @@
 
 .seatsHint {
   margin: 0;
-  color: var(--text-3);
+  color: var(--on-ink-2);
   font-size: var(--font-size-support);
   line-height: var(--line-height-support);
 }
@@ -65,14 +65,14 @@
   height: var(--meter-height);
   overflow: hidden;
   border-radius: var(--radius-pill);
-  background: var(--paper-sunken);
+  background: rgb(255 255 255 / 20%);
 }
 
 .meter > span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--text-2);
+  background: var(--on-ink);
   transition: inline-size var(--motion-base) var(--ease-out);
 }
 
@@ -165,6 +165,12 @@
   border-top: 1px solid var(--ink-hairline);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.row:hover,
+.row:focus-within {
+  background: #faf4fe;
 }
 
 .row:first-child {

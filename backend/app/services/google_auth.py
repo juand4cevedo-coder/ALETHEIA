@@ -6,12 +6,17 @@ import uuid
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.adapters.google_oidc import GoogleIdentity
 from app.core.config import Settings
+from app.core.legal import LEGAL_VERSION
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, OAuthIdentity, User
+from app.models import AuditLog, OAuthIdentity, Organization, Subscription, User
 from app.repositories import accounts as accounts_repository
 from app.repositories import sessions as sessions_repository
+from app.services import rate_limit, subscription_expiration
 from app.services.audit import audit_ip, audit_user_agent
+from app.services.legal import LegalVersionMismatchError, record_registration
+from app.services.plans import TRIAL_DAYS, TRIAL_PLAN_CODE
 from app.services.sessions import IssuedSession, start_session
 
 
@@ -29,6 +34,102 @@ class GoogleLinkSessionEndedError(Exception):
 
 class GoogleAccountBlockedError(Exception):
     pass
+
+
+class GoogleRegistrationEmailInUseError(Exception):
+    pass
+
+
+def register(
+    session: Session,
+    settings: Settings,
+    identity: GoogleIdentity,
+    *,
+    account_type: str,
+    organization_name: str | None,
+    legal_version: str,
+    client_ip: str,
+    user_agent: str | None,
+) -> IssuedSession:
+    """Crea una cuenta sin contraseña desde una identidad verificada y abre su sesión."""
+    if legal_version != LEGAL_VERSION:
+        raise LegalVersionMismatchError
+    rate_limit.hit(session, rate_limit.REGISTER_IP, client_ip)
+    session.commit()
+
+    existing_identity = accounts_repository.google_identity_by_subject(session, identity.subject)
+    if existing_identity is not None:
+        return login(
+            session,
+            settings,
+            identity.subject,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    if accounts_repository.user_by_email(session, identity.email) is not None:
+        raise GoogleRegistrationEmailInUseError
+
+    now = datetime.datetime.now(datetime.UTC)
+    user_id, organization_id = uuid.uuid7(), uuid.uuid7()
+    trial_plan_id = accounts_repository.plan_id_by_code(session, TRIAL_PLAN_CODE)
+    organization_display_name = (
+        identity.full_name if account_type == "individual" else organization_name
+    )
+    if organization_display_name is None:
+        raise ValueError("El registro de una firma exige el nombre de la organización.")
+    set_tenant(session, TenantContext(organization_id=organization_id, user_id=user_id))
+    user = User(
+        id=user_id,
+        email=identity.email,
+        email_verified_at=now,
+        password_hash=None,
+        full_name=identity.full_name,
+        terms_version=LEGAL_VERSION,
+        privacy_version=LEGAL_VERSION,
+        consented_at=now,
+    )
+    try:
+        accounts_repository.add_account(
+            session,
+            user=user,
+            organization=Organization(id=organization_id, name=organization_display_name),
+            subscription=Subscription(
+                organization_id=organization_id,
+                plan_id=trial_plan_id,
+                status="trial",
+                billing_cycle="none",
+                access_source="trial",
+                trial_ends_at=now + datetime.timedelta(days=TRIAL_DAYS),
+            ),
+            audit=AuditLog(
+                organization_id=organization_id,
+                actor_user_id=user_id,
+                action="user_registered",
+                target_id=user_id,
+                ip=audit_ip(client_ip),
+                user_agent=audit_user_agent(user_agent),
+                created_at=now,
+            ),
+        )
+        session.add(OAuthIdentity(user_id=user_id, provider="google", subject=identity.subject))
+        record_registration(session, user)
+        subscription_expiration.schedule(
+            session, organization_id, now + datetime.timedelta(days=TRIAL_DAYS)
+        )
+        issued = start_session(
+            session,
+            settings,
+            user_id,
+            organization_id,
+            client_ip=client_ip,
+            user_agent=user_agent,
+            now=now,
+        )
+        session.commit()
+        return issued
+    except IntegrityError:
+        session.rollback()
+        raise GoogleRegistrationEmailInUseError from None
 
 
 def login(

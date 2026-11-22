@@ -129,6 +129,39 @@ class GoogleAuthStatus(BaseModel):
     enabled: bool
 
 
+class GoogleRegisterRequest(BaseModel):
+    """Datos elegidos antes de crear una cuenta mediante una identidad de Google."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    account_type: AccountType
+    organization_name: _Name | None = None
+    legal_version: str = Field(max_length=20)
+    accepts_legal_terms: bool
+
+    @field_validator("accepts_legal_terms")
+    @classmethod
+    def _legal_terms_must_be_accepted(cls, accepted: bool) -> bool:
+        if not accepted:
+            msg = "Debe aceptar los términos y autorizar el tratamiento de sus datos."
+            raise ValueError(msg)
+        return accepted
+
+    @field_validator("organization_name")
+    @classmethod
+    def _organization_matches_account_type(
+        cls, organization_name: str | None, info: ValidationInfo
+    ) -> str | None:
+        account_type = info.data.get("account_type")
+        if account_type == "firm" and organization_name is None:
+            msg = "Falta el nombre de la oficina o firma."
+            raise ValueError(msg)
+        if account_type == "individual" and organization_name is not None:
+            msg = "Una cuenta por cuenta propia no lleva nombre de oficina o firma."
+            raise ValueError(msg)
+        return organization_name
+
+
 class ForgotPasswordRequest(BaseModel):
     """Correo al que se envía el enlace para restablecer la contraseña (API-011)."""
 

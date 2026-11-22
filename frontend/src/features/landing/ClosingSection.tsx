@@ -1,4 +1,3 @@
-import { Foto } from "../../components/ui/Foto.tsx";
 import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../../config/routes.ts";
 import { SIGN_UP_LABEL } from "../../config/site.ts";
@@ -6,6 +5,7 @@ import { usePlanCatalog } from "../billing/catalog.tsx";
 import { trialDays } from "../billing/plans.ts";
 import styles from "./ClosingSection.module.css";
 import section from "./Section.module.css";
+import { photoProps } from "../../config/media.ts";
 
 // Cierre del inicio: una sola acción. Los días de prueba salen del catálogo; sin él, la frase no
 // da una cifra.
@@ -18,7 +18,15 @@ export function ClosingSection() {
       className={`${section.section} ${styles.section} on-ink`}
       aria-labelledby="titulo-cierre"
     >
-      <Foto nombre="cierre" alt="" className={styles.photo} />
+      <img
+        {...photoProps("producto-real", "100vw")}
+        alt=""
+        width={2000}
+        height={1125}
+        loading="lazy"
+        decoding="async"
+        className={styles.photo}
+      />
       <div className={`${section.inner} ${styles.layout}`}>
         <div className={styles.copy}>
           <h2 id="titulo-cierre" className={section.title}>

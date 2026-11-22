@@ -2,6 +2,10 @@
    el contenido sobre el papel. Aquí la atención va al trabajo, no a la marca. La base es el
    celular de 360 px y todo lo demás se agrega con min-width. */
 .shell {
+  --paper: #f7f7f7;
+  --paper-sunken: #eeeaf2;
+  --sidebar-width: 264px;
+  --content-width: 1320px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -37,6 +41,9 @@
 /* El encabezado sube respecto al papel: tono más claro y un filete de tinta tenue debajo, en
    lugar de un borde gris. */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 25;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -44,7 +51,8 @@
   min-height: var(--header-height);
   padding: 0 var(--space-4);
   background: var(--paper-raised);
-  box-shadow: 0 1px 0 rgb(7 20 35 / 8%);
+  box-shadow: 0 1px 0 rgb(17 17 17 / 8%);
+  backdrop-filter: blur(18px);
 }
 
 .brand {
@@ -52,11 +60,11 @@
   align-items: center;
   gap: var(--space-2);
   min-height: var(--touch-target);
-  color: var(--text);
-  font-family: var(--font-editorial);
+  color: var(--ink-900);
+  font-family: var(--font-sans);
   font-size: 23px;
-  font-weight: 600;
-  letter-spacing: var(--tracking-subtitle);
+  font-weight: 750;
+  letter-spacing: -0.045em;
   line-height: var(--line-height-ui);
   text-decoration: none;
 }
@@ -75,7 +83,7 @@
   min-width: 0;
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: var(--space-6) var(--space-4) var(--space-12);
+  padding: var(--space-8) var(--space-4) var(--space-16);
 }
 
 .main:focus {
@@ -104,7 +112,7 @@
   }
 
   .main {
-    padding: var(--space-12) var(--space-12) var(--space-16);
+    padding: 56px var(--space-12) 96px;
   }
 }
 
@@ -133,18 +141,18 @@
   }
 }
 
-/* Tarjeta elevada: tono claro, sombra de dos capas y filete metálico arriba. La franja de error
-   a la izquierda va siempre acompañada del texto del mensaje. */
+/* El estado de error se distingue por un tinte y un contorno tenue. El texto y role="alert"
+   comunican el estado sin depender de una franja decorativa lateral. */
 .failure {
   display: grid;
   gap: var(--space-3);
   justify-items: start;
   max-width: var(--measure);
   padding: var(--space-4);
-  border-left: 3px solid var(--err);
+  border: 1px solid color-mix(in srgb, var(--err) 24%, transparent);
   border-radius: var(--radius-md);
-  background: var(--paper-raised);
-  box-shadow: var(--brass-hairline), var(--shadow-card);
+  background: color-mix(in srgb, var(--err) 4%, var(--paper-raised));
+  box-shadow: var(--shadow-card);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
 }

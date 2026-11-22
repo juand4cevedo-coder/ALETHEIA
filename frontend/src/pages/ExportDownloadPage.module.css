@@ -9,9 +9,9 @@
   margin: 0 auto;
   padding: var(--space-12);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: 28px;
   background: var(--paper-raised);
-  box-shadow: var(--brass-hairline), var(--shadow-card);
+  box-shadow: var(--shadow-card);
 }
 
 .card h1 {

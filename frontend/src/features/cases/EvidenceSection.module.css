@@ -28,11 +28,11 @@
 }
 
 .item {
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  border-radius: 22px;
   background: var(--paper-raised);
   border: 1px solid transparent;
-  box-shadow: var(--brass-hairline), var(--shadow-card);
+  box-shadow: var(--shadow-card);
 }
 
 .itemHead {

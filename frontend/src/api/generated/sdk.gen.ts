@@ -75,6 +75,9 @@ import type {
   GoogleLinkStartResponses,
   GoogleLoginStartData,
   GoogleLoginStartResponses,
+  GoogleRegisterStartData,
+  GoogleRegisterStartErrors,
+  GoogleRegisterStartResponses,
   GoogleStatusData,
   GoogleStatusResponses,
   GrantCourtesyData,
@@ -266,6 +269,30 @@ export const googleLoginStart = <ThrowOnError extends boolean = false>(
     unknown,
     ThrowOnError
   >({ url: "/api/v1/auth/google/login", ...options });
+
+/**
+ * Crear una cuenta mediante Google
+ */
+export const googleRegisterStart = <ThrowOnError extends boolean = false>(
+  options: Options<GoogleRegisterStartData, ThrowOnError>,
+): RequestResult<
+  GoogleRegisterStartResponses,
+  GoogleRegisterStartErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    GoogleRegisterStartResponses,
+    GoogleRegisterStartErrors,
+    ThrowOnError
+  >({
+    ...urlSearchParamsBodySerializer,
+    url: "/api/v1/auth/google/register",
+    ...options,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      ...options.headers,
+    },
+  });
 
 /**
  * Vincular Google a la cuenta con sesión
@@ -1412,7 +1439,7 @@ export const readCaseExport = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Buscar un despacho por su cuenta responsable
+ * Buscar un despacho por cualquiera de sus cuentas
  */
 export const lookupCourtesy = <ThrowOnError extends boolean = false>(
   options: Options<LookupCourtesyData, ThrowOnError>,

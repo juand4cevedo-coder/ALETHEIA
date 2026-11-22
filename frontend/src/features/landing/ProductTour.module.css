@@ -1,40 +1,30 @@
 .tabs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 .tabs button {
   position: relative;
   overflow: hidden;
-  min-height: 90px;
-  padding: 1px;
+  flex: 0 0 auto;
+  min-height: 52px;
+  padding: 0;
   border: 0;
-  border-radius: 16px;
+  border-radius: 999px;
   color: var(--text);
-  background: var(--ink-hairline);
+  background: var(--paper-sunken);
   cursor: pointer;
   font: 500 15px var(--font-sans);
   text-align: left;
 }
 .tabs button[aria-selected="true"] {
-  background: var(--ink-hairline);
+  background: var(--ink-900);
+  color: #fff;
 }
 .travelingBorder {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  fill: none;
-  overflow: hidden;
-  pointer-events: none;
-  opacity: 0;
-  stroke: var(--ok);
-  stroke-width: 2;
-  stroke-dasharray: 8 92;
-  stroke-linecap: round;
-  filter: drop-shadow(0 0 5px var(--ok));
+  display: none;
 }
 .tabs button[aria-selected="true"] .travelingBorder {
   opacity: 1;
@@ -47,34 +37,30 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  height: 100%;
-  border-radius: 15px;
-  background: var(--paper);
-  padding: 24px;
+  height: 52px;
+  border-radius: 999px;
+  background: transparent;
+  padding: 0 22px;
 }
 .tabs button[aria-selected="true"] .tabInner {
-  background: linear-gradient(var(--paper), var(--paper) 50%, var(--paper));
+  background: transparent;
 }
 .icon {
   display: grid;
   place-items: center;
   flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: 1px solid var(--ink-hairline);
-  background: linear-gradient(
-    225deg,
-    color-mix(in srgb, var(--ink-900) 10%, transparent),
-    transparent
-  );
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 0;
+  background: rgb(255 255 255 / 72%);
 }
 .tabs button[aria-selected="true"] .icon {
-  color: var(--ok);
+  color: var(--ink-900);
 }
 .panel {
-  border: 1px solid var(--ink-hairline);
-  border-radius: 16px;
+  border: 0;
+  border-radius: 28px;
   overflow: hidden;
   background: var(--ink-700);
 }
@@ -92,7 +78,7 @@
   background: var(--paper);
   color: var(--text-2);
   font-size: 14px;
-  text-align: center;
+  text-align: left;
 }
 @keyframes tourBorder {
   from {
@@ -107,14 +93,13 @@
     gap: 8px;
   }
   .tabs button {
-    font-size: 12px;
-    min-height: 80px;
+    font-size: 13px;
   }
   .tabInner {
-    padding: 12px 6px;
-    flex-direction: column;
+    padding: 0 16px;
+    flex-direction: row;
     gap: 8px;
-    text-align: center;
+    text-align: left;
   }
   .icon {
     width: 28px;

@@ -5,6 +5,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 
+import { hasSessionHint } from "./features/session/sessionHint.ts";
+import { prefetchWorkspace } from "./routes/lazyRoutes.ts";
 import { router } from "./routes/router.tsx";
 
 // TanStack Query no se monta aquí: lo trae el marco del acceso y del espacio de trabajo
@@ -14,3 +16,7 @@ createRoot(document.getElementById("root")!).render(
     <RouterProvider router={router} />
   </StrictMode>,
 );
+
+// La pista de sesión solo adelanta descargas; la sesión real la decide la API.
+if (hasSessionHint() && !location.pathname.startsWith("/app"))
+  prefetchWorkspace();

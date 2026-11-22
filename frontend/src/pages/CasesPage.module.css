@@ -62,10 +62,10 @@
 
 .segments {
   display: inline-flex;
-  padding: calc(var(--space-1) - 1px);
-  border: 1px solid var(--line-control);
-  border-radius: var(--radius-md);
-  background: var(--paper-raised);
+  padding: var(--space-1);
+  border: 0;
+  border-radius: 16px;
+  background: var(--paper-sunken);
 }
 
 .segment {
@@ -76,7 +76,7 @@
   min-height: var(--control-height-sm);
   padding: 0 var(--space-3);
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   color: var(--text-2);
   font-size: var(--font-size-support);
   cursor: pointer;
@@ -101,9 +101,10 @@
 
 /* El segmento elegido lleva borde --line-control: la superficie sola no se distingue. */
 .segment:has(.segmentInput:checked) {
-  border-color: var(--line-control);
-  background: var(--paper-sunken);
-  color: var(--text);
+  border-color: transparent;
+  background: var(--paper-raised);
+  box-shadow: 0 3px 12px rgb(35 0 48 / 9%);
+  color: var(--ink-700);
 }
 
 .segment:has(.segmentInput:focus-visible) {
@@ -139,8 +140,8 @@
   /* El texto empieza después del ícono de 16 px. */
   padding: 0 var(--space-3) 0
     calc(var(--space-3) + var(--space-4) + var(--space-2));
-  border: 1px solid var(--line-control);
-  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  border-radius: 16px;
   background: var(--paper-raised);
   color: var(--text);
   font: inherit;
@@ -180,8 +181,8 @@
   min-width: 0;
   margin: 0;
   padding: var(--space-4);
-  border: 1px solid var(--line-control);
-  border-radius: var(--radius-lg);
+  border: 0;
+  border-radius: 24px;
   background: var(--paper-raised);
 }
 
@@ -226,7 +227,7 @@
 /* ---------- El libro ---------- */
 .book {
   overflow: hidden;
-  border-radius: var(--radius-lg);
+  border-radius: 24px;
   background: var(--paper-raised);
   border: 1px solid transparent;
   box-shadow: var(--brass-hairline), var(--shadow-card);
@@ -266,8 +267,9 @@
 
 /* Encabezado de la tabla (especificación de identidad, sección 7): --text-3 a 12 px. */
 .table thead th {
-  padding: var(--space-3);
+  padding: var(--space-4) var(--space-3);
   border-bottom: 1px solid var(--ink-hairline);
+  background: #f6f2f8;
   color: var(--text-3);
   font-size: var(--font-size-label);
   font-weight: 500;
@@ -303,7 +305,7 @@
 /* Filas de 52 px como mínimo; las que llevan radicado debajo del título crecen. */
 .row {
   position: relative;
-  height: var(--row-height);
+  height: calc(var(--row-height) + var(--space-2));
   border-top: 1px solid var(--ink-hairline);
   transition: background-color var(--motion-fast) var(--ease-standard);
 }
@@ -314,7 +316,7 @@
 
 .row:hover,
 .row:focus-within {
-  background: var(--paper);
+  background: #faf4fe;
 }
 
 .row > th,

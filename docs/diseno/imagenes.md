@@ -4,9 +4,27 @@
 | --- | --- |
 | Fecha | 20 de noviembre de 2026 |
 | Alcance | Las fotografías del sitio público y de la pantalla de acceso, y los derivados de la marca |
-| Especificación | `rediseno-2026-11-19.md`, secciones 7.5 y 7.6 |
+| Sistema de diseño | [Identidad y sistema de diseño](identidad-y-sistema-de-diseno.md) |
 
 ## 1. Fotografías
+
+### Campaña pública desde el 21 de noviembre
+
+La dirección pública abandona las imágenes monocromas y documentales del primer
+rediseño. Usa fotografía real, con personas y color, para acercarse al ritmo de
+una campaña de producto contemporánea sin copiar recursos de otra marca.
+
+| Archivo | Uso | Autor y licencia | Fuente |
+| --- | --- | --- | --- |
+| `campaign/hero-real.jpg` | Hero de la portada | Vitaly Gariev, Unsplash License | [Colleagues collaborating at a modern office desk](https://unsplash.com/photos/colleagues-collaborating-at-a-modern-office-desk-0iTp1WNlMGc) |
+| `campaign/producto-real.jpg` | Explicación del producto | Vitaly Gariev, Unsplash License | [Personas que trabajan en oficinas modernas](https://unsplash.com/es/fotos/personas-que-trabajan-en-oficinas-modernas-kT5IXQVyUtU) |
+| `campaign/equipo-real.jpg` | Recurso reservado para páginas de equipos | Yusuf Çelik, Pexels License | [Young Professionals Collaborating in Modern Office](https://www.pexels.com/photo/young-professionals-collaborating-in-modern-office-31120848/) |
+
+Los originales descargados se guardan con el producto para no entregar a un
+tercero la dirección IP de los visitantes. Las exploraciones descartadas no se
+incorporan al producto.
+
+### Primera dirección visual
 
 Las cuatro provienen de Unsplash bajo su licencia gratuita, que permite el uso comercial sin pedir permiso ni pagar, y que no exige atribución aunque sí la recomienda. Esta tabla la registra de todos modos: cuesta nada y es lo correcto.
 
@@ -46,15 +64,19 @@ El procedimiento usado fue rasterizar en un navegador: descargar el original con
 
 ## 4. Derivados de la marca
 
-Las cuatro imágenes de mapa de bits de la marca salen de maestros vectoriales que viven en esta misma carpeta. Se rasterizan igual, dibujando el SVG en un lienzo.
+Los mapas de bits de la marca salen de un solo símbolo vectorial (ver [Identidad y sistema de diseño](identidad-y-sistema-de-diseno.md)). Las fuentes vectoriales viven en esta carpeta y se rasterizan con una herramienta que respete el tamaño final.
 
 | Maestro | Destino | Tamaño |
 | --- | --- | --- |
-| `favicon-32.svg` | `frontend/public/favicon.png` | 32 × 32 |
-| `apple-touch-icon-180.svg` | `frontend/public/apple-touch-icon.png` | 180 × 180 |
+| `favicon-32.svg` | `frontend/public/favicon.png` y `favicon.ico` (16, 32 y 48 px) | 32 × 32 |
+| `apple-touch-icon-180.svg` | `frontend/public/apple-touch-icon.png`, `icon-192.png` e `icon-512.png` | 180, 192 y 512 |
 | `og-image.svg` | `frontend/public/og-image.png` | 1200 × 630 |
 | `logo-correo-128.svg` | `frontend/public/email/logo-claro.png` | 128 × 128 |
 
-**La imagen social tiene una trampa.** Sus titulares van en Fraunces, pero un SVG dibujado dentro de una etiqueta de imagen se renderiza aislado y no hereda las tipografías de la página: saldría con la fuente de respaldo sin que nada avisara. Hay que incrustar la tipografía dentro del propio SVG, como una `@font-face` con la fuente en base64, antes de rasterizar.
+Los íconos de 16 y 32 px usan una variante reducida del símbolo: el ojo ocupa más espacio y el iris pierde la pupila, para que el contorno y el iris no se fundan. Los íconos instalables llevan el símbolo dentro de la zona segura de un cuadrado a sangre completa.
 
-La tipografía no necesita subconjunto propio: se usa la compilación por eje que publica Fontsource, explicado en la sección 7.2 de la especificación.
+**La imagen social no depende de fuentes instaladas.** Sus textos se convierten a trazados antes de rasterizar, así el resultado es idéntico en cualquier equipo. Cada rasterización se revisa a simple vista antes de publicarla.
+
+## 5. Fotografías de campaña
+
+Las fotografías del sitio público (`hero-real`, `equipo-real` y `producto-real`) se publican solo como WebP en tres anchos, 640, 1280 y 1920 px, en `frontend/public/media/campaign/`. El navegador elige el ancho con `srcset` y `sizes` (`frontend/src/config/media.ts`). Un original JPG de unos 350 KB queda entre 17 y 70 KB. Los originales no se versionan.

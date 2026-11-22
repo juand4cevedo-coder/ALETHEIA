@@ -36,10 +36,16 @@ registrar() {
 }
 
 compose() {
-    local bucket
+    local bucket google_id google_secret_parameter
     bucket="$([[ -f $ENTORNO ]] && sed -n 's/^ALETHEIA_EVIDENCE_BUCKET=//p' "$ENTORNO")"
+    google_id="$([[ -f $ENTORNO ]] && sed -n 's/^ALETHEIA_GOOGLE_CLIENT_ID=//p' "$ENTORNO")"
+    google_secret_parameter="$([[ -f $ENTORNO ]] && sed -n 's/^ALETHEIA_GOOGLE_CLIENT_SECRET_PARAMETER=//p' "$ENTORNO")"
     [[ -n $bucket ]] || {
         registrar "Falta $ENTORNO con ALETHEIA_EVIDENCE_BUCKET, o está vacío."
+        return 1
+    }
+    [[ -n $google_id && -n $google_secret_parameter ]] || {
+        registrar "Falta la configuración obligatoria de Google en $ENTORNO."
         return 1
     }
     docker compose --env-file "$ENTORNO" --env-file "$ACTUAL" -f "$COMPOSE" "$@"
@@ -83,6 +89,12 @@ levantar_y_comprobar() {
     curl --silent --show-error --fail --output /dev/null \
         --max-time 10 --retry 10 --retry-delay 3 --retry-all-errors \
         --resolve "$DOMINIO:443:127.0.0.1" "https://$DOMINIO/api/v1/health"
+    registrar "Comprobando el acceso con Google..."
+    curl --silent --show-error --fail \
+        --max-time 10 --retry 3 --retry-delay 2 --retry-all-errors \
+        --resolve "$DOMINIO:443:127.0.0.1" \
+        "https://$DOMINIO/api/v1/auth/google/status" \
+        | grep --quiet --extended-regexp '"enabled"[[:space:]]*:[[:space:]]*true'
 }
 
 # Vuelve a la versión guardada en $ANTERIOR. La que falló queda en $FALLIDO para revisarla.

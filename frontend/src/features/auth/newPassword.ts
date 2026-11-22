@@ -13,7 +13,7 @@ export function newPasswordError(password: string): string | undefined {
   return undefined;
 }
 
-export const CONFIRM_PASSWORD_MISMATCH = "Las contraseñas no coinciden.";
+const CONFIRM_PASSWORD_MISMATCH = "Las contraseñas no coinciden.";
 
 /** Error de confirmar la contraseña nueva: que sea igual, carácter por carácter, a la que se
  * escribió primero. Es un paso aparte de `newPasswordError`, que no cambia. */

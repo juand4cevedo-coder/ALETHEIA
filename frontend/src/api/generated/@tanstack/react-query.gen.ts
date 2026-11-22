@@ -32,6 +32,7 @@ import {
   googleCallback,
   googleLinkStart,
   googleLoginStart,
+  googleRegisterStart,
   googleStatus,
   grantCourtesy,
   health,
@@ -138,6 +139,8 @@ import type {
   GoogleCallbackError,
   GoogleLinkStartData,
   GoogleLoginStartData,
+  GoogleRegisterStartData,
+  GoogleRegisterStartError,
   GoogleStatusData,
   GoogleStatusResponse,
   GrantCourtesyData,
@@ -409,6 +412,33 @@ export const googleLoginStartOptions = (
     },
     queryKey: googleLoginStartQueryKey(options),
   });
+
+/**
+ * Crear una cuenta mediante Google
+ */
+export const googleRegisterStartMutation = (
+  options?: Partial<Options<GoogleRegisterStartData>>,
+): UseMutationOptions<
+  unknown,
+  GoogleRegisterStartError,
+  Options<GoogleRegisterStartData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    unknown,
+    GoogleRegisterStartError,
+    Options<GoogleRegisterStartData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await googleRegisterStart({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const googleLinkStartQueryKey = (
   options?: Options<GoogleLinkStartData>,
@@ -2089,7 +2119,7 @@ export const lookupCourtesyQueryKey = (options: Options<LookupCourtesyData>) =>
   createQueryKey("lookupCourtesy", options);
 
 /**
- * Buscar un despacho por su cuenta responsable
+ * Buscar un despacho por cualquiera de sus cuentas
  */
 export const lookupCourtesyOptions = (options: Options<LookupCourtesyData>) =>
   queryOptions<

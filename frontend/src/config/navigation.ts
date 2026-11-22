@@ -40,22 +40,7 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/#recorrido",
       title: "Su espacio de trabajo",
       text: "Conozca Aletheia por dentro.",
-      image: "/media/producto-actividad.webp",
-    },
-  },
-  {
-    title: "Compañía",
-    links: [
-      { to: "/nosotros", label: "Sobre Aletheia" },
-      { to: "/filosofia", label: "Nuestra filosofía" },
-      { to: "/blog", label: "Blog" },
-      { to: "/marca", label: "Marca" },
-    ],
-    feature: {
-      to: "/filosofia",
-      title: "La claridad empieza aquí",
-      text: "El propósito detrás de Aletheia.",
-      image: "/media/cierre-800.webp",
+      image: "/media/campaign/producto-real-640.webp",
     },
   },
   {
@@ -70,71 +55,41 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/empresa",
       title: "Un mismo contexto",
       text: "Personas, casos y responsabilidades.",
-      image: "/media/producto-resumen.webp",
-    },
-  },
-  {
-    title: "Ayuda",
-    links: [
-      { to: "/soporte", label: "Contactar con soporte" },
-      { to: "/ayuda", label: "Base de conocimiento" },
-      { to: "/estado", label: "Estado del servicio" },
-      { to: "/legal", label: "Información legal" },
-    ],
-    feature: {
-      to: "/ayuda/recuperar-el-acceso",
-      title: "Encuentre una respuesta",
-      text: "Una guía para cada primer paso.",
-      image: "/media/acceso-800.webp",
-    },
-  },
-  {
-    title: "Docs",
-    links: [
-      {
-        to: "/docs",
-        label: "Introducción",
-        description: "Empiece a trabajar con Aletheia.",
-      },
-      {
-        to: "/docs/crear-un-caso",
-        label: "Casos",
-        description: "Cree y encuentre sus asuntos.",
-      },
-      {
-        to: "/docs/invitar-al-equipo",
-        label: "Organizaciones",
-        description: "Invite a las personas de su equipo.",
-      },
-      {
-        to: "/docs/verificar-un-archivo",
-        label: "Integridad",
-        description: "Entienda la comparación de huellas.",
-      },
-    ],
-    feature: {
-      to: "/docs",
-      title: "De la idea al primer caso",
-      text: "Documentación en español.",
-      image: "/media/producto-casos.webp",
+      image: "/media/campaign/equipo-real-640.webp",
     },
   },
   {
     title: "Recursos",
     links: [
-      { to: "/blog", label: "Artículos y novedades" },
       {
-        to: "/blog/que-dice-una-huella-sha256",
-        label: "Entender una huella digital",
+        to: "/docs",
+        label: "Documentación",
+        description: "Empiece a trabajar con Aletheia.",
       },
+      { to: "/blog", label: "Artículos y novedades" },
       { to: ROUTES.verifierSection, label: "Probar el comprobador" },
-      { to: "/marca", label: "Recursos de marca" },
+      { to: "/ayuda", label: "Base de conocimiento" },
     ],
     feature: {
-      to: "/blog",
-      title: "Cada detalle cuenta",
-      text: "Lecturas para su práctica diaria.",
-      image: "/media/seguridad-800.webp",
+      to: "/docs",
+      title: "Del primer paso al caso",
+      text: "Guías, respuestas y recursos en español.",
+      image: "/media/campaign/producto-real-640.webp",
+    },
+  },
+  {
+    title: "Aletheia",
+    links: [
+      { to: "/nosotros", label: "Sobre Aletheia" },
+      { to: "/filosofia", label: "Nuestra filosofía" },
+      { to: "/seguridad", label: "Seguridad" },
+      { to: "/estado", label: "Estado del servicio" },
+    ],
+    feature: {
+      to: "/nosotros",
+      title: "La claridad empieza aquí",
+      text: "Conozca el propósito detrás de Aletheia.",
+      image: "/media/campaign/hero-real-640.webp",
     },
   },
 ];

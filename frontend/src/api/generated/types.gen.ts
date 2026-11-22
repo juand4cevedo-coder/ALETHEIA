@@ -815,9 +815,9 @@ export type CourtesyGrant = {
    */
   organization_id: string;
   /**
-   * Owner Email
+   * Account Email
    */
-  owner_email: string;
+  account_email: string;
   /**
    * Plan Code
    */
@@ -841,9 +841,9 @@ export type CourtesyRevoke = {
    */
   organization_id: string;
   /**
-   * Owner Email
+   * Account Email
    */
-  owner_email: string;
+  account_email: string;
   /**
    * Reason
    */
@@ -863,13 +863,13 @@ export type CourtesyTarget = {
    */
   organization_name: string;
   /**
-   * Owner Email
+   * Account Email
    */
-  owner_email: string;
+  account_email: string;
   /**
-   * Owner Name
+   * Account Name
    */
-  owner_name: string;
+  account_name: string;
   /**
    * Plan Code
    */
@@ -1220,6 +1220,30 @@ export type GoogleAuthStatus = {
    * Enabled
    */
   enabled: boolean;
+};
+
+/**
+ * GoogleRegisterRequest
+ *
+ * Datos elegidos antes de crear una cuenta mediante una identidad de Google.
+ */
+export type GoogleRegisterRequest = {
+  /**
+   * Account Type
+   */
+  account_type: "individual" | "firm";
+  /**
+   * Organization Name
+   */
+  organization_name?: string | null;
+  /**
+   * Legal Version
+   */
+  legal_version: string;
+  /**
+   * Accepts Legal Terms
+   */
+  accepts_legal_terms: boolean;
 };
 
 /**
@@ -2629,6 +2653,30 @@ export type GoogleLoginStartData = {
 };
 
 export type GoogleLoginStartResponses = {
+  /**
+   * Successful Response
+   */
+  200: unknown;
+};
+
+export type GoogleRegisterStartData = {
+  body: GoogleRegisterRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/google/register";
+};
+
+export type GoogleRegisterStartErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type GoogleRegisterStartError =
+  GoogleRegisterStartErrors[keyof GoogleRegisterStartErrors];
+
+export type GoogleRegisterStartResponses = {
   /**
    * Successful Response
    */
@@ -4612,9 +4660,9 @@ export type LookupCourtesyData = {
   path?: never;
   query: {
     /**
-     * Owner Email
+     * Account Email
      */
-    owner_email: string;
+    account_email: string;
   };
   url: "/api/v1/platform/courtesy";
 };

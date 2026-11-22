@@ -111,6 +111,45 @@
         }
       }
     },
+    "/api/v1/auth/google/register": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Crear una cuenta mediante Google",
+        "operationId": "google_register_start",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/GoogleRegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/google/link": {
       "get": {
         "tags": [
@@ -3871,7 +3910,7 @@
         "tags": [
           "plataforma"
         ],
-        "summary": "Buscar un despacho por su cuenta responsable",
+        "summary": "Buscar un despacho por cualquiera de sus cuentas",
         "operationId": "lookup_courtesy",
         "security": [
           {
@@ -3880,12 +3919,12 @@
         ],
         "parameters": [
           {
-            "name": "owner_email",
+            "name": "account_email",
             "in": "query",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Owner Email"
+              "title": "Account Email"
             }
           }
         ],
@@ -5965,9 +6004,9 @@
             "format": "uuid",
             "title": "Organization Id"
           },
-          "owner_email": {
+          "account_email": {
             "type": "string",
-            "title": "Owner Email"
+            "title": "Account Email"
           },
           "plan_code": {
             "type": "string",
@@ -5996,7 +6035,7 @@
         "type": "object",
         "required": [
           "organization_id",
-          "owner_email",
+          "account_email",
           "plan_code",
           "reason"
         ],
@@ -6009,9 +6048,9 @@
             "format": "uuid",
             "title": "Organization Id"
           },
-          "owner_email": {
+          "account_email": {
             "type": "string",
-            "title": "Owner Email"
+            "title": "Account Email"
           },
           "reason": {
             "type": "string",
@@ -6024,7 +6063,7 @@
         "type": "object",
         "required": [
           "organization_id",
-          "owner_email",
+          "account_email",
           "reason"
         ],
         "title": "CourtesyRevoke"
@@ -6040,13 +6079,13 @@
             "type": "string",
             "title": "Organization Name"
           },
-          "owner_email": {
+          "account_email": {
             "type": "string",
-            "title": "Owner Email"
+            "title": "Account Email"
           },
-          "owner_name": {
+          "account_name": {
             "type": "string",
-            "title": "Owner Name"
+            "title": "Account Name"
           },
           "plan_code": {
             "type": "string",
@@ -6101,8 +6140,8 @@
         "required": [
           "organization_id",
           "organization_name",
-          "owner_email",
-          "owner_name",
+          "account_email",
+          "account_name",
           "plan_code",
           "status",
           "access_source",
@@ -6630,6 +6669,49 @@
         ],
         "title": "GoogleAuthStatus",
         "description": "Disponibilidad pública del proveedor; nunca expone sus credenciales."
+      },
+      "GoogleRegisterRequest": {
+        "properties": {
+          "account_type": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "firm"
+            ],
+            "title": "Account Type"
+          },
+          "organization_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Name"
+          },
+          "legal_version": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Legal Version"
+          },
+          "accepts_legal_terms": {
+            "type": "boolean",
+            "title": "Accepts Legal Terms"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "account_type",
+          "legal_version",
+          "accepts_legal_terms"
+        ],
+        "title": "GoogleRegisterRequest",
+        "description": "Datos elegidos antes de crear una cuenta mediante una identidad de Google."
       },
       "HealthStatus": {
         "properties": {

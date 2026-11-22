@@ -1,0 +1,254 @@
+.section {
+  overflow: hidden;
+  background: #f5eff9;
+}
+
+.carousel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
+  grid-template-rows: minmax(620px, auto) auto;
+  border-radius: 32px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 30px 90px rgb(64 0 87 / 12%);
+}
+
+.visual {
+  position: relative;
+  min-width: 0;
+  background: #ddd1e6;
+  animation: image-in 700ms var(--ease-out) both;
+}
+
+.visual img {
+  width: 100%;
+  height: 100%;
+  min-height: 620px;
+  object-fit: cover;
+}
+
+.counter {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 10px 14px;
+  border: 1px solid rgb(255 255 255 / 45%);
+  border-radius: 999px;
+  background: rgb(17 17 17 / 68%);
+  backdrop-filter: blur(14px);
+  color: #fff;
+}
+
+.counter strong {
+  font-size: 15px;
+}
+
+.counter span {
+  color: rgb(255 255 255 / 68%);
+  font-size: 11px;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(40px, 5vw, 76px);
+  animation: copy-in 620ms var(--ease-out) both;
+}
+
+.eyebrow {
+  margin-bottom: 24px;
+  color: var(--ink-900);
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.copy h3 {
+  max-width: 13ch;
+  font-size: clamp(2.25rem, 3.5vw, 4rem);
+  font-weight: 650;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.description {
+  max-width: 46ch;
+  margin-top: 28px;
+  color: var(--text-2);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.metric {
+  display: grid;
+  gap: 4px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--ink-hairline);
+}
+
+.metric strong {
+  color: var(--ink-900);
+  font-size: 24px;
+  letter-spacing: -0.035em;
+}
+
+.metric span {
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: fit-content;
+  min-width: min(100%, 280px);
+  min-height: 54px;
+  margin-top: 40px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--ink-900);
+  color: #fff;
+  font-weight: 650;
+  text-decoration: none;
+  transition:
+    background-color var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
+}
+
+.link:hover {
+  background: var(--ink-700);
+  transform: translateY(-2px);
+}
+
+.controls {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 84px;
+  padding: 18px 28px;
+  border-top: 1px solid var(--ink-hairline);
+}
+
+.dots {
+  display: flex;
+  flex: 1;
+  gap: 10px;
+}
+
+.dot {
+  position: relative;
+  width: min(100%, 88px);
+  height: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 99px;
+  overflow: hidden;
+  background: #ddd6e1;
+  cursor: pointer;
+}
+
+.progress {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ink-900);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.dot[aria-current="true"] .progress {
+  transform: scaleX(1);
+}
+
+.dot[aria-current="true"] .progress[data-running="true"] {
+  animation: progress 6.5s linear both;
+}
+
+.toggle {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--ink-hairline);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+@keyframes progress {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes image-in {
+  from {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+}
+
+@keyframes copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@media (max-width: 820px) {
+  .carousel {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    border-radius: 24px;
+  }
+
+  .visual img {
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+  }
+
+  .copy {
+    padding: 32px 24px 40px;
+  }
+
+  .copy h3 {
+    font-size: clamp(2.15rem, 10vw, 3.25rem);
+  }
+
+  .description {
+    font-size: 16px;
+  }
+
+  .controls {
+    grid-column: auto;
+    padding: 18px 20px;
+  }
+
+  .toggle {
+    padding-inline: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visual,
+  .copy,
+  .dot[aria-current="true"] .progress[data-running="true"] {
+    animation: none;
+  }
+
+  .link {
+    transition: none;
+  }
+}

@@ -1,4 +1,3 @@
-import { Foto } from "../components/ui/Foto.tsx";
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, ScrollRestoration, useLocation } from "react-router";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
@@ -24,6 +23,7 @@ import {
   MenuIcon,
 } from "../components/ui/icons.tsx";
 import styles from "./PublicLayout.module.css";
+import { photoProps } from "../config/media.ts";
 
 const CURRENT_YEAR = new Date().getFullYear();
 function Brand() {
@@ -195,11 +195,24 @@ export function PublicLayout() {
           </nav>
         )}
       </dialog>
-      <main id="contenido" className={styles.main} tabIndex={-1}>
+      <main
+        key={location.pathname}
+        id="contenido"
+        className={`${styles.main} page-enter`}
+        tabIndex={-1}
+      >
         <Outlet />
       </main>
       <footer className={styles.footer}>
-        <Foto nombre="pie" alt="" className={styles.footerPhoto} />
+        <img
+          {...photoProps("equipo-real", "100vw")}
+          alt=""
+          width={2000}
+          height={1333}
+          loading="lazy"
+          decoding="async"
+          className={styles.footerPhoto}
+        />
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
             <Brand />

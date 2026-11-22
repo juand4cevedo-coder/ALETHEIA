@@ -83,10 +83,12 @@ def _llamar(
             cuerpo_respuesta: dict[str, Any] = json.loads(respuesta.read())
             return cuerpo_respuesta
     except urllib.error.HTTPError as exc:
-        texto = exc.read().decode("utf-8", errors="replace")
+        # El cuerpo puede contener datos de la transacción o del pagador. Se consume para
+        # liberar la conexión, pero nunca se propaga a excepciones ni registros.
+        exc.read()
         if exc.code in (400, 401, 404, 422):
-            raise WompiRechazadoError(f"Wompi respondió {exc.code}: {texto}") from exc
-        raise WompiNoDisponibleError(f"Wompi respondió {exc.code}: {texto}") from exc
+            raise WompiRechazadoError(f"Wompi respondió {exc.code}") from exc
+        raise WompiNoDisponibleError(f"Wompi respondió {exc.code}") from exc
     except (urllib.error.URLError, TimeoutError) as exc:
         raise WompiNoDisponibleError(f"Wompi no respondió: {exc}") from exc
     except (json.JSONDecodeError, KeyError, TypeError) as exc:

@@ -38,7 +38,7 @@ describe("Página de inicio (HU-001)", () => {
     const main = screen.getByRole("main");
     expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(within(main).getByRole("heading", { level: 1 })).toHaveTextContent(
-      /Su trabajo\.\s*Con claridad\./,
+      /Sus casos cambian\.\s*Su control también\./,
     );
     expect(
       within(main).getByRole("heading", {
@@ -152,6 +152,7 @@ describe("Página de inicio (HU-001)", () => {
     expect(headings.map((heading) => heading.textContent)).toEqual([
       "Todo tiene su lugar.",
       "Un poco de orden. Mucho más espacio para pensar.",
+      "Mucho más que ordenar expedientes.",
       "Saber qué ocurre. Decidir quién participa.",
       "Una herramienta precisa. Un alcance claro.",
       "La confianza también se comprueba.",

@@ -7,7 +7,17 @@ import hmac
 import uuid
 from typing import Annotated, Final
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    Form,
+    Header,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    status,
+)
 from fastapi.responses import RedirectResponse
 from fastapi.security import APIKeyCookie
 from sqlalchemy.orm import Session
@@ -27,6 +37,7 @@ from app.api.deps import (
 )
 from app.core.config import Settings
 from app.core.errors import problem_response
+from app.core.legal import LEGAL_VERSION
 from app.core.tokens import (
     InvalidGoogleFlowError,
     InvalidLinkError,
@@ -37,6 +48,7 @@ from app.core.tokens import (
 from app.schemas.auth import (
     ForgotPasswordRequest,
     GoogleAuthStatus,
+    GoogleRegisterRequest,
     LoginRequest,
     PasswordResetRequested,
     RegisterRequest,
@@ -49,6 +61,7 @@ from app.schemas.auth import (
 from app.services import accounts as accounts_service
 from app.services import credentials as credentials_service
 from app.services import google_auth as google_auth_service
+from app.services import rate_limit
 from app.services import sessions as sessions_service
 from app.services import verification as verification_service
 from app.services.legal import LegalVersionMismatchError
@@ -89,6 +102,7 @@ def _google_start(
     mode: str,
     user_id: uuid.UUID | None = None,
     session_id: uuid.UUID | None = None,
+    registration: GoogleRegisterRequest | None = None,
 ) -> RedirectResponse:
     state = new_opaque_token()
     nonce = new_opaque_token()
@@ -101,6 +115,9 @@ def _google_start(
         mode=mode,
         user_id=user_id,
         session_id=session_id,
+        account_type=registration.account_type if registration is not None else None,
+        organization_name=registration.organization_name if registration is not None else None,
+        legal_version=registration.legal_version if registration is not None else None,
     )
     response = RedirectResponse(
         google.authorization_url(
@@ -131,6 +148,20 @@ def google_login_start(
     google: Annotated[GoogleOidc, Depends(get_google_oidc)],
 ) -> RedirectResponse:
     return _google_start(settings, google, mode="login")
+
+
+@router.post("/auth/google/register", summary="Crear una cuenta mediante Google")
+def google_register_start(
+    registration: Annotated[GoogleRegisterRequest, Form()],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    google: Annotated[GoogleOidc, Depends(get_google_oidc)],
+) -> RedirectResponse:
+    if registration.legal_version != LEGAL_VERSION:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="Los textos legales cambiaron. Revise la versión vigente antes de continuar.",
+        )
+    return _google_start(settings, google, mode="register", registration=registration)
 
 
 @router.get("/auth/google/link", summary="Vincular Google a la cuenta con sesión")
@@ -185,6 +216,23 @@ def google_callback(
             )
             response.headers["location"] = "/app"
             set_session_cookies(response, issued)
+        elif (
+            flow.mode == "register"
+            and flow.account_type is not None
+            and flow.legal_version is not None
+        ):
+            issued = google_auth_service.register(
+                session,
+                settings,
+                identity,
+                account_type=flow.account_type,
+                organization_name=flow.organization_name,
+                legal_version=flow.legal_version,
+                client_ip=client_ip,
+                user_agent=user_agent,
+            )
+            response.headers["location"] = "/app"
+            set_session_cookies(response, issued)
         elif flow.user_id is not None and flow.session_id is not None:
             google_auth_service.link(
                 session,
@@ -199,10 +247,16 @@ def google_callback(
         response.headers["location"] = "/ingresar?google=sin-vinculo"
     except google_auth_service.GoogleAccountBlockedError:
         response.headers["location"] = "/ingresar?google=bloqueada"
+    except google_auth_service.GoogleRegistrationEmailInUseError:
+        response.headers["location"] = "/registro?google=correo-en-uso"
+    except rate_limit.RateLimitExceededError:
+        response.headers["location"] = "/registro?google=limite"
     except google_auth_service.GoogleIdentityAlreadyLinkedError:
         response.headers["location"] = "/app/cuenta?google=ocupado"
     except google_auth_service.GoogleLinkSessionEndedError:
         response.headers["location"] = "/ingresar?google=sesion-vencida"
+    except LegalVersionMismatchError:
+        response.headers["location"] = "/registro?google=legal-cambio"
     except InvalidGoogleFlowError, GoogleOidcError:
         pass
     return response

@@ -2,40 +2,47 @@ import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 import { ROUTES } from "../../config/routes.ts";
 import { SIGN_UP_LABEL } from "../../config/site.ts";
-import { DocumentScene } from "./DocumentScene.tsx";
 import styles from "./Hero.module.css";
+import { photoProps } from "../../config/media.ts";
 
 export function Hero() {
   return (
     <section className={styles.hero} aria-labelledby="titulo-inicio">
-      <div className={styles.scene}>
-        <div className={styles.intro}>
-          <h1 id="titulo-inicio" className={styles.title}>
-            Su trabajo.
-            <br />
-            Con claridad.
-          </h1>
+      <img
+        {...photoProps("hero-real", "100vw")}
+        alt="Profesionales colaborando en una oficina"
+        className={styles.photo}
+        fetchPriority="high"
+        decoding="async"
+      />
+      <div className={styles.scrim} aria-hidden="true" />
+      <div className={styles.content}>
+        <h1 id="titulo-inicio" className={styles.title}>
+          Sus casos cambian.
+          <br />
+          Su control también.
+        </h1>
+        <div className={styles.panel}>
+          <p className={styles.panelTitle}>Empiece con un caso real</p>
           <p className={styles.lead}>
-            Organice sus casos, reúna a su equipo y conserve el contexto de cada
-            decisión. Más orden para trabajar con tranquilidad.
+            Organice expedientes, reúna a su equipo y conserve el contexto de
+            cada decisión en un solo lugar.
           </p>
           <div className={styles.actions}>
-            <ButtonLink to={ROUTES.signUp}>{SIGN_UP_LABEL}</ButtonLink>
-            <ButtonLink to="/docs" variant="text">
-              Documentación <FlechaDerechaIcon size={16} aria-hidden="true" />
+            <ButtonLink to={ROUTES.signUp}>
+              {SIGN_UP_LABEL}
+              <FlechaDerechaIcon size={18} aria-hidden="true" />
+            </ButtonLink>
+            <ButtonLink to="/#como-funciona" variant="text">
+              Conocer el producto
             </ButtonLink>
           </div>
         </div>
-        <DocumentScene />
       </div>
-      <div className={styles.benefits}>
-        <p>Para quienes cuidan cada detalle de un caso.</p>
-        <ul>
-          <li>Abogados independientes</li>
-          <li>Firmas jurídicas</li>
-          <li>Equipos de trabajo</li>
-        </ul>
-      </div>
+      <a className={styles.next} href="#como-funciona">
+        <span className="visually-hidden">Ir a la siguiente sección</span>
+        <FlechaDerechaIcon size={20} aria-hidden="true" />
+      </a>
     </section>
   );
 }

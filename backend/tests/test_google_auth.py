@@ -14,13 +14,22 @@ from app.api.deps import get_google_oidc
 from app.core.legal import LEGAL_VERSION
 from app.core.passwords import hash_password
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, Membership, OAuthIdentity, Organization, User
+from app.models import (
+    AuditLog,
+    LegalAcceptance,
+    Membership,
+    OAuthIdentity,
+    Organization,
+    Subscription,
+    User,
+)
 from tests.conftest import NuevoCliente
 
 
 class FakeGoogle:
-    def __init__(self, subject: str = "google-subject-123") -> None:
+    def __init__(self, subject: str = "google-subject-123", email: str = "ana@example.com") -> None:
         self.subject = subject
+        self.email = email
         self.exchanges: list[tuple[str, str, str]] = []
 
     def authorization_url(self, *, state: str, nonce: str, code_challenge: str) -> str:
@@ -30,7 +39,12 @@ class FakeGoogle:
 
     def exchange(self, *, code: str, code_verifier: str, nonce: str) -> GoogleIdentity:
         self.exchanges.append((code, code_verifier, nonce))
-        return GoogleIdentity(subject=self.subject, email="ana@example.com", email_verified=True)
+        return GoogleIdentity(
+            subject=self.subject,
+            email=self.email,
+            email_verified=True,
+            full_name="Ana Restrepo",
+        )
 
 
 def _account(db: Session) -> tuple[User, uuid.UUID]:
@@ -61,7 +75,7 @@ def _state(response_location: str) -> str:
 
 def _start(client: TestClient, path: str) -> str:
     response = client.get(path, follow_redirects=False)
-    assert response.status_code == 303
+    assert response.status_code == 303, response.text
     assert response.headers["location"].startswith("https://accounts.google.test/auth?")
     cookie = response.headers["set-cookie"].lower()
     assert "httponly" in cookie
@@ -69,6 +83,31 @@ def _start(client: TestClient, path: str) -> str:
     assert "samesite=lax" in cookie
     assert "path=/api/v1/auth/google" in cookie
     assert response.headers["referrer-policy"] == "no-referrer"
+    return _state(response.headers["location"])
+
+
+def _start_registration(client: TestClient) -> str:
+    response = client.post(
+        "/api/v1/auth/google/register",
+        data={
+            "account_type": "firm",
+            "organization_name": "Restrepo Abogados",
+            "legal_version": LEGAL_VERSION,
+            "accepts_legal_terms": "true",
+        },
+        headers={
+            "Origin": "http://localhost:5173",
+            "Sec-Fetch-Site": "same-origin",
+            "X-Aletheia-Request": "",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 303, response.text
+    assert response.headers["location"].startswith("https://accounts.google.test/auth?")
+    cookie = response.headers["set-cookie"].lower()
+    assert "httponly" in cookie
+    assert "secure" in cookie
+    assert "samesite=lax" in cookie
     return _state(response.headers["location"])
 
 
@@ -133,6 +172,65 @@ def test_una_identidad_vinculada_puede_ingresar(
     profile = client.get("/api/v1/me")
     assert profile.status_code == 200
     assert profile.json()["google_linked"] is True
+
+
+def test_google_crea_cuenta_sin_contrasena_y_abre_sesion(
+    app: FastAPI, dispositivo: NuevoCliente, db: Session
+) -> None:
+    google = FakeGoogle(email="nueva@example.com")
+    app.dependency_overrides[get_google_oidc] = lambda: google
+    client = dispositivo()
+
+    state = _start_registration(client)
+    callback = client.get(
+        "/api/v1/auth/google/callback",
+        params={"state": state, "code": "codigo-de-google"},
+        follow_redirects=False,
+    )
+
+    assert callback.status_code == 303
+    assert callback.headers["location"] == "/app"
+    profile = client.get("/api/v1/me")
+    assert profile.status_code == 200
+    assert profile.json()["google_linked"] is True
+    assert profile.json()["organization"]["name"] == "Restrepo Abogados"
+
+    user = db.scalar(select(User).where(User.email == "nueva@example.com"))
+    assert user is not None
+    assert user.password_hash is None
+    assert user.email_verified_at is not None
+    assert user.full_name == "Ana Restrepo"
+    assert db.scalar(select(OAuthIdentity).where(OAuthIdentity.user_id == user.id)) is not None
+    membership = db.scalar(select(Membership).where(Membership.user_id == user.id))
+    assert membership is not None
+    subscription = db.scalar(
+        select(Subscription).where(Subscription.organization_id == membership.organization_id)
+    )
+    assert subscription is not None
+    assert subscription.status == "trial"
+    acceptance = db.scalar(select(LegalAcceptance).where(LegalAcceptance.user_id == user.id))
+    assert acceptance is not None
+    assert acceptance.version == LEGAL_VERSION
+
+
+def test_registro_google_no_enlaza_una_cuenta_existente_por_correo(
+    app: FastAPI, dispositivo: NuevoCliente, db: Session
+) -> None:
+    user, _ = _account(db)
+    google = FakeGoogle(subject="otra-identidad-google", email=user.email)
+    app.dependency_overrides[get_google_oidc] = lambda: google
+    client = dispositivo()
+
+    state = _start_registration(client)
+    callback = client.get(
+        "/api/v1/auth/google/callback",
+        params={"state": state, "code": "codigo-de-google"},
+        follow_redirects=False,
+    )
+
+    assert callback.headers["location"] == "/registro?google=correo-en-uso"
+    assert client.get("/api/v1/me").status_code == 401
+    assert db.scalar(select(OAuthIdentity).where(OAuthIdentity.user_id == user.id)) is None
 
 
 def test_no_asocia_por_correo_si_la_identidad_no_esta_vinculada(

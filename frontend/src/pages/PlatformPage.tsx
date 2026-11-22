@@ -1,3 +1,4 @@
+import { FilterPanel } from "../components/ui/FilterPanel.tsx";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 import { useOutletContext } from "react-router";
@@ -102,90 +103,94 @@ export function PlatformPage() {
           title="Cuentas"
           description="Bloquear una cuenta cierra sus sesiones en todos los dispositivos."
         >
-          <form
-            className={styles.accountFilters}
-            aria-label="Filtrar cuentas"
-            onSubmit={applyFilters}
+          <FilterPanel
+            active={Object.values(appliedFilters).filter(Boolean).length}
           >
-            <label className={styles.filterField}>
-              <span>Nombre o correo</span>
-              <input
-                type="search"
-                value={filters.search}
-                maxLength={120}
-                placeholder="Ej. carlos@example.com"
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    search: event.target.value,
-                  }))
-                }
-              />
-            </label>
-            <label className={styles.filterField}>
-              <span>Estado</span>
-              <select
-                value={filters.status}
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    status: event.target.value as AccountFilters["status"],
-                  }))
-                }
-              >
-                <option value="">Todos</option>
-                <option value="active">Activas</option>
-                <option value="blocked">Bloqueadas</option>
-              </select>
-            </label>
-            <label className={styles.filterField}>
-              <span>Verificación</span>
-              <select
-                value={filters.verification}
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    verification: event.target
-                      .value as AccountFilters["verification"],
-                  }))
-                }
-              >
-                <option value="">Todas</option>
-                <option value="verified">Verificadas</option>
-                <option value="pending">Pendientes</option>
-              </select>
-            </label>
-            <label className={styles.filterField}>
-              <span>Ámbito</span>
-              <select
-                value={filters.accountType}
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    accountType: event.target
-                      .value as AccountFilters["accountType"],
-                  }))
-                }
-              >
-                <option value="">Todos</option>
-                <option value="workspace">Despachos</option>
-                <option value="platform">Plataforma</option>
-              </select>
-            </label>
-            <div className={styles.filterActions}>
-              <Button size="sm" type="submit">
-                Aplicar filtros
-              </Button>
-              <Button
-                size="sm"
-                type="button"
-                variant="secondary"
-                onClick={clearFilters}
-              >
-                Limpiar
-              </Button>
-            </div>
-          </form>
+            <form
+              className={styles.accountFilters}
+              aria-label="Filtrar cuentas"
+              onSubmit={applyFilters}
+            >
+              <label className={styles.filterField}>
+                <span>Nombre o correo</span>
+                <input
+                  type="search"
+                  value={filters.search}
+                  maxLength={120}
+                  placeholder="Ej. carlos@example.com"
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      search: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+              <label className={styles.filterField}>
+                <span>Estado</span>
+                <select
+                  value={filters.status}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      status: event.target.value as AccountFilters["status"],
+                    }))
+                  }
+                >
+                  <option value="">Todos</option>
+                  <option value="active">Activas</option>
+                  <option value="blocked">Bloqueadas</option>
+                </select>
+              </label>
+              <label className={styles.filterField}>
+                <span>Verificación</span>
+                <select
+                  value={filters.verification}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      verification: event.target
+                        .value as AccountFilters["verification"],
+                    }))
+                  }
+                >
+                  <option value="">Todas</option>
+                  <option value="verified">Verificadas</option>
+                  <option value="pending">Pendientes</option>
+                </select>
+              </label>
+              <label className={styles.filterField}>
+                <span>Ámbito</span>
+                <select
+                  value={filters.accountType}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      accountType: event.target
+                        .value as AccountFilters["accountType"],
+                    }))
+                  }
+                >
+                  <option value="">Todos</option>
+                  <option value="workspace">Despachos</option>
+                  <option value="platform">Plataforma</option>
+                </select>
+              </label>
+              <div className={styles.filterActions}>
+                <Button size="sm" type="submit">
+                  Aplicar filtros
+                </Button>
+                <Button
+                  size="sm"
+                  type="button"
+                  variant="secondary"
+                  onClick={clearFilters}
+                >
+                  Limpiar
+                </Button>
+              </div>
+            </form>
+          </FilterPanel>
           {users.isPending && <p role="status">Cargando cuentas</p>}
           {users.isError && (
             <Notice tone="error">No pudimos cargar las cuentas.</Notice>

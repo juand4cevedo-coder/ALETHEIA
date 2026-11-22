@@ -16,8 +16,8 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--ink-hairline);
-  border-radius: var(--radius-md);
-  background: var(--paper-raised);
+  border-radius: 16px;
+  background: var(--paper-sunken);
   color: var(--text);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);

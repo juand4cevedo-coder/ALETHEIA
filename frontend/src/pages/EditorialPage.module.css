@@ -1,26 +1,26 @@
 .page {
   max-width: 1280px;
   margin: auto;
-  padding: 96px 24px 120px;
+  padding: 112px 24px 136px;
 }
 .centerHead {
-  text-align: center;
-  max-width: 800px;
-  margin: 0 auto 80px;
+  text-align: left;
+  max-width: 1040px;
+  margin: 0 auto 88px;
 }
 .centerHead h1,
 .blogHead h1,
 .articleHead h1 {
-  font: 400 clamp(3.5rem, 6.2vw, 5rem)/1.05 var(--font-editorial);
-  letter-spacing: -0.02em;
+  font: 650 clamp(3.5rem, 7vw, 6.5rem)/0.98 var(--font-sans);
+  letter-spacing: -0.055em;
 }
 .centerHead > p,
 .articleHead > p {
   color: var(--text-2);
   font-size: 18px;
   line-height: 1.6;
-  max-width: 600px;
-  margin: 24px auto 0;
+  max-width: 680px;
+  margin: 32px 0 0;
 }
 .brandTile {
   display: grid;
@@ -36,30 +36,31 @@
 .cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  gap: 16px;
 }
 .cards > a {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 180px;
-  padding: 32px;
-  background: linear-gradient(145deg, var(--paper-raised), var(--paper));
-  border: 1px solid var(--ink-hairline);
-  border-radius: 16px;
+  min-height: 240px;
+  padding: 36px;
+  background: var(--paper-sunken);
+  border: 0;
+  border-radius: 28px;
   color: var(--text);
   text-decoration: none;
   transition:
-    border-color 0.2s,
+    transform 0.2s,
     background 0.2s;
 }
 .cards > a:hover {
-  border-color: var(--line-control);
-  background: linear-gradient(145deg, var(--ink-hairline), var(--ink-700));
+  background: #eee7f4;
+  transform: translateY(-3px);
 }
 .cards h2 {
-  font-size: 20px;
-  font-weight: 500;
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -0.035em;
 }
 .cards p {
   color: var(--text-2);
@@ -80,8 +81,8 @@
   border-top: 1px solid var(--ink-hairline);
 }
 .principles section > span {
-  font: 400 80px/1 var(--font-editorial);
-  color: var(--line-control);
+  font: 650 72px/1 var(--font-sans);
+  color: var(--ink-900);
 }
 .principles h2 {
   font-size: 26px;
@@ -113,9 +114,9 @@
 .blogHead {
   display: flex;
   flex-direction: column;
-  text-align: center;
+  text-align: left;
   padding: 12px 0 24px;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 32px;
   margin-bottom: 48px;
@@ -196,8 +197,8 @@
   justify-content: center;
   align-items: center;
   aspect-ratio: 1.8;
-  border: 1px solid var(--ink-hairline);
-  border-radius: 16px;
+  border: 0;
+  border-radius: 28px;
   margin-bottom: 24px;
   background:
     radial-gradient(
@@ -214,13 +215,13 @@
   z-index: 1;
   font: 400 clamp(40px, 4.5vw, 62px)/1 var(--font-editorial);
   letter-spacing: -0.03em;
-  color: var(--text);
+  color: #fff;
 }
 .articleVisual small {
   position: relative;
   z-index: 1;
   font: 12px var(--font-mono);
-  color: var(--text-3);
+  color: rgb(255 255 255 / 78%);
   margin-top: 24px;
 }
 .articleVisual[data-kind="Integridad"] {

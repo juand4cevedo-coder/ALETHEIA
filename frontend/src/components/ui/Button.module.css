@@ -4,6 +4,7 @@
    cambia la clase .on-ink, de modo que estos controles lo heredan sin repetirlo. */
 .button {
   display: inline-flex;
+  max-width: 100%;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
@@ -11,7 +12,7 @@
   min-height: var(--control-height);
   padding: var(--space-2) var(--space-6);
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   font: inherit;
   /* 16 px para que el navegador del celular no acerque la pantalla al tocar el control. */
   font-size: var(--font-size-control-touch);
@@ -28,8 +29,20 @@
     transform var(--motion-base) var(--ease-standard);
 }
 
+@media (max-width: 360px) {
+  .button {
+    white-space: normal;
+    text-align: center;
+  }
+}
+
 .button svg {
   flex: none;
+}
+
+/* Respuesta al tacto: el botón cede un poco al presionarlo, como un botón físico. */
+.button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 /* La variante compacta conserva el mínimo táctil de 44 px. */

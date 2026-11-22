@@ -214,3 +214,24 @@
     display: none;
   }
 }
+
+/* En teléfono el aviso cede espacio al contenido: menos aire y un texto un punto más pequeño,
+   sin quitar ninguna de las tres decisiones. */
+@media (max-width: 560px) {
+  .panel {
+    gap: var(--space-3);
+    padding-block: var(--space-3)
+      calc(var(--space-3) + env(safe-area-inset-bottom));
+    max-height: 48dvh;
+  }
+
+  .text {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  .configure {
+    min-height: 0;
+    padding-block: var(--space-1);
+  }
+}

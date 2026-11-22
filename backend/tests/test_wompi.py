@@ -1,5 +1,8 @@
 """Adaptador de Wompi (ADR-010, HU-027): firma de integridad y verificación de webhooks."""
 
+import io
+import urllib.error
+from email.message import Message
 from typing import Any
 
 import pytest
@@ -64,3 +67,34 @@ def test_credenciales_de_exige_las_cuatro_variables(settings: Settings) -> None:
     incompletas = settings.model_copy(update={"wompi_public_key": "pub_test_x"})
     with pytest.raises(wompi.WompiNoConfiguradoError):
         wompi.credenciales_de(incompletas)
+
+
+@pytest.mark.parametrize(
+    ("codigo", "error_esperado"),
+    [(400, wompi.WompiRechazadoError), (500, wompi.WompiNoDisponibleError)],
+)
+def test_un_error_de_wompi_no_expone_el_cuerpo_de_la_respuesta(
+    monkeypatch: pytest.MonkeyPatch,
+    codigo: int,
+    error_esperado: type[RuntimeError],
+) -> None:
+    dato_sensible = b'{"customer_email":"persona@example.com","phone_number":"3001234567"}'
+    error_http = urllib.error.HTTPError(
+        "https://sandbox.wompi.co/v1/transactions",
+        codigo,
+        "error",
+        hdrs=Message(),
+        fp=io.BytesIO(dato_sensible),
+    )
+
+    def responder_con_error(*_args: object, **_kwargs: object) -> None:
+        raise error_http
+
+    monkeypatch.setattr(urllib.request, "urlopen", responder_con_error)
+
+    with pytest.raises(error_esperado) as capturado:
+        wompi._llamar("https://sandbox.wompi.co/v1/transactions")
+
+    assert str(codigo) in str(capturado.value)
+    assert "persona@example.com" not in str(capturado.value)
+    assert "3001234567" not in str(capturado.value)

@@ -7,16 +7,6 @@
   src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2")
     format("woff2-variations");
 }
-/* Fontsource publica Fraunces en una compilación por eje (standard, wght, opsz, soft, wonk,
-   full). Aquí se usa la de tamaño óptico, de modo que los ejes SOFT y WONK viven en otros archivos. */
-@font-face {
-  font-family: "Fraunces Variable";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 100 900;
-  src: url("@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2")
-    format("woff2-variations");
-}
 @font-face {
   font-family: "Geist Mono Variable";
   font-style: normal;

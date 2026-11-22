@@ -1,3 +1,4 @@
+import { FilterPanel } from "../components/ui/FilterPanel.tsx";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 import { useOutletContext } from "react-router";
@@ -167,7 +168,7 @@ function PlanAccessManager({
   const [message, setMessage] = useState("");
   const queryClient = useQueryClient();
   const target = useQuery({
-    ...lookupCourtesyOptions({ query: { owner_email: searched } }),
+    ...lookupCourtesyOptions({ query: { account_email: searched } }),
     enabled: Boolean(searched),
   });
   const grant = useMutation({
@@ -210,7 +211,7 @@ function PlanAccessManager({
       : "sin vencimiento";
     if (
       !window.confirm(
-        `Confirma ${selectedPlan.name} para ${target.data.organization_name} (${target.data.owner_email}), ${deadline}?`,
+        `Confirma ${selectedPlan.name} para ${target.data.organization_name} (${target.data.account_email}), ${deadline}?`,
       )
     )
       return;
@@ -218,7 +219,7 @@ function PlanAccessManager({
     grant.mutate({
       body: {
         organization_id: target.data.organization_id,
-        owner_email: target.data.owner_email,
+        account_email: target.data.account_email,
         plan_code: selectedPlan.code,
         reason: reason.trim(),
         ends_at: endsAt?.toISOString() ?? null,
@@ -241,7 +242,7 @@ function PlanAccessManager({
     revoke.mutate({
       body: {
         organization_id: target.data.organization_id,
-        owner_email: target.data.owner_email,
+        account_email: target.data.account_email,
         reason: reason.trim(),
       },
     });
@@ -254,9 +255,7 @@ function PlanAccessManager({
     >
       <div className={styles.courtesy}>
         <form className={styles.form} onSubmit={search}>
-          <label htmlFor="courtesy-email">
-            Correo del responsable del despacho
-          </label>
+          <label htmlFor="courtesy-email">Correo de cualquier miembro</label>
           <div className={styles.inlineForm}>
             <input
               id="courtesy-email"
@@ -271,7 +270,7 @@ function PlanAccessManager({
         {target.isPending && searched && <p role="status">Buscando despacho</p>}
         {target.isError && (
           <Notice tone="error">
-            No encontramos un despacho asociado a esa cuenta responsable.
+            No encontramos un despacho asociado a esa cuenta.
           </Notice>
         )}
         {target.data && (
@@ -279,7 +278,7 @@ function PlanAccessManager({
             <div className={styles.targetCard}>
               <strong>{target.data.organization_name}</strong>
               <span>
-                {target.data.owner_name}, {target.data.owner_email}
+                {target.data.account_name}, {target.data.account_email}
               </span>
               <span>
                 Plan actual:{" "}
@@ -587,85 +586,89 @@ export function PlatformAuditPage() {
         <Restricted />
       ) : (
         <Panel title="Eventos">
-          <form
-            className={styles.accountFilters}
-            aria-label="Filtrar auditoría"
-            onSubmit={applyFilters}
+          <FilterPanel
+            active={Object.values(appliedFilters).filter(Boolean).length}
           >
-            <label className={styles.filterField}>
-              <span>Persona, organización u objeto</span>
-              <input
-                type="search"
-                maxLength={120}
-                value={filters.search}
-                placeholder="Nombre, correo o UUID"
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    search: event.target.value,
-                  }))
-                }
-              />
-            </label>
-            <label className={styles.filterField}>
-              <span>Acción</span>
-              <select
-                value={filters.action}
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    action: event.target.value,
-                  }))
-                }
-              >
-                <option value="">Todas</option>
-                {Object.entries(ACTION_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className={styles.filterField}>
-              <span>Desde</span>
-              <input
-                type="datetime-local"
-                value={filters.createdFrom}
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    createdFrom: event.target.value,
-                  }))
-                }
-              />
-            </label>
-            <label className={styles.filterField}>
-              <span>Hasta</span>
-              <input
-                type="datetime-local"
-                value={filters.createdTo}
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    createdTo: event.target.value,
-                  }))
-                }
-              />
-            </label>
-            <div className={styles.filterActions}>
-              <Button size="sm" type="submit">
-                Aplicar filtros
-              </Button>
-              <Button
-                size="sm"
-                type="button"
-                variant="secondary"
-                onClick={clearFilters}
-              >
-                Limpiar
-              </Button>
-            </div>
-          </form>
+            <form
+              className={styles.accountFilters}
+              aria-label="Filtrar auditoría"
+              onSubmit={applyFilters}
+            >
+              <label className={styles.filterField}>
+                <span>Persona, organización u objeto</span>
+                <input
+                  type="search"
+                  maxLength={120}
+                  value={filters.search}
+                  placeholder="Nombre, correo o UUID"
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      search: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+              <label className={styles.filterField}>
+                <span>Acción</span>
+                <select
+                  value={filters.action}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      action: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Todas</option>
+                  {Object.entries(ACTION_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.filterField}>
+                <span>Desde</span>
+                <input
+                  type="datetime-local"
+                  value={filters.createdFrom}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      createdFrom: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+              <label className={styles.filterField}>
+                <span>Hasta</span>
+                <input
+                  type="datetime-local"
+                  value={filters.createdTo}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      createdTo: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+              <div className={styles.filterActions}>
+                <Button size="sm" type="submit">
+                  Aplicar filtros
+                </Button>
+                <Button
+                  size="sm"
+                  type="button"
+                  variant="secondary"
+                  onClick={clearFilters}
+                >
+                  Limpiar
+                </Button>
+              </div>
+            </form>
+          </FilterPanel>
           {filterError && <Notice tone="error">{filterError}</Notice>}
           {audit.isPending && <p role="status">Cargando eventos</p>}
           {audit.isError && (

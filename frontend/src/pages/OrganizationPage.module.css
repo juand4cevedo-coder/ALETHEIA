@@ -2,8 +2,8 @@
    de la cuenta. */
 .form {
   display: grid;
-  gap: var(--space-4);
-  max-width: 420px;
+  gap: var(--space-6);
+  max-width: 560px;
 }
 
 .form > button {

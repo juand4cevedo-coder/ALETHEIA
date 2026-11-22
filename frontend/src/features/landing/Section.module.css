@@ -1,9 +1,9 @@
 .section {
   position: relative;
-  max-width: 1280px;
+  max-width: none;
   margin: 0 auto;
-  padding: 96px 0;
-  border-top: 1px solid var(--ink-hairline);
+  padding: 120px 0 136px;
+  border-top: 0;
 }
 
 .inner {
@@ -15,10 +15,10 @@
 .heading {
   display: grid;
   gap: var(--space-3);
-  justify-items: center;
-  text-align: center;
-  max-width: var(--measure);
-  margin: 0 auto var(--space-12);
+  justify-items: start;
+  text-align: left;
+  max-width: 920px;
+  margin: 0 0 64px;
 }
 
 .headingStacked {
@@ -28,7 +28,7 @@
 .title {
   font-family: var(--font-editorial);
   font-size: var(--font-size-section);
-  font-weight: 400;
+  font-weight: 550;
   line-height: var(--line-height-section);
   letter-spacing: var(--tracking-section);
   color: var(--text);
@@ -37,25 +37,17 @@
 .lead {
   margin-top: var(--space-1);
   color: var(--text-2);
-  font-size: var(--font-size-subtitle);
+  max-width: 68ch;
+  font-size: 20px;
   font-weight: 400;
   line-height: var(--line-height-subtitle);
 }
 
 .card {
   position: relative;
-  border: 1px solid var(--ink-hairline);
+  border: 0;
   border-radius: var(--radius-lg);
-  background:
-    radial-gradient(
-      41% 12% at 50% 0%,
-      color-mix(in srgb, var(--ink-900) 5%, transparent),
-      transparent
-    ),
-    linear-gradient(
-      var(--paper-raised),
-      color-mix(in srgb, var(--paper) 80%, transparent)
-    );
+  background: var(--paper-sunken);
 }
 
 .cardTitle {
@@ -72,7 +64,7 @@
 
 @media (max-width: 760px) {
   .section {
-    padding: var(--space-16) 0;
+    padding: 72px 0 84px;
   }
 
   .inner {

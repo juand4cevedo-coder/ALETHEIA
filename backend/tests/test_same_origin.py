@@ -102,14 +102,19 @@ def test_las_lecturas_no_necesitan_el_encabezado(client: TestClient) -> None:
     assert client.get("/api/v1/prueba/lectura").status_code == 200
 
 
-def test_formulario_de_descarga_exige_origen_y_sitio_propios(client: TestClient) -> None:
-    route = "/api/v1/exports/download"
+@pytest.mark.parametrize(
+    "route",
+    ["/api/v1/auth/google/register", "/api/v1/exports/download"],
+)
+def test_formularios_nativos_exigen_origen_y_sitio_propios(client: TestClient, route: str) -> None:
     own = client.post(
         route,
         data={"otro": "x"},
         headers={"Origin": _SITIO, "Sec-Fetch-Site": "same-origin"},
     )
-    assert own.status_code == 422
+    # La petición alcanza la ruta. El registro puede responder 503 en esta configuración
+    # porque Google está deshabilitado; la descarga responde 422 por el formulario incompleto.
+    assert own.status_code != 403
     foreign = client.post(
         route,
         data={"token": "invalido"},

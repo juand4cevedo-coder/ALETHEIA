@@ -1,4 +1,3 @@
-import { Foto } from "../components/ui/Foto.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import {
@@ -13,10 +12,11 @@ import {
 import { readMeOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 
 import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
-import { SITE_NAME } from "../config/site.ts";
+import { SITE_NAME, WORDMARK } from "../config/site.ts";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import styles from "./AuthLayout.module.css";
+import { photoProps } from "../config/media.ts";
 
 /** Cambio a la otra pantalla de acceso, declarado en la ruta: va debajo del formulario. */
 export type AuthSwitch = { question: string; label: string; to: string };
@@ -87,26 +87,30 @@ export function AuthLayout() {
 
       <header className={styles.header}>
         <Link to={ROUTES.home} className={styles.brand}>
-          <span aria-hidden="true">‹</span> Inicio
-          <span className="visually-hidden">, ir al inicio</span>
+          <img src={logoUrl} alt="" width={30} height={30} />
+          <span>{WORDMARK}</span>
+        </Link>
+        <Link to={ROUTES.home} className={styles.back}>
+          Inicio
         </Link>
       </header>
 
-      <Foto
-        nombre="acceso"
-        alt=""
-        prioridad
-        sizes="(min-width: 900px) 44vw, 100vw"
-        className={styles.photo}
-      />
-      <main id="contenido" className={styles.main} tabIndex={-1}>
+      <section className={styles.visual} aria-label="Trabajo colaborativo">
         <img
-          className={styles.symbol}
-          src={logoUrl}
-          alt=""
-          width={48}
-          height={48}
+          {...photoProps("equipo-real", "(min-width: 900px) 50vw, 100vw")}
+          alt="Equipo profesional colaborando en un espacio contemporáneo"
+          width={2000}
+          height={1333}
+          fetchPriority="high"
+          decoding="async"
+          className={styles.photo}
         />
+        <div className={styles.visualCopy}>
+          <p>Un acceso claro a todo lo que importa.</p>
+          <span>Casos, equipo y actividad en un mismo espacio.</span>
+        </div>
+      </section>
+      <main id="contenido" className={styles.main} tabIndex={-1}>
         <div className={styles.panel}>
           <Outlet />
         </div>

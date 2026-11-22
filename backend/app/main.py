@@ -110,7 +110,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         SameOriginMiddleware,
         allowed_origins=allowed_origins,
         path_prefix=API_PREFIX,
-        form_post_paths=[f"{API_PREFIX}/exports/download"],
+        form_post_paths=[
+            f"{API_PREFIX}/auth/google/register",
+            f"{API_PREFIX}/exports/download",
+        ],
         # Wompi llama a esta ruta directamente desde su servidor: no hay Origin ni el
         # encabezado propio que verifican las demás. La firma de la notificación es su
         # verificación de origen (app.adapters.wompi.firma_de_webhook_es_valida).

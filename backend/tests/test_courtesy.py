@@ -1,4 +1,4 @@
-"""La concesión de cortesías requiere propietario, destino exacto y auditoría."""
+"""La asignación de planes acepta cualquier miembro, exige destino exacto y deja auditoría."""
 
 import datetime
 import uuid
@@ -13,7 +13,7 @@ from app.models import AuditLog, Job, Organization, Subscription
 from app.services import subscription_expiration
 from app.services.sessions import Principal
 from tests.conftest import NuevoCliente
-from tests.organizations import crear_oficina, crear_persona
+from tests.organizations import crear_miembro, crear_oficina, crear_persona
 
 
 def _principal(user_id: uuid.UUID) -> Principal:
@@ -33,18 +33,20 @@ def test_conceder_renovar_y_revocar_sin_registrar_pago(
     office = crear_oficina(db)
     admin = crear_persona(db, f"platform-{uuid.uuid4().hex}@example.com")
     admin.is_platform_admin = True
+    assistant = crear_miembro(db, office, f"asistente-{uuid.uuid4().hex}@example.com", "assistant")
     db.commit()
     app.dependency_overrides[get_session] = lambda: db
     app.dependency_overrides[get_principal] = lambda: _principal(admin.id)
     client = dispositivo()
     path = "/api/v1/platform/courtesy"
-    found = client.get(path, params={"owner_email": office.owner.email})
+    found = client.get(path, params={"account_email": assistant.email})
     assert found.status_code == 200
     assert found.json()["organization_id"] == str(office.organization_id)
+    assert found.json()["account_email"] == assistant.email
     assert "reason" not in found.text
     body = {
         "organization_id": str(office.organization_id),
-        "owner_email": office.owner.email,
+        "account_email": assistant.email,
         "plan_code": "corporate",
         "reason": "Acceso de cortesía autorizado para evaluación",
         "ends_at": (datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=7)).isoformat(),
@@ -77,7 +79,7 @@ def test_conceder_renovar_y_revocar_sin_registrar_pago(
         f"{path}/revoke",
         json={
             "organization_id": str(office.organization_id),
-            "owner_email": office.owner.email,
+            "account_email": assistant.email,
             "reason": "Finalizó el periodo de cortesía acordado",
         },
     )
@@ -102,7 +104,7 @@ def test_cuenta_ordinaria_no_concede_cortesia(
     client = dispositivo()
     assert (
         client.get(
-            "/api/v1/platform/courtesy", params={"owner_email": office.owner.email}
+            "/api/v1/platform/courtesy", params={"account_email": office.owner.email}
         ).status_code
         == 403
     )
@@ -111,7 +113,7 @@ def test_cuenta_ordinaria_no_concede_cortesia(
             "/api/v1/platform/courtesy",
             json={
                 "organization_id": str(office.organization_id),
-                "owner_email": office.owner.email,
+                "account_email": office.owner.email,
                 "plan_code": "essential",
                 "reason": "Intento sin permiso suficiente",
             },

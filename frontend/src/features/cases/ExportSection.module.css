@@ -52,8 +52,8 @@
   min-height: 44px;
   padding: var(--space-3);
   border: 1px solid var(--line-control);
-  border-radius: var(--radius-sm);
-  background: var(--paper-sunken);
+  border-radius: 14px;
+  background: var(--paper-raised);
   color: var(--text);
   font: inherit;
 }

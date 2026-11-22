@@ -1,0 +1,11 @@
+[Unit]
+Description=Respaldo diario de PostgreSQL de ALETHEIA
+
+[Timer]
+# 03:30 UTC son las 22:30 en Colombia: la hora de menor uso.
+OnCalendar=*-*-* 03:30:00 UTC
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

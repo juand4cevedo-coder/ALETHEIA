@@ -2,10 +2,10 @@
    panel. La integridad abre la fila y lleva una insignia en lugar de un número. */
 .strip {
   overflow: hidden;
-  border-radius: var(--radius-lg);
+  border-radius: 24px;
   background: var(--paper-raised);
   border: 1px solid transparent;
-  box-shadow: var(--brass-hairline), var(--shadow-card);
+  box-shadow: var(--shadow-card);
 }
 
 .figures {
