@@ -22,7 +22,9 @@
     auto;
   gap: var(--space-3);
   align-items: end;
-  padding-bottom: var(--space-5);
+  padding: var(--space-4);
+  border-radius: 20px;
+  background: var(--paper-sunken);
 }
 
 .filters label {
@@ -39,9 +41,9 @@
   min-width: 0;
   height: 2.5rem;
   padding: 0 var(--space-3);
-  border: 1px solid var(--ink-hairline);
-  border-radius: var(--radius-sm);
-  background: var(--paper);
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: var(--paper-raised);
   color: var(--text);
   font: inherit;
 }
@@ -119,15 +121,16 @@
 }
 
 .table thead th {
-  padding-top: 0;
-  padding-bottom: var(--space-3);
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
   border-top: 0;
   border-bottom: 1px solid var(--ink-hairline);
   color: var(--text-2);
   font-size: var(--font-size-label);
   font-weight: 500;
-  letter-spacing: var(--tracking-subtitle);
-  text-transform: uppercase;
+  background: #f6f2f8;
+  letter-spacing: 0;
+  text-transform: none;
   /* El encabezado nunca se parte: con el corte de palabra de las celdas, "Dirección IP" bajaría
      de línea a la mitad de la palabra. */
   white-space: nowrap;
@@ -145,6 +148,15 @@
 
 .table tbody td {
   color: var(--text-2);
+}
+
+.table tbody tr {
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.table tbody tr:hover,
+.table tbody tr:focus-within {
+  background: #faf4fe;
 }
 
 /* El nombre reemplaza el identificador crudo; el id queda solo en title= para depuración. */

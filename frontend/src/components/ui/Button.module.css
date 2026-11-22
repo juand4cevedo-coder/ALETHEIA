@@ -12,7 +12,7 @@
   min-height: var(--control-height);
   padding: var(--space-2) var(--space-6);
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   font: inherit;
   /* 16 px para que el navegador del celular no acerque la pantalla al tocar el control. */
   font-size: var(--font-size-control-touch);
