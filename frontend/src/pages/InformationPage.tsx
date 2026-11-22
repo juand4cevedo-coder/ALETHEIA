@@ -252,7 +252,11 @@ export function InformationPage() {
           <div className={styles.prose}>
             <h2>El símbolo de Aletheia</h2>
             <p>
-              El símbolo es un ojo dentro de un recuadro de esquinas redondeadas. El ojo expresa observación cuidadosa y búsqueda de claridad; el iris, el punto exacto en que se fija la huella de cada archivo. La versión violeta sirve sobre superficies claras y la blanca sobre superficies de marca.
+              El símbolo es un ojo dentro de un recuadro de esquinas
+              redondeadas. El ojo expresa observación cuidadosa y búsqueda de
+              claridad; el iris, el punto exacto en que se fija la huella de
+              cada archivo. La versión violeta sirve sobre superficies claras y
+              la blanca sobre superficies de marca.
             </p>
             <h2>Uso del nombre</h2>
             <p>
