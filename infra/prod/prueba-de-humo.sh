@@ -128,6 +128,20 @@ else
     falla "un POST sin el encabezado propio respondió $codigo"
 fi
 
+# 7. Contacto de seguridad publicado (RFC 9116).
+read -r codigo _ <<<"$(respuesta "https://$DOMINIO/.well-known/security.txt")"
+if [[ $codigo == 200 ]]; then ok "security.txt publicado"; else falla "security.txt respondió $codigo"; fi
+
+# 8. Las fotografías llevan caché de una semana; la aplicación no se guarda sin revalidar.
+medios="$(cabeceras "https://$DOMINIO/media/campaign/hero-real-1280.webp")"
+exigir "$medios" cache-control "max-age=604800" "fotografía"
+exigir "$portada" cache-control "no-cache" "página principal"
+
+# 9. Un cuerpo de 2 MiB hacia una ruta de la API que no recibe archivos se corta en Caddy, sin
+# llegar a la aplicación (solo la subida de evidencias admite cuerpos grandes).
+read -r codigo _ <<<"$(head -c 2097152 /dev/zero | curl --silent --max-time 20 --output /dev/null     --write-out '%{http_code} %{redirect_url}' --request POST --header 'X-Aletheia-Request: 1'     --header 'Content-Type: application/json' --data-binary @- "https://$DOMINIO/api/v1/auth/login")"
+if [[ $codigo == 413 ]]; then ok "cuerpo excesivo rechazado (413)"; else falla "un cuerpo de 2 MiB respondió $codigo y no 413"; fi
+
 if ((fallas > 0)); then
     echo "La prueba de humo encontró $fallas fallas."
     exit 1

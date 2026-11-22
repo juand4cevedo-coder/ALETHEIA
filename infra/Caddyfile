@@ -39,8 +39,36 @@
 
 	# La API conserva su prefijo /api/v1. Caddy reemplaza los X-Forwarded-* que mande el
 	# visitante, así que la API recibe la IP real y el esquema https.
+	# Solo la subida de evidencias recibe cuerpos grandes: el tope es el del plan más alto (2 GiB);
+	# la API aplica además el límite exacto del plan de cada cuenta mientras recibe el archivo.
+	# Cualquier otra ruta de la API trabaja con JSON o formularios pequeños: 1 MiB basta y corta
+	# antes de llegar a la aplicación un cuerpo enorme enviado a propósito.
+	@subida {
+		method POST
+		path_regexp ^/api/v1/cases/[0-9a-f-]+/evidences$
+	}
+	handle @subida {
+		request_body {
+			max_size 2200MB
+		}
+		reverse_proxy api:8000 {
+			transport http {
+				read_timeout 15m
+				write_timeout 15m
+			}
+		}
+	}
+
 	handle /api/* {
-		reverse_proxy api:8000
+		request_body {
+			max_size 1MB
+		}
+		reverse_proxy api:8000 {
+			transport http {
+				dial_timeout 5s
+				response_header_timeout 60s
+			}
+		}
 	}
 
 	# Archivos de Vite: llevan una huella en el nombre, así que nunca cambian y se guardan un año.
@@ -52,6 +80,19 @@
 			Cache-Control "public, max-age=31536000, immutable"
 			defer
 		}
+		file_server
+	}
+
+	# Imágenes, íconos y manifiesto: nombres fijos, así que no llevan huella. Una semana en el
+	# navegador y un día más de gracia mientras se revalidan en segundo plano.
+	handle /media/* {
+		root * /srv
+		header Cache-Control "public, max-age=604800, stale-while-revalidate=86400"
+		file_server
+	}
+	handle /brand/* {
+		root * /srv
+		header Cache-Control "public, max-age=604800, stale-while-revalidate=86400"
 		file_server
 	}
 
