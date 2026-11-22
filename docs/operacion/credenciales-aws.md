@@ -36,7 +36,7 @@ Combina las políticas administradas `ReadOnlyAccess` y `SecurityAudit` con la n
 | Qué | Cada cuánto | Cómo |
 | --- | --- | --- |
 | Llave del usuario de despliegue | 90 días y ante cualquier sospecha | Procedimiento de rotación del runbook: crear la nueva, reemplazar los secretos del entorno `production` en GitHub, desactivar la vieja y borrarla tras un despliegue correcto |
-| Revisión de credenciales | Antes de cada versión | `infra/prod/auditar-aws.sh` comprueba que la raíz no tenga llaves y tenga MFA, que cada persona con consola tenga MFA y que ninguna llave activa pase de 90 días |
+| Revisión de credenciales | Antes de cada versión | `infra/prod/auditar-aws.sh` comprueba que la raíz no tenga llaves (y avisa si no tiene MFA), que cada persona con consola tenga MFA y que ninguna llave activa pase de 90 días |
 | Claves de PostgreSQL y de firma | Ante cualquier sospecha | Se generan de nuevo en Parameter Store y se reinicia el servicio; los enlaces firmados anteriores dejan de valer |
 | Actividad | Ante una alerta | El historial de CloudTrail guarda 90 días de eventos de gestión |
 

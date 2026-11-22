@@ -104,7 +104,11 @@ presupuesto="$(aws --output text budgets describe-budgets --account-id "$cuenta"
 resumen="$(aws_ iam get-account-summary --query 'SummaryMap.[AccountAccessKeysPresent,AccountMFAEnabled]')"
 read -r llaves_raiz mfa_raiz <<<"$resumen"
 [[ ${llaves_raiz:-1} == 0 ]] && ok "la cuenta raíz no tiene llaves de acceso" || falla "la cuenta raíz tiene llaves de acceso"
-[[ ${mfa_raiz:-0} == 1 ]] && ok "la cuenta raíz tiene MFA" || falla "la cuenta raíz no tiene MFA"
+# En las cuentas de tipo proyecto, con un dueño que entra por su propio inicio de sesión, la raíz
+# puede no tener credenciales y su MFA no se puede activar. Por eso es un aviso y no una falla:
+# lo que hay que confirmar es el MFA del inicio de sesión del dueño (menú de la cuenta, Profile).
+[[ ${mfa_raiz:-0} == 1 ]] && ok "la cuenta raíz tiene MFA" \
+    || aviso "la raíz no tiene MFA: si la cuenta es de tipo proyecto, confirme el MFA del dueño en Profile"
 
 aws iam generate-credential-report >/dev/null 2>&1
 sleep 3
