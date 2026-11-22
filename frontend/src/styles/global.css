@@ -100,6 +100,20 @@ a {
   }
 }
 
+/* Entrada de página: cada cambio de ruta monta un <main> nuevo que aparece con un fundido y un
+   desplazamiento corto. Una sola vez por visita a la ruta; con movimiento reducido solo queda
+   el cambio de opacidad (ver más abajo). */
+.page-enter {
+  animation: page-in var(--motion-page) var(--ease-out) both;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
 /* Oculta un elemento a la vista y lo deja disponible para lectores de pantalla. */
 .visually-hidden {
   position: absolute;

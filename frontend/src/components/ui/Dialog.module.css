@@ -1,27 +1,56 @@
-/* Diálogo modal (CMP-UI-005): un panel en --paper-raised que flota sobre la página velada. Es uno
-   de los dos casos que llevan la sombra del sistema; el otro son los menús. */
+/* Diálogo modal (CMP-UI-005): un panel en --paper-raised que flota sobre la página velada.
+   En pantallas anchas aparece con un fundido, un desplazamiento corto hacia arriba y un
+   crecimiento suave; en el celular sube desde el borde inferior como una hoja. Las dos
+   direcciones también se animan al cerrar: el navegador mantiene el diálogo en pantalla
+   mientras dura la transición (allow-discrete sobre display y overlay). */
 .dialog {
   width: min(var(--panel-width), calc(100vw - 2 * var(--space-4)));
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 24px;
+  border-radius: 28px;
   background: var(--paper-raised);
   box-shadow: var(--shadow-float);
   color: var(--text);
+  opacity: 0;
+  transform: translateY(18px) scale(0.97);
+  transition:
+    opacity 200ms var(--ease-standard),
+    transform 340ms var(--ease-out),
+    overlay 340ms allow-discrete,
+    display 340ms allow-discrete;
 }
 
-/* Responde a la acción de abrirlo: aparece sin desplazarse. */
 .dialog[open] {
-  animation: appear var(--motion-base) var(--ease-standard);
+  opacity: 1;
+  transform: none;
+}
+
+@starting-style {
+  .dialog[open] {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
 }
 
 .dialog::backdrop {
-  background: color-mix(in srgb, var(--ink-900) 60%, transparent);
+  background: rgb(26 0 41 / 0%);
+  backdrop-filter: blur(0);
+  transition:
+    background-color 300ms var(--ease-standard),
+    backdrop-filter 300ms var(--ease-standard),
+    overlay 300ms allow-discrete,
+    display 300ms allow-discrete;
 }
 
-@keyframes appear {
-  from {
-    opacity: 0;
+.dialog[open]::backdrop {
+  background: rgb(26 0 41 / 54%);
+  backdrop-filter: blur(6px);
+}
+
+@starting-style {
+  .dialog[open]::backdrop {
+    background: rgb(26 0 41 / 0%);
+    backdrop-filter: blur(0);
   }
 }
 
@@ -40,8 +69,8 @@
   width: var(--control-height);
   height: var(--control-height);
   margin-bottom: var(--space-1);
-  border-radius: 14px;
-  background: var(--violet-700);
+  border-radius: 16px;
+  background: var(--ink-900);
   color: white;
 }
 
@@ -61,22 +90,52 @@
   margin-top: var(--space-3);
 }
 
-/* En el celular el diálogo ocupa la pantalla y los botones van a todo el ancho. */
+/* En el celular el diálogo es una hoja anclada abajo: ocupa todo el ancho, deja ver la
+   página velada por encima, lleva el asa de arrastre de las hojas del sistema y respeta la
+   zona segura del borde inferior. Los botones van a todo el ancho. */
 @media (max-width: 560px) {
   .dialog {
     width: 100%;
     max-width: 100%;
-    height: 100%;
-    max-height: 100%;
-    margin: 0;
+    height: fit-content;
+    max-height: 92dvh;
+    margin: auto 0 0;
     border: 0;
-    border-radius: 0;
+    border-radius: 28px 28px 0 0;
+    transform: translateY(100%);
+    transition:
+      opacity 160ms var(--ease-standard),
+      transform 380ms var(--ease-out),
+      overlay 380ms allow-discrete,
+      display 380ms allow-discrete;
+  }
+
+  .dialog[open] {
+    transform: none;
+  }
+
+  @starting-style {
+    .dialog[open] {
+      opacity: 1;
+      transform: translateY(100%);
+    }
   }
 
   .body {
-    align-content: center;
-    min-height: 100%;
-    padding: var(--space-8) var(--space-4);
+    align-content: start;
+    padding: var(--space-6) var(--space-4)
+      calc(var(--space-6) + env(safe-area-inset-bottom));
+  }
+
+  .body::before {
+    content: "";
+    justify-self: center;
+    width: 40px;
+    height: 4px;
+    margin-top: calc(-1 * var(--space-3));
+    margin-bottom: var(--space-2);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text) 18%, transparent);
   }
 
   .actions {
@@ -89,7 +148,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dialog[open] {
-    animation: none;
+  .dialog,
+  .dialog::backdrop {
+    transition-duration: 1ms;
+  }
+
+  .dialog {
+    transform: none;
   }
 }

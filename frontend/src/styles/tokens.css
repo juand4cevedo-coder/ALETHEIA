@@ -1,30 +1,32 @@
-/* Papel marfil y tinta profunda, con latón como acento. El sistema es de un solo modo: claro.
-   Los valores salen de la sección 7 de la especificación del rediseño del 19 de noviembre; un
-   cambio aquí es un cambio de identidad y debe pasar antes por esa especificación. */
+/* Identidad vigente: violeta Aletheia sobre blanco, con texto casi negro. Es la única paleta del
+   producto: el sitio público, el acceso y el espacio de trabajo la heredan de aquí y solo
+   ajustan fondos y radios. Los nombres vienen de la identidad anterior y se conservan para no
+   tocar cientos de reglas: ink es la marca (violeta), brass es su acento y paper son las
+   superficies. Un cambio de valor es un cambio de identidad: se documenta en el ADR-049. */
 :root {
   /* Un solo tipo de letra en todo el producto: la dirección visual vigente no usa serif. */
   --font-editorial: var(--font-sans);
 
   /* Papel: la escala que sube y baja. La profundidad se lee por el tono, no por el borde. */
-  --paper: #f4f1ea;
+  --paper: #ffffff;
   --paper-raised: #ffffff;
-  --paper-sunken: #e9e4d8;
+  --paper-sunken: #f4f4f4;
 
-  /* Tinta: secciones oscuras a sangre completa y el botón principal. */
-  --ink-900: #071423;
-  --ink-700: #12304f;
-  --ink-500: #1e4a74;
+  /* Marca: botón principal, enlaces y superficies de marca a sangre completa. */
+  --ink-900: #820ad1;
+  --ink-700: #5f007d;
+  --ink-500: #7209b7;
 
-  /* Latón: acento, nunca fondo. Filetes, subrayados, anillo de foco y estado activo. */
-  --brass-600: #7e5f36;
-  --brass-400: #c3a572;
+  /* Acento: filetes, subrayados, anillo de foco y estado activo. */
+  --brass-600: #820ad1;
+  --brass-400: #d9a6f7;
 
-  --text: #111820;
-  --text-2: #49545f;
-  --text-3: #5c656f;
+  --text: #111111;
+  --text-2: #4b4b4b;
+  --text-3: #676767;
 
-  --on-ink: #f4f1ea;
-  --on-ink-2: #a9b6c4;
+  --on-ink: #ffffff;
+  --on-ink-2: #f1dcff;
 
   /* Los estados siempre van acompañados de texto: el color no es su único portador. */
   --ok: #1f6b4a;
@@ -75,16 +77,17 @@
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
   --space-12: 48px;
   --space-16: 64px;
   --space-24: 96px;
 
-  /* Radios bajos: lo muy redondeado se lee como herramienta interna gratuita. */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 14px;
+  /* Radios del espacio de trabajo; el sitio público y el acceso los redondean más. */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
   --radius-pill: 999px;
 
   --control-height: 52px;
@@ -94,23 +97,22 @@
   --dot-size: 6px;
 
   /* Contorno de todo lo que se puede tocar: 3 a 1 como mínimo contra las tres superficies de papel. */
-  --line-control: #6e737a;
+  --line-control: #747474;
 
   --ring-focus:
     0 0 0 1px var(--brass-600),
     0 0 0 4px color-mix(in srgb, var(--brass-600) 22%, transparent);
 
-  /* Sombras de dos capas con tinte de tinta: una de contacto, corta y definida, y otra de
-     ambiente, larga y suave. El negro puro ensucia el marfil. */
-  --shadow-card: 0 1px 2px rgb(7 20 35 / 8%), 0 8px 24px rgb(7 20 35 / 8%);
-  --shadow-float: 0 2px 4px rgb(7 20 35 / 10%), 0 20px 48px rgb(7 20 35 / 16%);
+  /* Sombras de dos capas con tinte violeta: una de contacto, corta y definida, y otra de
+     ambiente, larga y suave. El negro puro ensucia las superficies claras. */
+  --shadow-card: 0 1px 2px rgb(35 0 48 / 5%), 0 14px 36px rgb(35 0 48 / 8%);
+  --shadow-float: 0 4px 12px rgb(35 0 48 / 10%), 0 28px 70px rgb(35 0 48 / 16%);
   /* Filete metálico de un píxel en el borde superior de las tarjetas elevadas. */
-  --brass-hairline: inset 0 1px 0
-    color-mix(in srgb, var(--brass-400) 40%, transparent);
+  --brass-hairline: inset 0 0 0 1px rgb(130 10 209 / 7%);
 
   /* Filete de tinta: el separador decorativo entre filas y secciones, hermano del filete
      metálico. Nunca como contorno de algo que se toca; para eso está --line-control. */
-  --ink-hairline: rgb(7 20 35 / 10%);
+  --ink-hairline: rgb(17 17 17 / 12%);
 
   --motion-fast: 120ms;
   /* Estados de control: color y borde. */

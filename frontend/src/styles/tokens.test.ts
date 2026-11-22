@@ -7,22 +7,22 @@ import { describe, expect, it } from "vitest";
 // Se lee del disco: en las pruebas, Vite entrega vacío todo CSS importado, incluso con ?raw.
 const tokensCss = readFileSync(join(import.meta.dirname, "tokens.css"), "utf8");
 
-// Colores semánticos de la identidad (especificación del rediseño del 19 de noviembre, sección
-// 7.1). Un cambio de valor aquí es un cambio de identidad y debe pasar antes por la especificación.
+// Colores semánticos de la identidad vigente (ADR-049). Un cambio de valor aquí es un cambio de
+// identidad y debe pasar antes por ese registro.
 const SEMANTIC_COLORS: Record<string, string> = {
-  "--paper": "#F4F1EA",
+  "--paper": "#FFFFFF",
   "--paper-raised": "#FFFFFF",
-  "--paper-sunken": "#E9E4D8",
-  "--ink-900": "#071423",
-  "--ink-700": "#12304F",
-  "--ink-500": "#1E4A74",
-  "--brass-600": "#7E5F36",
-  "--brass-400": "#C3A572",
-  "--text": "#111820",
-  "--text-2": "#49545F",
-  "--text-3": "#5C656F",
-  "--on-ink": "#F4F1EA",
-  "--on-ink-2": "#A9B6C4",
+  "--paper-sunken": "#F4F4F4",
+  "--ink-900": "#820AD1",
+  "--ink-700": "#5F007D",
+  "--ink-500": "#7209B7",
+  "--brass-600": "#820AD1",
+  "--brass-400": "#D9A6F7",
+  "--text": "#111111",
+  "--text-2": "#4B4B4B",
+  "--text-3": "#676767",
+  "--on-ink": "#FFFFFF",
+  "--on-ink-2": "#F1DCFF",
   "--ok": "#1F6B4A",
   "--warn": "#8A5A18",
   "--err": "#9B2226",
@@ -91,7 +91,8 @@ describe("legibilidad de la identidad", () => {
     for (const surface of ["--ink-900", "--ink-700"]) {
       expect(contrast("--on-ink", surface)).toBeGreaterThanOrEqual(4.5);
       expect(contrast("--on-ink-2", surface)).toBeGreaterThanOrEqual(4.5);
-      expect(contrast("--brass-400", surface)).toBeGreaterThanOrEqual(4.5);
+      // El acento claro es decorativo (filetes y marcas sobre la marca): 3 a 1 basta.
+      expect(contrast("--brass-400", surface)).toBeGreaterThanOrEqual(3);
     }
     expect(contrast("--paper", "--ink-900")).toBeGreaterThanOrEqual(4.5);
   });
@@ -165,5 +166,32 @@ describe("tokens retirados", () => {
         RETIRED_TOKENS.test(readFileSync(path, "utf8")),
     );
     expect(offenders.map((path) => relative(SRC, path))).toEqual([]);
+  });
+});
+
+describe("variables CSS", () => {
+  it("todo var(--nombre) sin valor de respaldo tiene una definición", () => {
+    // Una variable sin definir deja la propiedad en su valor inicial sin avisar: un fondo
+    // transparente con texto blanco, un margen en cero. Una definición puede estar en un
+    // archivo de estilos, en un style de React o en un setProperty.
+    const files = sourceFiles(SRC).filter(
+      (path) => !path.includes("generated"),
+    );
+    const defined = new Set<string>();
+    const used = new Map<string, string>();
+    for (const path of files) {
+      const text = readFileSync(path, "utf8");
+      for (const match of text.matchAll(/(--[a-z0-9-]+)\s*:/gi)) {
+        defined.add(match[1]!);
+      }
+      for (const match of text.matchAll(/["'`](--[a-z0-9-]+)["'`]/gi)) {
+        defined.add(match[1]!);
+      }
+      for (const match of text.matchAll(/var\((--[a-z0-9-]+)(\s*,)?/gi)) {
+        if (!match[2]) used.set(match[1]!, relative(SRC, path));
+      }
+    }
+    const missing = [...used].filter(([name]) => !defined.has(name));
+    expect(missing).toEqual([]);
   });
 });

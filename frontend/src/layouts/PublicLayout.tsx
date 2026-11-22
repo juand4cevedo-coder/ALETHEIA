@@ -195,7 +195,12 @@ export function PublicLayout() {
           </nav>
         )}
       </dialog>
-      <main id="contenido" className={styles.main} tabIndex={-1}>
+      <main
+        key={location.pathname}
+        id="contenido"
+        className={`${styles.main} page-enter`}
+        tabIndex={-1}
+      >
         <Outlet />
       </main>
       <footer className={styles.footer}>

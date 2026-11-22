@@ -3,26 +3,7 @@
    celular de 360 px y todo lo demás se agrega con min-width. */
 .shell {
   --paper: #f7f7f7;
-  --paper-raised: #ffffff;
   --paper-sunken: #eeeaf2;
-  --ink-900: #820ad1;
-  --ink-700: #5f007d;
-  --ink-500: #7209b7;
-  --brass-600: #820ad1;
-  --brass-400: #c786f1;
-  --text: #111111;
-  --text-2: #4b4b4b;
-  --text-3: #676767;
-  --on-ink: #ffffff;
-  --on-ink-2: #f1dcff;
-  --ink-hairline: rgb(17 17 17 / 12%);
-  --line-control: #747474;
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --shadow-card: 0 1px 2px rgb(35 0 48 / 5%), 0 14px 36px rgb(35 0 48 / 8%);
-  --shadow-float: 0 4px 12px rgb(35 0 48 / 10%), 0 28px 70px rgb(35 0 48 / 16%);
-  --brass-hairline: inset 0 0 0 1px rgb(130 10 209 / 7%);
   --sidebar-width: 264px;
   --content-width: 1320px;
   display: flex;

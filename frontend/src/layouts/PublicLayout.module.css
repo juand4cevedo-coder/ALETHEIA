@@ -1,22 +1,11 @@
 .shell {
   /* Sistema público de alto contraste y ritmo editorial. Estos tokens quedan limitados
      al sitio de mercadeo y no cambian la aplicación autenticada. */
-  --paper: #ffffff;
-  --paper-raised: #ffffff;
-  --paper-sunken: #f4f4f4;
-  --ink-900: #820ad1;
-  --ink-700: #5f007d;
   --ink-500: #820ad1;
-  --brass-600: #820ad1;
   --brass-400: #b15bff;
-  --text: #111111;
-  --text-2: #4b4b4b;
   --text-3: #666666;
-  --on-ink: #ffffff;
-  --on-ink-2: #f1dcff;
   --line-control: #767676;
   --ink-hairline: rgb(17 17 17 / 14%);
-  --font-editorial: var(--font-sans);
   --font-size-display: clamp(3rem, 7vw, 6.5rem);
   --line-height-display: 0.98;
   --tracking-display: -0.055em;
@@ -26,7 +15,6 @@
   --radius-sm: 999px;
   --radius-md: 20px;
   --radius-lg: 28px;
-  --header-height: 64px;
   --content-width: 1180px;
   display: flex;
   flex-direction: column;

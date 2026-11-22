@@ -48,7 +48,7 @@ describe("contrato responsive", () => {
       /@media \(max-width: 700px\)[\s\S]*\.filters,[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\)/,
     );
     expect(dialog).toMatch(
-      /@media \(max-width: 560px\)[\s\S]*\.dialog[\s\S]*width:\s*100%[\s\S]*height:\s*100%/,
+      /@media \(max-width: 560px\)[\s\S]*\.dialog[\s\S]*width:\s*100%[\s\S]*max-height:\s*92dvh[\s\S]*translateY\(100%\)/,
     );
   });
 });

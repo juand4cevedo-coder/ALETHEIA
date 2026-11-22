@@ -95,8 +95,9 @@ export function AppShell() {
       <div className={styles.body}>
         {signedIn && <WorkspaceNav me={me.data} />}
         <main
+          key={location.pathname}
           id="contenido"
-          className={styles.main}
+          className={`${styles.main} page-enter`}
           tabIndex={-1}
           aria-busy={me.isPending}
         >

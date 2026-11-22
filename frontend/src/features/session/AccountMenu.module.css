@@ -36,7 +36,7 @@
   height: calc(var(--touch-target) - var(--space-3));
   border: 1px solid var(--brass-400);
   border-radius: 50%;
-  background: var(--violet-700);
+  background: var(--ink-900);
   color: white;
   font-size: var(--font-size-label);
   font-weight: 600;

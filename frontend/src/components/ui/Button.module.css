@@ -40,6 +40,11 @@
   flex: none;
 }
 
+/* Respuesta al tacto: el botón cede un poco al presionarlo, como un botón físico. */
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
 /* La variante compacta conserva el mínimo táctil de 44 px. */
 .sm {
   min-height: var(--control-height-sm);
