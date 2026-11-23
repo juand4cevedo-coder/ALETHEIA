@@ -246,6 +246,34 @@ describe("Página de inicio (HU-001)", () => {
       ),
     ).toBeInTheDocument();
   });
+
+  it("muestra el detalle de un grupo del menú móvil, con su ícono, y permite volver", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    const user = userEvent.setup();
+    await renderRoute("/");
+
+    await user.click(screen.getByRole("button", { name: "Menú" }));
+    const dialog = screen.getByRole("dialog", { name: "Menú" });
+    await user.click(within(dialog).getByRole("button", { name: /Producto/ }));
+
+    // El detalle se descarga aparte: en jsdom puede tardar más del 1 s predeterminado.
+    const detail = await within(dialog).findByRole(
+      "heading",
+      { level: 2, name: "Producto" },
+      { timeout: 5000 },
+    );
+    expect(detail.closest("a")!.querySelector("svg")).not.toBeNull();
+    expect(
+      within(dialog).getByRole("navigation", { name: "Opciones de Producto" }),
+    ).toBeInTheDocument();
+
+    await user.click(
+      within(dialog).getByRole("button", { name: "Volver al menú principal" }),
+    );
+    expect(
+      within(dialog).getByRole("navigation", { name: "Navegación móvil" }),
+    ).toBeInTheDocument();
+  });
 });
 
 describe("Encabezado con sesión abierta (Diseño UX/UI, 4.2)", () => {

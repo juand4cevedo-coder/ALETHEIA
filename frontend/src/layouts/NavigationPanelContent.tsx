@@ -20,6 +20,7 @@ import {
 import type { IconComponent } from "../components/ui/icons.tsx";
 import { IconTile } from "../components/ui/IconTile.tsx";
 import type { NavigationGroup } from "../config/navigation.ts";
+import { GROUP_ICONS } from "../config/navigationIcons.ts";
 import { ROUTES } from "../config/routes.ts";
 import styles from "./PublicNavigation.module.css";
 
@@ -59,7 +60,7 @@ export default function NavigationPanelContent({
   return (
     <div className={styles.panelContent} key={group.title}>
       <Link to={group.feature.to} className={styles.feature} onClick={close}>
-        <IconTile icon={group.feature.icon} tone="solid" size="lg" />
+        <IconTile icon={GROUP_ICONS[group.title]!} tone="solid" size="lg" />
         <span className={styles.featureTitle}>{group.feature.title}</span>
         <small>{group.feature.text}</small>
         {FEATURE_SHOTS[group.title] && (
