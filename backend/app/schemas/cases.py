@@ -35,6 +35,10 @@ class EvidenceUploadOut(BaseModel):
     tsa_status: Literal["pending"]
 
 
+class EvidenceStampRetryOut(BaseModel):
+    detail: str
+
+
 class EvidenceSummaryOut(BaseModel):
     """Metadatos visibles para quienes pertenecen al caso; sin contenido del archivo."""
 
@@ -175,10 +179,22 @@ class CustodyEventOut(BaseModel):
     event_hash: str = Field(description="Huella SHA-256 del evento, en hexadecimal.")
 
 
+class CustodyEventDetailOut(CustodyEventOut):
+    """Un evento de la cadena con lo necesario para cotejarlo: la huella del anterior, la
+    evidencia a la que se refiere y los datos que el evento registró (solo los de una lista
+    cerrada, nunca contenido)."""
+
+    prev_hash: str = Field(description="Huella SHA-256 del evento anterior, en hexadecimal.")
+    evidence_id: uuid.UUID | None = Field(description="La evidencia del evento, si tiene una.")
+    details: dict[str, str | int | None] = Field(
+        description="Datos del evento: huella, tamaño, fechas, motivo."
+    )
+
+
 class CustodyPage(BaseModel):
     """Una página de eventos del caso, del más reciente al más antiguo."""
 
-    items: list[CustodyEventOut]
+    items: list[CustodyEventDetailOut]
     next_cursor: int | None = Field(description="Secuencia anterior a la última mostrada.")
 
 
@@ -207,6 +223,9 @@ class EvidenceDetailOut(EvidenceSummaryOut):
     """Metadatos y eventos de una evidencia asignada, sin contenido ni token del sello."""
 
     tsa_time: datetime.datetime | None
+    tsa_authority: str | None = Field(
+        default=None, description="Autoridad que firmó el sello, si ya está sellada."
+    )
     events: list[CustodyEventOut]
     next_event_seq: int | None
 

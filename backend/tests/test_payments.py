@@ -9,9 +9,10 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.adapters import wompi
+from app.core.config import Settings
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, PaymentEvent, Subscription
-from app.services import checkout, payments
+from app.models import AuditLog, Job, PaymentEvent, Subscription
+from app.services import checkout, payment_emails, payments
 from tests.organizations import Oficina, crear_oficina
 
 _SECRETO = "test_events_x"
@@ -333,3 +334,51 @@ def test_un_estado_pendiente_no_genera_evento_ni_consulta_a_wompi(
     payments.procesar_evento(db, _webhook("tx-1", "PENDING"), _credenciales())
 
     assert db.scalar(select(func.count()).select_from(PaymentEvent)) == 0
+
+
+def test_un_pago_aprobado_manda_el_comprobante_y_programa_el_aviso_de_renovacion(
+    db: Session, monkeypatch: pytest.MonkeyPatch, settings: Settings
+) -> None:
+    office = crear_oficina(db)
+    subscription = _en_prueba(db, office)
+    reference = checkout.referencia_nueva(office.organization_id, "essential", "monthly")
+    transaccion = wompi.Transaccion(
+        id="tx-9",
+        status="APPROVED",
+        reference=reference,
+        amount_in_cents=_MENSUAL_ESENCIAL_CENTAVOS,
+    )
+    monkeypatch.setattr(wompi, "consultar_transaccion", _consultar_falsa(transaccion))
+
+    payments.procesar_evento(db, _webhook("tx-9", "APPROVED"), _credenciales())
+
+    queued = {
+        job.payload["template"]: job
+        for job in db.scalars(select(Job).where(Job.kind == "email_send"))
+        if str(job.payload.get("template", "")).startswith(("payment_", "subscription_"))
+    }
+    assert set(queued) == {
+        payment_emails.APPROVED_TEMPLATE,
+        payment_emails.REMINDER_TEMPLATE,
+    }
+    assert queued[payment_emails.APPROVED_TEMPLATE].payload["user_id"] == str(office.owner.id)
+    # El aviso sale siete días antes de que venza el plan, no ahora.
+    reminder = queued[payment_emails.REMINDER_TEMPLATE]
+    assert subscription.current_period_end is not None
+    assert reminder.run_after > datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=20)
+
+    receipt = payment_emails.receipt_email(
+        db, dict(queued[payment_emails.APPROVED_TEMPLATE].payload), settings
+    )
+    assert receipt is not None
+    assert receipt.to == office.owner.email
+    assert "Recibimos el pago" in receipt.subject
+    assert "$" in receipt.text
+    notice = payment_emails.reminder_email(db, dict(reminder.payload), settings)
+    assert notice is not None
+    assert "vence" in notice.subject
+
+    # Si el plan se renueva antes del aviso, ya no hay nada que recordar.
+    subscription.current_period_end = subscription.current_period_end + datetime.timedelta(days=30)
+    db.flush()
+    assert payment_emails.reminder_email(db, dict(reminder.payload), settings) is None

@@ -1067,6 +1067,66 @@ export type CustodyAnchorOut = {
 };
 
 /**
+ * CustodyEventDetailOut
+ *
+ * Un evento de la cadena con lo necesario para cotejarlo: la huella del anterior, la
+ * evidencia a la que se refiere y los datos que el evento registró (solo los de una lista
+ * cerrada, nunca contenido).
+ */
+export type CustodyEventDetailOut = {
+  /**
+   * Seq
+   *
+   * Posición del evento en la cadena, desde 1.
+   */
+  seq: number;
+  /**
+   * Action
+   *
+   * Qué ocurrió, por ejemplo case_created.
+   */
+  action: string;
+  /**
+   * Actor Name
+   *
+   * Quién lo hizo, o null si fue el sistema.
+   */
+  actor_name: string | null;
+  /**
+   * Occurred At
+   *
+   * Cuándo ocurrió.
+   */
+  occurred_at: string;
+  /**
+   * Event Hash
+   *
+   * Huella SHA-256 del evento, en hexadecimal.
+   */
+  event_hash: string;
+  /**
+   * Prev Hash
+   *
+   * Huella SHA-256 del evento anterior, en hexadecimal.
+   */
+  prev_hash: string;
+  /**
+   * Evidence Id
+   *
+   * La evidencia del evento, si tiene una.
+   */
+  evidence_id: string | null;
+  /**
+   * Details
+   *
+   * Datos del evento: huella, tamaño, fechas, motivo.
+   */
+  details: {
+    [key: string]: string | number | null;
+  };
+};
+
+/**
  * CustodyEventOut
  *
  * Un evento de la cadena de custodia del caso.
@@ -1113,7 +1173,7 @@ export type CustodyPage = {
   /**
    * Items
    */
-  items: Array<CustodyEventOut>;
+  items: Array<CustodyEventDetailOut>;
   /**
    * Next Cursor
    *
@@ -1203,6 +1263,12 @@ export type EvidenceDetailOut = {
    */
   tsa_time: string | null;
   /**
+   * Tsa Authority
+   *
+   * Autoridad que firmó el sello, si ya está sellada.
+   */
+  tsa_authority?: string | null;
+  /**
    * Events
    */
   events: Array<CustodyEventOut>;
@@ -1224,6 +1290,16 @@ export type EvidencePage = {
    * Next Cursor
    */
   next_cursor: string | null;
+};
+
+/**
+ * EvidenceStampRetryOut
+ */
+export type EvidenceStampRetryOut = {
+  /**
+   * Detail
+   */
+  detail: string;
 };
 
 /**
@@ -5174,6 +5250,102 @@ export type ReadEvidenceResponses = {
 
 export type ReadEvidenceResponse =
   ReadEvidenceResponses[keyof ReadEvidenceResponses];
+
+export type DownloadEvidenceTimestampData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Evidence Id
+     */
+    evidence_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/timestamp";
+};
+
+export type DownloadEvidenceTimestampErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * La evidencia no existe, no es del caso o no tiene sello todavía.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type DownloadEvidenceTimestampError =
+  DownloadEvidenceTimestampErrors[keyof DownloadEvidenceTimestampErrors];
+
+export type DownloadEvidenceTimestampResponses = {
+  /**
+   * Respuesta RFC 3161 de la autoridad de sellado (.tsr).
+   */
+  200: Blob | File;
+};
+
+export type DownloadEvidenceTimestampResponse =
+  DownloadEvidenceTimestampResponses[keyof DownloadEvidenceTimestampResponses];
+
+export type RetryEvidenceTimestampData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Evidence Id
+     */
+    evidence_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/timestamp/retry";
+};
+
+export type RetryEvidenceTimestampErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * El rol no puede subir evidencia.
+   */
+  403: Problem;
+  /**
+   * La evidencia no existe o no es del caso.
+   */
+  404: Problem;
+  /**
+   * El sello no falló: está pendiente o ya se obtuvo.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RetryEvidenceTimestampError =
+  RetryEvidenceTimestampErrors[keyof RetryEvidenceTimestampErrors];
+
+export type RetryEvidenceTimestampResponses = {
+  /**
+   * Successful Response
+   */
+  202: EvidenceStampRetryOut;
+};
+
+export type RetryEvidenceTimestampResponse =
+  RetryEvidenceTimestampResponses[keyof RetryEvidenceTimestampResponses];
 
 export type ListCasesData = {
   body?: never;

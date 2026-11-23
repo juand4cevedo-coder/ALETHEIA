@@ -51,11 +51,13 @@ from app.schemas.cases import (
     CaseSummaryOut,
     CaseTotalsOut,
     CustodyAnchorOut,
+    CustodyEventDetailOut,
     CustodyEventOut,
     CustodyPage,
     CustodyVerificationOut,
     EvidenceDetailOut,
     EvidencePage,
+    EvidenceStampRetryOut,
     EvidenceSummaryOut,
     EvidenceUploadOut,
     LastEventOut,
@@ -64,8 +66,10 @@ from app.services import case_deletion as deletion_service
 from app.services import cases as cases_service
 from app.services import custody_verification, evidence_queries, rate_limit
 from app.services import evidence_download as evidence_download_service
+from app.services import evidence_timestamp as timestamp_service
 from app.services import evidence_upload as evidence_service
 from app.services.evidence_stream import FileTooLarge, InvalidUpload
+from app.services.evidence_timestamp import timestamp_authority
 from app.services.members import OrganizationNotActiveError
 from app.services.organization_emails import colombian_datetime
 from app.services.sessions import Principal
@@ -173,12 +177,15 @@ def list_custody_events(
         raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
     return CustodyPage(
         items=[
-            CustodyEventOut(
+            CustodyEventDetailOut(
                 seq=event.seq,
                 action=event.action,
                 actor_name=event.actor_name,
                 occurred_at=event.occurred_at,
                 event_hash=event.event_hash.hex(),
+                prev_hash=event.prev_hash.hex(),
+                evidence_id=event.evidence_id,
+                details=event.details,
             )
             for event in events
         ],
@@ -300,6 +307,7 @@ def read_evidence(
             "size_bytes": evidence.size_bytes,
             "tsa_status": evidence.tsa_status,
             "tsa_time": evidence.tsa_time,
+            "tsa_authority": timestamp_authority(evidence.tsa_token),
             "uploaded_at": evidence.uploaded_at,
             "events": [
                 CustodyEventOut(
@@ -314,6 +322,86 @@ def read_evidence(
             "next_event_seq": next_event_seq,
         }
     )
+
+
+@router.get(
+    "/{case_id}/evidences/{evidence_id}/timestamp",
+    response_class=Response,
+    summary="Descargar el sello de tiempo para verificarlo fuera de ALETHEIA",
+    responses=_UNAUTHORIZED
+    | {
+        200: {
+            "description": "Respuesta RFC 3161 de la autoridad de sellado (.tsr).",
+            "content": {
+                "application/timestamp-reply": {"schema": {"type": "string", "format": "binary"}}
+            },
+        },
+        404: {"description": "La evidencia no existe, no es del caso o no tiene sello todavía."},
+    },
+)
+def download_evidence_timestamp(
+    case_id: uuid.UUID,
+    evidence_id: uuid.UUID,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> Response:
+    try:
+        stamp = timestamp_service.download(session, principal, case_id, evidence_id)
+    except cases_service.CaseNotFoundError, timestamp_service.StampNotReadyError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    return Response(
+        content=stamp.token,
+        media_type="application/timestamp-reply",
+        headers={
+            "Cache-Control": "no-store",
+            "Content-Disposition": (
+                f"attachment; filename*=UTF-8''{quote(stamp.filename, safe='')}.tsr"
+            ),
+            "X-Content-SHA256": stamp.sha256,
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
+
+@router.post(
+    "/{case_id}/evidences/{evidence_id}/timestamp/retry",
+    status_code=202,
+    summary="Pedir otra vez el sello de tiempo de una evidencia cuyo sello falló",
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "El rol no puede subir evidencia."},
+        404: {"description": "La evidencia no existe o no es del caso."},
+        409: {"description": "El sello no falló: está pendiente o ya se obtuvo."},
+    },
+)
+def retry_evidence_timestamp(
+    case_id: uuid.UUID,
+    evidence_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> EvidenceStampRetryOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        timestamp_service.retry(
+            session,
+            principal,
+            case_id,
+            evidence_id,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except cases_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    except timestamp_service.DownloadForbidden:
+        raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
+    except timestamp_service.NotRetryableError:
+        raise HTTPException(
+            409, detail="Solo se puede pedir de nuevo un sello que falló.", headers=_NO_STORE
+        ) from None
+    return EvidenceStampRetryOut(detail="Pedimos el sello otra vez. Llegará en unos minutos.")
 
 
 @download_router.get(

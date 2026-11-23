@@ -371,7 +371,7 @@ describe("Página del caso (HU-015)", () => {
     ).toBeInTheDocument();
   });
 
-  it("muestra el evento 1 con su huella abreviada y la hora de Colombia", async () => {
+  it("muestra el evento 1 con su huella completa y la hora de Colombia", async () => {
     serve(() => jsonResponse(DETAIL));
     await openCase();
 
@@ -395,12 +395,19 @@ describe("Página del caso (HU-015)", () => {
     );
     expect(time).toHaveAttribute("datetime", "2026-11-10T15:32:07Z");
     expect(time.parentElement).toHaveTextContent(/^Laura Gómez, /);
-    // Inicio y final de la huella, sin puntos suspensivos entre ellos.
-    const hash = within(event).getByText(/^9f2c 71d0 b8e4/);
-    expect(hash.textContent).toBe("9f2c 71d0 b8e4 a41e");
+    // La huella se ve completa, en bloques de 8, y se puede copiar.
+    const blocks = EVENT_HASH.toLowerCase()
+      .match(/.{1,8}/g)!
+      .join(" ");
+    const hash = within(event).getByText(blocks);
     expect(hash.closest("[translate='no']")).not.toBeNull();
-    // El lector de pantalla recibe la huella completa.
-    expect(within(event).getByText(EVENT_HASH)).toBeInTheDocument();
+    expect(
+      within(event).getByRole("button", { name: "Copiar huella" }),
+    ).toBeInTheDocument();
+    // El primer evento no tiene anterior: el detalle lo dice.
+    expect(
+      within(event).getByText("Ver el detalle del evento"),
+    ).toBeInTheDocument();
   });
 
   it("carga los eventos anteriores en orden sin permitir modificarlos", async () => {

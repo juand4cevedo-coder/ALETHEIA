@@ -91,20 +91,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.hash {
-  margin: var(--space-2) 0 0;
-  color: var(--text-3);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-label);
-  line-height: var(--line-height-label);
-}
-
-/* La huella va en mono y en el texto secundario: es un dato para cotejar, no un enlace. */
-.hash code {
-  color: var(--text-2);
-  font-family: inherit;
-}
-
 /* Sin verificación independiente todavía: un estado gris, nunca un sello verde por defecto. Va
    en una línea bajo la cadena, sin recuadro propio. */
 .verification {
@@ -131,15 +117,79 @@
   }
 }
 
-.hashLabel {
-  margin-right: var(--space-2);
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
 }
 
-/* Lo que se omite de la huella abreviada: un trazo punteado, no puntos suspensivos. */
-.elision {
-  display: inline-block;
-  width: var(--space-4);
-  margin-right: var(--space-1);
-  border-bottom: 1px dotted currentColor;
-  vertical-align: middle;
+.head .name {
+  margin: 0;
+}
+
+.seq {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-label);
+  font-variant-numeric: tabular-nums;
+}
+
+.event,
+.next {
+  padding-bottom: var(--space-6);
+}
+
+/* La huella completa, con su rótulo encima: es el dato que se coteja. */
+.hash {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-3) 0 0;
+}
+
+.hashLabel {
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+}
+
+/* El detalle va plegado: la lista se lee de corrido y se abre solo lo que se necesita. */
+.more {
+  margin-top: var(--space-3);
+}
+
+.more summary {
+  width: fit-content;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  cursor: pointer;
+}
+
+.more summary:hover {
+  color: var(--text);
+}
+
+.facts {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-3) 0 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--paper-sunken);
+}
+
+.facts > div {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.facts dt {
+  color: var(--text-2);
+  font-size: var(--font-size-label);
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-support);
 }

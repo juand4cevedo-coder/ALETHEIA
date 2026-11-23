@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.28.0"
+    "version": "0.29.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -2640,6 +2640,183 @@
           },
           "404": {
             "description": "El caso o la evidencia no existen para esta persona.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/evidences/{evidence_id}/timestamp": {
+      "get": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Descargar el sello de tiempo para verificarlo fuera de ALETHEIA",
+        "operationId": "download_evidence_timestamp",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "evidence_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Evidence Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Respuesta RFC 3161 de la autoridad de sellado (.tsr).",
+            "content": {
+              "application/timestamp-reply": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La evidencia no existe, no es del caso o no tiene sello todavía.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/evidences/{evidence_id}/timestamp/retry": {
+      "post": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Pedir otra vez el sello de tiempo de una evidencia cuyo sello falló",
+        "operationId": "retry_evidence_timestamp",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "evidence_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Evidence Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceStampRetryOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no puede subir evidencia.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La evidencia no existe o no es del caso.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El sello no falló: está pendiente o ya se obtuvo.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -9020,6 +9197,92 @@
         "title": "CustodyAnchorOut",
         "description": "Alcance de un anclaje externo, sin exponer su token criptográfico."
       },
+      "CustodyEventDetailOut": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq",
+            "description": "Posición del evento en la cadena, desde 1."
+          },
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "Qué ocurrió, por ejemplo case_created."
+          },
+          "actor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Name",
+            "description": "Quién lo hizo, o null si fue el sistema."
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At",
+            "description": "Cuándo ocurrió."
+          },
+          "event_hash": {
+            "type": "string",
+            "title": "Event Hash",
+            "description": "Huella SHA-256 del evento, en hexadecimal."
+          },
+          "prev_hash": {
+            "type": "string",
+            "title": "Prev Hash",
+            "description": "Huella SHA-256 del evento anterior, en hexadecimal."
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id",
+            "description": "La evidencia del evento, si tiene una."
+          },
+          "details": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Details",
+            "description": "Datos del evento: huella, tamaño, fechas, motivo."
+          }
+        },
+        "type": "object",
+        "required": [
+          "seq",
+          "action",
+          "actor_name",
+          "occurred_at",
+          "event_hash",
+          "prev_hash",
+          "evidence_id",
+          "details"
+        ],
+        "title": "CustodyEventDetailOut",
+        "description": "Un evento de la cadena con lo necesario para cotejarlo: la huella del anterior, la\nevidencia a la que se refiere y los datos que el evento registró (solo los de una lista\ncerrada, nunca contenido)."
+      },
       "CustodyEventOut": {
         "properties": {
           "seq": {
@@ -9071,7 +9334,7 @@
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/CustodyEventOut"
+              "$ref": "#/components/schemas/CustodyEventDetailOut"
             },
             "type": "array",
             "title": "Items"
@@ -9230,6 +9493,18 @@
             ],
             "title": "Tsa Time"
           },
+          "tsa_authority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tsa Authority",
+            "description": "Autoridad que firmó el sello, si ya está sellada."
+          },
           "events": {
             "items": {
               "$ref": "#/components/schemas/CustodyEventOut"
@@ -9295,6 +9570,19 @@
           "next_cursor"
         ],
         "title": "EvidencePage"
+      },
+      "EvidenceStampRetryOut": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "EvidenceStampRetryOut"
       },
       "EvidenceSummaryOut": {
         "properties": {
