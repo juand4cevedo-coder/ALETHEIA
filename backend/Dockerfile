@@ -6,7 +6,7 @@
 # de la CI. La excepción a la regla de los 14 días está registrada en ADR-019.
 
 # --- Etapa 1: dependencias --------------------------------------------------------------
-FROM python:3.14.9-slim-trixie@sha256:35caba83af2fe6da9a5d922f9b0156f21d1246a48278c58a08bd253303ba42e8 AS dependencias
+FROM python:3.14.10-slim-trixie@sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f AS dependencias
 
 # uv 0.13.5: el mismo archivo y la misma suma SHA-256 que verifica la CI. Si el archivo cambia,
 # la construcción falla. Solo existe en esta etapa; la imagen final no lo lleva.
@@ -30,7 +30,7 @@ COPY pyproject.toml uv.lock .python-version ./
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --no-install-project
 
 # --- Etapa 2: imagen final --------------------------------------------------------------
-FROM python:3.14.9-slim-trixie@sha256:35caba83af2fe6da9a5d922f9b0156f21d1246a48278c58a08bd253303ba42e8
+FROM python:3.14.10-slim-trixie@sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f
 
 LABEL org.opencontainers.image.source="https://github.com/juand4cevedo-coder/ALETHEIA" \
       org.opencontainers.image.title="aletheia-api" \
