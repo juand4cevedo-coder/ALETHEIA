@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Crea la vigilancia de ALETHEIA en AWS: tema de avisos por correo, alarmas, sonda externa y
+# Crea la vigilancia de ALETHEIA en AWS: tema de avisos por correo, alarmas y
 # panel. Lo ejecuta una vez la persona administradora, desde CloudShell (región Ohio):
 #
 #   bash infra/aws/observabilidad.sh <correo-que-recibe-los-avisos>
@@ -22,14 +22,11 @@ instancia="$(aws_ ec2 describe-instances \
     --query 'Reservations[0].Instances[0].InstanceId' --output text)"
 [[ "$instancia" == i-* ]] || { echo "No encuentro la instancia aletheia-prod." >&2; exit 1; }
 
-echo "1/5 Tema de avisos y suscripción de correo"
+echo "1/4 Tema de avisos y suscripción de correo"
 tema="$(aws_ sns create-topic --name aletheia-alertas --query TopicArn --output text)"
 aws_ sns subscribe --topic-arn "$tema" --protocol email --notification-endpoint "$correo" >/dev/null
-tema_global="$(aws --region us-east-1 sns create-topic --name aletheia-alertas --query TopicArn --output text)"
-aws --region us-east-1 sns subscribe --topic-arn "$tema_global" --protocol email \
-    --notification-endpoint "$correo" >/dev/null
 
-echo "2/5 Permiso del servidor para publicar métricas, y nada más"
+echo "2/4 Permiso del servidor para publicar métricas, y nada más"
 aws iam put-role-policy --role-name "$ROL" --policy-name PublicarMetricas --policy-document "$(cat <<JSON
 {
   "Version": "2012-10-17",
@@ -54,7 +51,7 @@ alarma() { # nombre descripcion espacio metrica estadistica operador umbral peri
         --treat-missing-data "$faltantes" --alarm-actions "$tema" --ok-actions "$tema" "$@"
 }
 
-echo "3/5 Alarmas"
+echo "3/4 Alarmas"
 instancia_dim=(--dimensions "Name=InstanceId,Value=$instancia")
 # Fallan: la plataforma ya tiene un problema.
 alarma salud-api "La API o la base no responden desde el propio servidor" "$ESPACIO" SaludDeLaApi Minimum \
@@ -85,35 +82,14 @@ alarma correos-rebotados "Tasa de rebote de correos por encima del 4 %" AWS/SES 
 alarma correos-quejas "Tasa de quejas de correos por encima de 0,05 %" AWS/SES Reputation.ComplaintRate Maximum \
     GreaterThanThreshold 0.0005 3600 1 notBreaching
 
-echo "4/5 Sonda externa desde fuera de AWS (Route 53, cada 30 segundos)"
-referencia="aletheia-sonda-externa"
-sonda="$(aws route53 list-health-checks \
-    --query "HealthChecks[?HealthCheckConfig.FullyQualifiedDomainName=='$DOMINIO' && HealthCheckConfig.ResourcePath=='/api/v1/health'].Id | [0]" \
-    --output text)"
-if [[ "$sonda" == "None" || -z "$sonda" ]]; then
-    sonda="$(aws route53 create-health-check --caller-reference "$referencia-$(date +%s)" \
-        --health-check-config "Type=HTTPS,FullyQualifiedDomainName=$DOMINIO,ResourcePath=/api/v1/health,Port=443,RequestInterval=30,FailureThreshold=3,EnableSNI=true" \
-        --query HealthCheck.Id --output text)"
-    aws route53 change-tags-for-resource --resource-type healthcheck --resource-id "$sonda" \
-        --add-tags Key=Name,Value=aletheia-sonda-externa >/dev/null
-fi
-# Las métricas de Route 53 viven en Norte de Virginia.
-aws --region us-east-1 cloudwatch put-metric-alarm --alarm-name aletheia-sonda-externa \
-    --alarm-description "Desde fuera de AWS, $DOMINIO no responde" \
-    --namespace AWS/Route53 --metric-name HealthCheckStatus --statistic Minimum \
-    --comparison-operator LessThanThreshold --threshold 1 --period 60 --evaluation-periods 3 \
-    --datapoints-to-alarm 3 --treat-missing-data breaching \
-    --dimensions "Name=HealthCheckId,Value=$sonda" \
-    --alarm-actions "$tema_global" --ok-actions "$tema_global"
-
-echo "5/5 Panel"
+echo "4/4 Panel"
 panel="$(sed -e "s/INSTANCIA/$instancia/g" -e "s/REGION/$REGION/g" "$carpeta/panel.json")"
 aws_ cloudwatch put-dashboard --dashboard-name ALETHEIA --dashboard-body "$panel" >/dev/null
 
 cat <<TEXTO
 
-Listo. Falta un paso suyo: abra el correo $correo y confirme las DOS suscripciones de AWS
-(una por región). Sin esa confirmación no llegará ningún aviso.
+Listo. Falta un paso suyo: abra el correo $correo y confirme la suscripción de AWS
+Sin esa confirmación no llegará ningún aviso.
 
 Panel: https://$REGION.console.aws.amazon.com/cloudwatch/home?region=$REGION#dashboards/dashboard/ALETHEIA
 TEXTO

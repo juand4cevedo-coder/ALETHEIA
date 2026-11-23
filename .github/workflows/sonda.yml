@@ -1,0 +1,48 @@
+name: Sonda externa
+
+# Comprueba desde fuera de AWS que el sitio responde. Si falla, el flujo termina en error y
+# GitHub avisa por correo a quien administra el repositorio. Cubre lo que el servidor no puede
+# ver de sí mismo: caída total, certificado vencido o DNS roto.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: sonda-externa
+  cancel-in-progress: true
+
+jobs:
+  sitio:
+    name: El sitio responde
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Salud de la API
+        run: |
+          set -euo pipefail
+          for intento in 1 2 3; do
+            if cuerpo="$(curl --fail --silent --show-error --max-time 15 https://aletheia.sbs/api/v1/health)" \
+               && grep -q '"status":"ok"' <<<"$cuerpo" && grep -q '"database":"ok"' <<<"$cuerpo"; then
+              echo "La API y la base responden."
+              break
+            fi
+            if [[ "$intento" == 3 ]]; then
+              echo "::error::aletheia.sbs no responde con salud correcta tras 3 intentos."
+              exit 1
+            fi
+            sleep 20
+          done
+      - name: Página principal y certificado
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 15 --output /dev/null https://aletheia.sbs/
+          fin="$(echo | openssl s_client -connect aletheia.sbs:443 -servername aletheia.sbs 2>/dev/null | openssl x509 -noout -enddate | cut -d= -f2)"
+          dias=$(( ( $(date -d "$fin" +%s) - $(date +%s) ) / 86400 ))
+          echo "El certificado vence en $dias días."
+          if (( dias < 10 )); then
+            echo "::error::El certificado de aletheia.sbs vence en menos de 10 días."
+            exit 1
+          fi
