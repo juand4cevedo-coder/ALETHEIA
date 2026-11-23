@@ -233,3 +233,20 @@ def test_si_un_objeto_no_se_puede_borrar_el_caso_no_se_elimina(
     set_tenant(owner_db, TenantContext(organization_id=tenant.organization_id))
     assert owner_db.get(Case, tenant.case_id) is not None
     assert list(owner_db.scalars(select(DeletionRecord))) == []
+
+
+def test_si_quien_lo_pidio_ya_no_es_dueno_ni_administrador_lo_firma_un_dueno(
+    owner_db: Session, settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    tenant = create_tenant(owner_db, "Firma")
+    _mark_deleting(owner_db, tenant.case_id)
+    monkeypatch.setattr(case_deletion, "delete_evidence_object", lambda _settings, _key: None)
+    owner_db.commit()
+
+    case_deletion.purge(
+        lambda: owner_db, settings, tenant.case_id, tenant.organization_id, uuid.uuid7()
+    )
+
+    record = owner_db.scalar(select(DeletionRecord).where(DeletionRecord.case_id == tenant.case_id))
+    assert record is not None
+    assert record.requested_by == tenant.user_id

@@ -37,11 +37,13 @@ from app.models import (
     DeletionRecord,
     Evidence,
     Export,
+    Membership,
     Organization,
     User,
 )
 from app.services import jobs
 from app.services.audit import audit_ip, audit_user_agent
+from app.services.cases import CaseNotFoundError as _CaseNotFound
 from app.services.cases import NotAllowedToManageCaseError, _manage_case
 from app.services.jobs import PermanentJobError
 from app.services.sessions import Principal
@@ -100,6 +102,8 @@ def request(
     with session.begin():
         try:
             case = _manage_case(session, principal, case_id, "cases.manage_retention")
+        except _CaseNotFound:
+            raise CaseNotFoundError from None
         except NotAllowedToManageCaseError:
             raise DeletionNotAllowedError from None
         _active_organization(session, case.organization_id)
@@ -154,6 +158,31 @@ def _object_keys(session: Session, case_id: uuid.UUID) -> list[str]:
     return [*evidence, *(key for key in exports if key is not None), *documents]
 
 
+def _purge_actor(
+    session: Session, organization_id: uuid.UUID, requested_by: uuid.UUID
+) -> uuid.UUID:
+    """Quien firma el borrado: quien lo pidió, si sigue siendo dueño o administrador, o si no un
+    dueño del despacho."""
+    allowed = session.scalar(
+        select(Membership.user_id).where(
+            Membership.organization_id == organization_id,
+            Membership.user_id == requested_by,
+            Membership.role.in_(("owner", "admin")),
+        )
+    )
+    if allowed is not None:
+        return allowed
+    owner = session.scalar(
+        select(Membership.user_id)
+        .where(Membership.organization_id == organization_id, Membership.role == "owner")
+        .order_by(Membership.user_id)
+    )
+    if owner is None:
+        msg = "El despacho no tiene un dueño que firme la eliminación."
+        raise PermanentJobError(msg)
+    return owner
+
+
 def purge(
     open_session: Callable[[], Session],
     settings: Settings,
@@ -187,7 +216,12 @@ def purge(
         raise RuntimeError(msg)
 
     with open_session() as session, session.begin():
+        # purge_case exige que quien la pide sea, en la sesión, dueño o administrador. Si quien
+        # pidió la eliminación ya no lo es, la termina un dueño del despacho: la llave ya se
+        # destruyó y el borrado no puede quedar a medias por un cambio de roles.
         set_tenant(session, TenantContext(organization_id=organization_id))
+        actor = _purge_actor(session, organization_id, requested_by)
+        set_tenant(session, TenantContext(organization_id=organization_id, user_id=actor))
         record_id = uuid.uuid7()
         result = session.scalar(
             text(
@@ -196,7 +230,7 @@ def purge(
             ).bindparams(
                 case_id=case_id,
                 record_id=record_id,
-                requested_by=requested_by,
+                requested_by=actor,
                 days=BACKUP_RETENTION_DAYS,
             )
         )
@@ -207,7 +241,7 @@ def purge(
             session.add(
                 AuditLog(
                     organization_id=organization_id,
-                    actor_user_id=requested_by,
+                    actor_user_id=actor,
                     action="case_deleted",
                     target_id=case_id,
                     details={"record_id": str(record_id)},
