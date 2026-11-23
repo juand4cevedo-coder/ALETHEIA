@@ -109,15 +109,35 @@ nuevo=""
 origen=""
 cifrada=""
 
-# Copia una instantánea cifrándola y espera a que termine. Devuelve el identificador de la copia.
+# Espera a que una instantánea termine, hasta una hora, mostrando el avance. La espera integrada
+# de AWS (aws ec2 wait snapshot-completed) se rinde a los 10 minutos y una copia cifrada de 30 GiB
+# puede tardar más; además, dentro de una sustitución de comandos un fallo se perdería sin avisar.
+esperar_instantanea() {
+    local estado avance
+    for _ in $(seq 1 240); do
+        read -r estado avance < <(aws_ ec2 describe-snapshots --snapshot-ids "$1" \
+            --query 'Snapshots[0].[State,Progress]')
+        case $estado in
+            completed)
+                avisar "   $1 completada."
+                return 0
+                ;;
+            error) abortar "la instantánea $1 terminó con error." ;;
+        esac
+        avisar "   $1: $estado $avance"
+        sleep 15
+    done
+    abortar "la instantánea $1 no terminó en una hora."
+}
+
+# Copia una instantánea cifrándola y espera a que termine. Deja el resultado en $copia_cifrada.
+copia_cifrada=""
 copiar_cifrada() {
-    local copia
-    copia="$(aws_ ec2 copy-snapshot --source-region "$REGION" --source-snapshot-id "$1" \
+    copia_cifrada="$(aws_ ec2 copy-snapshot --source-region "$REGION" --source-snapshot-id "$1" \
         --encrypted --kms-key-id alias/aws/ebs --description "aletheia-prod raiz cifrada" \
         --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value=aletheia-raiz-cifrada}]' \
         --query SnapshotId)"
-    aws_ ec2 wait snapshot-completed --snapshot-ids "$copia"
-    printf '%s' "$copia"
+    esperar_instantanea "$copia_cifrada"
 }
 
 # Parte 1: no apaga nada. Respalda, toma una primera instantánea y su copia cifrada, que es lo más
@@ -139,10 +159,11 @@ preparar() {
         --description "aletheia-prod raiz sin cifrar, ensayo" \
         --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value=aletheia-raiz-sin-cifrar}]' \
         --query SnapshotId)"
-    aws_ ec2 wait snapshot-completed --snapshot-ids "$origen"
+    esperar_instantanea "$origen"
 
     avisar "3/7 Copia cifrada del ensayo ($origen)..."
-    cifrada="$(copiar_cifrada "$origen")"
+    copiar_cifrada "$origen"
+    cifrada="$copia_cifrada"
     avisar "   copia cifrada $cifrada lista. El ensayo terminó sin apagar nada."
 }
 
@@ -158,8 +179,9 @@ cambiar() {
         --description "aletheia-prod raiz sin cifrar, definitiva" \
         --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value=aletheia-raiz-sin-cifrar}]' \
         --query SnapshotId)"
-    aws_ ec2 wait snapshot-completed --snapshot-ids "$origen"
-    cifrada="$(copiar_cifrada "$origen")"
+    esperar_instantanea "$origen"
+    copiar_cifrada "$origen"
+    cifrada="$copia_cifrada"
     local argumentos=(--snapshot-id "$cifrada" --availability-zone "$zona" --volume-type "$tipo"
         --tag-specifications 'ResourceType=volume,Tags=[{Key=Name,Value=aletheia-prod-raiz-cifrada}]')
     if [[ $tipo == gp3 ]]; then
