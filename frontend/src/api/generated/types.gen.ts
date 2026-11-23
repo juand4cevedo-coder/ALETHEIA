@@ -2340,6 +2340,20 @@ export type SupportTicketStatusChange = {
 };
 
 /**
+ * TaskCalendarOut
+ */
+export type TaskCalendarOut = {
+  /**
+   * Items
+   */
+  items: Array<TaskInboxItem>;
+  /**
+   * Truncated
+   */
+  truncated: boolean;
+};
+
+/**
  * TaskInboxItem
  */
 export type TaskInboxItem = {
@@ -3464,6 +3478,66 @@ export type RevokeInvitationResponses = {
 export type RevokeInvitationResponse =
   RevokeInvitationResponses[keyof RevokeInvitationResponses];
 
+export type OrganizationAuditExportData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Action
+     *
+     * Acción de seguridad exacta.
+     */
+    action?: OrganizationAuditAction | null;
+    /**
+     * Actor
+     *
+     * Persona que originó el evento.
+     */
+    actor?: string | null;
+    /**
+     * Created From
+     *
+     * Inicio inclusivo del periodo, con zona horaria.
+     */
+    created_from?: string | null;
+    /**
+     * Created To
+     *
+     * Fin exclusivo del periodo, con zona horaria.
+     */
+    created_to?: string | null;
+  };
+  url: "/api/v1/organization/audit/export";
+};
+
+export type OrganizationAuditExportErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type OrganizationAuditExportError =
+  OrganizationAuditExportErrors[keyof OrganizationAuditExportErrors];
+
+export type OrganizationAuditExportResponses = {
+  /**
+   * CSV.
+   */
+  200: string;
+};
+
+export type OrganizationAuditExportResponse =
+  OrganizationAuditExportResponses[keyof OrganizationAuditExportResponses];
+
 export type OrganizationAuditPageData = {
   body?: never;
   path?: never;
@@ -4521,6 +4595,45 @@ export type TaskInboxResponses = {
 };
 
 export type TaskInboxResponse = TaskInboxResponses[keyof TaskInboxResponses];
+
+export type TaskCalendarData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * From
+     *
+     * Inicio inclusivo del periodo, con zona horaria.
+     */
+    from: string;
+    /**
+     * To
+     *
+     * Fin exclusivo del periodo, con zona horaria.
+     */
+    to: string;
+  };
+  url: "/api/v1/tasks/calendar";
+};
+
+export type TaskCalendarErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type TaskCalendarError = TaskCalendarErrors[keyof TaskCalendarErrors];
+
+export type TaskCalendarResponses = {
+  /**
+   * Successful Response
+   */
+  200: TaskCalendarOut;
+};
+
+export type TaskCalendarResponse =
+  TaskCalendarResponses[keyof TaskCalendarResponses];
 
 export type InspectExportData = {
   body: ExportInspectRequest;

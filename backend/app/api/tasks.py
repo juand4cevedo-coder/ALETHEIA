@@ -14,6 +14,7 @@ from app.schemas.tasks import (
     CaseTaskOut,
     CaseTaskPage,
     CaseTaskStatusUpdate,
+    TaskCalendarOut,
     TaskInboxItem,
     TaskInboxOut,
 )
@@ -87,6 +88,37 @@ def task_inbox(
         active=inbox.active,
         overdue=inbox.overdue,
         due_soon=inbox.due_soon,
+    )
+
+
+@inbox_router.get(
+    "/calendar",
+    summary="Consultar los plazos de un periodo",
+    responses={422: {"description": "El periodo es vacío, sin zona horaria o de más de 62 días."}},
+)
+def task_calendar(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    starts: Annotated[
+        datetime.datetime,
+        Query(alias="from", description="Inicio inclusivo del periodo, con zona horaria."),
+    ],
+    ends: Annotated[
+        datetime.datetime,
+        Query(alias="to", description="Fin exclusivo del periodo, con zona horaria."),
+    ],
+) -> TaskCalendarOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        calendar = task_service.list_calendar(session, principal, starts=starts, ends=ends)
+    except task_service.InvalidCalendarRangeError:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="El periodo debe tener zona horaria, inicio anterior al fin y máximo 62 días.",
+        ) from None
+    return TaskCalendarOut(
+        items=[_inbox_item(item) for item in calendar.items], truncated=calendar.truncated
     )
 
 

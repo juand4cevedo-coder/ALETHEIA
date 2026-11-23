@@ -8,6 +8,8 @@ import {
   organizationAuditPageOptions,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
+import { buttonClassName } from "../components/ui/buttonStyles.ts";
+import { DescargarIcon } from "../components/ui/icons.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
@@ -71,6 +73,18 @@ export function OrganizationAuditPage() {
   const from = searchParams.get("desde") ?? "";
   const to = searchParams.get("hasta") ?? "";
   const filtering = Boolean(action || actor || from || to);
+  // La exportación usa los mismos filtros que la lista. Es un enlace de descarga: el navegador
+  // envía la cookie de sesión y el servidor vuelve a comprobar que sea gestor.
+  const exportQuery = new URLSearchParams();
+  if (action) exportQuery.set("action", action);
+  if (actor) exportQuery.set("actor", actor);
+  const exportFrom = auditBoundary(from);
+  const exportTo = auditBoundary(to, true);
+  if (exportFrom) exportQuery.set("created_from", exportFrom);
+  if (exportTo) exportQuery.set("created_to", exportTo);
+  const exportHref = `/api/v1/organization/audit/export${
+    exportQuery.size > 0 ? `?${exportQuery}` : ""
+  }`;
   const audit = useQuery({
     ...organizationAuditPageOptions({
       query: {
@@ -172,6 +186,14 @@ export function OrganizationAuditPage() {
                 onChange={(event) => setFilter("hasta", event.target.value)}
               />
             </label>
+            <a
+              href={exportHref}
+              download
+              className={buttonClassName({ variant: "secondary", size: "sm" })}
+            >
+              <DescargarIcon size={16} aria-hidden="true" />
+              Descargar CSV
+            </a>
             {filtering && (
               <Button
                 size="sm"

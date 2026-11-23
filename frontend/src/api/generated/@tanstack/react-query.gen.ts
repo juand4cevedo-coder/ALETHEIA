@@ -47,6 +47,7 @@ import {
   listPlatformUsers,
   lookupCourtesy,
   type Options,
+  organizationAuditExport,
   organizationAuditPage,
   ownSupportTickets,
   platformAudit,
@@ -70,6 +71,7 @@ import {
   signIn,
   signOut,
   signOutEverywhere,
+  taskCalendar,
   taskInbox,
   updateCaseRetention,
   updateCaseTaskStatus,
@@ -179,6 +181,9 @@ import type {
   LookupCourtesyData,
   LookupCourtesyError,
   LookupCourtesyResponse,
+  OrganizationAuditExportData,
+  OrganizationAuditExportError,
+  OrganizationAuditExportResponse,
   OrganizationAuditPageData,
   OrganizationAuditPageError,
   OrganizationAuditPageResponse,
@@ -247,6 +252,9 @@ import type {
   SignOutEverywhereError,
   SignOutEverywhereResponse,
   SignOutResponse,
+  TaskCalendarData,
+  TaskCalendarError,
+  TaskCalendarResponse,
   TaskInboxData,
   TaskInboxError,
   TaskInboxResponse,
@@ -1162,6 +1170,34 @@ export const revokeInvitationMutation = (
   return mutationOptions;
 };
 
+export const organizationAuditExportQueryKey = (
+  options?: Options<OrganizationAuditExportData>,
+) => createQueryKey("organizationAuditExport", options);
+
+/**
+ * Exportar la auditoría de seguridad a CSV
+ */
+export const organizationAuditExportOptions = (
+  options?: Options<OrganizationAuditExportData>,
+) =>
+  queryOptions<
+    OrganizationAuditExportResponse,
+    OrganizationAuditExportError,
+    OrganizationAuditExportResponse,
+    ReturnType<typeof organizationAuditExportQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await organizationAuditExport({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: organizationAuditExportQueryKey(options),
+  });
+
 export const organizationAuditPageQueryKey = (
   options?: Options<OrganizationAuditPageData>,
 ) => createQueryKey("organizationAuditPage", options);
@@ -2007,6 +2043,31 @@ export const taskInboxOptions = (options?: Options<TaskInboxData>) =>
       return data;
     },
     queryKey: taskInboxQueryKey(options),
+  });
+
+export const taskCalendarQueryKey = (options: Options<TaskCalendarData>) =>
+  createQueryKey("taskCalendar", options);
+
+/**
+ * Consultar los plazos de un periodo
+ */
+export const taskCalendarOptions = (options: Options<TaskCalendarData>) =>
+  queryOptions<
+    TaskCalendarResponse,
+    TaskCalendarError,
+    TaskCalendarResponse,
+    ReturnType<typeof taskCalendarQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await taskCalendar({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: taskCalendarQueryKey(options),
   });
 
 /**

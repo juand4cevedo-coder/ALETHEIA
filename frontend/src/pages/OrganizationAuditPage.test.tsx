@@ -170,3 +170,34 @@ it("filtra por acción, persona y fechas desde el servidor y conserva la selecci
   await user.click(screen.getByRole("button", { name: "Limpiar filtros" }));
   expect(router.state.location.search).toBe("");
 });
+
+it("ofrece descargar la auditoría con los mismos filtros de la lista", async () => {
+  fetchMock.mockImplementation(async (input) => {
+    const path = new URL((input as Request).url).pathname;
+    if (path === "/api/v1/me") return jsonResponse(profile("owner"));
+    if (path === "/api/v1/organization/members")
+      return jsonResponse({
+        items: [],
+        next_cursor: null,
+        seats: {
+          used: 1,
+          included: 1,
+          full: false,
+          owner_exempt: true,
+          extra_user_price_cop: null,
+        },
+      });
+    if (path === "/api/v1/organization/audit")
+      return jsonResponse({ items: [], next_cursor: null });
+    throw new Error(`Ruta inesperada: ${path}`);
+  });
+  await renderRoute("/app/auditoria?accion=role_changed&desde=2026-11-01");
+  const link = await screen.findByRole("link", { name: /Descargar CSV/ });
+  const href = new URL(link.getAttribute("href")!, "http://localhost");
+  expect(href.pathname).toBe("/api/v1/organization/audit/export");
+  expect(href.searchParams.get("action")).toBe("role_changed");
+  expect(href.searchParams.get("created_from")).toBe(
+    "2026-11-01T05:00:00.000Z",
+  );
+  expect(link).toHaveAttribute("download");
+});

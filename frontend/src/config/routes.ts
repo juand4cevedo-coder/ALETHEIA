@@ -28,6 +28,7 @@ export const ROUTES = {
   organization: "/app/organizacion",
   members: "/app/miembros",
   organizationAudit: "/app/auditoria",
+  calendar: "/app/calendario",
   cases: "/app/casos",
   newCase: "/app/casos/nuevo",
   caseDetail: (id: string) => `/app/casos/${id}`,

@@ -220,3 +220,65 @@ def test_bandeja_filtra_en_backend_y_limita_al_asistente_a_sus_tareas(
 
     assert owner_client.post(f"{_CASES}/{case_id}/close").status_code == 200
     assert owner_client.get("/api/v1/tasks").json()["items"] == []
+
+
+_CALENDAR = "/api/v1/tasks/calendar"
+
+
+def test_calendario_muestra_los_plazos_del_periodo_y_limita_al_asistente(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office = crear_oficina(db)
+    lawyer = crear_miembro(db, office, "abogada.calendario@example.com", "lawyer")
+    assistant = crear_miembro(db, office, "asistente.calendario@example.com", "assistant")
+    outsider = crear_oficina(db)
+    lawyer_client = _session(dispositivo, db, lawyer)
+    case_id = lawyer_client.post(_CASES, json={"title": "Caso con plazos"}).json()["id"]
+    lawyer_client.post(f"{_CASES}/{case_id}/members", json={"user_id": str(assistant.id)})
+
+    def create(title: str, due: str, assignee: User) -> str:
+        created = lawyer_client.post(
+            f"{_CASES}/{case_id}/tasks",
+            json={"title": title, "due_at": due, "assigned_to": str(assignee.id)},
+        )
+        assert created.status_code == 201, created.text
+        return str(created.json()["id"])
+
+    in_range = create("Radicar memorial", "2026-11-10T15:00:00-05:00", lawyer)
+    mine = create("Copia del expediente", "2026-11-12T09:00:00-05:00", assistant)
+    create("Fuera del mes", "2026-12-20T09:00:00-05:00", lawyer)
+    params = {"from": "2026-11-01T00:00:00-05:00", "to": "2026-12-01T00:00:00-05:00"}
+
+    response = lawyer_client.get(_CALENDAR, params=params)
+    assert response.status_code == 200, response.text
+    assert response.headers["Cache-Control"] == "no-store"
+    body = response.json()
+    assert [item["id"] for item in body["items"]] == [in_range, mine]
+    assert body["truncated"] is False
+    assert body["items"][0]["case_title"] == "Caso con plazos"
+
+    # El asistente solo ve lo que se le asignó.
+    assistant_client = _session(dispositivo, db, assistant)
+    own = assistant_client.get(_CALENDAR, params=params)
+    assert [item["id"] for item in own.json()["items"]] == [mine]
+
+    # Quien no pertenece al despacho no ve nada de otro despacho.
+    foreign = _session(dispositivo, db, outsider.owner).get(_CALENDAR, params=params)
+    assert foreign.json()["items"] == []
+
+
+def test_calendario_rechaza_periodos_invalidos_y_exige_sesion(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office = crear_oficina(db)
+    client = _session(dispositivo, db, office.owner)
+    start = "2026-11-01T00:00:00-05:00"
+
+    assert dispositivo().get(_CALENDAR, params={"from": start, "to": start}).status_code == 401
+    assert client.get(_CALENDAR, params={"from": start, "to": start}).status_code == 422
+    assert (
+        client.get(_CALENDAR, params={"from": "2026-11-01T00:00:00", "to": "2026-11-20T00:00:00"})
+    ).status_code == 422
+    too_long = client.get(_CALENDAR, params={"from": start, "to": "2027-03-01T00:00:00-05:00"})
+    assert too_long.status_code == 422
+    assert client.get(_CALENDAR).status_code == 422
