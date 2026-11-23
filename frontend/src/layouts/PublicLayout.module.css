@@ -378,3 +378,49 @@
     display: none;
   }
 }
+
+/* Menú móvil: las filas entran una tras otra, la flecha avanza al tocar y la fila responde al
+   dedo. */
+.mobileMenu > :where(button, a),
+.mobileDetail nav > a {
+  animation: mobile-row-in 420ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 45ms + 60ms);
+  transition: background-color var(--motion-base) var(--ease-standard);
+}
+.mobileMenu > :where(button, a):active,
+.mobileDetail nav > a:active {
+  background: color-mix(in srgb, var(--ink-900) 6%, var(--paper));
+}
+.mobileMenu > :where(button, a) svg,
+.mobileDetail nav > a svg {
+  flex: none;
+  transition: transform 260ms var(--ease-out);
+}
+.mobileMenu > :where(button, a):active svg,
+.mobileDetail nav > a:active svg {
+  transform: translateX(4px);
+}
+.sheet[open] {
+  animation: sheet-in 320ms var(--ease-out) both;
+}
+
+@keyframes mobile-row-in {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobileMenu > :where(button, a),
+  .mobileDetail nav > a,
+  .sheet[open] {
+    animation: none;
+  }
+}

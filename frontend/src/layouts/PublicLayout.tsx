@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { Link, Outlet, ScrollRestoration, useLocation } from "react-router";
 import { IconTile } from "../components/ui/IconTile.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
@@ -174,6 +174,7 @@ export function PublicLayout() {
               <button
                 key={group.title}
                 type="button"
+                style={{ "--i": index } as CSSProperties}
                 onClick={() => setMobileGroup(index)}
               >
                 <span>
