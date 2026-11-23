@@ -253,6 +253,23 @@ Después de cifrar:
 - Dejar el disco anterior y la instantánea sin cifrar durante unos días. Borrarlos cuando todo esté bien, con los comandos que imprime el script; mientras existan hay una copia del disco sin cifrar en la cuenta.
 - Las instantáneas diarias que toma la política de Data Lifecycle Manager desde ese momento ya son cifradas.
 
+## Red de distribución
+
+Los archivos estáticos del sitio salen de una instancia en Ohio. Para quien visita desde Colombia, cada archivo viaja unos 450 ms hasta el servidor. `infra/aws/cdn.sh` crea una distribución de CloudFront en `cdn.aletheia.sbs` que guarda esos archivos en nodos cercanos al visitante.
+
+**Qué pasa por ahí y qué no.** Solo `/assets/` (archivos con huella, caché de un año), `/media/` y `/brand/` (imágenes públicas, caché de una semana). El HTML, la API, las sesiones y toda la evidencia siguen saliendo del servidor de siempre. Una función de CloudFront responde 404 a cualquier otra ruta, así que `cdn.aletheia.sbs/api/...` no existe. Una política de cabeceras permite CORS solo para `https://aletheia.sbs` y deja pasar la política `Cross-Origin-Resource-Policy` hacia otros orígenes, que Caddy fija en `same-origin` para todo lo demás.
+
+**Elecciones.** Certificado de ACM en Norte de Virginia, la única región donde CloudFront lo acepta (la cuenta lo permite; otros servicios de esa región están bloqueados por la política de la organización). Clase de precio `PriceClass_All`, porque los nodos de Suramérica solo están en ella. Política de caché administrada `CachingOptimized`, que respeta el `Cache-Control` del origen. HTTP/2 y HTTP/3. El primer terabyte de salida al mes entra en el nivel gratuito permanente de CloudFront.
+
+**Orden de puesta en marcha.** Primero la infraestructura, luego el sitio:
+
+1. `cdn.sh --certificado`: pide el certificado y muestra el registro DNS de validación, que se crea en Hostinger.
+2. `cdn.sh --crear`: con el certificado emitido, crea la función, la política y la distribución, y muestra el registro `CNAME cdn` que se crea en Hostinger.
+3. `cdn.sh --estado`: comprueba que `cdn.aletheia.sbs` sirve los archivos con CORS y que las otras rutas dan 404.
+4. Solo entonces se publica una versión del sitio que pide los archivos al subdominio (cambio de compilación, de CSP y de las rutas de las imágenes). Hasta ese momento el sitio no cambia.
+
+Para deshacerlo: publicar una versión sin el subdominio y, si se quiere, desactivar y borrar la distribución desde la consola de CloudFront.
+
 ## Rendimiento
 
 - Las fotografías de campaña se publican en tres anchos WebP (640, 1280 y 1920 px) y el navegador elige el más cercano con `srcset`. Un original JPG de unos 350 KB pasó a 17 a 70 KB. Para sumar una fotografía se genera con los mismos tres anchos y se declara en `frontend/src/config/media.ts`.
