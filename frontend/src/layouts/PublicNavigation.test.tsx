@@ -69,12 +69,12 @@ it("permite entrar al panel con el teclado y regresar al disparador con Escape",
   expect(teams).toHaveFocus();
   expect(teams).toHaveAttribute("aria-expanded", "true");
   await user.keyboard("{ArrowDown}");
-  await screen.findByRole("link", { name: "Para firmas jurídicas" });
+  await screen.findByRole("link", { name: /Para firmas jurídicas/ });
   // El foco del primer enlace se aplica en el próximo frame, después de montar el panel.
   const { waitFor } = await import("@testing-library/react");
   await waitFor(() =>
     expect(
-      screen.getByRole("link", { name: "Para firmas jurídicas" }),
+      screen.getByRole("link", { name: /Para firmas jurídicas/ }),
     ).toHaveFocus(),
   );
   await user.keyboard("{Escape}");

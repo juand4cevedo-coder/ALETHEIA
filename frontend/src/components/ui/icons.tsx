@@ -1,6 +1,6 @@
 // Módulo solo de íconos generados por fábricas: la recarga en caliente no aplica.
 /* oxlint-disable react/only-export-components */
-// Íconos de la interfaz: única puerta de entrada. Phosphor en peso light más los tres
+// Íconos de la interfaz: única puerta de entrada. Phosphor en peso duotone (regular en los controles pequeños) más los tres
 // propios (sello, cadena y paquete), dibujados con el mismo trazo. Ningún archivo
 // importa íconos de otra parte. Cada ícono de Phosphor vive en su archivo (carpeta icons): una
 // pantalla descarga solo los que dibuja, y la landing no carga los del espacio de trabajo.
@@ -53,6 +53,15 @@ export { UsuarioIcon } from "./icons/Usuario.ts";
 export { UsuariosIcon } from "./icons/Usuarios.ts";
 export { CerrarIcon } from "./icons/Cerrar.ts";
 export { HuellaIcon } from "./icons/Huella.ts";
+export { LibroIcon } from "./icons/Libro.ts";
+export { CalendarioIcon } from "./icons/Calendario.ts";
+export { TareasIcon } from "./icons/Tareas.ts";
+export { CampanaIcon } from "./icons/Campana.ts";
+export { CandadoIcon } from "./icons/Candado.ts";
+export { GraficaIcon } from "./icons/Grafica.ts";
+export { ChatIcon } from "./icons/Chat.ts";
+export { RayoIcon } from "./icons/Rayo.ts";
+export { DocumentoIcon } from "./icons/Documento.ts";
 
 // Íconos propios: ver crearPropio.
 
@@ -60,7 +69,11 @@ export { HuellaIcon } from "./icons/Huella.ts";
 export const SelloIcon = /* @__PURE__ */ crearPropio(
   "SelloIcon",
   <>
-    <path d="M12 2.2L14.17 3.89L16.9 3.51L17.94 6.06L20.49 7.1L20.11 9.83L21.8 12L20.11 14.17L20.49 16.9L17.94 17.94L16.9 20.49L14.17 20.11L12 21.8L9.83 20.11L7.1 20.49L6.06 17.94L3.51 16.9L3.89 14.17L2.2 12L3.89 9.83L3.51 7.1L6.06 6.06L7.1 3.51L9.83 3.89z" />
+    <path
+      fill="currentColor"
+      fillOpacity="0.2"
+      d="M12 2.2L14.17 3.89L16.9 3.51L17.94 6.06L20.49 7.1L20.11 9.83L21.8 12L20.11 14.17L20.49 16.9L17.94 17.94L16.9 20.49L14.17 20.11L12 21.8L9.83 20.11L7.1 20.49L6.06 17.94L3.51 16.9L3.89 14.17L2.2 12L3.89 9.83L3.51 7.1L6.06 6.06L7.1 3.51L9.83 3.89z"
+    />
     <path d="M12 8v4l2.5 1.5" />
   </>,
 );
@@ -70,6 +83,8 @@ export const CadenaIcon = /* @__PURE__ */ crearPropio(
   "CadenaIcon",
   <>
     <rect
+      fill="currentColor"
+      fillOpacity="0.2"
       x="3"
       y="11.5"
       width="12"
@@ -92,7 +107,11 @@ export const CadenaIcon = /* @__PURE__ */ crearPropio(
 export const PaqueteIcon = /* @__PURE__ */ crearPropio(
   "PaqueteIcon",
   <>
-    <path d="M3.5 7.5L12 3l8.5 4.5v9L12 21l-8.5-4.5z" />
+    <path
+      fill="currentColor"
+      fillOpacity="0.2"
+      d="M3.5 7.5L12 3l8.5 4.5v9L12 21l-8.5-4.5z"
+    />
     <path d="M3.5 7.5L12 12l8.5-4.5" />
     <path d="M12 12v9" />
   </>,

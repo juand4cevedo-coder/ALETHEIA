@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Link,
   Navigate,
@@ -22,7 +22,8 @@ import {
   rememberSession,
 } from "../features/session/sessionHint.ts";
 import styles from "./AppShell.module.css";
-import { CargandoIcon } from "../components/ui/icons.tsx";
+import { BuscarIcon, CargandoIcon } from "../components/ui/icons.tsx";
+import { CommandPalette } from "../features/workspace/CommandPalette.tsx";
 
 function isUnauthorized(error: unknown): boolean {
   return (
@@ -44,7 +45,21 @@ export function AppShell() {
   // Sin reintentos ni copia vieja: la respuesta dice si la sesión sigue viva ahora.
   const me = useQuery({ ...readMeOptions(), retry: false, staleTime: 0 });
   const signedIn = me.isSuccess;
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const sessionEnded = me.isError && isUnauthorized(me.error);
+
+  // Ctrl K (o Cmd K) abre la paleta de comandos desde cualquier pantalla del espacio.
+  useEffect(() => {
+    if (!signedIn) return;
+    function onKey(event: KeyboardEvent) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setPaletteOpen((open) => !open);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [signedIn]);
 
   // El sitio público muestra «Ir a mis casos» mientras haya sesión (sessionHint.ts).
   useEffect(() => {
@@ -89,7 +104,23 @@ export function AppShell() {
           <img src={logoUrl} alt="" width={28} height={28} />
           <span>{WORDMARK}</span>
         </Link>
-        {signedIn && <AccountMenu me={me.data} />}
+        {signedIn && (
+          <div className={styles.tools}>
+            <button
+              type="button"
+              className={styles.searchButton}
+              onClick={() => setPaletteOpen(true)}
+            >
+              <BuscarIcon size={18} aria-hidden="true" />
+              <span className={styles.searchLabel}>Buscar</span>
+              <kbd className={styles.searchKey}>Ctrl K</kbd>
+              <span className="visually-hidden">
+                Buscar una pantalla o un caso
+              </span>
+            </button>
+            <AccountMenu me={me.data} />
+          </div>
+        )}
       </header>
 
       <div className={styles.body}>
@@ -132,6 +163,13 @@ export function AppShell() {
         </main>
       </div>
       <ScrollRestoration />
+      {signedIn && (
+        <CommandPalette
+          me={me.data}
+          open={paletteOpen}
+          onClose={() => setPaletteOpen(false)}
+        />
+      )}
     </div>
   );
 }

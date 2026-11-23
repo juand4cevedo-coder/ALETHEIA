@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { Link, NavLink } from "react-router";
 import {
   ChevronAbajoIcon,
   FlechaDerechaIcon,
 } from "../components/ui/icons.tsx";
+import { IconTile } from "../components/ui/IconTile.tsx";
 import { NAVIGATION } from "../config/navigation.ts";
 import { ROUTES } from "../config/routes.ts";
 import styles from "./PublicNavigation.module.css";
@@ -14,6 +17,10 @@ export function PublicNavigation() {
   const pinned = useRef<number | null>(null);
   const root = useRef<HTMLElement>(null);
   const triggers = useRef<(HTMLButtonElement | null)[]>([]);
+  const [indicator, setIndicator] = useState<{
+    left: number;
+    width: number;
+  } | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
@@ -26,6 +33,14 @@ export function PublicNavigation() {
     pinned.current = null;
     setActive(null);
   }
+
+  // El indicador se desliza hasta la opción abierta; al cerrar se queda donde estaba y se
+  // desvanece, para que el siguiente movimiento parta de ahí y no desde el borde.
+  useLayoutEffect(() => {
+    const trigger = active === null ? null : triggers.current[active];
+    if (trigger)
+      setIndicator({ left: trigger.offsetLeft, width: trigger.offsetWidth });
+  }, [active]);
 
   useEffect(() => {
     function outside(event: PointerEvent) {
@@ -71,6 +86,19 @@ export function PublicNavigation() {
         }
       }}
     >
+      <span
+        className={styles.indicator}
+        aria-hidden="true"
+        data-visible={active !== null}
+        style={
+          indicator
+            ? {
+                width: indicator.width,
+                transform: `translateX(${indicator.left}px)`,
+              }
+            : undefined
+        }
+      />
       <ul className={styles.list}>
         {NAVIGATION.map((item, index) => (
           <li key={item.title}>
@@ -136,6 +164,13 @@ export function PublicNavigation() {
           </NavLink>
         </li>
       </ul>
+      {group &&
+        // Fuera del encabezado: su filtro de desenfoque haría de contenedor del velo y lo dejaría
+        // sin alto. En el cuerpo de la página cubre toda la ventana, por debajo del encabezado.
+        createPortal(
+          <div className={styles.scrim} aria-hidden="true" />,
+          document.body,
+        )}
       {group && (
         <div
           id="navigation-panel"
@@ -148,13 +183,22 @@ export function PublicNavigation() {
               className={styles.feature}
               onClick={close}
             >
-              <img src={group.feature.image} alt="" />
-              <span className={styles.featureTitle}>{group.title}</span>
+              <IconTile icon={group.feature.icon} tone="solid" size="lg" />
+              <span className={styles.featureTitle}>{group.feature.title}</span>
               <small>{group.feature.text}</small>
+              <span className={styles.featureCta}>
+                Conocer más
+                <FlechaDerechaIcon size={14} aria-hidden="true" />
+              </span>
             </Link>
             <div className={styles.links}>
-              {group.links.map((link) => (
-                <Link key={link.to} to={link.to} onClick={close}>
+              {group.links.map((link, position) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={close}
+                  style={{ "--i": position } as CSSProperties}
+                >
                   <span>
                     {link.label}
                     <FlechaDerechaIcon size={14} aria-hidden="true" />

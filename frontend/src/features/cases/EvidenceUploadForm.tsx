@@ -9,6 +9,7 @@ import {
 import { sessionUpload } from "../../api/sessionFetch.ts";
 import { Button } from "../../components/ui/Button.tsx";
 import { Field } from "../../components/ui/Field.tsx";
+import { FileDropzone } from "../../components/ui/FileDropzone.tsx";
 import fieldStyles from "../../components/ui/Field.module.css";
 import { Notice } from "../../components/ui/Notice.tsx";
 import { Select } from "../../components/ui/Select.tsx";
@@ -151,17 +152,14 @@ export function EvidenceUploadForm({ caseId }: { caseId: string }) {
           <label htmlFor={fileId} className={fieldStyles.label}>
             Archivo
           </label>
-          <div className={fieldStyles.control}>
-            <input
-              id={fileId}
-              name="archivo"
-              type="file"
-              required
-              disabled={busy}
-              className={fieldStyles.input}
-              aria-describedby={fileHelpId}
-            />
-          </div>
+          <FileDropzone
+            id={fileId}
+            name="archivo"
+            required
+            disabled={busy}
+            describedBy={fileHelpId}
+            progress={percent}
+          />
           <p id={fileHelpId} className={fieldStyles.help}>
             Cualquier tipo de archivo, hasta el límite de su plan.
           </p>

@@ -26,10 +26,13 @@ import { formatRecentActivity } from "../features/cases/dates.ts";
 import styles from "./WorkspacePage.module.css";
 import {
   CarpetaAbiertaIcon,
+  DiscoIcon,
   EdificioIcon,
   FlechaDerechaIcon,
+  HuellaIcon,
   MasIcon,
   ReciboIcon,
+  RelojIcon,
   SelloIcon,
   UsuariosIcon,
 } from "../components/ui/icons.tsx";
@@ -114,6 +117,7 @@ export function WorkspacePage() {
             aria-busy={totals.isPending}
           >
             <StatTile
+              icon={CarpetaAbiertaIcon}
               label="Casos abiertos"
               value={
                 caseTotals?.open ??
@@ -121,6 +125,7 @@ export function WorkspacePage() {
               }
             />
             <StatTile
+              icon={DiscoIcon}
               label="En archivo histórico"
               value={
                 caseTotals?.closed ??
@@ -128,6 +133,7 @@ export function WorkspacePage() {
               }
             />
             <StatTile
+              icon={RelojIcon}
               label="Sellos de tiempo pendientes"
               value={
                 caseTotals?.pending_stamps ??
@@ -140,6 +146,7 @@ export function WorkspacePage() {
               }
             />
             <StatTile
+              icon={HuellaIcon}
               label="Eventos de custodia"
               value={
                 caseTotals?.custody_events ??

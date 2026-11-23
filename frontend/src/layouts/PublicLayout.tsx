@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, ScrollRestoration, useLocation } from "react-router";
+import { IconTile } from "../components/ui/IconTile.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { CONSUMER_AUTHORITY } from "../config/legal.ts";
 import { ROUTES } from "../config/routes.ts";
@@ -23,7 +24,6 @@ import {
   MenuIcon,
 } from "../components/ui/icons.tsx";
 import styles from "./PublicLayout.module.css";
-import { photoProps } from "../config/media.ts";
 
 const CURRENT_YEAR = new Date().getFullYear();
 function Brand() {
@@ -145,7 +145,11 @@ export function PublicLayout() {
               className={styles.mobileFeature}
               onClick={closeMenu}
             >
-              <img src={selectedGroup.feature.image} alt="" />
+              <IconTile
+                icon={selectedGroup.feature.icon}
+                tone="soft"
+                size="lg"
+              />
               <h2 id="menu-movil-titulo">{selectedGroup.title}</h2>
               <p>{selectedGroup.feature.text}</p>
             </Link>
@@ -204,15 +208,6 @@ export function PublicLayout() {
         <Outlet />
       </main>
       <footer className={styles.footer}>
-        <img
-          {...photoProps("equipo-real", "100vw")}
-          alt=""
-          width={2000}
-          height={1333}
-          loading="lazy"
-          decoding="async"
-          className={styles.footerPhoto}
-        />
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
             <Brand />
