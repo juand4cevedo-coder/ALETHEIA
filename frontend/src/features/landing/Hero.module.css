@@ -24,6 +24,31 @@
   animation: hero-open 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Al bajar, la fotografía se desplaza más lento que la página: da profundidad sin JavaScript.
+   Usa la propiedad translate, que no choca con el transform de la animación de entrada. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .photo {
+      /* Más alta que el marco: al desplazarse hacia abajo no deja ver un hueco arriba. */
+      top: -12%;
+      height: 124%;
+      animation:
+        hero-open 1.2s cubic-bezier(0.16, 1, 0.3, 1) both,
+        hero-parallax linear both;
+      animation-timeline: auto, scroll(root);
+      animation-range:
+        normal,
+        0 720px;
+    }
+  }
+}
+
+@keyframes hero-parallax {
+  to {
+    translate: 0 10%;
+  }
+}
+
 .scrim {
   z-index: -1;
   background:

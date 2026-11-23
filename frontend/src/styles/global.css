@@ -14,6 +14,22 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-height) + var(--space-4));
   overflow-x: clip;
+  /* Controles nativos (casillas, selectores, barras) con el violeta de la marca. */
+  accent-color: var(--ink-900);
+  scrollbar-color: color-mix(in srgb, var(--ink-900) 38%, transparent)
+    transparent;
+  scrollbar-width: thin;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--ink-900) 22%, transparent);
+  color: inherit;
+}
+
+/* Los párrafos largos reparten bien el último renglón: sin palabras sueltas al final. */
+p {
+  text-wrap: pretty;
 }
 
 /* Mientras un diálogo modal está abierto, la página de fondo no se desplaza. */

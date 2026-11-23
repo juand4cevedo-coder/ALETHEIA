@@ -38,6 +38,14 @@
 
 .button svg {
   flex: none;
+  transition: transform 260ms var(--ease-out);
+}
+
+/* La flecha del final avanza al apuntar el botón: invita a seguir. */
+@media (hover: hover) {
+  .button:hover:not(:disabled) svg:last-child:not(:first-child) {
+    transform: translateX(3px);
+  }
 }
 
 /* Respuesta al tacto: el botón cede un poco al presionarlo, como un botón físico. */

@@ -45,6 +45,26 @@
   backdrop-filter: blur(20px);
   border-bottom: 0;
 }
+/* El encabezado gana una línea y una sombra suave en cuanto la página empieza a moverse. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .header {
+      animation: header-settle linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 96px;
+    }
+  }
+}
+
+@keyframes header-settle {
+  to {
+    background: rgb(255 255 255 / 98%);
+    box-shadow:
+      0 1px 0 rgb(35 0 48 / 8%),
+      0 12px 32px rgb(35 0 48 / 8%);
+  }
+}
+
 .bar {
   display: flex;
   align-items: center;
