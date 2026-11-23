@@ -62,6 +62,12 @@ class PortalTokenRequest(BaseModel):
     token: str = Field(min_length=1, max_length=MAX_TOKEN_LENGTH, description="Token del enlace.")
 
 
+class PortalRenewed(BaseModel):
+    """La misma respuesta haya o no un acceso que renovar."""
+
+    detail: str
+
+
 class PortalView(BaseModel):
     """Lo que ve el cliente. Hasta que acepte el aviso de datos no recibe el caso."""
 

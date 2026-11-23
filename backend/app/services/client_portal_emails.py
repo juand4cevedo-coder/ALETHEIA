@@ -41,13 +41,23 @@ def invite_email(
     name = access.client_name
     where = organization.name
     expires = colombian_datetime(access.expires_at)
+    renewed = payload.get("renewed") is True
+    intro = (
+        "Pidió un enlace nuevo para entrar a su espacio del caso. El anterior ya no sirve."
+        if renewed
+        else f"{where} le abrió un espacio en ALETHEIA para que siga su caso. Allí verá los "
+        "avisos que el despacho decida compartirle."
+    )
     return OutgoingEmail(
         to=access.client_email,
-        subject=f"{where} le abrió su espacio en ALETHEIA",
+        subject=(
+            f"Su enlace nuevo a {where} en ALETHEIA"
+            if renewed
+            else f"{where} le abrió su espacio en ALETHEIA"
+        ),
         text=(
             f"Hola, {name}:\n\n"
-            f"{where} le abrió un espacio en ALETHEIA para que siga su caso. Allí verá los "
-            "avisos que el despacho decida compartirle.\n\n"
+            f"{intro}\n\n"
             f"Para entrar, abra este enlace:\n{link}\n\n"
             f"El enlace vence el {expires} (hora de Colombia). Es personal: no lo reenvíe. "
             "Si no esperaba este mensaje, ignórelo; no pasa nada si no lo abre.\n\n"
@@ -57,8 +67,7 @@ def invite_email(
         html=email_layout(
             f"Hola, {html.escape(name)}:",
             [
-                f"<strong>{html.escape(where)}</strong> le abrió un espacio en ALETHEIA para "
-                "que siga su caso. Allí verá los avisos que el despacho decida compartirle.",
+                html.escape(intro),
                 "El enlace es personal: no lo reenvíe.",
             ],
             ("Entrar a mi espacio", link),

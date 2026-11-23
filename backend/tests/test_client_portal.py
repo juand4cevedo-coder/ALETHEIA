@@ -24,7 +24,7 @@ _VIEW = "/api/v1/client-portal/view"
 _ACCEPT = "/api/v1/client-portal/accept-notice"
 
 
-def _invites(db: Session) -> list[dict[str, str]]:
+def _invites(db: Session) -> list[dict[str, Any]]:
     jobs = db.scalars(select(Job).where(Job.kind == "email_send").order_by(Job.id)).all()
     return [dict(job.payload) for job in jobs if job.payload.get("template") == INVITE_TEMPLATE]
 
@@ -242,3 +242,71 @@ def test_el_portal_se_limita_por_direccion(dispositivo: NuevoCliente) -> None:
     codes = {anonymous.post(_VIEW, json={"token": "x"}).status_code for _ in range(61)}
 
     assert 429 in codes
+
+
+_RENEW = "/api/v1/client-portal/renew"
+
+
+def _expired_token(access: dict[str, Any], office: Oficina, version: int, days_ago: int) -> str:
+    """Un enlace que venció hace `days_ago` días, firmado con la versión dada."""
+    now = datetime.datetime.now(datetime.UTC)
+    issued = now - datetime.timedelta(days=days_ago + 30)
+    return issue_portal_link(
+        _KEY[0],
+        uuid.UUID(access["id"]),
+        office.organization_id,
+        version,
+        now - datetime.timedelta(days=days_ago),
+        now=issued,
+    )
+
+
+_KEY: list[str] = []
+
+
+def test_un_enlace_vencido_pide_uno_nuevo_al_correo_registrado(
+    dispositivo: NuevoCliente, db: Session, settings: Settings
+) -> None:
+    _KEY[:] = [settings.signing_key()]
+    office, lawyer, case_id = _case(dispositivo, db)
+    access = _invite(lawyer, case_id)
+    anonymous = dispositivo()
+    expired = _expired_token(access, office, 1, days_ago=2)
+    assert anonymous.post(_VIEW, json={"token": expired}).status_code == 404
+
+    asked = anonymous.post(_RENEW, json={"token": expired})
+
+    assert asked.status_code == 202, asked.text
+    assert len(_invites(db)) == 2
+    assert _invites(db)[-1]["renewed"] is True
+    email = invite_email(db, _invites(db)[-1], settings)
+    assert email is not None
+    assert email.to == "cliente@example.com"
+    assert "enlace nuevo" in email.subject
+    fresh = _token_of_last_invite(db, settings)
+    assert anonymous.post(_VIEW, json={"token": fresh}).status_code == 200
+    assert _actions(db, office, "client_portal_renewed") == 1
+    # El enlace vencido no puede renovarse otra vez: ya fue reemplazado.
+    anonymous.post(_RENEW, json={"token": expired})
+    assert len(_invites(db)) == 2
+
+
+def test_pedir_un_enlace_nuevo_responde_igual_cuando_no_hay_nada_que_renovar(
+    dispositivo: NuevoCliente, db: Session, settings: Settings
+) -> None:
+    _KEY[:] = [settings.signing_key()]
+    office, lawyer, case_id = _case(dispositivo, db)
+    access = _invite(lawyer, case_id)
+    anonymous = dispositivo()
+    too_old = _expired_token(access, office, 1, days_ago=100)
+    lawyer.delete(f"{_CASES}/{case_id}/portal/accesses/{access['id']}")
+    revoked = _expired_token(access, office, 1, days_ago=2)
+
+    answers = [
+        anonymous.post(_RENEW, json={"token": token}) for token in (too_old, revoked, "inventado")
+    ]
+
+    assert {answer.status_code for answer in answers} == {202}
+    assert len({answer.text for answer in answers}) == 1
+    assert len(_invites(db)) == 1
+    assert _actions(db, office, "client_portal_renewed") == 0

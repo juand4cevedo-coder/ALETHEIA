@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.22.0"
+    "version": "0.23.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -6593,6 +6593,58 @@
         }
       }
     },
+    "/api/v1/client-portal/renew": {
+      "post": {
+        "tags": [
+          "portal del cliente"
+        ],
+        "summary": "Pedir un enlace nuevo con el enlace vencido",
+        "description": "Responde siempre lo mismo, haya o no un acceso que renovar: el enlace nuevo va solo al\ncorreo con que se invitó al cliente.",
+        "operationId": "renew_portal_link",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalRenewed"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/client-portal/accept-notice": {
       "post": {
         "tags": [
@@ -10224,6 +10276,20 @@
           "client_email"
         ],
         "title": "PortalInvite"
+      },
+      "PortalRenewed": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "PortalRenewed",
+        "description": "La misma respuesta haya o no un acceso que renovar."
       },
       "PortalTokenRequest": {
         "properties": {

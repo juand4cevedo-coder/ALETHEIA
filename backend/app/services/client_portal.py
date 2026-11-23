@@ -46,6 +46,8 @@ PortalNotAllowedError = TaskNotAllowedError
 ClosedCasePortalError = ClosedCaseTaskError
 
 LINK_LIFETIME: Final = datetime.timedelta(days=30)
+# Un enlace vencido hace menos de esto todavía sirve para pedir uno nuevo.
+RENEW_GRACE: Final = datetime.timedelta(days=90)
 PATH: Final = "/portal"
 INVITE_TEMPLATE: Final = "client_portal_invite"
 MAX_UPDATES: Final = 100
@@ -140,7 +142,7 @@ def _audit(
     session.flush()
 
 
-def _enqueue_invite(session: Session, access: ClientPortalAccess) -> None:
+def _enqueue_invite(session: Session, access: ClientPortalAccess, *, renewed: bool = False) -> None:
     jobs.enqueue(
         session,
         "email_send",
@@ -148,6 +150,7 @@ def _enqueue_invite(session: Session, access: ClientPortalAccess) -> None:
             "template": INVITE_TEMPLATE,
             "access_id": str(access.id),
             "organization_id": str(access.organization_id),
+            "renewed": renewed,
         },
         f"{INVITE_TEMPLATE}:{access.id}:{access.link_version}",
     )
@@ -397,4 +400,50 @@ def accept_notice(
         client_ip=client_ip,
         user_agent=user_agent,
     )
+    session.commit()
+
+
+def renew(
+    session: Session,
+    settings: Settings,
+    token: str,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> None:
+    """Manda un enlace nuevo al correo con que se invitó al cliente. Sirve con el enlace más
+    reciente aunque haya vencido (hasta 90 días) y nunca con uno ya reemplazado, y el correo
+    va siempre a la dirección registrada, no a quien lo pide."""
+    claims = read_portal_link(settings.signing_key(), token, grace=RENEW_GRACE)
+    set_tenant(session, TenantContext(organization_id=claims.organization_id))
+    access = session.scalar(
+        select(ClientPortalAccess)
+        .join(Case, Case.id == ClientPortalAccess.case_id)
+        .where(
+            ClientPortalAccess.id == claims.access_id,
+            ClientPortalAccess.organization_id == claims.organization_id,
+            ClientPortalAccess.link_version == claims.version,
+            ClientPortalAccess.revoked_at.is_(None),
+            Case.status == "open",
+        )
+        .with_for_update(of=ClientPortalAccess)
+    )
+    organization = session.get(Organization, claims.organization_id)
+    if access is None or organization is None or organization.status != "active":
+        raise InvalidPortalLinkError
+    rate_limit.hit(session, rate_limit.PORTAL_RENEW_ACCESS, str(access.id))
+    access.link_version += 1
+    access.expires_at = _now() + LINK_LIFETIME
+    session.flush()
+    _audit(
+        session,
+        access.organization_id,
+        None,
+        "client_portal_renewed",
+        access.id,
+        {"case_id": str(access.case_id), "version": str(access.link_version)},
+        client_ip=client_ip,
+        user_agent=user_agent,
+    )
+    _enqueue_invite(session, access, renewed=True)
     session.commit()

@@ -473,7 +473,11 @@ def issue_portal_link(
     return jwt.encode(claims, _subkey(master_key, _PORTAL_USE), algorithm=_ALGORITHM)
 
 
-def read_portal_link(master_key: str, token: str) -> PortalLinkClaims:
+def read_portal_link(
+    master_key: str, token: str, *, grace: datetime.timedelta | None = None
+) -> PortalLinkClaims:
+    """Lee el enlace. Con `grace`, uno vencido hace menos de ese tiempo todavía se lee: sirve
+    solo para pedir uno nuevo, que siempre va al correo registrado."""
     if len(token) > MAX_TOKEN_LENGTH:
         raise InvalidPortalLinkError
     try:
@@ -483,6 +487,7 @@ def read_portal_link(master_key: str, token: str) -> PortalLinkClaims:
             algorithms=[_ALGORITHM],
             audience=_PORTAL_AUDIENCE,
             issuer=_ISSUER,
+            leeway=grace or datetime.timedelta(0),
             options={"require": ["iss", "aud", "sub", "org", "ver", "iat", "exp"]},
         )
         version = claims["ver"]

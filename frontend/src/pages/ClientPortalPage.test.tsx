@@ -9,6 +9,7 @@ const fetchMock = vi.fn<typeof fetch>();
 const TOKEN = "un-token-de-prueba";
 const VIEW = "/api/v1/client-portal/view";
 const ACCEPT = "/api/v1/client-portal/accept-notice";
+const RENEW = "/api/v1/client-portal/renew";
 const RUTA = "/portal";
 
 const BASE_VIEW = {
@@ -58,6 +59,28 @@ describe("Portal del cliente (ADR-054)", () => {
     expect(
       await screen.findByRole("heading", { name: "Este enlace ya no sirve" }),
     ).toBeInTheDocument();
+  });
+
+  it("con un enlace vencido deja pedir uno nuevo y responde lo mismo", async () => {
+    serve({
+      [VIEW]: () => jsonResponse({ type: "about:blank", status: 404 }, 404),
+      [RENEW]: () =>
+        jsonResponse({ detail: "Si el acceso sigue vigente..." }, 202),
+    });
+    const user = userEvent.setup();
+    await renderRoute(`${RUTA}#t=${TOKEN}`);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Pedir un enlace nuevo" }),
+    );
+
+    expect(
+      await screen.findByText(/enviamos un enlace nuevo al correo/),
+    ).toBeInTheDocument();
+    expect(await requests(RENEW)[0]!.json()).toEqual({ token: TOKEN });
+    expect(
+      screen.queryByRole("button", { name: "Pedir un enlace nuevo" }),
+    ).not.toBeInTheDocument();
   });
 
   it("pide aceptar el aviso de datos antes de mostrar el caso", async () => {
@@ -124,11 +147,12 @@ describe("Portal del cliente (ADR-054)", () => {
           case_status: "closed",
         }),
     });
-    await renderRoute(`${RUTA}#t=${TOKEN}`);
+    const { container } = await renderRoute(`${RUTA}#t=${TOKEN}`);
 
     expect(
       await screen.findByText(/todavía no le ha publicado avisos/),
     ).toBeInTheDocument();
     expect(screen.getByText(/archivado/)).toBeInTheDocument();
+    expect(await seriousAxeViolations(container)).toEqual([]);
   });
 });

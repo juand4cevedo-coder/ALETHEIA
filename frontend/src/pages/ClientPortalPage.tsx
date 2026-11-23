@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router";
 
 import {
   acceptPortalNoticeMutation,
+  renewPortalLinkMutation,
   viewPortalMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import type { PortalView } from "../api/generated/index.ts";
@@ -69,6 +70,11 @@ export function ClientPortalPage() {
     onError: fail,
   });
 
+  const renew = useMutation({
+    ...renewPortalLinkMutation(),
+    onError: fail,
+  });
+
   const { mutate: load } = view;
   useEffect(() => {
     if (token) load({ body: { token } });
@@ -100,8 +106,34 @@ export function ClientPortalPage() {
             </h1>
             <p>
               Venció, el despacho lo reemplazó con uno nuevo o le quitó el
-              acceso. Pídale al despacho que le envíe el enlace otra vez.
+              acceso.
             </p>
+            {token && !renew.isSuccess && (
+              <>
+                <p>
+                  Si el acceso sigue vigente, le enviamos un enlace nuevo al
+                  correo con que lo invitaron.
+                </p>
+                <Button
+                  type="button"
+                  busy={renew.isPending}
+                  onClick={() => {
+                    if (!renew.isPending) renew.mutate({ body: { token } });
+                  }}
+                >
+                  {renew.isPending ? "Enviando" : "Pedir un enlace nuevo"}
+                </Button>
+              </>
+            )}
+            {renew.isSuccess && (
+              <p role="status">
+                Si el acceso sigue vigente, enviamos un enlace nuevo al correo
+                con que lo invitaron. Revise también la carpeta de spam.
+              </p>
+            )}
+            {!token && (
+              <p>Pídale al despacho que le envíe el enlace otra vez.</p>
+            )}
           </section>
         )}
 
