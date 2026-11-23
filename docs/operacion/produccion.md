@@ -212,6 +212,8 @@ Instalación, una sola vez y como root en el servidor:
 3. `systemctl daemon-reload && systemctl enable --now aletheia-respaldo.timer`
 4. Probar a mano con `systemctl start aletheia-respaldo.service` y revisar `journalctl -u aletheia-respaldo`.
 
+`infra/prod/ensayar-restauracion.sh` ensaya la restauración sin tocar producción: copia la base, la restaura en una base temporal, compara el esquema y las filas de las tablas principales y borra la temporal.
+
 `respaldar.sh --revisar` sale con error si la última copia tiene más de 26 horas; sirve para una alarma o una comprobación periódica.
 
 Restaurar en una base vacía, con una copia descargada del bucket (por ejemplo desde CloudShell) y verificada contra su `.sha256`:
