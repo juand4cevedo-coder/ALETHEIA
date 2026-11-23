@@ -1,0 +1,19 @@
+{"widgets":[
+    {"type":"metric","x":0,"y":0,"width":8,"height":6,"properties":{"title":"Peticiones por minuto","region":"REGION","view":"timeSeries","stat":"Sum","period":60,"metrics":[["ALETHEIA/Produccion","Peticiones"]]}}
+,
+    {"type":"metric","x":8,"y":0,"width":8,"height":6,"properties":{"title":"Errores 5xx","region":"REGION","view":"timeSeries","stat":"Sum","period":60,"metrics":[["ALETHEIA/Produccion","Errores5xx",{"color":"#d13438"}],["ALETHEIA/Produccion","ErroresRegistrados"]]}}
+,
+    {"type":"metric","x":16,"y":0,"width":8,"height":6,"properties":{"title":"Latencia p95 de la API (ms)","region":"REGION","view":"timeSeries","stat":"Maximum","period":60,"metrics":[["ALETHEIA/Produccion","LatenciaP95"],["ALETHEIA/Produccion","TiempoDeSalud"]]}}
+,
+    {"type":"metric","x":0,"y":6,"width":8,"height":6,"properties":{"title":"Salud de la API (1 = responde)","region":"REGION","view":"timeSeries","stat":"Minimum","period":60,"metrics":[["ALETHEIA/Produccion","SaludDeLaApi"]]}}
+,
+    {"type":"metric","x":8,"y":6,"width":8,"height":6,"properties":{"title":"Memoria y disco usados (%)","region":"REGION","view":"timeSeries","stat":"Maximum","period":60,"metrics":[["ALETHEIA/Produccion","MemoriaUsada"],["ALETHEIA/Produccion","DiscoUsado"]]}}
+,
+    {"type":"metric","x":16,"y":6,"width":8,"height":6,"properties":{"title":"CPU (%) y créditos","region":"REGION","view":"timeSeries","stat":"Average","period":60,"metrics":[["AWS/EC2","CPUUtilization","InstanceId","INSTANCIA"],["AWS/EC2","CPUCreditBalance","InstanceId","INSTANCIA",{"yAxis":"right"}]]}}
+,
+    {"type":"metric","x":0,"y":12,"width":8,"height":6,"properties":{"title":"Contenedores activos","region":"REGION","view":"timeSeries","stat":"Minimum","period":60,"metrics":[["ALETHEIA/Produccion","ContenedoresActivos"]]}}
+,
+    {"type":"metric","x":8,"y":12,"width":8,"height":6,"properties":{"title":"Errores del trabajador","region":"REGION","view":"timeSeries","stat":"Sum","period":60,"metrics":[["ALETHEIA/Produccion","ErroresDelTrabajador"]]}}
+,
+    {"type":"metric","x":16,"y":12,"width":8,"height":6,"properties":{"title":"Reputación de correo (SES)","region":"REGION","view":"timeSeries","stat":"Maximum","period":60,"metrics":[["AWS/SES","Reputation.BounceRate"],["AWS/SES","Reputation.ComplaintRate"]]}}
+]}
