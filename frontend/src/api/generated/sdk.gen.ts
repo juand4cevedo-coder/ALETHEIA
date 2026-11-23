@@ -20,6 +20,9 @@ import type {
   AddCaseMemberData,
   AddCaseMemberErrors,
   AddCaseMemberResponses,
+  ApplyTaskTemplateData,
+  ApplyTaskTemplateErrors,
+  ApplyTaskTemplateResponses,
   AvailableCaseMembersData,
   AvailableCaseMembersErrors,
   AvailableCaseMembersResponses,
@@ -62,6 +65,12 @@ import type {
   CreateSupportTicketData,
   CreateSupportTicketErrors,
   CreateSupportTicketResponses,
+  CreateTaskTemplateData,
+  CreateTaskTemplateErrors,
+  CreateTaskTemplateResponses,
+  DeleteTaskTemplateData,
+  DeleteTaskTemplateErrors,
+  DeleteTaskTemplateResponses,
   DownloadEvidenceData,
   DownloadEvidenceErrors,
   DownloadEvidenceResponses,
@@ -122,6 +131,8 @@ import type {
   ListPlatformUsersData,
   ListPlatformUsersErrors,
   ListPlatformUsersResponses,
+  ListTaskTemplatesData,
+  ListTaskTemplatesResponses,
   LookupCourtesyData,
   LookupCourtesyErrors,
   LookupCourtesyResponses,
@@ -1491,6 +1502,114 @@ export const createCaseNote = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/cases/{case_id}/notes",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Listar las plantillas de tareas del despacho
+ */
+export const listTaskTemplates = <ThrowOnError extends boolean = false>(
+  options?: Options<ListTaskTemplatesData, ThrowOnError>,
+): RequestResult<ListTaskTemplatesResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    ListTaskTemplatesResponses,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/task-templates",
+    ...options,
+  });
+
+/**
+ * Crear una plantilla de tareas
+ */
+export const createTaskTemplate = <ThrowOnError extends boolean = false>(
+  options: Options<CreateTaskTemplateData, ThrowOnError>,
+): RequestResult<
+  CreateTaskTemplateResponses,
+  CreateTaskTemplateErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    CreateTaskTemplateResponses,
+    CreateTaskTemplateErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/task-templates",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Borrar una plantilla de tareas
+ */
+export const deleteTaskTemplate = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteTaskTemplateData, ThrowOnError>,
+): RequestResult<
+  DeleteTaskTemplateResponses,
+  DeleteTaskTemplateErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).delete<
+    DeleteTaskTemplateResponses,
+    DeleteTaskTemplateErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/task-templates/{template_id}",
+    ...options,
+  });
+
+/**
+ * Crear en un caso las tareas de una plantilla
+ */
+export const applyTaskTemplate = <ThrowOnError extends boolean = false>(
+  options: Options<ApplyTaskTemplateData, ThrowOnError>,
+): RequestResult<
+  ApplyTaskTemplateResponses,
+  ApplyTaskTemplateErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    ApplyTaskTemplateResponses,
+    ApplyTaskTemplateErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/tasks/from-template",
     ...options,
     headers: {
       "Content-Type": "application/json",

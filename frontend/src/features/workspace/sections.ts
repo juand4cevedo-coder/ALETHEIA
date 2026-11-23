@@ -4,6 +4,7 @@ import {
   CalendarioIcon,
   CarpetaAbiertaIcon,
   CorreoIcon,
+  TareasIcon,
   EdificioIcon,
   HuellaIcon,
   InicioIcon,
@@ -12,7 +13,7 @@ import {
   UsuariosIcon,
   type IconComponent,
 } from "../../components/ui/icons.tsx";
-import { managesOrganization, managesTeam } from "./roles.ts";
+import { managesOrganization, managesTasks, managesTeam } from "./roles.ts";
 
 type Item = {
   to: string;
@@ -51,6 +52,12 @@ export const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
         label: "Calendario",
         icon: CalendarioIcon,
         visible: (me) => me.organization != null && !me.platform_admin,
+      },
+      {
+        to: ROUTES.taskTemplates,
+        label: "Plantillas de tareas",
+        icon: TareasIcon,
+        visible: (me) => managesTasks(me.organization?.role),
       },
       {
         to: ROUTES.members,

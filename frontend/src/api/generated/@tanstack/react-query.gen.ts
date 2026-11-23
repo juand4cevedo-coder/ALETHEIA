@@ -13,6 +13,7 @@ import {
   acceptInvitation,
   acceptLegalTerms,
   addCaseMember,
+  applyTaskTemplate,
   availableCaseMembers,
   changeMemberRole,
   changePassword,
@@ -27,6 +28,8 @@ import {
   createCheckout,
   createInvitation,
   createSupportTicket,
+  createTaskTemplate,
+  deleteTaskTemplate,
   downloadEvidence,
   downloadExport,
   forgotPassword,
@@ -48,6 +51,7 @@ import {
   listMembers,
   listPlans,
   listPlatformUsers,
+  listTaskTemplates,
   lookupCourtesy,
   type Options,
   organizationAuditExport,
@@ -95,6 +99,9 @@ import type {
   AddCaseMemberData,
   AddCaseMemberError,
   AddCaseMemberResponse,
+  ApplyTaskTemplateData,
+  ApplyTaskTemplateError,
+  ApplyTaskTemplateResponse,
   AvailableCaseMembersData,
   AvailableCaseMembersError,
   AvailableCaseMembersResponse,
@@ -137,6 +144,12 @@ import type {
   CreateSupportTicketData,
   CreateSupportTicketError,
   CreateSupportTicketResponse,
+  CreateTaskTemplateData,
+  CreateTaskTemplateError,
+  CreateTaskTemplateResponse,
+  DeleteTaskTemplateData,
+  DeleteTaskTemplateError,
+  DeleteTaskTemplateResponse,
   DownloadEvidenceData,
   DownloadEvidenceError,
   DownloadExportData,
@@ -192,6 +205,8 @@ import type {
   ListPlatformUsersData,
   ListPlatformUsersError,
   ListPlatformUsersResponse,
+  ListTaskTemplatesData,
+  ListTaskTemplatesResponse,
   LookupCourtesyData,
   LookupCourtesyError,
   LookupCourtesyResponse,
@@ -2215,6 +2230,115 @@ export const createCaseNoteMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await createCaseNote({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const listTaskTemplatesQueryKey = (
+  options?: Options<ListTaskTemplatesData>,
+) => createQueryKey("listTaskTemplates", options);
+
+/**
+ * Listar las plantillas de tareas del despacho
+ */
+export const listTaskTemplatesOptions = (
+  options?: Options<ListTaskTemplatesData>,
+) =>
+  queryOptions<
+    ListTaskTemplatesResponse,
+    DefaultError,
+    ListTaskTemplatesResponse,
+    ReturnType<typeof listTaskTemplatesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listTaskTemplates({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listTaskTemplatesQueryKey(options),
+  });
+
+/**
+ * Crear una plantilla de tareas
+ */
+export const createTaskTemplateMutation = (
+  options?: Partial<Options<CreateTaskTemplateData>>,
+): UseMutationOptions<
+  CreateTaskTemplateResponse,
+  CreateTaskTemplateError,
+  Options<CreateTaskTemplateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateTaskTemplateResponse,
+    CreateTaskTemplateError,
+    Options<CreateTaskTemplateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createTaskTemplate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Borrar una plantilla de tareas
+ */
+export const deleteTaskTemplateMutation = (
+  options?: Partial<Options<DeleteTaskTemplateData>>,
+): UseMutationOptions<
+  DeleteTaskTemplateResponse,
+  DeleteTaskTemplateError,
+  Options<DeleteTaskTemplateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    DeleteTaskTemplateResponse,
+    DeleteTaskTemplateError,
+    Options<DeleteTaskTemplateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await deleteTaskTemplate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Crear en un caso las tareas de una plantilla
+ */
+export const applyTaskTemplateMutation = (
+  options?: Partial<Options<ApplyTaskTemplateData>>,
+): UseMutationOptions<
+  ApplyTaskTemplateResponse,
+  ApplyTaskTemplateError,
+  Options<ApplyTaskTemplateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ApplyTaskTemplateResponse,
+    ApplyTaskTemplateError,
+    Options<ApplyTaskTemplateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await applyTaskTemplate({
         ...options,
         ...fnOptions,
         throwOnError: true,

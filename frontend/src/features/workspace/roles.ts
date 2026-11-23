@@ -40,6 +40,11 @@ export const INVITABLE_ROLES: readonly {
 ];
 
 /** Quién gestiona el equipo: invitar, revocar, cambiar roles (RN-008). */
+// Quien crea y asigna tareas también gestiona las plantillas de tareas.
+export function managesTasks(role: Role | undefined): boolean {
+  return role === "owner" || role === "admin" || role === "lawyer";
+}
+
 export function managesTeam(role: Role | undefined): boolean {
   return role === "owner" || role === "admin";
 }

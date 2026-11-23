@@ -742,10 +742,11 @@ describe("Libro de casos (HU-017)", () => {
     const labels = within(nav)
       .getAllByRole("link")
       .map((link) => link.textContent?.match(/^[^\d,]+/)?.[0]);
-    expect(labels.slice(0, 4)).toEqual([
+    expect(labels.slice(0, 5)).toEqual([
       "Inicio",
       "Casos",
       "Calendario",
+      "Plantillas de tareas",
       "Miembros",
     ]);
     expect(casos).toHaveAccessibleName("Casos, 3 abiertos");

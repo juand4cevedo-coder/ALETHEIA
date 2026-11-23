@@ -11,6 +11,7 @@ import {
   loadAccountPage,
   loadAppShell,
   loadCalendarPage,
+  loadTaskTemplatesPage,
   loadAuthLayout,
   loadCasePage,
   loadEvidenceDetailPage,
@@ -246,6 +247,10 @@ export const routes: RouteObject[] = [
           {
             path: ROUTES.calendar.slice(ROUTES.app.length + 1),
             lazy: { Component: loadCalendarPage },
+          },
+          {
+            path: ROUTES.taskTemplates.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadTaskTemplatesPage },
           },
           {
             path: ROUTES.organizationAudit.slice(ROUTES.app.length + 1),

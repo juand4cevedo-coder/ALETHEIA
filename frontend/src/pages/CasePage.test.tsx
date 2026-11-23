@@ -590,6 +590,62 @@ describe("Página del caso (HU-015)", () => {
     expect(screen.getByText("Prioridad alta")).toBeVisible();
   });
 
+  it("el abogado crea de una vez las tareas de una plantilla", async () => {
+    const user = userEvent.setup();
+    let sentBody: unknown;
+    serve(() => jsonResponse(DETAIL));
+    const original = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input, init) => {
+      const request = input as Request;
+      const path = new URL(request.url).pathname;
+      if (path === `/api/v1/cases/${CASE_ID}/tasks`) {
+        return jsonResponse({ items: [], next_cursor: null });
+      }
+      if (path === "/api/v1/task-templates") {
+        return jsonResponse({
+          items: [
+            {
+              id: "01890a5d-ac96-774b-bcce-b302099a8101",
+              name: "Proceso laboral",
+              created_at: "2026-11-23T12:00:00Z",
+              items: [
+                {
+                  title: "Radicar la demanda",
+                  description: null,
+                  priority: "high",
+                  due_days: 3,
+                },
+              ],
+            },
+          ],
+        });
+      }
+      if (path === `/api/v1/cases/${CASE_ID}/tasks/from-template`) {
+        sentBody = await request.json();
+        return jsonResponse({ tasks: [] }, 201);
+      }
+      return original(input, init);
+    });
+
+    await openCase();
+    await user.click(screen.getByRole("tab", { name: "Tareas y plazos" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Usar una plantilla" }),
+    );
+    const dialog = screen.getByRole("dialog", {
+      name: "Crear tareas desde una plantilla",
+    });
+    expect(within(dialog).getByText(/Se crearán 1 tarea/)).toBeVisible();
+    await user.click(
+      within(dialog).getByRole("button", { name: "Crear las tareas" }),
+    );
+
+    expect(sentBody).toEqual({
+      template_id: "01890a5d-ac96-774b-bcce-b302099a8101",
+      assigned_to: ME.id,
+    });
+  });
+
   it("el asistente completa solo su tarea y no puede crearla ni cancelarla", async () => {
     const user = userEvent.setup();
     let current = TASK;

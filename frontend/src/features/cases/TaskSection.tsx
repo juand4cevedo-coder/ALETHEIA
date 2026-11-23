@@ -1,13 +1,16 @@
 import {
   useInfiniteQuery,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect, useId, useState } from "react";
 
 import type { CaseMemberOut, CaseTaskOut } from "../../api/generated";
 import {
+  applyTaskTemplateMutation,
   createCaseTaskMutation,
+  listTaskTemplatesOptions,
   listCaseTasksInfiniteOptions,
   listCaseTasksQueryKey,
   updateCaseTaskStatusMutation,
@@ -99,7 +102,10 @@ export function TaskSection({
           </p>
         </div>
         {canManage && caseOpen && (
-          <CreateTask caseId={caseId} members={members} />
+          <div className={styles.headingActions}>
+            <ApplyTemplate caseId={caseId} members={members} />
+            <CreateTask caseId={caseId} members={members} />
+          </div>
         )}
       </div>
 
@@ -182,6 +188,109 @@ export function TaskSection({
         </Button>
       )}
     </section>
+  );
+}
+
+// Crea de una vez las tareas de una plantilla del despacho, todas con la misma persona
+// responsable. Si el despacho no tiene plantillas, la opción no aparece.
+function ApplyTemplate({
+  caseId,
+  members,
+}: {
+  caseId: string;
+  members: CaseMemberOut[];
+}) {
+  const queryClient = useQueryClient();
+  const templates = useQuery(listTaskTemplatesOptions());
+  const [open, setOpen] = useState(false);
+  const [templateId, setTemplateId] = useState("");
+  const [assignedTo, setAssignedTo] = useState(members[0]?.user_id ?? "");
+  const items = Array.isArray(templates.data?.items)
+    ? templates.data.items
+    : [];
+  const selected = templateId || items[0]?.id || "";
+  const mutation = useMutation({
+    ...applyTaskTemplateMutation(),
+    onSuccess: async () => {
+      setOpen(false);
+      await queryClient.invalidateQueries({
+        queryKey: listCaseTasksQueryKey({ path: { case_id: caseId } }),
+      });
+    },
+  });
+  if (items.length === 0) return null;
+  const template = items.find((item) => item.id === selected);
+
+  return (
+    <>
+      <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+        Usar una plantilla
+      </Button>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Crear tareas desde una plantilla"
+        busy={mutation.isPending}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              busy={mutation.isPending}
+              disabled={!selected || !assignedTo}
+              onClick={() =>
+                mutation.mutate({
+                  path: { case_id: caseId },
+                  body: { template_id: selected, assigned_to: assignedTo },
+                })
+              }
+            >
+              Crear las tareas
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.form}>
+          <Select
+            label="Plantilla"
+            value={selected}
+            options={items.map((item) => ({
+              value: item.id,
+              label: item.name,
+            }))}
+            onChange={(event) => setTemplateId(event.target.value)}
+          />
+          <Select
+            label="Responsable de todas"
+            value={assignedTo}
+            options={members.map((member) => ({
+              value: member.user_id,
+              label: member.full_name,
+            }))}
+            onChange={(event) => setAssignedTo(event.target.value)}
+          />
+          {template && (
+            <p>
+              Se crearán {template.items.length}{" "}
+              {template.items.length === 1 ? "tarea" : "tareas"}. Después puede
+              cambiar el estado de cada una.
+            </p>
+          )}
+          {mutation.error && (
+            <Notice tone="error">
+              {apiProblem(mutation.error).detail ??
+                "No pudimos crear las tareas."}
+            </Notice>
+          )}
+        </div>
+      </Dialog>
+    </>
   );
 }
 
