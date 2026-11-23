@@ -7,7 +7,9 @@ import {
   listMembersOptions,
   organizationAuditPageOptions,
 } from "../api/generated/@tanstack/react-query.gen.ts";
+import { sessionFetch } from "../api/sessionFetch.ts";
 import { Button } from "../components/ui/Button.tsx";
+import { DescargarIcon } from "../components/ui/icons.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
@@ -62,6 +64,10 @@ export function OrganizationAuditPage() {
   const allowed = managesTeam(me.organization?.role);
   const [searchParams, setSearchParams] = useSearchParams();
   const [cursor, setCursor] = useState<string | undefined>();
+  const [exporting, setExporting] = useState(false);
+  const [exportNotice, setExportNotice] = useState<
+    "truncated" | "error" | null
+  >(null);
   const [previous, setPrevious] = useState<(string | undefined)[]>([]);
   const actionValue = searchParams.get("accion") ?? "";
   const action = ACTIONS.includes(actionValue as OrganizationAuditAction)
@@ -71,6 +77,53 @@ export function OrganizationAuditPage() {
   const from = searchParams.get("desde") ?? "";
   const to = searchParams.get("hasta") ?? "";
   const filtering = Boolean(action || actor || from || to);
+  // La exportación usa los mismos filtros que la lista. Es un enlace de descarga: el navegador
+  // envía la cookie de sesión y el servidor vuelve a comprobar que sea gestor.
+  const exportQuery = new URLSearchParams();
+  if (action) exportQuery.set("action", action);
+  if (actor) exportQuery.set("actor", actor);
+  const exportFrom = auditBoundary(from);
+  const exportTo = auditBoundary(to, true);
+  if (exportFrom) exportQuery.set("created_from", exportFrom);
+  if (exportTo) exportQuery.set("created_to", exportTo);
+  const exportHref = `/api/v1/organization/audit/export${
+    exportQuery.size > 0 ? `?${exportQuery}` : ""
+  }`;
+
+  // Se descarga con el cliente de sesión: si el acceso de diez minutos venció, se renueva y la
+  // petición se repite; un enlace directo recibiría un 401. También lee el aviso de recorte.
+  async function downloadAudit() {
+    setExporting(true);
+    setExportNotice(null);
+    try {
+      const response = await sessionFetch(
+        new URL(exportHref, window.location.origin),
+        {
+          headers: { Accept: "text/csv" },
+        },
+      );
+      if (!response.ok) {
+        setExportNotice("error");
+        return;
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download =
+        /filename="([^"]+)"/.exec(
+          response.headers.get("content-disposition") ?? "",
+        )?.[1] ?? "auditoria-aletheia.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+      if (response.headers.get("x-rows-truncated") === "1")
+        setExportNotice("truncated");
+    } catch {
+      setExportNotice("error");
+    } finally {
+      setExporting(false);
+    }
+  }
   const audit = useQuery({
     ...organizationAuditPageOptions({
       query: {
@@ -172,6 +225,15 @@ export function OrganizationAuditPage() {
                 onChange={(event) => setFilter("hasta", event.target.value)}
               />
             </label>
+            <Button
+              size="sm"
+              variant="secondary"
+              busy={exporting}
+              onClick={() => void downloadAudit()}
+            >
+              <DescargarIcon size={16} aria-hidden="true" />
+              Descargar CSV
+            </Button>
             {filtering && (
               <Button
                 size="sm"
@@ -186,6 +248,17 @@ export function OrganizationAuditPage() {
               </Button>
             )}
           </div>
+          {exportNotice === "truncated" && (
+            <Notice tone="warning">
+              La descarga trae solo los 5000 eventos más recientes de este
+              filtro. Acote las fechas o la acción para obtener el resto.
+            </Notice>
+          )}
+          {exportNotice === "error" && (
+            <Notice tone="error">
+              No pudimos preparar la descarga. Inténtelo de nuevo en un momento.
+            </Notice>
+          )}
           {audit.isPending && (
             <div className={styles.loading}>
               <p role="status" className={styles.status}>

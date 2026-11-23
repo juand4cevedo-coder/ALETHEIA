@@ -161,3 +161,109 @@ def test_auditoria_filtra_en_el_servidor_por_accion_persona_y_periodo(
         ).status_code
         == 422
     )
+
+
+EXPORT_PATH = "/api/v1/organization/audit/export"
+
+
+def test_el_gestor_exporta_su_auditoria_a_csv_sin_datos_internos(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    first = crear_oficina(db)
+    lawyer = crear_miembro(db, first, "lawyer-csv@example.com", "lawyer")
+    second = crear_oficina(db)
+
+    set_tenant(db, TenantContext(organization_id=first.organization_id, user_id=first.owner.id))
+    db.add(
+        AuditLog(
+            organization_id=first.organization_id,
+            actor_user_id=first.owner.id,
+            action="role_changed",
+            target_id=lawyer.id,
+            ip="192.0.2.10",
+            user_agent="=HYPERLINK(1)",
+            details={"private": "no publicar"},
+        )
+    )
+    db.add(
+        AuditLog(
+            organization_id=first.organization_id,
+            actor_user_id=first.owner.id,
+            action="case_created",
+            target_id=uuid.uuid7(),
+        )
+    )
+    db.flush()
+    set_tenant(db, TenantContext(organization_id=second.organization_id, user_id=second.owner.id))
+    db.add(
+        AuditLog(
+            organization_id=second.organization_id,
+            actor_user_id=second.owner.id,
+            action="plan_changed",
+            user_agent="Otro despacho",
+        )
+    )
+    db.flush()
+
+    response = _login(dispositivo, first.owner).get(EXPORT_PATH)
+    assert response.status_code == 200, response.text
+    assert response.headers["content-type"].startswith("text/csv")
+    assert response.headers["cache-control"] == "no-store"
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-rows-truncated"] == "0"
+    assert response.headers["content-disposition"].startswith("attachment; filename=")
+    lines = response.text.splitlines()
+    assert lines[0] == "fecha_utc,accion,persona_id,objeto_id,ip,navegador"
+    body = "\n".join(lines[1:])
+    assert "role_changed" in body
+    # La hoja de cálculo no debe ejecutar como fórmula lo que escribió un navegador.
+    assert "'=HYPERLINK(1)" in body
+    assert "case_created" not in body
+    assert "Otro despacho" not in body
+    assert "no publicar" not in response.text
+
+
+def test_la_exportacion_respeta_el_filtro_de_accion(dispositivo: NuevoCliente, db: Session) -> None:
+    office = crear_oficina(db)
+    set_tenant(db, TenantContext(organization_id=office.organization_id, user_id=office.owner.id))
+    for action in ("login", "plan_changed"):
+        db.add(
+            AuditLog(
+                organization_id=office.organization_id,
+                actor_user_id=office.owner.id,
+                action=action,
+            )
+        )
+    db.flush()
+
+    response = _login(dispositivo, office.owner).get(EXPORT_PATH, params={"action": "plan_changed"})
+    assert response.status_code == 200, response.text
+    rows = response.text.splitlines()[1:]
+    assert rows
+    assert all(",plan_changed," in row for row in rows)
+
+
+def test_solo_los_gestores_exportan_la_auditoria(dispositivo: NuevoCliente, db: Session) -> None:
+    office = crear_oficina(db)
+    lawyer = crear_miembro(db, office, "lawyer-sin-csv@example.com", "lawyer")
+
+    assert dispositivo().get(EXPORT_PATH).status_code == 401
+    assert _login(dispositivo, lawyer).get(EXPORT_PATH).status_code == 403
+
+
+def test_la_exportacion_exige_periodos_con_zona_horaria(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office = crear_oficina(db)
+    client = _login(dispositivo, office.owner)
+
+    naive = client.get(EXPORT_PATH, params={"created_from": "2026-11-01T00:00:00"})
+    assert naive.status_code == 422
+    inverted = client.get(
+        EXPORT_PATH,
+        params={
+            "created_from": "2026-12-01T00:00:00+00:00",
+            "created_to": "2026-11-01T00:00:00+00:00",
+        },
+    )
+    assert inverted.status_code == 422

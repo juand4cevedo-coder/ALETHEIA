@@ -1496,6 +1496,139 @@
         }
       }
     },
+    "/api/v1/organization/audit/export": {
+      "get": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Exportar la auditoría de seguridad a CSV",
+        "operationId": "organization_audit_export",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/OrganizationAuditAction"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Acción de seguridad exacta.",
+              "title": "Action"
+            },
+            "description": "Acción de seguridad exacta."
+          },
+          {
+            "name": "actor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Persona que originó el evento.",
+              "title": "Actor"
+            },
+            "description": "Persona que originó el evento."
+          },
+          {
+            "name": "created_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inicio inclusivo del periodo, con zona horaria.",
+              "title": "Created From"
+            },
+            "description": "Inicio inclusivo del periodo, con zona horaria."
+          },
+          {
+            "name": "created_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fin exclusivo del periodo, con zona horaria.",
+              "title": "Created To"
+            },
+            "description": "Fin exclusivo del periodo, con zona horaria."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No es propietario ni administrador.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/organization/audit": {
       "get": {
         "tags": [
@@ -3669,6 +3802,68 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TaskInboxOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/calendar": {
+      "get": {
+        "tags": [
+          "tareas"
+        ],
+        "summary": "Consultar los plazos de un periodo",
+        "operationId": "task_calendar",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Inicio inclusivo del periodo, con zona horaria.",
+              "title": "From"
+            },
+            "description": "Inicio inclusivo del periodo, con zona horaria."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Fin exclusivo del periodo, con zona horaria.",
+              "title": "To"
+            },
+            "description": "Fin exclusivo del periodo, con zona horaria."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCalendarOut"
                 }
               }
             }
@@ -8269,6 +8464,27 @@
           "status"
         ],
         "title": "SupportTicketStatusChange"
+      },
+      "TaskCalendarOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TaskInboxItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "truncated"
+        ],
+        "title": "TaskCalendarOut"
       },
       "TaskInboxItem": {
         "properties": {

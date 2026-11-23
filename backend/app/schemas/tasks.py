@@ -64,3 +64,8 @@ class TaskInboxOut(BaseModel):
     active: int
     overdue: int
     due_soon: int
+
+
+class TaskCalendarOut(BaseModel):
+    items: list[TaskInboxItem]
+    truncated: bool

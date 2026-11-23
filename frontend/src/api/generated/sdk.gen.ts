@@ -116,6 +116,9 @@ import type {
   LookupCourtesyData,
   LookupCourtesyErrors,
   LookupCourtesyResponses,
+  OrganizationAuditExportData,
+  OrganizationAuditExportErrors,
+  OrganizationAuditExportResponses,
   OrganizationAuditPageData,
   OrganizationAuditPageErrors,
   OrganizationAuditPageResponses,
@@ -184,6 +187,9 @@ import type {
   SignOutEverywhereErrors,
   SignOutEverywhereResponses,
   SignOutResponses,
+  TaskCalendarData,
+  TaskCalendarErrors,
+  TaskCalendarResponses,
   TaskInboxData,
   TaskInboxErrors,
   TaskInboxResponses,
@@ -813,6 +819,32 @@ export const revokeInvitation = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Exportar la auditoría de seguridad a CSV
+ */
+export const organizationAuditExport = <ThrowOnError extends boolean = false>(
+  options?: Options<OrganizationAuditExportData, ThrowOnError>,
+): RequestResult<
+  OrganizationAuditExportResponses,
+  OrganizationAuditExportErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    OrganizationAuditExportResponses,
+    OrganizationAuditExportErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/audit/export",
+    ...options,
+  });
+
+/**
  * Auditoría de seguridad de la organización
  */
 export const organizationAuditPage = <ThrowOnError extends boolean = false>(
@@ -1348,6 +1380,28 @@ export const taskInbox = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/tasks",
+    ...options,
+  });
+
+/**
+ * Consultar los plazos de un periodo
+ */
+export const taskCalendar = <ThrowOnError extends boolean = false>(
+  options: Options<TaskCalendarData, ThrowOnError>,
+): RequestResult<TaskCalendarResponses, TaskCalendarErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    TaskCalendarResponses,
+    TaskCalendarErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/tasks/calendar",
     ...options,
   });
 

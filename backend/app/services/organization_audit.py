@@ -1,7 +1,11 @@
 """Consulta de eventos de seguridad del despacho (HU-014)."""
 
+import csv
 import datetime
+import io
 import uuid
+from collections.abc import Sequence
+from typing import Final
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -74,3 +78,39 @@ def events(
     if created_to is not None:
         query = query.where(AuditLog.created_at < created_to)
     return list(session.scalars(query))
+
+
+# Tope de filas de una exportación: un despacho con años de eventos no debe poder pedir toda la
+# tabla en una sola respuesta. Si hay más, la exportación trae las más recientes y lo avisa.
+MAX_EXPORT_ROWS: Final = 5000
+
+CSV_COLUMNS: Final = ("fecha_utc", "accion", "persona_id", "objeto_id", "ip", "navegador")
+
+# Una hoja de cálculo ejecuta como fórmula lo que empieza con estos caracteres. El navegador
+# lo escribe quien inicia sesión, así que se neutraliza antes de entregarlo.
+_FORMULA_PREFIXES: Final = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _safe_cell(value: str | None) -> str:
+    if value is None:
+        return ""
+    return "'" + value if value.startswith(_FORMULA_PREFIXES) else value
+
+
+def to_csv(rows: Sequence[AuditLog]) -> str:
+    """Los eventos como CSV, sin los detalles internos: las mismas columnas que ve la lista."""
+    buffer = io.StringIO()
+    writer = csv.writer(buffer, lineterminator="\r\n")
+    writer.writerow(CSV_COLUMNS)
+    for event in rows:
+        writer.writerow(
+            (
+                event.created_at.astimezone(datetime.UTC).isoformat(timespec="seconds"),
+                event.action,
+                str(event.actor_user_id) if event.actor_user_id is not None else "",
+                str(event.target_id) if event.target_id is not None else "",
+                str(event.ip) if event.ip is not None else "",
+                _safe_cell(event.user_agent),
+            )
+        )
+    return buffer.getvalue()

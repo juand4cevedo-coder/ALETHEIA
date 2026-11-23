@@ -188,6 +188,82 @@ def list_task_inbox(
     )
 
 
+# Un mes visible cabe de sobra; el tope protege contra una consulta de años enteros.
+CALENDAR_MAX_DAYS = 62
+CALENDAR_MAX_ROWS = 500
+
+
+class InvalidCalendarRangeError(Exception):
+    """El periodo pedido es vacío, sin zona horaria o demasiado largo."""
+
+
+@dataclass(frozen=True, slots=True)
+class CalendarView:
+    items: list[InboxTaskView]
+    truncated: bool
+
+
+def list_calendar(
+    session: Session,
+    principal: Principal,
+    *,
+    starts: datetime.datetime,
+    ends: datetime.datetime,
+) -> CalendarView:
+    """Tareas con plazo dentro del periodo, de los casos abiertos que la persona ve.
+
+    Incluye las ya completadas para que el calendario muestre qué se cumplió; las canceladas
+    no. El asistente solo consulta su propia cola, igual que la bandeja.
+    """
+    if (
+        starts.tzinfo is None
+        or ends.tzinfo is None
+        or starts >= ends
+        or ends - starts > datetime.timedelta(days=CALENDAR_MAX_DAYS)
+    ):
+        raise InvalidCalendarRangeError
+    organization_id = principal.organization_id
+    if organization_id is None:
+        return CalendarView([], truncated=False)
+    conditions = [
+        CaseTask.organization_id == organization_id,
+        Case.status == "open",
+        CaseTask.status.in_(("pending", "in_progress", "completed")),
+        CaseTask.due_at >= starts,
+        CaseTask.due_at < ends,
+        CaseMember.user_id == principal.user_id,
+    ]
+    if principal.role == "assistant":
+        conditions.append(CaseTask.assigned_to == principal.user_id)
+    scope = (
+        select(CaseTask.id)
+        .join(Case, Case.id == CaseTask.case_id)
+        .join(
+            CaseMember,
+            and_(
+                CaseMember.case_id == Case.id,
+                CaseMember.organization_id == Case.organization_id,
+            ),
+        )
+        .where(*conditions)
+    )
+    rows = session.execute(
+        select(CaseTask, User.full_name, Case.title, Case.status)
+        .join(User, User.id == CaseTask.assigned_to)
+        .join(Case, Case.id == CaseTask.case_id)
+        .where(CaseTask.id.in_(scope))
+        .order_by(CaseTask.due_at.asc(), CaseTask.id.asc())
+        .limit(CALENDAR_MAX_ROWS + 1)
+    ).all()
+    return CalendarView(
+        items=[
+            InboxTaskView(task, name, title, status)
+            for task, name, title, status in rows[:CALENDAR_MAX_ROWS]
+        ],
+        truncated=len(rows) > CALENDAR_MAX_ROWS,
+    )
+
+
 def create_task(
     session: Session,
     principal: Principal,

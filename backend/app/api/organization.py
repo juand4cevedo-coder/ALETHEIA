@@ -333,6 +333,66 @@ def _invitation_out(invitation: Invitation) -> InvitationOut:
 
 
 @router.get(
+    "/audit/export",
+    summary="Exportar la auditoría de seguridad a CSV",
+    response_class=Response,
+    responses=_UNAUTHORIZED
+    | _FORBIDDEN
+    | {200: {"content": {"text/csv": {"schema": {"type": "string"}}}, "description": "CSV."}},
+)
+def organization_audit_export(
+    principal: Annotated[Principal, Depends(get_manager)],
+    session: Annotated[Session, Depends(get_session)],
+    action: Annotated[
+        OrganizationAuditAction | None,
+        Query(description="Acción de seguridad exacta."),
+    ] = None,
+    actor: Annotated[uuid.UUID | None, Query(description="Persona que originó el evento.")] = None,
+    created_from: Annotated[
+        datetime.datetime | None,
+        Query(description="Inicio inclusivo del periodo, con zona horaria."),
+    ] = None,
+    created_to: Annotated[
+        datetime.datetime | None,
+        Query(description="Fin exclusivo del periodo, con zona horaria."),
+    ] = None,
+) -> Response:
+    for boundary in (created_from, created_to):
+        if boundary is not None and boundary.tzinfo is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="Las fechas de auditoría deben incluir zona horaria.",
+            )
+    if created_from is not None and created_to is not None and created_from >= created_to:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="El inicio del periodo debe ser anterior al final.",
+        )
+    rows = organization_audit.events(
+        session,
+        principal,
+        after=None,
+        limit=organization_audit.MAX_EXPORT_ROWS + 1,
+        action=action.value if action is not None else None,
+        actor=actor,
+        created_from=created_from,
+        created_to=created_to,
+    )
+    truncated = len(rows) > organization_audit.MAX_EXPORT_ROWS
+    today = datetime.datetime.now(datetime.UTC).date().isoformat()
+    return Response(
+        content=organization_audit.to_csv(rows[: organization_audit.MAX_EXPORT_ROWS]),
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Cache-Control": "no-store",
+            "Content-Disposition": f'attachment; filename="auditoria-aletheia-{today}.csv"',
+            "X-Content-Type-Options": "nosniff",
+            "X-Rows-Truncated": "1" if truncated else "0",
+        },
+    )
+
+
+@router.get(
     "/audit",
     summary="Auditoría de seguridad de la organización",
     responses=_UNAUTHORIZED | _FORBIDDEN,

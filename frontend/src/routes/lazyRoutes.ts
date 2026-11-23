@@ -57,6 +57,8 @@ export const loadOrganizationPage = () =>
   import("../pages/OrganizationPage.tsx").then(
     (module) => module.OrganizationPage,
   );
+export const loadCalendarPage = () =>
+  import("../pages/CalendarPage.tsx").then((module) => module.CalendarPage);
 export const loadOrganizationAuditPage = () =>
   import("../pages/OrganizationAuditPage.tsx").then(
     (module) => module.OrganizationAuditPage,
