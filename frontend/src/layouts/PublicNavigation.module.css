@@ -77,8 +77,9 @@
    recibe el puntero, así el clic llega a la página y el panel se cierra. */
 .scrim {
   position: fixed;
-  z-index: 25;
-  inset: var(--header-height) 0 0;
+  /* Debajo del encabezado (z-index 20) y encima del contenido de la página. */
+  z-index: 19;
+  inset: 0;
   background: rgb(26 0 41 / 26%);
   backdrop-filter: blur(3px);
   pointer-events: none;

@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { Link, NavLink } from "react-router";
 import {
   ChevronAbajoIcon,
@@ -163,7 +164,13 @@ export function PublicNavigation() {
           </NavLink>
         </li>
       </ul>
-      {group && <div className={styles.scrim} aria-hidden="true" />}
+      {group &&
+        // Fuera del encabezado: su filtro de desenfoque haría de contenedor del velo y lo dejaría
+        // sin alto. En el cuerpo de la página cubre toda la ventana, por debajo del encabezado.
+        createPortal(
+          <div className={styles.scrim} aria-hidden="true" />,
+          document.body,
+        )}
       {group && (
         <div
           id="navigation-panel"

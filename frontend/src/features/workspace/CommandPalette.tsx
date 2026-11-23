@@ -115,6 +115,15 @@ export function CommandPalette({
   // El índice se acota al leer: si la lista se acorta al escribir, la selección no queda fuera.
   const activeIndex = Math.min(active, Math.max(entries.length - 1, 0));
 
+  // Con el foco en el campo de búsqueda, el navegador no desplaza la lista al mover la selección:
+  // se hace aquí para que la opción elegida siempre se vea antes de pulsar Enter.
+  useEffect(() => {
+    if (!open) return;
+    document
+      .getElementById(`${listId}-${activeIndex}`)
+      ?.scrollIntoView?.({ block: "nearest" });
+  }, [open, listId, activeIndex]);
+
   function choose(entry: Entry | undefined) {
     if (!entry) return;
     onClose();
