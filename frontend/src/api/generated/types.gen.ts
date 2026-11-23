@@ -294,6 +294,62 @@ export type CaseMemberOut = {
 };
 
 /**
+ * CaseNoteCreate
+ */
+export type CaseNoteCreate = {
+  /**
+   * Body
+   *
+   * Texto de la nota.
+   */
+  body: string;
+};
+
+/**
+ * CaseNoteOut
+ */
+export type CaseNoteOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Case Id
+   */
+  case_id: string;
+  /**
+   * Author Id
+   */
+  author_id: string;
+  /**
+   * Author Name
+   */
+  author_name: string;
+  /**
+   * Body
+   */
+  body: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+};
+
+/**
+ * CaseNotePage
+ */
+export type CaseNotePage = {
+  /**
+   * Items
+   */
+  items: Array<CaseNoteOut>;
+  /**
+   * Next Cursor
+   */
+  next_cursor: string | null;
+};
+
+/**
  * CaseOut
  *
  * Un caso activo o archivado.
@@ -1576,6 +1632,7 @@ export type Me = {
     | "cases.manage_retention"
     | "cases.manage_tasks"
     | "cases.complete_assigned_tasks"
+    | "cases.write_notes"
     | "cases.upload_evidence"
     | "cases.download_evidence"
   >;
@@ -4549,6 +4606,78 @@ export type UpdateCaseTaskStatusResponses = {
 
 export type UpdateCaseTaskStatusResponse =
   UpdateCaseTaskStatusResponses[keyof UpdateCaseTaskStatusResponses];
+
+export type ListCaseNotesData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: {
+    /**
+     * Cursor
+     */
+    cursor?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
+  };
+  url: "/api/v1/cases/{case_id}/notes";
+};
+
+export type ListCaseNotesErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListCaseNotesError = ListCaseNotesErrors[keyof ListCaseNotesErrors];
+
+export type ListCaseNotesResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaseNotePage;
+};
+
+export type ListCaseNotesResponse =
+  ListCaseNotesResponses[keyof ListCaseNotesResponses];
+
+export type CreateCaseNoteData = {
+  body: CaseNoteCreate;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/notes";
+};
+
+export type CreateCaseNoteErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CreateCaseNoteError =
+  CreateCaseNoteErrors[keyof CreateCaseNoteErrors];
+
+export type CreateCaseNoteResponses = {
+  /**
+   * Successful Response
+   */
+  201: CaseNoteOut;
+};
+
+export type CreateCaseNoteResponse =
+  CreateCaseNoteResponses[keyof CreateCaseNoteResponses];
 
 export type TaskInboxData = {
   body?: never;

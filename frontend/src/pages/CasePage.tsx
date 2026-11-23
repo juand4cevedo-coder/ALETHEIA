@@ -36,6 +36,7 @@ import { apiProblem } from "../features/auth/apiProblem.ts";
 import { CustodySection } from "../features/cases/CustodySection.tsx";
 import { EvidenceSection } from "../features/cases/EvidenceSection.tsx";
 import { ExportSection } from "../features/cases/ExportSection.tsx";
+import { NotesSection } from "../features/cases/NotesSection.tsx";
 import { TaskSection } from "../features/cases/TaskSection.tsx";
 import { formatColombiaTime } from "../features/cases/dates.ts";
 import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
@@ -48,11 +49,12 @@ import {
   CarpetaAbiertaIcon,
 } from "../components/ui/icons.tsx";
 
-type TabKey = "chain" | "team" | "tasks" | "evidence" | "export";
+type TabKey = "chain" | "team" | "tasks" | "notes" | "evidence" | "export";
 const TAB_ORDER: readonly TabKey[] = [
   "chain",
   "team",
   "tasks",
+  "notes",
   "evidence",
   "export",
 ];
@@ -190,6 +192,7 @@ function CaseView({
     chain: null,
     team: null,
     tasks: null,
+    notes: null,
     evidence: null,
     export: null,
   });
@@ -197,6 +200,7 @@ function CaseView({
     chain: useId(),
     team: useId(),
     tasks: useId(),
+    notes: useId(),
     evidence: useId(),
     export: useId(),
   };
@@ -238,6 +242,7 @@ function CaseView({
         unit: detail.member_count === 1 ? "persona" : "personas",
       },
       { key: "tasks", label: "Tareas y plazos" },
+      { key: "notes", label: "Notas" },
       { key: "evidence", label: "Evidencias" },
       ...(canExport ? [{ key: "export" as const, label: "Paquete" }] : []),
     ];
@@ -356,6 +361,21 @@ function CaseView({
               members={detail.members}
               role={me.organization?.role}
               currentUserId={me.id}
+              caseOpen={detail.status === "open"}
+            />
+          )}
+        </div>
+        <div
+          role="tabpanel"
+          id={`${ids.notes}-panel`}
+          aria-labelledby={`${ids.notes}-tab`}
+          className={styles.tabPanel}
+          tabIndex={0}
+          hidden={tab !== "notes"}
+        >
+          {tab === "notes" && (
+            <NotesSection
+              caseId={detail.id}
               caseOpen={detail.status === "open"}
             />
           )}

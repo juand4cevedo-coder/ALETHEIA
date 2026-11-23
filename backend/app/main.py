@@ -18,6 +18,7 @@ from app.api import (
     health,
     invitations,
     me,
+    notes,
     organization,
     plans,
     platform,
@@ -81,6 +82,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(cases.router, prefix=API_PREFIX)
     app.include_router(cases.download_router, prefix=API_PREFIX)
     app.include_router(tasks.router, prefix=API_PREFIX)
+    app.include_router(notes.router, prefix=API_PREFIX)
     app.include_router(tasks.inbox_router, prefix=API_PREFIX)
     app.include_router(exports.router, prefix=API_PREFIX)
     app.include_router(exports.case_router, prefix=API_PREFIX)

@@ -46,6 +46,9 @@ import type {
   CreateCaseExportData,
   CreateCaseExportErrors,
   CreateCaseExportResponses,
+  CreateCaseNoteData,
+  CreateCaseNoteErrors,
+  CreateCaseNoteResponses,
   CreateCaseResponses,
   CreateCaseTaskData,
   CreateCaseTaskErrors,
@@ -89,6 +92,9 @@ import type {
   InspectExportData,
   InspectExportErrors,
   InspectExportResponses,
+  ListCaseNotesData,
+  ListCaseNotesErrors,
+  ListCaseNotesResponses,
   ListCasesData,
   ListCasesErrors,
   ListCasesResponses,
@@ -1354,6 +1360,54 @@ export const updateCaseTaskStatus = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/cases/{case_id}/tasks/{task_id}/status",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Listar las notas de un caso
+ */
+export const listCaseNotes = <ThrowOnError extends boolean = false>(
+  options: Options<ListCaseNotesData, ThrowOnError>,
+): RequestResult<ListCaseNotesResponses, ListCaseNotesErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    ListCaseNotesResponses,
+    ListCaseNotesErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/notes",
+    ...options,
+  });
+
+/**
+ * Agregar una nota al caso
+ */
+export const createCaseNote = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCaseNoteData, ThrowOnError>,
+): RequestResult<CreateCaseNoteResponses, CreateCaseNoteErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CreateCaseNoteResponses,
+    CreateCaseNoteErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/notes",
     ...options,
     headers: {
       "Content-Type": "application/json",

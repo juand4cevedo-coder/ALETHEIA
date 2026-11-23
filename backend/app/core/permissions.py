@@ -19,6 +19,7 @@ Permission = Literal[
     "cases.manage_retention",
     "cases.manage_tasks",
     "cases.complete_assigned_tasks",
+    "cases.write_notes",
     "cases.upload_evidence",
     "cases.download_evidence",
 ]
@@ -37,6 +38,7 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.manage_retention",
             "cases.manage_tasks",
             "cases.complete_assigned_tasks",
+            "cases.write_notes",
             "cases.upload_evidence",
             "cases.download_evidence",
         }
@@ -52,6 +54,7 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.manage_retention",
             "cases.manage_tasks",
             "cases.complete_assigned_tasks",
+            "cases.write_notes",
             "cases.upload_evidence",
             "cases.download_evidence",
         }
@@ -65,6 +68,7 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "cases.manage_lifecycle",
             "cases.manage_tasks",
             "cases.complete_assigned_tasks",
+            "cases.write_notes",
             "cases.upload_evidence",
             "cases.download_evidence",
         }
@@ -73,6 +77,7 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
         {
             "organization.view",
             "cases.read_assigned",
+            "cases.write_notes",
             "cases.upload_evidence",
             "cases.complete_assigned_tasks",
         }
