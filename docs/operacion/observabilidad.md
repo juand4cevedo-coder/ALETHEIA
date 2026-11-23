@@ -4,7 +4,7 @@ El objetivo es enterarse antes de que algo falle y, si falla, enterarse en menos
 
 1. **Métricas desde el servidor.** `infra/prod/metricas.sh` corre cada minuto y publica en CloudWatch, en el espacio `ALETHEIA/Produccion`: peticiones, errores 5xx, latencia p95, errores registrados por la API y por el trabajador, contenedores activos, memoria, disco y tiempo de respuesta de la salud. Sale de los registros JSON que la API ya escribe; no agrega dependencias ni toca la aplicación.
 2. **Alarmas y panel en AWS.** `infra/aws/observabilidad.sh` crea las alarmas, un tema de avisos por correo y el panel `ALETHEIA`.
-3. **Sonda externa.** Un flujo de GitHub (`.github/workflows/sonda.yml`) pide `https://aletheia.sbs/api/v1/health` cada 10 minutos desde fuera de AWS y revisa que el certificado no venza en menos de 10 días. Si falla, GitHub avisa por correo a quien administra el repositorio. Cubre lo que el servidor no puede ver de sí mismo: caída total, certificado vencido o DNS roto. No usa Route 53 porque el plan gratuito de AWS bloquea la región de Norte de Virginia, donde viven sus métricas.
+3. **Sonda externa.** Un flujo de GitHub (`.github/workflows/sonda.yml`) pide `https://aletheia.sbs/api/v1/health` cada 10 minutos desde fuera de AWS y revisa que el certificado no venza en menos de 10 días. Si falla, abre una incidencia en el repositorio con la etiqueta `sonda-externa` y la cierra sola cuando el sitio vuelve; GitHub la envía por correo a quienes siguen el repositorio. Para recibirla, la persona administradora debe estar en «Watch > All Activity» o «Custom > Issues» del repositorio, con las notificaciones por correo activas en su perfil de GitHub. Cubre lo que el servidor no puede ver de sí mismo: caída total, certificado vencido o DNS roto. No usa Route 53 porque el plan gratuito de AWS bloquea la región de Norte de Virginia, donde viven sus métricas.
 
 ## Alarmas
 
@@ -23,7 +23,7 @@ Avisan de una falla en curso:
 
 | Alarma | Se activa cuando |
 | --- | --- |
-| Flujo «Sonda externa» de GitHub | Desde fuera, el sitio no responde tras tres intentos, o el certificado vence en menos de 10 días |
+| Incidencia «sonda-externa» de GitHub | Desde fuera, el sitio no responde tras tres intentos, o el certificado vence en menos de 10 días |
 | `aletheia-salud-api` | La API o la base no responden desde el servidor |
 | `aletheia-sin-metricas` | El servidor dejó de publicar métricas: puede estar apagado |
 | `aletheia-errores-5xx` | Cinco o más errores 5xx en cinco minutos, dos veces seguidas |
