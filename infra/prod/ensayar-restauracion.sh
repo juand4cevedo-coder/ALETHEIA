@@ -46,9 +46,12 @@ registrar "Comparando filas (producción antes y después de la copia / restaura
 for tabla in "${TABLAS[@]}"; do
     original="$(sql --dbname aletheia --command "SELECT count(*) FROM $tabla")"
     restaurada="$(sql --dbname "$TEMPORAL" --command "SELECT count(*) FROM $tabla")"
-    # Producción sigue recibiendo escrituras mientras se ensaya: la copia debe quedar entre el
-    # conteo previo y el posterior.
-    if ((restaurada >= antes[$tabla] && restaurada <= original)); then
+    # Producción sigue cambiando mientras se ensaya (entran filas y una purga las quita): la copia
+    # debe quedar entre el menor y el mayor de los dos conteos, antes y después de copiar. Si la
+    # tabla cambió en los dos sentidos a la vez, se repite el ensayo.
+    minimo=$((antes[$tabla] < original ? antes[$tabla] : original))
+    maximo=$((antes[$tabla] > original ? antes[$tabla] : original))
+    if ((restaurada >= minimo && restaurada <= maximo)); then
         printf '  %-16s %s / %s  igual\n' "$tabla" "$original" "$restaurada"
     else
         printf '  %-16s %s / %s  DIFERENTE\n' "$tabla" "$original" "$restaurada"
