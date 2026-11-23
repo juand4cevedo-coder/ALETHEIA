@@ -19,6 +19,7 @@ class CaseNote(Base):
         ForeignKeyConstraint(
             ["organization_id", "case_id"],
             ["cases.organization_id", "cases.id"],
+            ondelete="CASCADE",
         ),
         Index("ix_case_notes_case_id_id", "case_id", "id"),
     )

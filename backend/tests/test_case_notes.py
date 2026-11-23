@@ -126,3 +126,14 @@ def test_la_nota_exige_texto_dentro_de_los_limites(dispositivo: NuevoCliente, db
     assert (
         client.post(f"{_CASES}/{case_id}/notes", json={"body": "ok", "extra": 1}).status_code == 422
     )
+
+
+def test_una_nota_solo_con_espacios_se_rechaza(dispositivo: NuevoCliente, db: Session) -> None:
+    office = crear_oficina(db)
+    lawyer = crear_miembro(db, office, "abogada.vacia@example.com", "lawyer")
+    client = _session(dispositivo, db, lawyer)
+    case_id = client.post(_CASES, json={"title": "Caso sin notas vacias"}).json()["id"]
+
+    response = client.post(f"{_CASES}/{case_id}/notes", json={"body": "   \n  "})
+
+    assert response.status_code == 422

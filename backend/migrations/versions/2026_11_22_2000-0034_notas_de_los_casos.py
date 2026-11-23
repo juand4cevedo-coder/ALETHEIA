@@ -79,6 +79,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["organization_id", "case_id"],
             ["cases.organization_id", "cases.id"],
+            ondelete="CASCADE",
             name=op.f("fk_case_notes_organization_id_case_id_cases"),
         ),
         sa.ForeignKeyConstraint(
