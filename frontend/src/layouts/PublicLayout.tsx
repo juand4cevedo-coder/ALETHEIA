@@ -1,3 +1,4 @@
+import { photoProps } from "../config/media.ts";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { Link, Outlet, ScrollRestoration, useLocation } from "react-router";
 import { IconTile } from "../components/ui/IconTile.tsx";
@@ -209,6 +210,15 @@ export function PublicLayout() {
         <Outlet />
       </main>
       <footer className={styles.footer}>
+        <img
+          className={styles.footerPhoto}
+          alt=""
+          width={1920}
+          height={1080}
+          loading="lazy"
+          decoding="async"
+          {...photoProps("pie", "100vw")}
+        />
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
             <Brand />
