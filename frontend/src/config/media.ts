@@ -25,3 +25,18 @@ export function photoProps(
 export function photoThumb(photo: Photo): string {
   return file(photo, 640);
 }
+
+/** Capturas del producto: cada una se publica en 640 y en 1260 px de ancho. Un teléfono, que las
+ * dibuja a unos 340 px, descarga la de 640 (un 70 % más liviana). `path` es la ruta de la captura
+ * grande, por ejemplo «/media/producto/tareas.webp». */
+export function productShotProps(
+  path: string,
+  sizes: string,
+): { src: string; srcSet: string; sizes: string } {
+  const small = path.replace(/\.webp$/, "-640.webp");
+  return {
+    src: path,
+    srcSet: `${small} 640w, ${path} 1260w`,
+    sizes,
+  };
+}

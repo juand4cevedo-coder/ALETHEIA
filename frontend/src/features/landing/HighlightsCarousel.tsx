@@ -9,7 +9,7 @@ import {
 import { Link } from "react-router";
 
 import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
-import { photoProps } from "../../config/media.ts";
+import { photoProps, productShotProps } from "../../config/media.ts";
 import styles from "./HighlightsCarousel.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
@@ -193,7 +193,10 @@ export function HighlightsCarousel() {
               >
                 {item.visual.kind === "product" ? (
                   <img
-                    src={item.visual.image}
+                    {...productShotProps(
+                      item.visual.image,
+                      "(min-width: 820px) 47vw, 86vw",
+                    )}
                     alt={index === active ? item.visual.alt : ""}
                     width={1260}
                     height={720}
