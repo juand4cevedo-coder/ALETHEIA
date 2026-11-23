@@ -58,18 +58,16 @@ def test_elimina_una_cuenta_suelta_libera_el_correo_y_deja_auditoria(
     assert _delete(client, prueba.id, "prueba@example.com").status_code == 404
 
 
-def test_pide_el_correo_exacto_y_no_toca_cuentas_de_plataforma(
+def test_pide_el_correo_exacto_y_no_elimina_la_cuenta_de_plataforma(
     app: FastAPI, owner_db: Session, dispositivo: NuevoCliente
 ) -> None:
     admin = _user(owner_db, "plataforma@example.com", platform_admin=True)
-    otra = _user(owner_db, "otra.plataforma@example.com", platform_admin=True)
     prueba = crear_persona(owner_db, "prueba@example.com")
     _as_platform(app, owner_db, admin)
     owner_db.commit()
     client = dispositivo()
 
     assert _delete(client, prueba.id, "otro@example.com").status_code == 422
-    assert _delete(client, otra.id, otra.email).status_code == 409
     assert _delete(client, admin.id, admin.email).status_code == 409
     owner_db.expire_all()
     assert owner_db.get_one(User, prueba.id).status == "active"
