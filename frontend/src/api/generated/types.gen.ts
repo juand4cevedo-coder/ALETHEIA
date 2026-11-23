@@ -1751,6 +1751,7 @@ export type OrganizationAuditAction =
   | "invitation_accepted"
   | "role_changed"
   | "member_removed"
+  | "organization_policy_changed"
   | "plan_changed"
   | "subscription_canceled"
   | "subscription_expired"
@@ -1914,6 +1915,44 @@ export type OrganizationOut = {
    * Cuándo se creó la organización.
    */
   created_at: string;
+};
+
+/**
+ * OrganizationPolicies
+ *
+ * Políticas del despacho que afectan a todo el equipo.
+ */
+export type OrganizationPolicies = {
+  /**
+   * Default Retention Years
+   *
+   * Años que se conserva un caso archivado; solo cuenta para los futuros.
+   */
+  default_retention_years: number;
+  /**
+   * Session Days
+   *
+   * Días que dura una sesión. Solo afecta a los ingresos nuevos.
+   */
+  session_days: number;
+};
+
+/**
+ * OrganizationPoliciesRequest
+ */
+export type OrganizationPoliciesRequest = {
+  /**
+   * Default Retention Years
+   *
+   * Años que se conserva un caso archivado; solo cuenta para los futuros.
+   */
+  default_retention_years: number;
+  /**
+   * Session Days
+   *
+   * Días que dura una sesión. Solo afecta a los ingresos nuevos.
+   */
+  session_days: number;
 };
 
 /**
@@ -3774,6 +3813,70 @@ export type OrganizationHealthResponses = {
 
 export type OrganizationHealthResponse =
   OrganizationHealthResponses[keyof OrganizationHealthResponses];
+
+export type GetPoliciesData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/organization/policies";
+};
+
+export type GetPoliciesErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+};
+
+export type GetPoliciesError = GetPoliciesErrors[keyof GetPoliciesErrors];
+
+export type GetPoliciesResponses = {
+  /**
+   * Successful Response
+   */
+  200: OrganizationPolicies;
+};
+
+export type GetPoliciesResponse =
+  GetPoliciesResponses[keyof GetPoliciesResponses];
+
+export type PutPoliciesData = {
+  body: OrganizationPoliciesRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/organization/policies";
+};
+
+export type PutPoliciesErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type PutPoliciesError = PutPoliciesErrors[keyof PutPoliciesErrors];
+
+export type PutPoliciesResponses = {
+  /**
+   * Successful Response
+   */
+  200: OrganizationPolicies;
+};
+
+export type PutPoliciesResponse =
+  PutPoliciesResponses[keyof PutPoliciesResponses];
 
 export type PreviewInvitationData = {
   body: InvitationTokenRequest;

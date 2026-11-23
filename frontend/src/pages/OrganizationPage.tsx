@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, type ReactNode, useState } from "react";
 import { Navigate, useOutletContext } from "react-router";
 
 import type { Me } from "../api/generated";
@@ -15,6 +15,7 @@ import { Panel } from "../components/ui/Panel.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
+import { PoliciesCard } from "../features/workspace/PoliciesCard.tsx";
 import { managesOrganization } from "../features/workspace/roles.ts";
 import styles from "./OrganizationPage.module.css";
 
@@ -26,10 +27,20 @@ export function OrganizationPage() {
   if (!managesOrganization(me.organization?.role) || !me.organization) {
     return <Navigate to={ROUTES.app} replace />;
   }
-  return <NameCard organization={me.organization} />;
+  return (
+    <NameCard organization={me.organization}>
+      <PoliciesCard canEdit={me.organization.role === "owner"} />
+    </NameCard>
+  );
 }
 
-function NameCard({ organization }: { organization: { name: string } }) {
+function NameCard({
+  organization,
+  children,
+}: {
+  organization: { name: string };
+  children?: ReactNode;
+}) {
   const queryClient = useQueryClient();
   const [name, setName] = useState(organization.name);
   const [error, setError] = useState<string>();
@@ -94,6 +105,7 @@ function NameCard({ organization }: { organization: { name: string } }) {
           </Button>
         </form>
       </Panel>
+      {children}
     </div>
   );
 }

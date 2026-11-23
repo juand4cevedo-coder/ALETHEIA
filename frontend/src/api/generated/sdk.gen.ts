@@ -71,6 +71,9 @@ import type {
   ForgotPasswordData,
   ForgotPasswordErrors,
   ForgotPasswordResponses,
+  GetPoliciesData,
+  GetPoliciesErrors,
+  GetPoliciesResponses,
   GoogleCallbackData,
   GoogleCallbackErrors,
   GoogleCallbackResponses,
@@ -145,6 +148,9 @@ import type {
   PreviewInvitationData,
   PreviewInvitationErrors,
   PreviewInvitationResponses,
+  PutPoliciesData,
+  PutPoliciesErrors,
+  PutPoliciesResponses,
   ReadCaseData,
   ReadCaseErrors,
   ReadCaseExportData,
@@ -903,6 +909,54 @@ export const organizationHealth = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/organization/health",
     ...options,
+  });
+
+/**
+ * Políticas del despacho: conservación de casos y duración de sesión
+ */
+export const getPolicies = <ThrowOnError extends boolean = false>(
+  options?: Options<GetPoliciesData, ThrowOnError>,
+): RequestResult<GetPoliciesResponses, GetPoliciesErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GetPoliciesResponses,
+    GetPoliciesErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/policies",
+    ...options,
+  });
+
+/**
+ * Cambiar las políticas del despacho (solo el propietario)
+ */
+export const putPolicies = <ThrowOnError extends boolean = false>(
+  options: Options<PutPoliciesData, ThrowOnError>,
+): RequestResult<PutPoliciesResponses, PutPoliciesErrors, ThrowOnError> =>
+  (options.client ?? client).put<
+    PutPoliciesResponses,
+    PutPoliciesErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/policies",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**

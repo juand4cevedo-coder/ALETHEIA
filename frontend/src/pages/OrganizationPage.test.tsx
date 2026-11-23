@@ -146,3 +146,35 @@ describe("Nombre del despacho (API-022)", () => {
     },
   );
 });
+
+describe("Políticas del despacho", () => {
+  const POLICIES = { default_retention_years: 10, session_days: 14 };
+
+  it("la propietaria cambia la conservación y la duración de la sesión", async () => {
+    let sent: unknown;
+    serve("owner", {
+      "GET /api/v1/organization/policies": () => jsonResponse(POLICIES),
+      "PUT /api/v1/organization/policies": async (request) => {
+        sent = await request.json();
+        return jsonResponse(sent);
+      },
+    });
+    const user = userEvent.setup();
+    await renderRoute("/app/organizacion");
+
+    const retention = await screen.findByLabelText(
+      "Conservación de los casos archivados",
+    );
+    await user.selectOptions(retention, "5");
+    await user.selectOptions(
+      screen.getByLabelText("Duración de la sesión"),
+      "7",
+    );
+    await user.click(screen.getByRole("button", { name: "Guardar políticas" }));
+
+    expect(
+      await screen.findByText("Guardamos las políticas."),
+    ).toBeInTheDocument();
+    expect(sent).toEqual({ default_retention_years: 5, session_days: 7 });
+  });
+});

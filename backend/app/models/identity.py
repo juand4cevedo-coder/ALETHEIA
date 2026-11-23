@@ -58,6 +58,7 @@ AUDIT_ACTIONS: Final = (
     "case_task_created",
     "case_task_status_changed",
     "case_note_created",
+    "organization_policy_changed",
     "account_closed",
 )
 
