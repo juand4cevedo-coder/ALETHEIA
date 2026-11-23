@@ -303,7 +303,12 @@ def test_un_identificador_que_no_es_de_wompi_nunca_llega_a_la_url(
     identificador: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     llamadas: list[str] = []
-    monkeypatch.setattr(wompi, "_llamar", lambda url, **_kw: llamadas.append(url) or {})
+
+    def falsa(url: str, **_kw: object) -> dict[str, object]:
+        llamadas.append(url)
+        return {}
+
+    monkeypatch.setattr(wompi, "_llamar", falsa)
     creds = wompi.Credenciales(
         public_key="pub_test_x",
         private_key="prv_test_x",
