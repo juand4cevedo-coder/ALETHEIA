@@ -14,6 +14,7 @@ import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import { EmailStatus } from "../features/session/EmailStatus.tsx";
+import { OrganizationHealthPanel } from "../features/workspace/OrganizationHealthPanel.tsx";
 import { TaskInbox } from "../features/workspace/TaskInbox.tsx";
 import {
   managesOrganization,
@@ -169,6 +170,10 @@ export function WorkspacePage() {
               <a href={ROUTES.account}>Revise el plan en Mi cuenta</a> para no
               perder el acceso.
             </Notice>
+          )}
+
+          {managesOrganization(me.organization?.role) && (
+            <OrganizationHealthPanel />
           )}
 
           <TaskInbox me={me} />

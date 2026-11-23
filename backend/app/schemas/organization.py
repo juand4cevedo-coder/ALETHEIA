@@ -156,3 +156,30 @@ class OrganizationAuditEvent(BaseModel):
 class OrganizationAuditPage(BaseModel):
     items: list[OrganizationAuditEvent]
     next_cursor: uuid.UUID | None
+
+
+class SecurityIndicators(BaseModel):
+    """Conteos de eventos de seguridad de la ventana de la respuesta."""
+
+    logins: int
+    failed_logins: int
+    sessions_revoked: int
+    role_changes: int
+    invitations: int
+
+
+class OrganizationHealth(BaseModel):
+    """Salud del despacho para quien lo gestiona (HU de métricas)."""
+
+    storage_used_bytes: int
+    storage_limit_bytes: int | None = Field(description="Null si la organización no tiene plan.")
+    plan_name: str | None
+    subscription_status: str | None
+    subscription_ends_at: datetime.datetime | None = Field(
+        description="Fin de la prueba, del periodo vigente o de la lectura posterior a cancelar."
+    )
+    members: int
+    seats_included: int
+    seats_used: int = Field(description="Miembros más invitaciones abiertas.")
+    window_days: int
+    security: SecurityIndicators

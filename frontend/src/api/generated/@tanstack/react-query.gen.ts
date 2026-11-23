@@ -51,6 +51,7 @@ import {
   type Options,
   organizationAuditExport,
   organizationAuditPage,
+  organizationHealth,
   ownSupportTickets,
   platformAudit,
   platformBilling,
@@ -195,6 +196,9 @@ import type {
   OrganizationAuditPageData,
   OrganizationAuditPageError,
   OrganizationAuditPageResponse,
+  OrganizationHealthData,
+  OrganizationHealthError,
+  OrganizationHealthResponse,
   OwnSupportTicketsData,
   OwnSupportTicketsError,
   OwnSupportTicketsResponse,
@@ -1286,6 +1290,34 @@ export const organizationAuditPageInfiniteOptions = (
   );
   return opts as Omit<typeof opts, "initialData">;
 };
+
+export const organizationHealthQueryKey = (
+  options?: Options<OrganizationHealthData>,
+) => createQueryKey("organizationHealth", options);
+
+/**
+ * Salud del despacho: plan, almacenamiento, cupo y seguridad reciente
+ */
+export const organizationHealthOptions = (
+  options?: Options<OrganizationHealthData>,
+) =>
+  queryOptions<
+    OrganizationHealthResponse,
+    OrganizationHealthError,
+    OrganizationHealthResponse,
+    ReturnType<typeof organizationHealthQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await organizationHealth({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: organizationHealthQueryKey(options),
+  });
 
 /**
  * Ver una invitación antes de aceptarla

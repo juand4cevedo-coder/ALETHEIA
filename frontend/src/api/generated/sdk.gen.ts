@@ -128,6 +128,9 @@ import type {
   OrganizationAuditPageData,
   OrganizationAuditPageErrors,
   OrganizationAuditPageResponses,
+  OrganizationHealthData,
+  OrganizationHealthErrors,
+  OrganizationHealthResponses,
   OwnSupportTicketsData,
   OwnSupportTicketsErrors,
   OwnSupportTicketsResponses,
@@ -873,6 +876,32 @@ export const organizationAuditPage = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/organization/audit",
+    ...options,
+  });
+
+/**
+ * Salud del despacho: plan, almacenamiento, cupo y seguridad reciente
+ */
+export const organizationHealth = <ThrowOnError extends boolean = false>(
+  options?: Options<OrganizationHealthData, ThrowOnError>,
+): RequestResult<
+  OrganizationHealthResponses,
+  OrganizationHealthErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    OrganizationHealthResponses,
+    OrganizationHealthErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/health",
     ...options,
   });
 

@@ -99,6 +99,25 @@ function caseItem(overrides: Record<string, unknown> = {}) {
   };
 }
 
+const HEALTH = {
+  storage_used_bytes: 850 * 1024 * 1024,
+  storage_limit_bytes: 1024 * 1024 * 1024,
+  plan_name: "Profesional",
+  subscription_status: "trial",
+  subscription_ends_at: "2026-12-10T15:00:00Z",
+  members: 3,
+  seats_included: 3,
+  seats_used: 3,
+  window_days: 7,
+  security: {
+    logins: 12,
+    failed_logins: 2,
+    sessions_revoked: 0,
+    role_changes: 1,
+    invitations: 4,
+  },
+};
+
 function serve(role: Role, meOverrides: Record<string, unknown> = {}) {
   fetchMock.mockImplementation(async (input) => {
     const request = input as Request;
@@ -119,6 +138,9 @@ function serve(role: Role, meOverrides: Record<string, unknown> = {}) {
     }
     if (url.pathname === "/api/v1/tasks") {
       return jsonResponse(TASK_INBOX);
+    }
+    if (url.pathname === "/api/v1/organization/health") {
+      return jsonResponse(HEALTH);
     }
     throw new Error(`Ruta inesperada: ${request.method} ${url.pathname}`);
   });
@@ -258,4 +280,27 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
       await screen.findByRole("heading", { level: 1, name: "Laura Gómez" }),
     ).toBeInTheDocument();
   });
+});
+
+it("muestra la salud del despacho al propietario, con avisos de límite", async () => {
+  serve("owner");
+  await renderRoute("/app");
+  expect(
+    await screen.findByRole("heading", { name: "Salud del despacho" }),
+  ).toBeInTheDocument();
+  expect(screen.getByText(/Plan Profesional, en prueba/)).toBeInTheDocument();
+  expect(
+    screen.getByText(/Se acerca al límite de su plan/),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText(/No cabe nadie más sin cambiar de plan/),
+  ).toBeInTheDocument();
+  expect(screen.getByText("Ingresos fallidos")).toBeInTheDocument();
+});
+
+it("no muestra la salud del despacho a un abogado", async () => {
+  serve("lawyer");
+  await renderRoute("/app");
+  await screen.findByText(/Ver mis casos/);
+  expect(screen.queryByText("Salud del despacho")).toBeNull();
 });

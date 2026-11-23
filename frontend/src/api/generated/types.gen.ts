@@ -1814,6 +1814,57 @@ export type OrganizationAuditPage = {
 };
 
 /**
+ * OrganizationHealth
+ *
+ * Salud del despacho para quien lo gestiona (HU de métricas).
+ */
+export type OrganizationHealth = {
+  /**
+   * Storage Used Bytes
+   */
+  storage_used_bytes: number;
+  /**
+   * Storage Limit Bytes
+   *
+   * Null si la organización no tiene plan.
+   */
+  storage_limit_bytes: number | null;
+  /**
+   * Plan Name
+   */
+  plan_name: string | null;
+  /**
+   * Subscription Status
+   */
+  subscription_status: string | null;
+  /**
+   * Subscription Ends At
+   *
+   * Fin de la prueba, del periodo vigente o de la lectura posterior a cancelar.
+   */
+  subscription_ends_at: string | null;
+  /**
+   * Members
+   */
+  members: number;
+  /**
+   * Seats Included
+   */
+  seats_included: number;
+  /**
+   * Seats Used
+   *
+   * Miembros más invitaciones abiertas.
+   */
+  seats_used: number;
+  /**
+   * Window Days
+   */
+  window_days: number;
+  security: SecurityIndicators;
+};
+
+/**
  * OrganizationMembership
  *
  * La organización de la persona y su rol en ella.
@@ -2318,6 +2369,34 @@ export type SeatsOut = {
    * El propietario de la plataforma puede invitar sin tope del plan.
    */
   owner_exempt: boolean;
+};
+
+/**
+ * SecurityIndicators
+ *
+ * Conteos de eventos de seguridad de la ventana de la respuesta.
+ */
+export type SecurityIndicators = {
+  /**
+   * Logins
+   */
+  logins: number;
+  /**
+   * Failed Logins
+   */
+  failed_logins: number;
+  /**
+   * Sessions Revoked
+   */
+  sessions_revoked: number;
+  /**
+   * Role Changes
+   */
+  role_changes: number;
+  /**
+   * Invitations
+   */
+  invitations: number;
 };
 
 /**
@@ -3664,6 +3743,37 @@ export type OrganizationAuditPageResponses = {
 
 export type OrganizationAuditPageResponse =
   OrganizationAuditPageResponses[keyof OrganizationAuditPageResponses];
+
+export type OrganizationHealthData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/organization/health";
+};
+
+export type OrganizationHealthErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * No es propietario ni administrador.
+   */
+  403: Problem;
+};
+
+export type OrganizationHealthError =
+  OrganizationHealthErrors[keyof OrganizationHealthErrors];
+
+export type OrganizationHealthResponses = {
+  /**
+   * Successful Response
+   */
+  200: OrganizationHealth;
+};
+
+export type OrganizationHealthResponse =
+  OrganizationHealthResponses[keyof OrganizationHealthResponses];
 
 export type PreviewInvitationData = {
   body: InvitationTokenRequest;

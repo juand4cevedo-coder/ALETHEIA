@@ -26,14 +26,17 @@ from app.schemas.organization import (
     OrganizationAuditAction,
     OrganizationAuditEvent,
     OrganizationAuditPage,
+    OrganizationHealth,
     OrganizationOut,
     OrganizationRenameRequest,
     RoleChangeRequest,
     SeatsOut,
+    SecurityIndicators,
 )
 from app.services import members as members_service
 from app.services import organization as organization_service
 from app.services import organization_audit
+from app.services import organization_health as organization_health_service
 from app.services.sessions import Principal
 
 router = APIRouter(prefix="/organization", tags=["organización"])
@@ -459,4 +462,31 @@ def organization_audit_page(
             for event in page
         ],
         next_cursor=page[-1].id if len(rows) > limit else None,
+    )
+
+
+@router.get(
+    "/health",
+    summary="Salud del despacho: plan, almacenamiento, cupo y seguridad reciente",
+    responses=_UNAUTHORIZED | _FORBIDDEN,
+)
+def organization_health(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_manager)],
+    session: Annotated[Session, Depends(get_session)],
+) -> OrganizationHealth:
+    response.headers["Cache-Control"] = "no-store"
+    now = datetime.datetime.now(datetime.UTC)
+    result = organization_health_service.health(session, principal, now)
+    return OrganizationHealth(
+        storage_used_bytes=result.storage_used_bytes,
+        storage_limit_bytes=result.storage_limit_bytes,
+        plan_name=result.plan_name,
+        subscription_status=result.subscription_status,
+        subscription_ends_at=result.subscription_ends_at,
+        members=result.members,
+        seats_included=result.seats_included,
+        seats_used=result.seats_used,
+        window_days=result.window_days,
+        security=SecurityIndicators(**result.indicators),
     )
