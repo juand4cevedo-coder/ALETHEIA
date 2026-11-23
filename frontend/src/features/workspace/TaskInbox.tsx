@@ -7,6 +7,7 @@ import { EmptyState } from "../../components/ui/EmptyState.tsx";
 import { Panel } from "../../components/ui/Panel.tsx";
 import { StatusBadge } from "../../components/ui/StatusBadge.tsx";
 import { ROUTES } from "../../config/routes.ts";
+import { dayKey } from "../calendar/calendar.ts";
 import { formatColombiaTime } from "../cases/dates.ts";
 import styles from "./TaskInbox.module.css";
 
@@ -16,6 +17,25 @@ const PRIORITY = {
   high: "Alta",
   urgent: "Urgente",
 } as const;
+
+const GROUPS = [
+  { key: "overdue", label: "Vencidas" },
+  { key: "today", label: "Para hoy" },
+  { key: "week", label: "Esta semana" },
+  { key: "later", label: "Más adelante" },
+  { key: "none", label: "Sin plazo" },
+] as const;
+type GroupKey = (typeof GROUPS)[number]["key"];
+
+// Agrupa por el día de Colombia, no por el del navegador: un plazo «para hoy» es el de hoy allá.
+function groupOf(dueAt: string | null, now: number): GroupKey {
+  if (dueAt === null) return "none";
+  const due = new Date(dueAt).getTime();
+  if (due < now) return "overdue";
+  const today = dayKey(new Date(now).toISOString());
+  if (dayKey(dueAt) === today) return "today";
+  return due - now < 7 * 24 * 60 * 60 * 1000 ? "week" : "later";
+}
 
 export function TaskInbox({ me }: { me: Me }) {
   const [now] = useState(() => Date.now());
@@ -82,38 +102,55 @@ export function TaskInbox({ me }: { me: Me }) {
               }
             />
           ) : (
-            <ol className={styles.list} aria-label="Tareas próximas">
-              {data.items.map((task) => {
-                const overdue =
-                  task.due_at !== null && new Date(task.due_at).getTime() < now;
+            <div className={styles.groups}>
+              {GROUPS.map(({ key, label }) => {
+                const tasks = data.items.filter(
+                  (task) => groupOf(task.due_at, now) === key,
+                );
+                if (tasks.length === 0) return null;
                 return (
-                  <li key={task.id}>
-                    <a
-                      href={`${ROUTES.cases}/${task.case_id}#tareas`}
-                      className={styles.task}
-                    >
-                      <span className={styles.taskMain}>
-                        <strong>{task.title}</strong>
-                        <span>{task.case_title}</span>
-                      </span>
-                      <span className={styles.meta}>
-                        {!personal && <span>{task.assignee_name}</span>}
-                        <StatusBadge tone={overdue ? "error" : "pending"}>
-                          {overdue
-                            ? "Vencida"
-                            : task.due_at
-                              ? formatColombiaTime(task.due_at)
-                              : "Sin plazo"}
-                        </StatusBadge>
-                        <span>
-                          Prioridad {PRIORITY[task.priority].toLowerCase()}
-                        </span>
-                      </span>
-                    </a>
-                  </li>
+                  <section key={key} aria-label={label} data-group={key}>
+                    <h3 className={styles.groupTitle}>
+                      {label} <span>{tasks.length}</span>
+                    </h3>
+                    <ol className={styles.list}>
+                      {tasks.map((task) => {
+                        const overdue = key === "overdue";
+                        return (
+                          <li key={task.id}>
+                            <a
+                              href={`${ROUTES.cases}/${task.case_id}#tareas`}
+                              className={styles.task}
+                            >
+                              <span className={styles.taskMain}>
+                                <strong>{task.title}</strong>
+                                <span>{task.case_title}</span>
+                              </span>
+                              <span className={styles.meta}>
+                                {!personal && <span>{task.assignee_name}</span>}
+                                <StatusBadge
+                                  tone={overdue ? "error" : "pending"}
+                                >
+                                  {overdue
+                                    ? "Vencida"
+                                    : task.due_at
+                                      ? formatColombiaTime(task.due_at)
+                                      : "Sin plazo"}
+                                </StatusBadge>
+                                <span>
+                                  Prioridad{" "}
+                                  {PRIORITY[task.priority].toLowerCase()}
+                                </span>
+                              </span>
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </section>
                 );
               })}
-            </ol>
+            </div>
           )}
         </>
       )}

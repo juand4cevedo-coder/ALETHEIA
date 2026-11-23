@@ -304,3 +304,44 @@ it("no muestra la salud del despacho a un abogado", async () => {
   await screen.findByText(/Ver mis casos/);
   expect(screen.queryByText("Salud del despacho")).toBeNull();
 });
+
+it("agrupa las tareas por plazo: vencidas, esta semana y más adelante", async () => {
+  const day = 24 * 60 * 60 * 1000;
+  const task = (id: string, title: string, offsetDays: number) => ({
+    ...TASK_INBOX.items[0]!,
+    id,
+    title,
+    due_at: new Date(Date.now() + offsetDays * day).toISOString(),
+  });
+  fetchMock.mockImplementation(async (input) => {
+    const url = new URL((input as Request).url);
+    if (url.pathname === "/api/v1/me") return jsonResponse(me("lawyer"));
+    if (url.pathname === "/api/v1/tasks") {
+      return jsonResponse({
+        ...TASK_INBOX,
+        items: [
+          task("01890a5d-ac96-774b-bcce-b302099a8101", "Contestar demanda", -2),
+          task("01890a5d-ac96-774b-bcce-b302099a8102", "Revisar pruebas", 3),
+          task("01890a5d-ac96-774b-bcce-b302099a8103", "Archivar caso", 30),
+        ],
+      });
+    }
+    if (url.pathname === "/api/v1/cases") {
+      return jsonResponse({ items: [], next_cursor: null, totals: TOTALS });
+    }
+    throw new Error(`Ruta inesperada: ${url.pathname}`);
+  });
+  await renderRoute("/app");
+  const overdue = await screen.findByRole("region", { name: "Vencidas" });
+  expect(within(overdue).getByText("Contestar demanda")).toBeInTheDocument();
+  expect(
+    within(screen.getByRole("region", { name: "Esta semana" })).getByText(
+      "Revisar pruebas",
+    ),
+  ).toBeInTheDocument();
+  expect(
+    within(screen.getByRole("region", { name: "Más adelante" })).getByText(
+      "Archivar caso",
+    ),
+  ).toBeInTheDocument();
+});
