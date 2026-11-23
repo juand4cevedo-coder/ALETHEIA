@@ -21,6 +21,7 @@ from app.core.config import Settings
 
 # Registran las plantillas de correo: sin estos imports, el trabajador no las conoce.
 from app.services import account_emails as _account_emails  # noqa: F401
+from app.services import client_portal_emails as _client_portal_emails  # noqa: F401
 from app.services import (
     custody_anchor,
     evidence_stamp,

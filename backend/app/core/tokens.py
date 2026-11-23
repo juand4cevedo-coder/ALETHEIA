@@ -430,3 +430,68 @@ def read_share_link(master_key: str, token: str) -> ShareLinkClaims:
         )
     except jwt.PyJWTError, ValueError, TypeError, KeyError:
         raise InvalidShareLinkError from None
+
+
+_PORTAL_USE: Final = "link:client_portal"
+_PORTAL_AUDIENCE: Final = "client_portal"
+
+
+class InvalidPortalLinkError(Exception):
+    """El enlace del portal falta, fue alterado o venció, sin decir cuál de las causas."""
+
+
+@dataclass(frozen=True, slots=True)
+class PortalLinkClaims:
+    access_id: uuid.UUID
+    organization_id: uuid.UUID
+    version: int
+
+
+def issue_portal_link(
+    master_key: str,
+    access_id: uuid.UUID,
+    organization_id: uuid.UUID,
+    version: int,
+    expires_at: datetime.datetime,
+    *,
+    now: datetime.datetime | None = None,
+) -> str:
+    """Firma el enlace de un cliente al portal. La fila `client_portal_accesses` manda: revocar el
+    acceso o reenviar el enlace (que sube la versión) invalida este aunque la firma siga vigente."""
+    issued_at = now or datetime.datetime.now(datetime.UTC)
+    if expires_at.tzinfo is None or expires_at.utcoffset() is None or expires_at <= issued_at:
+        raise ValueError("El enlace necesita un vencimiento futuro con zona horaria.")
+    claims = {
+        "iss": _ISSUER,
+        "aud": _PORTAL_AUDIENCE,
+        "sub": str(access_id),
+        "org": str(organization_id),
+        "ver": version,
+        "iat": issued_at,
+        "exp": expires_at,
+    }
+    return jwt.encode(claims, _subkey(master_key, _PORTAL_USE), algorithm=_ALGORITHM)
+
+
+def read_portal_link(master_key: str, token: str) -> PortalLinkClaims:
+    if len(token) > MAX_TOKEN_LENGTH:
+        raise InvalidPortalLinkError
+    try:
+        claims = jwt.decode(
+            token,
+            _subkey(master_key, _PORTAL_USE),
+            algorithms=[_ALGORITHM],
+            audience=_PORTAL_AUDIENCE,
+            issuer=_ISSUER,
+            options={"require": ["iss", "aud", "sub", "org", "ver", "iat", "exp"]},
+        )
+        version = claims["ver"]
+        if not isinstance(version, int) or isinstance(version, bool):
+            raise InvalidPortalLinkError
+        return PortalLinkClaims(
+            access_id=uuid.UUID(claims["sub"]),
+            organization_id=uuid.UUID(claims["org"]),
+            version=version,
+        )
+    except jwt.PyJWTError, ValueError, TypeError, KeyError:
+        raise InvalidPortalLinkError from None

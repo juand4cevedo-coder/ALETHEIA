@@ -29,6 +29,10 @@ export const loadRecoverTwoFactorPage = () =>
   import("../pages/RecoverTwoFactorPage.tsx").then(
     (module) => module.RecoverTwoFactorPage,
   );
+export const loadClientPortalPage = () =>
+  import("../pages/ClientPortalPage.tsx").then(
+    (module) => module.ClientPortalPage,
+  );
 export const loadAppShell = () =>
   import("../layouts/AppShell.tsx").then((module) => module.AppShell);
 export const loadWorkspacePage = () =>

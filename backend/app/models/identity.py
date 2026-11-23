@@ -72,6 +72,10 @@ AUDIT_ACTIONS: Final = (
     "two_factor_recovery_requested",
     "two_factor_recovery_canceled",
     "two_factor_recovery_completed",
+    "client_portal_invited",
+    "client_portal_revoked",
+    "client_portal_notice_accepted",
+    "client_portal_update_published",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.

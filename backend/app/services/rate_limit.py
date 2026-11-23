@@ -70,6 +70,9 @@ VITALS_IP: Final = Limit("vitals_ip", 60, _WINDOW)
 # Recuperar el segundo factor (ADR-053): pedir el enlace, confirmarlo, cancelarlo y terminarlo.
 TWO_FACTOR_RECOVERY_ACCOUNT: Final = Limit("two_factor_recovery_account", 3, _WINDOW)
 TWO_FACTOR_RECOVERY_IP: Final = Limit("two_factor_recovery_ip", 10, _WINDOW)
+# Portal del cliente (ADR-054): abrir el enlace, aceptar el aviso e invitar desde una cuenta.
+PORTAL_IP: Final = Limit("portal_ip", 60, _WINDOW)
+PORTAL_INVITE_ACCOUNT: Final = Limit("portal_invite_account", 20, _WINDOW)
 
 LIMITS: Final = (
     LOGIN_ACCOUNT,
@@ -91,6 +94,8 @@ LIMITS: Final = (
     VITALS_IP,
     TWO_FACTOR_RECOVERY_ACCOUNT,
     TWO_FACTOR_RECOVERY_IP,
+    PORTAL_IP,
+    PORTAL_INVITE_ACCOUNT,
 )
 # Un intento más viejo que la ventana más larga ya no cuenta para ningún límite.
 RETENTION: Final = max(limit.window for limit in LIMITS)

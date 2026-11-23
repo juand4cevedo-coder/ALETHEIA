@@ -1,0 +1,65 @@
+.notice {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--paper-sunken);
+  color: var(--text-2);
+}
+
+.notice h2 {
+  color: var(--text);
+  font-size: var(--font-size-body);
+  font-weight: 650;
+}
+
+.notice p {
+  margin: 0;
+}
+
+.updates {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.update {
+  padding: var(--space-4) var(--space-5);
+  border-radius: 20px;
+  background: var(--paper-raised);
+  box-shadow: var(--brass-hairline), var(--shadow-card);
+}
+
+.update header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.update time {
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+}
+
+/* El texto se muestra tal como se escribió, con sus saltos de línea. */
+.update p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.empty,
+.foot {
+  margin: 0;
+  color: var(--text-2);
+}
+
+.foot {
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+}

@@ -43,19 +43,22 @@ import { PRACTICE_AREA_LABELS } from "../features/cases/practiceAreas.ts";
 import { initialsOf } from "../features/session/initials.ts";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./CasePage.module.css";
+import { ClientPortalSection } from "../features/cases/ClientPortalSection.tsx";
 import {
   BalanzaIcon,
   CargandoIcon,
   CarpetaAbiertaIcon,
 } from "../components/ui/icons.tsx";
 
-type TabKey = "chain" | "team" | "tasks" | "notes" | "evidence" | "export";
+type TabKey =
+  "chain" | "team" | "tasks" | "notes" | "evidence" | "portal" | "export";
 const TAB_ORDER: readonly TabKey[] = [
   "chain",
   "team",
   "tasks",
   "notes",
   "evidence",
+  "portal",
   "export",
 ];
 
@@ -185,15 +188,18 @@ function CaseView({
   const canExport = ["owner", "admin", "lawyer"].includes(
     me.organization?.role ?? "",
   );
-  const tabOrder = canExport
-    ? TAB_ORDER
-    : TAB_ORDER.filter((key) => key !== "export");
+  // El portal lo manejan los dueños y los abogados; el paquete, también los administradores.
+  const canPortal = ["owner", "lawyer"].includes(me.organization?.role ?? "");
+  const tabOrder = TAB_ORDER.filter(
+    (key) => (key !== "export" || canExport) && (key !== "portal" || canPortal),
+  );
   const tabRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({
     chain: null,
     team: null,
     tasks: null,
     notes: null,
     evidence: null,
+    portal: null,
     export: null,
   });
   const ids = {
@@ -202,6 +208,7 @@ function CaseView({
     tasks: useId(),
     notes: useId(),
     evidence: useId(),
+    portal: useId(),
     export: useId(),
   };
   // La API entrega los últimos eventos; el número del más reciente es el total de la cadena.
@@ -244,6 +251,9 @@ function CaseView({
       { key: "tasks", label: "Tareas y plazos" },
       { key: "notes", label: "Notas" },
       { key: "evidence", label: "Evidencias" },
+      ...(canPortal
+        ? [{ key: "portal" as const, label: "Portal del cliente" }]
+        : []),
       ...(canExport ? [{ key: "export" as const, label: "Paquete" }] : []),
     ];
 
@@ -395,6 +405,23 @@ function CaseView({
             />
           )}
         </div>
+        {canPortal && (
+          <div
+            role="tabpanel"
+            id={`${ids.portal}-panel`}
+            aria-labelledby={`${ids.portal}-tab`}
+            className={styles.tabPanel}
+            tabIndex={0}
+            hidden={tab !== "portal"}
+          >
+            {tab === "portal" && (
+              <ClientPortalSection
+                caseId={detail.id}
+                caseOpen={detail.status === "open"}
+              />
+            )}
+          </div>
+        )}
         {canExport && (
           <div
             role="tabpanel"
