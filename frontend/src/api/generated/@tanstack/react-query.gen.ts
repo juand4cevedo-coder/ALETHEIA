@@ -37,6 +37,7 @@ import {
   deletePlatformUser,
   deleteTaskTemplate,
   downloadEvidence,
+  downloadEvidenceTimestamp,
   downloadExport,
   downloadPortalDocument,
   downloadSharedEvidence,
@@ -97,6 +98,7 @@ import {
   requestRecovery,
   resendVerification,
   resetPassword,
+  retryEvidenceTimestamp,
   revokeClientAccess,
   revokeCourtesy,
   revokeInvitation,
@@ -205,6 +207,9 @@ import type {
   DeleteTaskTemplateResponse,
   DownloadEvidenceData,
   DownloadEvidenceError,
+  DownloadEvidenceTimestampData,
+  DownloadEvidenceTimestampError,
+  DownloadEvidenceTimestampResponse,
   DownloadExportData,
   DownloadExportError,
   DownloadExportResponse,
@@ -373,6 +378,9 @@ import type {
   ResetPasswordData,
   ResetPasswordError,
   ResetPasswordResponse,
+  RetryEvidenceTimestampData,
+  RetryEvidenceTimestampError,
+  RetryEvidenceTimestampResponse,
   RevokeClientAccessData,
   RevokeClientAccessError,
   RevokeClientAccessResponse,
@@ -1848,6 +1856,61 @@ export const readEvidenceOptions = (options: Options<ReadEvidenceData>) =>
     },
     queryKey: readEvidenceQueryKey(options),
   });
+
+export const downloadEvidenceTimestampQueryKey = (
+  options: Options<DownloadEvidenceTimestampData>,
+) => createQueryKey("downloadEvidenceTimestamp", options);
+
+/**
+ * Descargar el sello de tiempo para verificarlo fuera de ALETHEIA
+ */
+export const downloadEvidenceTimestampOptions = (
+  options: Options<DownloadEvidenceTimestampData>,
+) =>
+  queryOptions<
+    DownloadEvidenceTimestampResponse,
+    DownloadEvidenceTimestampError,
+    DownloadEvidenceTimestampResponse,
+    ReturnType<typeof downloadEvidenceTimestampQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await downloadEvidenceTimestamp({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: downloadEvidenceTimestampQueryKey(options),
+  });
+
+/**
+ * Pedir otra vez el sello de tiempo de una evidencia cuyo sello falló
+ */
+export const retryEvidenceTimestampMutation = (
+  options?: Partial<Options<RetryEvidenceTimestampData>>,
+): UseMutationOptions<
+  RetryEvidenceTimestampResponse,
+  RetryEvidenceTimestampError,
+  Options<RetryEvidenceTimestampData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RetryEvidenceTimestampResponse,
+    RetryEvidenceTimestampError,
+    Options<RetryEvidenceTimestampData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await retryEvidenceTimestamp({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const listCasesQueryKey = (options?: Options<ListCasesData>) =>
   createQueryKey("listCases", options);

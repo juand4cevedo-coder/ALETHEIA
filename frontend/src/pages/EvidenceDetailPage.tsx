@@ -10,7 +10,6 @@ import { Hash } from "../components/ui/Hash.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
-import { StatusBadge } from "../components/ui/StatusBadge.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
@@ -19,13 +18,8 @@ import { apiProblem } from "../features/auth/apiProblem.ts";
 import { custodyActionLabel } from "../features/cases/custodyActions.ts";
 import { formatColombiaTime } from "../features/cases/dates.ts";
 import { ShareEvidencePanel } from "../features/cases/ShareEvidencePanel.tsx";
+import { TimestampPanel } from "../features/cases/TimestampPanel.tsx";
 import styles from "./EvidenceDetailPage.module.css";
-
-const SEAL = {
-  pending: { tone: "pending", label: "Sello pendiente" },
-  stamped: { tone: "ok", label: "Sello obtenido" },
-  failed: { tone: "error", label: "Sello fallido" },
-} as const;
 
 export function EvidenceDetailPage() {
   const me = useOutletContext<Me>();
@@ -113,7 +107,6 @@ export function EvidenceDetailPage() {
 
   const evidence = detail.data.pages[0];
   const events = detail.data.pages.flatMap((page) => page.events);
-  const seal = SEAL[evidence.tsa_status];
   return (
     <div className={styles.screen}>
       <title>{pageTitle(evidence.original_filename)}</title>
@@ -177,19 +170,19 @@ export function EvidenceDetailPage() {
               <Hash value={evidence.sha256} variant="full" />
             </dd>
           </div>
-          <div>
-            <dt>Sello de tiempo</dt>
-            <dd>
-              <StatusBadge tone={seal.tone}>{seal.label}</StatusBadge>
-              {evidence.tsa_time && (
-                <time dateTime={evidence.tsa_time}>
-                  {formatColombiaTime(evidence.tsa_time, { seconds: true })}
-                </time>
-              )}
-            </dd>
-          </div>
         </dl>
       </Panel>
+      <TimestampPanel
+        caseId={caseId}
+        evidenceId={evidenceId}
+        filename={evidence.original_filename}
+        sha256={evidence.sha256}
+        status={evidence.tsa_status}
+        time={evidence.tsa_time}
+        authority={evidence.tsa_authority}
+        canRetry={me.organization != null}
+        onChanged={() => void detail.refetch()}
+      />
       {me.organization?.role !== "assistant" && me.organization && (
         <ShareEvidencePanel caseId={caseId} evidenceId={evidenceId} />
       )}

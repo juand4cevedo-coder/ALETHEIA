@@ -23,6 +23,46 @@ class EvidenceEvent:
     event_hash: bytes
 
 
+# Datos de un evento que se muestran: una lista cerrada de claves con valores simples.
+SAFE_DETAIL_KEYS = frozenset(
+    {
+        "sha256",
+        "size_bytes",
+        "tsa_time",
+        "reason",
+        "export_id",
+        "manifest_sha256",
+        "link_id",
+        "expires_at",
+        "retention_until",
+        "retention_basis",
+        "name",
+        "role",
+    }
+)
+
+
+@dataclass(frozen=True)
+class CaseEvent(EvidenceEvent):
+    """Un evento con lo necesario para cotejarlo contra la cadena."""
+
+    prev_hash: bytes
+    evidence_id: uuid.UUID | None
+    details: dict[str, str | int | None]
+
+
+def safe_details(raw: object) -> dict[str, str | int | None]:
+    """Solo las claves permitidas y con valores simples: la cadena puede guardar más de lo que se
+    muestra, y un valor anidado nunca sale tal cual."""
+    if not isinstance(raw, dict):
+        return {}
+    shown: dict[str, str | int | None] = {}
+    for key, value in raw.items():
+        if key in SAFE_DETAIL_KEYS and (value is None or isinstance(value, str | int)):
+            shown[key] = value
+    return shown
+
+
 def list_case_events(
     session: Session,
     principal: Principal,
@@ -30,7 +70,7 @@ def list_case_events(
     *,
     cursor: int | None,
     limit: int,
-) -> tuple[list[EvidenceEvent], int | None]:
+) -> tuple[list[CaseEvent], int | None]:
     """Página de custodia tras comprobar la asignación al caso."""
     organization_id = principal.organization_id
     if organization_id is None:
@@ -46,6 +86,9 @@ def list_case_events(
             User.full_name,
             CustodyEvent.occurred_at,
             CustodyEvent.event_hash,
+            CustodyEvent.prev_hash,
+            CustodyEvent.evidence_id,
+            CustodyEvent.details,
         )
         .outerjoin(User, User.id == CustodyEvent.actor_user_id)
         .where(CustodyEvent.organization_id == organization_id, CustodyEvent.case_id == case_id)
@@ -53,7 +96,19 @@ def list_case_events(
     if cursor is not None:
         statement = statement.where(CustodyEvent.seq < cursor)
     rows = list(session.execute(statement.order_by(CustodyEvent.seq.desc()).limit(limit + 1)))
-    items = [EvidenceEvent(*row) for row in rows[:limit]]
+    items = [
+        CaseEvent(
+            seq=row[0],
+            action=row[1],
+            actor_name=row[2],
+            occurred_at=row[3],
+            event_hash=row[4],
+            prev_hash=row[5],
+            evidence_id=row[6],
+            details=safe_details(row[7]),
+        )
+        for row in rows[:limit]
+    ]
     return items, items[-1].seq if len(rows) > limit else None
 
 

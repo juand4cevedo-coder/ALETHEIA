@@ -92,6 +92,9 @@ import type {
   DownloadEvidenceData,
   DownloadEvidenceErrors,
   DownloadEvidenceResponses,
+  DownloadEvidenceTimestampData,
+  DownloadEvidenceTimestampErrors,
+  DownloadEvidenceTimestampResponses,
   DownloadExportData,
   DownloadExportErrors,
   DownloadExportResponses,
@@ -264,6 +267,9 @@ import type {
   ResetPasswordData,
   ResetPasswordErrors,
   ResetPasswordResponses,
+  RetryEvidenceTimestampData,
+  RetryEvidenceTimestampErrors,
+  RetryEvidenceTimestampResponses,
   RevokeClientAccessData,
   RevokeClientAccessErrors,
   RevokeClientAccessResponses,
@@ -1265,6 +1271,58 @@ export const readEvidence = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/cases/{case_id}/evidences/{evidence_id}",
+    ...options,
+  });
+
+/**
+ * Descargar el sello de tiempo para verificarlo fuera de ALETHEIA
+ */
+export const downloadEvidenceTimestamp = <ThrowOnError extends boolean = false>(
+  options: Options<DownloadEvidenceTimestampData, ThrowOnError>,
+): RequestResult<
+  DownloadEvidenceTimestampResponses,
+  DownloadEvidenceTimestampErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    DownloadEvidenceTimestampResponses,
+    DownloadEvidenceTimestampErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/timestamp",
+    ...options,
+  });
+
+/**
+ * Pedir otra vez el sello de tiempo de una evidencia cuyo sello falló
+ */
+export const retryEvidenceTimestamp = <ThrowOnError extends boolean = false>(
+  options: Options<RetryEvidenceTimestampData, ThrowOnError>,
+): RequestResult<
+  RetryEvidenceTimestampResponses,
+  RetryEvidenceTimestampErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    RetryEvidenceTimestampResponses,
+    RetryEvidenceTimestampErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/timestamp/retry",
     ...options,
   });
 

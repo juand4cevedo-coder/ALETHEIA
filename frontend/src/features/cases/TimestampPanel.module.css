@@ -1,0 +1,33 @@
+.stack {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}
+
+.stack p {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--text-2);
+}
+
+.stack pre {
+  max-width: 100%;
+  margin: var(--space-3) 0;
+  padding: var(--space-4);
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  background: var(--paper-sunken);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-label);
+}
+
+.stack details summary {
+  width: fit-content;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.stack code {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
