@@ -8,6 +8,7 @@ import {
   deleteTaskTemplateMutation,
   listTaskTemplatesOptions,
   listTaskTemplatesQueryKey,
+  updateTaskTemplateMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { EmptyState } from "../components/ui/EmptyState.tsx";
@@ -81,7 +82,7 @@ export function TaskTemplatesPage() {
         title="Plantillas de tareas"
         description="Listas de tareas que su despacho repite en sus casos. Aplíquelas desde un caso para abrirlo con su trabajo inicial."
       />
-      <NewTemplate />
+      <TemplateForm />
       <Panel title="Sus plantillas">
         {templates.isPending && <p role="status">Cargando las plantillas</p>}
         {templates.isError && (
@@ -109,31 +110,48 @@ export function TaskTemplatesPage() {
 
 function TemplateCard({ template }: { template: TaskTemplateOut }) {
   const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
   const remove = useMutation({
     ...deleteTaskTemplateMutation(),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: listTaskTemplatesQueryKey() }),
   });
+  if (editing) {
+    return (
+      <li className={styles.card}>
+        <TemplateForm template={template} onDone={() => setEditing(false)} />
+      </li>
+    );
+  }
   return (
     <li className={styles.card}>
       <header>
         <h3>{template.name}</h3>
-        <Button
-          variant="secondary"
-          size="sm"
-          busy={remove.isPending}
-          onClick={() => {
-            if (
-              window.confirm(
-                `¿Borrar la plantilla «${template.name}»? Las tareas ya creadas con ella no se tocan.`,
-              )
-            ) {
-              remove.mutate({ path: { template_id: template.id } });
-            }
-          }}
-        >
-          Borrar
-        </Button>
+        <div className={styles.cardActions}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setEditing(true)}
+          >
+            Editar
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            busy={remove.isPending}
+            onClick={() => {
+              if (
+                window.confirm(
+                  `¿Borrar la plantilla «${template.name}»? Las tareas ya creadas con ella no se tocan.`,
+                )
+              ) {
+                remove.mutate({ path: { template_id: template.id } });
+              }
+            }}
+          >
+            Borrar
+          </Button>
+        </div>
       </header>
       <ol>
         {template.items.map((item, position) => (
@@ -149,30 +167,58 @@ function TemplateCard({ template }: { template: TaskTemplateOut }) {
   );
 }
 
-function NewTemplate() {
+// Crea una plantilla o, si recibe una, la edita: el nombre cambia y sus tareas se reemplazan.
+function TemplateForm({
+  template,
+  onDone,
+}: {
+  template?: TaskTemplateOut;
+  onDone?: () => void;
+}) {
   const queryClient = useQueryClient();
-  const [name, setName] = useState("");
-  const [drafts, setDrafts] = useState<Draft[]>([emptyDraft()]);
+  const [name, setName] = useState(template?.name ?? "");
+  const [drafts, setDrafts] = useState<Draft[]>(() =>
+    template
+      ? template.items.map((item) => ({
+          title: item.title,
+          priority: item.priority,
+          dueDays: item.due_days == null ? "" : String(item.due_days),
+        }))
+      : [emptyDraft()],
+  );
   const [error, setError] = useState<string>();
+
+  async function saved() {
+    setError(undefined);
+    await queryClient.invalidateQueries({
+      queryKey: listTaskTemplatesQueryKey(),
+    });
+    onDone?.();
+  }
+
+  function fail(failure: unknown) {
+    const problem = apiProblem(failure);
+    setError(
+      problem.status === 409
+        ? "Ya tiene una plantilla con ese nombre."
+        : "No pudimos guardar la plantilla. Revise los datos.",
+    );
+  }
 
   const create = useMutation({
     ...createTaskTemplateMutation(),
     onSuccess: async () => {
       setName("");
       setDrafts([emptyDraft()]);
-      setError(undefined);
-      await queryClient.invalidateQueries({
-        queryKey: listTaskTemplatesQueryKey(),
-      });
+      await saved();
     },
-    onError: (failure) => {
-      const problem = apiProblem(failure);
-      setError(
-        problem.status === 409
-          ? "Ya tiene una plantilla con ese nombre."
-          : "No pudimos guardar la plantilla. Revise los datos.",
-      );
-    },
+    onError: fail,
+  });
+
+  const edit = useMutation({
+    ...updateTaskTemplateMutation(),
+    onSuccess: saved,
+    onError: fail,
   });
 
   function update(position: number, change: Partial<Draft>) {
@@ -191,90 +237,95 @@ function NewTemplate() {
       setError("Escriba el nombre y al menos una tarea.");
       return;
     }
-    create.mutate({
-      body: {
-        name: name.trim(),
-        items: filled.map((draft) => ({
-          title: draft.title.trim(),
-          priority: draft.priority as TaskTemplateItemIn["priority"],
-          due_days: draft.dueDays === "" ? null : Number(draft.dueDays),
-        })),
-      },
-    });
+    const body = {
+      name: name.trim(),
+      items: filled.map((draft) => ({
+        title: draft.title.trim(),
+        priority: draft.priority as TaskTemplateItemIn["priority"],
+        due_days: draft.dueDays === "" ? null : Number(draft.dueDays),
+      })),
+    };
+    if (template) edit.mutate({ path: { template_id: template.id }, body });
+    else create.mutate({ body });
   }
 
-  return (
-    <Panel title="Nueva plantilla">
-      <form className={styles.form} onSubmit={submit}>
-        <Field
-          label="Nombre de la plantilla"
-          value={name}
-          maxLength={120}
-          onChange={(event) => setName(event.target.value)}
-          help="Por ejemplo, el tipo de proceso: «Proceso laboral»."
-        />
-        <ol className={styles.drafts} aria-label="Tareas de la plantilla">
-          {drafts.map((draft, position) => (
-            <li key={position} className={styles.draft}>
-              <Field
-                label={`Tarea ${position + 1}`}
-                value={draft.title}
-                maxLength={160}
-                onChange={(event) =>
-                  update(position, { title: event.target.value })
+  const busy = create.isPending || edit.isPending;
+  const body = (
+    <form className={styles.form} onSubmit={submit}>
+      <Field
+        label="Nombre de la plantilla"
+        value={name}
+        maxLength={120}
+        onChange={(event) => setName(event.target.value)}
+        help="Por ejemplo, el tipo de proceso: «Proceso laboral»."
+      />
+      <ol className={styles.drafts} aria-label="Tareas de la plantilla">
+        {drafts.map((draft, position) => (
+          <li key={position} className={styles.draft}>
+            <Field
+              label={`Tarea ${position + 1}`}
+              value={draft.title}
+              maxLength={160}
+              onChange={(event) =>
+                update(position, { title: event.target.value })
+              }
+            />
+            <Select
+              label="Prioridad"
+              value={draft.priority}
+              options={PRIORITY_OPTIONS}
+              onChange={(event) =>
+                update(position, { priority: event.target.value })
+              }
+            />
+            <Select
+              label="Plazo"
+              value={draft.dueDays}
+              options={DUE_OPTIONS}
+              onChange={(event) =>
+                update(position, { dueDays: event.target.value })
+              }
+            />
+            {drafts.length > 1 && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  setDrafts((current) =>
+                    current.filter((_, index) => index !== position),
+                  )
                 }
-              />
-              <Select
-                label="Prioridad"
-                value={draft.priority}
-                options={PRIORITY_OPTIONS}
-                onChange={(event) =>
-                  update(position, { priority: event.target.value })
-                }
-              />
-              <Select
-                label="Plazo"
-                value={draft.dueDays}
-                options={DUE_OPTIONS}
-                onChange={(event) =>
-                  update(position, { dueDays: event.target.value })
-                }
-              />
-              {drafts.length > 1 && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() =>
-                    setDrafts((current) =>
-                      current.filter((_, index) => index !== position),
-                    )
-                  }
-                >
-                  Quitar
-                </Button>
-              )}
-            </li>
-          ))}
-        </ol>
-        <div className={styles.actions}>
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled={drafts.length >= 30}
-            onClick={() => setDrafts((current) => [...current, emptyDraft()])}
-          >
-            <MasIcon size={16} aria-hidden="true" /> Agregar tarea
+              >
+                Quitar
+              </Button>
+            )}
+          </li>
+        ))}
+      </ol>
+      <div className={styles.actions}>
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={drafts.length >= 30}
+          onClick={() => setDrafts((current) => [...current, emptyDraft()])}
+        >
+          <MasIcon size={16} aria-hidden="true" /> Agregar tarea
+        </Button>
+        <Button type="submit" busy={busy}>
+          {template ? "Guardar cambios" : "Guardar plantilla"}
+        </Button>
+        {template && (
+          <Button variant="secondary" size="sm" onClick={onDone}>
+            Cancelar
           </Button>
-          <Button type="submit" busy={create.isPending}>
-            Guardar plantilla
-          </Button>
-        </div>
-        {error && (
-          <Notice tone="error">
-            <p role="alert">{error}</p>
-          </Notice>
         )}
-      </form>
-    </Panel>
+      </div>
+      {error && (
+        <Notice tone="error">
+          <p role="alert">{error}</p>
+        </Notice>
+      )}
+    </form>
   );
+  return template ? body : <Panel title="Nueva plantilla">{body}</Panel>;
 }

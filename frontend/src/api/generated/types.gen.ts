@@ -1806,6 +1806,9 @@ export type OrganizationAuditAction =
   | "role_changed"
   | "member_removed"
   | "organization_policy_changed"
+  | "task_template_created"
+  | "task_template_updated"
+  | "task_template_deleted"
   | "two_factor_enabled"
   | "two_factor_disabled"
   | "two_factor_failed"
@@ -5346,6 +5349,38 @@ export type DeleteTaskTemplateResponses = {
 
 export type DeleteTaskTemplateResponse =
   DeleteTaskTemplateResponses[keyof DeleteTaskTemplateResponses];
+
+export type UpdateTaskTemplateData = {
+  body: TaskTemplateCreate;
+  path: {
+    /**
+     * Template Id
+     */
+    template_id: string;
+  };
+  query?: never;
+  url: "/api/v1/task-templates/{template_id}";
+};
+
+export type UpdateTaskTemplateErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type UpdateTaskTemplateError =
+  UpdateTaskTemplateErrors[keyof UpdateTaskTemplateErrors];
+
+export type UpdateTaskTemplateResponses = {
+  /**
+   * Successful Response
+   */
+  200: TaskTemplateOut;
+};
+
+export type UpdateTaskTemplateResponse =
+  UpdateTaskTemplateResponses[keyof UpdateTaskTemplateResponses];
 
 export type ApplyTaskTemplateData = {
   body: ApplyTaskTemplate;

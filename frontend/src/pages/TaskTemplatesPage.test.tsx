@@ -112,3 +112,50 @@ it("un asistente no entra a las plantillas", async () => {
 
   await vi.waitFor(() => expect(router.state.location.pathname).toBe("/app"));
 });
+
+it("edita una plantilla: carga sus tareas, cambia una y guarda el reemplazo", async () => {
+  let sent: unknown;
+  let target = "";
+  fetchMock.mockImplementation(async (input) => {
+    const request = input as Request;
+    const path = new URL(request.url).pathname;
+    if (path === "/api/v1/me") return jsonResponse(me("lawyer"));
+    if (path === "/api/v1/task-templates" && request.method === "GET") {
+      return jsonResponse({ items: [TEMPLATE] });
+    }
+    if (
+      path.startsWith("/api/v1/task-templates/") &&
+      request.method === "PUT"
+    ) {
+      target = path;
+      sent = await request.json();
+      return jsonResponse(TEMPLATE);
+    }
+    throw new Error(`Ruta inesperada: ${request.method} ${path}`);
+  });
+  const user = userEvent.setup();
+  await renderRoute("/app/plantillas");
+
+  await user.click(await screen.findByRole("button", { name: "Editar" }));
+  // El formulario arranca con lo que ya tiene la plantilla.
+  // Hay dos formularios: el de plantilla nueva arriba y el de edición en la tarjeta.
+  const firstTask = screen.getAllByLabelText("Tarea 1")[1]!;
+  expect(firstTask).toHaveValue("Radicar la demanda");
+  expect(screen.getAllByLabelText("Nombre de la plantilla")[1]).toHaveValue(
+    "Proceso laboral",
+  );
+  await user.clear(firstTask);
+  await user.type(firstTask, "Radicar con poder");
+  await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
+
+  await vi.waitFor(() =>
+    expect(target).toBe(`/api/v1/task-templates/${TEMPLATE.id}`),
+  );
+  expect(sent).toEqual({
+    name: "Proceso laboral",
+    items: [
+      { title: "Radicar con poder", priority: "high", due_days: 3 },
+      { title: "Archivar soportes", priority: "normal", due_days: null },
+    ],
+  });
+});

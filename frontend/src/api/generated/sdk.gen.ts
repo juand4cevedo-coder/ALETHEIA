@@ -256,6 +256,9 @@ import type {
   UpdateCaseTaskStatusData,
   UpdateCaseTaskStatusErrors,
   UpdateCaseTaskStatusResponses,
+  UpdateTaskTemplateData,
+  UpdateTaskTemplateErrors,
+  UpdateTaskTemplateResponses,
   UploadEvidenceData,
   UploadEvidenceErrors,
   UploadEvidenceResponses,
@@ -1646,6 +1649,36 @@ export const deleteTaskTemplate = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/task-templates/{template_id}",
     ...options,
+  });
+
+/**
+ * Editar una plantilla de tareas: cambia el nombre y reemplaza sus tareas
+ */
+export const updateTaskTemplate = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateTaskTemplateData, ThrowOnError>,
+): RequestResult<
+  UpdateTaskTemplateResponses,
+  UpdateTaskTemplateErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).put<
+    UpdateTaskTemplateResponses,
+    UpdateTaskTemplateErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/task-templates/{template_id}",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**

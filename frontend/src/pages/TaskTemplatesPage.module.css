@@ -73,3 +73,8 @@
     grid-template-columns: 1fr;
   }
 }
+
+.cardActions {
+  display: flex;
+  gap: var(--space-2);
+}
