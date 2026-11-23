@@ -3,7 +3,9 @@
 # administradora desde CloudShell (región Ohio), con MFA:
 #
 #   bash infra/aws/cifrar-disco-raiz.sh --revisar            # solo mira, no cambia nada
-#   bash infra/aws/cifrar-disco-raiz.sh --ejecutar           # cifra (corte de 10 a 20 minutos)
+#   bash infra/aws/cifrar-disco-raiz.sh --preparar           # ensayo sin apagar nada: adelanta lo lento
+#   bash infra/aws/cifrar-disco-raiz.sh --cambiar            # el corte: apaga, cifra lo definitivo y cambia
+#   bash infra/aws/cifrar-disco-raiz.sh --ejecutar           # las dos cosas seguidas
 #   bash infra/aws/cifrar-disco-raiz.sh --revertir <vol-...> # vuelve al disco anterior
 #
 # AWS no cifra un disco en uso. El procedimiento es el estándar: copia del disco, copia cifrada
@@ -93,85 +95,109 @@ if [[ $modo == --revertir ]]; then
     exit 0
 fi
 
-[[ $modo == --ejecutar ]] || abortar "modo desconocido: $modo (use --revisar, --ejecutar o --revertir)."
+case $modo in
+    --preparar | --cambiar | --ejecutar) ;;
+    *) abortar "modo desconocido: $modo (use --revisar, --preparar, --cambiar, --ejecutar o --revertir)." ;;
+esac
 informe
 [[ $cifrado != True ]] || abortar "el disco raíz ya está cifrado."
 [[ $estado == running ]] || abortar "la instancia debe estar en ejecución para empezar."
 [[ $ip_elastica != None ]] || abortar "la instancia no tiene IP elástica: cámbiela antes de cifrar."
 [[ $cifrado_por_omision == True ]] || abortar "active el cifrado por omisión de EBS antes de cifrar."
 
-cat <<TEXTO
+nuevo=""
+origen=""
+cifrada=""
 
-Esto apaga el sitio entre 10 y 20 minutos. Antes de apagar se hace una copia de la base de datos
-y una copia del disco; el disco anterior queda guardado, sin borrar, para volver atrás.
-TEXTO
-read -r -p "Escriba CIFRAR para seguir: " respuesta
-[[ $respuesta == CIFRAR ]] || abortar "cancelado."
+# Copia una instantánea cifrándola y espera a que termine. Devuelve el identificador de la copia.
+copiar_cifrada() {
+    local copia
+    copia="$(aws_ ec2 copy-snapshot --source-region "$REGION" --source-snapshot-id "$1" \
+        --encrypted --kms-key-id alias/aws/ebs --description "aletheia-prod raiz cifrada" \
+        --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value=aletheia-raiz-cifrada}]' \
+        --query SnapshotId)"
+    aws_ ec2 wait snapshot-completed --snapshot-ids "$copia"
+    printf '%s' "$copia"
+}
 
-avisar "1/8 Copia de la base de datos antes de empezar (puede tardar unos minutos)..."
-orden="$(aws_ ssm send-command --instance-ids "$instancia" --document-name AWS-RunShellScript \
-    --parameters 'commands=["systemctl start aletheia-respaldo.service && /bin/bash /opt/aletheia/infra/prod/respaldar.sh --revisar"]' \
-    --query Command.CommandId)"
-aws ssm wait command-executed --region "$REGION" --command-id "$orden" --instance-id "$instancia" \
-    || abortar "el respaldo previo falló: revise el servidor antes de seguir. No se cambió nada."
-avisar "   respaldo verificado."
+# Parte 1: no apaga nada. Respalda, toma una primera instantánea y su copia cifrada, que es lo más
+# lento. Sirve de ensayo y adelanta el trabajo: las copias siguientes de AWS solo mueven lo que
+# cambió, así que el corte de la parte 2 es corto. NO sirve para el cambio por sí sola: el sitio
+# sigue escribiendo, y un disco hecho de esta instantánea perdería lo posterior.
+preparar() {
+    avisar "1/7 Copia de la base de datos antes de empezar (puede tardar unos minutos)..."
+    local orden
+    orden="$(aws_ ssm send-command --instance-ids "$instancia" --document-name AWS-RunShellScript \
+        --parameters 'commands=["systemctl start aletheia-respaldo.service && /bin/bash /opt/aletheia/infra/prod/respaldar.sh --revisar"]' \
+        --query Command.CommandId)"
+    aws ssm wait command-executed --region "$REGION" --command-id "$orden" --instance-id "$instancia" \
+        || abortar "el respaldo previo falló: revise el servidor antes de seguir. No se cambió nada."
+    avisar "   respaldo verificado."
 
-avisar "2/8 Instantánea del disco actual..."
-origen="$(aws_ ec2 create-snapshot --volume-id "$volumen" \
-    --description "aletheia-prod raiz sin cifrar, antes de cifrar" \
-    --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value=aletheia-raiz-sin-cifrar}]' \
-    --query SnapshotId)"
-aws_ ec2 wait snapshot-completed --snapshot-ids "$origen"
+    avisar "2/7 Primera instantánea del disco actual (ensayo, con el sitio en línea)..."
+    origen="$(aws_ ec2 create-snapshot --volume-id "$volumen" \
+        --description "aletheia-prod raiz sin cifrar, ensayo" \
+        --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value=aletheia-raiz-sin-cifrar}]' \
+        --query SnapshotId)"
+    aws_ ec2 wait snapshot-completed --snapshot-ids "$origen"
 
-avisar "3/8 Copia cifrada de la instantánea ($origen)..."
-cifrada="$(aws_ ec2 copy-snapshot --source-region "$REGION" --source-snapshot-id "$origen" \
-    --encrypted --kms-key-id alias/aws/ebs --description "aletheia-prod raiz cifrada" \
-    --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value=aletheia-raiz-cifrada}]' \
-    --query SnapshotId)"
-aws_ ec2 wait snapshot-completed --snapshot-ids "$cifrada"
+    avisar "3/7 Copia cifrada del ensayo ($origen)..."
+    cifrada="$(copiar_cifrada "$origen")"
+    avisar "   copia cifrada $cifrada lista. El ensayo terminó sin apagar nada."
+}
 
-avisar "4/8 Disco nuevo y cifrado a partir de la copia ($cifrada)..."
-argumentos=(--snapshot-id "$cifrada" --availability-zone "$zona" --volume-type "$tipo"
-    --tag-specifications 'ResourceType=volume,Tags=[{Key=Name,Value=aletheia-prod-raiz-cifrada}]')
-if [[ $tipo == gp3 ]]; then
-    argumentos+=(--iops "$iops" --throughput "$rendimiento")
-fi
-nuevo="$(aws_ ec2 create-volume "${argumentos[@]}" --query VolumeId)"
-aws_ ec2 wait volume-available --volume-ids "$nuevo"
-[[ "$(aws_ ec2 describe-volumes --volume-ids "$nuevo" --query 'Volumes[0].Encrypted')" == True ]] \
-    || abortar "el disco nuevo $nuevo no salió cifrado. No se tocó la máquina."
+# Parte 2: el corte. Con la máquina apagada ya no se escribe nada en el disco, así que la
+# instantánea que se toma ahora es la definitiva.
+cambiar() {
+    avisar "4/7 Apagando la instancia (el sitio queda fuera de línea)..."
+    aws_ ec2 stop-instances --instance-ids "$instancia" >/dev/null
+    aws_ ec2 wait instance-stopped --instance-ids "$instancia"
 
-avisar "5/8 Apagando la instancia (el sitio queda fuera de línea)..."
-aws_ ec2 stop-instances --instance-ids "$instancia" >/dev/null
-aws_ ec2 wait instance-stopped --instance-ids "$instancia"
+    avisar "5/7 Instantánea definitiva, copia cifrada y disco nuevo..."
+    origen="$(aws_ ec2 create-snapshot --volume-id "$volumen" \
+        --description "aletheia-prod raiz sin cifrar, definitiva" \
+        --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value=aletheia-raiz-sin-cifrar}]' \
+        --query SnapshotId)"
+    aws_ ec2 wait snapshot-completed --snapshot-ids "$origen"
+    cifrada="$(copiar_cifrada "$origen")"
+    local argumentos=(--snapshot-id "$cifrada" --availability-zone "$zona" --volume-type "$tipo"
+        --tag-specifications 'ResourceType=volume,Tags=[{Key=Name,Value=aletheia-prod-raiz-cifrada}]')
+    if [[ $tipo == gp3 ]]; then
+        argumentos+=(--iops "$iops" --throughput "$rendimiento")
+    fi
+    nuevo="$(aws_ ec2 create-volume "${argumentos[@]}" --query VolumeId)"
+    aws_ ec2 wait volume-available --volume-ids "$nuevo"
+    if [[ "$(aws_ ec2 describe-volumes --volume-ids "$nuevo" --query 'Volumes[0].Encrypted')" != True ]]; then
+        aws_ ec2 start-instances --instance-ids "$instancia" >/dev/null
+        abortar "el disco nuevo $nuevo no salió cifrado. Se volvió a encender la instancia con el disco anterior."
+    fi
 
-avisar "6/8 Cambiando el disco raíz..."
-aws_ ec2 detach-volume --volume-id "$volumen" >/dev/null
-aws_ ec2 wait volume-available --volume-ids "$volumen"
-aws_ ec2 create-tags --resources "$volumen" \
-    --tags Key=Name,Value=aletheia-raiz-anterior-sin-cifrar >/dev/null
-aws_ ec2 attach-volume --volume-id "$nuevo" --instance-id "$instancia" --device "$dispositivo" >/dev/null
-aws_ ec2 wait volume-in-use --volume-ids "$nuevo"
+    avisar "6/7 Cambiando el disco raíz y encendiendo..."
+    aws_ ec2 detach-volume --volume-id "$volumen" >/dev/null
+    aws_ ec2 wait volume-available --volume-ids "$volumen"
+    aws_ ec2 create-tags --resources "$volumen" \
+        --tags Key=Name,Value=aletheia-raiz-anterior-sin-cifrar >/dev/null
+    aws_ ec2 attach-volume --volume-id "$nuevo" --instance-id "$instancia" --device "$dispositivo" >/dev/null
+    aws_ ec2 wait volume-in-use --volume-ids "$nuevo"
+    aws_ ec2 start-instances --instance-ids "$instancia" >/dev/null
+    aws_ ec2 wait instance-running --instance-ids "$instancia"
+    aws_ ec2 wait instance-status-ok --instance-ids "$instancia"
 
-avisar "7/8 Encendiendo la instancia..."
-aws_ ec2 start-instances --instance-ids "$instancia" >/dev/null
-aws_ ec2 wait instance-running --instance-ids "$instancia"
-aws_ ec2 wait instance-status-ok --instance-ids "$instancia"
+    avisar "7/7 Comprobando el sitio (hasta 5 minutos)..."
+    local respuesta=""
+    for _ in $(seq 1 30); do
+        respuesta="$(salud)"
+        [[ $respuesta == *'"database":"ok"'* ]] && break
+        sleep 10
+    done
+    avisar "Salud: $respuesta"
 
-avisar "8/8 Comprobando el sitio (hasta 5 minutos)..."
-for _ in $(seq 1 30); do
-    respuesta="$(salud)"
-    [[ $respuesta == *'"database":"ok"'* ]] && break
-    sleep 10
-done
-avisar "Salud: $respuesta"
-
-cat <<TEXTO
+    cat <<TEXTO
 
 Resultado:
   Disco raíz nuevo:       $nuevo (cifrado)
   Disco anterior:         $volumen (guardado, sin cifrar, etiquetado aletheia-raiz-anterior-sin-cifrar)
-  Instantánea sin cifrar: $origen
+  Instantánea sin cifrar: $origen (hay otra, del ensayo, con la misma etiqueta)
   Instantánea cifrada:    $cifrada
 
 Si algo no funciona, vuelva al disco anterior:
@@ -179,6 +205,34 @@ Si algo no funciona, vuelva al disco anterior:
 
 Cuando lleve unos días bien (revise el panel ALETHEIA y la prueba de humo), borre lo sin cifrar:
   aws --region $REGION ec2 delete-volume --volume-id $volumen
-  aws --region $REGION ec2 delete-snapshot --snapshot-id $origen
+  y las instantáneas con la etiqueta aletheia-raiz-sin-cifrar (consola de EC2, Instantáneas).
 TEXTO
-[[ $respuesta == *'"database":"ok"'* ]] || abortar "el sitio no respondió bien: revise y, si hace falta, revierta."
+    [[ $respuesta == *'"database":"ok"'* ]] || abortar "el sitio no respondió bien: revise y, si hace falta, revierta."
+}
+
+confirmar_corte() {
+    cat <<TEXTO
+
+El corte apaga el sitio de 8 a 15 minutos (más si no se hizo antes --preparar). El disco anterior
+queda guardado, sin borrar, para volver atrás.
+TEXTO
+    read -r -p "Escriba CIFRAR para seguir: " respuesta
+    [[ $respuesta == CIFRAR ]] || abortar "cancelado."
+}
+
+case $modo in
+    --preparar)
+        avisar "Esta parte NO apaga nada: el sitio sigue en línea."
+        preparar
+        avisar "Listo. Cuando quiera hacer el corte, ejecute: --cambiar"
+        ;;
+    --cambiar)
+        confirmar_corte
+        cambiar
+        ;;
+    --ejecutar)
+        confirmar_corte
+        preparar
+        cambiar
+        ;;
+esac
