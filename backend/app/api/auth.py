@@ -437,7 +437,6 @@ def sign_in(
             headers={"Cache-Control": "no-store"},
         ) from None
     set_session_cookies(response, issued)
-    clear_two_factor_cookie(response)
     return None
 
 
