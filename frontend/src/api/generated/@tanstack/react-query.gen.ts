@@ -22,6 +22,7 @@ import {
   closeCase,
   createCase,
   createCaseExport,
+  createCaseNote,
   createCaseTask,
   createCheckout,
   createInvitation,
@@ -37,6 +38,7 @@ import {
   grantCourtesy,
   health,
   inspectExport,
+  listCaseNotes,
   listCases,
   listCaseTasks,
   listCustodyEvents,
@@ -116,6 +118,9 @@ import type {
   CreateCaseExportData,
   CreateCaseExportError,
   CreateCaseExportResponse,
+  CreateCaseNoteData,
+  CreateCaseNoteError,
+  CreateCaseNoteResponse,
   CreateCaseResponse,
   CreateCaseTaskData,
   CreateCaseTaskError,
@@ -154,6 +159,9 @@ import type {
   InspectExportData,
   InspectExportError,
   InspectExportResponse,
+  ListCaseNotesData,
+  ListCaseNotesError,
+  ListCaseNotesResponse,
   ListCasesData,
   ListCasesError,
   ListCasesResponse,
@@ -2010,6 +2018,111 @@ export const updateCaseTaskStatusMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await updateCaseTaskStatus({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const listCaseNotesQueryKey = (options: Options<ListCaseNotesData>) =>
+  createQueryKey("listCaseNotes", options);
+
+/**
+ * Listar las notas de un caso
+ */
+export const listCaseNotesOptions = (options: Options<ListCaseNotesData>) =>
+  queryOptions<
+    ListCaseNotesResponse,
+    ListCaseNotesError,
+    ListCaseNotesResponse,
+    ReturnType<typeof listCaseNotesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listCaseNotes({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listCaseNotesQueryKey(options),
+  });
+
+export const listCaseNotesInfiniteQueryKey = (
+  options: Options<ListCaseNotesData>,
+): QueryKey<Options<ListCaseNotesData>> =>
+  createQueryKey("listCaseNotes", options, true);
+
+/**
+ * Listar las notas de un caso
+ */
+export const listCaseNotesInfiniteOptions = (
+  options: Options<ListCaseNotesData>,
+) => {
+  const opts = infiniteQueryOptions<
+    ListCaseNotesResponse,
+    ListCaseNotesError,
+    InfiniteData<ListCaseNotesResponse>,
+    QueryKey<Options<ListCaseNotesData>>,
+    | string
+    | null
+    | Pick<
+        QueryKey<Options<ListCaseNotesData>>[0],
+        "body" | "headers" | "path" | "query"
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<ListCaseNotesData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  cursor: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listCaseNotes({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: listCaseNotesInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+/**
+ * Agregar una nota al caso
+ */
+export const createCaseNoteMutation = (
+  options?: Partial<Options<CreateCaseNoteData>>,
+): UseMutationOptions<
+  CreateCaseNoteResponse,
+  CreateCaseNoteError,
+  Options<CreateCaseNoteData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateCaseNoteResponse,
+    CreateCaseNoteError,
+    Options<CreateCaseNoteData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createCaseNote({
         ...options,
         ...fnOptions,
         throwOnError: true,

@@ -15,6 +15,7 @@ from app.models.evidence import (
 from app.models.identity import AuditLog, LegalAcceptance, OAuthIdentity, RefreshToken, User
 from app.models.jobs import Job
 from app.models.limits import RateLimitEvent
+from app.models.notes import CaseNote
 from app.models.organization import Invitation, Membership, Organization
 from app.models.support import SupportTicket
 from app.models.tasks import CaseTask
@@ -24,6 +25,7 @@ __all__ = [
     "Base",
     "Case",
     "CaseMember",
+    "CaseNote",
     "CaseTask",
     "CustodyAnchor",
     "CustodyEvent",
