@@ -39,7 +39,7 @@ from app.api.deps import (
     get_client_ip,
     get_google_oidc,
     get_principal,
-    get_principal_allowing_outdated_legal,
+    get_principal_bare,
     get_session,
 )
 from app.core.config import Settings
@@ -558,7 +558,7 @@ def refresh_session(
 )
 def sign_out(
     response: Response,
-    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
+    principal: Annotated[Principal, Depends(get_principal_bare)],
     session: Annotated[Session, Depends(get_session)],
     client_ip: Annotated[str, Depends(get_client_ip)],
     user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
@@ -582,7 +582,7 @@ def sign_out(
 )
 def sign_out_everywhere(
     response: Response,
-    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
+    principal: Annotated[Principal, Depends(get_principal_bare)],
     session: Annotated[Session, Depends(get_session)],
     client_ip: Annotated[str, Depends(get_client_ip)],
     user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,

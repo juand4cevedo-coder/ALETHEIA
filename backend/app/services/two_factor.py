@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.core import two_factor as totp
 from app.core.config import Settings
 from app.core.tokens import InvalidLinkError, LinkPurpose, read_link, state_matches
-from app.models import TwoFactorRecoveryCode, User, UserTwoFactor
+from app.models import Organization, TwoFactorRecoveryCode, User, UserTwoFactor
 from app.services import rate_limit
 from app.services.sessions import (
     IssuedSession,
@@ -35,6 +35,10 @@ class TwoFactorNotEnabledError(Exception):
 
 class TwoFactorSetupNotStartedError(Exception):
     """No hay una activación en curso: primero se pide el secreto."""
+
+
+class TwoFactorRequiredByPolicyError(Exception):
+    """El despacho exige el segundo factor: no se puede desactivar."""
 
 
 class InvalidTwoFactorCodeError(Exception):
@@ -248,6 +252,11 @@ def disable(
     user_agent: str | None,
 ) -> None:
     """Quita el segundo factor: pide un código vigente, para que una sesión robada no baste."""
+    membership = _enter_organization(session, user.id)
+    if membership is not None and session.scalar(
+        select(Organization.require_two_factor).where(Organization.id == membership.organization_id)
+    ):
+        raise TwoFactorRequiredByPolicyError
     verify(session, settings, user.id, code, client_ip=client_ip, user_agent=user_agent)
     session.execute(delete(TwoFactorRecoveryCode).where(TwoFactorRecoveryCode.user_id == user.id))
     session.execute(delete(UserTwoFactor).where(UserTwoFactor.user_id == user.id))

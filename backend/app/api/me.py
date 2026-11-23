@@ -18,7 +18,7 @@ from app.api.cookies import clear_session_cookies
 from app.api.deps import (
     get_client_ip,
     get_principal,
-    get_principal_allowing_outdated_legal,
+    get_principal_bare,
     get_session,
 )
 from app.core.legal import LEGAL_VERSION
@@ -49,7 +49,7 @@ router = APIRouter(tags=["perfil"])
 )
 def read_me(
     response: Response,
-    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
+    principal: Annotated[Principal, Depends(get_principal_bare)],
     session: Annotated[Session, Depends(get_session)],
 ) -> Me:
     # Datos personales: ni el navegador ni un intermediario guardan una copia.
@@ -101,6 +101,7 @@ def read_me(
             current_version=LEGAL_VERSION,
             acceptance_required=not principal.accepted_current_legal,
         ),
+        two_factor_setup_required=principal.two_factor_setup_required,
     )
 
 
@@ -121,7 +122,7 @@ def read_me(
 def accept_legal_terms(
     request: LegalAcceptanceRequest,
     response: Response,
-    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
+    principal: Annotated[Principal, Depends(get_principal_bare)],
     session: Annotated[Session, Depends(get_session)],
     client_ip: Annotated[str, Depends(get_client_ip)],
     user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,

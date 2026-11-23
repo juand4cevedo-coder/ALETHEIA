@@ -8498,6 +8498,12 @@
           "legal": {
             "$ref": "#/components/schemas/LegalStatus",
             "description": "Su aceptación de los textos legales."
+          },
+          "two_factor_setup_required": {
+            "type": "boolean",
+            "title": "Two Factor Setup Required",
+            "description": "Su despacho exige el segundo factor y todavía no lo tiene: solo puede activarlo.",
+            "default": false
           }
         },
         "type": "object",
@@ -8946,6 +8952,12 @@
             "minimum": 1.0,
             "title": "Session Days",
             "description": "Días que dura una sesión. Solo afecta a los ingresos nuevos."
+          },
+          "require_two_factor": {
+            "type": "boolean",
+            "title": "Require Two Factor",
+            "description": "Exige el segundo factor a todo el equipo. Quien no lo tenga solo puede activarlo.",
+            "default": false
           }
         },
         "type": "object",
@@ -8971,6 +8983,12 @@
             "minimum": 1.0,
             "title": "Session Days",
             "description": "Días que dura una sesión. Solo afecta a los ingresos nuevos."
+          },
+          "require_two_factor": {
+            "type": "boolean",
+            "title": "Require Two Factor",
+            "description": "Exige el segundo factor a todo el equipo. Quien no lo tenga solo puede activarlo.",
+            "default": false
           }
         },
         "additionalProperties": false,

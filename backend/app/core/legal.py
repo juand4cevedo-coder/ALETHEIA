@@ -17,3 +17,12 @@ LEGAL_ACCEPTANCE_REQUIRED: Final = "https://aletheia.sbs/problemas/aceptar-texto
 
 class LegalAcceptanceRequiredError(Exception):
     """La persona tiene sesión, pero no ha aceptado los textos legales vigentes (RN-029)."""
+
+
+# Tipo de Problem Details de un 403 porque el despacho exige el segundo factor y la persona aún
+# no lo tiene. La interfaz lo compara tal cual para llevarla a activarlo.
+TWO_FACTOR_SETUP_REQUIRED: Final = "https://aletheia.sbs/problemas/activar-segundo-factor"
+
+
+class TwoFactorSetupRequiredError(Exception):
+    """El despacho exige el segundo factor y esta persona todavía no lo ha activado."""

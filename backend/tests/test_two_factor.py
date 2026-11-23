@@ -2,6 +2,8 @@
 
 import base64
 import datetime
+import uuid
+from typing import Any
 
 from fastapi.testclient import TestClient
 from sqlalchemy import select, update
@@ -11,7 +13,7 @@ from app.core import two_factor as totp
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, User, UserTwoFactor
 from tests.conftest import NuevoCliente
-from tests.organizations import CLAVE, Oficina, crear_oficina
+from tests.organizations import CLAVE, Oficina, crear_miembro, crear_oficina
 
 _LOGIN = "/api/v1/auth/login"
 _SECOND_STEP = "/api/v1/auth/login/two-factor"
@@ -210,3 +212,69 @@ def test_el_secreto_no_se_guarda_en_claro(dispositivo: NuevoCliente, db: Session
     ).one()
     assert secret not in stored
     assert len(stored) > len(secret)
+
+
+_POLICIES = "/api/v1/organization/policies"
+
+
+def _require(client: TestClient, value: bool = True) -> Any:
+    return client.put(
+        _POLICIES,
+        json={"default_retention_years": 10, "session_days": 14, "require_two_factor": value},
+    )
+
+
+def test_el_propietario_no_puede_exigirlo_sin_tenerlo_activo(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office = crear_oficina(db)
+    client = _verified_client(dispositivo, db, office.owner)
+
+    refused = _require(client)
+
+    assert refused.status_code == 409, refused.text
+    assert client.get(_POLICIES).json()["require_two_factor"] is False
+    _activate(client)
+    accepted = _require(client)
+    assert accepted.status_code == 200, accepted.text
+    assert accepted.json()["require_two_factor"] is True
+    # Con la política activa, el propietario tampoco puede desactivarlo.
+    assert client.post(f"{_BASE}/disable", json={"code": "000000"}).status_code == 409
+
+
+def test_quien_no_tiene_segundo_factor_solo_puede_activarlo(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office = crear_oficina(db)
+    owner_client = _verified_client(dispositivo, db, office.owner)
+    _activate(owner_client)
+    assert _require(owner_client).status_code == 200
+    lawyer = crear_miembro(db, office, "abogada-exigida@example.com", "lawyer")
+    client = _verified_client(dispositivo, db, lawyer)
+
+    # El perfil sigue disponible y avisa de lo que falta.
+    me = client.get("/api/v1/me")
+    assert me.status_code == 200
+    assert me.json()["two_factor_setup_required"] is True
+    # Lo demás responde 403 con su propio tipo.
+    blocked = client.get("/api/v1/cases")
+    assert blocked.status_code == 403
+    assert blocked.json()["type"] == "https://aletheia.sbs/problemas/activar-segundo-factor"
+    # La descarga de evidencia tampoco se salta la política.
+    download = client.get(f"/api/v1/cases/{uuid.uuid4()}/evidences/{uuid.uuid4()}/download")
+    assert download.status_code == 403
+    assert download.json()["type"] == "https://aletheia.sbs/problemas/activar-segundo-factor"
+
+    # Activarlo sí se puede, y desbloquea el resto.
+    _activate(client)
+    assert client.get("/api/v1/me").json()["two_factor_setup_required"] is False
+    assert client.get("/api/v1/cases").status_code == 200
+
+
+def test_sin_la_politica_nadie_queda_limitado(dispositivo: NuevoCliente, db: Session) -> None:
+    office = crear_oficina(db)
+    lawyer = crear_miembro(db, office, "abogada-libre@example.com", "lawyer")
+    client = _verified_client(dispositivo, db, lawyer)
+
+    assert client.get("/api/v1/me").json()["two_factor_setup_required"] is False
+    assert client.get("/api/v1/cases").status_code == 200

@@ -36,6 +36,8 @@ class Organization(Base):
     # Políticas del despacho: años que se conserva un caso archivado y días que dura una sesión.
     default_retention_years: Mapped[int] = mapped_column(SmallInteger, server_default="10")
     session_days: Mapped[int] = mapped_column(SmallInteger, server_default="14")
+    # Si es verdadera, quien no tenga el segundo factor solo puede activarlo.
+    require_two_factor: Mapped[bool] = mapped_column(server_default=text("false"))
     created_at: Mapped[CreatedAt]
 
 

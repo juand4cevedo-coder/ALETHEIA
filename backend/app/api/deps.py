@@ -12,7 +12,7 @@ from app.adapters.google_oidc import GoogleOidcClient, GoogleOidcUnavailableErro
 from app.adapters.keys import KeyWrapper
 from app.api.cookies import ACCESS_COOKIE
 from app.core.config import Settings
-from app.core.legal import LegalAcceptanceRequiredError
+from app.core.legal import LegalAcceptanceRequiredError, TwoFactorSetupRequiredError
 from app.core.permissions import has_permission
 from app.services import sessions as sessions_service
 from app.services.sessions import NotAuthenticatedError, Principal
@@ -80,16 +80,15 @@ SESSION_ENDED: Final = "Su sesión terminó. Ingrese de nuevo."
 SESSION_CHALLENGE: Final = 'Cookie realm="aletheia"'
 
 
-def get_principal_allowing_outdated_legal(
+def get_principal_bare(
     access_token: Annotated[str | None, Depends(_access_cookie)],
     session: Annotated[Session, Depends(get_session)],
     settings: Annotated[Settings, Depends(get_app_settings)],
 ) -> Principal:
-    """Quién hace la petición, haya aceptado o no los textos legales vigentes.
+    """Quién hace la petición, sin exigir textos legales ni el segundo factor del despacho.
 
-    Solo para lo que debe seguir funcionando antes de aceptarlos: ver el perfil, aceptar los
-    textos, cerrar la sesión y, cuando existan, descargar y exportar los casos, porque los
-    términos prometen que la evidencia nunca queda retenida. Sin una sesión viva, 401 sin más
+    Solo para lo que debe seguir funcionando en esos dos casos: ver el perfil, aceptar los
+    textos, cerrar la sesión y activar el segundo factor. Sin una sesión viva, 401 sin más
     detalle (RN-026).
     """
     try:
@@ -100,6 +99,20 @@ def get_principal_allowing_outdated_legal(
             detail=SESSION_ENDED,
             headers={"WWW-Authenticate": SESSION_CHALLENGE, "Cache-Control": "no-store"},
         ) from None
+
+
+def get_principal_allowing_outdated_legal(
+    principal: Annotated[Principal, Depends(get_principal_bare)],
+) -> Principal:
+    """Quién hace la petición, haya aceptado o no los textos legales vigentes.
+
+    Para descargar y exportar los casos, porque los términos prometen que la evidencia nunca
+    queda retenida. Sí exige el segundo factor cuando el despacho lo pide: una sesión sin él no
+    llega a la evidencia.
+    """
+    if principal.two_factor_setup_required:
+        raise TwoFactorSetupRequiredError
+    return principal
 
 
 def get_principal(

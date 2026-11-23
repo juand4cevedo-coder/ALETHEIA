@@ -511,6 +511,7 @@ def get_policies(
     return OrganizationPolicies(
         default_retention_years=organization.default_retention_years,
         session_days=organization.session_days,
+        require_two_factor=organization.require_two_factor,
     )
 
 
@@ -528,15 +529,24 @@ def put_policies(
     user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
 ) -> OrganizationPolicies:
     response.headers["Cache-Control"] = "no-store"
-    organization = organization_service.update_policies(
-        session,
-        principal,
-        default_retention_years=request.default_retention_years,
-        session_days=request.session_days,
-        client_ip=client_ip,
-        user_agent=user_agent,
-    )
+    try:
+        organization = organization_service.update_policies(
+            session,
+            principal,
+            default_retention_years=request.default_retention_years,
+            session_days=request.session_days,
+            require_two_factor=request.require_two_factor,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except organization_service.TwoFactorSetupRequiredForPolicyError:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="Para exigirlo al equipo, primero active su propia verificación en dos pasos "
+            "en Mi cuenta.",
+        ) from None
     return OrganizationPolicies(
         default_retention_years=organization.default_retention_years,
         session_days=organization.session_days,
+        require_two_factor=organization.require_two_factor,
     )
