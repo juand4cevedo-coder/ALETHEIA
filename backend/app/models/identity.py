@@ -83,6 +83,7 @@ AUDIT_ACTIONS: Final = (
     "client_portal_document_downloaded",
     "case_deletion_requested",
     "case_deleted",
+    "account_deleted_by_platform",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.

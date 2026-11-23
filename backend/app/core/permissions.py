@@ -50,7 +50,6 @@ ROLE_PERMISSIONS: Final[dict[str, frozenset[Permission]]] = {
             "organization.view",
             "team.manage",
             "cases.read_assigned",
-            "cases.create",
             "cases.manage_members",
             "cases.manage_lifecycle",
             "cases.manage_retention",

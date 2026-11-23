@@ -59,3 +59,4 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-053](adr-053.md) | Recuperación del segundo factor con espera de seguridad | Aceptado | 24/11/2026 |
 | [ADR-054](adr-054.md) | Portal del cliente con acceso por correo y avisos que el despacho publica | Aceptado | 24/11/2026 |
 | [ADR-055](adr-055.md) | Eliminación definitiva de un caso cerrado con la llave destruida primero | Aceptado | 25/11/2026 |
+| [ADR-056](adr-056.md) | El administrador no abre casos y la plataforma puede eliminar cuentas de prueba | Aceptado | 25/11/2026 |

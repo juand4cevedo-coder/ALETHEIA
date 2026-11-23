@@ -131,7 +131,7 @@ const NONE_IN_SEGMENT: Record<Status, string> = {
 
 /** Texto exacto para quien no abre casos (especificación, 5.2). */
 const ASSISTANT_EMPTY =
-  "Los casos los abre un abogado, el administrador o la persona responsable del despacho. Cuando lo asignen a uno, aparecerá aquí";
+  "Los casos los abre un abogado o la persona responsable del despacho. Cuando lo asignen a uno, aparecerá aquí";
 
 // En 1100 px o menos la tabla pasa a tarjetas apiladas: con el menú lateral de 240 px, antes de ahí
 // la columna del título no llega a 240 px de texto (especificación, 5.2).

@@ -1,8 +1,9 @@
 import type { Role } from "../workspace/roles.ts";
 
-// Quién abre casos: el propietario, el administrador y el abogado (RN-008). El asistente
-// trabaja en los casos que le asignan, pero no los abre; la API también lo exige.
-const CASE_CREATORS: readonly Role[] = ["owner", "admin", "lawyer"];
+// Quién abre casos: el responsable del despacho y los abogados (RN-008, ADR-056). El
+// administrador lleva la parte administrativa del despacho y el asistente trabaja en los casos que
+// le asignan: ninguno los abre. La API también lo exige.
+const CASE_CREATORS: readonly Role[] = ["owner", "lawyer"];
 
 export function canOpenCases(role?: Role): boolean {
   return role !== undefined && CASE_CREATORS.includes(role);

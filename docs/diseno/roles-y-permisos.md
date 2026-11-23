@@ -18,7 +18,7 @@ cuentas del despacho.
 | Ver su despacho | Sí | Sí | Sí | Sí | No |
 | Gestionar miembros e invitaciones | Sí | Sí | No | No | No |
 | Consultar auditoría de seguridad de su despacho | Sí | Sí | No | No | No |
-| Abrir casos | Sí | Sí | Sí | No | No |
+| Abrir casos | Sí | No | Sí | No | No |
 | Ver los casos asignados | Sí | Sí | Sí | Sí | No |
 | Asignar y retirar personas de un caso asignado | Sí | Sí | Sí | No | No |
 | Cerrar, archivar y reabrir un caso asignado | Sí | Sí | Sí | No | No |
@@ -26,6 +26,8 @@ cuentas del despacho.
 | Consultar los metadatos de evidencia de un caso asignado | Sí | Sí | Sí | Sí | No |
 | Descargar el original de una evidencia del caso asignado | Sí | Sí | Sí | No | No |
 | Bloquear y desbloquear cuentas de la plataforma | No | No | No | No | Sí |
+| Eliminar definitivamente una cuenta, por ejemplo de prueba | No | No | No | No | Sí |
+| Eliminar definitivamente un caso cerrado, vencido y sin bloqueo jurídico | Sí | Sí | No | No | No |
 | Abrir y consultar solicitudes propias de soporte | Sí | Sí | Sí | Sí | No; atiende desde la consola |
 | Resolver solicitudes de soporte | No | No | No | No | Sí |
 | Ver resumen comercial y auditoría transversal | No | No | No | No | Sí |
