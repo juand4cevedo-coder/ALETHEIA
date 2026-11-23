@@ -78,10 +78,16 @@ import {
   revokeCourtesy,
   revokeInvitation,
   signIn,
+  signInSecondFactor,
   signOut,
   signOutEverywhere,
   taskCalendar,
   taskInbox,
+  twoFactorDisable,
+  twoFactorEnable,
+  twoFactorRecoveryCodes,
+  twoFactorSetup,
+  twoFactorStatus,
   updateCaseRetention,
   updateCaseTaskStatus,
   uploadEvidence,
@@ -281,6 +287,9 @@ import type {
   SignInData,
   SignInError,
   SignInResponse,
+  SignInSecondFactorData,
+  SignInSecondFactorError,
+  SignInSecondFactorResponse,
   SignOutData,
   SignOutError,
   SignOutEverywhereData,
@@ -293,6 +302,19 @@ import type {
   TaskInboxData,
   TaskInboxError,
   TaskInboxResponse,
+  TwoFactorDisableData,
+  TwoFactorDisableError,
+  TwoFactorDisableResponse,
+  TwoFactorEnableData,
+  TwoFactorEnableError,
+  TwoFactorEnableResponse,
+  TwoFactorRecoveryCodesData,
+  TwoFactorRecoveryCodesError,
+  TwoFactorRecoveryCodesResponse,
+  TwoFactorSetupData,
+  TwoFactorSetupResponse,
+  TwoFactorStatusData,
+  TwoFactorStatusResponse,
   UpdateCaseRetentionData,
   UpdateCaseRetentionError,
   UpdateCaseRetentionResponse,
@@ -630,6 +652,33 @@ export const signInMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await signIn({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Completar el ingreso con el código del segundo factor
+ */
+export const signInSecondFactorMutation = (
+  options?: Partial<Options<SignInSecondFactorData>>,
+): UseMutationOptions<
+  SignInSecondFactorResponse,
+  SignInSecondFactorError,
+  Options<SignInSecondFactorData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SignInSecondFactorResponse,
+    SignInSecondFactorError,
+    Options<SignInSecondFactorData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await signInSecondFactor({
         ...options,
         ...fnOptions,
         throwOnError: true,
@@ -2339,6 +2388,142 @@ export const applyTaskTemplateMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await applyTaskTemplate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const twoFactorStatusQueryKey = (
+  options?: Options<TwoFactorStatusData>,
+) => createQueryKey("twoFactorStatus", options);
+
+/**
+ * Estado del segundo factor de la cuenta
+ */
+export const twoFactorStatusOptions = (
+  options?: Options<TwoFactorStatusData>,
+) =>
+  queryOptions<
+    TwoFactorStatusResponse,
+    DefaultError,
+    TwoFactorStatusResponse,
+    ReturnType<typeof twoFactorStatusQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await twoFactorStatus({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: twoFactorStatusQueryKey(options),
+  });
+
+/**
+ * Empezar la activación: entrega el secreto una vez
+ */
+export const twoFactorSetupMutation = (
+  options?: Partial<Options<TwoFactorSetupData>>,
+): UseMutationOptions<
+  TwoFactorSetupResponse,
+  DefaultError,
+  Options<TwoFactorSetupData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    TwoFactorSetupResponse,
+    DefaultError,
+    Options<TwoFactorSetupData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await twoFactorSetup({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Confirmar la activación con el primer código
+ */
+export const twoFactorEnableMutation = (
+  options?: Partial<Options<TwoFactorEnableData>>,
+): UseMutationOptions<
+  TwoFactorEnableResponse,
+  TwoFactorEnableError,
+  Options<TwoFactorEnableData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    TwoFactorEnableResponse,
+    TwoFactorEnableError,
+    Options<TwoFactorEnableData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await twoFactorEnable({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Desactivar el segundo factor con un código vigente
+ */
+export const twoFactorDisableMutation = (
+  options?: Partial<Options<TwoFactorDisableData>>,
+): UseMutationOptions<
+  TwoFactorDisableResponse,
+  TwoFactorDisableError,
+  Options<TwoFactorDisableData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    TwoFactorDisableResponse,
+    TwoFactorDisableError,
+    Options<TwoFactorDisableData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await twoFactorDisable({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Generar códigos de respaldo nuevos
+ */
+export const twoFactorRecoveryCodesMutation = (
+  options?: Partial<Options<TwoFactorRecoveryCodesData>>,
+): UseMutationOptions<
+  TwoFactorRecoveryCodesResponse,
+  TwoFactorRecoveryCodesError,
+  Options<TwoFactorRecoveryCodesData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    TwoFactorRecoveryCodesResponse,
+    TwoFactorRecoveryCodesError,
+    Options<TwoFactorRecoveryCodesData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await twoFactorRecoveryCodes({
         ...options,
         ...fnOptions,
         throwOnError: true,

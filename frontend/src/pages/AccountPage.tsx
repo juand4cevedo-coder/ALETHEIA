@@ -22,6 +22,7 @@ import { EmailStatus } from "../features/session/EmailStatus.tsx";
 import { SignOutEverywhereDialog } from "../features/session/SignOutEverywhereDialog.tsx";
 import { useSignOut } from "../features/session/useSignOut.ts";
 import { CheckoutCard } from "./CheckoutCard.tsx";
+import { TwoFactorCard } from "../features/account/TwoFactorCard.tsx";
 import styles from "./AccountPage.module.css";
 
 const METER_ID = "medidor-cambio";
@@ -116,6 +117,7 @@ export function AccountPage() {
       </Panel>
 
       <PasswordCard />
+      <TwoFactorCard />
       <SessionsCard />
       <AccountClosureCard me={me} />
     </div>

@@ -207,6 +207,9 @@ import type {
   SignInData,
   SignInErrors,
   SignInResponses,
+  SignInSecondFactorData,
+  SignInSecondFactorErrors,
+  SignInSecondFactorResponses,
   SignOutData,
   SignOutErrors,
   SignOutEverywhereData,
@@ -219,6 +222,19 @@ import type {
   TaskInboxData,
   TaskInboxErrors,
   TaskInboxResponses,
+  TwoFactorDisableData,
+  TwoFactorDisableErrors,
+  TwoFactorDisableResponses,
+  TwoFactorEnableData,
+  TwoFactorEnableErrors,
+  TwoFactorEnableResponses,
+  TwoFactorRecoveryCodesData,
+  TwoFactorRecoveryCodesErrors,
+  TwoFactorRecoveryCodesResponses,
+  TwoFactorSetupData,
+  TwoFactorSetupResponses,
+  TwoFactorStatusData,
+  TwoFactorStatusResponses,
   UpdateCaseRetentionData,
   UpdateCaseRetentionErrors,
   UpdateCaseRetentionResponses,
@@ -443,6 +459,36 @@ export const signIn = <ThrowOnError extends boolean = false>(
 ): RequestResult<SignInResponses, SignInErrors, ThrowOnError> =>
   (options.client ?? client).post<SignInResponses, SignInErrors, ThrowOnError>({
     url: "/api/v1/auth/login",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Completar el ingreso con el código del segundo factor
+ */
+export const signInSecondFactor = <ThrowOnError extends boolean = false>(
+  options: Options<SignInSecondFactorData, ThrowOnError>,
+): RequestResult<
+  SignInSecondFactorResponses,
+  SignInSecondFactorErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    SignInSecondFactorResponses,
+    SignInSecondFactorErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_2fa",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/auth/login/two-factor",
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -1610,6 +1656,140 @@ export const applyTaskTemplate = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/cases/{case_id}/tasks/from-template",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Estado del segundo factor de la cuenta
+ */
+export const twoFactorStatus = <ThrowOnError extends boolean = false>(
+  options?: Options<TwoFactorStatusData, ThrowOnError>,
+): RequestResult<TwoFactorStatusResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    TwoFactorStatusResponses,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/account/two-factor",
+    ...options,
+  });
+
+/**
+ * Empezar la activación: entrega el secreto una vez
+ */
+export const twoFactorSetup = <ThrowOnError extends boolean = false>(
+  options?: Options<TwoFactorSetupData, ThrowOnError>,
+): RequestResult<TwoFactorSetupResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).post<
+    TwoFactorSetupResponses,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/account/two-factor/setup",
+    ...options,
+  });
+
+/**
+ * Confirmar la activación con el primer código
+ */
+export const twoFactorEnable = <ThrowOnError extends boolean = false>(
+  options: Options<TwoFactorEnableData, ThrowOnError>,
+): RequestResult<
+  TwoFactorEnableResponses,
+  TwoFactorEnableErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    TwoFactorEnableResponses,
+    TwoFactorEnableErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/account/two-factor/enable",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Desactivar el segundo factor con un código vigente
+ */
+export const twoFactorDisable = <ThrowOnError extends boolean = false>(
+  options: Options<TwoFactorDisableData, ThrowOnError>,
+): RequestResult<
+  TwoFactorDisableResponses,
+  TwoFactorDisableErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    TwoFactorDisableResponses,
+    TwoFactorDisableErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/account/two-factor/disable",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Generar códigos de respaldo nuevos
+ */
+export const twoFactorRecoveryCodes = <ThrowOnError extends boolean = false>(
+  options: Options<TwoFactorRecoveryCodesData, ThrowOnError>,
+): RequestResult<
+  TwoFactorRecoveryCodesResponses,
+  TwoFactorRecoveryCodesErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    TwoFactorRecoveryCodesResponses,
+    TwoFactorRecoveryCodesErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/account/two-factor/recovery-codes",
     ...options,
     headers: {
       "Content-Type": "application/json",
