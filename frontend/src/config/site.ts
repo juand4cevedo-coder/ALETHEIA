@@ -9,8 +9,8 @@ export const CONTACT_EMAIL = "contacto@aletheia.sbs";
  * ingreso. */
 export const SIGN_UP_LABEL = "Crear una cuenta";
 
-/** Título de la pestaña: el nombre de la pantalla, una barra vertical y la marca
- * («Casos | ALETHEIA»). Es la única convención; ningún título se arma a mano. */
+/** Título de la pestaña: la marca, una barra vertical y el nombre de la pantalla
+ * («ALETHEIA | Casos»). Es la única convención; ningún título se arma a mano. */
 export function pageTitle(name: string): string {
-  return `${name} | ${SITE_NAME}`;
+  return `${SITE_NAME} | ${name}`;
 }

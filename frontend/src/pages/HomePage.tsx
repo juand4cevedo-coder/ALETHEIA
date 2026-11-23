@@ -18,7 +18,7 @@ const BelowFold = lazy(() =>
 export function HomePage() {
   return (
     <PlanCatalogProvider>
-      <title>{pageTitle("Un espacio para sus casos y su equipo")}</title>
+      <title>{pageTitle("Casos y evidencia de su despacho")}</title>
       <meta
         name="description"
         content="Organice sus casos y su equipo jurídico. Compruebe huellas SHA-256 en su navegador y explore los fundamentos de la evidencia digital."
