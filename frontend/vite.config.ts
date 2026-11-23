@@ -15,10 +15,22 @@ const cdnEnHtml: Plugin = {
   generateBundle(_, bundle) {
     const html = bundle["index.html"];
     if (!cdn || html?.type !== "asset") return;
-    html.source = String(html.source).replace(
-      /\/(?:media|brand)\/[^\s",]*/g,
-      (ruta) => `${cdn}${ruta}`,
-    );
+    // Dos precargas de conexión, al principio del head: el navegador abre conexiones separadas
+    // para lo que pide con CORS (el script y las fuentes) y para lo que no (las imágenes), y
+    // cada una paga su propio saludo de DNS, TCP y TLS. Así los saludos corren mientras se
+    // descarga el HTML y no después.
+    const precarga =
+      `<head>\n    <link rel="preconnect" href="${cdn}" crossorigin />\n` +
+      `    <link rel="preconnect" href="${cdn}" />`;
+    const reescrito = String(html.source)
+      .replace(/\/(?:media|brand)\/[^\s",]*/g, (ruta) => `${cdn}${ruta}`)
+      .replace("<head>", precarga);
+    if (!reescrito.includes('rel="preconnect"')) {
+      throw new Error(
+        "El index.html no tiene <head>: no se pudo precargar el CDN.",
+      );
+    }
+    html.source = reescrito;
   },
 };
 
