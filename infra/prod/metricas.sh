@@ -39,6 +39,12 @@ fi
 # Una caída de la API o del trabajador se ve en las alarmas por esta métrica.
 agregar ContenedoresActivos "$(docker ps -q | wc -l | tr -d ' ')" Count
 
+# Edad del último respaldo, en horas: avisa antes de que pase un día sin copia.
+marca=/var/lib/aletheia/ultimo-respaldo
+if [[ -f $marca ]]; then
+    agregar RespaldoEdadHoras "$((($(date +%s) - $(stat -c %Y "$marca")) / 3600))" Count
+fi
+
 disco="$(df --output=pcent / | tail -n1 | tr -dc '0-9')"
 memoria="$(free | awk '/^Mem:/ { printf "%.1f", ($2 - $7) / $2 * 100 }')"
 agregar DiscoUsado "$disco" Percent

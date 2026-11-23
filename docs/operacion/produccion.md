@@ -212,6 +212,8 @@ Instalación, una sola vez y como root en el servidor:
 3. `systemctl daemon-reload && systemctl enable --now aletheia-respaldo.timer`
 4. Probar a mano con `systemctl start aletheia-respaldo.service` y revisar `journalctl -u aletheia-respaldo`.
 
+`infra/prod/ensayar-restauracion.sh` ensaya la restauración sin tocar producción: copia la base, la restaura en una base temporal, compara el esquema y las filas de las tablas principales y borra la temporal.
+
 `respaldar.sh --revisar` sale con error si la última copia tiene más de 26 horas; sirve para una alarma o una comprobación periódica.
 
 Restaurar en una base vacía, con una copia descargada del bucket (por ejemplo desde CloudShell) y verificada contra su `.sha256`:
@@ -221,6 +223,10 @@ Restaurar en una base vacía, con una copia descargada del bucket (por ejemplo d
 3. Comprobar con `alembic current` que la versión del esquema es la esperada y con la verificación de cadena de un caso conocido.
 
 Un respaldo que nunca se restauró no es una garantía: la restauración se ensaya en una base de pruebas al menos una vez por trimestre y el resultado se anota aquí.
+
+| Fecha | Qué se ensayó | Resultado |
+| --- | --- | --- |
+| 22 de noviembre de 2026 | `ensayar-restauracion.sh` sobre la base de producción, versión 0.9.0 | Correcto: esquema y filas iguales |
 
 ## Revisión de la cuenta de AWS
 
