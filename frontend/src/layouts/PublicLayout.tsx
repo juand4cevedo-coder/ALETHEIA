@@ -1,4 +1,4 @@
-import { photoProps } from "../config/media.ts";
+import { mediaUrl, photoProps } from "../config/media.ts";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { Link, Outlet, ScrollRestoration, useLocation } from "react-router";
 import { IconTile } from "../components/ui/IconTile.tsx";
@@ -30,7 +30,12 @@ const CURRENT_YEAR = new Date().getFullYear();
 function Brand() {
   return (
     <Link to={ROUTES.home} className={styles.brand} aria-label={WORDMARK}>
-      <img src="/brand/symbol-dark.svg" alt="" width="32" height="32" />
+      <img
+        src={mediaUrl("/brand/symbol-dark.svg")}
+        alt=""
+        width="32"
+        height="32"
+      />
       <span aria-hidden="true">{WORDMARK}</span>
     </Link>
   );

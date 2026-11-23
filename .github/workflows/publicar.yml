@@ -87,6 +87,10 @@ jobs:
 
       - name: Construir y publicar para linux/amd64
         id: publicar
+        env:
+          # Variable del repositorio (Settings > Secrets and variables > Actions > Variables). Sin
+          # definir, la interfaz sale toda del mismo origen.
+          CDN_URL: ${{ vars.CDN_URL }}
         run: |
           set -euo pipefail
           publicar() {
@@ -104,7 +108,7 @@ jobs:
             echo "$servicio=$digest" >> "$GITHUB_OUTPUT"
           }
           publicar api --file backend/Dockerfile backend
-          publicar web --file infra/caddy.Dockerfile .
+          publicar web --build-arg "VITE_CDN_URL=${CDN_URL:-}" --file infra/caddy.Dockerfile .
 
   desplegar:
     name: Desplegar en producción
