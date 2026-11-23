@@ -19,6 +19,7 @@ export const ROUTES = {
   resetPassword: "/restablecer-contrasena",
   recoverTwoFactor: "/recuperar-segundo-factor",
   acceptInvitation: "/invitacion",
+  clientPortal: "/portal",
   // Espacio de trabajo: todo lo que exige sesión vive bajo /app.
   app: "/app",
   account: "/app/cuenta",

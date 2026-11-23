@@ -14,6 +14,7 @@ from app.api import (
     auth,
     billing,
     cases,
+    client_portal,
     evidence_shares,
     exports,
     health,
@@ -41,7 +42,7 @@ from app.core.middleware import (
 from app.core.openapi import install_problem_details
 from app.db.session import create_db_engine
 
-API_VERSION: Final = "0.21.0"
+API_VERSION: Final = "0.22.0"
 
 
 def _operation_id(route: APIRoute) -> str:
@@ -98,6 +99,8 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(platform.router, prefix=API_PREFIX)
     app.include_router(support.router, prefix=API_PREFIX)
     app.include_router(billing.router, prefix=API_PREFIX)
+    app.include_router(client_portal.router, prefix=API_PREFIX)
+    app.include_router(client_portal.public_router, prefix=API_PREFIX)
     app.include_router(web_vitals.router, prefix=API_PREFIX)
     install_problem_details(app)
     return app

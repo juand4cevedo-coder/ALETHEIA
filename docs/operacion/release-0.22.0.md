@@ -1,0 +1,10 @@
+# Aletheia 0.22.0
+
+- Portal del cliente (ADR-054). En cada caso hay una pestaña nueva, «Portal del cliente», para los dueños y los abogados del caso. Desde allí se invita a un cliente con su nombre y su correo: recibe un enlace de 30 días, sin crear cuenta. Invitarlo otra vez le reenvía el enlace y el anterior deja de servir; «Quitar acceso» lo corta al instante.
+- Lo que ve el cliente es lo que el despacho decide: el título y el estado del caso y los avisos que se publican en esa pestaña (hasta 2000 caracteres, solo se agregan). Notas, tareas, equipo, evidencias y cadena de custodia no llegan al portal por ninguna ruta.
+- Antes de ver el caso, el cliente lee y acepta un aviso sobre el tratamiento de sus datos. Esa aceptación y cada acción del despacho (invitar, quitar el acceso, publicar un aviso) quedan en la auditoría del despacho; el texto de los avisos no se copia a la auditoría.
+- Un caso archivado conserva sus accesos y avisos, pero no admite invitaciones ni avisos nuevos. Límites: 60 aperturas por dirección y 20 invitaciones por cuenta cada 15 minutos.
+- Migración 0044: tablas `client_portal_accesses` y `client_portal_updates` con aislamiento por organización, y cuatro acciones nuevas de auditoría. Rutas nuevas: `/api/v1/cases/{id}/portal/accesses`, `/portal/updates` y las públicas `/api/v1/client-portal/view` y `/accept-notice`. Página pública nueva: `/portal`.
+- Pendiente antes de usarlo con clientes reales: revisión legal del aviso de datos, que presenta a ALETHEIA y al despacho como corresponsables, y actualización de la política de privacidad (ADR-054).
+
+Para verlo después de desplegar: con una cuenta de dueño o de abogado, abra un caso, entre a «Portal del cliente», invite un correo suyo de prueba y revise que llegue el mensaje. Abra el enlace en otra ventana sin sesión: debe aparecer el aviso de datos y, al aceptarlo, el título del caso. Publique un aviso y recargue la página del cliente: debe verlo. Pulse «Quitar acceso» y recargue: debe decir que el enlace ya no sirve. En Auditoría del despacho deben verse los cuatro eventos.

@@ -1683,6 +1683,7 @@ export type Me = {
     | "cases.write_notes"
     | "cases.upload_evidence"
     | "cases.download_evidence"
+    | "cases.manage_client_portal"
   >;
   /**
    * Su organización, o null si ya no pertenece a ninguna.
@@ -2225,6 +2226,168 @@ export type PlatformUserPage = {
    * Cuentas que coinciden con los filtros, sin limitar por página.
    */
   total: number;
+};
+
+/**
+ * PortalAccessList
+ */
+export type PortalAccessList = {
+  /**
+   * Items
+   */
+  items: Array<PortalAccessOut>;
+};
+
+/**
+ * PortalAccessOut
+ */
+export type PortalAccessOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Client Name
+   */
+  client_name: string;
+  /**
+   * Client Email
+   */
+  client_email: string;
+  /**
+   * Status
+   */
+  status: "active" | "expired" | "revoked";
+  /**
+   * Created By Name
+   */
+  created_by_name: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Expires At
+   */
+  expires_at: string;
+  /**
+   * Notice Accepted At
+   */
+  notice_accepted_at: string | null;
+  /**
+   * Last Visit At
+   */
+  last_visit_at: string | null;
+};
+
+/**
+ * PortalInvite
+ */
+export type PortalInvite = {
+  /**
+   * Client Name
+   *
+   * Nombre del cliente, como lo verá en el correo.
+   */
+  client_name: string;
+  /**
+   * Client Email
+   *
+   * Correo al que llega el enlace del portal.
+   */
+  client_email: string;
+};
+
+/**
+ * PortalTokenRequest
+ */
+export type PortalTokenRequest = {
+  /**
+   * Token
+   *
+   * Token del enlace.
+   */
+  token: string;
+};
+
+/**
+ * PortalUpdateCreate
+ */
+export type PortalUpdateCreate = {
+  /**
+   * Body
+   *
+   * Aviso para el cliente. Es lo único del caso que el portal le muestra.
+   */
+  body: string;
+};
+
+/**
+ * PortalUpdateList
+ */
+export type PortalUpdateList = {
+  /**
+   * Items
+   */
+  items: Array<PortalUpdateOut>;
+};
+
+/**
+ * PortalUpdateOut
+ */
+export type PortalUpdateOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Author Name
+   */
+  author_name: string;
+  /**
+   * Body
+   */
+  body: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+};
+
+/**
+ * PortalView
+ *
+ * Lo que ve el cliente. Hasta que acepte el aviso de datos no recibe el caso.
+ */
+export type PortalView = {
+  /**
+   * Organization Name
+   */
+  organization_name: string;
+  /**
+   * Client Name
+   */
+  client_name: string;
+  /**
+   * Notice Accepted
+   */
+  notice_accepted: boolean;
+  /**
+   * Case Title
+   */
+  case_title: string | null;
+  /**
+   * Case Status
+   */
+  case_status: "open" | "closed" | null;
+  /**
+   * Updates
+   */
+  updates: Array<PortalUpdateOut>;
+  /**
+   * Expires At
+   */
+  expires_at: string;
 };
 
 /**
@@ -6745,6 +6908,237 @@ export type CreateCheckoutResponses = {
 
 export type CreateCheckoutResponse =
   CreateCheckoutResponses[keyof CreateCheckoutResponses];
+
+export type ListPortalAccessesData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/portal/accesses";
+};
+
+export type ListPortalAccessesErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListPortalAccessesError =
+  ListPortalAccessesErrors[keyof ListPortalAccessesErrors];
+
+export type ListPortalAccessesResponses = {
+  /**
+   * Successful Response
+   */
+  200: PortalAccessList;
+};
+
+export type ListPortalAccessesResponse =
+  ListPortalAccessesResponses[keyof ListPortalAccessesResponses];
+
+export type InviteClientData = {
+  body: PortalInvite;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/portal/accesses";
+};
+
+export type InviteClientErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type InviteClientError = InviteClientErrors[keyof InviteClientErrors];
+
+export type InviteClientResponses = {
+  /**
+   * Successful Response
+   */
+  201: PortalAccessOut;
+};
+
+export type InviteClientResponse =
+  InviteClientResponses[keyof InviteClientResponses];
+
+export type RevokeClientAccessData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Access Id
+     */
+    access_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/portal/accesses/{access_id}";
+};
+
+export type RevokeClientAccessErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RevokeClientAccessError =
+  RevokeClientAccessErrors[keyof RevokeClientAccessErrors];
+
+export type RevokeClientAccessResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type RevokeClientAccessResponse =
+  RevokeClientAccessResponses[keyof RevokeClientAccessResponses];
+
+export type ListPortalUpdatesData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/portal/updates";
+};
+
+export type ListPortalUpdatesErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListPortalUpdatesError =
+  ListPortalUpdatesErrors[keyof ListPortalUpdatesErrors];
+
+export type ListPortalUpdatesResponses = {
+  /**
+   * Successful Response
+   */
+  200: PortalUpdateList;
+};
+
+export type ListPortalUpdatesResponse =
+  ListPortalUpdatesResponses[keyof ListPortalUpdatesResponses];
+
+export type PublishPortalUpdateData = {
+  body: PortalUpdateCreate;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/portal/updates";
+};
+
+export type PublishPortalUpdateErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type PublishPortalUpdateError =
+  PublishPortalUpdateErrors[keyof PublishPortalUpdateErrors];
+
+export type PublishPortalUpdateResponses = {
+  /**
+   * Successful Response
+   */
+  201: PortalUpdateOut;
+};
+
+export type PublishPortalUpdateResponse =
+  PublishPortalUpdateResponses[keyof PublishPortalUpdateResponses];
+
+export type ViewPortalData = {
+  body: PortalTokenRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/client-portal/view";
+};
+
+export type ViewPortalErrors = {
+  /**
+   * El enlace no existe o ya no está vigente.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+};
+
+export type ViewPortalError = ViewPortalErrors[keyof ViewPortalErrors];
+
+export type ViewPortalResponses = {
+  /**
+   * Successful Response
+   */
+  200: PortalView;
+};
+
+export type ViewPortalResponse = ViewPortalResponses[keyof ViewPortalResponses];
+
+export type AcceptPortalNoticeData = {
+  body: PortalTokenRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/client-portal/accept-notice";
+};
+
+export type AcceptPortalNoticeErrors = {
+  /**
+   * El enlace no existe o ya no está vigente.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+};
+
+export type AcceptPortalNoticeError =
+  AcceptPortalNoticeErrors[keyof AcceptPortalNoticeErrors];
+
+export type AcceptPortalNoticeResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type AcceptPortalNoticeResponse =
+  AcceptPortalNoticeResponses[keyof AcceptPortalNoticeResponses];
 
 export type SubmitWebVitalsData = {
   body: VitalsReport;

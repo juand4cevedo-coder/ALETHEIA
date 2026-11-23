@@ -17,6 +17,9 @@ import type {
   AcceptLegalTermsData,
   AcceptLegalTermsErrors,
   AcceptLegalTermsResponses,
+  AcceptPortalNoticeData,
+  AcceptPortalNoticeErrors,
+  AcceptPortalNoticeResponses,
   AddCaseMemberData,
   AddCaseMemberErrors,
   AddCaseMemberResponses,
@@ -122,6 +125,9 @@ import type {
   InspectSharedEvidenceData,
   InspectSharedEvidenceErrors,
   InspectSharedEvidenceResponses,
+  InviteClientData,
+  InviteClientErrors,
+  InviteClientResponses,
   ListCaseNotesData,
   ListCaseNotesErrors,
   ListCaseNotesResponses,
@@ -149,6 +155,12 @@ import type {
   ListPlatformUsersData,
   ListPlatformUsersErrors,
   ListPlatformUsersResponses,
+  ListPortalAccessesData,
+  ListPortalAccessesErrors,
+  ListPortalAccessesResponses,
+  ListPortalUpdatesData,
+  ListPortalUpdatesErrors,
+  ListPortalUpdatesResponses,
   ListShareLinksData,
   ListShareLinksErrors,
   ListShareLinksResponses,
@@ -183,6 +195,9 @@ import type {
   PreviewInvitationData,
   PreviewInvitationErrors,
   PreviewInvitationResponses,
+  PublishPortalUpdateData,
+  PublishPortalUpdateErrors,
+  PublishPortalUpdateResponses,
   PutPoliciesData,
   PutPoliciesErrors,
   PutPoliciesResponses,
@@ -225,6 +240,9 @@ import type {
   ResetPasswordData,
   ResetPasswordErrors,
   ResetPasswordResponses,
+  RevokeClientAccessData,
+  RevokeClientAccessErrors,
+  RevokeClientAccessResponses,
   RevokeCourtesyData,
   RevokeCourtesyErrors,
   RevokeCourtesyResponses,
@@ -286,6 +304,9 @@ import type {
   VerifyEmailData,
   VerifyEmailErrors,
   VerifyEmailResponses,
+  ViewPortalData,
+  ViewPortalErrors,
+  ViewPortalResponses,
   WompiTermsData,
   WompiTermsErrors,
   WompiTermsResponses,
@@ -2550,6 +2571,182 @@ export const createCheckout = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/billing/checkout",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Listar los accesos de clientes de un caso
+ */
+export const listPortalAccesses = <ThrowOnError extends boolean = false>(
+  options: Options<ListPortalAccessesData, ThrowOnError>,
+): RequestResult<
+  ListPortalAccessesResponses,
+  ListPortalAccessesErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    ListPortalAccessesResponses,
+    ListPortalAccessesErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/portal/accesses",
+    ...options,
+  });
+
+/**
+ * Invitar a un cliente al portal o reenviarle el enlace
+ */
+export const inviteClient = <ThrowOnError extends boolean = false>(
+  options: Options<InviteClientData, ThrowOnError>,
+): RequestResult<InviteClientResponses, InviteClientErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    InviteClientResponses,
+    InviteClientErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/portal/accesses",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Quitarle el acceso a un cliente
+ */
+export const revokeClientAccess = <ThrowOnError extends boolean = false>(
+  options: Options<RevokeClientAccessData, ThrowOnError>,
+): RequestResult<
+  RevokeClientAccessResponses,
+  RevokeClientAccessErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).delete<
+    RevokeClientAccessResponses,
+    RevokeClientAccessErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/portal/accesses/{access_id}",
+    ...options,
+  });
+
+/**
+ * Listar los avisos publicados al cliente
+ */
+export const listPortalUpdates = <ThrowOnError extends boolean = false>(
+  options: Options<ListPortalUpdatesData, ThrowOnError>,
+): RequestResult<
+  ListPortalUpdatesResponses,
+  ListPortalUpdatesErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    ListPortalUpdatesResponses,
+    ListPortalUpdatesErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/portal/updates",
+    ...options,
+  });
+
+/**
+ * Publicar un aviso para el cliente
+ */
+export const publishPortalUpdate = <ThrowOnError extends boolean = false>(
+  options: Options<PublishPortalUpdateData, ThrowOnError>,
+): RequestResult<
+  PublishPortalUpdateResponses,
+  PublishPortalUpdateErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    PublishPortalUpdateResponses,
+    PublishPortalUpdateErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/portal/updates",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Ver el portal con el enlace del correo
+ */
+export const viewPortal = <ThrowOnError extends boolean = false>(
+  options: Options<ViewPortalData, ThrowOnError>,
+): RequestResult<ViewPortalResponses, ViewPortalErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    ViewPortalResponses,
+    ViewPortalErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/client-portal/view",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Aceptar el aviso de tratamiento de datos
+ */
+export const acceptPortalNotice = <ThrowOnError extends boolean = false>(
+  options: Options<AcceptPortalNoticeData, ThrowOnError>,
+): RequestResult<
+  AcceptPortalNoticeResponses,
+  AcceptPortalNoticeErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    AcceptPortalNoticeResponses,
+    AcceptPortalNoticeErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/client-portal/accept-notice",
     ...options,
     headers: {
       "Content-Type": "application/json",

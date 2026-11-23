@@ -12,6 +12,7 @@ import { client } from "../client.gen";
 import {
   acceptInvitation,
   acceptLegalTerms,
+  acceptPortalNotice,
   addCaseMember,
   applyTaskTemplate,
   availableCaseMembers,
@@ -48,6 +49,7 @@ import {
   health,
   inspectExport,
   inspectSharedEvidence,
+  inviteClient,
   listCaseNotes,
   listCases,
   listCaseTasks,
@@ -57,6 +59,8 @@ import {
   listMembers,
   listPlans,
   listPlatformUsers,
+  listPortalAccesses,
+  listPortalUpdates,
   listShareLinks,
   listTaskTemplates,
   lookupCourtesy,
@@ -70,6 +74,7 @@ import {
   platformSupportTickets,
   platformWebVitals,
   previewInvitation,
+  publishPortalUpdate,
   putPolicies,
   readCase,
   readCaseExport,
@@ -84,6 +89,7 @@ import {
   requestRecovery,
   resendVerification,
   resetPassword,
+  revokeClientAccess,
   revokeCourtesy,
   revokeInvitation,
   revokeShareLink,
@@ -105,6 +111,7 @@ import {
   uploadEvidence,
   verifyCustody,
   verifyEmail,
+  viewPortal,
   wompiTerms,
 } from "../sdk.gen";
 import type {
@@ -114,6 +121,9 @@ import type {
   AcceptLegalTermsData,
   AcceptLegalTermsError,
   AcceptLegalTermsResponse,
+  AcceptPortalNoticeData,
+  AcceptPortalNoticeError,
+  AcceptPortalNoticeResponse,
   AddCaseMemberData,
   AddCaseMemberError,
   AddCaseMemberResponse,
@@ -214,6 +224,9 @@ import type {
   InspectSharedEvidenceData,
   InspectSharedEvidenceError,
   InspectSharedEvidenceResponse,
+  InviteClientData,
+  InviteClientError,
+  InviteClientResponse,
   ListCaseNotesData,
   ListCaseNotesError,
   ListCaseNotesResponse,
@@ -241,6 +254,12 @@ import type {
   ListPlatformUsersData,
   ListPlatformUsersError,
   ListPlatformUsersResponse,
+  ListPortalAccessesData,
+  ListPortalAccessesError,
+  ListPortalAccessesResponse,
+  ListPortalUpdatesData,
+  ListPortalUpdatesError,
+  ListPortalUpdatesResponse,
   ListShareLinksData,
   ListShareLinksError,
   ListShareLinksResponse,
@@ -275,6 +294,9 @@ import type {
   PreviewInvitationData,
   PreviewInvitationError,
   PreviewInvitationResponse,
+  PublishPortalUpdateData,
+  PublishPortalUpdateError,
+  PublishPortalUpdateResponse,
   PutPoliciesData,
   PutPoliciesError,
   PutPoliciesResponse,
@@ -317,6 +339,9 @@ import type {
   ResetPasswordData,
   ResetPasswordError,
   ResetPasswordResponse,
+  RevokeClientAccessData,
+  RevokeClientAccessError,
+  RevokeClientAccessResponse,
   RevokeCourtesyData,
   RevokeCourtesyError,
   RevokeCourtesyResponse,
@@ -378,6 +403,9 @@ import type {
   VerifyEmailData,
   VerifyEmailError,
   VerifyEmailResponse,
+  ViewPortalData,
+  ViewPortalError,
+  ViewPortalResponse,
   WompiTermsData,
   WompiTermsError,
   WompiTermsResponse,
@@ -3585,6 +3613,197 @@ export const createCheckoutMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await createCheckout({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const listPortalAccessesQueryKey = (
+  options: Options<ListPortalAccessesData>,
+) => createQueryKey("listPortalAccesses", options);
+
+/**
+ * Listar los accesos de clientes de un caso
+ */
+export const listPortalAccessesOptions = (
+  options: Options<ListPortalAccessesData>,
+) =>
+  queryOptions<
+    ListPortalAccessesResponse,
+    ListPortalAccessesError,
+    ListPortalAccessesResponse,
+    ReturnType<typeof listPortalAccessesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listPortalAccesses({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listPortalAccessesQueryKey(options),
+  });
+
+/**
+ * Invitar a un cliente al portal o reenviarle el enlace
+ */
+export const inviteClientMutation = (
+  options?: Partial<Options<InviteClientData>>,
+): UseMutationOptions<
+  InviteClientResponse,
+  InviteClientError,
+  Options<InviteClientData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    InviteClientResponse,
+    InviteClientError,
+    Options<InviteClientData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await inviteClient({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Quitarle el acceso a un cliente
+ */
+export const revokeClientAccessMutation = (
+  options?: Partial<Options<RevokeClientAccessData>>,
+): UseMutationOptions<
+  RevokeClientAccessResponse,
+  RevokeClientAccessError,
+  Options<RevokeClientAccessData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RevokeClientAccessResponse,
+    RevokeClientAccessError,
+    Options<RevokeClientAccessData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await revokeClientAccess({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const listPortalUpdatesQueryKey = (
+  options: Options<ListPortalUpdatesData>,
+) => createQueryKey("listPortalUpdates", options);
+
+/**
+ * Listar los avisos publicados al cliente
+ */
+export const listPortalUpdatesOptions = (
+  options: Options<ListPortalUpdatesData>,
+) =>
+  queryOptions<
+    ListPortalUpdatesResponse,
+    ListPortalUpdatesError,
+    ListPortalUpdatesResponse,
+    ReturnType<typeof listPortalUpdatesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listPortalUpdates({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listPortalUpdatesQueryKey(options),
+  });
+
+/**
+ * Publicar un aviso para el cliente
+ */
+export const publishPortalUpdateMutation = (
+  options?: Partial<Options<PublishPortalUpdateData>>,
+): UseMutationOptions<
+  PublishPortalUpdateResponse,
+  PublishPortalUpdateError,
+  Options<PublishPortalUpdateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PublishPortalUpdateResponse,
+    PublishPortalUpdateError,
+    Options<PublishPortalUpdateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await publishPortalUpdate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Ver el portal con el enlace del correo
+ */
+export const viewPortalMutation = (
+  options?: Partial<Options<ViewPortalData>>,
+): UseMutationOptions<
+  ViewPortalResponse,
+  ViewPortalError,
+  Options<ViewPortalData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ViewPortalResponse,
+    ViewPortalError,
+    Options<ViewPortalData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await viewPortal({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Aceptar el aviso de tratamiento de datos
+ */
+export const acceptPortalNoticeMutation = (
+  options?: Partial<Options<AcceptPortalNoticeData>>,
+): UseMutationOptions<
+  AcceptPortalNoticeResponse,
+  AcceptPortalNoticeError,
+  Options<AcceptPortalNoticeData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    AcceptPortalNoticeResponse,
+    AcceptPortalNoticeError,
+    Options<AcceptPortalNoticeData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await acceptPortalNotice({
         ...options,
         ...fnOptions,
         throwOnError: true,

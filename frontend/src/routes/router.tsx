@@ -23,6 +23,7 @@ import {
   loadOrganizationPage,
   loadNewCasePage,
   loadPlatformPage,
+  loadClientPortalPage,
   loadRecoverTwoFactorPage,
   loadPlatformVitalsPage,
   loadPlatformBillingPage,
@@ -212,6 +213,11 @@ export const routes: RouteObject[] = [
             // Se abre desde el correo de invitación: nunca redirige, haya o no sesión.
             path: ROUTES.acceptInvitation.slice(1),
             lazy: { Component: loadAcceptInvitationPage },
+          },
+          {
+            // Se abre desde el correo del despacho al cliente: sin sesión y sin redirección.
+            path: ROUTES.clientPortal.slice(1),
+            lazy: { Component: loadClientPortalPage },
           },
           {
             path: ROUTES.verifyEmail.slice(1),
