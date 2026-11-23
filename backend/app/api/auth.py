@@ -213,11 +213,11 @@ def google_callback(
     _clear_google_cookie(response)
     if flow_token is None or state_value is None or code is None or error is not None:
         logger.warning(
-            "Google: regreso sin completar (cookie=%s, state=%s, code=%s, error=%s)",
+            "Google: regreso sin completar (cookie=%s, state=%s, code=%s, rechazo_de_google=%s)",
             flow_token is not None,
             state_value is not None,
             code is not None,
-            error,
+            error is not None,
         )
         return response
     try:
