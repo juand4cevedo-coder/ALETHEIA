@@ -1,53 +1,20 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
-import { createPortal } from "react-dom";
-import { Link, NavLink } from "react-router";
 import {
-  ArchivoBusquedaIcon,
-  BalanzaIcon,
-  CarpetaAbiertaIcon,
-  ChatIcon,
-  ChevronAbajoIcon,
-  DocumentoIcon,
-  EscudoVistoIcon,
-  FlechaDerechaIcon,
-  HuellaIcon,
-  InfoIcon,
-  LibroIcon,
-  OjoIcon,
-  RayoIcon,
-  UsuarioAgregarIcon,
-  UsuariosIcon,
-} from "../components/ui/icons.tsx";
-import type { IconComponent } from "../components/ui/icons.tsx";
-import { IconTile } from "../components/ui/IconTile.tsx";
+  lazy,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
+import { NavLink } from "react-router";
+import { ChevronAbajoIcon } from "../components/ui/icons.tsx";
 import { NAVIGATION } from "../config/navigation.ts";
 import { ROUTES } from "../config/routes.ts";
 import styles from "./PublicNavigation.module.css";
 
-// Cada vínculo lleva su ícono y cada categoría una captura distinta del producto, para que el
-// panel enseñe algo y no solo liste enlaces.
-const LINK_ICONS: Record<string, IconComponent> = {
-  [ROUTES.howItWorks]: CarpetaAbiertaIcon,
-  [ROUTES.verifier]: ArchivoBusquedaIcon,
-  [ROUTES.verifierSection]: HuellaIcon,
-  "/empresa": UsuariosIcon,
-  "/seguridad": EscudoVistoIcon,
-  "/docs/invitar-al-equipo": UsuarioAgregarIcon,
-  "/soporte": ChatIcon,
-  "/docs": LibroIcon,
-  "/blog": DocumentoIcon,
-  "/ayuda": InfoIcon,
-  "/nosotros": OjoIcon,
-  "/filosofia": BalanzaIcon,
-  "/estado": RayoIcon,
-};
-const FEATURE_SHOTS: Record<string, string> = {
-  Producto: "/media/producto/resumen.webp",
-  Equipos: "/media/producto/actividad.webp",
-  Recursos: "/media/producto/verificador.webp",
-  Aletheia: "/media/producto/paquete.webp",
-};
+const loadPanel = () => import("./NavigationPanelContent.tsx");
+const NavigationPanelContent = lazy(loadPanel);
 
 /** Un solo panel evita saltos al recorrer las categorías con el puntero. */
 export function PublicNavigation() {
@@ -102,7 +69,11 @@ export function PublicNavigation() {
       ref={root}
       className={styles.nav}
       aria-label="Principal"
-      onPointerEnter={cancelClose}
+      onPointerEnter={() => {
+        cancelClose();
+        void loadPanel();
+      }}
+      onFocusCapture={() => void loadPanel()}
       onPointerLeave={(event) => {
         if (
           event.pointerType === "mouse" &&
@@ -215,53 +186,9 @@ export function PublicNavigation() {
           className={styles.panel}
           aria-labelledby={`nav-trigger-${active}`}
         >
-          <div className={styles.panelContent} key={group.title}>
-            <Link
-              to={group.feature.to}
-              className={styles.feature}
-              onClick={close}
-            >
-              <IconTile icon={group.feature.icon} tone="solid" size="lg" />
-              <span className={styles.featureTitle}>{group.feature.title}</span>
-              <small>{group.feature.text}</small>
-              {FEATURE_SHOTS[group.title] && (
-                <img
-                  className={styles.featureShot}
-                  src={FEATURE_SHOTS[group.title]}
-                  alt=""
-                  width={1260}
-                  height={720}
-                  loading="lazy"
-                  decoding="async"
-                />
-              )}
-              <span className={styles.featureCta}>
-                Conocer más
-                <FlechaDerechaIcon size={14} aria-hidden="true" />
-              </span>
-            </Link>
-            <div className={styles.links}>
-              {group.links.map((link, position) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={close}
-                  style={{ "--i": position } as CSSProperties}
-                >
-                  {LINK_ICONS[link.to] && (
-                    <IconTile icon={LINK_ICONS[link.to]!} />
-                  )}
-                  <span className={styles.linkText}>
-                    <span className={styles.linkLabel}>
-                      {link.label}
-                      <FlechaDerechaIcon size={14} aria-hidden="true" />
-                    </span>
-                    {link.description && <small>{link.description}</small>}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
+          <Suspense fallback={null}>
+            <NavigationPanelContent group={group} close={close} />
+          </Suspense>
         </div>
       )}
     </nav>
