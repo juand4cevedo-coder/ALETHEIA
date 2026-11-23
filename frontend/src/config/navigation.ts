@@ -1,10 +1,3 @@
-import type { IconComponent } from "../components/ui/icons.tsx";
-import {
-  CarpetaAbiertaIcon,
-  LibroIcon,
-  OjoIcon,
-  UsuariosIcon,
-} from "../components/ui/icons.tsx";
 import { LEGAL_PAGES, legalRoute, ROUTES } from "./routes.ts";
 
 export type NavigationLink = {
@@ -15,7 +8,8 @@ export type NavigationLink = {
 export type NavigationGroup = {
   title: string;
   links: NavigationLink[];
-  feature: { to: string; title: string; text: string; icon: IconComponent };
+  // El ícono de cada grupo vive en navigationIcons.ts, que solo se descarga al abrir un menú.
+  feature: { to: string; title: string; text: string };
 };
 
 export const NAVIGATION: NavigationGroup[] = [
@@ -47,7 +41,6 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/#recorrido",
       title: "Su espacio de trabajo",
       text: "Conozca Aletheia por dentro.",
-      icon: CarpetaAbiertaIcon,
     },
   },
   {
@@ -78,7 +71,6 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/empresa",
       title: "Un mismo contexto",
       text: "Personas, casos y responsabilidades.",
-      icon: UsuariosIcon,
     },
   },
   {
@@ -109,7 +101,6 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/docs",
       title: "Del primer paso al caso",
       text: "Guías, respuestas y recursos en español.",
-      icon: LibroIcon,
     },
   },
   {
@@ -140,7 +131,6 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/nosotros",
       title: "La claridad empieza aquí",
       text: "Conozca el propósito detrás de Aletheia.",
-      icon: OjoIcon,
     },
   },
 ];

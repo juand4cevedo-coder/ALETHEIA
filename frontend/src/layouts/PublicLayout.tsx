@@ -1,7 +1,13 @@
 import { mediaUrl, photoProps } from "../config/media.ts";
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Link, Outlet, ScrollRestoration, useLocation } from "react-router";
-import { IconTile } from "../components/ui/IconTile.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { CONSUMER_AUTHORITY } from "../config/legal.ts";
 import { ROUTES } from "../config/routes.ts";
@@ -25,6 +31,10 @@ import {
   MenuIcon,
 } from "../components/ui/icons.tsx";
 import styles from "./PublicLayout.module.css";
+
+// El detalle de un grupo del menú móvil se descarga al tocarlo o al abrir el menú, no con la entrada.
+const loadMobileGroupDetail = () => import("./MobileGroupDetail.tsx");
+const MobileGroupDetail = lazy(loadMobileGroupDetail);
 
 const CURRENT_YEAR = new Date().getFullYear();
 function Brand() {
@@ -91,6 +101,7 @@ export function PublicLayout() {
               aria-expanded={menuOpen}
               aria-controls="menu-movil"
               onClick={() => {
+                void loadMobileGroupDetail();
                 menuRef.current?.showModal();
                 setMenuOpen(true);
               }}
@@ -142,35 +153,15 @@ export function PublicLayout() {
           </button>
         </div>
         {selectedGroup ? (
-          <section
-            className={styles.mobileDetail}
-            aria-labelledby="menu-movil-titulo"
+          <Suspense
+            fallback={
+              <p className={styles.mobileEyebrow} role="status">
+                Cargando
+              </p>
+            }
           >
-            <Link
-              to={selectedGroup.feature.to}
-              className={styles.mobileFeature}
-              onClick={closeMenu}
-            >
-              <IconTile
-                icon={selectedGroup.feature.icon}
-                tone="soft"
-                size="lg"
-              />
-              <h2 id="menu-movil-titulo">{selectedGroup.title}</h2>
-              <p>{selectedGroup.feature.text}</p>
-            </Link>
-            <nav aria-label={`Opciones de ${selectedGroup.title}`}>
-              {selectedGroup.links.map((link) => (
-                <Link key={link.to} to={link.to} onClick={closeMenu}>
-                  <span>
-                    <strong>{link.label}</strong>
-                    {link.description && <small>{link.description}</small>}
-                  </span>
-                  <FlechaDerechaIcon size={18} aria-hidden="true" />
-                </Link>
-              ))}
-            </nav>
-          </section>
+            <MobileGroupDetail group={selectedGroup} close={closeMenu} />
+          </Suspense>
         ) : (
           <nav className={styles.mobileMenu} aria-label="Navegación móvil">
             <p id="menu-movil-titulo" className={styles.mobileEyebrow}>
