@@ -48,7 +48,7 @@ export function ScopeSection() {
 
         <div className={styles.columns}>
           {COLUMNS.map((column) => (
-            <div key={column.title} className={styles.panel}>
+            <div key={column.title} className={styles.panel} data-reveal>
               <h3 className={styles.panelTitle}>{column.title}</h3>
               <ul className={styles.list}>
                 {column.items.map((item) => (

@@ -43,6 +43,7 @@ export function PlanCard({
   return (
     <article
       className={styles.card}
+      data-reveal
       data-recommended={recommended || undefined}
       aria-labelledby={headingId}
     >
