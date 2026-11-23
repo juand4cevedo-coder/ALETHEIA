@@ -43,6 +43,27 @@ else
     [[ $tokens == required ]] && ok "IMDSv2 obligatorio" || falla "IMDSv2 no es obligatorio ($tokens)"
     cifrados="$(aws_ ec2 describe-volumes --filters Name=attachment.instance-id,Values="$instancia" --query 'Volumes[].Encrypted')"
     [[ $cifrados != *False* && -n $cifrados ]] && ok "discos cifrados" || falla "hay discos sin cifrar"
+    # La política de copias diarias (DLM) solo copia los discos con la etiqueta respaldo=diario.
+    # Si el disco de producción no la lleva, deja de tener copias sin que nada avise (como pasó
+    # al cambiar el disco raíz por uno cifrado, el 23/11/2026).
+    sin_etiqueta="$(aws_ ec2 describe-volumes --filters Name=attachment.instance-id,Values="$instancia" \
+        --query 'Volumes[?!(Tags[?Key==`respaldo` && Value==`diario`])].VolumeId')"
+    [[ -z $sin_etiqueta ]] && ok "los discos de la instancia llevan la etiqueta respaldo=diario" \
+        || falla "sin etiqueta respaldo=diario, la política de copias no los respalda: $sin_etiqueta"
+    sueltos="$(aws_ ec2 describe-volumes --filters Name=status,Values=available Name=tag:respaldo,Values=diario \
+        --query 'Volumes[].VolumeId')"
+    [[ -z $sueltos ]] || aviso "discos sin conectar que siguen respaldándose cada noche: $sueltos"
+    for volumen in $(aws_ ec2 describe-volumes --filters Name=attachment.instance-id,Values="$instancia" \
+        --query 'Volumes[].VolumeId'); do
+        ultima_copia="$(aws_ ec2 describe-snapshots --owner-ids self \
+            --filters Name=volume-id,Values="$volumen" Name=tag:dlm:managed,Values=true \
+            --query 'max_by(Snapshots, &StartTime).StartTime')"
+        if [[ -z $ultima_copia || $ultima_copia == None ]]; then
+            aviso "el disco $volumen todavía no tiene ninguna copia diaria"
+        else
+            ok "última copia diaria de $volumen: $ultima_copia"
+        fi
+    done
     grupo="$(aws_ ec2 describe-instances --instance-ids "$instancia" --query 'Reservations[0].Instances[0].SecurityGroups[0].GroupId')"
     abiertos="$(aws_ ec2 describe-security-groups --group-ids "$grupo" \
         --query 'SecurityGroups[0].IpPermissions[?contains(IpRanges[].CidrIp, `0.0.0.0/0`)].FromPort')"
