@@ -148,7 +148,11 @@ describe("Nombre del despacho (API-022)", () => {
 });
 
 describe("Políticas del despacho", () => {
-  const POLICIES = { default_retention_years: 10, session_days: 14 };
+  const POLICIES = {
+    default_retention_years: 10,
+    session_days: 14,
+    require_two_factor: false,
+  };
 
   it("la propietaria cambia la conservación y la duración de la sesión", async () => {
     let sent: unknown;
@@ -170,11 +174,50 @@ describe("Políticas del despacho", () => {
       screen.getByLabelText("Duración de la sesión"),
       "7",
     );
+    await user.click(
+      screen.getByRole("checkbox", {
+        name: "Exigir la verificación en dos pasos a todo el equipo",
+      }),
+    );
     await user.click(screen.getByRole("button", { name: "Guardar políticas" }));
 
     expect(
       await screen.findByText("Guardamos las políticas."),
     ).toBeInTheDocument();
-    expect(sent).toEqual({ default_retention_years: 5, session_days: 7 });
+    expect(sent).toEqual({
+      default_retention_years: 5,
+      session_days: 7,
+      require_two_factor: true,
+    });
+  });
+
+  it("si el servidor la rechaza, muestra el motivo y deja la casilla como estaba", async () => {
+    serve("owner", {
+      "GET /api/v1/organization/policies": () => jsonResponse(POLICIES),
+      "PUT /api/v1/organization/policies": () =>
+        jsonResponse(
+          {
+            type: "about:blank",
+            title: "Conflicto",
+            status: 409,
+            detail:
+              "Para exigirlo al equipo, primero active su propia verificación en dos pasos en Mi cuenta.",
+          },
+          409,
+        ),
+    });
+    const user = userEvent.setup();
+    await renderRoute("/app/organizacion");
+
+    const box = await screen.findByRole("checkbox", {
+      name: "Exigir la verificación en dos pasos a todo el equipo",
+    });
+    await user.click(box);
+    await user.click(screen.getByRole("button", { name: "Guardar políticas" }));
+
+    expect(
+      await screen.findByText(/primero active su propia verificación/),
+    ).toBeInTheDocument();
+    expect(box).not.toBeChecked();
   });
 });

@@ -1,0 +1,33 @@
+.screen {
+  min-height: 100dvh;
+  padding: var(--space-6);
+  background: var(--paper);
+  color: var(--text);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 720px;
+  margin: 0 auto var(--space-8);
+  font-weight: 650;
+}
+
+.main {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.main h1 {
+  font-size: var(--font-size-title);
+  font-weight: 650;
+  line-height: var(--line-height-title);
+  letter-spacing: var(--tracking-title);
+}
+
+.main p {
+  color: var(--text-2);
+}

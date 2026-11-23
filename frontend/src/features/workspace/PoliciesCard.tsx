@@ -7,9 +7,11 @@ import {
   putPoliciesMutation,
 } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../../components/ui/Button.tsx";
+import { Checkbox } from "../../components/ui/Checkbox.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
 import { Panel } from "../../components/ui/Panel.tsx";
 import { Select } from "../../components/ui/Select.tsx";
+import { apiProblem } from "../auth/apiProblem.ts";
 import styles from "./PoliciesCard.module.css";
 
 const RETENTION_OPTIONS = [1, 3, 5, 7, 10, 15, 20, 30].map((years) => ({
@@ -38,9 +40,10 @@ export function PoliciesCard({ canEdit }: { canEdit: boolean }) {
       {policies.data && (
         <PoliciesForm
           // Si el servidor devuelve otros valores, el formulario se reinicia con ellos.
-          key={`${policies.data.default_retention_years}-${policies.data.session_days}`}
+          key={`${policies.data.default_retention_years}-${policies.data.session_days}-${policies.data.require_two_factor}`}
           retention={policies.data.default_retention_years}
           session={policies.data.session_days}
+          requireTwoFactor={policies.data.require_two_factor ?? false}
           canEdit={canEdit}
         />
       )}
@@ -51,15 +54,18 @@ export function PoliciesCard({ canEdit }: { canEdit: boolean }) {
 function PoliciesForm({
   retention,
   session,
+  requireTwoFactor,
   canEdit,
 }: {
   retention: number;
   session: number;
+  requireTwoFactor: boolean;
   canEdit: boolean;
 }) {
   const queryClient = useQueryClient();
   const [years, setYears] = useState(String(retention));
   const [days, setDays] = useState(String(session));
+  const [required, setRequired] = useState(requireTwoFactor);
   const [error, setError] = useState<string>();
   const [saved, setSaved] = useState(false);
 
@@ -69,10 +75,21 @@ function PoliciesForm({
       setSaved(true);
       await queryClient.invalidateQueries({ queryKey: getPoliciesQueryKey() });
     },
-    onError: () => setError("No pudimos guardar las políticas."),
+    onError: (failure) => {
+      const { status, detail } = apiProblem(failure);
+      setRequired(requireTwoFactor);
+      setError(
+        status === 409
+          ? (detail ?? "No pudimos guardar las políticas.")
+          : "No pudimos guardar las políticas.",
+      );
+    },
   });
 
-  const unchanged = years === String(retention) && days === String(session);
+  const unchanged =
+    years === String(retention) &&
+    days === String(session) &&
+    required === requireTwoFactor;
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -82,6 +99,7 @@ function PoliciesForm({
       body: {
         default_retention_years: Number(years),
         session_days: Number(days),
+        require_two_factor: required,
       },
     });
   }
@@ -104,6 +122,19 @@ function PoliciesForm({
         disabled={!canEdit}
         help="Cuánto puede pasar antes de que le pidan ingresar de nuevo a cualquier persona del equipo. Solo cuenta para los ingresos nuevos."
       />
+      <Checkbox
+        checked={required}
+        disabled={!canEdit}
+        onChange={(event) => setRequired(event.target.checked)}
+      >
+        Exigir la verificación en dos pasos a todo el equipo
+      </Checkbox>
+      <p className={styles.hint}>
+        Quien no la tenga podrá ingresar, pero solo llegará a activarla; hasta
+        entonces nada más del espacio de trabajo le responde. Usted debe tenerla
+        activa antes de exigirla, y mientras esté exigida nadie podrá
+        desactivarla.
+      </p>
       {!canEdit && (
         <Notice tone="info">
           <p>Solo la persona propietaria puede cambiar estas políticas.</p>

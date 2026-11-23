@@ -14,6 +14,7 @@ import logoUrl from "../assets/simbolo.svg";
 import { Button } from "../components/ui/Button.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, WORDMARK } from "../config/site.ts";
+import { TwoFactorRequired } from "../features/account/TwoFactorRequired.tsx";
 import { LegalRenewal } from "../features/legal/LegalRenewal.tsx";
 import { AccountMenu } from "../features/session/AccountMenu.tsx";
 import { WorkspaceNav } from "../features/workspace/WorkspaceNav.tsx";
@@ -74,6 +75,11 @@ export function AppShell() {
   // trabajo: la API tampoco responde el resto hasta entonces (TT-012, RN-029).
   if (signedIn && me.data.legal.acceptance_required) {
     return <LegalRenewal me={me.data} />;
+  }
+
+  // Si el despacho exige el segundo factor y la persona no lo tiene, solo puede activarlo.
+  if (signedIn && me.data.two_factor_setup_required) {
+    return <TwoFactorRequired me={me.data} />;
   }
 
   if (sessionEnded) {
