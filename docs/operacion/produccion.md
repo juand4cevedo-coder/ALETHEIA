@@ -224,6 +224,10 @@ Restaurar en una base vacía, con una copia descargada del bucket (por ejemplo d
 
 Un respaldo que nunca se restauró no es una garantía: la restauración se ensaya en una base de pruebas al menos una vez por trimestre y el resultado se anota aquí.
 
+| Fecha | Qué se ensayó | Resultado |
+| --- | --- | --- |
+| 22 de noviembre de 2026 | `ensayar-restauracion.sh` sobre la base de producción, versión 0.9.0 | Correcto: esquema y filas iguales |
+
 ## Revisión de la cuenta de AWS
 
 La organización de las credenciales y su rotación están en [Credenciales de AWS](credenciales-aws.md).

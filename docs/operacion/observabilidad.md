@@ -12,6 +12,7 @@ Avisan antes de la falla:
 
 | Alarma | Se activa cuando |
 | --- | --- |
+| `aletheia-respaldo` | El último respaldo de la base tiene más de 26 horas |
 | `aletheia-disco` | El disco pasa del 75 % |
 | `aletheia-memoria` | La memoria pasa del 88 % durante 15 minutos |
 | `aletheia-cpu` | La CPU pasa del 80 % durante 15 minutos |
@@ -63,7 +64,6 @@ La hace la persona administradora. Cuesta cerca de 4 dólares al mes: nueve mét
 
 ## Pendiente
 
-- Una alarma de respaldo vencido con `respaldar.sh --revisar`.
 - Un panel de métricas del negocio (casos, evidencias, uso por despacho) dentro del producto.
 
 ## Presupuesto

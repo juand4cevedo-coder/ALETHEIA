@@ -69,6 +69,8 @@ alarma estado-instancia "La instancia falló una comprobación de estado de AWS"
 # Avisan antes: la plataforma se está acercando a un límite.
 alarma latencia "Latencia p95 de la API por encima de 1,5 s" "$ESPACIO" LatenciaP95 Maximum \
     GreaterThanThreshold 1500 300 3 notBreaching
+alarma respaldo "El último respaldo de la base tiene más de 26 horas" "$ESPACIO" RespaldoEdadHoras Maximum \
+    GreaterThanThreshold 26 300 2 breaching
 alarma disco "Disco por encima del 75 %" "$ESPACIO" DiscoUsado Maximum \
     GreaterThanThreshold 75 300 2 notBreaching
 alarma memoria "Memoria por encima del 88 %" "$ESPACIO" MemoriaUsada Maximum \
