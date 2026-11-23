@@ -22,6 +22,18 @@ _ISSUERS: Final = ("https://accounts.google.com", "accounts.google.com")
 class GoogleOidcError(Exception):
     """Google rechazó el código o el ID token no demuestra una identidad válida."""
 
+    def __init__(self, reason: str = "identidad no válida") -> None:
+        super().__init__(reason)
+        self.reason = reason
+
+
+def _error_code(exc: urllib.error.HTTPError) -> str:
+    try:
+        code = json.loads(exc.read(2_048)).get("error")
+    except ValueError, AttributeError, OSError:
+        return "sin detalle"
+    return code if isinstance(code, str) and code.isascii() and len(code) <= 60 else "sin detalle"
+
 
 class GoogleOidcUnavailableError(Exception):
     """El despliegue todavía no tiene credenciales de Google."""
@@ -143,13 +155,18 @@ class GoogleOidcClient:
                 email_verified=True,
                 full_name=full_name,
             )
+        except GoogleOidcError:
+            raise
+        except urllib.error.HTTPError as exc:
+            # Google explica por qué rechaza el código (invalid_grant, redirect_uri_mismatch,
+            # invalid_client...). Solo se conserva ese código, nunca el cuerpo completo.
+            raise GoogleOidcError(f"Google respondió {exc.code}: {_error_code(exc)}") from None
         except (
-            GoogleOidcError,
             KeyError,
             TypeError,
             ValueError,
             json.JSONDecodeError,
             jwt.PyJWTError,
             urllib.error.URLError,
-        ):
-            raise GoogleOidcError from None
+        ) as exc:
+            raise GoogleOidcError(type(exc).__name__) from None

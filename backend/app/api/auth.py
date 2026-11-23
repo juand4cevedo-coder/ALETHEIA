@@ -4,6 +4,7 @@ sesión actual y de todas (API-009 y API-010) y recuperación de la contraseña 
 API-012)."""
 
 import hmac
+import logging
 import uuid
 from typing import Annotated, Final
 
@@ -75,6 +76,8 @@ from app.services import two_factor as two_factor_service
 from app.services import verification as verification_service
 from app.services.legal import LegalVersionMismatchError
 from app.services.sessions import Principal
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["cuenta"])
 
@@ -209,6 +212,13 @@ def google_callback(
     response.headers["Referrer-Policy"] = "no-referrer"
     _clear_google_cookie(response)
     if flow_token is None or state_value is None or code is None or error is not None:
+        logger.warning(
+            "Google: regreso sin completar (cookie=%s, state=%s, code=%s, rechazo_de_google=%s)",
+            flow_token is not None,
+            state_value is not None,
+            code is not None,
+            error is not None,
+        )
         return response
     try:
         flow = read_google_flow(settings.signing_key(), flow_token)
@@ -269,8 +279,10 @@ def google_callback(
         response.headers["location"] = "/ingresar?google=sesion-vencida"
     except LegalVersionMismatchError:
         response.headers["location"] = "/registro?google=legal-cambio"
-    except InvalidGoogleFlowError, GoogleOidcError:
-        pass
+    except InvalidGoogleFlowError:
+        logger.warning("Google: el flujo no es válido (cookie vencida o state distinto)")
+    except GoogleOidcError as failure:
+        logger.warning("Google: no se pudo comprobar la identidad: %s", failure.reason)
     return response
 
 
