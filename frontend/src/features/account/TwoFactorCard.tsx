@@ -22,24 +22,23 @@ type Mode = "idle" | "setup" | "codes" | "disable" | "renew";
 // Dibuja el código QR del enlace otpauth en el navegador: el secreto no sale de esta pantalla. La
 // biblioteca se descarga solo al activar el segundo factor, no con el resto de la cuenta.
 function useQrCode(uri: string | undefined): string | undefined {
-  const [url, setUrl] = useState<string>();
+  // Se guarda junto con el enlace del que salió: si el enlace cambia o desaparece, el dibujo
+  // anterior deja de valer sin tener que borrarlo desde el efecto.
+  const [drawn, setDrawn] = useState<{ uri: string; url: string }>();
   useEffect(() => {
-    if (!uri) {
-      setUrl(undefined);
-      return;
-    }
+    if (!uri) return;
     let current = true;
     void import("qrcode-generator").then(({ default: qrcode }) => {
       const qr = qrcode(0, "M");
       qr.addData(uri);
       qr.make();
-      if (current) setUrl(qr.createDataURL(4, 4));
+      if (current) setDrawn({ uri, url: qr.createDataURL(4, 4) });
     });
     return () => {
       current = false;
     };
   }, [uri]);
-  return url;
+  return uri && drawn?.uri === uri ? drawn.url : undefined;
 }
 
 // El secreto en grupos de cuatro: se lee y se teclea sin perder el lugar.

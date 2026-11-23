@@ -61,6 +61,9 @@ NEWS_EMAIL_WINDOW_SECONDS: Final = 60 * 60
 # Los avisos por correo de mensajes seguidos se juntan en uno por ventana.
 MESSAGE_EMAIL_WINDOW_SECONDS: Final = 15 * 60
 MAX_UPDATES: Final = 100
+# Un despacho con el plan vencido queda en solo lectura: el cliente puede seguir leyendo y
+# descargando, pero no escribir. Uno suspendido o cerrado corta el portal.
+_READABLE_STATUSES: Final = ("active", "read_only")
 
 
 class AccessNotFoundError(Exception):
@@ -400,6 +403,7 @@ def _live_access(
     query = (
         select(ClientPortalAccess, Case)
         .join(Case, Case.id == ClientPortalAccess.case_id)
+        .join(Organization, Organization.id == ClientPortalAccess.organization_id)
         .where(
             ClientPortalAccess.id == claims.access_id,
             ClientPortalAccess.organization_id == claims.organization_id,
@@ -407,6 +411,7 @@ def _live_access(
             ClientPortalAccess.revoked_at.is_(None),
             ClientPortalAccess.expires_at > _now(),
             Case.status != "deleting",
+            Organization.status.in_(_READABLE_STATUSES),
         )
     )
     if lock:
@@ -421,7 +426,7 @@ def view(session: Session, settings: Settings, token: str) -> PublicView:
     """Lo que ve el cliente. Hasta que acepte el aviso solo ve quién lo invitó."""
     access, case = _live_access(session, settings, token, lock=True)
     organization = session.get(Organization, access.organization_id)
-    if organization is None or organization.status != "active":
+    if organization is None:
         raise InvalidPortalLinkError
     access.last_visit_at = _now()
     accepted = access.notice_accepted_at is not None
@@ -516,7 +521,7 @@ def renew(
         .with_for_update(of=ClientPortalAccess)
     )
     organization = session.get(Organization, claims.organization_id)
-    if access is None or organization is None or organization.status != "active":
+    if access is None or organization is None or organization.status not in _READABLE_STATUSES:
         raise InvalidPortalLinkError
     rate_limit.hit(session, rate_limit.PORTAL_RENEW_ACCESS, str(access.id))
     access.link_version += 1

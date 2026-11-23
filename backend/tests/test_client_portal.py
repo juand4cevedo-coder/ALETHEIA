@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.core.tokens import InvalidPortalLinkError, issue_portal_link, read_portal_link
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, ClientPortalAccess, Job
+from app.models import AuditLog, ClientPortalAccess, Job, Organization
 from app.services.client_portal import INVITE_TEMPLATE, MESSAGE_TEMPLATE, NEWS_TEMPLATE
 from app.services.client_portal_emails import invite_email, message_email, news_email
 from tests.conftest import NuevoCliente
@@ -458,3 +458,26 @@ def test_no_se_avisa_a_quien_no_entro_ni_a_quien_ya_no_tiene_acceso(
     assert news_email(db, _news_jobs(db)[0], settings) is None
     lawyer.post(f"{_CASES}/{case_id}/portal/updates", json={"body": "Tercero"})
     assert len(_news_jobs(db)) == 1
+
+
+def test_un_despacho_en_solo_lectura_deja_leer_pero_no_escribir_y_uno_cerrado_corta_el_portal(
+    dispositivo: NuevoCliente, db: Session, settings: Settings
+) -> None:
+    office, _, _, anonymous, token = _ready_client(dispositivo, db, settings)
+
+    def set_status(status: str) -> None:
+        set_tenant(
+            db, TenantContext(organization_id=office.organization_id, user_id=office.owner.id)
+        )
+        db.execute(update(Organization).values(status=status))
+        db.flush()
+
+    set_status("read_only")
+    assert anonymous.post(_VIEW, json={"token": token}).status_code == 200
+    assert anonymous.post(_MESSAGES, json={"token": token, "body": "Hola"}).status_code == 404
+
+    set_status("closed")
+    assert anonymous.post(_VIEW, json={"token": token}).status_code == 404
+    assert anonymous.post(_ACCEPT, json={"token": token}).status_code == 404
+    assert anonymous.post(_RENEW, json={"token": token}).status_code == 202  # misma respuesta
+    assert len(_invites(db)) == 1  # y no se mandó otro enlace
