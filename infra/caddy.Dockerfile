@@ -23,6 +23,10 @@ WORKDIR /web
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
+# Dominio de la red de distribución para los archivos estáticos (ADR-051). Vacío por omisión: todo
+# sale del mismo origen. Se activa con la variable CDN_URL del repositorio, sin cambiar código.
+ARG VITE_CDN_URL=""
+ENV VITE_CDN_URL=$VITE_CDN_URL
 RUN pnpm build
 
 # --- Etapa 2: Caddy ---------------------------------------------------------------------

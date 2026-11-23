@@ -266,9 +266,12 @@ Los archivos estáticos del sitio salen de una instancia en Ohio. Para quien vis
 1. `cdn.sh --certificado`: pide el certificado y muestra el registro DNS de validación, que se crea en Hostinger.
 2. `cdn.sh --crear`: con el certificado emitido, crea la función, la política y la distribución, y muestra el registro `CNAME cdn` que se crea en Hostinger.
 3. `cdn.sh --estado`: comprueba que `cdn.aletheia.sbs` sirve los archivos con CORS y que las otras rutas dan 404.
-4. Solo entonces se publica una versión del sitio que pide los archivos al subdominio (cambio de compilación, de CSP y de las rutas de las imágenes). Hasta ese momento el sitio no cambia.
+4. Publicar una versión que sepa usar el subdominio (ADR-051). Esa versión trae el interruptor apagado: el CSP ya admite `https://cdn.aletheia.sbs`, pero el sitio sigue pidiendo todo al mismo origen.
+5. Encender el interruptor: crear la variable de repositorio `CDN_URL` con el valor `https://cdn.aletheia.sbs` (GitHub > Settings > Secrets and variables > Actions > Variables) y publicar una versión nueva. `publicar.yml` la pasa como argumento de construcción `VITE_CDN_URL`, y la interfaz se construye con las direcciones de `/assets/`, `/media/` y `/brand/` apuntando al subdominio. El HTML, el manifiesto, los íconos y la API siguen en el origen.
 
-Para deshacerlo: publicar una versión sin el subdominio y, si se quiere, desactivar y borrar la distribución desde la consola de CloudFront.
+Para comprobarlo después de publicar: en la pestaña Red del navegador, el `index-*.js`, las fuentes y las fotografías deben pedirse a `cdn.aletheia.sbs` con `x-cache: Hit from cloudfront` desde la segunda visita, y la consola no debe mostrar errores de CSP ni de CORS.
+
+Para deshacerlo: borrar la variable `CDN_URL` y publicar una versión nueva (el sitio vuelve a servir todo del origen; las páginas ya abiertas siguen funcionando porque el origen conserva los mismos archivos). Si además se quiere retirar la distribución, se desactiva y se borra desde la consola de CloudFront.
 
 ## Rendimiento
 

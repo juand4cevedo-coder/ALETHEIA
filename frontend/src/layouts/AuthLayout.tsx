@@ -16,7 +16,7 @@ import { SITE_NAME, WORDMARK } from "../config/site.ts";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import styles from "./AuthLayout.module.css";
-import { photoProps } from "../config/media.ts";
+import { mediaUrl, photoProps } from "../config/media.ts";
 
 /** Cambio a la otra pantalla de acceso, declarado en la ruta: va debajo del formulario. */
 export type AuthSwitch = { question: string; label: string; to: string };
@@ -38,7 +38,7 @@ function isAuthSwitch(value: unknown): value is AuthSwitch {
   );
 }
 
-const logoUrl = "/brand/symbol-dark.svg";
+const logoUrl = mediaUrl("/brand/symbol-dark.svg");
 const CURRENT_YEAR = new Date().getFullYear();
 
 export function AuthLayout() {

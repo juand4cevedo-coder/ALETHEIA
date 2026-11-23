@@ -1,9 +1,37 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import { defineConfig, type Plugin } from "vitest/config";
+
+// Red de distribución (CloudFront, cdn.aletheia.sbs). Con VITE_CDN_URL definida al construir,
+// los archivos con huella de /assets y las imágenes de /media y /brand se piden a ese dominio.
+// Sin ella (el valor por omisión) todo sale del mismo origen, como antes. El HTML, el manifiesto,
+// los íconos y la API nunca pasan por la red de distribución.
+const cdn = (process.env.VITE_CDN_URL ?? "").replace(/\/+$/, "");
+
+// El HTML lleva la precarga de la foto de portada con una ruta fija. Se reescribe sobre el
+// archivo ya generado, cuando Vite terminó de procesar las direcciones del HTML.
+const cdnEnHtml: Plugin = {
+  name: "aletheia-cdn-html",
+  enforce: "post",
+  generateBundle(_, bundle) {
+    const html = bundle["index.html"];
+    if (!cdn || html?.type !== "asset") return;
+    html.source = String(html.source).replace(
+      /\/(?:media|brand)\/[^\s",]*/g,
+      (ruta) => `${cdn}${ruta}`,
+    );
+  },
+};
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), cdnEnHtml],
+  experimental: cdn
+    ? {
+        // Solo lo que Vite genera con huella; los íconos y el manifiesto de /public se quedan.
+        renderBuiltUrl: (archivo) =>
+          archivo.startsWith("assets/") ? `${cdn}/${archivo}` : undefined,
+      }
+    : undefined,
   build: {
     // El presupuesto recorre las importaciones estáticas del manifiesto, también las compartidas.
     manifest: true,

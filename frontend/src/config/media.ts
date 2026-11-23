@@ -1,3 +1,12 @@
+/** Dominio de la red de distribución (cdn.aletheia.sbs), definido al construir con VITE_CDN_URL.
+ * Vacío por omisión: las imágenes salen del mismo origen. */
+const CDN = String(import.meta.env.VITE_CDN_URL ?? "").replace(/\/+$/, "");
+
+/** Dirección de un archivo público de /media o /brand, por la red de distribución si está activa. */
+export function mediaUrl(path: string): string {
+  return CDN + path;
+}
+
 /** Fotografías de la campaña, publicadas en tres anchos WebP (640, 1280 y 1920 px). El
  * navegador elige el más cercano al tamaño con que se dibuja, así un teléfono no descarga la
  * imagen de escritorio. Los originales JPG ya no se publican. */
@@ -6,7 +15,7 @@ export type Photo = "hero-real" | "equipo-real" | "producto-real" | "pie";
 const WIDTHS = [640, 1280, 1920] as const;
 
 function file(photo: Photo, width: number): string {
-  return `/media/campaign/${photo}-${width}.webp`;
+  return mediaUrl(`/media/campaign/${photo}-${width}.webp`);
 }
 
 /** Atributos de una imagen responsive: la versión intermedia como src y las tres en srcSet. */
@@ -33,10 +42,11 @@ export function productShotProps(
   path: string,
   sizes: string,
 ): { src: string; srcSet: string; sizes: string } {
-  const small = path.replace(/\.webp$/, "-640.webp");
+  const large = mediaUrl(path);
+  const small = large.replace(/\.webp$/, "-640.webp");
   return {
-    src: path,
-    srcSet: `${small} 640w, ${path} 1260w`,
+    src: large,
+    srcSet: `${small} 640w, ${large} 1260w`,
     sizes,
   };
 }

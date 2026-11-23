@@ -150,7 +150,7 @@ if [[ $id_politica == None || -z $id_politica ]]; then
     "AccessControlAllowHeaders": {"Quantity": 1, "Items": ["*"]},
     "AccessControlAllowMethods": {"Quantity": 2, "Items": ["GET", "HEAD"]},
     "AccessControlAllowCredentials": false,
-    "AccessControlMaxAge": 86400,
+    "AccessControlMaxAgeSec": 86400,
     "OriginOverride": true
   },
   "SecurityHeadersConfig": {
