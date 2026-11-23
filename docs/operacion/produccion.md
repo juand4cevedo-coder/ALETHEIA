@@ -234,6 +234,22 @@ La organización de las credenciales y su rotación están en [Credenciales de A
 
 `infra/prod/auditar-aws.sh` es de solo lectura y se ejecuta desde CloudShell. Comprueba IMDSv2, discos cifrados, puertos abiertos, buckets privados y cifrados con su ciclo de vida, la antigüedad de la última copia de PostgreSQL, los parámetros de Parameter Store (solo los nombres), las alarmas de CloudWatch y el presupuesto. También revisa las credenciales de IAM: raíz sin llaves y con MFA, MFA para cada persona con consola y llaves de menos de 90 días. Se ejecuta antes de cada versión y después de cualquier cambio en AWS.
 
+## Cifrado del disco raíz
+
+La cuenta cifra por omisión todo disco nuevo, pero el disco raíz de `aletheia-prod` se creó antes y no está cifrado (la revisión de la cuenta lo marca). AWS no cifra un disco en uso: `infra/aws/cifrar-disco-raiz.sh` hace el procedimiento estándar, con la máquina apagada para el cambio y el disco anterior guardado para volver atrás.
+
+1. **Revisar** (`--revisar`, no cambia nada): comprueba que la instancia está en ejecución, que tiene IP elástica (si no, al reiniciar cambiaría la IP) y que el cifrado por omisión está activo. Da el estado del sitio.
+2. **Ejecutar** (`--ejecutar`): pide escribir `CIFRAR` y sigue ocho pasos. Hace un respaldo verificado de la base de datos por Systems Manager; toma una instantánea del disco; la copia cifrada con la llave `aws/ebs`; crea un disco nuevo, de las mismas características, a partir de esa copia y comprueba que quedó cifrado antes de tocar la máquina; apaga la instancia; separa el disco anterior (lo etiqueta `aletheia-raiz-anterior-sin-cifrar`); conecta el nuevo en el mismo dispositivo; enciende la instancia y espera hasta cinco minutos a que `/api/v1/health` responda con la base en orden.
+3. **Revertir** (`--revertir vol-...`): apaga, separa el disco nuevo, vuelve a conectar el anterior y enciende. Sirve mientras el disco anterior no se haya borrado.
+
+El sitio queda fuera de línea entre 10 y 20 minutos: conviene una hora de poco uso (por ejemplo, de madrugada en Colombia). La IP elástica no cambia, así que el DNS sigue valiendo, y las llaves, los volúmenes de Docker y los certificados de Caddy viven en el mismo disco y no se pierden. Durante el corte las dos tareas programadas (respaldo y métricas) simplemente no corren; al encender, el temporizador del respaldo retoma su turno.
+
+Después de cifrar:
+
+- Ejecutar `infra/prod/prueba-de-humo.sh` y `infra/prod/auditar-aws.sh`; `discos cifrados` debe pasar.
+- Dejar el disco anterior y la instantánea sin cifrar durante unos días. Borrarlos cuando todo esté bien, con los comandos que imprime el script; mientras existan hay una copia del disco sin cifrar en la cuenta.
+- Las instantáneas diarias que toma la política de Data Lifecycle Manager desde ese momento ya son cifradas.
+
 ## Rendimiento
 
 - Las fotografías de campaña se publican en tres anchos WebP (640, 1280 y 1920 px) y el navegador elige el más cercano con `srcset`. Un original JPG de unos 350 KB pasó a 17 a 70 KB. Para sumar una fotografía se genera con los mismos tres anchos y se declara en `frontend/src/config/media.ts`.
