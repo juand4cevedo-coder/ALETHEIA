@@ -43,6 +43,7 @@ from app.services.client_portal import (
     PortalNotAllowedError,
     _allowed,
     _live_access,
+    notify_clients,
 )
 from app.services.evidence_download import EvidenceIntegrityError, PreparedDownload
 from app.services.evidence_stream import ReceivedFile, receive
@@ -180,6 +181,7 @@ def _record(
         )
     )
     session.flush()
+    notify_clients(session, case.id)
 
 
 def upload(

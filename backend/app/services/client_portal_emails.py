@@ -5,6 +5,7 @@ momento: si el despacho lo reenvió o lo revocó antes de que corra la tarea, no
 El correo no nombra el caso: dice quién invita, no de qué trata.
 """
 
+import datetime
 import html
 import uuid
 from typing import Any
@@ -15,7 +16,12 @@ from app.adapters.email import REPLY_TO, OutgoingEmail
 from app.core.config import Settings
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import Case, ClientPortalAccess, Organization, User
-from app.services.client_portal import INVITE_TEMPLATE, MESSAGE_TEMPLATE, portal_link
+from app.services.client_portal import (
+    INVITE_TEMPLATE,
+    MESSAGE_TEMPLATE,
+    NEWS_TEMPLATE,
+    portal_link,
+)
 from app.services.email_layout import email_layout
 from app.services.jobs import PermanentJobError
 from app.services.notifications import email_template
@@ -123,6 +129,57 @@ def message_email(
             ],
             ("Abrir el caso", link),
             "Si hay más mensajes en los próximos minutos, no le enviaremos otro correo.",
+            site_url=settings.public_url,
+        ),
+    )
+
+
+@email_template(NEWS_TEMPLATE)
+def news_email(
+    session: Session, payload: dict[str, Any], settings: Settings
+) -> OutgoingEmail | None:
+    """Aviso al cliente: hay novedades en su espacio. No dice cuáles ni nombra el caso, porque el
+    correo viaja fuera de ALETHEIA; el contenido se lee en el portal."""
+    try:
+        access_id = uuid.UUID(str(payload["access_id"]))
+        organization_id = uuid.UUID(str(payload["organization_id"]))
+    except KeyError, ValueError:
+        msg = "La tarea de correo del portal no trae identificadores válidos."
+        raise PermanentJobError(msg) from None
+    set_tenant(session, TenantContext(organization_id=organization_id))
+    access = session.get(ClientPortalAccess, access_id)
+    organization = session.get(Organization, organization_id)
+    now = datetime.datetime.now(datetime.UTC)
+    if (
+        access is None
+        or organization is None
+        or access.revoked_at is not None
+        or access.expires_at <= now
+    ):
+        return None
+    link = portal_link(settings, access)
+    name = access.client_name
+    where = organization.name
+    return OutgoingEmail(
+        to=access.client_email,
+        subject=f"Hay novedades en su espacio de {where}",
+        text=(
+            f"Hola, {name}:\n\n"
+            f"{where} publicó novedades en su espacio de ALETHEIA. Por seguridad no las "
+            f"copiamos en este correo; para verlas, abra:\n{link}\n\n"
+            "El enlace es personal: no lo reenvíe. Si hay más novedades en la próxima hora, "
+            "no le enviaremos otro correo.\n\n"
+            "ALETHEIA"
+        ),
+        html=email_layout(
+            f"Hola, {html.escape(name)}:",
+            [
+                f"<strong>{html.escape(where)}</strong> publicó novedades en su espacio de "
+                "ALETHEIA. Por seguridad no las copiamos en este correo.",
+                "El enlace es personal: no lo reenvíe.",
+            ],
+            ("Ver las novedades", link),
+            "Si hay más novedades en la próxima hora, no le enviaremos otro correo.",
             site_url=settings.public_url,
         ),
     )

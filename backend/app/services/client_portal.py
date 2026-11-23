@@ -55,6 +55,9 @@ RENEW_GRACE: Final = datetime.timedelta(days=90)
 PATH: Final = "/portal"
 INVITE_TEMPLATE: Final = "client_portal_invite"
 MESSAGE_TEMPLATE: Final = "client_portal_message"
+NEWS_TEMPLATE: Final = "client_portal_news"
+# Un cliente recibe como máximo un aviso de novedades por hora, sea cual sea el número de cambios.
+NEWS_EMAIL_WINDOW_SECONDS: Final = 60 * 60
 # Los avisos por correo de mensajes seguidos se juntan en uno por ventana.
 MESSAGE_EMAIL_WINDOW_SECONDS: Final = 15 * 60
 MAX_UPDATES: Final = 100
@@ -188,6 +191,33 @@ def _enqueue_invite(session: Session, access: ClientPortalAccess, *, renewed: bo
         },
         f"{INVITE_TEMPLATE}:{access.id}:{access.link_version}",
     )
+
+
+def notify_clients(session: Session, case_id: uuid.UUID) -> None:
+    """Avisa por correo a los clientes con acceso vigente que ya entraron al portal que hay
+    novedades. No copia el contenido: dice que hay algo nuevo y lleva al portal. Se agrupa por
+    hora para que varios cambios seguidos no llenen el correo del cliente."""
+    now = _now()
+    accesses = session.scalars(
+        select(ClientPortalAccess).where(
+            ClientPortalAccess.case_id == case_id,
+            ClientPortalAccess.revoked_at.is_(None),
+            ClientPortalAccess.expires_at > now,
+            ClientPortalAccess.notice_accepted_at.is_not(None),
+        )
+    ).all()
+    bucket = int(now.timestamp() // NEWS_EMAIL_WINDOW_SECONDS)
+    for access in accesses:
+        jobs.enqueue(
+            session,
+            "email_send",
+            {
+                "template": NEWS_TEMPLATE,
+                "access_id": str(access.id),
+                "organization_id": str(access.organization_id),
+            },
+            f"{NEWS_TEMPLATE}:{access.id}:{access.link_version}:{bucket}",
+        )
 
 
 def list_accesses(session: Session, principal: Principal, case_id: uuid.UUID) -> list[AccessView]:
@@ -356,6 +386,7 @@ def publish_update(
             client_ip=client_ip,
             user_agent=user_agent,
         )
+        notify_clients(session, case.id)
         author = session.scalar(select(User.full_name).where(User.id == principal.user_id))
     return UpdateView(update, author or "")
 
