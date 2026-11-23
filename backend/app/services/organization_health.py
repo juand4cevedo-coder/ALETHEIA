@@ -55,17 +55,16 @@ def health(session: Session, principal: Principal, now: datetime.datetime) -> He
     members = organization_repository.member_count(session, organization_id)
 
     since = now - datetime.timedelta(days=WINDOW_DAYS)
-    counts = dict(
-        session.execute(
-            select(AuditLog.action, func.count())
-            .where(
-                AuditLog.organization_id == organization_id,
-                AuditLog.created_at >= since,
-                AuditLog.action.in_([a for group in _INDICATORS.values() for a in group]),
-            )
-            .group_by(AuditLog.action)
-        ).tuples()
+    rows = session.execute(
+        select(AuditLog.action, func.count())
+        .where(
+            AuditLog.organization_id == organization_id,
+            AuditLog.created_at >= since,
+            AuditLog.action.in_([a for group in _INDICATORS.values() for a in group]),
+        )
+        .group_by(AuditLog.action)
     )
+    counts = {action: total for action, total in rows}
     indicators = {
         name: sum(counts.get(action, 0) for action in actions)
         for name, actions in _INDICATORS.items()
