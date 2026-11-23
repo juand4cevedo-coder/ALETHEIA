@@ -1,19 +1,44 @@
 """Portal del cliente: el despacho invita y publica avisos; el cliente los lee (ADR-054)."""
 
 import contextlib
+import logging
 import uuid
 from typing import Annotated
+from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
+import tink
+from botocore.exceptions import BotoCoreError, ClientError
+from fastapi import (
+    APIRouter,
+    Depends,
+    Form,
+    Header,
+    HTTPException,
+    Request,
+    Response,
+    status,
+)
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
+from app.adapters.evidence_storage import new_evidence_sink
+from app.adapters.keys import KeyWrapper, KeyWrapperError
 from app.api.cases import get_case_worker
-from app.api.deps import get_app_settings, get_client_ip, get_principal, get_session
+from app.api.deps import (
+    get_app_settings,
+    get_client_ip,
+    get_key_wrapper,
+    get_principal,
+    get_session,
+)
 from app.core.config import Settings
 from app.core.tokens import InvalidPortalLinkError
 from app.schemas.client_portal import (
     PortalAccessList,
     PortalAccessOut,
+    PortalDocumentAdminOut,
+    PortalDocumentList,
+    PortalDocumentOut,
     PortalInbox,
     PortalInboxMessage,
     PortalInvite,
@@ -27,9 +52,14 @@ from app.schemas.client_portal import (
     PortalView,
 )
 from app.services import client_portal as portal
+from app.services import client_portal_documents as documents
 from app.services import rate_limit
+from app.services.evidence_download import EvidenceIntegrityError
+from app.services.evidence_stream import FileTooLarge, InvalidUpload
 from app.services.members import OrganizationNotActiveError
 from app.services.sessions import Principal
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/cases", tags=["portal del cliente"], dependencies=[Depends(get_case_worker)]
@@ -242,6 +272,15 @@ def view_portal(
             PortalMessageOut(id=item.id, body=item.body, created_at=item.created_at)
             for item in data.messages
         ],
+        documents=[
+            PortalDocumentOut(
+                id=item.id,
+                filename=item.filename,
+                size_bytes=item.size_bytes,
+                created_at=item.created_at,
+            )
+            for item in data.documents
+        ],
         expires_at=data.expires_at,
     )
 
@@ -292,6 +331,208 @@ def mark_portal_messages_read(
     except portal.PortalNotAllowedError:
         raise HTTPException(403, detail=_NOT_ALLOWED, headers=_NO_STORE) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT, headers=_NO_STORE)
+
+
+def _document(view: documents.DocumentView) -> PortalDocumentAdminOut:
+    item = view.document
+    return PortalDocumentAdminOut(
+        id=item.id,
+        filename=item.filename,
+        size_bytes=item.size_bytes,
+        created_at=item.created_at,
+        uploaded_by_name=view.uploaded_by_name,
+        sha256=item.sha256.hex(),
+    )
+
+
+@router.get("/{case_id}/portal/documents", summary="Listar los documentos del cliente")
+def list_portal_documents(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> PortalDocumentList:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        views = documents.list_documents(session, principal, case_id)
+    except documents.CaseNotFoundError:
+        raise HTTPException(404, detail=_NOT_FOUND, headers=_NO_STORE) from None
+    except documents.PortalNotAllowedError:
+        raise HTTPException(403, detail=_NOT_ALLOWED, headers=_NO_STORE) from None
+    return PortalDocumentList(items=[_document(view) for view in views])
+
+
+@router.post(
+    "/{case_id}/portal/documents",
+    status_code=status.HTTP_201_CREATED,
+    summary="Subir una copia para el cliente",
+    responses={
+        409: {"description": "El caso o el despacho no admiten documentos nuevos."},
+        413: {"description": "El archivo supera el límite de 25 MB o el espacio del plan."},
+        422: {"description": "Formulario inválido."},
+        429: {"description": "Demasiadas subidas."},
+        503: {"description": "No se pudo acceder a la llave de cifrado del caso."},
+    },
+)
+def upload_portal_document(
+    case_id: uuid.UUID,
+    request: Request,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    wrapper: Annotated[KeyWrapper, Depends(get_key_wrapper)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> PortalDocumentOut:
+    """Multipart como la evidencia: `tipo` y `origen` antes del `archivo`. Aquí solo aseguran
+    que el cuerpo tenga la misma forma; la copia no es evidencia."""
+    response.headers["Cache-Control"] = "no-store"
+    rate_limit.hit(session, rate_limit.UPLOAD_ACCOUNT, str(principal.user_id))
+    session.commit()
+    document_id = uuid.uuid7()
+    storage_key = f"evidences/{uuid.uuid7()}"
+    sink = new_evidence_sink(settings, storage_key)
+    try:
+        received = documents.upload(
+            session,
+            principal,
+            case_id,
+            request,
+            wrapper,
+            sink,
+            document_id,
+            storage_key,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except documents.CaseNotFoundError:
+        raise HTTPException(404, detail=_NOT_FOUND, headers=_NO_STORE) from None
+    except documents.PortalNotAllowedError:
+        raise HTTPException(403, detail=_NOT_ALLOWED, headers=_NO_STORE) from None
+    except documents.DocumentUnavailableError, OrganizationNotActiveError:
+        raise HTTPException(
+            409,
+            detail="El caso o el despacho no admiten documentos nuevos.",
+            headers=_NO_STORE,
+        ) from None
+    except documents.QuotaExceededError, FileTooLarge:
+        raise HTTPException(
+            413, detail="El archivo supera el límite disponible.", headers=_NO_STORE
+        ) from None
+    except InvalidUpload, UnicodeError, ValueError:
+        raise HTTPException(422, detail="Formulario inválido.", headers=_NO_STORE) from None
+    except KeyWrapperError:
+        logger.exception("No se pudo abrir la llave del caso")
+        raise HTTPException(
+            503,
+            detail="No se pudo acceder a la llave de cifrado del caso.",
+            headers=_NO_STORE,
+        ) from None
+    return PortalDocumentOut(
+        id=document_id,
+        filename=received.filename,
+        size_bytes=received.size,
+        created_at=portal._now(),
+    )
+
+
+@router.delete(
+    "/{case_id}/portal/documents/{document_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Quitar un documento del portal",
+)
+def remove_portal_document(
+    case_id: uuid.UUID,
+    document_id: uuid.UUID,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> Response:
+    try:
+        documents.remove(
+            session, principal, case_id, document_id, client_ip=client_ip, user_agent=user_agent
+        )
+    except documents.CaseNotFoundError, documents.DocumentNotFoundError:
+        raise HTTPException(404, detail=_NOT_FOUND, headers=_NO_STORE) from None
+    except documents.PortalNotAllowedError:
+        raise HTTPException(403, detail=_NOT_ALLOWED, headers=_NO_STORE) from None
+    except OrganizationNotActiveError:
+        raise HTTPException(403, detail=_INACTIVE, headers=_NO_STORE) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT, headers=_NO_STORE)
+
+
+@public_router.post(
+    "/documents/download",
+    response_class=StreamingResponse,
+    summary="Descargar un documento del portal",
+    responses={
+        200: {
+            "description": "Archivo verificado contra su huella.",
+            "content": {
+                "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}
+            },
+        },
+        404: {"description": "El enlace o el documento no existen o ya no están vigentes."},
+        409: {"description": "Falta aceptar el aviso de datos."},
+        429: {"description": "Demasiados intentos."},
+        503: {"description": "No se pudo verificar o leer el archivo conservado."},
+    },
+)
+def download_portal_document(
+    token: Annotated[str, Form(min_length=1, max_length=4096)],
+    document_id: Annotated[uuid.UUID, Form()],
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    wrapper: Annotated[KeyWrapper, Depends(get_key_wrapper)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> StreamingResponse:
+    rate_limit.hit(session, rate_limit.PORTAL_IP, client_ip)
+    session.commit()
+    try:
+        download = documents.prepare_download(
+            session,
+            settings,
+            wrapper,
+            token,
+            document_id,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except InvalidPortalLinkError:
+        raise HTTPException(404, detail=_GONE, headers=_NO_STORE) from None
+    except documents.NoticeNotAcceptedError:
+        raise HTTPException(
+            409, detail="Acepte primero el aviso sobre sus datos.", headers=_NO_STORE
+        ) from None
+    except (
+        KeyWrapperError,
+        BotoCoreError,
+        ClientError,
+        OSError,
+        ValueError,
+        tink.TinkError,
+        EvidenceIntegrityError,
+    ):
+        logger.exception("No se pudo verificar un documento del portal antes de descargarlo")
+        raise HTTPException(
+            503, detail="No se pudo verificar el archivo conservado.", headers=_NO_STORE
+        ) from None
+    return StreamingResponse(
+        download.chunks(),
+        media_type="application/octet-stream",
+        headers={
+            "Cache-Control": "no-store",
+            "Content-Length": str(download.size_bytes),
+            "Content-Disposition": (
+                f"attachment; filename*=UTF-8''{quote(download.filename, safe='')}"
+            ),
+            "X-Content-Type-Options": "nosniff",
+            "X-Robots-Tag": "noindex",
+        },
+    )
 
 
 @public_router.post(

@@ -2,6 +2,8 @@ import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
+import { formatBytes } from "../features/billing/format.ts";
+
 import {
   acceptPortalNoticeMutation,
   renewPortalLinkMutation,
@@ -266,6 +268,50 @@ export function ClientPortalPage() {
                   </li>
                 ))}
               </ol>
+            )}
+            {data.documents.length > 0 && (
+              <section
+                className={portal.messages}
+                aria-labelledby="documentos-del-cliente"
+              >
+                <h2 id="documentos-del-cliente">Documentos</h2>
+                <p className={portal.empty}>
+                  Copias que el despacho dejó para usted. Antes de entregarle
+                  cada archivo, ALETHEIA comprueba que no se haya alterado.
+                </p>
+                <ul className={portal.documents} aria-label="Documentos">
+                  {data.documents.map((item) => (
+                    <li key={item.id} className={portal.document}>
+                      <div>
+                        <strong>{item.filename}</strong>
+                        <span>
+                          {formatBytes(item.size_bytes)}, publicado el{" "}
+                          {colombianDate(item.created_at)}
+                        </span>
+                      </div>
+                      <form
+                        action="/api/v1/client-portal/documents/download"
+                        method="post"
+                      >
+                        <input type="hidden" name="token" value={token ?? ""} />
+                        <input
+                          type="hidden"
+                          name="document_id"
+                          value={item.id}
+                        />
+                        <Button
+                          type="submit"
+                          variant="secondary"
+                          size="sm"
+                          aria-label={`Descargar ${item.filename}`}
+                        >
+                          Descargar
+                        </Button>
+                      </form>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             )}
             <section
               className={portal.messages}

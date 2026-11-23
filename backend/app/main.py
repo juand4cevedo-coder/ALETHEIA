@@ -42,7 +42,7 @@ from app.core.middleware import (
 from app.core.openapi import install_problem_details
 from app.db.session import create_db_engine
 
-API_VERSION: Final = "0.24.0"
+API_VERSION: Final = "0.25.0"
 
 
 def _operation_id(route: APIRoute) -> str:
@@ -129,6 +129,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             f"{API_PREFIX}/auth/google/register",
             f"{API_PREFIX}/exports/download",
             f"{API_PREFIX}/shared-evidence/download",
+            f"{API_PREFIX}/client-portal/documents/download",
         ],
         # Wompi llama a esta ruta directamente desde su servidor: no hay Origin ni el
         # encabezado propio que verifican las demás. La firma de la notificación es su

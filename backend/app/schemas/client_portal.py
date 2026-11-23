@@ -90,6 +90,26 @@ class PortalInbox(BaseModel):
     unread_count: int
 
 
+class PortalDocumentOut(BaseModel):
+    """Un documento que el despacho le dejó al cliente."""
+
+    id: uuid.UUID
+    filename: str
+    size_bytes: int
+    created_at: datetime.datetime
+
+
+class PortalDocumentAdminOut(PortalDocumentOut):
+    """El mismo documento, como lo ve el despacho."""
+
+    uploaded_by_name: str
+    sha256: str = Field(description="Huella SHA-256 en hexadecimal.")
+
+
+class PortalDocumentList(BaseModel):
+    items: list[PortalDocumentAdminOut]
+
+
 class PortalRenewed(BaseModel):
     """La misma respuesta haya o no un acceso que renovar."""
 
@@ -106,4 +126,5 @@ class PortalView(BaseModel):
     case_status: Literal["open", "closed"] | None
     updates: list[PortalUpdateOut]
     messages: list[PortalMessageOut]
+    documents: list[PortalDocumentOut]
     expires_at: datetime.datetime

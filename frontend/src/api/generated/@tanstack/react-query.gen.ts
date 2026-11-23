@@ -37,6 +37,7 @@ import {
   deleteTaskTemplate,
   downloadEvidence,
   downloadExport,
+  downloadPortalDocument,
   downloadSharedEvidence,
   forgotPassword,
   getPolicies,
@@ -60,6 +61,7 @@ import {
   listPlans,
   listPlatformUsers,
   listPortalAccesses,
+  listPortalDocuments,
   listPortalMessages,
   listPortalUpdates,
   listShareLinks,
@@ -86,6 +88,7 @@ import {
   registerAccount,
   removeCaseMember,
   removeMember,
+  removePortalDocument,
   renameOrganization,
   renewPortalLink,
   reopenCase,
@@ -113,6 +116,7 @@ import {
   updateCaseTaskStatus,
   updateTaskTemplate,
   uploadEvidence,
+  uploadPortalDocument,
   verifyCustody,
   verifyEmail,
   viewPortal,
@@ -199,6 +203,9 @@ import type {
   DownloadExportData,
   DownloadExportError,
   DownloadExportResponse,
+  DownloadPortalDocumentData,
+  DownloadPortalDocumentError,
+  DownloadPortalDocumentResponse,
   DownloadSharedEvidenceData,
   DownloadSharedEvidenceError,
   DownloadSharedEvidenceResponse,
@@ -261,6 +268,9 @@ import type {
   ListPortalAccessesData,
   ListPortalAccessesError,
   ListPortalAccessesResponse,
+  ListPortalDocumentsData,
+  ListPortalDocumentsError,
+  ListPortalDocumentsResponse,
   ListPortalMessagesData,
   ListPortalMessagesError,
   ListPortalMessagesResponse,
@@ -334,6 +344,9 @@ import type {
   RemoveMemberData,
   RemoveMemberError,
   RemoveMemberResponse,
+  RemovePortalDocumentData,
+  RemovePortalDocumentError,
+  RemovePortalDocumentResponse,
   RenameOrganizationData,
   RenameOrganizationError,
   RenameOrganizationResponse,
@@ -413,6 +426,9 @@ import type {
   UploadEvidenceData,
   UploadEvidenceError,
   UploadEvidenceResponse,
+  UploadPortalDocumentData,
+  UploadPortalDocumentError,
+  UploadPortalDocumentResponse,
   VerifyCustodyData,
   VerifyCustodyError,
   VerifyCustodyResponse,
@@ -3831,6 +3847,91 @@ export const markPortalMessagesReadMutation = (
   return mutationOptions;
 };
 
+export const listPortalDocumentsQueryKey = (
+  options: Options<ListPortalDocumentsData>,
+) => createQueryKey("listPortalDocuments", options);
+
+/**
+ * Listar los documentos del cliente
+ */
+export const listPortalDocumentsOptions = (
+  options: Options<ListPortalDocumentsData>,
+) =>
+  queryOptions<
+    ListPortalDocumentsResponse,
+    ListPortalDocumentsError,
+    ListPortalDocumentsResponse,
+    ReturnType<typeof listPortalDocumentsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listPortalDocuments({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listPortalDocumentsQueryKey(options),
+  });
+
+/**
+ * Subir una copia para el cliente
+ *
+ * Multipart como la evidencia: `tipo` y `origen` antes del `archivo`. Aquí solo aseguran
+ * que el cuerpo tenga la misma forma; la copia no es evidencia.
+ */
+export const uploadPortalDocumentMutation = (
+  options?: Partial<Options<UploadPortalDocumentData>>,
+): UseMutationOptions<
+  UploadPortalDocumentResponse,
+  UploadPortalDocumentError,
+  Options<UploadPortalDocumentData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    UploadPortalDocumentResponse,
+    UploadPortalDocumentError,
+    Options<UploadPortalDocumentData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await uploadPortalDocument({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Quitar un documento del portal
+ */
+export const removePortalDocumentMutation = (
+  options?: Partial<Options<RemovePortalDocumentData>>,
+): UseMutationOptions<
+  RemovePortalDocumentResponse,
+  RemovePortalDocumentError,
+  Options<RemovePortalDocumentData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RemovePortalDocumentResponse,
+    RemovePortalDocumentError,
+    Options<RemovePortalDocumentData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await removePortalDocument({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 /**
  * Ver el portal con el enlace del correo
  */
@@ -3848,6 +3949,33 @@ export const viewPortalMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await viewPortal({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Descargar un documento del portal
+ */
+export const downloadPortalDocumentMutation = (
+  options?: Partial<Options<DownloadPortalDocumentData>>,
+): UseMutationOptions<
+  DownloadPortalDocumentResponse,
+  DownloadPortalDocumentError,
+  Options<DownloadPortalDocumentData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    DownloadPortalDocumentResponse,
+    DownloadPortalDocumentError,
+    Options<DownloadPortalDocumentData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await downloadPortalDocument({
         ...options,
         ...fnOptions,
         throwOnError: true,

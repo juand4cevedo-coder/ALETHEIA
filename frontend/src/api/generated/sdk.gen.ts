@@ -92,6 +92,9 @@ import type {
   DownloadExportData,
   DownloadExportErrors,
   DownloadExportResponses,
+  DownloadPortalDocumentData,
+  DownloadPortalDocumentErrors,
+  DownloadPortalDocumentResponses,
   DownloadSharedEvidenceData,
   DownloadSharedEvidenceErrors,
   DownloadSharedEvidenceResponses,
@@ -158,6 +161,9 @@ import type {
   ListPortalAccessesData,
   ListPortalAccessesErrors,
   ListPortalAccessesResponses,
+  ListPortalDocumentsData,
+  ListPortalDocumentsErrors,
+  ListPortalDocumentsResponses,
   ListPortalMessagesData,
   ListPortalMessagesErrors,
   ListPortalMessagesResponses,
@@ -231,6 +237,9 @@ import type {
   RemoveMemberData,
   RemoveMemberErrors,
   RemoveMemberResponses,
+  RemovePortalDocumentData,
+  RemovePortalDocumentErrors,
+  RemovePortalDocumentResponses,
   RenameOrganizationData,
   RenameOrganizationErrors,
   RenameOrganizationResponses,
@@ -310,6 +319,9 @@ import type {
   UploadEvidenceData,
   UploadEvidenceErrors,
   UploadEvidenceResponses,
+  UploadPortalDocumentData,
+  UploadPortalDocumentErrors,
+  UploadPortalDocumentResponses,
   VerifyCustodyData,
   VerifyCustodyErrors,
   VerifyCustodyResponses,
@@ -2777,6 +2789,87 @@ export const markPortalMessagesRead = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Listar los documentos del cliente
+ */
+export const listPortalDocuments = <ThrowOnError extends boolean = false>(
+  options: Options<ListPortalDocumentsData, ThrowOnError>,
+): RequestResult<
+  ListPortalDocumentsResponses,
+  ListPortalDocumentsErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    ListPortalDocumentsResponses,
+    ListPortalDocumentsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/portal/documents",
+    ...options,
+  });
+
+/**
+ * Subir una copia para el cliente
+ *
+ * Multipart como la evidencia: `tipo` y `origen` antes del `archivo`. Aquí solo aseguran
+ * que el cuerpo tenga la misma forma; la copia no es evidencia.
+ */
+export const uploadPortalDocument = <ThrowOnError extends boolean = false>(
+  options: Options<UploadPortalDocumentData, ThrowOnError>,
+): RequestResult<
+  UploadPortalDocumentResponses,
+  UploadPortalDocumentErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    UploadPortalDocumentResponses,
+    UploadPortalDocumentErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/portal/documents",
+    ...options,
+  });
+
+/**
+ * Quitar un documento del portal
+ */
+export const removePortalDocument = <ThrowOnError extends boolean = false>(
+  options: Options<RemovePortalDocumentData, ThrowOnError>,
+): RequestResult<
+  RemovePortalDocumentResponses,
+  RemovePortalDocumentErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).delete<
+    RemovePortalDocumentResponses,
+    RemovePortalDocumentErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/portal/documents/{document_id}",
+    ...options,
+  });
+
+/**
  * Ver el portal con el enlace del correo
  */
 export const viewPortal = <ThrowOnError extends boolean = false>(
@@ -2791,6 +2884,30 @@ export const viewPortal = <ThrowOnError extends boolean = false>(
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Descargar un documento del portal
+ */
+export const downloadPortalDocument = <ThrowOnError extends boolean = false>(
+  options: Options<DownloadPortalDocumentData, ThrowOnError>,
+): RequestResult<
+  DownloadPortalDocumentResponses,
+  DownloadPortalDocumentErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    DownloadPortalDocumentResponses,
+    DownloadPortalDocumentErrors,
+    ThrowOnError
+  >({
+    ...urlSearchParamsBodySerializer,
+    url: "/api/v1/client-portal/documents/download",
+    ...options,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
       ...options.headers,
     },
   });

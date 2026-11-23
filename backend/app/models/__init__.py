@@ -5,6 +5,7 @@ from app.models import custody_hooks as _custody_hooks  # noqa: F401
 from app.models.billing import PaymentEvent, Plan, Subscription
 from app.models.client_portal import (
     ClientPortalAccess,
+    ClientPortalDocument,
     ClientPortalMessage,
     ClientPortalUpdate,
 )
@@ -37,6 +38,7 @@ __all__ = [
     "CaseNote",
     "CaseTask",
     "ClientPortalAccess",
+    "ClientPortalDocument",
     "ClientPortalMessage",
     "ClientPortalUpdate",
     "CustodyAnchor",
