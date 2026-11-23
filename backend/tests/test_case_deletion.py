@@ -205,6 +205,7 @@ def test_la_tarea_borra_los_objetos_deja_la_constancia_y_manda_el_correo(
     assert "Caso de Firma" not in email.text
 
     # Repetir la tarea no cambia nada: no hay segunda constancia, auditoría ni correo.
+    owner_db.commit()  # la tarea abre su propia transacción
     case_deletion.purge(
         lambda: owner_db, settings, tenant.case_id, tenant.organization_id, tenant.user_id
     )
