@@ -75,6 +75,8 @@ PORTAL_IP: Final = Limit("portal_ip", 60, _WINDOW)
 PORTAL_INVITE_ACCOUNT: Final = Limit("portal_invite_account", 20, _WINDOW)
 # Pedir un enlace nuevo: tope por acceso, para no llenar de correos a un cliente.
 PORTAL_RENEW_ACCESS: Final = Limit("portal_renew_access", 3, _WINDOW)
+# Mensajes del cliente: tope por acceso, para que un enlace filtrado no llene el caso de texto.
+PORTAL_MESSAGE_ACCESS: Final = Limit("portal_message_access", 10, _WINDOW)
 
 LIMITS: Final = (
     LOGIN_ACCOUNT,
@@ -99,6 +101,7 @@ LIMITS: Final = (
     PORTAL_IP,
     PORTAL_INVITE_ACCOUNT,
     PORTAL_RENEW_ACCESS,
+    PORTAL_MESSAGE_ACCESS,
 )
 # Un intento más viejo que la ventana más larga ya no cuenta para ningún límite.
 RETENTION: Final = max(limit.window for limit in LIMITS)

@@ -60,10 +60,12 @@ import {
   listPlans,
   listPlatformUsers,
   listPortalAccesses,
+  listPortalMessages,
   listPortalUpdates,
   listShareLinks,
   listTaskTemplates,
   lookupCourtesy,
+  markPortalMessagesRead,
   type Options,
   organizationAuditExport,
   organizationAuditPage,
@@ -94,6 +96,7 @@ import {
   revokeCourtesy,
   revokeInvitation,
   revokeShareLink,
+  sendPortalMessage,
   signIn,
   signInSecondFactor,
   signOut,
@@ -258,6 +261,9 @@ import type {
   ListPortalAccessesData,
   ListPortalAccessesError,
   ListPortalAccessesResponse,
+  ListPortalMessagesData,
+  ListPortalMessagesError,
+  ListPortalMessagesResponse,
   ListPortalUpdatesData,
   ListPortalUpdatesError,
   ListPortalUpdatesResponse,
@@ -269,6 +275,9 @@ import type {
   LookupCourtesyData,
   LookupCourtesyError,
   LookupCourtesyResponse,
+  MarkPortalMessagesReadData,
+  MarkPortalMessagesReadError,
+  MarkPortalMessagesReadResponse,
   OrganizationAuditExportData,
   OrganizationAuditExportError,
   OrganizationAuditExportResponse,
@@ -355,6 +364,9 @@ import type {
   RevokeShareLinkData,
   RevokeShareLinkError,
   RevokeShareLinkResponse,
+  SendPortalMessageData,
+  SendPortalMessageError,
+  SendPortalMessageResponse,
   SignInData,
   SignInError,
   SignInResponse,
@@ -3764,6 +3776,61 @@ export const publishPortalUpdateMutation = (
   return mutationOptions;
 };
 
+export const listPortalMessagesQueryKey = (
+  options: Options<ListPortalMessagesData>,
+) => createQueryKey("listPortalMessages", options);
+
+/**
+ * Mensajes que los clientes escribieron
+ */
+export const listPortalMessagesOptions = (
+  options: Options<ListPortalMessagesData>,
+) =>
+  queryOptions<
+    ListPortalMessagesResponse,
+    ListPortalMessagesError,
+    ListPortalMessagesResponse,
+    ReturnType<typeof listPortalMessagesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listPortalMessages({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listPortalMessagesQueryKey(options),
+  });
+
+/**
+ * Marcar como leídos los mensajes de los clientes
+ */
+export const markPortalMessagesReadMutation = (
+  options?: Partial<Options<MarkPortalMessagesReadData>>,
+): UseMutationOptions<
+  MarkPortalMessagesReadResponse,
+  MarkPortalMessagesReadError,
+  Options<MarkPortalMessagesReadData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    MarkPortalMessagesReadResponse,
+    MarkPortalMessagesReadError,
+    Options<MarkPortalMessagesReadData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await markPortalMessagesRead({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 /**
  * Ver el portal con el enlace del correo
  */
@@ -3781,6 +3848,33 @@ export const viewPortalMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await viewPortal({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Escribirle al despacho desde el portal
+ */
+export const sendPortalMessageMutation = (
+  options?: Partial<Options<SendPortalMessageData>>,
+): UseMutationOptions<
+  SendPortalMessageResponse,
+  SendPortalMessageError,
+  Options<SendPortalMessageData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SendPortalMessageResponse,
+    SendPortalMessageError,
+    Options<SendPortalMessageData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await sendPortalMessage({
         ...options,
         ...fnOptions,
         throwOnError: true,

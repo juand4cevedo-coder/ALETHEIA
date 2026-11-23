@@ -3,7 +3,11 @@
 from app.db.base import Base
 from app.models import custody_hooks as _custody_hooks  # noqa: F401
 from app.models.billing import PaymentEvent, Plan, Subscription
-from app.models.client_portal import ClientPortalAccess, ClientPortalUpdate
+from app.models.client_portal import (
+    ClientPortalAccess,
+    ClientPortalMessage,
+    ClientPortalUpdate,
+)
 from app.models.evidence import (
     Case,
     CaseMember,
@@ -33,6 +37,7 @@ __all__ = [
     "CaseNote",
     "CaseTask",
     "ClientPortalAccess",
+    "ClientPortalMessage",
     "ClientPortalUpdate",
     "CustodyAnchor",
     "CustodyEvent",

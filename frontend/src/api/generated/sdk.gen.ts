@@ -158,6 +158,9 @@ import type {
   ListPortalAccessesData,
   ListPortalAccessesErrors,
   ListPortalAccessesResponses,
+  ListPortalMessagesData,
+  ListPortalMessagesErrors,
+  ListPortalMessagesResponses,
   ListPortalUpdatesData,
   ListPortalUpdatesErrors,
   ListPortalUpdatesResponses,
@@ -169,6 +172,9 @@ import type {
   LookupCourtesyData,
   LookupCourtesyErrors,
   LookupCourtesyResponses,
+  MarkPortalMessagesReadData,
+  MarkPortalMessagesReadErrors,
+  MarkPortalMessagesReadResponses,
   OrganizationAuditExportData,
   OrganizationAuditExportErrors,
   OrganizationAuditExportResponses,
@@ -255,6 +261,9 @@ import type {
   RevokeShareLinkData,
   RevokeShareLinkErrors,
   RevokeShareLinkResponses,
+  SendPortalMessageData,
+  SendPortalMessageErrors,
+  SendPortalMessageResponses,
   SignInData,
   SignInErrors,
   SignInResponses,
@@ -2716,6 +2725,58 @@ export const publishPortalUpdate = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Mensajes que los clientes escribieron
+ */
+export const listPortalMessages = <ThrowOnError extends boolean = false>(
+  options: Options<ListPortalMessagesData, ThrowOnError>,
+): RequestResult<
+  ListPortalMessagesResponses,
+  ListPortalMessagesErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    ListPortalMessagesResponses,
+    ListPortalMessagesErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/portal/messages",
+    ...options,
+  });
+
+/**
+ * Marcar como leídos los mensajes de los clientes
+ */
+export const markPortalMessagesRead = <ThrowOnError extends boolean = false>(
+  options: Options<MarkPortalMessagesReadData, ThrowOnError>,
+): RequestResult<
+  MarkPortalMessagesReadResponses,
+  MarkPortalMessagesReadErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    MarkPortalMessagesReadResponses,
+    MarkPortalMessagesReadErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/portal/messages/read",
+    ...options,
+  });
+
+/**
  * Ver el portal con el enlace del correo
  */
 export const viewPortal = <ThrowOnError extends boolean = false>(
@@ -2727,6 +2788,29 @@ export const viewPortal = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     url: "/api/v1/client-portal/view",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Escribirle al despacho desde el portal
+ */
+export const sendPortalMessage = <ThrowOnError extends boolean = false>(
+  options: Options<SendPortalMessageData, ThrowOnError>,
+): RequestResult<
+  SendPortalMessageResponses,
+  SendPortalMessageErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    SendPortalMessageResponses,
+    SendPortalMessageErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/client-portal/messages",
     ...options,
     headers: {
       "Content-Type": "application/json",

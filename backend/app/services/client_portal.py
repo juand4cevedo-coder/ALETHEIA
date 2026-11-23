@@ -15,7 +15,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Final
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
@@ -25,8 +25,11 @@ from app.db.tenancy import TenantContext, set_tenant
 from app.models import (
     AuditLog,
     Case,
+    CaseMember,
     ClientPortalAccess,
+    ClientPortalMessage,
     ClientPortalUpdate,
+    Membership,
     Organization,
     User,
 )
@@ -50,11 +53,18 @@ LINK_LIFETIME: Final = datetime.timedelta(days=30)
 RENEW_GRACE: Final = datetime.timedelta(days=90)
 PATH: Final = "/portal"
 INVITE_TEMPLATE: Final = "client_portal_invite"
+MESSAGE_TEMPLATE: Final = "client_portal_message"
+# Los avisos por correo de mensajes seguidos se juntan en uno por ventana.
+MESSAGE_EMAIL_WINDOW_SECONDS: Final = 15 * 60
 MAX_UPDATES: Final = 100
 
 
 class AccessNotFoundError(Exception):
     """El acceso no existe para ese caso."""
+
+
+class NoticeNotAcceptedError(Exception):
+    """El cliente todavía no aceptó el aviso de datos."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,6 +96,19 @@ class PublicUpdate:
 
 
 @dataclass(frozen=True, slots=True)
+class PublicMessage:
+    id: uuid.UUID
+    body: str
+    created_at: datetime.datetime
+
+
+@dataclass(frozen=True, slots=True)
+class MessageView:
+    message: ClientPortalMessage
+    client_name: str
+
+
+@dataclass(frozen=True, slots=True)
 class PublicView:
     organization_name: str
     client_name: str
@@ -93,6 +116,7 @@ class PublicView:
     case_title: str | None
     case_status: str | None
     updates: list[PublicUpdate]
+    messages: list[PublicMessage]
     expires_at: datetime.datetime
 
 
@@ -364,6 +388,10 @@ def view(session: Session, settings: Settings, token: str) -> PublicView:
         PublicUpdate(item.update.id, item.author_name, item.update.body, item.update.created_at)
         for item in (_updates(session, case.id) if accepted else [])
     ]
+    messages = [
+        PublicMessage(message.id, message.body, message.created_at)
+        for message in (_own_messages(session, access.id) if accepted else [])
+    ]
     result = PublicView(
         organization_name=organization.name,
         client_name=access.client_name,
@@ -371,6 +399,7 @@ def view(session: Session, settings: Settings, token: str) -> PublicView:
         case_title=case.title if accepted else None,
         case_status=case.status if accepted else None,
         updates=updates,
+        messages=messages,
         expires_at=access.expires_at,
     )
     session.commit()
@@ -447,3 +476,106 @@ def renew(
     )
     _enqueue_invite(session, access, renewed=True)
     session.commit()
+
+
+def _own_messages(session: Session, access_id: uuid.UUID) -> list[ClientPortalMessage]:
+    """Los mensajes que escribió este cliente, del más reciente al más antiguo."""
+    return list(
+        session.scalars(
+            select(ClientPortalMessage)
+            .where(ClientPortalMessage.access_id == access_id)
+            .order_by(ClientPortalMessage.id.desc())
+            .limit(MAX_UPDATES)
+        )
+    )
+
+
+def send_message(
+    session: Session,
+    settings: Settings,
+    token: str,
+    body: str,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> PublicMessage:
+    """El cliente le escribe al despacho. Avisa por correo, sin copiar el texto, a los dueños y
+    abogados del caso; los mensajes seguidos se juntan en un solo aviso por cada 15 minutos."""
+    access, case = _live_access(session, settings, token, lock=True)
+    if access.notice_accepted_at is None:
+        raise NoticeNotAcceptedError
+    organization = session.get(Organization, access.organization_id)
+    if organization is None or organization.status != "active":
+        raise InvalidPortalLinkError
+    if case.status != "open":
+        raise ClosedCasePortalError
+    rate_limit.hit(session, rate_limit.PORTAL_MESSAGE_ACCESS, str(access.id))
+    message = ClientPortalMessage(
+        organization_id=access.organization_id,
+        case_id=case.id,
+        access_id=access.id,
+        body=body.strip(),
+    )
+    session.add(message)
+    session.flush()
+    _audit(
+        session,
+        access.organization_id,
+        None,
+        "client_portal_message_sent",
+        message.id,
+        {"case_id": str(case.id), "length": str(len(message.body))},
+        client_ip=client_ip,
+        user_agent=user_agent,
+    )
+    recipients = session.scalars(
+        select(Membership.user_id)
+        .join(CaseMember, CaseMember.user_id == Membership.user_id)
+        .where(
+            CaseMember.case_id == case.id,
+            Membership.organization_id == access.organization_id,
+            Membership.role.in_(("owner", "lawyer")),
+        )
+    ).all()
+    bucket = int(_now().timestamp() // MESSAGE_EMAIL_WINDOW_SECONDS)
+    for user_id in recipients:
+        jobs.enqueue(
+            session,
+            "email_send",
+            {
+                "template": MESSAGE_TEMPLATE,
+                "user_id": str(user_id),
+                "case_id": str(case.id),
+                "organization_id": str(access.organization_id),
+                "access_id": str(access.id),
+            },
+            f"{MESSAGE_TEMPLATE}:{access.id}:{user_id}:{bucket}",
+        )
+    result = PublicMessage(message.id, message.body, message.created_at)
+    session.commit()
+    return result
+
+
+def list_messages(session: Session, principal: Principal, case_id: uuid.UUID) -> list[MessageView]:
+    _allowed(principal)
+    _member_case(session, principal, case_id, lock=False)
+    rows = session.execute(
+        select(ClientPortalMessage, ClientPortalAccess.client_name)
+        .join(ClientPortalAccess, ClientPortalAccess.id == ClientPortalMessage.access_id)
+        .where(ClientPortalMessage.case_id == case_id)
+        .order_by(ClientPortalMessage.id.desc())
+        .limit(MAX_UPDATES)
+    ).all()
+    return [MessageView(message, name) for message, name in rows]
+
+
+def mark_messages_read(session: Session, principal: Principal, case_id: uuid.UUID) -> None:
+    _allowed(principal)
+    session.commit()
+    with session.begin():
+        case = _member_case(session, principal, case_id, lock=False)
+        session.execute(
+            update(ClientPortalMessage)
+            .where(ClientPortalMessage.case_id == case.id, ClientPortalMessage.read_at.is_(None))
+            .values(read_at=_now())
+        )

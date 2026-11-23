@@ -72,3 +72,29 @@ class ClientPortalUpdate(Base):
     author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
     body: Mapped[str]
     created_at: Mapped[CreatedAt]
+
+
+class ClientPortalMessage(Base):
+    """Un mensaje de texto del cliente al despacho. Solo se agregan, sin archivos: el abogado
+    responde con un aviso o por sus canales de siempre."""
+
+    __tablename__ = "client_portal_messages"
+    __table_args__ = (
+        CheckConstraint("char_length(body) BETWEEN 1 AND 2000", name="body_length"),
+        ForeignKeyConstraint(
+            ["organization_id", "case_id"],
+            ["cases.organization_id", "cases.id"],
+            ondelete="CASCADE",
+        ),
+        ForeignKeyConstraint(["access_id"], ["client_portal_accesses.id"], ondelete="CASCADE"),
+        Index("ix_client_portal_messages_case_id_id", "case_id", "id"),
+        Index("ix_client_portal_messages_access_id_id", "access_id", "id"),
+    )
+
+    id: Mapped[UUIDv7Pk]
+    organization_id: Mapped[uuid.UUID]
+    case_id: Mapped[uuid.UUID]
+    access_id: Mapped[uuid.UUID]
+    body: Mapped[str]
+    read_at: Mapped[datetime.datetime | None]
+    created_at: Mapped[CreatedAt]

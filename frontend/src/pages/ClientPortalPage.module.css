@@ -63,3 +63,21 @@
   color: var(--text-3);
   font-size: var(--font-size-support);
 }
+
+.messages {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.messages h2 {
+  font-size: var(--font-size-body);
+  font-weight: 650;
+}
+
+.messageForm {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--paper-sunken);
+}

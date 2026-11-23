@@ -5,10 +5,13 @@ import { Link, useLocation } from "react-router";
 import {
   acceptPortalNoticeMutation,
   renewPortalLinkMutation,
+  sendPortalMessageMutation,
   viewPortalMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import type { PortalView } from "../api/generated/index.ts";
 import { Button } from "../components/ui/Button.tsx";
+import { Field } from "../components/ui/Field.tsx";
+import { Notice } from "../components/ui/Notice.tsx";
 import { CirculoVistoIcon, VinculoIcon } from "../components/ui/icons.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { legalRoute } from "../config/routes.ts";
@@ -68,6 +71,27 @@ export function ClientPortalPage() {
       if (token) view.mutate({ body: { token } });
     },
     onError: fail,
+  });
+
+  const [text, setText] = useState("");
+  const [sendError, setSendError] = useState("");
+  const send = useMutation({
+    ...sendPortalMessageMutation(),
+    onSuccess: () => {
+      setText("");
+      setSendError("");
+      if (token) view.mutate({ body: { token } });
+    },
+    onError: (failure) => {
+      const { status, requestId } = apiProblem(failure);
+      if (status === 404) setProblem({ kind: "gone" });
+      else if (status === 429)
+        setSendError(
+          "Envió muchos mensajes seguidos. Espere unos minutos para escribir otro.",
+        );
+      else if (status === 409) setSendError("Este caso ya no recibe mensajes.");
+      else setProblem({ kind: "system", requestId });
+    },
   });
 
   const renew = useMutation({
@@ -243,6 +267,65 @@ export function ClientPortalPage() {
                 ))}
               </ol>
             )}
+            <section
+              className={portal.messages}
+              aria-labelledby="mensajes-del-cliente"
+            >
+              <h2 id="mensajes-del-cliente">Escribirle al despacho</h2>
+              {data.case_status === "open" ? (
+                <form
+                  className={portal.messageForm}
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    const body = text.trim();
+                    if (token && body && !send.isPending)
+                      send.mutate({ body: { token, body } });
+                  }}
+                >
+                  <Field
+                    label="Su mensaje"
+                    multiline
+                    rows={4}
+                    maxLength={2000}
+                    value={text}
+                    help="El despacho lo lee en el caso. No es una consulta urgente: para eso llame."
+                    disabled={send.isPending}
+                    onChange={(event) => setText(event.target.value)}
+                  />
+                  <Button
+                    type="submit"
+                    busy={send.isPending}
+                    disabled={text.trim() === ""}
+                  >
+                    Enviar mensaje
+                  </Button>
+                  {sendError && (
+                    <Notice tone="error">
+                      <p role="alert">{sendError}</p>
+                    </Notice>
+                  )}
+                </form>
+              ) : (
+                <p className={portal.empty}>
+                  El caso está archivado y ya no recibe mensajes.
+                </p>
+              )}
+              {data.messages.length > 0 && (
+                <ol className={portal.updates} aria-label="Sus mensajes">
+                  {data.messages.map((item) => (
+                    <li key={item.id} className={portal.update}>
+                      <header>
+                        <strong>Usted</strong>
+                        <time dateTime={item.created_at}>
+                          {colombianDate(item.created_at)}
+                        </time>
+                      </header>
+                      <p>{item.body}</p>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </section>
             <p className={portal.foot}>
               Este enlace es personal y vale hasta el{" "}
               {colombianDate(data.expires_at)} (hora de Colombia). No lo

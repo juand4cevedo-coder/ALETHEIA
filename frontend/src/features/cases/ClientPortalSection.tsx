@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type FormEvent, useId, useState } from "react";
+import { type FormEvent, useEffect, useId, useState } from "react";
 
 import {
   inviteClientMutation,
   listPortalAccessesOptions,
   listPortalAccessesQueryKey,
+  listPortalMessagesOptions,
+  listPortalMessagesQueryKey,
+  markPortalMessagesReadMutation,
   listPortalUpdatesOptions,
   listPortalUpdatesQueryKey,
   publishPortalUpdateMutation,
@@ -41,6 +44,25 @@ export function ClientPortalSection({
   const path = { case_id: caseId };
   const accesses = useQuery(listPortalAccessesOptions({ path }));
   const updates = useQuery(listPortalUpdatesOptions({ path }));
+  const messages = useQuery(listPortalMessagesOptions({ path }));
+  const markRead = useMutation({
+    ...markPortalMessagesReadMutation(),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: listPortalMessagesQueryKey({ path }),
+      }),
+  });
+  const unread = messages.data?.unread_count ?? 0;
+  const {
+    mutate: markAsRead,
+    isPending: marking,
+    isError: markFailed,
+  } = markRead;
+  // Abrir la pestaña es leer: lo nuevo se marca una vez que la lista llegó.
+  useEffect(() => {
+    if (unread > 0 && !marking && !markFailed)
+      markAsRead({ path: { case_id: caseId } });
+  }, [unread, marking, markFailed, markAsRead, caseId]);
   const countId = useId();
 
   const [name, setName] = useState("");
@@ -262,6 +284,35 @@ export function ClientPortalSection({
           <Notice tone="error">
             <p role="alert">No pudimos quitar el acceso. Inténtelo de nuevo.</p>
           </Notice>
+        )}
+      </div>
+
+      <div className={styles.block}>
+        <h3>Mensajes de clientes</h3>
+        {messages.isPending && <p role="status">Cargando mensajes</p>}
+        {messages.isSuccess && messages.data.items.length === 0 && (
+          <p className={styles.muted}>
+            Todavía no le escribió ningún cliente. Para responderle, publique un
+            aviso o use sus canales de siempre.
+          </p>
+        )}
+        {messages.isSuccess && messages.data.items.length > 0 && (
+          <ol className={styles.updates} aria-label="Mensajes de clientes">
+            {messages.data.items.map((item) => (
+              <li key={item.id} className={styles.update}>
+                <header>
+                  <strong>
+                    {item.client_name}
+                    {item.read_at === null && " (nuevo)"}
+                  </strong>
+                  <time dateTime={item.created_at}>
+                    {formatColombiaTime(item.created_at)}
+                  </time>
+                </header>
+                <p>{item.body}</p>
+              </li>
+            ))}
+          </ol>
         )}
       </div>
 

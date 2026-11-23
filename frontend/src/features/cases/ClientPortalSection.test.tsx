@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 
@@ -39,7 +39,11 @@ function renderPortal(caseOpen = true) {
   );
 }
 
-function serve(state: { accesses: unknown[]; updates: unknown[] }) {
+function serve(state: {
+  accesses: unknown[];
+  updates: unknown[];
+  messages?: unknown[];
+}) {
   fetchMock.mockImplementation(async (input) => {
     const request = input as Request;
     const path = new URL(request.url).pathname;
@@ -67,6 +71,22 @@ function serve(state: { accesses: unknown[]; updates: unknown[] }) {
       };
       state.updates = [created];
       return jsonResponse(created, 201);
+    }
+    if (request.method === "POST" && path.endsWith("/portal/messages/read")) {
+      state.messages = (state.messages ?? []).map((item) => ({
+        ...(item as object),
+        read_at: "2026-11-22T22:00:00Z",
+      }));
+      return new Response(null, { status: 204 });
+    }
+    if (path.endsWith("/portal/messages")) {
+      const items = state.messages ?? [];
+      return jsonResponse({
+        items,
+        unread_count: items.filter(
+          (item) => (item as { read_at: string | null }).read_at === null,
+        ).length,
+      });
     }
     if (request.method === "DELETE") {
       state.accesses = [access("revoked")];
@@ -180,4 +200,44 @@ it("en un caso archivado conserva lo compartido y no deja invitar ni publicar", 
   expect(
     screen.queryByRole("button", { name: "Publicar aviso" }),
   ).not.toBeInTheDocument();
+});
+
+it("muestra los mensajes de clientes y los marca como leídos al abrir", async () => {
+  const state = {
+    accesses: [access()],
+    updates: [],
+    messages: [
+      {
+        id: "01890a5d-ac96-774b-bcce-b302099a8003",
+        client_name: "María Pérez",
+        body: "¿Cómo va mi caso?",
+        created_at: "2026-11-22T21:30:00Z",
+        read_at: null,
+      },
+    ],
+  };
+  serve(state);
+  renderPortal();
+
+  expect(await screen.findByText("¿Cómo va mi caso?")).toBeInTheDocument();
+  await waitFor(() =>
+    expect(
+      fetchMock.mock.calls.some(
+        ([input]) =>
+          (input as Request).method === "POST" &&
+          new URL((input as Request).url).pathname.endsWith(
+            "/portal/messages/read",
+          ),
+      ),
+    ).toBe(true),
+  );
+});
+
+it("sin mensajes de clientes lo dice y explica cómo responder", async () => {
+  serve({ accesses: [], updates: [], messages: [] });
+  renderPortal();
+
+  expect(
+    await screen.findByText(/Todavía no le escribió ningún cliente/),
+  ).toBeInTheDocument();
 });

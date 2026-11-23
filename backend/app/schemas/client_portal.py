@@ -62,6 +62,34 @@ class PortalTokenRequest(BaseModel):
     token: str = Field(min_length=1, max_length=MAX_TOKEN_LENGTH, description="Token del enlace.")
 
 
+class PortalMessageCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    token: str = Field(min_length=1, max_length=MAX_TOKEN_LENGTH, description="Token del enlace.")
+    body: str = Field(min_length=1, max_length=2000, description="Mensaje para el despacho.")
+
+
+class PortalMessageOut(BaseModel):
+    id: uuid.UUID
+    body: str
+    created_at: datetime.datetime
+
+
+class PortalInboxMessage(BaseModel):
+    """Un mensaje de un cliente, como lo ve el despacho."""
+
+    id: uuid.UUID
+    client_name: str
+    body: str
+    created_at: datetime.datetime
+    read_at: datetime.datetime | None
+
+
+class PortalInbox(BaseModel):
+    items: list[PortalInboxMessage]
+    unread_count: int
+
+
 class PortalRenewed(BaseModel):
     """La misma respuesta haya o no un acceso que renovar."""
 
@@ -77,4 +105,5 @@ class PortalView(BaseModel):
     case_title: str | None
     case_status: Literal["open", "closed"] | None
     updates: list[PortalUpdateOut]
+    messages: list[PortalMessageOut]
     expires_at: datetime.datetime
