@@ -30,6 +30,7 @@ import {
   downloadEvidence,
   downloadExport,
   forgotPassword,
+  getPolicies,
   googleCallback,
   googleLinkStart,
   googleLoginStart,
@@ -57,6 +58,7 @@ import {
   platformBilling,
   platformSupportTickets,
   previewInvitation,
+  putPolicies,
   readCase,
   readCaseExport,
   readEvidence,
@@ -143,6 +145,9 @@ import type {
   ForgotPasswordData,
   ForgotPasswordError,
   ForgotPasswordResponse,
+  GetPoliciesData,
+  GetPoliciesError,
+  GetPoliciesResponse,
   GoogleCallbackData,
   GoogleCallbackError,
   GoogleLinkStartData,
@@ -213,6 +218,9 @@ import type {
   PreviewInvitationData,
   PreviewInvitationError,
   PreviewInvitationResponse,
+  PutPoliciesData,
+  PutPoliciesError,
+  PutPoliciesResponse,
   ReadCaseData,
   ReadCaseError,
   ReadCaseExportData,
@@ -1318,6 +1326,58 @@ export const organizationHealthOptions = (
     },
     queryKey: organizationHealthQueryKey(options),
   });
+
+export const getPoliciesQueryKey = (options?: Options<GetPoliciesData>) =>
+  createQueryKey("getPolicies", options);
+
+/**
+ * Políticas del despacho: conservación de casos y duración de sesión
+ */
+export const getPoliciesOptions = (options?: Options<GetPoliciesData>) =>
+  queryOptions<
+    GetPoliciesResponse,
+    GetPoliciesError,
+    GetPoliciesResponse,
+    ReturnType<typeof getPoliciesQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getPolicies({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getPoliciesQueryKey(options),
+  });
+
+/**
+ * Cambiar las políticas del despacho (solo el propietario)
+ */
+export const putPoliciesMutation = (
+  options?: Partial<Options<PutPoliciesData>>,
+): UseMutationOptions<
+  PutPoliciesResponse,
+  PutPoliciesError,
+  Options<PutPoliciesData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    PutPoliciesResponse,
+    PutPoliciesError,
+    Options<PutPoliciesData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await putPolicies({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 /**
  * Ver una invitación antes de aceptarla

@@ -28,6 +28,8 @@ from app.schemas.organization import (
     OrganizationAuditPage,
     OrganizationHealth,
     OrganizationOut,
+    OrganizationPolicies,
+    OrganizationPoliciesRequest,
     OrganizationRenameRequest,
     RoleChangeRequest,
     SeatsOut,
@@ -489,4 +491,52 @@ def organization_health(
         seats_used=result.seats_used,
         window_days=result.window_days,
         security=SecurityIndicators(**result.indicators),
+    )
+
+
+@router.get(
+    "/policies",
+    summary="Políticas del despacho: conservación de casos y duración de sesión",
+    responses=_UNAUTHORIZED | _FORBIDDEN,
+)
+def get_policies(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_manager)],
+    session: Annotated[Session, Depends(get_session)],
+) -> OrganizationPolicies:
+    response.headers["Cache-Control"] = "no-store"
+    organization = session.get(Organization, members_service.organization_of_manager(principal))
+    if organization is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="No encontramos su organización.")
+    return OrganizationPolicies(
+        default_retention_years=organization.default_retention_years,
+        session_days=organization.session_days,
+    )
+
+
+@router.put(
+    "/policies",
+    summary="Cambiar las políticas del despacho (solo el propietario)",
+    responses=_UNAUTHORIZED | _FORBIDDEN,
+)
+def put_policies(
+    request: OrganizationPoliciesRequest,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_owner)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> OrganizationPolicies:
+    response.headers["Cache-Control"] = "no-store"
+    organization = organization_service.update_policies(
+        session,
+        principal,
+        default_retention_years=request.default_retention_years,
+        session_days=request.session_days,
+        client_ip=client_ip,
+        user_agent=user_agent,
+    )
+    return OrganizationPolicies(
+        default_retention_years=organization.default_retention_years,
+        session_days=organization.session_days,
     )

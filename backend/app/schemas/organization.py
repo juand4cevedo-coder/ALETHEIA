@@ -31,6 +31,7 @@ class OrganizationAuditAction(StrEnum):
     INVITATION_ACCEPTED = "invitation_accepted"
     ROLE_CHANGED = "role_changed"
     MEMBER_REMOVED = "member_removed"
+    ORGANIZATION_POLICY_CHANGED = "organization_policy_changed"
     PLAN_CHANGED = "plan_changed"
     SUBSCRIPTION_CANCELED = "subscription_canceled"
     SUBSCRIPTION_EXPIRED = "subscription_expired"
@@ -183,3 +184,22 @@ class OrganizationHealth(BaseModel):
     seats_used: int = Field(description="Miembros más invitaciones abiertas.")
     window_days: int
     security: SecurityIndicators
+
+
+class OrganizationPolicies(BaseModel):
+    """Políticas del despacho que afectan a todo el equipo."""
+
+    default_retention_years: int = Field(
+        ge=1,
+        le=30,
+        description="Años que se conserva un caso archivado; solo cuenta para los futuros.",
+    )
+    session_days: int = Field(
+        ge=1,
+        le=14,
+        description="Días que dura una sesión. Solo afecta a los ingresos nuevos.",
+    )
+
+
+class OrganizationPoliciesRequest(OrganizationPolicies):
+    model_config = ConfigDict(extra="forbid")

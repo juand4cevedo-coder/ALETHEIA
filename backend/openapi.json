@@ -1839,6 +1839,116 @@
         ]
       }
     },
+    "/api/v1/organization/policies": {
+      "get": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Políticas del despacho: conservación de casos y duración de sesión",
+        "operationId": "get_policies",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationPolicies"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No es propietario ni administrador.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Cambiar las políticas del despacho (solo el propietario)",
+        "operationId": "put_policies",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationPoliciesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationPolicies"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No es propietario ni administrador.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
     "/api/v1/invitations/preview": {
       "post": {
         "tags": [
@@ -7757,6 +7867,7 @@
           "invitation_accepted",
           "role_changed",
           "member_removed",
+          "organization_policy_changed",
           "plan_changed",
           "subscription_canceled",
           "subscription_expired",
@@ -8029,6 +8140,56 @@
         ],
         "title": "OrganizationOut",
         "description": "Los datos propios del despacho que puede administrar su propietario."
+      },
+      "OrganizationPolicies": {
+        "properties": {
+          "default_retention_years": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Default Retention Years",
+            "description": "Años que se conserva un caso archivado; solo cuenta para los futuros."
+          },
+          "session_days": {
+            "type": "integer",
+            "maximum": 14.0,
+            "minimum": 1.0,
+            "title": "Session Days",
+            "description": "Días que dura una sesión. Solo afecta a los ingresos nuevos."
+          }
+        },
+        "type": "object",
+        "required": [
+          "default_retention_years",
+          "session_days"
+        ],
+        "title": "OrganizationPolicies",
+        "description": "Políticas del despacho que afectan a todo el equipo."
+      },
+      "OrganizationPoliciesRequest": {
+        "properties": {
+          "default_retention_years": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Default Retention Years",
+            "description": "Años que se conserva un caso archivado; solo cuenta para los futuros."
+          },
+          "session_days": {
+            "type": "integer",
+            "maximum": 14.0,
+            "minimum": 1.0,
+            "title": "Session Days",
+            "description": "Días que dura una sesión. Solo afecta a los ingresos nuevos."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "default_retention_years",
+          "session_days"
+        ],
+        "title": "OrganizationPoliciesRequest"
       },
       "OrganizationRenameRequest": {
         "properties": {

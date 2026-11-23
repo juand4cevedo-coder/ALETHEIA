@@ -24,6 +24,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Final
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
@@ -37,7 +38,7 @@ from app.core.tokens import (
     read_access_token,
 )
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, Membership, RefreshToken, User
+from app.models import AuditLog, Membership, Organization, RefreshToken, User
 from app.repositories import accounts as accounts_repository
 from app.repositories import sessions as sessions_repository
 from app.services import rate_limit
@@ -162,6 +163,22 @@ def sign_in(
     return issued
 
 
+def _lifetime_for(session: Session, organization_id: uuid.UUID | None) -> datetime.timedelta:
+    """Lo que dura una sesión nueva: la política del despacho, sin pasar de los 14 días por omisión.
+
+    Si no se puede leer (una persona sin despacho, o una lectura que la seguridad por filas no
+    permite todavía), vale el plazo por omisión: nunca uno mayor.
+    """
+    if organization_id is None:
+        return SESSION_LIFETIME
+    days = session.scalar(
+        select(Organization.session_days).where(Organization.id == organization_id)
+    )
+    if days is None:
+        return SESSION_LIFETIME
+    return min(datetime.timedelta(days=days), SESSION_LIFETIME)
+
+
 def start_session(
     session: Session,
     settings: Settings,
@@ -182,7 +199,7 @@ def start_session(
         settings.signing_key(),
         user_id,
         uuid.uuid7(),
-        expires_at=now + SESSION_LIFETIME,
+        expires_at=now + _lifetime_for(session, organization_id),
         now=now,
     )
     _audit(session, "login", organization_id, user_id, client_ip, user_agent, now)

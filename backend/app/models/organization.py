@@ -4,7 +4,7 @@ import datetime
 import uuid
 from typing import Final
 
-from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, Index, text
+from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, Index, SmallInteger, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -24,6 +24,8 @@ class Organization(Base):
         CheckConstraint("char_length(name) BETWEEN 1 AND 120", name="name_length"),
         CheckConstraint(text_values("status", ORGANIZATION_STATUSES), name="status"),
         CheckConstraint("storage_used_bytes >= 0", name="storage_used_bytes"),
+        CheckConstraint("default_retention_years BETWEEN 1 AND 30", name="default_retention_years"),
+        CheckConstraint("session_days BETWEEN 1 AND 14", name="session_days"),
     )
 
     id: Mapped[UUIDv7Pk]
@@ -31,6 +33,9 @@ class Organization(Base):
     status: Mapped[str] = mapped_column(server_default="active")
     # Se actualiza en la misma transacción de cada subida.
     storage_used_bytes: Mapped[int] = mapped_column(BigInteger, server_default="0")
+    # Políticas del despacho: años que se conserva un caso archivado y días que dura una sesión.
+    default_retention_years: Mapped[int] = mapped_column(SmallInteger, server_default="10")
+    session_days: Mapped[int] = mapped_column(SmallInteger, server_default="14")
     created_at: Mapped[CreatedAt]
 
 

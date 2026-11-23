@@ -31,6 +31,7 @@ SECURITY_ACTIONS = (
     "invitation_accepted",
     "role_changed",
     "member_removed",
+    "organization_policy_changed",
     "plan_changed",
     "subscription_canceled",
     "subscription_expired",
