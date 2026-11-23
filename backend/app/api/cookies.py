@@ -61,3 +61,27 @@ def clear_session_cookies(response: Response) -> None:
         httponly=True,
         samesite="strict",
     )
+
+
+# Desafío del segundo paso del ingreso: lo entrega la API cuando la contraseña (o Google) ya se
+# comprobó y la cuenta exige el segundo factor. Vale 5 minutos y solo sirve en el segundo paso.
+TWO_FACTOR_COOKIE: Final = "__Host-aletheia_2fa"
+TWO_FACTOR_COOKIE_MAX_AGE: Final = 300
+
+
+def set_two_factor_cookie(response: Response, challenge: str) -> None:
+    response.set_cookie(
+        TWO_FACTOR_COOKIE,
+        challenge,
+        max_age=TWO_FACTOR_COOKIE_MAX_AGE,
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="strict",
+    )
+
+
+def clear_two_factor_cookie(response: Response) -> None:
+    response.delete_cookie(
+        TWO_FACTOR_COOKIE, path="/", secure=True, httponly=True, samesite="strict"
+    )

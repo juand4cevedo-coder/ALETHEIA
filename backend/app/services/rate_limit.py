@@ -41,6 +41,9 @@ _WINDOW: Final = datetime.timedelta(minutes=15)
 # límite a registro, recuperación e invitaciones; ahí se usan los mismos topes.
 LOGIN_ACCOUNT: Final = Limit("login_account", 5, _WINDOW)
 LOGIN_IP: Final = Limit("login_ip", 20, _WINDOW)
+# Segundo paso del ingreso y confirmaciones del segundo factor: 5 códigos errados por persona.
+TWO_FACTOR_ACCOUNT: Final = Limit("two_factor_account", 5, _WINDOW)
+TWO_FACTOR_IP: Final = Limit("two_factor_ip", 20, _WINDOW)
 REGISTER_IP: Final = Limit("register_ip", 20, _WINDOW)
 # Todos los correos de la cuenta que alguien puede provocar desde fuera (reenviar la verificación
 # o el aviso de un registro repetido) comparten este tope por dirección: nadie puede usar
@@ -64,6 +67,8 @@ EXPORT_ACCOUNT: Final = Limit("export_account", 15, _WINDOW)
 LIMITS: Final = (
     LOGIN_ACCOUNT,
     LOGIN_IP,
+    TWO_FACTOR_ACCOUNT,
+    TWO_FACTOR_IP,
     REGISTER_IP,
     EMAIL_VERIFICATION_ACCOUNT,
     EMAIL_VERIFICATION_IP,

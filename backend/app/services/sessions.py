@@ -32,13 +32,15 @@ from app.core.legal import LEGAL_VERSION
 from app.core.passwords import check_password, hash_password, needs_rehash
 from app.core.tokens import (
     InvalidAccessTokenError,
+    LinkPurpose,
     issue_access_token,
+    issue_link,
     new_opaque_token,
     opaque_token_hash,
     read_access_token,
 )
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, Membership, Organization, RefreshToken, User
+from app.models import AuditLog, Membership, Organization, RefreshToken, User, UserTwoFactor
 from app.repositories import accounts as accounts_repository
 from app.repositories import sessions as sessions_repository
 from app.services import rate_limit
@@ -102,6 +104,44 @@ class Principal:
         return self.legal_version == LEGAL_VERSION
 
 
+TWO_FACTOR_CHALLENGE_LIFETIME: Final = datetime.timedelta(minutes=5)
+
+
+class SecondFactorRequiredError(Exception):
+    """La contraseña (o Google) ya se comprobó, pero la cuenta exige el segundo factor.
+
+    Lleva el desafío firmado que el segundo paso presenta junto con el código. Todavía no hay
+    sesión: nada de la cuenta se abre hasta que el código sea válido.
+    """
+
+    def __init__(self, challenge: str) -> None:
+        super().__init__("segundo factor requerido")
+        self.challenge = challenge
+
+
+def has_second_factor(session: Session, user_id: uuid.UUID) -> bool:
+    """Si la persona terminó de activar su segundo factor."""
+    return (
+        session.scalar(
+            select(UserTwoFactor.user_id).where(
+                UserTwoFactor.user_id == user_id, UserTwoFactor.enabled_at.is_not(None)
+            )
+        )
+        is not None
+    )
+
+
+def second_factor_challenge(settings: Settings, user: User) -> str:
+    """El desafío del segundo paso: vale 5 minutos y mientras el security_stamp no cambie."""
+    return issue_link(
+        settings.signing_key(),
+        LinkPurpose.TWO_FACTOR_CHALLENGE,
+        user.id,
+        str(user.security_stamp),
+        TWO_FACTOR_CHALLENGE_LIFETIME,
+    )
+
+
 def refresh_token_hash(token: str) -> bytes:
     """El SHA-256 con que se guarda y se busca un token de renovación."""
     return opaque_token_hash(token)
@@ -147,6 +187,10 @@ def sign_in(
         # Si los parámetros de Argon2id suben, cada cuenta se actualiza en su próximo ingreso.
         user.password_hash = hash_password(password)
     rate_limit.clear(session, rate_limit.LOGIN_ACCOUNT, email)
+    if has_second_factor(session, user.id):
+        # La contraseña quedó comprobada: se guarda el nuevo hash y se pide el segundo paso.
+        session.commit()
+        raise SecondFactorRequiredError(second_factor_challenge(settings, user))
     membership = _enter_organization(session, user.id)
     organization_id = membership.organization_id if membership is not None else None
 

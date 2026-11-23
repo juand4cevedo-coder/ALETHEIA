@@ -25,6 +25,7 @@ from app.api import (
     support,
     task_templates,
     tasks,
+    two_factor,
 )
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
@@ -85,6 +86,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(tasks.router, prefix=API_PREFIX)
     app.include_router(notes.router, prefix=API_PREFIX)
     app.include_router(task_templates.router, prefix=API_PREFIX)
+    app.include_router(two_factor.router, prefix=API_PREFIX)
     app.include_router(tasks.inbox_router, prefix=API_PREFIX)
     app.include_router(exports.router, prefix=API_PREFIX)
     app.include_router(exports.case_router, prefix=API_PREFIX)
