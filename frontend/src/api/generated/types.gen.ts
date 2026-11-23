@@ -1579,6 +1579,18 @@ export type LegalStatus = {
 };
 
 /**
+ * LoginChallenge
+ *
+ * El ingreso necesita el segundo paso: llega la cookie del desafío.
+ */
+export type LoginChallenge = {
+  /**
+   * Two Factor Required
+   */
+  two_factor_required?: true;
+};
+
+/**
  * LoginRequest
  *
  * Correo y contraseña para ingresar (API-005).
@@ -1778,6 +1790,11 @@ export type OrganizationAuditAction =
   | "role_changed"
   | "member_removed"
   | "organization_policy_changed"
+  | "two_factor_enabled"
+  | "two_factor_disabled"
+  | "two_factor_failed"
+  | "two_factor_recovery_used"
+  | "two_factor_codes_regenerated"
   | "plan_changed"
   | "subscription_canceled"
   | "subscription_expired"
@@ -2735,6 +2752,66 @@ export type TaskTemplateOut = {
 };
 
 /**
+ * TwoFactorCode
+ */
+export type TwoFactorCode = {
+  /**
+   * Code
+   *
+   * Código de 6 dígitos de la aplicación o un código de respaldo.
+   */
+  code: string;
+};
+
+/**
+ * TwoFactorEnabled
+ */
+export type TwoFactorEnabled = {
+  /**
+   * Recovery Codes
+   *
+   * Códigos de respaldo de un solo uso. Se muestran esta única vez.
+   */
+  recovery_codes: Array<string>;
+};
+
+/**
+ * TwoFactorSetup
+ *
+ * Lo que necesita la aplicación de autenticación: el secreto y el enlace otpauth.
+ */
+export type TwoFactorSetup = {
+  /**
+   * Secret
+   *
+   * Secreto en base32, para escribirlo a mano.
+   */
+  secret: string;
+  /**
+   * Uri
+   *
+   * Enlace otpauth:// que una aplicación de autenticación abre.
+   */
+  uri: string;
+};
+
+/**
+ * TwoFactorStatus
+ */
+export type TwoFactorStatus = {
+  /**
+   * Enabled
+   */
+  enabled: boolean;
+  /**
+   * Recovery Codes Remaining
+   *
+   * Códigos de respaldo que todavía no se han usado.
+   */
+  recovery_codes_remaining: number;
+};
+
+/**
  * UserStatusChange
  */
 export type UserStatusChange = {
@@ -3171,12 +3248,51 @@ export type SignInError = SignInErrors[keyof SignInErrors];
 
 export type SignInResponses = {
   /**
+   * La contraseña es correcta y la cuenta exige un segundo paso: llega la cookie del desafío y falta el código.
+   */
+  202: LoginChallenge;
+  /**
    * Sesión abierta: llegan las cookies de acceso y de renovación.
    */
   204: void;
 };
 
 export type SignInResponse = SignInResponses[keyof SignInResponses];
+
+export type SignInSecondFactorData = {
+  body: TwoFactorCode;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/login/two-factor";
+};
+
+export type SignInSecondFactorErrors = {
+  /**
+   * El desafío venció o el código no coincide.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados códigos errados.
+   */
+  429: Problem;
+};
+
+export type SignInSecondFactorError =
+  SignInSecondFactorErrors[keyof SignInSecondFactorErrors];
+
+export type SignInSecondFactorResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type SignInSecondFactorResponse =
+  SignInSecondFactorResponses[keyof SignInSecondFactorResponses];
 
 export type RefreshSessionData = {
   body?: never;
@@ -5117,6 +5233,121 @@ export type ApplyTaskTemplateResponses = {
 
 export type ApplyTaskTemplateResponse =
   ApplyTaskTemplateResponses[keyof ApplyTaskTemplateResponses];
+
+export type TwoFactorStatusData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/account/two-factor";
+};
+
+export type TwoFactorStatusResponses = {
+  /**
+   * Successful Response
+   */
+  200: TwoFactorStatus;
+};
+
+export type TwoFactorStatusResponse =
+  TwoFactorStatusResponses[keyof TwoFactorStatusResponses];
+
+export type TwoFactorSetupData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/account/two-factor/setup";
+};
+
+export type TwoFactorSetupResponses = {
+  /**
+   * Successful Response
+   */
+  200: TwoFactorSetup;
+};
+
+export type TwoFactorSetupResponse =
+  TwoFactorSetupResponses[keyof TwoFactorSetupResponses];
+
+export type TwoFactorEnableData = {
+  body: TwoFactorCode;
+  path?: never;
+  query?: never;
+  url: "/api/v1/account/two-factor/enable";
+};
+
+export type TwoFactorEnableErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type TwoFactorEnableError =
+  TwoFactorEnableErrors[keyof TwoFactorEnableErrors];
+
+export type TwoFactorEnableResponses = {
+  /**
+   * Successful Response
+   */
+  200: TwoFactorEnabled;
+};
+
+export type TwoFactorEnableResponse =
+  TwoFactorEnableResponses[keyof TwoFactorEnableResponses];
+
+export type TwoFactorDisableData = {
+  body: TwoFactorCode;
+  path?: never;
+  query?: never;
+  url: "/api/v1/account/two-factor/disable";
+};
+
+export type TwoFactorDisableErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type TwoFactorDisableError =
+  TwoFactorDisableErrors[keyof TwoFactorDisableErrors];
+
+export type TwoFactorDisableResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type TwoFactorDisableResponse =
+  TwoFactorDisableResponses[keyof TwoFactorDisableResponses];
+
+export type TwoFactorRecoveryCodesData = {
+  body: TwoFactorCode;
+  path?: never;
+  query?: never;
+  url: "/api/v1/account/two-factor/recovery-codes";
+};
+
+export type TwoFactorRecoveryCodesErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type TwoFactorRecoveryCodesError =
+  TwoFactorRecoveryCodesErrors[keyof TwoFactorRecoveryCodesErrors];
+
+export type TwoFactorRecoveryCodesResponses = {
+  /**
+   * Successful Response
+   */
+  200: TwoFactorEnabled;
+};
+
+export type TwoFactorRecoveryCodesResponse =
+  TwoFactorRecoveryCodesResponses[keyof TwoFactorRecoveryCodesResponses];
 
 export type TaskInboxData = {
   body?: never;

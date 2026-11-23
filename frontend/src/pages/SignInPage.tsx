@@ -1,3 +1,4 @@
+import { SecondFactorStep } from "../features/auth/SecondFactorStep.tsx";
 import { SocialAccess } from "../features/auth/SocialAccess.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useEffect, useRef, useState } from "react";
@@ -85,6 +86,10 @@ export function SignInPage() {
   const [submitted, setSubmitted] = useState(false);
   const [problem, setProblem] = useState<FormProblem | null>(null);
   const [signedIn, setSignedIn] = useState(false);
+  // Llegar de Google con la cuenta protegida también cae en el segundo paso.
+  const [challenge, setChallenge] = useState(
+    () => new URLSearchParams(location.search).get("verificacion") === "2fa",
+  );
   const fieldRefs = useRef<
     Partial<Record<SignInField, HTMLInputElement | null>>
   >({});
@@ -105,27 +110,38 @@ export function SignInPage() {
     ROUTES.app,
   );
 
+  // Abre el espacio de trabajo tras un ingreso completo, con o sin segundo paso.
+  async function finishSignIn() {
+    // La contraseña no se queda en la memoria de la página.
+    setValues((current) => ({ ...current, password: "" }));
+    setSignedIn(true);
+    rememberSession();
+    queryClient.clear();
+    let next = destination;
+    if (destination === ROUTES.app) {
+      try {
+        const profile = await queryClient.fetchQuery({
+          ...readMeOptions(),
+          staleTime: 0,
+        });
+        if (profile.platform_admin) next = ROUTES.platform;
+      } catch {
+        // El marco del espacio de trabajo mostrará el error del perfil.
+      }
+    }
+    await navigate(next, { replace: true });
+  }
+
   const signIn = useMutation({
     ...signInMutation(),
-    onSuccess: async () => {
-      // La contraseña no se queda en la memoria de la página.
-      setValues((current) => ({ ...current, password: "" }));
-      setSignedIn(true);
-      rememberSession();
-      queryClient.clear();
-      let next = destination;
-      if (destination === ROUTES.app) {
-        try {
-          const profile = await queryClient.fetchQuery({
-            ...readMeOptions(),
-            staleTime: 0,
-          });
-          if (profile.platform_admin) next = ROUTES.platform;
-        } catch {
-          // El marco del espacio de trabajo mostrará el error del perfil.
-        }
+    onSuccess: async (data) => {
+      if (data && "two_factor_required" in data) {
+        // La contraseña no se queda en la memoria de la página.
+        setValues((current) => ({ ...current, password: "" }));
+        setChallenge(true);
+        return;
       }
-      await navigate(next, { replace: true });
+      await finishSignIn();
     },
     onError: (error) => {
       const found = problemFrom(error);
@@ -174,6 +190,22 @@ export function SignInPage() {
       return;
     }
     signIn.mutate({ body: toLoginRequest(values) });
+  }
+
+  if (challenge) {
+    return (
+      <>
+        <title>{pageTitle("Verificación en dos pasos")}</title>
+        <meta name="robots" content="noindex" />
+        <SecondFactorStep
+          onDone={finishSignIn}
+          onRestart={() => {
+            setChallenge(false);
+            void navigate(ROUTES.signIn, { replace: true });
+          }}
+        />
+      </>
+    );
   }
 
   return (

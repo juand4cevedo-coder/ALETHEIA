@@ -18,13 +18,20 @@ from fastapi import (
     Response,
     status,
 )
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import APIKeyCookie
 from sqlalchemy.orm import Session
 
 from app.adapters.email import REPLY_TO
 from app.adapters.google_oidc import GoogleOidc, GoogleOidcError, pkce_challenge
-from app.api.cookies import REFRESH_COOKIE, clear_session_cookies, set_session_cookies
+from app.api.cookies import (
+    REFRESH_COOKIE,
+    TWO_FACTOR_COOKIE,
+    clear_session_cookies,
+    clear_two_factor_cookie,
+    set_session_cookies,
+    set_two_factor_cookie,
+)
 from app.api.deps import (
     SESSION_CHALLENGE,
     SESSION_ENDED,
@@ -58,11 +65,13 @@ from app.schemas.auth import (
     VerificationRequested,
     VerifyEmailRequest,
 )
+from app.schemas.two_factor import LoginChallenge, TwoFactorCode
 from app.services import accounts as accounts_service
 from app.services import credentials as credentials_service
 from app.services import google_auth as google_auth_service
 from app.services import rate_limit
 from app.services import sessions as sessions_service
+from app.services import two_factor as two_factor_service
 from app.services import verification as verification_service
 from app.services.legal import LegalVersionMismatchError
 from app.services.sessions import Principal
@@ -243,6 +252,9 @@ def google_callback(
                 user_agent=user_agent,
             )
             response.headers["location"] = "/app/cuenta?google=vinculado"
+    except sessions_service.SecondFactorRequiredError as required:
+        set_two_factor_cookie(response, required.challenge)
+        response.headers["location"] = "/ingresar?verificacion=2fa"
     except google_auth_service.GoogleIdentityNotLinkedError:
         response.headers["location"] = "/ingresar?google=sin-vinculo"
     except google_auth_service.GoogleAccountBlockedError:
@@ -369,9 +381,15 @@ _ACCOUNT_BLOCKED = f"Esta cuenta está bloqueada. Escríbanos a {REPLY_TO} para 
     "/auth/login",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Ingresar con correo y contraseña",
+    response_model=None,
     responses={
         status.HTTP_204_NO_CONTENT: {
             "description": "Sesión abierta: llegan las cookies de acceso y de renovación."
+        },
+        status.HTTP_202_ACCEPTED: {
+            "model": LoginChallenge,
+            "description": "La contraseña es correcta y la cuenta exige un segundo paso: llega la "
+            "cookie del desafío y falta el código.",
         },
         status.HTTP_401_UNAUTHORIZED: {"description": "El correo o la contraseña no coinciden."},
         status.HTTP_403_FORBIDDEN: {"description": "La cuenta está bloqueada."},
@@ -387,7 +405,7 @@ def sign_in(
     settings: Annotated[Settings, Depends(get_app_settings)],
     client_ip: Annotated[str, Depends(get_client_ip)],
     user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
-) -> None:
+) -> Response | None:
     response.headers["Cache-Control"] = "no-store"
     try:
         issued = sessions_service.sign_in(
@@ -398,6 +416,14 @@ def sign_in(
             client_ip=client_ip,
             user_agent=user_agent,
         )
+    except sessions_service.SecondFactorRequiredError as required:
+        challenge = JSONResponse(
+            LoginChallenge().model_dump(),
+            status_code=status.HTTP_202_ACCEPTED,
+            headers={"Cache-Control": "no-store"},
+        )
+        set_two_factor_cookie(challenge, required.challenge)
+        return challenge
     except sessions_service.InvalidCredentialsError:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
@@ -411,6 +437,58 @@ def sign_in(
             headers={"Cache-Control": "no-store"},
         ) from None
     set_session_cookies(response, issued)
+    return None
+
+
+_two_factor_cookie = APIKeyCookie(
+    name=TWO_FACTOR_COOKIE,
+    scheme_name="desafio_segundo_factor",
+    description="Cookie del desafío que entrega el ingreso si la cuenta exige el segundo factor.",
+    auto_error=False,
+)
+
+
+@router.post(
+    "/auth/login/two-factor",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Completar el ingreso con el código del segundo factor",
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {"description": "El desafío venció o el código no coincide."},
+        status.HTTP_429_TOO_MANY_REQUESTS: {"description": "Demasiados códigos errados."},
+    },
+)
+def sign_in_second_factor(
+    request: TwoFactorCode,
+    response: Response,
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    challenge: Annotated[str | None, Depends(_two_factor_cookie)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> None:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        if challenge is None:
+            raise two_factor_service.InvalidChallengeError
+        issued = two_factor_service.complete_sign_in(
+            session,
+            settings,
+            challenge,
+            request.code,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except (
+        two_factor_service.InvalidChallengeError,
+        two_factor_service.InvalidTwoFactorCodeError,
+    ):
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="El código no es válido o el ingreso venció. Vuelva a empezar.",
+            headers={"WWW-Authenticate": SESSION_CHALLENGE, "Cache-Control": "no-store"},
+        ) from None
+    set_session_cookies(response, issued)
+    clear_two_factor_cookie(response)
 
 
 # Declara en el contrato que la renovación lee la cookie de renovación. auto_error=False: sin

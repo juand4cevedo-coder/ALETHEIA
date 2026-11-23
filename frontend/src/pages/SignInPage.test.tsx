@@ -290,6 +290,67 @@ describe("Acceso con una sesión abierta (Diseño UX/UI, 4.2)", () => {
     await waitFor(() => expect(router.state.location.pathname).toBe("/app"));
   });
 
+  it("con segundo factor pide el código y entra al espacio de trabajo al verificarlo", async () => {
+    let verified = false;
+    fetchMock.mockImplementation(async (input) => {
+      const request = input as Request;
+      const path = new URL(request.url).pathname;
+      if (path === "/api/v1/auth/login") {
+        return jsonResponse({ two_factor_required: true }, 202);
+      }
+      if (path === "/api/v1/auth/login/two-factor") {
+        verified = true;
+        return new Response(null, { status: 204 });
+      }
+      if (path === "/api/v1/me") {
+        return verified ? jsonResponse(ME) : problem(401);
+      }
+      throw new Error(`Ruta inesperada: ${path}`);
+    });
+    const user = userEvent.setup();
+    await renderRoute("/ingresar");
+
+    await fillAndSubmit(user);
+    expect(
+      await screen.findByRole("heading", {
+        name: "Verificación en dos pasos",
+      }),
+    ).toBeInTheDocument();
+    // La contraseña no se vuelve a pedir y la sesión todavía no existe.
+    expect(screen.queryByLabelText("Contraseña")).toBeNull();
+    expect(verified).toBe(false);
+
+    await user.type(screen.getByLabelText("Código"), "123 456");
+    await user.click(screen.getByRole("button", { name: "Verificar" }));
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" }),
+    ).toBeInTheDocument();
+  });
+
+  it("un código errado en el segundo paso muestra el aviso y deja reintentar", async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const path = new URL((input as Request).url).pathname;
+      if (path === "/api/v1/auth/login") {
+        return jsonResponse({ two_factor_required: true }, 202);
+      }
+      if (path === "/api/v1/auth/login/two-factor") return problem(401);
+      if (path === "/api/v1/me") return problem(401);
+      throw new Error(`Ruta inesperada: ${path}`);
+    });
+    const user = userEvent.setup();
+    await renderRoute("/ingresar");
+
+    await fillAndSubmit(user);
+    await user.type(await screen.findByLabelText("Código"), "000000");
+    await user.click(screen.getByRole("button", { name: "Verificar" }));
+
+    expect(
+      await screen.findByText(/El código no es válido o el ingreso venció/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Verificar" })).toBeEnabled();
+  });
+
   it("si la sesión ya venció se queda en ingresar", async () => {
     window.localStorage.setItem("aletheia:sesion", "1");
     fetchMock.mockImplementation(async () => problem(401));

@@ -266,3 +266,57 @@ it("no muestra el pago con Nequi a quien no administra la facturación", async (
   await screen.findByText("Esencial");
   expect(screen.queryByLabelText("Celular Nequi")).not.toBeInTheDocument();
 });
+
+it("activa la verificación en dos pasos y muestra los códigos de respaldo una sola vez", async () => {
+  let enabled = false;
+  let sent: unknown;
+  fetchMock.mockImplementation(async (input) => {
+    const request = input as Request;
+    const path = new URL(request.url).pathname;
+    if (path === "/api/v1/me") return jsonResponse(ownerEnPrueba());
+    if (path === "/api/v1/account/two-factor/setup") {
+      return jsonResponse({
+        secret: "JBSWY3DPEHPK3PXP",
+        uri: "otpauth://totp/ALETHEIA%3Aana%40example.com?secret=JBSWY3DPEHPK3PXP",
+      });
+    }
+    if (path === "/api/v1/account/two-factor/enable") {
+      sent = await request.json();
+      enabled = true;
+      return jsonResponse({ recovery_codes: ["ABCDE-FGHJK", "23456-789MN"] });
+    }
+    if (path === "/api/v1/account/two-factor") {
+      return jsonResponse({
+        enabled,
+        recovery_codes_remaining: enabled ? 2 : 0,
+      });
+    }
+    if (path === "/api/v1/plans") return jsonResponse({ items: [] });
+    throw new Error(`Ruta inesperada: ${path}`);
+  });
+  const user = userEvent.setup();
+  await renderRoute("/app/cuenta");
+
+  await user.click(
+    await screen.findByRole("button", {
+      name: "Activar la verificación en dos pasos",
+    }),
+  );
+  expect(screen.getByLabelText("Clave de configuración")).toHaveTextContent(
+    "JBSW Y3DP EHPK 3PXP",
+  );
+  await user.type(screen.getByLabelText("Código de la aplicación"), "123456");
+  await user.click(screen.getByRole("button", { name: "Confirmar y activar" }));
+
+  const codes = await screen.findByRole("list", {
+    name: "Códigos de respaldo",
+  });
+  expect(within(codes).getByText("ABCDE-FGHJK")).toBeInTheDocument();
+  expect(sent).toEqual({ code: "123456" });
+
+  await user.click(screen.getByRole("button", { name: "Ya los guardé" }));
+  expect(screen.queryByText("ABCDE-FGHJK")).toBeNull();
+  expect(
+    await screen.findByText(/está activa. Le quedan 2 códigos de respaldo/),
+  ).toBeInTheDocument();
+});

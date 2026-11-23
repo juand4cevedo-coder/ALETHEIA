@@ -17,7 +17,13 @@ from app.services import rate_limit, subscription_expiration
 from app.services.audit import audit_ip, audit_user_agent
 from app.services.legal import LegalVersionMismatchError, record_registration
 from app.services.plans import TRIAL_DAYS, TRIAL_PLAN_CODE
-from app.services.sessions import IssuedSession, start_session
+from app.services.sessions import (
+    IssuedSession,
+    SecondFactorRequiredError,
+    has_second_factor,
+    second_factor_challenge,
+    start_session,
+)
 
 
 class GoogleIdentityNotLinkedError(Exception):
@@ -148,6 +154,8 @@ def login(
         raise GoogleIdentityNotLinkedError
     if user.status != "active":
         raise GoogleAccountBlockedError
+    if has_second_factor(session, user.id):
+        raise SecondFactorRequiredError(second_factor_challenge(settings, user))
     set_tenant(session, TenantContext(user_id=user.id))
     membership = (
         None if user.is_platform_admin else accounts_repository.membership_of(session, user.id)

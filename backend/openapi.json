@@ -448,6 +448,16 @@
           "204": {
             "description": "Sesión abierta: llegan las cookies de acceso y de renovación."
           },
+          "202": {
+            "description": "La contraseña es correcta y la cuenta exige un segundo paso: llega la cookie del desafío y falta el código.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginChallenge"
+                }
+              }
+            }
+          },
           "401": {
             "description": "El correo o la contraseña no coinciden.",
             "content": {
@@ -489,6 +499,65 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/auth/login/two-factor": {
+      "post": {
+        "tags": [
+          "cuenta"
+        ],
+        "summary": "Completar el ingreso con el código del segundo factor",
+        "operationId": "sign_in_second_factor",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorCode"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "El desafío venció o el código no coincide.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados códigos errados.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "desafio_segundo_factor": []
+          }
+        ]
       }
     },
     "/api/v1/auth/refresh": {
@@ -4153,6 +4222,189 @@
         }
       }
     },
+    "/api/v1/account/two-factor": {
+      "get": {
+        "tags": [
+          "segundo factor"
+        ],
+        "summary": "Estado del segundo factor de la cuenta",
+        "operationId": "two_factor_status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoFactorStatus"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/account/two-factor/setup": {
+      "post": {
+        "tags": [
+          "segundo factor"
+        ],
+        "summary": "Empezar la activación: entrega el secreto una vez",
+        "operationId": "two_factor_setup",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoFactorSetup"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/account/two-factor/enable": {
+      "post": {
+        "tags": [
+          "segundo factor"
+        ],
+        "summary": "Confirmar la activación con el primer código",
+        "operationId": "two_factor_enable",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorCode"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoFactorEnabled"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/account/two-factor/disable": {
+      "post": {
+        "tags": [
+          "segundo factor"
+        ],
+        "summary": "Desactivar el segundo factor con un código vigente",
+        "operationId": "two_factor_disable",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorCode"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/account/two-factor/recovery-codes": {
+      "post": {
+        "tags": [
+          "segundo factor"
+        ],
+        "summary": "Generar códigos de respaldo nuevos",
+        "operationId": "two_factor_recovery_codes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorCode"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoFactorEnabled"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
     "/api/v1/tasks": {
       "get": {
         "tags": [
@@ -7812,6 +8064,19 @@
         "title": "LegalStatus",
         "description": "Qué textos legales aceptó la persona y si debe aceptar unos nuevos (RN-029)."
       },
+      "LoginChallenge": {
+        "properties": {
+          "two_factor_required": {
+            "type": "boolean",
+            "const": true,
+            "title": "Two Factor Required",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "LoginChallenge",
+        "description": "El ingreso necesita el segundo paso: llega la cookie del desafío."
+      },
       "LoginRequest": {
         "properties": {
           "email": {
@@ -8075,6 +8340,11 @@
           "role_changed",
           "member_removed",
           "organization_policy_changed",
+          "two_factor_enabled",
+          "two_factor_disabled",
+          "two_factor_failed",
+          "two_factor_recovery_used",
+          "two_factor_codes_regenerated",
           "plan_changed",
           "subscription_canceled",
           "subscription_expired",
@@ -9582,6 +9852,80 @@
         ],
         "title": "TaskTemplateOut"
       },
+      "TwoFactorCode": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 6,
+            "title": "Code",
+            "description": "Código de 6 dígitos de la aplicación o un código de respaldo."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "TwoFactorCode"
+      },
+      "TwoFactorEnabled": {
+        "properties": {
+          "recovery_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recovery Codes",
+            "description": "Códigos de respaldo de un solo uso. Se muestran esta única vez."
+          }
+        },
+        "type": "object",
+        "required": [
+          "recovery_codes"
+        ],
+        "title": "TwoFactorEnabled"
+      },
+      "TwoFactorSetup": {
+        "properties": {
+          "secret": {
+            "type": "string",
+            "title": "Secret",
+            "description": "Secreto en base32, para escribirlo a mano."
+          },
+          "uri": {
+            "type": "string",
+            "title": "Uri",
+            "description": "Enlace otpauth:// que una aplicación de autenticación abre."
+          }
+        },
+        "type": "object",
+        "required": [
+          "secret",
+          "uri"
+        ],
+        "title": "TwoFactorSetup",
+        "description": "Lo que necesita la aplicación de autenticación: el secreto y el enlace otpauth."
+      },
+      "TwoFactorStatus": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "recovery_codes_remaining": {
+            "type": "integer",
+            "title": "Recovery Codes Remaining",
+            "description": "Códigos de respaldo que todavía no se han usado."
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "recovery_codes_remaining"
+        ],
+        "title": "TwoFactorStatus"
+      },
       "UserStatusChange": {
         "properties": {
           "status": {
@@ -9770,6 +10114,12 @@
         "type": "apiKey",
         "in": "cookie",
         "name": "__Secure-aletheia_google"
+      },
+      "desafio_segundo_factor": {
+        "type": "apiKey",
+        "description": "Cookie del desafío que entrega el ingreso si la cuenta exige el segundo factor.",
+        "in": "cookie",
+        "name": "__Host-aletheia_2fa"
       },
       "renovacion": {
         "type": "apiKey",

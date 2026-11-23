@@ -59,6 +59,11 @@ AUDIT_ACTIONS: Final = (
     "case_task_status_changed",
     "case_note_created",
     "organization_policy_changed",
+    "two_factor_enabled",
+    "two_factor_disabled",
+    "two_factor_failed",
+    "two_factor_recovery_used",
+    "two_factor_codes_regenerated",
     "account_closed",
 )
 

@@ -163,3 +163,14 @@
 .intro a:hover {
   text-decoration: underline;
 }
+
+.linkButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-900);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
