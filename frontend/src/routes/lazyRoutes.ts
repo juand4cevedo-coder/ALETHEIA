@@ -45,6 +45,10 @@ export const loadPlatformAuditPage = () =>
   import("../pages/PlatformModulesPage.tsx").then(
     (module) => module.PlatformAuditPage,
   );
+export const loadPlatformVitalsPage = () =>
+  import("../pages/PlatformVitalsPage.tsx").then(
+    (module) => module.PlatformVitalsPage,
+  );
 export const loadSupportPage = () =>
   import("../pages/SupportPage.tsx").then((module) => module.SupportPage);
 export const loadAcceptInvitationPage = () =>

@@ -22,6 +22,7 @@ from app.models.support import SupportTicket
 from app.models.task_templates import TaskTemplate, TaskTemplateItem
 from app.models.tasks import CaseTask
 from app.models.two_factor import TwoFactorRecoveryCode, UserTwoFactor
+from app.models.web_vitals import WebVital
 
 __all__ = [
     "AuditLog",
@@ -53,4 +54,5 @@ __all__ = [
     "TwoFactorRecoveryCode",
     "User",
     "UserTwoFactor",
+    "WebVital",
 ]

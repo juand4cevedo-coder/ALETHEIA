@@ -168,6 +168,9 @@ import type {
   PlatformSupportTicketsData,
   PlatformSupportTicketsErrors,
   PlatformSupportTicketsResponses,
+  PlatformWebVitalsData,
+  PlatformWebVitalsErrors,
+  PlatformWebVitalsResponses,
   PreviewInvitationData,
   PreviewInvitationErrors,
   PreviewInvitationResponses,
@@ -231,6 +234,9 @@ import type {
   SignOutEverywhereErrors,
   SignOutEverywhereResponses,
   SignOutResponses,
+  SubmitWebVitalsData,
+  SubmitWebVitalsErrors,
+  SubmitWebVitalsResponses,
   TaskCalendarData,
   TaskCalendarErrors,
   TaskCalendarResponses,
@@ -2276,6 +2282,32 @@ export const platformAudit = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Rendimiento real: percentil 75 por versión, dispositivo y métrica
+ */
+export const platformWebVitals = <ThrowOnError extends boolean = false>(
+  options?: Options<PlatformWebVitalsData, ThrowOnError>,
+): RequestResult<
+  PlatformWebVitalsResponses,
+  PlatformWebVitalsErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    PlatformWebVitalsResponses,
+    PlatformWebVitalsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/web-vitals",
+    ...options,
+  });
+
+/**
  * Mis solicitudes de soporte
  */
 export const ownSupportTickets = <ThrowOnError extends boolean = false>(
@@ -2418,6 +2450,29 @@ export const createCheckout = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/billing/checkout",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Entregar las medidas de rendimiento de una visita
+ */
+export const submitWebVitals = <ThrowOnError extends boolean = false>(
+  options: Options<SubmitWebVitalsData, ThrowOnError>,
+): RequestResult<
+  SubmitWebVitalsResponses,
+  SubmitWebVitalsErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    SubmitWebVitalsResponses,
+    SubmitWebVitalsErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/web-vitals",
     ...options,
     headers: {
       "Content-Type": "application/json",

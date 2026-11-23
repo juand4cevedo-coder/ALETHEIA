@@ -6,9 +6,10 @@ export const COOKIE_CHOICE_KEY = "aletheia:cookies";
  * Versión del consentimiento. Sube cuando se agrega una categoría o una herramienta opcional:
  * las elecciones guardadas con una versión anterior dejan de valer y el panel vuelve a preguntar.
  */
-export const CONSENT_VERSION = 1;
+export const CONSENT_VERSION = 2;
 
-/** Categorías que esperan consentimiento. Hoy ninguna tiene una herramienta activa. */
+/** Categorías que esperan consentimiento. «analytics» activa la medición de rendimiento real
+ * (Core Web Vitals, ADR-052); no hay otra herramienta de medición ni de publicidad. */
 export type OptionalCookieCategory = "analytics";
 
 export type CookieChoice = {

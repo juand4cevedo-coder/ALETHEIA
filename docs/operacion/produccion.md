@@ -281,6 +281,7 @@ Para deshacerlo: borrar la variable `CDN_URL` y publicar una versión nueva (el 
 - El producto usa un solo tipo de letra de interfaz (Inter) y una de código (Geist Mono); no se descarga ninguna fuente con serif.
 - El pool de conexiones de la API es de 10 más 10 de rebose, con espera máxima de 10 s (`backend/app/db/session.py`). Sumado al trabajador queda por debajo de las 100 conexiones de PostgreSQL.
 - Quien ya tiene sesión precarga en reposo las piezas del espacio de trabajo desde las páginas públicas (`prefetchWorkspace`).
+- **Rendimiento real (ADR-052).** Quien acepta la categoría «Analítica» del panel de cookies entrega, al salir de la página, LCP, INP, CLS, FCP y TTFB a `POST /api/v1/web-vitals`, sin cuenta, IP ni navegador, con 90 días de vida (la tabla `web_vitals`). Las cuentas de plataforma ven el percentil 75 por versión, pantalla y métrica en Plataforma > Rendimiento real (`/app/plataforma/rendimiento`). Es la medida que decide si algo como la red de distribución conviene: compare la versión nueva con la anterior en esa pantalla antes de decidir. Las medidas son de una muestra que se inclina hacia quien acepta la analítica; sirven para comparar versiones, no como cifra absoluta.
 
 
 Al integrar la rama `release/X.Y.Z` en `develop`, se crea y se sube una etiqueta firmada sobre el commit integrado. La publicación sigue estos pasos en `.github/workflows/publicar.yml`.

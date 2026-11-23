@@ -1,0 +1,12 @@
+# Aletheia 0.20.0
+
+- Medición de rendimiento real (Core Web Vitals), solo con consentimiento (ADR-052). Quien acepte la categoría «Analítica» del panel de cookies entrega, al salir de la página, el tiempo del contenido principal (LCP), la respuesta a un toque (INP), la estabilidad visual (CLS), el primer contenido (FCP) y la respuesta del servidor (TTFB). Cada medida lleva el grupo de la página (no la dirección), el tipo de pantalla, el de conexión y la versión del sitio. No lleva cuenta, correo, sesión, IP ni navegador, no usa cookies y no permite relacionar dos medidas de la misma visita.
+- Plataforma > Rendimiento real: las cuentas de plataforma ven el percentil 75 por versión, pantalla y métrica, con los umbrales de Google (bueno, por mejorar, malo) y la parte de visitas dentro del umbral bueno. Periodo a elegir entre 7 y 90 días.
+- El panel de cookies vuelve a preguntar a todos (la versión del consentimiento sube a 2) y su texto, igual que la política de cookies, describe exactamente qué se mide y qué no. El texto legal cambió sin subir la versión de los textos legales, porque no cambia derechos ni obligaciones; conviene que su asesoría legal lo revise.
+- Migración 0042: tabla `web_vitals`, sin Row-Level Security (ninguna fila es de un despacho ni de una persona), con listas cerradas en CHECK y sin permiso de edición para la aplicación. El trabajador borra las medidas de más de 90 días con el mantenimiento de cada 10 minutos.
+- Nueva ruta pública `POST /api/v1/web-vitals` (204), con límite de 60 entregas por IP cada 15 minutos (se guarda un resumen irreversible de la IP por ese tiempo, como en los intentos de ingreso) y `GET /api/v1/platform/web-vitals` solo para plataforma.
+- El código de medición se descarga aparte y solo si hay consentimiento. Presupuesto de JavaScript inicial: 119,51 KB de 120.
+
+Esta versión sí trae una migración (0042).
+
+Para verlo después de desplegar: abra https://aletheia.sbs en una ventana nueva y acepte la analítica en el panel de cookies (volverá a aparecer). Navegue unos segundos y cierre la pestaña o cámbiese de pestaña. Entre con una cuenta de plataforma a Plataforma > Rendimiento real: la primera fila de la versión 0.20.0 debe aparecer en el periodo de 7 días. Si rechaza la analítica y repite, no debe sumar ninguna medida. Con el tiempo, compare esta versión con las siguientes en esa pantalla antes de decidir sobre la red de distribución.

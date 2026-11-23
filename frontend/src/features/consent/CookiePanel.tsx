@@ -124,9 +124,10 @@ export function CookiePanel({
       {view === "summary" ? (
         <>
           <p className={styles.text}>
-            Solo usamos las cookies necesarias para mantener su sesión. No
-            usamos analítica ni publicidad. Las opcionales quedan apagadas hasta
-            que usted las acepte.{" "}
+            Usamos las cookies necesarias para mantener su sesión. Si usted lo
+            acepta, también medimos de forma anónima qué tan rápido carga el
+            sitio. No usamos publicidad. Lo opcional queda apagado hasta que
+            usted lo acepte.{" "}
             <Link to={legalRoute("cookies")}>Política de cookies</Link>
           </p>
           <div className={styles.actions}>
@@ -178,10 +179,10 @@ export function CookiePanel({
                   id="cookies-analitica-detalle"
                   className={styles.categoryText}
                 >
-                  Medirían de forma anónima cómo se usa el sitio. Hoy no usamos
-                  ninguna herramienta de este tipo, así que esta opción no
-                  activa nada. Si algún día la agregamos, le volveremos a
-                  preguntar.
+                  Mide de forma anónima qué tan rápido carga y responde el
+                  sitio, para corregir lo que vaya lento. No usa cookies y la
+                  medida no queda ligada a su cuenta ni a su navegador. Si la
+                  deja apagada, el sitio funciona igual.
                 </p>
               </div>
               <input

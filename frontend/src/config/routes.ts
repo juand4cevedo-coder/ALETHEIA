@@ -25,6 +25,7 @@ export const ROUTES = {
   platformBilling: "/app/plataforma/facturacion",
   platformSupport: "/app/plataforma/soporte",
   platformAudit: "/app/plataforma/auditoria",
+  platformVitals: "/app/plataforma/rendimiento",
   support: "/app/soporte",
   organization: "/app/organizacion",
   members: "/app/miembros",

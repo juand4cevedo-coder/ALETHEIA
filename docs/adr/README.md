@@ -53,3 +53,6 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-047](adr-047.md) | Informe PDF generado a partir del manifiesto exacto | Aceptado | 17/11/2026 |
 | [ADR-048](adr-048.md) | Enlace de exportación válido 24 horas con firma de la aplicación | Aceptado | 17/11/2026 |
 | [ADR-049](adr-049.md) | Identidad violeta, un solo conjunto de tokens y símbolo del ojo | Aceptado | 22/11/2026 |
+| [ADR-050](adr-050.md) | Segundo factor con aplicación de autenticación y códigos de respaldo | Aceptado | 23/11/2026 |
+| [ADR-051](adr-051.md) | Archivos estáticos por una red de distribución | Aceptado | 23/11/2026 |
+| [ADR-052](adr-052.md) | Medición de rendimiento real con consentimiento y sin identificadores | Aceptado | 23/11/2026 |

@@ -23,6 +23,7 @@ import {
   loadOrganizationPage,
   loadNewCasePage,
   loadPlatformPage,
+  loadPlatformVitalsPage,
   loadPlatformBillingPage,
   loadPlatformSupportPage,
   loadPlatformAuditPage,
@@ -240,6 +241,10 @@ export const routes: RouteObject[] = [
           {
             path: ROUTES.platformAudit.slice(ROUTES.app.length + 1),
             lazy: { Component: loadPlatformAuditPage },
+          },
+          {
+            path: ROUTES.platformVitals.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadPlatformVitalsPage },
           },
           {
             path: ROUTES.support.slice(ROUTES.app.length + 1),
