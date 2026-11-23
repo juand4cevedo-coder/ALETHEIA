@@ -68,7 +68,7 @@ La hace la persona administradora. Cuesta cerca de 4 dólares al mes: nueve mét
 
 ## Presupuesto
 
-`infra/aws/presupuesto.sh <correo> [monto]` crea el presupuesto mensual `aletheia-mensual` (15 USD por defecto) con avisos por correo al 50 % y 80 % del gasto real y cuando el pronóstico lo supera. Se ejecuta una vez desde CloudShell.
+`infra/aws/presupuesto.sh <correo> [monto]` crea el presupuesto mensual `aletheia-mensual` (30 USD por defecto, sin contar los créditos) con avisos por correo al 50 % y 80 % del gasto real y cuando el pronóstico lo supera. Se ejecuta una vez desde CloudShell.
 
 ## Fechas que no se pueden olvidar
 
