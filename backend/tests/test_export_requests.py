@@ -176,7 +176,32 @@ def test_el_historial_lista_los_paquetes_del_caso_con_su_estado_y_quien_los_pidi
     assert items[0]["manifest_sha256"] is None
     assert all(item["requested_by_name"] == "Propietario Historial" for item in items)
 
+    # El asistente, con su rol de verdad en la base, no ve el historial de paquetes.
+    assistant_id = uuid.uuid7()
+    db.add(
+        User(
+            id=assistant_id,
+            email=f"{assistant_id}@example.com",
+            full_name="Asistente",
+            terms_version=LEGAL_VERSION,
+            privacy_version=LEGAL_VERSION,
+            consented_at=datetime.datetime.now(datetime.UTC),
+        )
+    )
+    db.flush()
+    db.add(
+        Membership(organization_id=tenant.organization_id, user_id=assistant_id, role="assistant")
+    )
+    db.add(
+        CaseMember(
+            case_id=tenant.case_id,
+            user_id=assistant_id,
+            organization_id=tenant.organization_id,
+            added_by=tenant.user_id,
+        )
+    )
+    db.commit()
     app.dependency_overrides[get_principal_allowing_outdated_legal] = lambda: _principal(
-        tenant.user_id, tenant.organization_id, "assistant"
+        assistant_id, tenant.organization_id, "assistant"
     )
     assert client.get(f"/api/v1/cases/{tenant.case_id}/exports").status_code == 403
