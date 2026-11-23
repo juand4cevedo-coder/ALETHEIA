@@ -81,6 +81,12 @@ def reconciliar(session: Session, creds: wompi.Credenciales, transaction_id: str
     _registrar_y_aplicar(session, transaccion, "reconcile")
 
 
+def aplicar_consultada(session: Session, transaccion: wompi.Transaccion) -> None:
+    """Igual que `reconciliar`, con una transacción que el servidor ya consultó a Wompi."""
+    if transaccion.status in _ESTADOS_FINALES:
+        _registrar_y_aplicar(session, transaccion, "reconcile")
+
+
 def _registrar_y_aplicar(session: Session, transaccion: wompi.Transaccion, event_type: str) -> None:
     resultado = session.execute(
         insert(PaymentEvent)

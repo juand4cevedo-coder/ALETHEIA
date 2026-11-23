@@ -205,7 +205,6 @@ export type {
   ChangeSupportTicketStatusResponses,
   CheckoutCreate,
   CheckoutOut,
-  CheckoutWebConfirm,
   CheckoutWebCreate,
   CheckoutWebOut,
   CheckoutWebResult,

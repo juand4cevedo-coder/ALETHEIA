@@ -42,15 +42,9 @@ const RETURN_MAX_POLLS = 24;
 type ReturnState = "checking" | "approved" | "pending" | "failed" | "error";
 
 /** La persona vuelve del Checkout Web de Wompi: se confirma con el servidor, que le pregunta a
- * Wompi con la llave privada. La dirección de regreso solo informa y nunca activa nada por sí
- * sola. */
-function CheckoutReturn({
-  transactionId,
-  onDone,
-}: {
-  transactionId: string;
-  onDone: () => void;
-}) {
+ * Wompi con la llave privada por el pago pendiente del despacho. La dirección de regreso solo
+ * avisa que se volvió: no aporta ningún dato y nunca activa nada por sí sola. */
+function CheckoutReturn({ onDone }: { onDone: () => void }) {
   const queryClient = useQueryClient();
   const [state, setState] = useState<ReturnState>("checking");
   const confirm = useMutation({
@@ -67,8 +61,8 @@ function CheckoutReturn({
   const { mutate } = confirm;
 
   useEffect(() => {
-    mutate({ body: { transaction_id: transactionId } });
-  }, [transactionId, mutate]);
+    mutate({});
+  }, [mutate]);
 
   useEffect(() => {
     if (state !== "pending") return;
@@ -79,10 +73,10 @@ function CheckoutReturn({
         clearInterval(timer);
         return;
       }
-      mutate({ body: { transaction_id: transactionId } });
+      mutate({});
     }, RETURN_POLL_MS);
     return () => clearInterval(timer);
-  }, [state, transactionId, mutate]);
+  }, [state, mutate]);
 
   if (state === "approved")
     return (
@@ -173,12 +167,7 @@ export function CheckoutCard({ me }: { me: Me }) {
   }
 
   if (returnId) {
-    return (
-      <CheckoutReturn
-        transactionId={returnId}
-        onDone={() => setParams({}, { replace: true })}
-      />
-    );
+    return <CheckoutReturn onDone={() => setParams({}, { replace: true })} />;
   }
 
   if (started) {

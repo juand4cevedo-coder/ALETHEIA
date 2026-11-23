@@ -14,7 +14,6 @@ from app.core.config import Settings
 from app.schemas.billing import (
     CheckoutCreate,
     CheckoutOut,
-    CheckoutWebConfirm,
     CheckoutWebCreate,
     CheckoutWebOut,
     CheckoutWebResult,
@@ -173,12 +172,11 @@ def create_checkout_web(
     summary="Confirmar el resultado de un cobro al volver del Checkout Web",
     responses={
         status.HTTP_403_FORBIDDEN: {"description": "El rol no administra la facturación."},
-        status.HTTP_404_NOT_FOUND: {"description": "La transacción no es de este despacho."},
+        status.HTTP_404_NOT_FOUND: {"description": "No hay un pago en curso para este despacho."},
         status.HTTP_503_SERVICE_UNAVAILABLE: {"description": "Wompi no respondió."},
     },
 )
 def confirm_checkout_web(
-    body: CheckoutWebConfirm,
     response: Response,
     principal: Annotated[Principal, Depends(get_principal)],
     session: Annotated[Session, Depends(get_session)],
@@ -186,9 +184,7 @@ def confirm_checkout_web(
 ) -> CheckoutWebResult:
     response.headers["Cache-Control"] = "no-store"
     try:
-        estado = checkout_service.confirmar_regreso(
-            session, settings, principal, body.transaction_id
-        )
+        estado = checkout_service.confirmar_regreso(session, settings, principal)
         session.commit()
     except checkout_service.CheckoutNoPermitidoError:
         session.rollback()
@@ -201,7 +197,7 @@ def confirm_checkout_web(
         session.rollback()
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
-            detail="No encontramos esa transacción para este despacho.",
+            detail="No hay un pago en curso para este despacho.",
             headers=_NO_STORE,
         ) from None
     except wompi.WompiNoConfiguradoError, wompi.WompiNoDisponibleError:

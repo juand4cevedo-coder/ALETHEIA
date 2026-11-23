@@ -349,7 +349,7 @@ const PLANS = [
 
 function serveCheckoutWeb(handlers: {
   web?: (body: Record<string, unknown>) => Response;
-  confirm?: (body: Record<string, unknown>) => Response;
+  confirm?: () => Response;
 }) {
   fetchMock.mockImplementation(async (input, init) => {
     const isRequest = typeof input !== "string";
@@ -367,9 +367,7 @@ function serveCheckoutWeb(handlers: {
         (await (input as Request).json()) as Record<string, unknown>,
       );
     if (path === "/api/v1/billing/checkout-web/confirm" && method === "POST")
-      return handlers.confirm!(
-        (await (input as Request).json()) as Record<string, unknown>,
-      );
+      return handlers.confirm!();
     throw new Error(`Ruta inesperada: ${method} ${path}`);
   });
 }
@@ -406,10 +404,10 @@ it("por omisión paga en la página de Wompi con tarjeta, PSE u otros medios", a
 });
 
 it("al volver de Wompi confirma el pago con el servidor y dice que quedó aprobado", async () => {
-  let confirmed: Record<string, unknown> | null = null;
+  let confirmations = 0;
   serveCheckoutWeb({
-    confirm: (sent) => {
-      confirmed = sent;
+    confirm: () => {
+      confirmations += 1;
       return jsonResponse({ status: "APPROVED" });
     },
   });
@@ -418,7 +416,7 @@ it("al volver de Wompi confirma el pago con el servidor y dice que quedó aproba
   expect(
     await screen.findByText("Su pago quedó aprobado y el plan ya está activo."),
   ).toBeInTheDocument();
-  expect(confirmed).toEqual({ transaction_id: "1292-1602113476-10985" });
+  expect(confirmations).toBe(1);
 });
 
 it("si el pago no se completó lo dice y deja intentarlo de nuevo", async () => {

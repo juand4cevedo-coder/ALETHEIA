@@ -231,6 +231,26 @@ def consultar_transaccion(creds: Credenciales, transaction_id: str) -> Transacci
     )
 
 
+def consultar_por_referencia(creds: Credenciales, reference: str) -> Transaccion | None:
+    """GET /transactions?reference=: la transacción más reciente de una referencia propia.
+    La referencia sale de la base (la generó este servidor), nunca de la petición, y viaja
+    codificada como parámetro de consulta; la ruta es fija."""
+    consulta = urllib.parse.urlencode({"reference": reference})
+    respuesta = _llamar(f"{creds.base_url}/transactions?{consulta}", bearer=creds.private_key)
+    filas = [fila for fila in respuesta.get("data", []) if fila.get("reference") == reference]
+    if not filas:
+        return None
+    # Una referencia puede tener varios intentos: manda el más reciente.
+    fila = max(filas, key=lambda f: str(f.get("created_at", "")))
+    return Transaccion(
+        id=fila["id"],
+        status=fila["status"],
+        reference=fila["reference"],
+        amount_in_cents=fila["amount_in_cents"],
+        payment_method_type=fila.get("payment_method_type"),
+    )
+
+
 def _valor_de(objeto: dict[str, Any], ruta: str) -> object:
     actual: object = objeto
     for parte in ruta.split("."):

@@ -149,26 +149,33 @@ def iniciar_checkout_web(
     return url
 
 
-def confirmar_regreso(
-    session: Session,
-    settings: Settings,
-    principal: Principal,
-    transaction_id: str,
-) -> str:
-    """Al volver del Checkout Web la persona trae el identificador de su transacción. Se vuelve a
-    pedir a Wompi con la llave privada (la redirección solo informa) y, si ya terminó, se aplica por
-    el mismo camino que un webhook. Devuelve el estado que Wompi reporta."""
+def confirmar_regreso(session: Session, settings: Settings, principal: Principal) -> str:
+    """Al volver del Checkout Web se consulta a Wompi, con la llave privada, el cobro pendiente del
+    despacho (la dirección de regreso solo informa y no aporta ningún dato). La referencia sale de
+    la base, no de la petición. Si ya terminó, se aplica por el mismo camino que un webhook.
+    Devuelve el estado que Wompi reporta."""
     from app.services import payments
 
     organization_id = principal.organization_id
     if organization_id is None or not has_permission(principal.role, "billing.manage"):
         raise CheckoutNoPermitidoError
-    creds = wompi.credenciales_de(settings)
-    transaccion = wompi.consultar_transaccion(creds, transaction_id)
-    referencia = leer_referencia(transaccion.reference)
-    if referencia is None or referencia.organization_id != organization_id:
+    set_tenant(session, TenantContext(organization_id=organization_id, user_id=principal.user_id))
+    subscription = session.scalar(
+        select(Subscription).where(Subscription.organization_id == organization_id)
+    )
+    if subscription is None:
+        raise CheckoutNoPermitidoError
+    reference = subscription.pending_checkout_reference
+    if reference is None:
+        # Ya se aplicó (un webhook o una confirmación anterior): se dice lo que quedó.
+        if subscription.status == "active" and subscription.access_source == "payment":
+            return "APPROVED"
         raise TransaccionAjenaError
-    payments.reconciliar(session, creds, transaction_id)
+    creds = wompi.credenciales_de(settings)
+    transaccion = wompi.consultar_por_referencia(creds, reference)
+    if transaccion is None:
+        return "PENDING"  # la persona volvió sin terminar de pagar
+    payments.aplicar_consultada(session, transaccion)
     return transaccion.status
 
 

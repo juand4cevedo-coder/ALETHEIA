@@ -6740,16 +6740,6 @@
         ],
         "summary": "Confirmar el resultado de un cobro al volver del Checkout Web",
         "operationId": "confirm_checkout_web",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CheckoutWebConfirm"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -6772,7 +6762,7 @@
             }
           },
           "404": {
-            "description": "La transacción no es de este despacho.",
+            "description": "No hay un pago en curso para este despacho.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -6787,16 +6777,6 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "La solicitud tiene datos inválidos.",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationProblem"
                 }
               }
             }
@@ -9179,24 +9159,6 @@
           "status"
         ],
         "title": "CheckoutOut"
-      },
-      "CheckoutWebConfirm": {
-        "properties": {
-          "transaction_id": {
-            "type": "string",
-            "maxLength": 100,
-            "minLength": 1,
-            "pattern": "^[A-Za-z0-9_-]+$",
-            "title": "Transaction Id",
-            "description": "El identificador que Wompi agrega a la dirección de regreso (id)."
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "transaction_id"
-        ],
-        "title": "CheckoutWebConfirm"
       },
       "CheckoutWebCreate": {
         "properties": {

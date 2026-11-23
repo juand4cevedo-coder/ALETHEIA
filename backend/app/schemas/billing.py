@@ -52,16 +52,5 @@ class CheckoutWebOut(BaseModel):
     )
 
 
-class CheckoutWebConfirm(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    transaction_id: str = Field(
-        min_length=1,
-        max_length=100,
-        pattern=r"^[A-Za-z0-9_-]+$",
-        description="El identificador que Wompi agrega a la dirección de regreso (id).",
-    )
-
-
 class CheckoutWebResult(BaseModel):
     status: Literal["PENDING", "APPROVED", "DECLINED", "VOIDED", "ERROR"]

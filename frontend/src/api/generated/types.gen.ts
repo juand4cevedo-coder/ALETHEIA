@@ -935,18 +935,6 @@ export type CheckoutOut = {
 };
 
 /**
- * CheckoutWebConfirm
- */
-export type CheckoutWebConfirm = {
-  /**
-   * Transaction Id
-   *
-   * El identificador que Wompi agrega a la dirección de regreso (id).
-   */
-  transaction_id: string;
-};
-
-/**
  * CheckoutWebCreate
  */
 export type CheckoutWebCreate = {
@@ -7549,7 +7537,7 @@ export type CreateCheckoutWebResponse =
   CreateCheckoutWebResponses[keyof CreateCheckoutWebResponses];
 
 export type ConfirmCheckoutWebData = {
-  body: CheckoutWebConfirm;
+  body?: never;
   path?: never;
   query?: never;
   url: "/api/v1/billing/checkout-web/confirm";
@@ -7561,13 +7549,9 @@ export type ConfirmCheckoutWebErrors = {
    */
   403: Problem;
   /**
-   * La transacción no es de este despacho.
+   * No hay un pago en curso para este despacho.
    */
   404: Problem;
-  /**
-   * La solicitud tiene datos inválidos.
-   */
-  422: ValidationProblem;
   /**
    * Wompi no respondió.
    */

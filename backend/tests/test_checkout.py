@@ -260,39 +260,93 @@ def test_solo_quien_administra_la_facturacion_inicia_el_checkout_web(
         checkout.iniciar_checkout_web(db, _con_wompi(settings), principal, "essential", "monthly")
 
 
-def test_al_volver_del_checkout_web_se_confirma_con_wompi_y_solo_la_transaccion_propia(
+def test_al_volver_del_checkout_web_se_confirma_la_referencia_pendiente_del_despacho(
     db: Session, settings: Settings, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     office = crear_oficina(db)
     subscription = _en_prueba(db, office)
     principal = _principal(office.organization_id, office.owner.id, "owner")
     con_wompi = _con_wompi(settings)
+
+    # Sin un pago en curso no hay nada que confirmar.
+    with pytest.raises(checkout.TransaccionAjenaError):
+        checkout.confirmar_regreso(db, con_wompi, principal)
+
     url = checkout.iniciar_checkout_web(db, con_wompi, principal, "essential", "monthly")
     reference = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)["reference"][0]
-    transacciones = {
-        "tx-propia": wompi.Transaccion("tx-propia", "APPROVED", reference, 29_900 * 100),
-        "tx-ajena": wompi.Transaccion(
-            "tx-ajena",
-            "APPROVED",
-            checkout.referencia_nueva(uuid.uuid7(), "essential", "monthly"),
-            29_900 * 100,
-        ),
-    }
-    monkeypatch.setattr(
-        wompi, "consultar_transaccion", lambda _creds, identificador: transacciones[identificador]
-    )
+    consultadas: list[str] = []
 
-    with pytest.raises(checkout.TransaccionAjenaError):
-        checkout.confirmar_regreso(db, con_wompi, principal, "tx-ajena")
+    def consultar(_creds: object, referencia: str) -> wompi.Transaccion | None:
+        consultadas.append(referencia)
+        return None
+
+    monkeypatch.setattr(wompi, "consultar_por_referencia", consultar)
+    assert checkout.confirmar_regreso(db, con_wompi, principal) == "PENDING"
+    assert consultadas == [reference]
     assert subscription.status == "trial"
 
-    estado = checkout.confirmar_regreso(db, con_wompi, principal, "tx-propia")
-
-    assert estado == "APPROVED"
+    monkeypatch.setattr(
+        wompi,
+        "consultar_por_referencia",
+        lambda _creds, referencia: wompi.Transaccion("tx-1", "APPROVED", referencia, 29_900 * 100),
+    )
+    assert checkout.confirmar_regreso(db, con_wompi, principal) == "APPROVED"
     db.refresh(subscription)
     assert subscription.status == "active"
     assert subscription.billing_cycle == "monthly"
     assert subscription.pending_checkout_reference is None
+
+    # Repetir la confirmación (recargar la página) sigue diciendo que quedó aprobado.
+    assert checkout.confirmar_regreso(db, con_wompi, principal) == "APPROVED"
+
+
+def test_la_consulta_por_referencia_codifica_la_referencia_y_elige_la_mas_reciente(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    llamadas: list[str] = []
+
+    def falsa(url: str, **_kw: object) -> dict[str, object]:
+        llamadas.append(url)
+        return {
+            "data": [
+                {
+                    "id": "a",
+                    "status": "DECLINED",
+                    "reference": "r&x=1",
+                    "amount_in_cents": 1,
+                    "created_at": "2026-01-01T00:00:00Z",
+                },
+                {
+                    "id": "b",
+                    "status": "APPROVED",
+                    "reference": "r&x=1",
+                    "amount_in_cents": 1,
+                    "created_at": "2026-01-02T00:00:00Z",
+                },
+                {
+                    "id": "c",
+                    "status": "APPROVED",
+                    "reference": "otra",
+                    "amount_in_cents": 1,
+                    "created_at": "2026-01-03T00:00:00Z",
+                },
+            ]
+        }
+
+    monkeypatch.setattr(wompi, "_llamar", falsa)
+    creds = wompi.Credenciales(
+        public_key="pub_test_x",
+        private_key="prv_test_x",
+        integrity_secret="test_integrity_x",  # noqa: S106
+        events_secret="test_events_x",  # noqa: S106
+        base_url="https://sandbox.wompi.co/v1",
+    )
+
+    transaccion = wompi.consultar_por_referencia(creds, "r&x=1")
+
+    assert llamadas == ["https://sandbox.wompi.co/v1/transactions?reference=r%26x%3D1"]
+    assert transaccion is not None
+    assert transaccion.id == "b"
 
 
 @pytest.mark.parametrize(
