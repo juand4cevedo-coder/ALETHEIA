@@ -465,7 +465,9 @@ describe("Inicio del espacio de trabajo", () => {
       const { router } = await renderRoute("/app");
 
       await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
-      if (role === "assistant") {
+      // El administrador y el asistente no abren casos (ADR-056).
+      const opensCases = role === "owner" || role === "lawyer";
+      if (!opensCases) {
         expect(
           screen.queryByRole("link", { name: "Abrir un caso" }),
         ).not.toBeInTheDocument();
@@ -474,8 +476,9 @@ describe("Inicio del espacio de trabajo", () => {
           screen.getByRole("link", { name: "Abrir un caso" }),
         ).toHaveAttribute("href", "/app/casos/nuevo");
       }
-      const workspaceLinkName =
-        role === "assistant" ? "Ver mis casos asignados" : "Ver mis casos";
+      const workspaceLinkName = opensCases
+        ? "Ver mis casos"
+        : "Ver mis casos asignados";
       await user.click(screen.getByRole("link", { name: workspaceLinkName }));
       await waitFor(() =>
         expect(router.state.location.pathname).toBe("/app/casos"),

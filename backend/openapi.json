@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.27.0"
+    "version": "0.28.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -5842,6 +5842,78 @@
         }
       }
     },
+    "/api/v1/platform/users/{user_id}/deletion": {
+      "post": {
+        "tags": [
+          "plataforma"
+        ],
+        "summary": "Eliminar definitivamente una cuenta, por ejemplo una de prueba",
+        "description": "Cierra sus sesiones, libera su correo y minimiza su identidad. Los casos con conservación\nvigente se conservan; si es la única responsable de su despacho, el despacho se cierra.",
+        "operationId": "delete_platform_user",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDeletionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "La cuenta no existe o ya está eliminada.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Es una cuenta de plataforma, o es la responsable de un despacho con más personas.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/platform/billing": {
       "get": {
         "tags": [
@@ -7338,6 +7410,24 @@
         ],
         "title": "AcceptInvitationRequest",
         "description": "Aceptar la invitación (API-019).\n\nCon full_name se crea una cuenta nueva: la contraseña es la nueva y debe aceptar los textos\nlegales vigentes. Sin full_name, la persona ya tiene cuenta y la contraseña es la suya."
+      },
+      "AccountDeletionRequest": {
+        "properties": {
+          "confirmation": {
+            "type": "string",
+            "maxLength": 320,
+            "minLength": 3,
+            "title": "Confirmation",
+            "description": "El correo de la cuenta, escrito tal cual, para confirmar."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "confirmation"
+        ],
+        "title": "AccountDeletionRequest",
+        "description": "Confirmación de una eliminación definitiva: el correo exacto de la cuenta."
       },
       "AppliedTaskTemplate": {
         "properties": {

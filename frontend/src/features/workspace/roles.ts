@@ -25,7 +25,8 @@ export const INVITABLE_ROLES: readonly {
   {
     value: "lawyer",
     label: ROLE_LABELS.lawyer,
-    description: "Abre casos y trabaja en los que le asignen.",
+    description:
+      "Abre casos, asigna a su equipo y trabaja en los que le asignen.",
   },
   {
     value: "assistant",
@@ -35,7 +36,8 @@ export const INVITABLE_ROLES: readonly {
   {
     value: "admin",
     label: ROLE_LABELS.admin,
-    description: "Gestiona el equipo y trabaja en los casos que le asignen.",
+    description:
+      "Lleva la parte administrativa: invita y gestiona al equipo. No abre casos.",
   },
 ];
 

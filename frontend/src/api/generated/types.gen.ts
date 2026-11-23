@@ -46,6 +46,20 @@ export type AcceptInvitationRequest = {
 };
 
 /**
+ * AccountDeletionRequest
+ *
+ * Confirmación de una eliminación definitiva: el correo exacto de la cuenta.
+ */
+export type AccountDeletionRequest = {
+  /**
+   * Confirmation
+   *
+   * El correo de la cuenta, escrito tal cual, para confirmar.
+   */
+  confirmation: string;
+};
+
+/**
  * AppliedTaskTemplate
  */
 export type AppliedTaskTemplate = {
@@ -6869,6 +6883,46 @@ export type ChangePlatformUserStatusResponses = {
 
 export type ChangePlatformUserStatusResponse =
   ChangePlatformUserStatusResponses[keyof ChangePlatformUserStatusResponses];
+
+export type DeletePlatformUserData = {
+  body: AccountDeletionRequest;
+  path: {
+    /**
+     * User Id
+     */
+    user_id: string;
+  };
+  query?: never;
+  url: "/api/v1/platform/users/{user_id}/deletion";
+};
+
+export type DeletePlatformUserErrors = {
+  /**
+   * La cuenta no existe o ya está eliminada.
+   */
+  404: Problem;
+  /**
+   * Es una cuenta de plataforma, o es la responsable de un despacho con más personas.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type DeletePlatformUserError =
+  DeletePlatformUserErrors[keyof DeletePlatformUserErrors];
+
+export type DeletePlatformUserResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type DeletePlatformUserResponse =
+  DeletePlatformUserResponses[keyof DeletePlatformUserResponses];
 
 export type PlatformBillingData = {
   body?: never;

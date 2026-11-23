@@ -83,6 +83,9 @@ import type {
   CreateTaskTemplateData,
   CreateTaskTemplateErrors,
   CreateTaskTemplateResponses,
+  DeletePlatformUserData,
+  DeletePlatformUserErrors,
+  DeletePlatformUserResponses,
   DeleteTaskTemplateData,
   DeleteTaskTemplateErrors,
   DeleteTaskTemplateResponses,
@@ -2410,6 +2413,39 @@ export const changePlatformUserStatus = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/platform/users/{user_id}/status",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Eliminar definitivamente una cuenta, por ejemplo una de prueba
+ *
+ * Cierra sus sesiones, libera su correo y minimiza su identidad. Los casos con conservación
+ * vigente se conservan; si es la única responsable de su despacho, el despacho se cierra.
+ */
+export const deletePlatformUser = <ThrowOnError extends boolean = false>(
+  options: Options<DeletePlatformUserData, ThrowOnError>,
+): RequestResult<
+  DeletePlatformUserResponses,
+  DeletePlatformUserErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    DeletePlatformUserResponses,
+    DeletePlatformUserErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/users/{user_id}/deletion",
     ...options,
     headers: {
       "Content-Type": "application/json",

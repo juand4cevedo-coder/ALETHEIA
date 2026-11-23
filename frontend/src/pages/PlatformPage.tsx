@@ -6,10 +6,13 @@ import { useOutletContext } from "react-router";
 import type { Me, PlatformUser } from "../api/generated";
 import {
   changePlatformUserStatusMutation,
+  deletePlatformUserMutation,
   listPlatformUsersOptions,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { Dialog } from "../components/ui/Dialog.tsx";
+import { Field } from "../components/ui/Field.tsx";
+import { apiProblem } from "../features/auth/apiProblem.ts";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
@@ -42,6 +45,8 @@ export function PlatformPage() {
   >([]);
   const [target, setTarget] = useState<PlatformUser | null>(null);
   const [failed, setFailed] = useState(false);
+  const [removing, setRemoving] = useState<PlatformUser | null>(null);
+  const [confirmation, setConfirmation] = useState("");
   const queryClient = useQueryClient();
   const accountQuery = {
     search: appliedFilters.search || undefined,
@@ -69,6 +74,15 @@ export function PlatformPage() {
       await queryClient.invalidateQueries();
     },
     onError: () => setFailed(true),
+  });
+
+  const remove = useMutation({
+    ...deletePlatformUserMutation(),
+    onSuccess: async () => {
+      setRemoving(null);
+      setConfirmation("");
+      await queryClient.invalidateQueries();
+    },
   });
 
   function resetPagination() {
@@ -275,6 +289,19 @@ export function PlatformPage() {
                               : "Desbloquear"}
                           </Button>
                         )}
+                        {!user.platform_admin && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => {
+                              remove.reset();
+                              setConfirmation("");
+                              setRemoving(user);
+                            }}
+                          >
+                            Eliminar
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -358,6 +385,72 @@ export function PlatformPage() {
         {failed && (
           <Notice tone="error">
             No pudimos cambiar el estado de la cuenta.
+          </Notice>
+        )}
+      </Dialog>
+      <Dialog
+        open={removing !== null}
+        onClose={() => !remove.isPending && setRemoving(null)}
+        title="Eliminar la cuenta de forma definitiva"
+        busy={remove.isPending}
+        actions={
+          <>
+            <Button
+              size="sm"
+              variant="secondary"
+              data-autofocus
+              disabled={remove.isPending}
+              onClick={() => setRemoving(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              busy={remove.isPending}
+              disabled={
+                !removing ||
+                confirmation.trim().toLowerCase() !==
+                  removing.email.toLowerCase()
+              }
+              onClick={() => {
+                if (!removing) return;
+                remove.mutate({
+                  path: { user_id: removing.id },
+                  body: { confirmation: confirmation.trim() },
+                });
+              }}
+            >
+              Eliminar para siempre
+            </Button>
+          </>
+        }
+      >
+        <p>
+          Se cierran todas sus sesiones, se libera el correo{" "}
+          <strong translate="no">{removing?.email}</strong> para volver a
+          registrarlo y se borran sus datos personales. No se puede deshacer.
+        </p>
+        <p>
+          Si es la única responsable de su despacho, el despacho se cierra con
+          ella. Los casos con conservación vigente se conservan, sin nombre ni
+          correo de la persona. Si el despacho tiene más personas, retírelas
+          primero.
+        </p>
+        <Field
+          label="Para confirmar, escriba el correo de la cuenta"
+          type="email"
+          autoComplete="off"
+          spellCheck={false}
+          value={confirmation}
+          disabled={remove.isPending}
+          onChange={(event) => setConfirmation(event.target.value)}
+        />
+        {remove.error && (
+          <Notice tone="error">
+            <p role="alert">
+              {apiProblem(remove.error).detail ??
+                "No pudimos eliminar la cuenta. Inténtelo de nuevo."}
+            </p>
           </Notice>
         )}
       </Dialog>

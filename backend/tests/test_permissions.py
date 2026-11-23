@@ -41,7 +41,10 @@ def test_permisos_actuales_por_rol() -> None:
     assert has_permission("admin", "team.manage")
     assert not has_permission("lawyer", "team.manage")
     assert not has_permission("assistant", "team.manage")
+    assert has_permission("owner", "cases.create")
     assert has_permission("lawyer", "cases.create")
+    # El administrador lleva la parte administrativa; los casos los abren los abogados.
+    assert not has_permission("admin", "cases.create")
     assert not has_permission("assistant", "cases.create")
     assert has_permission("lawyer", "cases.manage_members")
     assert not has_permission("assistant", "cases.manage_members")

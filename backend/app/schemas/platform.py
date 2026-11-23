@@ -95,3 +95,15 @@ class PlatformAuditPage(BaseModel):
     items: list[PlatformAuditEvent]
     next_cursor: uuid.UUID | None
     total: int = Field(description="Eventos que coinciden con los filtros, sin limitar por página.")
+
+
+class AccountDeletionRequest(BaseModel):
+    """Confirmación de una eliminación definitiva: el correo exacto de la cuenta."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    confirmation: str = Field(
+        min_length=3,
+        max_length=320,
+        description="El correo de la cuenta, escrito tal cual, para confirmar.",
+    )

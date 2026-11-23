@@ -28,7 +28,7 @@ function rule(selector: string): string {
 type Role = "owner" | "admin" | "lawyer" | "assistant";
 
 const ASSISTANT_EMPTY =
-  "Los casos los abre un abogado, el administrador o la persona responsable del despacho. Cuando lo asignen a uno, aparecerá aquí";
+  "Los casos los abre un abogado o la persona responsable del despacho. Cuando lo asignen a uno, aparecerá aquí";
 
 function me(role: Role, emailVerified = true) {
   return {
@@ -262,7 +262,7 @@ describe("Libro de casos (HU-017)", () => {
     ).not.toBeInTheDocument();
   });
 
-  it.each(["owner", "admin", "lawyer"] as const)(
+  it.each(["owner", "lawyer"] as const)(
     "un %s ve «Abrir un caso» y lleva al formulario",
     async (role) => {
       serve(role, () => BOOK);

@@ -165,8 +165,8 @@ def _filas(db: Session, oficina: Oficina) -> dict[str, int]:
 # --- Quién abre casos (RN-008, CA-HU-015-02) ------------------------------------------------
 
 
-@pytest.mark.parametrize("role", ["owner", "admin", "lawyer"])
-def test_propietario_administrador_y_abogado_abren_casos(
+@pytest.mark.parametrize("role", ["owner", "lawyer"])
+def test_propietario_y_abogado_abren_casos(
     db: Session, envoltorio: EnvoltorioDePrueba, role: str
 ) -> None:
     oficina = crear_oficina(db)
@@ -197,12 +197,15 @@ def test_propietario_administrador_y_abogado_abren_casos(
     open_case_key(envoltorio, WrappedKey(caso.wrapped_key, caso.key_version))
 
 
-def test_el_asistente_no_abre_casos(db: Session, envoltorio: EnvoltorioDePrueba) -> None:
+@pytest.mark.parametrize("role", ["admin", "assistant"])
+def test_el_administrador_y_el_asistente_no_abren_casos(
+    db: Session, envoltorio: EnvoltorioDePrueba, role: str
+) -> None:
     oficina = crear_oficina(db)
-    asistente = _persona(db, oficina, "assistant")
+    persona = _persona(db, oficina, role)
 
     with pytest.raises(NotAllowedToCreateCasesError):
-        _abrir(db, _principal(oficina, asistente, "assistant"), envoltorio)
+        _abrir(db, _principal(oficina, persona, role), envoltorio)
 
     assert envoltorio.llamadas == 0
     assert _filas(db, oficina)["cases"] == 0

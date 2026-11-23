@@ -55,6 +55,12 @@ function serve(platformAdmin: boolean) {
       status = ((await request.json()) as { status: string }).status;
       return jsonResponse({ id: OTHER_ID, status });
     }
+    if (
+      path === `/api/v1/platform/users/${OTHER_ID}/deletion` &&
+      request.method === "POST"
+    ) {
+      return new Response(null, { status: 204 });
+    }
     throw new Error(`Ruta inesperada: ${request.method} ${path}`);
   });
 }
@@ -309,4 +315,76 @@ it("rotula cada celda de la tabla para la tarjeta del celular", async () => {
     "Correo verificado",
     null,
   ]);
+});
+
+it("elimina una cuenta solo después de escribir su correo exacto", async () => {
+  serve(true);
+  const user = userEvent.setup();
+  await renderRoute("/app/plataforma");
+
+  await user.click(await screen.findByRole("button", { name: "Eliminar" }));
+  const confirm = screen.getByRole("button", { name: "Eliminar para siempre" });
+  expect(confirm).toBeDisabled();
+
+  await user.type(
+    screen.getByLabelText("Para confirmar, escriba el correo de la cuenta"),
+    "otro@example.com",
+  );
+  expect(confirm).toBeDisabled();
+  await user.clear(
+    screen.getByLabelText("Para confirmar, escriba el correo de la cuenta"),
+  );
+  await user.type(
+    screen.getByLabelText("Para confirmar, escriba el correo de la cuenta"),
+    "Carlos@example.com",
+  );
+  expect(confirm).toBeEnabled();
+  await user.click(confirm);
+
+  await waitFor(() =>
+    expect(
+      fetchMock.mock.calls.some(([input]) => {
+        const request = input as Request;
+        return (
+          request.method === "POST" &&
+          new URL(request.url).pathname ===
+            `/api/v1/platform/users/${OTHER_ID}/deletion`
+        );
+      }),
+    ).toBe(true),
+  );
+});
+
+it("explica por qué no se pudo eliminar", async () => {
+  serve(true);
+  const original = fetchMock.getMockImplementation()!;
+  fetchMock.mockImplementation(async (input, init) => {
+    const request = input as Request;
+    if (new URL(request.url).pathname.endsWith("/deletion"))
+      return jsonResponse(
+        {
+          type: "about:blank",
+          status: 409,
+          detail:
+            "Es la responsable de un despacho con más personas. Retire primero a las demás.",
+        },
+        409,
+      );
+    return original(input, init);
+  });
+  const user = userEvent.setup();
+  await renderRoute("/app/plataforma");
+
+  await user.click(await screen.findByRole("button", { name: "Eliminar" }));
+  await user.type(
+    screen.getByLabelText("Para confirmar, escriba el correo de la cuenta"),
+    "carlos@example.com",
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Eliminar para siempre" }),
+  );
+
+  expect(
+    await screen.findByText(/despacho con más personas/),
+  ).toBeInTheDocument();
 });

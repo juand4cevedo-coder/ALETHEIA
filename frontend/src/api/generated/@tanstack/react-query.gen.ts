@@ -34,6 +34,7 @@ import {
   createShareLink,
   createSupportTicket,
   createTaskTemplate,
+  deletePlatformUser,
   deleteTaskTemplate,
   downloadEvidence,
   downloadExport,
@@ -196,6 +197,9 @@ import type {
   CreateTaskTemplateData,
   CreateTaskTemplateError,
   CreateTaskTemplateResponse,
+  DeletePlatformUserData,
+  DeletePlatformUserError,
+  DeletePlatformUserResponse,
   DeleteTaskTemplateData,
   DeleteTaskTemplateError,
   DeleteTaskTemplateResponse,
@@ -3276,6 +3280,36 @@ export const changePlatformUserStatusMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await changePlatformUserStatus({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Eliminar definitivamente una cuenta, por ejemplo una de prueba
+ *
+ * Cierra sus sesiones, libera su correo y minimiza su identidad. Los casos con conservación
+ * vigente se conservan; si es la única responsable de su despacho, el despacho se cierra.
+ */
+export const deletePlatformUserMutation = (
+  options?: Partial<Options<DeletePlatformUserData>>,
+): UseMutationOptions<
+  DeletePlatformUserResponse,
+  DeletePlatformUserError,
+  Options<DeletePlatformUserData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    DeletePlatformUserResponse,
+    DeletePlatformUserError,
+    Options<DeletePlatformUserData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await deletePlatformUser({
         ...options,
         ...fnOptions,
         throwOnError: true,

@@ -14,6 +14,7 @@ from app.api.deps import get_client_ip, get_principal, get_session
 from app.models import AuditLog, Organization, PaymentEvent, Plan, Subscription, User
 from app.repositories.sessions import revoke_user_sessions
 from app.schemas.platform import (
+    AccountDeletionRequest,
     CourtesyGrant,
     CourtesyRevoke,
     CourtesyTarget,
@@ -27,6 +28,7 @@ from app.schemas.platform import (
 )
 from app.schemas.web_vitals import VitalsSummary, VitalSummaryRow
 from app.services import courtesy
+from app.services import platform_accounts as accounts_service
 from app.services import web_vitals as vitals_service
 from app.services.audit import audit_ip
 from app.services.sessions import Principal
@@ -177,7 +179,8 @@ def list_platform_users(
 ) -> PlatformUserPage:
     del principal
     response.headers["Cache-Control"] = "no-store"
-    filters = []
+    # Las cuentas eliminadas ya no existen para la plataforma: solo queda su seudónimo.
+    filters: list[ColumnElement[bool]] = [User.status != "closed"]
     if search is not None:
         term = search.strip().lower()
         filters.append(
@@ -245,6 +248,60 @@ def change_platform_user_status(
         )
         session.commit()
     return _public_user(user)
+
+
+@router.post(
+    "/users/{user_id}/deletion",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Eliminar definitivamente una cuenta, por ejemplo una de prueba",
+    responses={
+        404: {"description": "La cuenta no existe o ya está eliminada."},
+        409: {
+            "description": (
+                "Es una cuenta de plataforma, o es la responsable de un despacho con más personas."
+            )
+        },
+        422: {"description": "El correo escrito no coincide con el de la cuenta."},
+    },
+)
+def delete_platform_user(
+    user_id: uuid.UUID,
+    data: AccountDeletionRequest,
+    principal: Annotated[Principal, Depends(get_platform_admin)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+) -> Response:
+    """Cierra sus sesiones, libera su correo y minimiza su identidad. Los casos con conservación
+    vigente se conservan; si es la única responsable de su despacho, el despacho se cierra."""
+    try:
+        accounts_service.delete_account(
+            session,
+            principal,
+            user_id,
+            data.confirmation,
+            client_ip=client_ip,
+            user_agent=None,
+        )
+    except accounts_service.AccountNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="La cuenta no existe.") from None
+    except accounts_service.ProtectedAccountError:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="Una cuenta de plataforma no se elimina desde esta operación.",
+        ) from None
+    except accounts_service.ConfirmationMismatchError:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="El correo escrito no coincide con el de la cuenta.",
+        ) from None
+    except accounts_service.OwnerHasTeamError:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail=(
+                "Es la responsable de un despacho con más personas. Retire primero a las demás."
+            ),
+        ) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT, headers={"Cache-Control": "no-store"})
 
 
 @router.get("/billing", summary="Resumen comercial de la plataforma")
