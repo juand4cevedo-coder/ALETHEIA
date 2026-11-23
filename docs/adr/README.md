@@ -56,3 +56,4 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-050](adr-050.md) | Segundo factor con aplicación de autenticación y códigos de respaldo | Aceptado | 23/11/2026 |
 | [ADR-051](adr-051.md) | Archivos estáticos por una red de distribución | Aceptado | 23/11/2026 |
 | [ADR-052](adr-052.md) | Medición de rendimiento real con consentimiento y sin identificadores | Aceptado | 23/11/2026 |
+| [ADR-053](adr-053.md) | Recuperación del segundo factor con espera de seguridad | Aceptado | 24/11/2026 |

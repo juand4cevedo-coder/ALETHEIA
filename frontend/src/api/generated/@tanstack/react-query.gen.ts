@@ -15,12 +15,15 @@ import {
   addCaseMember,
   applyTaskTemplate,
   availableCaseMembers,
+  cancelRecovery,
   changeMemberRole,
   changePassword,
   changePlatformUserStatus,
   changeSupportTicketStatus,
   closeAccount,
   closeCase,
+  completeRecovery,
+  confirmRecovery,
   createCase,
   createCaseExport,
   createCaseNote,
@@ -78,6 +81,7 @@ import {
   removeMember,
   renameOrganization,
   reopenCase,
+  requestRecovery,
   resendVerification,
   resetPassword,
   revokeCourtesy,
@@ -119,6 +123,9 @@ import type {
   AvailableCaseMembersData,
   AvailableCaseMembersError,
   AvailableCaseMembersResponse,
+  CancelRecoveryData,
+  CancelRecoveryError,
+  CancelRecoveryResponse,
   ChangeMemberRoleData,
   ChangeMemberRoleError,
   ChangeMemberRoleResponse,
@@ -137,6 +144,12 @@ import type {
   CloseCaseData,
   CloseCaseError,
   CloseCaseResponse,
+  CompleteRecoveryData,
+  CompleteRecoveryError,
+  CompleteRecoveryResponse,
+  ConfirmRecoveryData,
+  ConfirmRecoveryError,
+  ConfirmRecoveryResponse,
   CreateCaseData,
   CreateCaseError,
   CreateCaseExportData,
@@ -295,6 +308,9 @@ import type {
   ReopenCaseData,
   ReopenCaseError,
   ReopenCaseResponse,
+  RequestRecoveryData,
+  RequestRecoveryError,
+  RequestRecoveryResponse,
   ResendVerificationData,
   ResendVerificationError,
   ResendVerificationResponse,
@@ -2583,6 +2599,114 @@ export const twoFactorRecoveryCodesMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await twoFactorRecoveryCodes({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Pedir recuperar el segundo factor por correo
+ */
+export const requestRecoveryMutation = (
+  options?: Partial<Options<RequestRecoveryData>>,
+): UseMutationOptions<
+  RequestRecoveryResponse,
+  RequestRecoveryError,
+  Options<RequestRecoveryData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RequestRecoveryResponse,
+    RequestRecoveryError,
+    Options<RequestRecoveryData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await requestRecovery({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Confirmar el pedido con el enlace del correo y la contraseña
+ */
+export const confirmRecoveryMutation = (
+  options?: Partial<Options<ConfirmRecoveryData>>,
+): UseMutationOptions<
+  ConfirmRecoveryResponse,
+  ConfirmRecoveryError,
+  Options<ConfirmRecoveryData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ConfirmRecoveryResponse,
+    ConfirmRecoveryError,
+    Options<ConfirmRecoveryData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await confirmRecovery({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Cancelar la recuperación con el enlace del aviso
+ */
+export const cancelRecoveryMutation = (
+  options?: Partial<Options<CancelRecoveryData>>,
+): UseMutationOptions<
+  CancelRecoveryResponse,
+  CancelRecoveryError,
+  Options<CancelRecoveryData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CancelRecoveryResponse,
+    CancelRecoveryError,
+    Options<CancelRecoveryData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await cancelRecovery({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Terminar la recuperación pasada la espera de seguridad
+ */
+export const completeRecoveryMutation = (
+  options?: Partial<Options<CompleteRecoveryData>>,
+): UseMutationOptions<
+  CompleteRecoveryResponse,
+  CompleteRecoveryError,
+  Options<CompleteRecoveryData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CompleteRecoveryResponse,
+    CompleteRecoveryError,
+    Options<CompleteRecoveryData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await completeRecovery({
         ...options,
         ...fnOptions,
         throwOnError: true,

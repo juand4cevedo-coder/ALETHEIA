@@ -26,6 +26,9 @@ import type {
   AvailableCaseMembersData,
   AvailableCaseMembersErrors,
   AvailableCaseMembersResponses,
+  CancelRecoveryData,
+  CancelRecoveryErrors,
+  CancelRecoveryResponses,
   ChangeMemberRoleData,
   ChangeMemberRoleErrors,
   ChangeMemberRoleResponses,
@@ -44,6 +47,12 @@ import type {
   CloseCaseData,
   CloseCaseErrors,
   CloseCaseResponses,
+  CompleteRecoveryData,
+  CompleteRecoveryErrors,
+  CompleteRecoveryResponses,
+  ConfirmRecoveryData,
+  ConfirmRecoveryErrors,
+  ConfirmRecoveryResponses,
   CreateCaseData,
   CreateCaseErrors,
   CreateCaseExportData,
@@ -207,6 +216,9 @@ import type {
   ReopenCaseData,
   ReopenCaseErrors,
   ReopenCaseResponses,
+  RequestRecoveryData,
+  RequestRecoveryErrors,
+  RequestRecoveryResponses,
   ResendVerificationData,
   ResendVerificationErrors,
   ResendVerificationResponses,
@@ -1844,6 +1856,94 @@ export const twoFactorRecoveryCodes = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/account/two-factor/recovery-codes",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Pedir recuperar el segundo factor por correo
+ */
+export const requestRecovery = <ThrowOnError extends boolean = false>(
+  options: Options<RequestRecoveryData, ThrowOnError>,
+): RequestResult<
+  RequestRecoveryResponses,
+  RequestRecoveryErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    RequestRecoveryResponses,
+    RequestRecoveryErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/two-factor-recovery",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Confirmar el pedido con el enlace del correo y la contraseña
+ */
+export const confirmRecovery = <ThrowOnError extends boolean = false>(
+  options: Options<ConfirmRecoveryData, ThrowOnError>,
+): RequestResult<
+  ConfirmRecoveryResponses,
+  ConfirmRecoveryErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    ConfirmRecoveryResponses,
+    ConfirmRecoveryErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/two-factor-recovery/confirm",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Cancelar la recuperación con el enlace del aviso
+ */
+export const cancelRecovery = <ThrowOnError extends boolean = false>(
+  options: Options<CancelRecoveryData, ThrowOnError>,
+): RequestResult<CancelRecoveryResponses, CancelRecoveryErrors, ThrowOnError> =>
+  (options.client ?? client).post<
+    CancelRecoveryResponses,
+    CancelRecoveryErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/two-factor-recovery/cancel",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Terminar la recuperación pasada la espera de seguridad
+ */
+export const completeRecovery = <ThrowOnError extends boolean = false>(
+  options: Options<CompleteRecoveryData, ThrowOnError>,
+): RequestResult<
+  CompleteRecoveryResponses,
+  CompleteRecoveryErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    CompleteRecoveryResponses,
+    CompleteRecoveryErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/auth/two-factor-recovery/complete",
     ...options,
     headers: {
       "Content-Type": "application/json",

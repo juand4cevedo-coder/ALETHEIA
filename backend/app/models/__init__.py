@@ -21,7 +21,7 @@ from app.models.organization import Invitation, Membership, Organization
 from app.models.support import SupportTicket
 from app.models.task_templates import TaskTemplate, TaskTemplateItem
 from app.models.tasks import CaseTask
-from app.models.two_factor import TwoFactorRecoveryCode, UserTwoFactor
+from app.models.two_factor import TwoFactorRecovery, TwoFactorRecoveryCode, UserTwoFactor
 from app.models.web_vitals import WebVital
 
 __all__ = [
@@ -51,6 +51,7 @@ __all__ = [
     "SupportTicket",
     "TaskTemplate",
     "TaskTemplateItem",
+    "TwoFactorRecovery",
     "TwoFactorRecoveryCode",
     "User",
     "UserTwoFactor",

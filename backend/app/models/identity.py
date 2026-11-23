@@ -69,6 +69,9 @@ AUDIT_ACTIONS: Final = (
     "task_template_updated",
     "task_template_deleted",
     "account_closed",
+    "two_factor_recovery_requested",
+    "two_factor_recovery_canceled",
+    "two_factor_recovery_completed",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.

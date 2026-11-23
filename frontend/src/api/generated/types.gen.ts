@@ -2334,6 +2334,100 @@ export type PublicPlan = {
 };
 
 /**
+ * RecoveryCancel
+ *
+ * Token del enlace de cancelación que llega por correo (API-053).
+ */
+export type RecoveryCancel = {
+  /**
+   * Token
+   *
+   * Token del enlace.
+   */
+  token: string;
+};
+
+/**
+ * RecoveryComplete
+ *
+ * Correo y contraseña de quien termina la recuperación pasada la espera (API-054).
+ */
+export type RecoveryComplete = {
+  /**
+   * Email
+   *
+   * Correo de la cuenta.
+   */
+  email: string;
+  /**
+   * Password
+   *
+   * Contraseña de la cuenta.
+   */
+  password: string;
+};
+
+/**
+ * RecoveryConfirm
+ *
+ * Token del enlace del correo y contraseña de la cuenta (API-052).
+ */
+export type RecoveryConfirm = {
+  /**
+   * Token
+   *
+   * Token del enlace.
+   */
+  token: string;
+  /**
+   * Password
+   *
+   * Contraseña de la cuenta.
+   */
+  password: string;
+};
+
+/**
+ * RecoveryRequest
+ *
+ * Correo de la cuenta que perdió el teléfono y los códigos de respaldo (API-051).
+ */
+export type RecoveryRequest = {
+  /**
+   * Email
+   *
+   * Correo de la cuenta.
+   */
+  email: string;
+};
+
+/**
+ * RecoveryRequested
+ *
+ * La misma respuesta exista o no la cuenta, tenga o no segundo factor.
+ */
+export type RecoveryRequested = {
+  /**
+   * Detail
+   *
+   * Qué sigue.
+   */
+  detail: string;
+};
+
+/**
+ * RecoveryStarted
+ */
+export type RecoveryStarted = {
+  /**
+   * Available At
+   *
+   * Primer momento en que se puede terminar la recuperación.
+   */
+  available_at: string;
+};
+
+/**
  * RegisterRequest
  *
  * Datos para crear una cuenta con su organización y la prueba gratis (API-003).
@@ -5643,6 +5737,154 @@ export type TwoFactorRecoveryCodesResponses = {
 
 export type TwoFactorRecoveryCodesResponse =
   TwoFactorRecoveryCodesResponses[keyof TwoFactorRecoveryCodesResponses];
+
+export type RequestRecoveryData = {
+  body: RecoveryRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/two-factor-recovery";
+};
+
+export type RequestRecoveryErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiadas solicitudes.
+   */
+  429: Problem;
+};
+
+export type RequestRecoveryError =
+  RequestRecoveryErrors[keyof RequestRecoveryErrors];
+
+export type RequestRecoveryResponses = {
+  /**
+   * Successful Response
+   */
+  202: RecoveryRequested;
+};
+
+export type RequestRecoveryResponse =
+  RequestRecoveryResponses[keyof RequestRecoveryResponses];
+
+export type ConfirmRecoveryData = {
+  body: RecoveryConfirm;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/two-factor-recovery/confirm";
+};
+
+export type ConfirmRecoveryErrors = {
+  /**
+   * El enlace no es válido o ya venció.
+   */
+  400: Problem;
+  /**
+   * La contraseña no coincide.
+   */
+  401: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+};
+
+export type ConfirmRecoveryError =
+  ConfirmRecoveryErrors[keyof ConfirmRecoveryErrors];
+
+export type ConfirmRecoveryResponses = {
+  /**
+   * Successful Response
+   */
+  200: RecoveryStarted;
+};
+
+export type ConfirmRecoveryResponse =
+  ConfirmRecoveryResponses[keyof ConfirmRecoveryResponses];
+
+export type CancelRecoveryData = {
+  body: RecoveryCancel;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/two-factor-recovery/cancel";
+};
+
+export type CancelRecoveryErrors = {
+  /**
+   * El enlace no es válido o ya no sirve.
+   */
+  400: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+};
+
+export type CancelRecoveryError =
+  CancelRecoveryErrors[keyof CancelRecoveryErrors];
+
+export type CancelRecoveryResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type CancelRecoveryResponse =
+  CancelRecoveryResponses[keyof CancelRecoveryResponses];
+
+export type CompleteRecoveryData = {
+  body: RecoveryComplete;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/two-factor-recovery/complete";
+};
+
+export type CompleteRecoveryErrors = {
+  /**
+   * Correo o contraseña incorrectos.
+   */
+  401: Problem;
+  /**
+   * No hay una recuperación abierta.
+   */
+  404: Problem;
+  /**
+   * La espera de seguridad no ha terminado.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+};
+
+export type CompleteRecoveryError =
+  CompleteRecoveryErrors[keyof CompleteRecoveryErrors];
+
+export type CompleteRecoveryResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type CompleteRecoveryResponse =
+  CompleteRecoveryResponses[keyof CompleteRecoveryResponses];
 
 export type ListShareLinksData = {
   body?: never;

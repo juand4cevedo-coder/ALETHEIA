@@ -41,7 +41,7 @@ from app.core.middleware import (
 from app.core.openapi import install_problem_details
 from app.db.session import create_db_engine
 
-API_VERSION: Final = "0.20.1"
+API_VERSION: Final = "0.21.0"
 
 
 def _operation_id(route: APIRoute) -> str:
@@ -89,6 +89,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(notes.router, prefix=API_PREFIX)
     app.include_router(task_templates.router, prefix=API_PREFIX)
     app.include_router(two_factor.router, prefix=API_PREFIX)
+    app.include_router(two_factor.recovery_router, prefix=API_PREFIX)
     app.include_router(evidence_shares.router, prefix=API_PREFIX)
     app.include_router(evidence_shares.public_router, prefix=API_PREFIX)
     app.include_router(tasks.inbox_router, prefix=API_PREFIX)
