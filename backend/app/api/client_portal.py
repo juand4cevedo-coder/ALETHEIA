@@ -447,12 +447,19 @@ def remove_portal_document(
     document_id: uuid.UUID,
     principal: Annotated[Principal, Depends(get_principal)],
     session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
     client_ip: Annotated[str, Depends(get_client_ip)],
     user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
 ) -> Response:
     try:
         documents.remove(
-            session, principal, case_id, document_id, client_ip=client_ip, user_agent=user_agent
+            session,
+            principal,
+            case_id,
+            document_id,
+            settings=settings,
+            client_ip=client_ip,
+            user_agent=user_agent,
         )
     except documents.CaseNotFoundError, documents.DocumentNotFoundError:
         raise HTTPException(404, detail=_NOT_FOUND, headers=_NO_STORE) from None

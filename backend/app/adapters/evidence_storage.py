@@ -175,3 +175,16 @@ def open_encrypted_evidence(settings: Settings, key: str) -> Iterator[BinaryIO]:
     else:
         with (Path(".local/evidence") / key).open("rb") as stream:
             yield stream
+
+
+def delete_evidence_object(settings: Settings, key: str) -> None:
+    """Borra un objeto cifrado; repetirlo no falla. Acepta solo claves generadas."""
+    if STORAGE_KEY_PATTERN.fullmatch(key) is None:
+        raise ValueError("clave de almacenamiento inválida")
+    if settings.environment == "production":
+        client = boto3.client(
+            "s3", config=Config(connect_timeout=5, read_timeout=30, retries={"max_attempts": 3})
+        )
+        client.delete_object(Bucket=settings.evidence_bucket_name(), Key=key)
+    else:
+        (Path(".local/evidence") / key).unlink(missing_ok=True)

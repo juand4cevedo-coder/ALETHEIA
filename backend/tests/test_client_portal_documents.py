@@ -17,6 +17,7 @@ from app.api import client_portal as portal_api
 from app.core.config import Settings
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, ClientPortalDocument, CustodyEvent, Job, Organization
+from app.services import client_portal_documents as documents_service
 from app.services import evidence_download as evidence_download_service
 from app.services.client_portal import INVITE_TEMPLATE, NEWS_TEMPLATE
 from app.services.client_portal_emails import invite_email, news_email
@@ -38,6 +39,11 @@ def storage(app: FastAPI, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Pa
         portal_api,
         "new_evidence_sink",
         lambda _settings, key: LocalEvidenceSink(tmp_path, key),
+    )
+    monkeypatch.setattr(
+        documents_service,
+        "delete_evidence_object",
+        lambda _settings, key: (tmp_path / key).unlink(missing_ok=True),
     )
     monkeypatch.setattr(
         evidence_download_service,
@@ -142,16 +148,24 @@ def test_una_copia_no_toca_la_cadena_de_custodia_y_cuenta_para_el_espacio(
 
 
 def test_el_cliente_no_descarga_sin_aceptar_ni_un_documento_quitado_ni_con_enlace_cerrado(
-    dispositivo: NuevoCliente, db: Session, settings: Settings
+    dispositivo: NuevoCliente, db: Session, settings: Settings, storage: Path
 ) -> None:
     office, lawyer, case_id, anonymous, token = _setup(dispositivo, db, settings)
     document_id = _upload(lawyer, case_id).json()["id"]
+    assert len(list(storage.rglob("evidences/*"))) == 1
+    set_tenant(db, TenantContext(organization_id=office.organization_id, user_id=office.owner.id))
+    used = db.scalar(select(Organization.storage_used_bytes))
+    assert used == len(_BODY)
 
     removed = lawyer.delete(f"{_CASES}/{case_id}/portal/documents/{document_id}")
     again = lawyer.delete(f"{_CASES}/{case_id}/portal/documents/{document_id}")
 
     assert removed.status_code == 204
     assert again.status_code == 204
+    assert list(storage.rglob("evidences/*")) == []  # el objeto cifrado se borró
+    set_tenant(db, TenantContext(organization_id=office.organization_id, user_id=office.owner.id))
+    db.expire_all()
+    assert db.scalar(select(Organization.storage_used_bytes)) == 0  # y el espacio volvió
     assert _download(anonymous, settings, token, document_id).status_code == 404
     assert anonymous.post(_VIEW, json={"token": token}).json()["documents"] == []
     assert lawyer.get(f"{_CASES}/{case_id}/portal/documents").json()["items"] == []

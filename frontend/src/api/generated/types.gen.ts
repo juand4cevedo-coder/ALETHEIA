@@ -177,6 +177,30 @@ export type CaseCreate = {
 };
 
 /**
+ * CaseDeletionAccepted
+ */
+export type CaseDeletionAccepted = {
+  /**
+   * Detail
+   */
+  detail: string;
+};
+
+/**
+ * CaseDeletionRequest
+ *
+ * Confirmación de una eliminación definitiva: el título exacto del caso.
+ */
+export type CaseDeletionRequest = {
+  /**
+   * Confirmation
+   *
+   * El título del caso, escrito tal cual, para confirmar que se quiere eliminar.
+   */
+  confirmation: string;
+};
+
+/**
  * CaseDetail
  *
  * El caso con su equipo y sus últimos eventos (API-024).
@@ -5349,6 +5373,54 @@ export type CloseCaseResponses = {
 };
 
 export type CloseCaseResponse = CloseCaseResponses[keyof CloseCaseResponses];
+
+export type RequestCaseDeletionData = {
+  body: CaseDeletionRequest;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/deletion";
+};
+
+export type RequestCaseDeletionErrors = {
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * Solo dueños y administradores eliminan casos.
+   */
+  403: Problem;
+  /**
+   * El caso no existe o la persona no pertenece a él.
+   */
+  404: Problem;
+  /**
+   * El caso no está cerrado, tiene un bloqueo jurídico o su conservación no terminó.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RequestCaseDeletionError =
+  RequestCaseDeletionErrors[keyof RequestCaseDeletionErrors];
+
+export type RequestCaseDeletionResponses = {
+  /**
+   * Successful Response
+   */
+  202: CaseDeletionAccepted;
+};
+
+export type RequestCaseDeletionResponse =
+  RequestCaseDeletionResponses[keyof RequestCaseDeletionResponses];
 
 export type ReopenCaseData = {
   body?: never;

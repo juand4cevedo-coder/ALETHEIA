@@ -40,6 +40,8 @@ from app.schemas.cases import (
     INVALID_FILING_NUMBER,
     CaseCandidate,
     CaseCreate,
+    CaseDeletionAccepted,
+    CaseDeletionRequest,
     CaseDetail,
     CaseMemberAdd,
     CaseMemberOut,
@@ -58,12 +60,14 @@ from app.schemas.cases import (
     EvidenceUploadOut,
     LastEventOut,
 )
+from app.services import case_deletion as deletion_service
 from app.services import cases as cases_service
 from app.services import custody_verification, evidence_queries, rate_limit
 from app.services import evidence_download as evidence_download_service
 from app.services import evidence_upload as evidence_service
 from app.services.evidence_stream import FileTooLarge, InvalidUpload
 from app.services.members import OrganizationNotActiveError
+from app.services.organization_emails import colombian_datetime
 from app.services.sessions import Principal
 
 logger = logging.getLogger(__name__)
@@ -742,6 +746,76 @@ def close_case(
         raise HTTPException(409, detail="El caso ya está cerrado.", headers=_NO_STORE) from None
     except OrganizationNotActiveError:
         raise HTTPException(409, detail=ORGANIZATION_NOT_ACTIVE, headers=_NO_STORE) from None
+
+
+@router.post(
+    "/{case_id}/deletion",
+    status_code=202,
+    summary="Eliminar de forma definitiva un caso cerrado",
+    responses=_UNAUTHORIZED
+    | {
+        403: {"description": "Solo dueños y administradores eliminan casos."},
+        404: {"description": "El caso no existe o la persona no pertenece a él."},
+        409: {
+            "description": (
+                "El caso no está cerrado, tiene un bloqueo jurídico o su conservación no terminó."
+            )
+        },
+        422: {"description": "El texto escrito no coincide con el título del caso."},
+    },
+)
+def request_case_deletion(
+    case_id: uuid.UUID,
+    data: CaseDeletionRequest,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> CaseDeletionAccepted:
+    """Destruye la llave del caso en el acto y encola el borrado. No tiene vuelta atrás."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        deletion_service.request(
+            session,
+            principal,
+            case_id,
+            data.confirmation,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except deletion_service.CaseNotFoundError:
+        raise HTTPException(404, detail=NOT_FOUND, headers=_NO_STORE) from None
+    except deletion_service.DeletionNotAllowedError:
+        raise HTTPException(403, detail=NOT_ALLOWED, headers=_NO_STORE) from None
+    except deletion_service.ConfirmationMismatchError:
+        raise HTTPException(
+            422, detail="El texto no coincide con el título del caso.", headers=_NO_STORE
+        ) from None
+    except deletion_service.NotClosedError:
+        raise HTTPException(
+            409, detail="Solo se elimina un caso cerrado. Ciérrelo primero.", headers=_NO_STORE
+        ) from None
+    except deletion_service.LegalHoldError:
+        raise HTTPException(
+            409,
+            detail="El caso tiene un bloqueo jurídico vigente. Levántelo antes de eliminarlo.",
+            headers=_NO_STORE,
+        ) from None
+    except deletion_service.RetentionPendingError as exc:
+        raise HTTPException(
+            409,
+            detail=(
+                "El plazo de conservación del caso termina el "
+                f"{colombian_datetime(exc.until)} (hora de Colombia)."
+            ),
+            headers=_NO_STORE,
+        ) from None
+    except OrganizationNotActiveError:
+        raise HTTPException(409, detail=ORGANIZATION_NOT_ACTIVE, headers=_NO_STORE) from None
+    return CaseDeletionAccepted(
+        detail="Eliminación en curso. Recibirá la constancia por correo cuando termine."
+    )
 
 
 @router.post(

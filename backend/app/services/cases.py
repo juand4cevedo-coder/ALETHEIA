@@ -306,7 +306,7 @@ def get_case(session: Session, principal: Principal, case_id: uuid.UUID) -> Case
         raise CaseNotFoundError
     set_tenant(session, TenantContext(organization_id=organization_id, user_id=principal.user_id))
     case = cases_repository.case_for_member(session, case_id, principal.user_id)
-    if case is None or case.organization_id != organization_id:
+    if case is None or case.organization_id != organization_id or case.status == "deleting":
         raise CaseNotFoundError
     return CaseView(
         case=case,

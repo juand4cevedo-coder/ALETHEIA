@@ -92,6 +92,7 @@ import {
   renameOrganization,
   renewPortalLink,
   reopenCase,
+  requestCaseDeletion,
   requestRecovery,
   resendVerification,
   resetPassword,
@@ -356,6 +357,9 @@ import type {
   ReopenCaseData,
   ReopenCaseError,
   ReopenCaseResponse,
+  RequestCaseDeletionData,
+  RequestCaseDeletionError,
+  RequestCaseDeletionResponse,
   RequestRecoveryData,
   RequestRecoveryError,
   RequestRecoveryResponse,
@@ -1986,6 +1990,35 @@ export const closeCaseMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await closeCase({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Eliminar de forma definitiva un caso cerrado
+ *
+ * Destruye la llave del caso en el acto y encola el borrado. No tiene vuelta atrás.
+ */
+export const requestCaseDeletionMutation = (
+  options?: Partial<Options<RequestCaseDeletionData>>,
+): UseMutationOptions<
+  RequestCaseDeletionResponse,
+  RequestCaseDeletionError,
+  Options<RequestCaseDeletionData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RequestCaseDeletionResponse,
+    RequestCaseDeletionError,
+    Options<RequestCaseDeletionData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await requestCaseDeletion({
         ...options,
         ...fnOptions,
         throwOnError: true,

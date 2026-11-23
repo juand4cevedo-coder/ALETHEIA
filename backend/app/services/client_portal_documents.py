@@ -10,6 +10,7 @@ evidencia: un enlace nunca entrega un archivo alterado.
 """
 
 import datetime
+import logging
 import uuid
 from dataclasses import dataclass
 from typing import Final
@@ -19,7 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from tink import streaming_aead
 
-from app.adapters.evidence_storage import EvidenceSink
+from app.adapters.evidence_storage import EvidenceSink, delete_evidence_object
 from app.adapters.keys import KeyWrapper, WrappedKey
 from app.core.case_keys import open_case_key
 from app.core.config import Settings
@@ -49,6 +50,8 @@ from app.services.evidence_download import EvidenceIntegrityError, PreparedDownl
 from app.services.evidence_stream import ReceivedFile, receive
 from app.services.sessions import Principal
 from app.services.tasks import _active_organization, _member_case
+
+logger = logging.getLogger(__name__)
 
 ASSOCIATED_PREFIX: Final = b"aletheia/portal-documento/v1"
 MAX_DOCUMENT_BYTES: Final = 25 * 1024 * 1024
@@ -245,9 +248,11 @@ def remove(
     case_id: uuid.UUID,
     document_id: uuid.UUID,
     *,
+    settings: Settings,
     client_ip: str,
     user_agent: str | None,
 ) -> None:
+    """Quita el documento: lo oculta, devuelve su espacio al plan y borra el objeto cifrado."""
     _allowed(principal)
     session.commit()
     with session.begin():
@@ -264,6 +269,14 @@ def remove(
             return
         document.removed_at = _now()
         document.removed_by = principal.user_id
+        storage_key = document.storage_key
+        organization = session.scalar(
+            select(Organization).where(Organization.id == case.organization_id).with_for_update()
+        )
+        if organization is not None:
+            organization.storage_used_bytes = max(
+                organization.storage_used_bytes - document.size_bytes, 0
+            )
         session.add(
             AuditLog(
                 organization_id=case.organization_id,
@@ -276,6 +289,12 @@ def remove(
             )
         )
         session.flush()
+    # El objeto se borra fuera de la transacción. Si falla, el documento ya quedó oculto y sin
+    # descarga; el objeto cifrado sobrante solo ocupa espacio y se deja constancia en el registro.
+    try:
+        delete_evidence_object(settings, storage_key)
+    except Exception:
+        logger.exception("No se pudo borrar el objeto cifrado de un documento del portal")
 
 
 def prepare_download(
