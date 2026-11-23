@@ -315,6 +315,9 @@ import type {
   TaskInboxData,
   TaskInboxErrors,
   TaskInboxResponses,
+  TransferOwnershipData,
+  TransferOwnershipErrors,
+  TransferOwnershipResponses,
   TwoFactorDisableData,
   TwoFactorDisableErrors,
   TwoFactorDisableResponses,
@@ -903,6 +906,36 @@ export const changeMemberRole = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/organization/members/{user_id}",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Dejar el despacho a cargo de otro miembro
+ */
+export const transferOwnership = <ThrowOnError extends boolean = false>(
+  options: Options<TransferOwnershipData, ThrowOnError>,
+): RequestResult<
+  TransferOwnershipResponses,
+  TransferOwnershipErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    TransferOwnershipResponses,
+    TransferOwnershipErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/organization/ownership-transfer",
     ...options,
     headers: {
       "Content-Type": "application/json",

@@ -228,7 +228,7 @@ def close_account(
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail=(
-                "Antes de cerrar su cuenta debe dejar el despacho a cargo de otra persona "
+                "Antes de cerrar su cuenta entregue el despacho a otro miembro (Miembros, Entregar el despacho) "
                 "o retirar a sus demás miembros."
             ),
         ) from None

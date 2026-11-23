@@ -408,6 +408,57 @@ describe("Cambiar el rol y retirar (UI-021, HU-013)", () => {
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
+  it("el propietario entrega el despacho con su contraseña y el administrador no ve el botón", async () => {
+    let sent: Record<string, unknown> | null = null;
+    serve("owner", {
+      "POST /api/v1/organization/ownership-transfer": async (request) => {
+        sent = (await request.clone().json()) as Record<string, unknown>;
+        return jsonResponse({ ...CARLOS, role: "owner" });
+      },
+    });
+    const user = userEvent.setup();
+    await renderRoute("/app/miembros");
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Dejar el despacho a cargo de Carlos Gómez",
+      }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Entregar el despacho" }),
+    );
+    expect(
+      await screen.findByText("Escriba su contraseña para confirmar."),
+    ).toBeInTheDocument();
+    expect(sent).toBeNull();
+
+    await user.type(
+      screen.getByLabelText("Confirme su contraseña actual"),
+      "Contrasena-segura-1",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Entregar el despacho" }),
+    );
+
+    await waitFor(() =>
+      expect(sent).toEqual({
+        user_id: CARLOS.user_id,
+        previous_owner_role: "lawyer",
+        password: "Contrasena-segura-1",
+      }),
+    );
+  });
+
+  it("quien administra pero no es el propietario no puede entregar el despacho", async () => {
+    serve("admin", {});
+    await renderRoute("/app/miembros");
+
+    await screen.findByText("Carlos Gómez");
+    expect(
+      screen.queryByRole("button", { name: /^Dejar el despacho a cargo de / }),
+    ).not.toBeInTheDocument();
+  });
+
   it("cambia el rol con lo que permite cada uno y refresca la lista", async () => {
     let role = "lawyer";
     serve("owner", {

@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.33.1"
+    "version": "0.34.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -1317,6 +1317,82 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/organization/ownership-transfer": {
+      "post": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Dejar el despacho a cargo de otro miembro",
+        "operationId": "transfer_ownership",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnershipTransferRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "La contraseña no coincide.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Esa persona no es miembro.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
       }
     },
     "/api/v1/organization/invitations": {
@@ -10753,6 +10829,7 @@
           "invitation_revoked",
           "invitation_accepted",
           "role_changed",
+          "ownership_transferred",
           "member_removed",
           "organization_policy_changed",
           "task_template_created",
@@ -11115,6 +11192,41 @@
         ],
         "title": "OrganizationRenameRequest",
         "description": "Nombre nuevo del despacho (API-022). Solo el propietario lo cambia."
+      },
+      "OwnershipTransferRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id",
+            "description": "El miembro que pasa a ser responsable del despacho."
+          },
+          "previous_owner_role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "lawyer"
+            ],
+            "title": "Previous Owner Role",
+            "description": "El rol con el que sigue quien entrega: administrador o abogado."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "description": "La contraseña de quien entrega el despacho."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "user_id",
+          "previous_owner_role",
+          "password"
+        ],
+        "title": "OwnershipTransferRequest",
+        "description": "Dejar el despacho a cargo de otro miembro. Pide la contraseña de quien lo entrega."
       },
       "PasswordResetRequested": {
         "properties": {

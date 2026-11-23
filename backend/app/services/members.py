@@ -18,6 +18,7 @@ from typing import Final
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.passwords import check_password
 from app.core.permissions import has_permission
 from app.core.tokens import new_opaque_token, opaque_token_hash
 from app.models import AuditLog, Invitation, Membership, Plan, User
@@ -247,6 +248,75 @@ def change_role(
     row = organization_repository.member_row(session, organization_id, user_id)
     session.commit()
     if row is None:  # La membresía acaba de leerse con su candado.
+        msg = "El miembro desapareció dentro de la transacción"
+        raise LookupError(msg)
+    return row
+
+
+class WrongPasswordError(Exception):
+    """La contraseña de quien entrega el despacho no coincide."""
+
+
+class NotTheOwnerError(Exception):
+    """Solo la persona responsable del despacho puede entregarlo."""
+
+
+def transfer_ownership(
+    session: Session,
+    principal: Principal,
+    target_user_id: uuid.UUID,
+    previous_owner_role: str,
+    password: str,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> MemberRow:
+    """Deja el despacho a cargo de otro miembro (RN-010). Quien entrega sigue como administrador
+    o abogado, a su elección; siempre queda exactamente un responsable.
+
+    Pide la contraseña de quien entrega: es la acción más delicada del despacho y no debe
+    bastar con una sesión abierta en un equipo ajeno."""
+    organization_id = organization_of_manager(principal)
+    if not has_permission(principal.role, "organization.manage"):
+        raise NotTheOwnerError
+    if target_user_id == principal.user_id or previous_owner_role not in ("admin", "lawyer"):
+        raise SelfChangeError
+    user = session.get(User, principal.user_id, with_for_update=True)
+    if user is None or user.status != "active":
+        raise WrongPasswordError
+    rate_limit.check(session, rate_limit.LOGIN_ACCOUNT, user.email)
+    if not check_password(user.password_hash, password):
+        rate_limit.record(session, rate_limit.LOGIN_ACCOUNT, user.email)
+        session.commit()
+        raise WrongPasswordError
+    # Las dos membresías se bloquean en el mismo orden siempre, para que dos traspasos a la vez
+    # no se crucen.
+    first, second = sorted((principal.user_id, target_user_id), key=str)
+    locked = {
+        uid: organization_repository.membership_for_update(session, organization_id, uid)
+        for uid in (first, second)
+    }
+    current = locked[principal.user_id]
+    target = locked[target_user_id]
+    if current is None or current.role != "owner":
+        session.rollback()
+        raise NotTheOwnerError
+    if target is None:
+        session.rollback()
+        raise MemberNotFoundError
+    if target.role == "owner":
+        session.rollback()
+        raise OwnerProtectedError
+    now = datetime.datetime.now(datetime.UTC)
+    # Un solo propietario por organización (índice único): primero baja el actual y después
+    # sube el nuevo.
+    current.role = previous_owner_role
+    session.flush()
+    target.role = "owner"
+    _audit(session, principal, "ownership_transferred", target_user_id, client_ip, user_agent, now)
+    row = organization_repository.member_row(session, organization_id, target_user_id)
+    session.commit()
+    if row is None:
         msg = "El miembro desapareció dentro de la transacción"
         raise LookupError(msg)
     return row

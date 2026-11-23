@@ -24,7 +24,7 @@ _INDICATORS = {
     "logins": ("login",),
     "failed_logins": ("login_failed",),
     "sessions_revoked": ("sessions_revoked", "session_reuse_detected"),
-    "role_changes": ("role_changed", "member_removed"),
+    "role_changes": ("role_changed", "ownership_transferred", "member_removed"),
     "invitations": ("invitation_sent", "invitation_accepted"),
 }
 

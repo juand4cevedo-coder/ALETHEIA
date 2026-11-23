@@ -12,7 +12,7 @@ from typing import Annotated, Any, Final
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_client_ip, get_manager, get_owner, get_session
+from app.api.deps import NOT_ALLOWED, get_client_ip, get_manager, get_owner, get_session
 from app.models import Invitation, Organization
 from app.repositories.organization import MemberRow
 from app.schemas.organization import (
@@ -31,6 +31,7 @@ from app.schemas.organization import (
     OrganizationPolicies,
     OrganizationPoliciesRequest,
     OrganizationRenameRequest,
+    OwnershipTransferRequest,
     RoleChangeRequest,
     SeatsOut,
     SecurityIndicators,
@@ -189,6 +190,46 @@ def change_member_role(
         row = members_service.change_role(
             session, principal, user_id, request.role, client_ip=client_ip, user_agent=user_agent
         )
+    except _MEMBER_EXCEPTIONS as exc:
+        raise _member_errors(exc) from None
+    return _member_out(row)
+
+
+@router.post(
+    "/ownership-transfer",
+    summary="Dejar el despacho a cargo de otro miembro",
+    responses=_UNAUTHORIZED
+    | {
+        status.HTTP_400_BAD_REQUEST: {"description": "La contraseña no coincide."},
+        status.HTTP_404_NOT_FOUND: {"description": "Esa persona no es miembro."},
+    },
+)
+def transfer_ownership(
+    request: OwnershipTransferRequest,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_owner)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> MemberOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        row = members_service.transfer_ownership(
+            session,
+            principal,
+            request.user_id,
+            request.previous_owner_role,
+            request.password,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except members_service.WrongPasswordError:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail="La contraseña no coincide. Revísela e inténtelo de nuevo.",
+        ) from None
+    except members_service.NotTheOwnerError:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=NOT_ALLOWED) from None
     except _MEMBER_EXCEPTIONS as exc:
         raise _member_errors(exc) from None
     return _member_out(row)

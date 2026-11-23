@@ -2015,6 +2015,7 @@ export type OrganizationAuditAction =
   | "invitation_revoked"
   | "invitation_accepted"
   | "role_changed"
+  | "ownership_transferred"
   | "member_removed"
   | "organization_policy_changed"
   | "task_template_created"
@@ -2252,6 +2253,32 @@ export type OrganizationRenameRequest = {
    * Nombre de la oficina, la firma o la persona independiente.
    */
   name: string;
+};
+
+/**
+ * OwnershipTransferRequest
+ *
+ * Dejar el despacho a cargo de otro miembro. Pide la contraseña de quien lo entrega.
+ */
+export type OwnershipTransferRequest = {
+  /**
+   * User Id
+   *
+   * El miembro que pasa a ser responsable del despacho.
+   */
+  user_id: string;
+  /**
+   * Previous Owner Role
+   *
+   * El rol con el que sigue quien entrega: administrador o abogado.
+   */
+  previous_owner_role: "admin" | "lawyer";
+  /**
+   * Password
+   *
+   * La contraseña de quien entrega el despacho.
+   */
+  password: string;
 };
 
 /**
@@ -4647,6 +4674,45 @@ export type ChangeMemberRoleResponses = {
 
 export type ChangeMemberRoleResponse =
   ChangeMemberRoleResponses[keyof ChangeMemberRoleResponses];
+
+export type TransferOwnershipData = {
+  body: OwnershipTransferRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/organization/ownership-transfer";
+};
+
+export type TransferOwnershipErrors = {
+  /**
+   * La contraseña no coincide.
+   */
+  400: Problem;
+  /**
+   * No hay una sesión válida.
+   */
+  401: Problem;
+  /**
+   * Esa persona no es miembro.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type TransferOwnershipError =
+  TransferOwnershipErrors[keyof TransferOwnershipErrors];
+
+export type TransferOwnershipResponses = {
+  /**
+   * Successful Response
+   */
+  200: MemberOut;
+};
+
+export type TransferOwnershipResponse =
+  TransferOwnershipResponses[keyof TransferOwnershipResponses];
 
 export type ListInvitationsData = {
   body?: never;
