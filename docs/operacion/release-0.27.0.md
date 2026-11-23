@@ -1,0 +1,9 @@
+# Aletheia 0.27.0
+
+- Eliminar un caso cerrado de forma definitiva (ADR-055, SEQ-004). En un caso cerrado, los dueños y administradores tienen el botón «Eliminar definitivamente». Piden escribir el título exacto del caso y explican qué se pierde y qué se conserva. Solo se acepta si el caso está cerrado, sin bloqueo jurídico y con el plazo de conservación vencido; si no, el botón está desactivado y dice por qué.
+- Al confirmar, la llave de cifrado del caso se destruye en el acto: el contenido deja de poder recuperarse aunque algo falle después. El caso desaparece de la lista y la tarea `case_purge` borra los objetos cifrados (evidencias, paquetes y copias del portal) y después el expediente, con su cadena de custodia, notas, tareas y lo compartido con el cliente. Si un objeto no se puede borrar, la tarea se reintenta y el expediente no se elimina con restos.
+- Queda una constancia permanente (cantidad de evidencias, bytes y huellas SHA-256, sin nombres de archivo ni contenido) y llega por correo a quien pidió la eliminación. Los respaldos conservan una copia cifrada, sin llave, 7 días. La solicitud y la eliminación quedan en la auditoría del despacho.
+- Al quitar un documento del portal, ahora también se borra su objeto cifrado y se devuelve su espacio al plan (antes solo se ocultaba).
+- Migración 0048: función `request_case_deletion` y dos acciones de auditoría. Ruta nueva: `POST /api/v1/cases/{id}/deletion`.
+
+Para probarlo después de desplegar, con un caso de PRUEBA y nunca con uno real: ciérrelo y deje que su plazo de conservación venza (para una prueba hay que adelantar esa fecha en la base, porque el plazo por defecto es de 10 años). Pida la eliminación escribiendo el título: el caso debe desaparecer de la lista y, en pocos minutos, llegar el correo de la constancia. Revise en Auditoría del despacho los dos eventos.

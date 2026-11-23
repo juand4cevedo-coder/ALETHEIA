@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.26.0"
+    "version": "0.27.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -3099,6 +3099,105 @@
           },
           "409": {
             "description": "El caso ya está cerrado o el despacho está en solo lectura.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/deletion": {
+      "post": {
+        "tags": [
+          "casos"
+        ],
+        "summary": "Eliminar de forma definitiva un caso cerrado",
+        "description": "Destruye la llave del caso en el acto y encola el borrado. No tiene vuelta atrás.",
+        "operationId": "request_case_deletion",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseDeletionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDeletionAccepted"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Solo dueños y administradores eliminan casos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El caso no existe o la persona no pertenece a él.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El caso no está cerrado, tiene un bloqueo jurídico o su conservación no terminó.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7445,6 +7544,37 @@
         ],
         "title": "CaseCreate",
         "description": "Datos con que se abre un caso (API-022)."
+      },
+      "CaseDeletionAccepted": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "CaseDeletionAccepted"
+      },
+      "CaseDeletionRequest": {
+        "properties": {
+          "confirmation": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Confirmation",
+            "description": "El título del caso, escrito tal cual, para confirmar que se quiere eliminar."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "confirmation"
+        ],
+        "title": "CaseDeletionRequest",
+        "description": "Confirmación de una eliminación definitiva: el título exacto del caso."
       },
       "CaseDetail": {
         "properties": {

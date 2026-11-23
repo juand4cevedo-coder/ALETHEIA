@@ -21,8 +21,8 @@ from app.core.config import Settings
 
 # Registran las plantillas de correo: sin estos imports, el trabajador no las conoce.
 from app.services import account_emails as _account_emails  # noqa: F401
-from app.services import client_portal_emails as _client_portal_emails  # noqa: F401
 from app.services import (
+    case_deletion,
     custody_anchor,
     evidence_stamp,
     export_build,
@@ -31,6 +31,8 @@ from app.services import (
     payments,
     subscription_expiration,
 )
+from app.services import case_deletion_emails as _case_deletion_emails  # noqa: F401
+from app.services import client_portal_emails as _client_portal_emails  # noqa: F401
 from app.services import organization_emails as _organization_emails  # noqa: F401
 from app.services import two_factor_recovery_emails as _two_factor_recovery_emails  # noqa: F401
 from app.services.jobs import PermanentJobError
@@ -129,6 +131,20 @@ def anchor_custody(run: JobRun) -> None:
     custody_anchor.anchor(run.open_session, case_id, organization_id)
 
 
+def purge_case_job(run: JobRun) -> None:
+    """case_purge (SEQ-004): borra los objetos cifrados y el expediente de un caso cuya llave ya
+    se destruyó. Repetirla no cambia el resultado."""
+    try:
+        case_id = uuid.UUID(str(run.payload["case_id"]))
+        organization_id = uuid.UUID(str(run.payload["organization_id"]))
+        requested_by = uuid.UUID(str(run.payload["requested_by"]))
+    except (KeyError, ValueError, TypeError) as exc:
+        raise PermanentJobError("Identificadores de eliminación inválidos.") from exc
+    case_deletion.purge(
+        run.open_session, run.context.settings, case_id, organization_id, requested_by
+    )
+
+
 def reconcile_payment(run: JobRun) -> None:
     """payment_reconcile (EVT-007): si el webhook de Wompi ya activó o rechazó el cobro, esto
     encuentra la misma clave de deduplicación y no hace nada; si nunca llegó, lo resuelve con
@@ -161,5 +177,6 @@ HANDLERS: Final[Mapping[str, Handler]] = {
     "export_expire": expire_export,
     "tsa_stamp": stamp_evidence,
     "custody_anchor": anchor_custody,
+    "case_purge": purge_case_job,
     "payment_reconcile": reconcile_payment,
 }

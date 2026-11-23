@@ -44,6 +44,7 @@ import { initialsOf } from "../features/session/initials.ts";
 import { ROLE_LABELS } from "../features/workspace/roles.ts";
 import styles from "./CasePage.module.css";
 import { ClientPortalSection } from "../features/cases/ClientPortalSection.tsx";
+import { DeleteCaseDialog } from "../features/cases/DeleteCaseDialog.tsx";
 import {
   BalanzaIcon,
   CargandoIcon,
@@ -533,6 +534,9 @@ function CaseLifecycle({ detail, me }: { detail: CaseDetail; me: Me }) {
         >
           Gestionar conservación
         </Button>
+      )}
+      {detail.status === "closed" && canManageRetention && (
+        <DeleteCaseDialog detail={detail} />
       )}
       {message && (
         <span className={styles.lifecycleMessage} role="status">

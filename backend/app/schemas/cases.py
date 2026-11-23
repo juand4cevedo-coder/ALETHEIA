@@ -268,3 +268,19 @@ class CasePage(BaseModel):
     )
     next_cursor: str | None = Field(description="Cursor de la página siguiente, o null.")
     totals: CaseTotalsOut = Field(description="Totales de los casos de la persona.")
+
+
+class CaseDeletionRequest(BaseModel):
+    """Confirmación de una eliminación definitiva: el título exacto del caso."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    confirmation: str = Field(
+        min_length=1,
+        max_length=200,
+        description="El título del caso, escrito tal cual, para confirmar que se quiere eliminar.",
+    )
+
+
+class CaseDeletionAccepted(BaseModel):
+    detail: str

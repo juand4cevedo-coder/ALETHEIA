@@ -249,6 +249,9 @@ import type {
   ReopenCaseData,
   ReopenCaseErrors,
   ReopenCaseResponses,
+  RequestCaseDeletionData,
+  RequestCaseDeletionErrors,
+  RequestCaseDeletionResponses,
   RequestRecoveryData,
   RequestRecoveryErrors,
   RequestRecoveryResponses,
@@ -1352,6 +1355,38 @@ export const closeCase = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/cases/{case_id}/close",
     ...options,
+  });
+
+/**
+ * Eliminar de forma definitiva un caso cerrado
+ *
+ * Destruye la llave del caso en el acto y encola el borrado. No tiene vuelta atrás.
+ */
+export const requestCaseDeletion = <ThrowOnError extends boolean = false>(
+  options: Options<RequestCaseDeletionData, ThrowOnError>,
+): RequestResult<
+  RequestCaseDeletionResponses,
+  RequestCaseDeletionErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    RequestCaseDeletionResponses,
+    RequestCaseDeletionErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/deletion",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**
