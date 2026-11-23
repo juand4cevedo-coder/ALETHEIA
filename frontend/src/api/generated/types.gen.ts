@@ -46,6 +46,32 @@ export type AcceptInvitationRequest = {
 };
 
 /**
+ * AppliedTaskTemplate
+ */
+export type AppliedTaskTemplate = {
+  /**
+   * Tasks
+   */
+  tasks: Array<CaseTaskOut>;
+};
+
+/**
+ * ApplyTaskTemplate
+ */
+export type ApplyTaskTemplate = {
+  /**
+   * Template Id
+   */
+  template_id: string;
+  /**
+   * Assigned To
+   *
+   * Responsable de todas las tareas creadas.
+   */
+  assigned_to: string;
+};
+
+/**
  * Body_download_export
  */
 export type BodyDownloadExport = {
@@ -2617,6 +2643,98 @@ export type TaskInboxOut = {
 };
 
 /**
+ * TaskTemplateCreate
+ */
+export type TaskTemplateCreate = {
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Items
+   */
+  items: Array<TaskTemplateItemIn>;
+};
+
+/**
+ * TaskTemplateItemIn
+ */
+export type TaskTemplateItemIn = {
+  /**
+   * Title
+   */
+  title: string;
+  /**
+   * Description
+   */
+  description?: string | null;
+  /**
+   * Priority
+   */
+  priority?: "low" | "normal" | "high" | "urgent";
+  /**
+   * Due Days
+   *
+   * Días de plazo desde que se aplica la plantilla; null si no lleva plazo.
+   */
+  due_days?: number | null;
+};
+
+/**
+ * TaskTemplateItemOut
+ */
+export type TaskTemplateItemOut = {
+  /**
+   * Title
+   */
+  title: string;
+  /**
+   * Description
+   */
+  description: string | null;
+  /**
+   * Priority
+   */
+  priority: "low" | "normal" | "high" | "urgent";
+  /**
+   * Due Days
+   */
+  due_days: number | null;
+};
+
+/**
+ * TaskTemplateList
+ */
+export type TaskTemplateList = {
+  /**
+   * Items
+   */
+  items: Array<TaskTemplateOut>;
+};
+
+/**
+ * TaskTemplateOut
+ */
+export type TaskTemplateOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Items
+   */
+  items: Array<TaskTemplateItemOut>;
+};
+
+/**
  * UserStatusChange
  */
 export type UserStatusChange = {
@@ -4891,6 +5009,114 @@ export type CreateCaseNoteResponses = {
 
 export type CreateCaseNoteResponse =
   CreateCaseNoteResponses[keyof CreateCaseNoteResponses];
+
+export type ListTaskTemplatesData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/task-templates";
+};
+
+export type ListTaskTemplatesResponses = {
+  /**
+   * Successful Response
+   */
+  200: TaskTemplateList;
+};
+
+export type ListTaskTemplatesResponse =
+  ListTaskTemplatesResponses[keyof ListTaskTemplatesResponses];
+
+export type CreateTaskTemplateData = {
+  body: TaskTemplateCreate;
+  path?: never;
+  query?: never;
+  url: "/api/v1/task-templates";
+};
+
+export type CreateTaskTemplateErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CreateTaskTemplateError =
+  CreateTaskTemplateErrors[keyof CreateTaskTemplateErrors];
+
+export type CreateTaskTemplateResponses = {
+  /**
+   * Successful Response
+   */
+  201: TaskTemplateOut;
+};
+
+export type CreateTaskTemplateResponse =
+  CreateTaskTemplateResponses[keyof CreateTaskTemplateResponses];
+
+export type DeleteTaskTemplateData = {
+  body?: never;
+  path: {
+    /**
+     * Template Id
+     */
+    template_id: string;
+  };
+  query?: never;
+  url: "/api/v1/task-templates/{template_id}";
+};
+
+export type DeleteTaskTemplateErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type DeleteTaskTemplateError =
+  DeleteTaskTemplateErrors[keyof DeleteTaskTemplateErrors];
+
+export type DeleteTaskTemplateResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type DeleteTaskTemplateResponse =
+  DeleteTaskTemplateResponses[keyof DeleteTaskTemplateResponses];
+
+export type ApplyTaskTemplateData = {
+  body: ApplyTaskTemplate;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/tasks/from-template";
+};
+
+export type ApplyTaskTemplateErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ApplyTaskTemplateError =
+  ApplyTaskTemplateErrors[keyof ApplyTaskTemplateErrors];
+
+export type ApplyTaskTemplateResponses = {
+  /**
+   * Successful Response
+   */
+  201: AppliedTaskTemplate;
+};
+
+export type ApplyTaskTemplateResponse =
+  ApplyTaskTemplateResponses[keyof ApplyTaskTemplateResponses];
 
 export type TaskInboxData = {
   body?: never;
