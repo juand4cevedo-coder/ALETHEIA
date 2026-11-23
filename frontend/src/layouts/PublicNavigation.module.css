@@ -174,9 +174,9 @@
 }
 
 .links a {
-  display: grid;
-  align-content: center;
-  gap: 2px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
   min-height: 84px;
   padding: var(--space-3) var(--space-4);
   border-radius: 18px;
@@ -192,7 +192,14 @@
   background: color-mix(in srgb, var(--ink-900) 7%, var(--paper));
 }
 
-.links a > span {
+.linkText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.linkLabel {
   display: flex;
   justify-content: space-between;
   gap: var(--space-3);
@@ -201,7 +208,7 @@
   line-height: var(--line-height-body);
 }
 
-.links svg {
+.linkLabel svg {
   flex: none;
   color: var(--ink-900);
   transform: translateX(-6px);
@@ -211,8 +218,8 @@
     transform 260ms var(--ease-out);
 }
 
-.links a:hover svg,
-.links a:focus-visible svg {
+.links a:hover .linkLabel svg,
+.links a:focus-visible .linkLabel svg {
   transform: none;
   opacity: 1;
 }
@@ -258,8 +265,28 @@
 
   .indicator,
   .list button svg,
-  .links svg,
+  .linkLabel svg,
   .featureCta svg {
+    transition: none;
+  }
+}
+
+/* Captura del producto dentro de la tarjeta destacada: se ve la pantalla real y no una ilustración. */
+.featureShot {
+  width: 100%;
+  height: auto;
+  margin-top: var(--space-4);
+  border-radius: 14px;
+  box-shadow: 0 14px 36px rgb(64 0 87 / 18%);
+  transition: transform 420ms var(--ease-out);
+}
+
+.feature:hover .featureShot {
+  transform: translateY(-4px) scale(1.015);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featureShot {
     transition: none;
   }
 }

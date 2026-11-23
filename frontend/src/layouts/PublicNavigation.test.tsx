@@ -20,16 +20,15 @@ it("ofrece cinco opciones y cambia el panel con el puntero", async () => {
   );
   await user.hover(screen.getByRole("button", { name: "Producto" }));
   expect(
-    screen.getByRole("link", {
+    await screen.findByRole("link", {
       name: /Gestión de casos/,
     }),
   ).toHaveAttribute("href", "/#como-funciona");
   await user.hover(screen.getByRole("button", { name: "Recursos" }));
   expect(screen.queryByText("Gestión de casos")).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: /Documentación/ })).toHaveAttribute(
-    "href",
-    "/docs",
-  );
+  expect(
+    await screen.findByRole("link", { name: /Documentación/ }),
+  ).toHaveAttribute("href", "/docs");
   fireEvent.pointerDown(document.body);
   expect(screen.getByRole("button", { name: "Recursos" })).toHaveAttribute(
     "aria-expanded",

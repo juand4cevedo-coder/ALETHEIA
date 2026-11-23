@@ -1,15 +1,20 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
-import { createPortal } from "react-dom";
-import { Link, NavLink } from "react-router";
 import {
-  ChevronAbajoIcon,
-  FlechaDerechaIcon,
-} from "../components/ui/icons.tsx";
-import { IconTile } from "../components/ui/IconTile.tsx";
+  lazy,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
+import { NavLink } from "react-router";
+import { ChevronAbajoIcon } from "../components/ui/icons.tsx";
 import { NAVIGATION } from "../config/navigation.ts";
 import { ROUTES } from "../config/routes.ts";
 import styles from "./PublicNavigation.module.css";
+
+const loadPanel = () => import("./NavigationPanelContent.tsx");
+const NavigationPanelContent = lazy(loadPanel);
 
 /** Un solo panel evita saltos al recorrer las categorías con el puntero. */
 export function PublicNavigation() {
@@ -64,7 +69,11 @@ export function PublicNavigation() {
       ref={root}
       className={styles.nav}
       aria-label="Principal"
-      onPointerEnter={cancelClose}
+      onPointerEnter={() => {
+        cancelClose();
+        void loadPanel();
+      }}
+      onFocusCapture={() => void loadPanel()}
       onPointerLeave={(event) => {
         if (
           event.pointerType === "mouse" &&
@@ -177,37 +186,9 @@ export function PublicNavigation() {
           className={styles.panel}
           aria-labelledby={`nav-trigger-${active}`}
         >
-          <div className={styles.panelContent} key={group.title}>
-            <Link
-              to={group.feature.to}
-              className={styles.feature}
-              onClick={close}
-            >
-              <IconTile icon={group.feature.icon} tone="solid" size="lg" />
-              <span className={styles.featureTitle}>{group.feature.title}</span>
-              <small>{group.feature.text}</small>
-              <span className={styles.featureCta}>
-                Conocer más
-                <FlechaDerechaIcon size={14} aria-hidden="true" />
-              </span>
-            </Link>
-            <div className={styles.links}>
-              {group.links.map((link, position) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={close}
-                  style={{ "--i": position } as CSSProperties}
-                >
-                  <span>
-                    {link.label}
-                    <FlechaDerechaIcon size={14} aria-hidden="true" />
-                  </span>
-                  {link.description && <small>{link.description}</small>}
-                </Link>
-              ))}
-            </div>
-          </div>
+          <Suspense fallback={null}>
+            <NavigationPanelContent group={group} close={close} />
+          </Suspense>
         </div>
       )}
     </nav>
