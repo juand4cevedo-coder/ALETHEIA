@@ -18,7 +18,9 @@ from sqlalchemy.orm import Session
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import (
     Case,
+    CaseMember,
     CaseNote,
+    CaseTask,
     CustodyEvent,
     DeletionRecord,
     Evidence,
@@ -170,6 +172,24 @@ def test_purge_case_deja_constancia_y_borra_el_caso(owner_db: Session) -> None:
             body="Nota del caso",
         )
     )
+    owner_db.add(
+        CaseMember(
+            case_id=tenant.case_id,
+            user_id=tenant.user_id,
+            organization_id=tenant.organization_id,
+            added_by=tenant.user_id,
+        )
+    )
+    owner_db.flush()
+    owner_db.add(
+        CaseTask(
+            organization_id=tenant.organization_id,
+            case_id=tenant.case_id,
+            title="Preparar audiencia",
+            assigned_to=tenant.user_id,
+            created_by=tenant.user_id,
+        )
+    )
     owner_db.flush()
     _chain(owner_db, tenant, 2)
     owner_db.execute(
@@ -192,7 +212,7 @@ def test_purge_case_deja_constancia_y_borra_el_caso(owner_db: Session) -> None:
     )
     assert record.backups_expire_at - record.key_destroyed_at == datetime.timedelta(days=7)
     assert owner_db.get(Case, tenant.case_id) is None
-    for model in (Evidence, CustodyEvent, CaseNote):
+    for model in (Evidence, CustodyEvent, CaseNote, CaseTask):
         assert owner_db.scalar(select(func.count()).select_from(model)) == 0
     storage = owner_db.scalar(
         select(Organization.storage_used_bytes).where(Organization.id == tenant.organization_id)
