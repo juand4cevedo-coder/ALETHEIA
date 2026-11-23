@@ -85,6 +85,7 @@ import {
   removeCaseMember,
   removeMember,
   renameOrganization,
+  renewPortalLink,
   reopenCase,
   requestRecovery,
   resendVerification,
@@ -327,6 +328,9 @@ import type {
   RenameOrganizationData,
   RenameOrganizationError,
   RenameOrganizationResponse,
+  RenewPortalLinkData,
+  RenewPortalLinkError,
+  RenewPortalLinkResponse,
   ReopenCaseData,
   ReopenCaseError,
   ReopenCaseResponse,
@@ -3777,6 +3781,36 @@ export const viewPortalMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await viewPortal({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Pedir un enlace nuevo con el enlace vencido
+ *
+ * Responde siempre lo mismo, haya o no un acceso que renovar: el enlace nuevo va solo al
+ * correo con que se invitó al cliente.
+ */
+export const renewPortalLinkMutation = (
+  options?: Partial<Options<RenewPortalLinkData>>,
+): UseMutationOptions<
+  RenewPortalLinkResponse,
+  RenewPortalLinkError,
+  Options<RenewPortalLinkData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RenewPortalLinkResponse,
+    RenewPortalLinkError,
+    Options<RenewPortalLinkData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await renewPortalLink({
         ...options,
         ...fnOptions,
         throwOnError: true,

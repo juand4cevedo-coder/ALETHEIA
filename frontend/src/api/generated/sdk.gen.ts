@@ -228,6 +228,9 @@ import type {
   RenameOrganizationData,
   RenameOrganizationErrors,
   RenameOrganizationResponses,
+  RenewPortalLinkData,
+  RenewPortalLinkErrors,
+  RenewPortalLinkResponses,
   ReopenCaseData,
   ReopenCaseErrors,
   ReopenCaseResponses,
@@ -2724,6 +2727,32 @@ export const viewPortal = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     url: "/api/v1/client-portal/view",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Pedir un enlace nuevo con el enlace vencido
+ *
+ * Responde siempre lo mismo, haya o no un acceso que renovar: el enlace nuevo va solo al
+ * correo con que se invitó al cliente.
+ */
+export const renewPortalLink = <ThrowOnError extends boolean = false>(
+  options: Options<RenewPortalLinkData, ThrowOnError>,
+): RequestResult<
+  RenewPortalLinkResponses,
+  RenewPortalLinkErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    RenewPortalLinkResponses,
+    RenewPortalLinkErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/client-portal/renew",
     ...options,
     headers: {
       "Content-Type": "application/json",

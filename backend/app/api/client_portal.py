@@ -1,5 +1,6 @@
 """Portal del cliente: el despacho invita y publica avisos; el cliente los lee (ADR-054)."""
 
+import contextlib
 import uuid
 from typing import Annotated
 
@@ -14,6 +15,7 @@ from app.schemas.client_portal import (
     PortalAccessList,
     PortalAccessOut,
     PortalInvite,
+    PortalRenewed,
     PortalTokenRequest,
     PortalUpdateCreate,
     PortalUpdateList,
@@ -35,6 +37,7 @@ _NOT_FOUND = "No encontramos lo que busca o no tiene acceso a ello."
 _NOT_ALLOWED = "No tiene permiso para esta acción."
 _GONE = "El enlace no existe o ya no está vigente."
 _INACTIVE = "La organización no está activa."
+_RENEWED = "Si el acceso sigue vigente, enviamos un enlace nuevo al correo con que lo invitaron."
 
 
 def _access(view: portal.AccessView) -> PortalAccessOut:
@@ -233,6 +236,30 @@ def view_portal(
         ],
         expires_at=data.expires_at,
     )
+
+
+@public_router.post(
+    "/renew",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Pedir un enlace nuevo con el enlace vencido",
+    responses={429: {"description": "Demasiados intentos."}},
+)
+def renew_portal_link(
+    body: PortalTokenRequest,
+    response: Response,
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> PortalRenewed:
+    """Responde siempre lo mismo, haya o no un acceso que renovar: el enlace nuevo va solo al
+    correo con que se invitó al cliente."""
+    response.headers["Cache-Control"] = "no-store"
+    rate_limit.hit(session, rate_limit.PORTAL_IP, client_ip)
+    session.commit()
+    with contextlib.suppress(InvalidPortalLinkError):
+        portal.renew(session, settings, body.token, client_ip=client_ip, user_agent=user_agent)
+    return PortalRenewed(detail=_RENEWED)
 
 
 @public_router.post(

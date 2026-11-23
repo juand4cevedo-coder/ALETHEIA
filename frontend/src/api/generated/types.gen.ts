@@ -2299,6 +2299,18 @@ export type PortalInvite = {
 };
 
 /**
+ * PortalRenewed
+ *
+ * La misma respuesta haya o no un acceso que renovar.
+ */
+export type PortalRenewed = {
+  /**
+   * Detail
+   */
+  detail: string;
+};
+
+/**
  * PortalTokenRequest
  */
 export type PortalTokenRequest = {
@@ -7104,6 +7116,37 @@ export type ViewPortalResponses = {
 };
 
 export type ViewPortalResponse = ViewPortalResponses[keyof ViewPortalResponses];
+
+export type RenewPortalLinkData = {
+  body: PortalTokenRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/client-portal/renew";
+};
+
+export type RenewPortalLinkErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+};
+
+export type RenewPortalLinkError =
+  RenewPortalLinkErrors[keyof RenewPortalLinkErrors];
+
+export type RenewPortalLinkResponses = {
+  /**
+   * Successful Response
+   */
+  202: PortalRenewed;
+};
+
+export type RenewPortalLinkResponse =
+  RenewPortalLinkResponses[keyof RenewPortalLinkResponses];
 
 export type AcceptPortalNoticeData = {
   body: PortalTokenRequest;

@@ -10,5 +10,6 @@ Disallow: /invitacion
 Disallow: /ingresar
 Disallow: /descargar-paquete
 Disallow: /compartido
+Disallow: /portal
 
 Sitemap: https://aletheia.sbs/sitemap.xml
