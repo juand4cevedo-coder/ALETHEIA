@@ -82,6 +82,16 @@ export type BodyDownloadExport = {
 };
 
 /**
+ * Body_download_shared_evidence
+ */
+export type BodyDownloadSharedEvidence = {
+  /**
+   * Token
+   */
+  token: string;
+};
+
+/**
  * CaseCandidate
  *
  * Persona disponible para asignar a este caso.
@@ -2479,6 +2489,123 @@ export type SecurityIndicators = {
    * Invitations
    */
   invitations: number;
+};
+
+/**
+ * ShareLinkCreate
+ */
+export type ShareLinkCreate = {
+  /**
+   * Expires In Hours
+   *
+   * Horas de vigencia del enlace, hasta 30 días.
+   */
+  expires_in_hours?: number;
+  /**
+   * Label
+   *
+   * Nota para quien administra, por ejemplo a quién se le envió.
+   */
+  label?: string | null;
+};
+
+/**
+ * ShareLinkCreated
+ */
+export type ShareLinkCreated = {
+  link: ShareLinkOut;
+  /**
+   * Url
+   *
+   * El enlace completo. Se muestra una sola vez.
+   */
+  url: string;
+};
+
+/**
+ * ShareLinkList
+ */
+export type ShareLinkList = {
+  /**
+   * Items
+   */
+  items: Array<ShareLinkOut>;
+};
+
+/**
+ * ShareLinkOut
+ */
+export type ShareLinkOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Label
+   */
+  label: string | null;
+  /**
+   * Created By Name
+   */
+  created_by_name: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Expires At
+   */
+  expires_at: string;
+  /**
+   * Revoked At
+   */
+  revoked_at: string | null;
+  /**
+   * Status
+   */
+  status: "active" | "expired" | "revoked";
+  /**
+   * Download Count
+   */
+  download_count: number;
+  /**
+   * Last Downloaded At
+   */
+  last_downloaded_at: string | null;
+};
+
+/**
+ * SharedEvidenceInfo
+ */
+export type SharedEvidenceInfo = {
+  /**
+   * Filename
+   */
+  filename: string;
+  /**
+   * Size Bytes
+   */
+  size_bytes: number;
+  /**
+   * Sha256
+   *
+   * Huella SHA-256 en hexadecimal, para comprobar el archivo.
+   */
+  sha256: string;
+  /**
+   * Expires At
+   */
+  expires_at: string;
+};
+
+/**
+ * SharedEvidenceRequest
+ */
+export type SharedEvidenceRequest = {
+  /**
+   * Token
+   */
+  token: string;
 };
 
 /**
@@ -5348,6 +5475,184 @@ export type TwoFactorRecoveryCodesResponses = {
 
 export type TwoFactorRecoveryCodesResponse =
   TwoFactorRecoveryCodesResponses[keyof TwoFactorRecoveryCodesResponses];
+
+export type ListShareLinksData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Evidence Id
+     */
+    evidence_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/share-links";
+};
+
+export type ListShareLinksErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListShareLinksError =
+  ListShareLinksErrors[keyof ListShareLinksErrors];
+
+export type ListShareLinksResponses = {
+  /**
+   * Successful Response
+   */
+  200: ShareLinkList;
+};
+
+export type ListShareLinksResponse =
+  ListShareLinksResponses[keyof ListShareLinksResponses];
+
+export type CreateShareLinkData = {
+  body: ShareLinkCreate;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Evidence Id
+     */
+    evidence_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/share-links";
+};
+
+export type CreateShareLinkErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CreateShareLinkError =
+  CreateShareLinkErrors[keyof CreateShareLinkErrors];
+
+export type CreateShareLinkResponses = {
+  /**
+   * Successful Response
+   */
+  201: ShareLinkCreated;
+};
+
+export type CreateShareLinkResponse =
+  CreateShareLinkResponses[keyof CreateShareLinkResponses];
+
+export type RevokeShareLinkData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Evidence Id
+     */
+    evidence_id: string;
+    /**
+     * Link Id
+     */
+    link_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/share-links/{link_id}";
+};
+
+export type RevokeShareLinkErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RevokeShareLinkError =
+  RevokeShareLinkErrors[keyof RevokeShareLinkErrors];
+
+export type RevokeShareLinkResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type RevokeShareLinkResponse =
+  RevokeShareLinkResponses[keyof RevokeShareLinkResponses];
+
+export type InspectSharedEvidenceData = {
+  body: SharedEvidenceRequest;
+  path?: never;
+  query?: never;
+  url: "/api/v1/shared-evidence/inspect";
+};
+
+export type InspectSharedEvidenceErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type InspectSharedEvidenceError =
+  InspectSharedEvidenceErrors[keyof InspectSharedEvidenceErrors];
+
+export type InspectSharedEvidenceResponses = {
+  /**
+   * Successful Response
+   */
+  200: SharedEvidenceInfo;
+};
+
+export type InspectSharedEvidenceResponse =
+  InspectSharedEvidenceResponses[keyof InspectSharedEvidenceResponses];
+
+export type DownloadSharedEvidenceData = {
+  body: BodyDownloadSharedEvidence;
+  path?: never;
+  query?: never;
+  url: "/api/v1/shared-evidence/download";
+};
+
+export type DownloadSharedEvidenceErrors = {
+  /**
+   * El enlace no existe o ya no está vigente.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos de descarga.
+   */
+  429: Problem;
+  /**
+   * No se pudo verificar o leer el archivo conservado.
+   */
+  503: Problem;
+};
+
+export type DownloadSharedEvidenceError =
+  DownloadSharedEvidenceErrors[keyof DownloadSharedEvidenceErrors];
+
+export type DownloadSharedEvidenceResponses = {
+  /**
+   * Archivo original verificado; queda en la cadena de custodia.
+   */
+  200: Blob | File;
+};
+
+export type DownloadSharedEvidenceResponse =
+  DownloadSharedEvidenceResponses[keyof DownloadSharedEvidenceResponses];
 
 export type TaskInboxData = {
   body?: never;

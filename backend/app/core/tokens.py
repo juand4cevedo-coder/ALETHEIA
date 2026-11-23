@@ -364,3 +364,66 @@ def export_manifest_matches(
         return False
     expected = _seal(_subkey(master_key, _EXPORT_USE), manifest_sha256.hex())
     return hmac.compare_digest(expected, claims.state_seal)
+
+
+_SHARE_USE: Final = "link:evidence_share"
+_SHARE_AUDIENCE: Final = "evidence_share"
+
+
+class InvalidShareLinkError(Exception):
+    """El enlace de evidencia falta, fue alterado o venció, sin decir cuál de las causas."""
+
+
+@dataclass(frozen=True, slots=True)
+class ShareLinkClaims:
+    link_id: uuid.UUID
+    organization_id: uuid.UUID
+    evidence_id: uuid.UUID
+
+
+def issue_share_link(
+    master_key: str,
+    link_id: uuid.UUID,
+    organization_id: uuid.UUID,
+    evidence_id: uuid.UUID,
+    expires_at: datetime.datetime,
+    *,
+    now: datetime.datetime | None = None,
+) -> str:
+    """Firma un enlace a una sola evidencia. La fila `evidence_share_links` manda: revocarla lo
+    invalida aunque la firma siga vigente."""
+    issued_at = now or datetime.datetime.now(datetime.UTC)
+    if expires_at.tzinfo is None or expires_at.utcoffset() is None or expires_at <= issued_at:
+        raise ValueError("El enlace necesita un vencimiento futuro con zona horaria.")
+    key = _subkey(master_key, _SHARE_USE)
+    claims = {
+        "iss": _ISSUER,
+        "aud": _SHARE_AUDIENCE,
+        "sub": str(link_id),
+        "org": str(organization_id),
+        "evd": str(evidence_id),
+        "iat": issued_at,
+        "exp": expires_at,
+    }
+    return jwt.encode(claims, key, algorithm=_ALGORITHM)
+
+
+def read_share_link(master_key: str, token: str) -> ShareLinkClaims:
+    if len(token) > MAX_TOKEN_LENGTH:
+        raise InvalidShareLinkError
+    try:
+        claims = jwt.decode(
+            token,
+            _subkey(master_key, _SHARE_USE),
+            algorithms=[_ALGORITHM],
+            audience=_SHARE_AUDIENCE,
+            issuer=_ISSUER,
+            options={"require": ["iss", "aud", "sub", "org", "evd", "iat", "exp"]},
+        )
+        return ShareLinkClaims(
+            link_id=uuid.UUID(claims["sub"]),
+            organization_id=uuid.UUID(claims["org"]),
+            evidence_id=uuid.UUID(claims["evd"]),
+        )
+    except jwt.PyJWTError, ValueError, TypeError, KeyError:
+        raise InvalidShareLinkError from None

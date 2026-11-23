@@ -59,6 +59,9 @@ CUSTODY_ACTIONS: Final = (
     "case_reopened",
     "case_retention_updated",
     "deletion_requested",
+    "evidence_link_created",
+    "evidence_link_revoked",
+    "evidence_link_downloaded",
 )
 
 # Las tablas hijas de un caso repiten organization_id para el aislamiento por organización.

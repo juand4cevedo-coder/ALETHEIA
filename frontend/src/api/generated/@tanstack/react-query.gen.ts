@@ -27,11 +27,13 @@ import {
   createCaseTask,
   createCheckout,
   createInvitation,
+  createShareLink,
   createSupportTicket,
   createTaskTemplate,
   deleteTaskTemplate,
   downloadEvidence,
   downloadExport,
+  downloadSharedEvidence,
   forgotPassword,
   getPolicies,
   googleCallback,
@@ -42,6 +44,7 @@ import {
   grantCourtesy,
   health,
   inspectExport,
+  inspectSharedEvidence,
   listCaseNotes,
   listCases,
   listCaseTasks,
@@ -51,6 +54,7 @@ import {
   listMembers,
   listPlans,
   listPlatformUsers,
+  listShareLinks,
   listTaskTemplates,
   lookupCourtesy,
   type Options,
@@ -77,6 +81,7 @@ import {
   resetPassword,
   revokeCourtesy,
   revokeInvitation,
+  revokeShareLink,
   signIn,
   signInSecondFactor,
   signOut,
@@ -147,6 +152,9 @@ import type {
   CreateInvitationData,
   CreateInvitationError,
   CreateInvitationResponse,
+  CreateShareLinkData,
+  CreateShareLinkError,
+  CreateShareLinkResponse,
   CreateSupportTicketData,
   CreateSupportTicketError,
   CreateSupportTicketResponse,
@@ -161,6 +169,9 @@ import type {
   DownloadExportData,
   DownloadExportError,
   DownloadExportResponse,
+  DownloadSharedEvidenceData,
+  DownloadSharedEvidenceError,
+  DownloadSharedEvidenceResponse,
   ForgotPasswordData,
   ForgotPasswordError,
   ForgotPasswordResponse,
@@ -184,6 +195,9 @@ import type {
   InspectExportData,
   InspectExportError,
   InspectExportResponse,
+  InspectSharedEvidenceData,
+  InspectSharedEvidenceError,
+  InspectSharedEvidenceResponse,
   ListCaseNotesData,
   ListCaseNotesError,
   ListCaseNotesResponse,
@@ -211,6 +225,9 @@ import type {
   ListPlatformUsersData,
   ListPlatformUsersError,
   ListPlatformUsersResponse,
+  ListShareLinksData,
+  ListShareLinksError,
+  ListShareLinksResponse,
   ListTaskTemplatesData,
   ListTaskTemplatesResponse,
   LookupCourtesyData,
@@ -284,6 +301,9 @@ import type {
   RevokeInvitationData,
   RevokeInvitationError,
   RevokeInvitationResponse,
+  RevokeShareLinkData,
+  RevokeShareLinkError,
+  RevokeShareLinkResponse,
   SignInData,
   SignInError,
   SignInResponse,
@@ -2524,6 +2544,139 @@ export const twoFactorRecoveryCodesMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await twoFactorRecoveryCodes({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const listShareLinksQueryKey = (options: Options<ListShareLinksData>) =>
+  createQueryKey("listShareLinks", options);
+
+/**
+ * Listar los enlaces de una evidencia
+ */
+export const listShareLinksOptions = (options: Options<ListShareLinksData>) =>
+  queryOptions<
+    ListShareLinksResponse,
+    ListShareLinksError,
+    ListShareLinksResponse,
+    ReturnType<typeof listShareLinksQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listShareLinks({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listShareLinksQueryKey(options),
+  });
+
+/**
+ * Crear un enlace para compartir una evidencia
+ */
+export const createShareLinkMutation = (
+  options?: Partial<Options<CreateShareLinkData>>,
+): UseMutationOptions<
+  CreateShareLinkResponse,
+  CreateShareLinkError,
+  Options<CreateShareLinkData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateShareLinkResponse,
+    CreateShareLinkError,
+    Options<CreateShareLinkData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createShareLink({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Revocar un enlace de evidencia
+ */
+export const revokeShareLinkMutation = (
+  options?: Partial<Options<RevokeShareLinkData>>,
+): UseMutationOptions<
+  RevokeShareLinkResponse,
+  RevokeShareLinkError,
+  Options<RevokeShareLinkData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RevokeShareLinkResponse,
+    RevokeShareLinkError,
+    Options<RevokeShareLinkData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await revokeShareLink({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Comprobar un enlace de evidencia antes de descargar
+ */
+export const inspectSharedEvidenceMutation = (
+  options?: Partial<Options<InspectSharedEvidenceData>>,
+): UseMutationOptions<
+  InspectSharedEvidenceResponse,
+  InspectSharedEvidenceError,
+  Options<InspectSharedEvidenceData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    InspectSharedEvidenceResponse,
+    InspectSharedEvidenceError,
+    Options<InspectSharedEvidenceData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await inspectSharedEvidence({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Descargar una evidencia con un enlace vigente
+ */
+export const downloadSharedEvidenceMutation = (
+  options?: Partial<Options<DownloadSharedEvidenceData>>,
+): UseMutationOptions<
+  DownloadSharedEvidenceResponse,
+  DownloadSharedEvidenceError,
+  Options<DownloadSharedEvidenceData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    DownloadSharedEvidenceResponse,
+    DownloadSharedEvidenceError,
+    Options<DownloadSharedEvidenceData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await downloadSharedEvidence({
         ...options,
         ...fnOptions,
         throwOnError: true,

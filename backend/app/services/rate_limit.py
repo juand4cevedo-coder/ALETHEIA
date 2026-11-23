@@ -58,6 +58,8 @@ INVITATION_ACCOUNT: Final = Limit("invitation_account", 20, _WINDOW)
 INVITATION_LINK_IP: Final = Limit("invitation_link_ip", 20, _WINDOW)
 SUPPORT_ACCOUNT: Final = Limit("support_account", 10, _WINDOW)
 EXPORT_LINK_IP: Final = Limit("export_link_ip", 20, _WINDOW)
+# Abrir y descargar enlaces de evidencia: cuenta enlaces válidos e inválidos por igual.
+SHARE_LINK_IP: Final = Limit("share_link_ip", 30, _WINDOW)
 # S6 de la auditoría del 17/11/2026: subir evidencia y solicitar exportaciones ya exigen
 # sesión, pero no tenían tope propio por cuenta. Una llave filtrada o una cuenta comprometida
 # ya no puede saturar el almacenamiento ni generar paquetes sin límite.
@@ -78,6 +80,7 @@ LIMITS: Final = (
     INVITATION_LINK_IP,
     SUPPORT_ACCOUNT,
     EXPORT_LINK_IP,
+    SHARE_LINK_IP,
     UPLOAD_ACCOUNT,
     EXPORT_ACCOUNT,
 )
