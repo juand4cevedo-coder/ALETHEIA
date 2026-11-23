@@ -1,15 +1,26 @@
 # Revisión legal del portal del cliente
 
+## En una página: lo que se necesita decidir
+
+El portal del cliente ya está en producción, pero **no debe usarse con clientes reales** hasta resolver tres cosas. Cada una se explica más abajo.
+
+1. **¿Quién es responsable de los datos del cliente?** El aviso del portal dice que el despacho y ALETHEIA son corresponsables. La política vigente dice que ALETHEIA es encargada del contenido de los casos. Hay que elegir una y hacer que las dos coincidan.
+2. **¿Basta un botón de aceptación como autorización?** Hoy el cliente acepta el aviso con un clic al entrar. Hay que confirmar si eso cumple el artículo 13 del Decreto 1377 de 2013 o si el despacho debe tener antes la autorización del cliente.
+3. **¿Qué se hace con los datos del cliente cuando se le quita el acceso?** Hoy se conservan (nombre, correo, fechas y mensajes) mientras exista el caso. Hay que decidir si se suprimen al revocar o si la conservación por el caso basta.
+
+Lo que ya es firme: un caso cerrado, sin bloqueo jurídico y con su plazo vencido puede eliminarse de forma definitiva (llave destruida, constancia permanente, respaldos sin llave a los 7 días), y esa eliminación se lleva también todo lo del portal.
+
+
 Documento para un abogado. Reúne lo que hace el portal con datos personales, el texto que hoy ve el cliente, lo que la política de privacidad pública dice y no dice, y el cambio propuesto. Nada de esto se publicó: la política vigente no se tocó.
 
 ## Qué hace el portal con datos personales
 
 - **Quién es la persona.** Un cliente de un despacho, sin cuenta en ALETHEIA.
-- **Qué datos entran.** Su nombre y su correo, que escribe el despacho al invitarlo. La fecha en que aceptó el aviso de datos y la fecha de su última visita. Los avisos que el despacho escribe para él, que pueden contener datos del caso, y el título y el estado del caso.
-- **Qué datos no entran.** Notas internas, tareas, equipo, evidencias y cadena de custodia no llegan al portal.
+- **Qué datos entran.** Su nombre y su correo, que escribe el despacho al invitarlo. La fecha en que aceptó el aviso de datos y la fecha de su última visita. Los avisos que el despacho escribe para él, que pueden contener datos del caso, y el título y el estado del caso. Los mensajes de texto que el cliente le escribe al despacho (hasta 2000 caracteres, sin archivos). Las copias de documentos que el despacho sube para él (hasta 25 MB cada una, cifradas con la llave del caso).
+- **Qué datos no entran.** Notas internas, tareas, equipo, evidencias y cadena de custodia no llegan al portal. Los correos que el portal envía (invitación, novedades) no copian el contenido ni el título del caso ni nombres de archivo.
 - **De dónde vienen.** Del despacho, no del cliente. El cliente no los entrega: se enteran de que existen cuando recibe el correo.
-- **Cuánto duran.** El acceso vale 30 días desde cada envío del enlace. El despacho puede quitarlo en cualquier momento. Los datos del acceso (nombre, correo, fechas) se conservan mientras exista el caso; no hay hoy una supresión automática al revocar.
-- **Qué queda registrado.** En la auditoría del despacho: invitación, revocación, renovación del enlace, aceptación del aviso y publicación de cada aviso (sin su texto), con la IP y el navegador de quien actúa.
+- **Cuánto duran.** El acceso vale 30 días desde cada envío del enlace; el cliente puede pedir uno nuevo hasta 90 días después de que venza, y el despacho puede quitarlo en cualquier momento. Los datos del acceso, los mensajes y los avisos se conservan mientras exista el caso; no hay hoy una supresión automática al revocar. Al eliminar el caso se eliminan con él. Un documento que el despacho quita se borra del almacenamiento en el acto.
+- **Qué queda registrado.** En la auditoría del despacho: invitación, revocación, renovación del enlace, aceptación del aviso, publicación de cada aviso, cada mensaje del cliente (sin su texto) y alta, retiro y descarga de documentos, con la IP y el navegador de quien actúa.
 
 ## La contradicción que hay que resolver
 

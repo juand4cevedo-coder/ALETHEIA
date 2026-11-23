@@ -72,6 +72,15 @@ Hay dos detalles que el código debe tener en cuenta:
 - Como el rol no puede listar el bucket de evidencias, S3 responde 403 y no 404 cuando un objeto no existe. El adaptador de almacenamiento lo trata como no encontrado.
 - La regla de 7 días cuenta hasta la medianoche UTC siguiente y AWS borra con demora. TT-011 fija un margen para `backups_expire_at` (Arquitectura 8.11).
 
+Qué hay en el bucket de evidencias y quién lo borra:
+
+| Clave | Contenido | Se borra cuando |
+| --- | --- | --- |
+| `evidences/<uuid>` | Originales de evidencia y también las copias que el despacho sube al portal del cliente (ADR-054), cifrados con la llave del caso | Se quita el documento del portal, o se elimina el caso (ADR-055). Una evidencia suelta nunca se borra sola |
+| `exports/<uuid>.zip` | Paquetes de preservación | Vencen a las 24 horas, o se elimina el caso |
+
+Las copias del portal usan el mismo prefijo que la evidencia a propósito: la política del rol de la máquina no distingue prefijos y no hay que tocarla. La eliminación de un caso la hace la tarea `case_purge`, que borra los objetos antes de llamar a `purge_case`; si un borrado falla, la tarea se reintenta y el expediente no se elimina con restos.
+
 ## AWS KMS
 
 | Elemento | Valor |
@@ -274,6 +283,17 @@ Los archivos estáticos del sitio salen de una instancia en Ohio. Para quien vis
 Para comprobarlo después de publicar: en la pestaña Red del navegador, el `index-*.js`, las fuentes y las fotografías deben pedirse a `cdn.aletheia.sbs` con `x-cache: Hit from cloudfront` desde la segunda visita, y la consola no debe mostrar errores de CSP ni de CORS.
 
 Para deshacerlo: borrar la variable `CDN_URL` y publicar una versión nueva (el sitio vuelve a servir todo del origen; las páginas ya abiertas siguen funcionando porque el origen conserva los mismos archivos). Si además se quiere retirar la distribución, se desactiva y se borra desde la consola de CloudFront.
+
+## Portal del cliente y eliminación de casos
+
+Para quien opera el servicio. El diseño y sus razones están en ADR-054 y ADR-055.
+
+- **Portal del cliente.** El cliente entra a `/portal#t=<enlace>` sin cuenta. El enlace es un JWT firmado con la llave de la aplicación y no se guarda: la fila de `client_portal_accesses` decide si vale (revocado, vencido o reemplazado por una versión nueva lo invalidan). Dura 30 días y se renueva solo si el cliente lo pide con el enlace vencido hace menos de 90 días; el correo va siempre a la dirección registrada. Toda acción deja una fila en la auditoría del despacho.
+- **Correos del portal.** Salen por las tareas `email_send` con las plantillas `client_portal_invite`, `client_portal_message` y `client_portal_news`. Ninguno copia contenido del caso ni nombres de archivo. Los avisos al abogado y al cliente se agrupan (15 minutos y 1 hora) con la clave de idempotencia de la tarea.
+- **Límites.** 60 aperturas por IP, 20 invitaciones por cuenta, 3 renovaciones y 10 mensajes por acceso, todos en ventanas de 15 minutos (`rate_limit_events`).
+- **Eliminar un caso.** Solo dueños y administradores, con el caso cerrado, sin bloqueo jurídico y con el plazo vencido. Al pedirlo, la función `request_case_deletion` pasa el caso a `deleting` y destruye su llave. La tarea `case_purge` hace el resto. Para ver una eliminación atascada: `SELECT id, status, attempts, last_error FROM jobs WHERE kind = 'case_purge' AND status <> 'done'`. Reintenta hasta 5 veces; si queda `dead`, el caso sigue en `deleting` sin llave y hay que revisar el almacenamiento antes de volver a encolarla con el mismo `case_id`.
+- **Constancias.** `deletion_records` es permanente y de solo lectura. Guarda cantidad, bytes y huellas, nunca nombres ni contenido. Los respaldos conservan 7 días una copia cifrada sin llave.
+- **Cómo probarlo sin riesgo.** Con una cuenta y un caso de prueba. El plazo de conservación por defecto es de 10 años: para probar la eliminación hay que adelantar `retention_until` en la base, siempre sobre un caso de prueba.
 
 ## Rendimiento
 
