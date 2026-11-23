@@ -1793,6 +1793,52 @@
         }
       }
     },
+    "/api/v1/organization/health": {
+      "get": {
+        "tags": [
+          "organización"
+        ],
+        "summary": "Salud del despacho: plan, almacenamiento, cupo y seguridad reciente",
+        "operationId": "organization_health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationHealth"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No hay una sesión válida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No es propietario ni administrador.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
     "/api/v1/invitations/preview": {
       "post": {
         "tags": [
@@ -7831,6 +7877,96 @@
         ],
         "title": "OrganizationAuditPage"
       },
+      "OrganizationHealth": {
+        "properties": {
+          "storage_used_bytes": {
+            "type": "integer",
+            "title": "Storage Used Bytes"
+          },
+          "storage_limit_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storage Limit Bytes",
+            "description": "Null si la organización no tiene plan."
+          },
+          "plan_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Name"
+          },
+          "subscription_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscription Status"
+          },
+          "subscription_ends_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscription Ends At",
+            "description": "Fin de la prueba, del periodo vigente o de la lectura posterior a cancelar."
+          },
+          "members": {
+            "type": "integer",
+            "title": "Members"
+          },
+          "seats_included": {
+            "type": "integer",
+            "title": "Seats Included"
+          },
+          "seats_used": {
+            "type": "integer",
+            "title": "Seats Used",
+            "description": "Miembros más invitaciones abiertas."
+          },
+          "window_days": {
+            "type": "integer",
+            "title": "Window Days"
+          },
+          "security": {
+            "$ref": "#/components/schemas/SecurityIndicators"
+          }
+        },
+        "type": "object",
+        "required": [
+          "storage_used_bytes",
+          "storage_limit_bytes",
+          "plan_name",
+          "subscription_status",
+          "subscription_ends_at",
+          "members",
+          "seats_included",
+          "seats_used",
+          "window_days",
+          "security"
+        ],
+        "title": "OrganizationHealth",
+        "description": "Salud del despacho para quien lo gestiona (HU de métricas)."
+      },
       "OrganizationMembership": {
         "properties": {
           "id": {
@@ -8547,6 +8683,40 @@
         ],
         "title": "SeatsOut",
         "description": "Cupo de usuarios del plan (RN-012)."
+      },
+      "SecurityIndicators": {
+        "properties": {
+          "logins": {
+            "type": "integer",
+            "title": "Logins"
+          },
+          "failed_logins": {
+            "type": "integer",
+            "title": "Failed Logins"
+          },
+          "sessions_revoked": {
+            "type": "integer",
+            "title": "Sessions Revoked"
+          },
+          "role_changes": {
+            "type": "integer",
+            "title": "Role Changes"
+          },
+          "invitations": {
+            "type": "integer",
+            "title": "Invitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "logins",
+          "failed_logins",
+          "sessions_revoked",
+          "role_changes",
+          "invitations"
+        ],
+        "title": "SecurityIndicators",
+        "description": "Conteos de eventos de seguridad de la ventana de la respuesta."
       },
       "SupportTicketCreate": {
         "properties": {
