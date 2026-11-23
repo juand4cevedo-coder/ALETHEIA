@@ -68,12 +68,48 @@ def create_task_template(
     response: Response,
     principal: Annotated[Principal, Depends(get_principal)],
     session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
 ) -> TaskTemplateOut:
     response.headers["Cache-Control"] = "no-store"
     try:
-        view = template_service.create_template(session, principal, data)
+        view = template_service.create_template(
+            session, principal, data, client_ip=client_ip, user_agent=user_agent
+        )
     except task_service.TaskNotAllowedError:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail=_FORBIDDEN) from None
+    except template_service.TemplateNameTakenError:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="Ya tiene una plantilla con ese nombre.",
+        ) from None
+    return _out(view)
+
+
+@router.put(
+    "/task-templates/{template_id}",
+    summary="Editar una plantilla de tareas: cambia el nombre y reemplaza sus tareas",
+)
+def update_task_template(
+    template_id: uuid.UUID,
+    data: TaskTemplateCreate,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> TaskTemplateOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        view = template_service.update_template(
+            session, principal, template_id, data, client_ip=client_ip, user_agent=user_agent
+        )
+    except task_service.TaskNotAllowedError:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=_FORBIDDEN) from None
+    except template_service.TemplateNotFoundError:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="No encontramos esa plantilla."
+        ) from None
     except template_service.TemplateNameTakenError:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
@@ -91,9 +127,13 @@ def delete_task_template(
     template_id: uuid.UUID,
     principal: Annotated[Principal, Depends(get_principal)],
     session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
 ) -> Response:
     try:
-        template_service.delete_template(session, principal, template_id)
+        template_service.delete_template(
+            session, principal, template_id, client_ip=client_ip, user_agent=user_agent
+        )
     except task_service.TaskNotAllowedError:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail=_FORBIDDEN) from None
     except template_service.TemplateNotFoundError:

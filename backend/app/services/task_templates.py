@@ -5,7 +5,7 @@ import uuid
 import zoneinfo
 from dataclasses import dataclass
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -89,8 +89,54 @@ def list_templates(session: Session, principal: Principal) -> list[TemplateView]
     return [TemplateView(template, grouped[template.id]) for template in templates]
 
 
+def _audit(
+    session: Session,
+    principal: Principal,
+    action: str,
+    template_id: uuid.UUID,
+    name: str,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+    extra: dict[str, str | int] | None = None,
+) -> None:
+    session.add(
+        AuditLog(
+            organization_id=principal.organization_id,
+            actor_user_id=principal.user_id,
+            action=action,
+            target_id=template_id,
+            details={"name": name, **(extra or {})},
+            ip=audit_ip(client_ip),
+            user_agent=audit_user_agent(user_agent),
+        )
+    )
+
+
+def _build_items(
+    organization_id: uuid.UUID, template_id: uuid.UUID, data: TaskTemplateCreate
+) -> list[TaskTemplateItem]:
+    return [
+        TaskTemplateItem(
+            organization_id=organization_id,
+            template_id=template_id,
+            position=position,
+            title=item.title,
+            description=item.description,
+            priority=item.priority,
+            due_days=item.due_days,
+        )
+        for position, item in enumerate(data.items, start=1)
+    ]
+
+
 def create_template(
-    session: Session, principal: Principal, data: TaskTemplateCreate
+    session: Session,
+    principal: Principal,
+    data: TaskTemplateCreate,
+    *,
+    client_ip: str,
+    user_agent: str | None,
 ) -> TemplateView:
     organization_id = _require_manager(principal)
     session.commit()
@@ -101,26 +147,82 @@ def create_template(
             )
             session.add(template)
             session.flush()
-            items = [
-                TaskTemplateItem(
-                    organization_id=organization_id,
-                    template_id=template.id,
-                    position=position,
-                    title=item.title,
-                    description=item.description,
-                    priority=item.priority,
-                    due_days=item.due_days,
-                )
-                for position, item in enumerate(data.items, start=1)
-            ]
+            items = _build_items(organization_id, template.id, data)
             session.add_all(items)
+            _audit(
+                session,
+                principal,
+                "task_template_created",
+                template.id,
+                data.name,
+                client_ip=client_ip,
+                user_agent=user_agent,
+                extra={"items": len(items)},
+            )
             session.flush()
     except IntegrityError:
         raise TemplateNameTakenError from None
     return TemplateView(template, items)
 
 
-def delete_template(session: Session, principal: Principal, template_id: uuid.UUID) -> None:
+def update_template(
+    session: Session,
+    principal: Principal,
+    template_id: uuid.UUID,
+    data: TaskTemplateCreate,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> TemplateView:
+    """Cambia el nombre y reemplaza las tareas de la plantilla en una sola transacción.
+
+    Las tareas que ya se crearon desde la plantilla no cambian: son tareas normales del caso.
+    """
+    organization_id = _require_manager(principal)
+    session.commit()
+    try:
+        with session.begin():
+            template = session.scalar(
+                select(TaskTemplate)
+                .where(
+                    TaskTemplate.id == template_id,
+                    TaskTemplate.organization_id == organization_id,
+                )
+                .with_for_update()
+            )
+            if template is None:
+                raise TemplateNotFoundError
+            previous_name = template.name
+            session.execute(
+                delete(TaskTemplateItem).where(TaskTemplateItem.template_id == template_id)
+            )
+            template.name = data.name
+            items = _build_items(organization_id, template_id, data)
+            session.add_all(items)
+            _audit(
+                session,
+                principal,
+                "task_template_updated",
+                template_id,
+                data.name,
+                client_ip=client_ip,
+                user_agent=user_agent,
+                extra={"previous_name": previous_name, "items": len(items)},
+            )
+            session.flush()
+    except IntegrityError:
+        raise TemplateNameTakenError from None
+    return TemplateView(template, items)
+
+
+def delete_template(
+    session: Session,
+    principal: Principal,
+    template_id: uuid.UUID,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> None:
     organization_id = _require_manager(principal)
     session.commit()
     with session.begin():
@@ -131,6 +233,15 @@ def delete_template(session: Session, principal: Principal, template_id: uuid.UU
         )
         if template is None:
             raise TemplateNotFoundError
+        _audit(
+            session,
+            principal,
+            "task_template_deleted",
+            template_id,
+            template.name,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
         session.delete(template)
 
 

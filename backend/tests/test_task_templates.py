@@ -1,14 +1,16 @@
 """Plantillas de tareas: permisos, aislamiento por despacho y creación de tareas en un caso."""
 
 import datetime
+import uuid
 from typing import Any
 
-from sqlalchemy import update
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.models import User
+from app.db.tenancy import TenantContext, set_tenant
+from app.models import AuditLog, User
 from tests.conftest import NuevoCliente
-from tests.organizations import CLAVE, crear_miembro, crear_oficina
+from tests.organizations import CLAVE, Oficina, crear_miembro, crear_oficina
 
 _TEMPLATES = "/api/v1/task-templates"
 _CASES = "/api/v1/cases"
@@ -166,3 +168,116 @@ def test_no_se_aplica_la_plantilla_de_otro_despacho(dispositivo: NuevoCliente, d
 
     assert response.status_code == 404
     assert client.delete(f"{_TEMPLATES}/{foreign_id}").status_code == 404
+
+
+def _audit_actions(db: Session, office: Oficina) -> list[str]:
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    return list(
+        db.scalars(
+            select(AuditLog.action)
+            .where(
+                AuditLog.organization_id == office.organization_id,
+                AuditLog.action.like("task_template_%"),
+            )
+            .order_by(AuditLog.id)
+        )
+    )
+
+
+def test_se_edita_una_plantilla_y_se_reemplazan_sus_tareas(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office = crear_oficina(db)
+    client = _session(dispositivo, db, office.owner)
+    template_id = client.post(_TEMPLATES, json=_BODY).json()["id"]
+    case_id = client.post(_CASES, json={"title": "Caso previo"}).json()["id"]
+    client.post(
+        f"{_CASES}/{case_id}/tasks/from-template",
+        json={"template_id": template_id, "assigned_to": str(office.owner.id)},
+    )
+
+    edited = client.put(
+        f"{_TEMPLATES}/{template_id}",
+        json={
+            "name": "Proceso laboral actualizado",
+            "items": [
+                {"title": "Revisar poder", "priority": "urgent", "due_days": 1},
+                {"title": "Radicar la demanda", "due_days": 5},
+            ],
+        },
+    )
+
+    assert edited.status_code == 200, edited.text
+    assert edited.headers["cache-control"] == "no-store"
+    body = edited.json()
+    assert body["id"] == template_id
+    assert body["name"] == "Proceso laboral actualizado"
+    assert [item["title"] for item in body["items"]] == ["Revisar poder", "Radicar la demanda"]
+    assert body["items"][0]["priority"] == "urgent"
+    listed = client.get(_TEMPLATES).json()["items"]
+    assert [template["name"] for template in listed] == ["Proceso laboral actualizado"]
+    assert len(listed[0]["items"]) == 2
+    # Las tareas ya creadas con la versión anterior no cambian.
+    assert len(client.get(f"{_CASES}/{case_id}/tasks").json()["items"]) == 3
+    # Y aplicar la plantilla ahora crea las dos nuevas.
+    case_two = client.post(_CASES, json={"title": "Caso nuevo"}).json()["id"]
+    applied = client.post(
+        f"{_CASES}/{case_two}/tasks/from-template",
+        json={"template_id": template_id, "assigned_to": str(office.owner.id)},
+    )
+    assert [task["title"] for task in applied.json()["tasks"]] == [
+        "Revisar poder",
+        "Radicar la demanda",
+    ]
+
+
+def test_editar_respeta_nombres_permisos_y_despachos(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office = crear_oficina(db)
+    other = crear_oficina(db)
+    assistant = crear_miembro(db, office, "asistente-edita@example.com", "assistant")
+    client = _session(dispositivo, db, office.owner)
+    first = client.post(_TEMPLATES, json=_BODY).json()["id"]
+    second = client.post(
+        _TEMPLATES, json={"name": "Otro proceso", "items": [{"title": "Una tarea"}]}
+    ).json()["id"]
+
+    # El mismo nombre de la propia plantilla se acepta; el de otra del despacho, no.
+    same = client.put(f"{_TEMPLATES}/{first}", json=_BODY)
+    assert same.status_code == 200, same.text
+    taken = client.put(f"{_TEMPLATES}/{second}", json=_BODY)
+    assert taken.status_code == 409
+    # La plantilla de otro despacho no existe para quien edita.
+    foreign = _session(dispositivo, db, other.owner)
+    assert foreign.put(f"{_TEMPLATES}/{first}", json=_BODY).status_code == 404
+    assert client.put(f"{_TEMPLATES}/{uuid.uuid4()}", json=_BODY).status_code == 404
+    # Un asistente no edita, y los datos se validan igual que al crear.
+    assert (
+        _session(dispositivo, db, assistant).put(f"{_TEMPLATES}/{first}", json=_BODY).status_code
+        == 403
+    )
+    assert (
+        client.put(f"{_TEMPLATES}/{first}", json={"name": "Vacía", "items": []}).status_code == 422
+    )
+    assert dispositivo().put(f"{_TEMPLATES}/{first}", json=_BODY).status_code == 401
+
+
+def test_crear_editar_y_borrar_dejan_rastro_en_la_auditoria(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    office = crear_oficina(db)
+    client = _session(dispositivo, db, office.owner)
+
+    template_id = client.post(_TEMPLATES, json=_BODY).json()["id"]
+    client.put(
+        f"{_TEMPLATES}/{template_id}",
+        json={"name": "Renombrada", "items": [{"title": "Una tarea"}]},
+    )
+    client.delete(f"{_TEMPLATES}/{template_id}")
+
+    assert _audit_actions(db, office) == [
+        "task_template_created",
+        "task_template_updated",
+        "task_template_deleted",
+    ]

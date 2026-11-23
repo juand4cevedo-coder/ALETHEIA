@@ -4124,6 +4124,62 @@
       }
     },
     "/api/v1/task-templates/{template_id}": {
+      "put": {
+        "tags": [
+          "plantillas de tareas"
+        ],
+        "summary": "Editar una plantilla de tareas: cambia el nombre y reemplaza sus tareas",
+        "operationId": "update_task_template",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "template_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Template Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskTemplateCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskTemplateOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      },
       "delete": {
         "tags": [
           "plantillas de tareas"
@@ -8659,6 +8715,9 @@
           "role_changed",
           "member_removed",
           "organization_policy_changed",
+          "task_template_created",
+          "task_template_updated",
+          "task_template_deleted",
           "two_factor_enabled",
           "two_factor_disabled",
           "two_factor_failed",
