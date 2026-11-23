@@ -393,10 +393,11 @@
   mask-image: linear-gradient(to bottom, transparent 0%, #000 60%);
   pointer-events: none;
   user-select: none;
-  user-select: none;
 }
 
-dedo. */ .mobileMenu > :where(button, a),
+/* Menú móvil: las filas entran una tras otra, la flecha avanza al tocar y la fila responde al
+   dedo. */
+.mobileMenu > :where(button, a),
 .mobileDetail nav > a {
   animation: mobile-row-in 420ms var(--ease-out) both;
   animation-delay: calc(var(--i, 0) * 45ms + 60ms);
