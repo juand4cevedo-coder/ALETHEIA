@@ -12,6 +12,7 @@ import {
   listInvitationsInfiniteQueryKey,
   listMembersInfiniteOptions,
   listMembersInfiniteQueryKey,
+  readMeQueryKey,
   removeMemberMutation,
   revokeInvitationMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
@@ -25,6 +26,7 @@ import { pageTitle } from "../config/site.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { dateTime, shortDate } from "../features/members/format.ts";
 import { ChangeRoleDialog } from "../features/members/ChangeRoleDialog.tsx";
+import { TransferOwnershipDialog } from "../features/members/TransferOwnershipDialog.tsx";
 import { InviteDialog } from "../features/members/InviteDialog.tsx";
 import { RemoveMemberDialog } from "../features/members/RemoveMemberDialog.tsx";
 import { RevokeInvitationDialog } from "../features/members/RevokeInvitationDialog.tsx";
@@ -54,7 +56,10 @@ export function MembersPage() {
       <meta name="robots" content="noindex" />
 
       {managesTeam(me.organization?.role) ? (
-        <Team currentUserId={me.id} />
+        <Team
+          currentUserId={me.id}
+          isOwner={me.organization?.role === "owner"}
+        />
       ) : (
         <>
           <Header />
@@ -77,13 +82,20 @@ function Header({ action }: { action?: ReactNode }) {
   );
 }
 
-function Team({ currentUserId }: { currentUserId: string }) {
+function Team({
+  currentUserId,
+  isOwner,
+}: {
+  currentUserId: string;
+  isOwner: boolean;
+}) {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [inviting, setInviting] = useState(false);
   const [sent, setSent] = useState<InvitationOut | null>(null);
   const [revoking, setRevoking] = useState<InvitationOut | null>(null);
   const [changing, setChanging] = useState<MemberOut | null>(null);
+  const [handingOver, setHandingOver] = useState<MemberOut | null>(null);
   const [removing, setRemoving] = useState<MemberOut | null>(null);
   const [removed, setRemoved] = useState<string | null>(null);
 
@@ -302,6 +314,19 @@ function Team({ currentUserId }: { currentUserId: string }) {
                     >
                       Cambiar el rol
                     </Button>
+                    {isOwner && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        aria-label={`Dejar el despacho a cargo de ${member.full_name}`}
+                        onClick={() => {
+                          setRemoved(null);
+                          setHandingOver(member);
+                        }}
+                      >
+                        Entregar el despacho
+                      </Button>
+                    )}
                     <Button
                       variant="secondary"
                       size="sm"
@@ -408,6 +433,17 @@ function Team({ currentUserId }: { currentUserId: string }) {
         onClose={() => setChanging(null)}
         onChanged={() => {
           setChanging(null);
+          void refresh();
+        }}
+      />
+      <TransferOwnershipDialog
+        key={handingOver?.user_id ?? "ninguno-traspaso"}
+        member={handingOver}
+        onClose={() => setHandingOver(null)}
+        onTransferred={() => {
+          setHandingOver(null);
+          // Quien entregó ya no es responsable: se vuelve a leer su perfil y la página decide.
+          void queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
           void refresh();
         }}
       />

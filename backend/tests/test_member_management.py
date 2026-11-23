@@ -305,3 +305,87 @@ def test_quien_fue_retirado_puede_ser_invitado_de_nuevo_sin_recuperar_sus_casos(
 
     assert reinvitada.status_code == 201, reinvitada.text
     assert _asignaciones(db, oficina, persona) == 0
+
+
+# --- Transferir la titularidad ----------------------------------------------------------------
+
+_TRASPASO = "/api/v1/organization/ownership-transfer"
+
+
+def _traspasar(cliente: TestClient, user: User, *, rol: str = "admin", clave: str = CLAVE) -> Any:
+    return cliente.post(
+        _TRASPASO, json={"user_id": str(user.id), "previous_owner_role": rol, "password": clave}
+    )
+
+
+def test_el_propietario_deja_el_despacho_a_otro_miembro_y_queda_en_la_auditoria(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    oficina = crear_oficina(db, "firm")
+    nueva = crear_miembro(db, oficina, "ana@example.com", "lawyer")
+    cliente = _sesion(dispositivo, oficina.owner)
+
+    respuesta = _traspasar(cliente, nueva, rol="lawyer")
+
+    assert respuesta.status_code == 200, respuesta.text
+    assert respuesta.json()["role"] == "owner"
+    assert _rol(db, oficina, nueva) == "owner"
+    _contexto(db, oficina)
+    roles = {fila.user_id: fila.role for fila in db.scalars(select(Membership))}
+    assert roles[oficina.owner.id] == "lawyer"
+    assert list(roles.values()).count("owner") == 1
+    (evento,) = _auditoria(db, oficina, "ownership_transferred")
+    assert evento.actor_user_id == oficina.owner.id
+    assert evento.target_id == nueva.id
+
+
+def test_la_contrasena_equivocada_no_cambia_nada(dispositivo: NuevoCliente, db: Session) -> None:
+    oficina = crear_oficina(db, "firm")
+    nueva = crear_miembro(db, oficina, "ana@example.com", "lawyer")
+
+    respuesta = _traspasar(_sesion(dispositivo, oficina.owner), nueva, clave="otra-clave-1234567")
+
+    assert respuesta.status_code == 400
+    assert _rol(db, oficina, nueva) == "lawyer"
+    assert _auditoria(db, oficina, "ownership_transferred") == []
+
+
+def test_solo_el_propietario_traspasa_el_despacho(dispositivo: NuevoCliente, db: Session) -> None:
+    oficina = crear_oficina(db, "firm")
+    admin = crear_miembro(db, oficina, "admin@example.com", "admin")
+    otra = crear_miembro(db, oficina, "ana@example.com", "lawyer")
+
+    respuesta = _traspasar(_sesion(dispositivo, admin), otra)
+
+    assert respuesta.status_code == 403
+    assert _rol(db, oficina, otra) == "lawyer"
+
+
+def test_no_se_traspasa_a_uno_mismo_ni_a_alguien_de_otro_despacho(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    oficina = crear_oficina(db, "firm")
+    ajena = crear_oficina(db, "firm")
+    cliente = _sesion(dispositivo, oficina.owner)
+
+    assert _traspasar(cliente, oficina.owner).status_code == 403
+    assert _traspasar(cliente, ajena.owner).status_code == 404
+
+
+def test_cerrar_la_cuenta_pasa_a_ser_posible_despues_de_traspasar(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    oficina = crear_oficina(db, "firm")
+    nueva = crear_miembro(db, oficina, "ana@example.com", "admin")
+    cliente = _sesion(dispositivo, oficina.owner)
+    _traspasar(cliente, nueva)
+
+    # Quien entregó ya no es responsable: el cambio rige en su siguiente petición.
+    assert cliente.get(_MIEMBROS).status_code == 200
+    assert (
+        cliente.post(
+            _TRASPASO,
+            json={"user_id": str(nueva.id), "previous_owner_role": "admin", "password": CLAVE},
+        ).status_code
+        == 403
+    )

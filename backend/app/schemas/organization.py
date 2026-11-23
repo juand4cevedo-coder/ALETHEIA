@@ -30,6 +30,7 @@ class OrganizationAuditAction(StrEnum):
     INVITATION_REVOKED = "invitation_revoked"
     INVITATION_ACCEPTED = "invitation_accepted"
     ROLE_CHANGED = "role_changed"
+    OWNERSHIP_TRANSFERRED = "ownership_transferred"
     MEMBER_REMOVED = "member_removed"
     ORGANIZATION_POLICY_CHANGED = "organization_policy_changed"
     TASK_TEMPLATE_CREATED = "task_template_created"
@@ -94,6 +95,20 @@ class RoleChangeRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     role: InvitableRole = Field(description="Rol nuevo: admin, lawyer o assistant.")
+
+
+class OwnershipTransferRequest(BaseModel):
+    """Dejar el despacho a cargo de otro miembro. Pide la contraseña de quien lo entrega."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    user_id: uuid.UUID = Field(description="El miembro que pasa a ser responsable del despacho.")
+    previous_owner_role: Literal["admin", "lawyer"] = Field(
+        description="El rol con el que sigue quien entrega: administrador o abogado."
+    )
+    password: str = Field(
+        min_length=1, max_length=128, description="La contraseña de quien entrega el despacho."
+    )
 
 
 class InvitationOut(BaseModel):

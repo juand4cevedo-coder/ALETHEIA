@@ -114,6 +114,7 @@ import {
   submitWebVitals,
   taskCalendar,
   taskInbox,
+  transferOwnership,
   twoFactorDisable,
   twoFactorEnable,
   twoFactorRecoveryCodes,
@@ -429,6 +430,9 @@ import type {
   TaskInboxData,
   TaskInboxError,
   TaskInboxResponse,
+  TransferOwnershipData,
+  TransferOwnershipError,
+  TransferOwnershipResponse,
   TwoFactorDisableData,
   TwoFactorDisableError,
   TwoFactorDisableResponse,
@@ -1245,6 +1249,33 @@ export const changeMemberRoleMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await changeMemberRole({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Dejar el despacho a cargo de otro miembro
+ */
+export const transferOwnershipMutation = (
+  options?: Partial<Options<TransferOwnershipData>>,
+): UseMutationOptions<
+  TransferOwnershipResponse,
+  TransferOwnershipError,
+  Options<TransferOwnershipData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    TransferOwnershipResponse,
+    TransferOwnershipError,
+    Options<TransferOwnershipData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await transferOwnership({
         ...options,
         ...fnOptions,
         throwOnError: true,

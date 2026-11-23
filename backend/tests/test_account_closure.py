@@ -120,7 +120,7 @@ def test_propietaria_con_equipo_debe_resolver_la_responsabilidad_primero(
     response = _close(client)
 
     assert response.status_code == 409
-    assert "dejar el despacho a cargo" in response.json()["detail"]
+    assert "entregue el despacho a otro miembro" in response.json()["detail"]
     db.refresh(owner)
     db.refresh(organization)
     assert owner.status == "active"

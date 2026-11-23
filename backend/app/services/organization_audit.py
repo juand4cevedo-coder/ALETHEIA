@@ -30,6 +30,7 @@ SECURITY_ACTIONS = (
     "invitation_revoked",
     "invitation_accepted",
     "role_changed",
+    "ownership_transferred",
     "member_removed",
     "organization_policy_changed",
     "task_template_created",
