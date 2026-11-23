@@ -16,9 +16,9 @@ import {
   currentMonth,
   dayKey,
   dayLabel,
+  gridRange,
   monthGrid,
   monthLabel,
-  monthRange,
   timeLabel,
 } from "../features/calendar/calendar.ts";
 import { buildIcs } from "../features/calendar/ics.ts";
@@ -60,7 +60,8 @@ export function CalendarPage() {
   // Hoy se fija al abrir la pantalla: el calendario no se mueve solo si pasa la medianoche.
   const [today] = useState(() => dayKey(new Date().toISOString()));
   const [selected, setSelected] = useState<string>(today);
-  const range = monthRange(month);
+  // Se pide toda la cuadrícula visible, no solo el mes: los días vecinos también se pueden elegir.
+  const range = gridRange(month);
   const calendar = useQuery({
     ...taskCalendarOptions({ query: range }),
     enabled: me.organization != null && !me.platform_admin,
@@ -89,7 +90,12 @@ export function CalendarPage() {
   }
 
   function exportIcs() {
-    const ics = buildIcs(calendar.data?.items ?? []);
+    // Solo los plazos del mes elegido: la cuadrícula trae además días de los meses vecinos.
+    const prefix = `${month.year}-${String(month.month).padStart(2, "0")}-`;
+    const inMonth = (calendar.data?.items ?? []).filter(
+      (task) => task.due_at && dayKey(task.due_at).startsWith(prefix),
+    );
+    const ics = buildIcs(inMonth);
     if (ics)
       download(
         ics,
@@ -109,7 +115,7 @@ export function CalendarPage() {
             variant="secondary"
             size="sm"
             onClick={exportIcs}
-            disabled={total === 0}
+            disabled={total === 0 || calendar.isPlaceholderData}
           >
             <DescargarIcon size={16} aria-hidden="true" />
             Llevar a mi calendario

@@ -171,7 +171,7 @@ it("filtra por acción, persona y fechas desde el servidor y conserva la selecci
   expect(router.state.location.search).toBe("");
 });
 
-it("ofrece descargar la auditoría con los mismos filtros de la lista", async () => {
+function serveAudit(exportResponse: () => Response) {
   fetchMock.mockImplementation(async (input) => {
     const path = new URL((input as Request).url).pathname;
     if (path === "/api/v1/me") return jsonResponse(profile("owner"));
@@ -189,15 +189,79 @@ it("ofrece descargar la auditoría con los mismos filtros de la lista", async ()
       });
     if (path === "/api/v1/organization/audit")
       return jsonResponse({ items: [], next_cursor: null });
+    if (path === "/api/v1/organization/audit/export") return exportResponse();
     throw new Error(`Ruta inesperada: ${path}`);
   });
+}
+
+function csv(headers: Record<string, string> = {}) {
+  return new Response("fecha_utc,accion", {
+    status: 200,
+    headers: {
+      "content-type": "text/csv",
+      "content-disposition":
+        'attachment; filename="auditoria-aletheia-2026-11-22.csv"',
+      "x-rows-truncated": "0",
+      ...headers,
+    },
+  });
+}
+
+function stubDownload() {
+  const create = vi.fn(() => "blob:auditoria");
+  Object.assign(URL, { createObjectURL: create, revokeObjectURL: vi.fn() });
+  const click = vi
+    .spyOn(HTMLAnchorElement.prototype, "click")
+    .mockImplementation(() => {});
+  return { create, click };
+}
+
+it("descarga la auditoría con los mismos filtros de la lista", async () => {
+  serveAudit(() => csv());
+  const { create, click } = stubDownload();
+  const user = userEvent.setup();
   await renderRoute("/app/auditoria?accion=role_changed&desde=2026-11-01");
-  const link = await screen.findByRole("link", { name: /Descargar CSV/ });
-  const href = new URL(link.getAttribute("href")!, "http://localhost");
-  expect(href.pathname).toBe("/api/v1/organization/audit/export");
-  expect(href.searchParams.get("action")).toBe("role_changed");
-  expect(href.searchParams.get("created_from")).toBe(
+
+  await user.click(
+    await screen.findByRole("button", { name: /Descargar CSV/ }),
+  );
+  await waitFor(() => expect(click).toHaveBeenCalled());
+  expect(create).toHaveBeenCalled();
+
+  const request = fetchMock.mock.calls
+    .map(([input]) => new URL((input as Request).url))
+    .find((url) => url.pathname.endsWith("/audit/export"))!;
+  expect(request.searchParams.get("action")).toBe("role_changed");
+  expect(request.searchParams.get("created_from")).toBe(
     "2026-11-01T05:00:00.000Z",
   );
-  expect(link).toHaveAttribute("download");
+  expect(screen.queryByText(/solo los 5000 eventos/)).toBeNull();
+});
+
+it("avisa cuando la descarga se recortó a los eventos más recientes", async () => {
+  serveAudit(() => csv({ "x-rows-truncated": "1" }));
+  stubDownload();
+  const user = userEvent.setup();
+  await renderRoute("/app/auditoria");
+
+  await user.click(
+    await screen.findByRole("button", { name: /Descargar CSV/ }),
+  );
+  expect(
+    await screen.findByText(/solo los 5000 eventos más recientes/),
+  ).toBeInTheDocument();
+});
+
+it("explica cuando no se pudo preparar la descarga", async () => {
+  serveAudit(() => new Response("{}", { status: 500 }));
+  stubDownload();
+  const user = userEvent.setup();
+  await renderRoute("/app/auditoria");
+
+  await user.click(
+    await screen.findByRole("button", { name: /Descargar CSV/ }),
+  );
+  expect(
+    await screen.findByText(/No pudimos preparar la descarga/),
+  ).toBeInTheDocument();
 });

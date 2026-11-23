@@ -70,6 +70,20 @@ export function monthRange({ year, month }: MonthRef): {
   };
 }
 
+/** Periodo que cubre la cuadrícula visible: de su primer lunes al día siguiente a su último
+ * domingo. Incluye los días de los meses vecinos que completan las filas, para que elegirlos
+ * no muestre como vacío un día que sí tiene plazos. */
+export function gridRange(month: MonthRef): { from: string; to: string } {
+  const cells = monthGrid(month).flat();
+  const last = cells.at(-1)!.key;
+  const [year, mon, day] = last.split("-").map(Number);
+  const after = new Date(Date.UTC(year!, mon! - 1, day! + 1));
+  return {
+    from: `${cells[0]!.key}T00:00:00${OFFSET}`,
+    to: `${after.getUTCFullYear()}-${pad(after.getUTCMonth() + 1)}-${pad(after.getUTCDate())}T00:00:00${OFFSET}`,
+  };
+}
+
 export function monthLabel({ year, month }: MonthRef): string {
   const label = MONTH_FORMAT.format(new Date(Date.UTC(year, month - 1, 1)));
   return label.charAt(0).toUpperCase() + label.slice(1);

@@ -5,6 +5,7 @@ import {
   currentMonth,
   dayKey,
   dayLabel,
+  gridRange,
   monthGrid,
   monthLabel,
   monthRange,
@@ -26,6 +27,19 @@ describe("calendario de plazos", () => {
     expect(monthRange({ year: 2026, month: 12 }).to).toBe(
       "2027-01-01T00:00:00-05:00",
     );
+  });
+
+  it("pide toda la cuadrícula visible, con los días de los meses vecinos", () => {
+    // Noviembre de 2026 se dibuja del 26 de octubre al 6 de diciembre.
+    expect(gridRange({ year: 2026, month: 11 })).toEqual({
+      from: "2026-10-26T00:00:00-05:00",
+      to: "2026-12-07T00:00:00-05:00",
+    });
+    // Una cuadrícula de seis semanas sigue dentro del máximo de 62 días de la API.
+    const range = gridRange({ year: 2026, month: 8 });
+    const days =
+      (Date.parse(range.to) - Date.parse(range.from)) / (24 * 60 * 60 * 1000);
+    expect(days).toBeLessThanOrEqual(42);
   });
 
   it("avanza y retrocede entre años", () => {
