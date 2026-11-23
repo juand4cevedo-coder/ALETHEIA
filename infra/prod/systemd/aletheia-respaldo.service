@@ -5,7 +5,7 @@ After=network-online.target docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/aletheia/infra/prod/respaldar.sh
+ExecStart=/bin/bash /opt/aletheia/infra/prod/respaldar.sh
 # Una copia atascada no debe dejar el servidor ocupado toda la noche.
 TimeoutStartSec=1800
 Nice=10
