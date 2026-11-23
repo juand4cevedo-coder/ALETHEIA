@@ -1,0 +1,8 @@
+[Unit]
+Description=Publicar las métricas de salud de ALETHEIA en CloudWatch
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/aletheia/infra/prod/metricas.sh
+TimeoutStartSec=45
