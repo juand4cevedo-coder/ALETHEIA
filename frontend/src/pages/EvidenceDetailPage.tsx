@@ -18,6 +18,7 @@ import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { custodyActionLabel } from "../features/cases/custodyActions.ts";
 import { formatColombiaTime } from "../features/cases/dates.ts";
+import { ShareEvidencePanel } from "../features/cases/ShareEvidencePanel.tsx";
 import styles from "./EvidenceDetailPage.module.css";
 
 const SEAL = {
@@ -189,6 +190,9 @@ export function EvidenceDetailPage() {
           </div>
         </dl>
       </Panel>
+      {me.organization?.role !== "assistant" && me.organization && (
+        <ShareEvidencePanel caseId={caseId} evidenceId={evidenceId} />
+      )}
       <Panel
         title="Eventos de esta evidencia"
         description="Los números indican su posición en la cadena de custodia del caso."
@@ -200,7 +204,12 @@ export function EvidenceDetailPage() {
                 <strong>
                   #{event.seq}: {custodyActionLabel(event.action)}
                 </strong>
-                <span>{event.actor_name ?? "Sistema"}</span>
+                <span>
+                  {event.actor_name ??
+                    (event.action === "evidence_link_downloaded"
+                      ? "Persona con el enlace"
+                      : "Sistema")}
+                </span>
               </div>
               <time dateTime={event.occurred_at}>
                 {formatColombiaTime(event.occurred_at, { seconds: true })}

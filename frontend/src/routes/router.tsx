@@ -61,6 +61,15 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: ROUTES.sharedEvidence.slice(1),
+        lazy: {
+          Component: () =>
+            import("../pages/SharedEvidencePage.tsx").then(
+              (module) => module.SharedEvidencePage,
+            ),
+        },
+      },
+      {
         path: ROUTES.verifier.slice(1),
         lazy: {
           Component: () =>

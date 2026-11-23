@@ -8,5 +8,7 @@ Disallow: /restablecer-contrasena
 Disallow: /recuperar
 Disallow: /invitacion
 Disallow: /ingresar
+Disallow: /descargar-paquete
+Disallow: /compartido
 
 Sitemap: https://aletheia.sbs/sitemap.xml

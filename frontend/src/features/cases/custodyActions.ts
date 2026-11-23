@@ -17,6 +17,9 @@ export const CUSTODY_ACTION_LABELS: Record<string, string> = {
   case_reopened: "Caso reabierto",
   case_retention_updated: "Conservación actualizada",
   deletion_requested: "Eliminación solicitada",
+  evidence_link_created: "Enlace para compartir creado",
+  evidence_link_revoked: "Enlace para compartir revocado",
+  evidence_link_downloaded: "Original descargado con un enlace",
 };
 
 export function custodyActionLabel(action: string): string {

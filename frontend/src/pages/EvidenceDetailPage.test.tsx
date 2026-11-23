@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 
@@ -202,4 +202,118 @@ it("conserva el detalle y permite reintentar si falla la página siguiente", asy
     screen.getByRole("button", { name: "Ver más eventos" }),
   );
   expect(await screen.findByText(/#2: Evidencia subida/)).toBeInTheDocument();
+});
+
+it("crea un enlace para compartir, lo muestra una sola vez y permite revocarlo", async () => {
+  let links: unknown[] = [];
+  let sent: unknown;
+  const link = {
+    id: "01890a5d-ac96-774b-bcce-b302099a8201",
+    label: "Para el perito",
+    created_by_name: "Laura Gómez",
+    created_at: "2026-11-23T15:00:00Z",
+    expires_at: "2026-11-24T15:00:00Z",
+    revoked_at: null,
+    status: "active",
+    download_count: 0,
+    last_downloaded_at: null,
+  };
+  fetchMock.mockImplementation(async (input) => {
+    const request = input as Request;
+    const url = new URL(request.url);
+    if (url.pathname === "/api/v1/me") return jsonResponse(me);
+    if (url.pathname === `${api}/share-links`) {
+      if (request.method === "POST") {
+        sent = await request.json();
+        links = [link];
+        return jsonResponse(
+          { link, url: "https://aletheia.sbs/compartido#t=secreto" },
+          201,
+        );
+      }
+      return jsonResponse({ items: links });
+    }
+    if (url.pathname === `${api}/share-links/${link.id}`) {
+      links = [{ ...link, status: "revoked" }];
+      return new Response(null, { status: 204 });
+    }
+    if (url.pathname === api) {
+      return jsonResponse({
+        id: evidenceId,
+        original_filename: "registro.txt",
+        declared_type: "document",
+        declared_origin: "Entregado por la cliente",
+        detected_type: "text/plain",
+        sha256: sha,
+        size_bytes: 4,
+        tsa_status: "pending",
+        tsa_time: null,
+        uploaded_at: "2026-11-14T14:00:00Z",
+        events: [],
+        next_event_seq: null,
+      });
+    }
+    throw new Error(`Ruta inesperada: ${url.pathname}`);
+  });
+  vi.spyOn(window, "confirm").mockReturnValue(true);
+  const user = userEvent.setup();
+  await renderRoute(route);
+
+  await user.click(
+    await screen.findByRole("button", { name: "Crear un enlace" }),
+  );
+  const dialog = screen.getByRole("dialog", {
+    name: "Crear un enlace para compartir",
+  });
+  await user.type(
+    within(dialog).getByLabelText("Nota (opcional)"),
+    "Para el perito",
+  );
+  await user.click(
+    within(dialog).getByRole("button", { name: "Crear el enlace" }),
+  );
+
+  const shown = await screen.findByLabelText("Enlace para compartir");
+  expect(shown).toHaveValue("https://aletheia.sbs/compartido#t=secreto");
+  expect(sent).toEqual({ expires_in_hours: 24, label: "Para el perito" });
+  await user.click(screen.getByRole("button", { name: "Listo" }));
+  // El enlace completo ya no se vuelve a mostrar.
+  expect(screen.queryByDisplayValue(/compartido#t=/)).toBeNull();
+
+  const list = await screen.findByRole("list", {
+    name: "Enlaces de esta evidencia",
+  });
+  expect(within(list).getByText("Para el perito")).toBeInTheDocument();
+  await user.click(within(list).getByRole("button", { name: "Revocar" }));
+  expect(await screen.findByText("Revocado")).toBeInTheDocument();
+});
+
+it("un asistente no ve el panel para compartir", async () => {
+  fetchMock.mockImplementation(async (input) => {
+    const url = new URL((input as Request).url);
+    if (url.pathname === "/api/v1/me")
+      return jsonResponse({
+        ...me,
+        organization: { ...me.organization, role: "assistant" },
+      });
+    if (url.pathname === api)
+      return jsonResponse({
+        id: evidenceId,
+        original_filename: "registro.txt",
+        declared_type: "document",
+        declared_origin: "Entregado por la cliente",
+        detected_type: "text/plain",
+        sha256: sha,
+        size_bytes: 4,
+        tsa_status: "pending",
+        tsa_time: null,
+        uploaded_at: "2026-11-14T14:00:00Z",
+        events: [],
+        next_event_seq: null,
+      });
+    throw new Error(`Ruta inesperada: ${url.pathname}`);
+  });
+  await renderRoute(route);
+  await screen.findByRole("heading", { name: "registro.txt" });
+  expect(screen.queryByText("Compartir con un enlace")).toBeNull();
 });

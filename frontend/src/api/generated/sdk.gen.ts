@@ -62,6 +62,9 @@ import type {
   CreateInvitationData,
   CreateInvitationErrors,
   CreateInvitationResponses,
+  CreateShareLinkData,
+  CreateShareLinkErrors,
+  CreateShareLinkResponses,
   CreateSupportTicketData,
   CreateSupportTicketErrors,
   CreateSupportTicketResponses,
@@ -77,6 +80,9 @@ import type {
   DownloadExportData,
   DownloadExportErrors,
   DownloadExportResponses,
+  DownloadSharedEvidenceData,
+  DownloadSharedEvidenceErrors,
+  DownloadSharedEvidenceResponses,
   ForgotPasswordData,
   ForgotPasswordErrors,
   ForgotPasswordResponses,
@@ -104,6 +110,9 @@ import type {
   InspectExportData,
   InspectExportErrors,
   InspectExportResponses,
+  InspectSharedEvidenceData,
+  InspectSharedEvidenceErrors,
+  InspectSharedEvidenceResponses,
   ListCaseNotesData,
   ListCaseNotesErrors,
   ListCaseNotesResponses,
@@ -131,6 +140,9 @@ import type {
   ListPlatformUsersData,
   ListPlatformUsersErrors,
   ListPlatformUsersResponses,
+  ListShareLinksData,
+  ListShareLinksErrors,
+  ListShareLinksResponses,
   ListTaskTemplatesData,
   ListTaskTemplatesResponses,
   LookupCourtesyData,
@@ -204,6 +216,9 @@ import type {
   RevokeInvitationData,
   RevokeInvitationErrors,
   RevokeInvitationResponses,
+  RevokeShareLinkData,
+  RevokeShareLinkErrors,
+  RevokeShareLinkResponses,
   SignInData,
   SignInErrors,
   SignInResponses,
@@ -1793,6 +1808,131 @@ export const twoFactorRecoveryCodes = <ThrowOnError extends boolean = false>(
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Listar los enlaces de una evidencia
+ */
+export const listShareLinks = <ThrowOnError extends boolean = false>(
+  options: Options<ListShareLinksData, ThrowOnError>,
+): RequestResult<ListShareLinksResponses, ListShareLinksErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    ListShareLinksResponses,
+    ListShareLinksErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/share-links",
+    ...options,
+  });
+
+/**
+ * Crear un enlace para compartir una evidencia
+ */
+export const createShareLink = <ThrowOnError extends boolean = false>(
+  options: Options<CreateShareLinkData, ThrowOnError>,
+): RequestResult<
+  CreateShareLinkResponses,
+  CreateShareLinkErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    CreateShareLinkResponses,
+    CreateShareLinkErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/share-links",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Revocar un enlace de evidencia
+ */
+export const revokeShareLink = <ThrowOnError extends boolean = false>(
+  options: Options<RevokeShareLinkData, ThrowOnError>,
+): RequestResult<
+  RevokeShareLinkResponses,
+  RevokeShareLinkErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).delete<
+    RevokeShareLinkResponses,
+    RevokeShareLinkErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/share-links/{link_id}",
+    ...options,
+  });
+
+/**
+ * Comprobar un enlace de evidencia antes de descargar
+ */
+export const inspectSharedEvidence = <ThrowOnError extends boolean = false>(
+  options: Options<InspectSharedEvidenceData, ThrowOnError>,
+): RequestResult<
+  InspectSharedEvidenceResponses,
+  InspectSharedEvidenceErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    InspectSharedEvidenceResponses,
+    InspectSharedEvidenceErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/shared-evidence/inspect",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Descargar una evidencia con un enlace vigente
+ */
+export const downloadSharedEvidence = <ThrowOnError extends boolean = false>(
+  options: Options<DownloadSharedEvidenceData, ThrowOnError>,
+): RequestResult<
+  DownloadSharedEvidenceResponses,
+  DownloadSharedEvidenceErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    DownloadSharedEvidenceResponses,
+    DownloadSharedEvidenceErrors,
+    ThrowOnError
+  >({
+    ...urlSearchParamsBodySerializer,
+    url: "/api/v1/shared-evidence/download",
+    ...options,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
       ...options.headers,
     },
   });
