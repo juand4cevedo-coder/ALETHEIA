@@ -114,6 +114,26 @@ a {
   }
 }
 
+/* Entrada al desplazarse: los títulos y los bloques de cada sección suben y se aclaran al entrar
+   en la ventana. Es solo CSS (sin JavaScript) y solo donde el navegador lo admite; sin soporte o
+   con movimiento reducido, todo se ve desde el principio. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    main section :is(h2, h2 + p, figure, [data-reveal]) {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+  }
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+}
+
 /* Oculta un elemento a la vista y lo deja disponible para lectores de pantalla. */
 .visually-hidden {
   position: absolute;
@@ -149,4 +169,18 @@ a {
 
 html {
   scroll-padding-block-end: var(--cookie-bar-height, 0px);
+}
+
+/* Las tarjetas con entrada animada se elevan un poco al apuntarlas. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    transition:
+      transform var(--motion-base) var(--ease-out),
+      box-shadow var(--motion-base) var(--ease-out);
+  }
+
+  [data-reveal]:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 48px rgb(64 0 87 / 14%);
+  }
 }

@@ -25,14 +25,14 @@ export function StandardsSection() {
           lead="Su información merece atención. Cada caso tiene sus miembros y usted puede revisar sus accesos desde su cuenta."
         />
         <ul className={styles.guarantees}>
-          <li>
+          <li data-reveal>
             <LlaveIcon size={24} aria-hidden="true" />
             <h3>Permisos por caso</h3>
             <p>
               La información está disponible para quienes forman parte del caso.
             </p>
           </li>
-          <li>
+          <li data-reveal>
             <DispositivosIcon size={24} aria-hidden="true" />
             <h3>Control de sus sesiones</h3>
             <p>
