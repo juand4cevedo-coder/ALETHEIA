@@ -13,8 +13,8 @@ from app.core.config import Settings
 from app.core.tokens import InvalidPortalLinkError, issue_portal_link, read_portal_link
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, ClientPortalAccess, Job
-from app.services.client_portal import INVITE_TEMPLATE, MESSAGE_TEMPLATE
-from app.services.client_portal_emails import invite_email, message_email
+from app.services.client_portal import INVITE_TEMPLATE, MESSAGE_TEMPLATE, NEWS_TEMPLATE
+from app.services.client_portal_emails import invite_email, message_email, news_email
 from tests.conftest import NuevoCliente
 from tests.organizations import Oficina, crear_miembro, crear_oficina
 from tests.test_case_notes import _session
@@ -410,3 +410,51 @@ def test_solo_quien_maneja_el_portal_lee_los_mensajes_y_hay_tope_por_acceso(
     assert assistant_client.post(f"{_CASES}/{case_id}/portal/messages/read").status_code == 403
     assert codes[:10] == [201] * 10
     assert codes[10] == 429
+
+
+def _news_jobs(db: Session) -> list[dict[str, Any]]:
+    jobs = db.scalars(select(Job).where(Job.kind == "email_send").order_by(Job.id)).all()
+    return [dict(job.payload) for job in jobs if job.payload.get("template") == NEWS_TEMPLATE]
+
+
+def test_el_cliente_que_ya_entro_recibe_un_aviso_de_novedades_sin_el_contenido(
+    dispositivo: NuevoCliente, db: Session, settings: Settings
+) -> None:
+    _, lawyer, case_id, anonymous, _token = _ready_client(dispositivo, db, settings)
+
+    first = lawyer.post(f"{_CASES}/{case_id}/portal/updates", json={"body": "Hay audiencia"})
+    second = lawyer.post(f"{_CASES}/{case_id}/portal/updates", json={"body": "Otro aviso"})
+
+    assert first.status_code == 201
+    assert second.status_code == 201
+    assert len(_news_jobs(db)) == 1  # varios cambios seguidos se juntan en un solo correo
+    email = news_email(db, _news_jobs(db)[0], settings)
+    assert email is not None
+    assert email.to == "cliente@example.com"
+    assert "novedades" in email.subject
+    assert "Hay audiencia" not in email.text
+    assert "Caso del portal" not in email.text
+    found = re.search(r"#t=([\w.-]+)", email.text)
+    assert found is not None
+    assert anonymous.post(_VIEW, json={"token": found.group(1)}).status_code == 200
+
+
+def test_no_se_avisa_a_quien_no_entro_ni_a_quien_ya_no_tiene_acceso(
+    dispositivo: NuevoCliente, db: Session, settings: Settings
+) -> None:
+    _, lawyer, case_id = _case(dispositivo, db)
+    access = _invite(lawyer, case_id)
+
+    lawyer.post(f"{_CASES}/{case_id}/portal/updates", json={"body": "Primero"})
+    assert _news_jobs(db) == []  # todavía no aceptó el aviso de datos
+
+    anonymous = dispositivo()
+    token = _token_of_last_invite(db, settings)
+    anonymous.post(_ACCEPT, json={"token": token})
+    lawyer.post(f"{_CASES}/{case_id}/portal/updates", json={"body": "Segundo"})
+    assert len(_news_jobs(db)) == 1
+
+    lawyer.delete(f"{_CASES}/{case_id}/portal/accesses/{access['id']}")
+    assert news_email(db, _news_jobs(db)[0], settings) is None
+    lawyer.post(f"{_CASES}/{case_id}/portal/updates", json={"body": "Tercero"})
+    assert len(_news_jobs(db)) == 1

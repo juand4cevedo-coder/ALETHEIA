@@ -16,10 +16,10 @@ from app.adapters.evidence_storage import LocalEvidenceSink
 from app.api import client_portal as portal_api
 from app.core.config import Settings
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, ClientPortalDocument, CustodyEvent, Organization
+from app.models import AuditLog, ClientPortalDocument, CustodyEvent, Job, Organization
 from app.services import evidence_download as evidence_download_service
-from app.services.client_portal import INVITE_TEMPLATE
-from app.services.client_portal_emails import invite_email
+from app.services.client_portal import INVITE_TEMPLATE, NEWS_TEMPLATE
+from app.services.client_portal_emails import invite_email, news_email
 from tests.conftest import NuevoCliente
 from tests.organizations import Oficina, crear_miembro, crear_oficina
 from tests.test_case_notes import _session
@@ -215,3 +215,18 @@ def test_un_formulario_invalido_no_deja_restos(
     assert list(storage.rglob("evidences/*")) == []
     set_tenant(db, TenantContext(organization_id=office.organization_id, user_id=office.owner.id))
     assert db.scalars(select(ClientPortalDocument)).all() == []
+
+
+def test_subir_un_documento_avisa_al_cliente_sin_decir_cual(
+    dispositivo: NuevoCliente, db: Session, settings: Settings
+) -> None:
+    _, lawyer, case_id, _, _ = _setup(dispositivo, db, settings)
+
+    assert _upload(lawyer, case_id, "secreto.pdf").status_code == 201
+
+    jobs = db.scalars(select(Job).where(Job.kind == "email_send")).all()
+    news = [job for job in jobs if job.payload.get("template") == NEWS_TEMPLATE]
+    assert len(news) == 1
+    email = news_email(db, dict(news[0].payload), settings)
+    assert email is not None
+    assert "secreto.pdf" not in email.text

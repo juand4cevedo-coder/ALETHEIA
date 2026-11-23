@@ -369,7 +369,9 @@ export function ClientPortalSection({
         <p className={styles.muted}>
           Suba una copia pensada para el cliente, de hasta 25 MB. No es
           evidencia: no entra a la cadena de custodia ni reemplaza el original.
-          Va cifrada, y cada descarga queda en la auditoría.
+          Va cifrada, y cada descarga queda en la auditoría. Al subirla, el
+          cliente recibe un correo que avisa de novedades, sin el nombre del
+          archivo.
         </p>
         {caseOpen && (
           <form
@@ -472,7 +474,7 @@ export function ClientPortalSection({
               value={body}
               maxLength={MAX_UPDATE}
               describedBy={countId}
-              help="Lo leerá el cliente tal como lo escriba. No copie notas internas ni estrategia."
+              help="Lo leerá el cliente tal como lo escriba. No copie notas internas ni estrategia. Le llegará un correo que avisa de novedades, sin copiar el aviso."
               disabled={publish.isPending}
               onChange={(event) => setBody(event.target.value)}
             >
