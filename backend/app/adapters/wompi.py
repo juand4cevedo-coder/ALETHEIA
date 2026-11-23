@@ -13,9 +13,12 @@ Wompi advierte que esa lista de propiedades puede cambiar, así que nunca se asu
 import hashlib
 import hmac
 import json
+import re
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from typing import Any, Final
 
 from app.core.config import Settings
@@ -23,6 +26,10 @@ from app.core.config import Settings
 _SANDBOX_URL: Final = "https://sandbox.wompi.co/v1"
 _PRODUCTION_URL: Final = "https://production.wompi.co/v1"
 _ESPERA_SEGUNDOS: Final = 15
+_CHECKOUT_WEB_URL: Final = "https://checkout.wompi.co/p/"
+# Los identificadores de Wompi son letras, números, guiones y guiones bajos (por ejemplo
+# 1292-1602113476-10985). Cualquier otra cosa no es un identificador y nunca llega a la URL.
+_ID_DE_TRANSACCION: Final = re.compile(r"[A-Za-z0-9_-]{1,100}")
 
 
 class WompiNoConfiguradoError(RuntimeError):
@@ -126,6 +133,40 @@ def firma_de_integridad(reference: str, amount_in_cents: int, currency: str, sec
     return hashlib.sha256(cadena.encode()).hexdigest()
 
 
+def url_de_checkout_web(
+    creds: Credenciales,
+    *,
+    reference: str,
+    amount_in_cents: int,
+    redirect_url: str,
+    customer_email: str,
+    vigencia: timedelta,
+    ahora: datetime | None = None,
+) -> tuple[str, datetime]:
+    """La dirección del Checkout Web de Wompi para una transacción, y cuándo vence.
+
+    La persona paga en la página de Wompi con tarjeta, PSE, Nequi u otros medios que el comercio
+    tenga habilitados; los datos de pago nunca pasan por ALETHEIA. La firma de integridad cubre la
+    referencia, el monto, la moneda, la fecha de vencimiento y el secreto, en ese orden: Wompi la
+    exige y rechaza una dirección alterada. La redirección de regreso solo informa; lo que activa
+    el plan es el webhook o la consulta firmada con la llave privada."""
+    vence = (ahora or datetime.now(UTC)) + vigencia
+    expiracion = vence.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    cadena = f"{reference}{amount_in_cents}COP{expiracion}{creds.integrity_secret}"
+    firma = hashlib.sha256(cadena.encode()).hexdigest()
+    parametros = {
+        "public-key": creds.public_key,
+        "currency": "COP",
+        "amount-in-cents": str(amount_in_cents),
+        "reference": reference,
+        "signature:integrity": firma,
+        "redirect-url": redirect_url,
+        "expiration-time": expiracion,
+        "customer-data:email": customer_email,
+    }
+    return f"{_CHECKOUT_WEB_URL}?{urllib.parse.urlencode(parametros)}", vence
+
+
 @dataclass(frozen=True, slots=True)
 class Transaccion:
     id: str
@@ -176,7 +217,10 @@ def consultar_transaccion(creds: Credenciales, transaction_id: str) -> Transacci
     """GET /transactions/{id}: la versión de la transacción en la que Wompi manda, no la que
     venga en un webhook. El webhook solo avisa que algo cambió (HU-027); nunca se activa un
     plan con datos que no salgan de aquí o de una respuesta de POST /transactions."""
-    respuesta = _llamar(f"{creds.base_url}/transactions/{transaction_id}", bearer=creds.private_key)
+    if _ID_DE_TRANSACCION.fullmatch(transaction_id) is None:
+        raise WompiRechazadoError("El identificador de la transacción no es válido.")
+    ruta = urllib.parse.quote(transaction_id, safe="")
+    respuesta = _llamar(f"{creds.base_url}/transactions/{ruta}", bearer=creds.private_key)
     data = respuesta["data"]
     return Transaccion(
         id=data["id"],
@@ -184,6 +228,26 @@ def consultar_transaccion(creds: Credenciales, transaction_id: str) -> Transacci
         reference=data["reference"],
         amount_in_cents=data["amount_in_cents"],
         payment_method_type=data.get("payment_method_type"),
+    )
+
+
+def consultar_por_referencia(creds: Credenciales, reference: str) -> Transaccion | None:
+    """GET /transactions?reference=: la transacción más reciente de una referencia propia.
+    La referencia sale de la base (la generó este servidor), nunca de la petición, y viaja
+    codificada como parámetro de consulta; la ruta es fija."""
+    consulta = urllib.parse.urlencode({"reference": reference})
+    respuesta = _llamar(f"{creds.base_url}/transactions?{consulta}", bearer=creds.private_key)
+    filas = [fila for fila in respuesta.get("data", []) if fila.get("reference") == reference]
+    if not filas:
+        return None
+    # Una referencia puede tener varios intentos: manda el más reciente.
+    fila = max(filas, key=lambda f: str(f.get("created_at", "")))
+    return Transaccion(
+        id=fila["id"],
+        status=fila["status"],
+        reference=fila["reference"],
+        amount_in_cents=fila["amount_in_cents"],
+        payment_method_type=fila.get("payment_method_type"),
     )
 
 

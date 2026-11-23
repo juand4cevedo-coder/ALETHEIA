@@ -37,3 +37,20 @@ class CheckoutOut(BaseModel):
     transaction_id: str
     reference: str
     status: Literal["PENDING", "APPROVED", "DECLINED", "VOIDED", "ERROR"]
+
+
+class CheckoutWebCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    plan_code: str = Field(pattern=r"^[a-z_]{1,30}$")
+    billing_cycle: Literal["monthly", "annual"]
+
+
+class CheckoutWebOut(BaseModel):
+    checkout_url: str = Field(
+        description="Página de Wompi donde la persona paga con tarjeta, PSE, Nequi u otros medios."
+    )
+
+
+class CheckoutWebResult(BaseModel):
+    status: Literal["PENDING", "APPROVED", "DECLINED", "VOIDED", "ERROR"]

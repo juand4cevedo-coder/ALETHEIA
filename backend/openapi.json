@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.32.0"
+    "version": "0.33.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -6667,6 +6667,128 @@
         ]
       }
     },
+    "/api/v1/billing/checkout-web": {
+      "post": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "Iniciar un cobro en el Checkout Web de Wompi (tarjeta, PSE, Nequi y otros)",
+        "operationId": "create_checkout_web",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutWebCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutWebOut"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no administra la facturación.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "La pasarela no está disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/billing/checkout-web/confirm": {
+      "post": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "Confirmar el resultado de un cobro al volver del Checkout Web",
+        "operationId": "confirm_checkout_web",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutWebResult"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no administra la facturación.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No hay un pago en curso para este despacho.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Wompi no respondió.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
     "/api/v1/cases/{case_id}/portal/accesses": {
       "get": {
         "tags": [
@@ -9037,6 +9159,64 @@
           "status"
         ],
         "title": "CheckoutOut"
+      },
+      "CheckoutWebCreate": {
+        "properties": {
+          "plan_code": {
+            "type": "string",
+            "pattern": "^[a-z_]{1,30}$",
+            "title": "Plan Code"
+          },
+          "billing_cycle": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "annual"
+            ],
+            "title": "Billing Cycle"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "plan_code",
+          "billing_cycle"
+        ],
+        "title": "CheckoutWebCreate"
+      },
+      "CheckoutWebOut": {
+        "properties": {
+          "checkout_url": {
+            "type": "string",
+            "title": "Checkout Url",
+            "description": "Página de Wompi donde la persona paga con tarjeta, PSE, Nequi u otros medios."
+          }
+        },
+        "type": "object",
+        "required": [
+          "checkout_url"
+        ],
+        "title": "CheckoutWebOut"
+      },
+      "CheckoutWebResult": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "DECLINED",
+              "VOIDED",
+              "ERROR"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "CheckoutWebResult"
       },
       "CloseAccountRequest": {
         "properties": {

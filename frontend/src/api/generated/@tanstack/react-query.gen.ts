@@ -24,12 +24,14 @@ import {
   closeAccount,
   closeCase,
   completeRecovery,
+  confirmCheckoutWeb,
   confirmRecovery,
   createCase,
   createCaseExport,
   createCaseNote,
   createCaseTask,
   createCheckout,
+  createCheckoutWeb,
   createInvitation,
   createShareLink,
   createSupportTicket,
@@ -170,6 +172,9 @@ import type {
   CompleteRecoveryData,
   CompleteRecoveryError,
   CompleteRecoveryResponse,
+  ConfirmCheckoutWebData,
+  ConfirmCheckoutWebError,
+  ConfirmCheckoutWebResponse,
   ConfirmRecoveryData,
   ConfirmRecoveryError,
   ConfirmRecoveryResponse,
@@ -188,6 +193,9 @@ import type {
   CreateCheckoutData,
   CreateCheckoutError,
   CreateCheckoutResponse,
+  CreateCheckoutWebData,
+  CreateCheckoutWebError,
+  CreateCheckoutWebResponse,
   CreateInvitationData,
   CreateInvitationError,
   CreateInvitationResponse,
@@ -3805,6 +3813,60 @@ export const createCheckoutMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await createCheckout({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Iniciar un cobro en el Checkout Web de Wompi (tarjeta, PSE, Nequi y otros)
+ */
+export const createCheckoutWebMutation = (
+  options?: Partial<Options<CreateCheckoutWebData>>,
+): UseMutationOptions<
+  CreateCheckoutWebResponse,
+  CreateCheckoutWebError,
+  Options<CreateCheckoutWebData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateCheckoutWebResponse,
+    CreateCheckoutWebError,
+    Options<CreateCheckoutWebData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createCheckoutWeb({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Confirmar el resultado de un cobro al volver del Checkout Web
+ */
+export const confirmCheckoutWebMutation = (
+  options?: Partial<Options<ConfirmCheckoutWebData>>,
+): UseMutationOptions<
+  ConfirmCheckoutWebResponse,
+  ConfirmCheckoutWebError,
+  Options<ConfirmCheckoutWebData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ConfirmCheckoutWebResponse,
+    ConfirmCheckoutWebError,
+    Options<ConfirmCheckoutWebData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await confirmCheckoutWeb({
         ...options,
         ...fnOptions,
         throwOnError: true,

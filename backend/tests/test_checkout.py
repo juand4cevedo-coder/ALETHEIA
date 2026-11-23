@@ -1,6 +1,8 @@
 """Primer cobro de una suscripción con Wompi (HU-027): quién puede iniciarlo y con qué datos."""
 
 import datetime
+import hashlib
+import urllib.parse
 import uuid
 
 import pytest
@@ -146,3 +148,230 @@ def test_el_cobro_se_crea_con_los_tokens_y_la_firma_de_wompi(
     assert subscription.pending_checkout_reference == cobro.reference
     tarea = db.scalars(select(Job).where(Job.kind == "payment_reconcile")).one()
     assert tarea.payload["transaction_id"] == "tx-1"
+
+
+def _con_wompi(settings: Settings) -> Settings:
+    return settings.model_copy(
+        update={
+            "wompi_public_key": "pub_test_x",
+            "wompi_private_key": Secret("prv_test_x"),
+            "wompi_integrity_secret": Secret("test_integrity_x"),
+            "wompi_events_secret": Secret("test_events_x"),
+        }
+    )
+
+
+def test_la_direccion_del_checkout_web_lleva_la_firma_de_integridad_con_el_vencimiento() -> None:
+    creds = wompi.Credenciales(
+        public_key="pub_test_x",
+        private_key="prv_test_x",
+        integrity_secret="test_integrity_x",  # noqa: S106
+        events_secret="test_events_x",  # noqa: S106
+        base_url="https://sandbox.wompi.co/v1",
+    )
+    ahora = datetime.datetime(2026, 11, 24, 15, 0, tzinfo=datetime.UTC)
+
+    url, vence = wompi.url_de_checkout_web(
+        creds,
+        reference="ref-1",
+        amount_in_cents=2_990_000,
+        redirect_url="https://aletheia.sbs/app/cuenta",
+        customer_email="ana@example.com",
+        vigencia=datetime.timedelta(hours=1),
+        ahora=ahora,
+    )
+
+    assert url.startswith("https://checkout.wompi.co/p/?")
+    consulta = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+    assert consulta["public-key"] == ["pub_test_x"]
+    assert consulta["currency"] == ["COP"]
+    assert consulta["amount-in-cents"] == ["2990000"]
+    assert consulta["redirect-url"] == ["https://aletheia.sbs/app/cuenta"]
+    assert consulta["expiration-time"] == ["2026-11-24T16:00:00.000Z"]
+    assert vence == ahora + datetime.timedelta(hours=1)
+    esperada = hashlib.sha256(
+        b"ref-12990000COP2026-11-24T16:00:00.000Ztest_integrity_x"
+    ).hexdigest()
+    assert consulta["signature:integrity"] == [esperada]
+    # La llave privada y el secreto de eventos nunca salen en la dirección.
+    assert "prv_test_x" not in url
+    assert "test_events_x" not in url
+
+
+def test_el_checkout_web_se_inicia_con_una_referencia_nueva_y_bloquea_un_segundo_cobro(
+    db: Session, settings: Settings
+) -> None:
+    office = crear_oficina(db)
+    _en_prueba(db, office)
+    principal = _principal(office.organization_id, office.owner.id, "owner")
+
+    url = checkout.iniciar_checkout_web(db, _con_wompi(settings), principal, "essential", "monthly")
+
+    consulta = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+    assert consulta["amount-in-cents"] == [str(29_900 * 100)]
+    subscription = db.scalars(
+        select(Subscription).where(Subscription.organization_id == office.organization_id)
+    ).one()
+    assert subscription.pending_checkout_reference == consulta["reference"][0]
+    referencia = checkout.leer_referencia(consulta["reference"][0])
+    assert referencia is not None
+    assert referencia.organization_id == office.organization_id
+    with pytest.raises(checkout.CheckoutNoPermitidoError):
+        checkout.iniciar_checkout_web(db, _con_wompi(settings), principal, "essential", "monthly")
+
+
+def test_un_cobro_que_nunca_se_pago_deja_de_bloquear_pasada_su_vigencia(
+    db: Session, settings: Settings
+) -> None:
+    office = crear_oficina(db)
+    subscription = _en_prueba(db, office)
+    principal = _principal(office.organization_id, office.owner.id, "owner")
+    vieja = uuid.UUID(
+        bytes=(
+            int(
+                (datetime.datetime.now(datetime.UTC) - datetime.timedelta(hours=2)).timestamp()
+                * 1000
+            )
+        ).to_bytes(6, "big")
+        + b"\x70\x00\x80\x00\x00\x00\x00\x00\x00\x01"
+    )
+    subscription.pending_checkout_reference = (
+        f"aletheia:{office.organization_id}:essential:monthly:{vieja}"
+    )
+    db.flush()
+
+    anterior = subscription.pending_checkout_reference
+
+    url = checkout.iniciar_checkout_web(db, _con_wompi(settings), principal, "essential", "monthly")
+
+    consulta = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+    assert consulta["reference"][0] != anterior
+    assert subscription.pending_checkout_reference == consulta["reference"][0]
+
+
+def test_solo_quien_administra_la_facturacion_inicia_el_checkout_web(
+    db: Session, settings: Settings
+) -> None:
+    office = crear_oficina(db)
+    _en_prueba(db, office)
+    principal = _principal(office.organization_id, office.owner.id, "lawyer")
+
+    with pytest.raises(checkout.CheckoutNoPermitidoError):
+        checkout.iniciar_checkout_web(db, _con_wompi(settings), principal, "essential", "monthly")
+
+
+def test_al_volver_del_checkout_web_se_confirma_la_referencia_pendiente_del_despacho(
+    db: Session, settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    office = crear_oficina(db)
+    subscription = _en_prueba(db, office)
+    principal = _principal(office.organization_id, office.owner.id, "owner")
+    con_wompi = _con_wompi(settings)
+
+    # Sin un pago en curso no hay nada que confirmar.
+    with pytest.raises(checkout.TransaccionAjenaError):
+        checkout.confirmar_regreso(db, con_wompi, principal)
+
+    url = checkout.iniciar_checkout_web(db, con_wompi, principal, "essential", "monthly")
+    reference = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)["reference"][0]
+    consultadas: list[str] = []
+
+    def consultar(_creds: object, referencia: str) -> wompi.Transaccion | None:
+        consultadas.append(referencia)
+        return None
+
+    monkeypatch.setattr(wompi, "consultar_por_referencia", consultar)
+    assert checkout.confirmar_regreso(db, con_wompi, principal) == "PENDING"
+    assert consultadas == [reference]
+    assert subscription.status == "trial"
+
+    monkeypatch.setattr(
+        wompi,
+        "consultar_por_referencia",
+        lambda _creds, referencia: wompi.Transaccion("tx-1", "APPROVED", referencia, 29_900 * 100),
+    )
+    assert checkout.confirmar_regreso(db, con_wompi, principal) == "APPROVED"
+    db.refresh(subscription)
+    assert subscription.status == "active"
+    assert subscription.billing_cycle == "monthly"
+    assert subscription.pending_checkout_reference is None
+
+    # Repetir la confirmación (recargar la página) sigue diciendo que quedó aprobado.
+    assert checkout.confirmar_regreso(db, con_wompi, principal) == "APPROVED"
+
+
+def test_la_consulta_por_referencia_codifica_la_referencia_y_elige_la_mas_reciente(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    llamadas: list[str] = []
+
+    def falsa(url: str, **_kw: object) -> dict[str, object]:
+        llamadas.append(url)
+        return {
+            "data": [
+                {
+                    "id": "a",
+                    "status": "DECLINED",
+                    "reference": "r&x=1",
+                    "amount_in_cents": 1,
+                    "created_at": "2026-01-01T00:00:00Z",
+                },
+                {
+                    "id": "b",
+                    "status": "APPROVED",
+                    "reference": "r&x=1",
+                    "amount_in_cents": 1,
+                    "created_at": "2026-01-02T00:00:00Z",
+                },
+                {
+                    "id": "c",
+                    "status": "APPROVED",
+                    "reference": "otra",
+                    "amount_in_cents": 1,
+                    "created_at": "2026-01-03T00:00:00Z",
+                },
+            ]
+        }
+
+    monkeypatch.setattr(wompi, "_llamar", falsa)
+    creds = wompi.Credenciales(
+        public_key="pub_test_x",
+        private_key="prv_test_x",
+        integrity_secret="test_integrity_x",  # noqa: S106
+        events_secret="test_events_x",  # noqa: S106
+        base_url="https://sandbox.wompi.co/v1",
+    )
+
+    transaccion = wompi.consultar_por_referencia(creds, "r&x=1")
+
+    assert llamadas == ["https://sandbox.wompi.co/v1/transactions?reference=r%26x%3D1"]
+    assert transaccion is not None
+    assert transaccion.id == "b"
+
+
+@pytest.mark.parametrize(
+    "identificador",
+    ["../merchants/info", "tx/1", "tx?x=1", "tx#a", "", "a" * 101, "tx 1", "https://evil.test"],
+)
+def test_un_identificador_que_no_es_de_wompi_nunca_llega_a_la_url(
+    identificador: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    llamadas: list[str] = []
+
+    def falsa(url: str, **_kw: object) -> dict[str, object]:
+        llamadas.append(url)
+        return {}
+
+    monkeypatch.setattr(wompi, "_llamar", falsa)
+    creds = wompi.Credenciales(
+        public_key="pub_test_x",
+        private_key="prv_test_x",
+        integrity_secret="test_integrity_x",  # noqa: S106
+        events_secret="test_events_x",  # noqa: S106
+        base_url="https://sandbox.wompi.co/v1",
+    )
+
+    with pytest.raises(wompi.WompiRechazadoError):
+        wompi.consultar_transaccion(creds, identificador)
+
+    assert llamadas == []

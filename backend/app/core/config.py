@@ -147,6 +147,36 @@ class Settings(DatabaseSettings):
     wompi_events_secret: Secret[str] | None = Field(
         default=None, description="Secreto de eventos de Wompi, para verificar sus webhooks."
     )
+    # En producción las tres llaves secretas se leen de Parameter Store, como las demás
+    # credenciales: el contenedor solo recibe el nombre de cada parámetro. La llave pública no es
+    # secreta y va en ALETHEIA_WOMPI_PUBLIC_KEY.
+    wompi_private_key_parameter: str | None = Field(
+        default=None,
+        pattern=_PARAMETER_PATTERN,
+        description="Parámetro SecureString con la llave privada de Wompi.",
+    )
+    wompi_integrity_secret_parameter: str | None = Field(
+        default=None,
+        pattern=_PARAMETER_PATTERN,
+        description="Parámetro SecureString con el secreto de integridad de Wompi.",
+    )
+    wompi_events_secret_parameter: str | None = Field(
+        default=None,
+        pattern=_PARAMETER_PATTERN,
+        description="Parámetro SecureString con el secreto de eventos de Wompi.",
+    )
+
+    @field_validator(
+        "wompi_public_key",
+        "wompi_private_key_parameter",
+        "wompi_integrity_secret_parameter",
+        "wompi_events_secret_parameter",
+        mode="before",
+    )
+    @classmethod
+    def _blank_wompi_is_unset(cls, value: object) -> object:
+        # Compose pasa estas variables siempre; sin Wompi configurado llegan vacías.
+        return None if isinstance(value, str) and not value.strip() else value
 
     @property
     def public_url(self) -> str:
@@ -258,6 +288,36 @@ class Settings(DatabaseSettings):
             if configured and self.google_client_secret is None:
                 msg = "falta ALETHEIA_GOOGLE_CLIENT_SECRET"
                 raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def _wompi_credentials_from_one_place(self) -> Self:
+        parametros = (
+            self.wompi_private_key_parameter,
+            self.wompi_integrity_secret_parameter,
+            self.wompi_events_secret_parameter,
+        )
+        secretos = (
+            self.wompi_private_key,
+            self.wompi_integrity_secret,
+            self.wompi_events_secret,
+        )
+        if self.environment == "production":
+            if any(secreto is not None for secreto in secretos):
+                msg = "en production los secretos de Wompi no pueden venir en una variable"
+                raise ValueError(msg)
+            configurado = self.wompi_public_key is not None
+            if configurado != all(parametro is not None for parametro in parametros) or (
+                not configurado and any(parametro is not None for parametro in parametros)
+            ):
+                msg = (
+                    "Wompi en production exige la llave pública y los tres parámetros de "
+                    "Parameter Store, o ninguno"
+                )
+                raise ValueError(msg)
+        elif any(parametro is not None for parametro in parametros):
+            msg = "los secretos de Wompi solo se leen de Parameter Store con environment production"
+            raise ValueError(msg)
         return self
 
     @property

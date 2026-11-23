@@ -110,6 +110,13 @@ services:
       # No es secreto: solo nombra el bucket, la clave sigue siendo el rol de la máquina.
       # El valor real vive en /etc/aletheia/entorno.env (ver la cabecera del archivo).
       ALETHEIA_EVIDENCE_BUCKET: ${ALETHEIA_EVIDENCE_BUCKET}
+      # Pasarela de pagos (Wompi). Opcionales: sin ellas el cobro queda apagado. La llave pública no
+      # es secreta; las otras tres llegan solo como nombre de parámetro y se leen de Parameter Store.
+      # Los valores viven en /etc/aletheia/entorno.env (ver docs/operacion/produccion.md).
+      ALETHEIA_WOMPI_PUBLIC_KEY: ${ALETHEIA_WOMPI_PUBLIC_KEY:-}
+      ALETHEIA_WOMPI_PRIVATE_KEY_PARAMETER: ${ALETHEIA_WOMPI_PRIVATE_KEY_PARAMETER:-}
+      ALETHEIA_WOMPI_INTEGRITY_SECRET_PARAMETER: ${ALETHEIA_WOMPI_INTEGRITY_SECRET_PARAMETER:-}
+      ALETHEIA_WOMPI_EVENTS_SECRET_PARAMETER: ${ALETHEIA_WOMPI_EVENTS_SECRET_PARAMETER:-}
     # Sin "ports": solo Caddy llega a la API, por la red frontal.
     networks:
       - frontal
