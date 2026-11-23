@@ -65,3 +65,14 @@ La hace la persona administradora. Cuesta cerca de 4 dólares al mes: nueve mét
 
 - Una alarma de respaldo vencido con `respaldar.sh --revisar`.
 - Un panel de métricas del negocio (casos, evidencias, uso por despacho) dentro del producto.
+
+## Presupuesto
+
+`infra/aws/presupuesto.sh <correo> [monto]` crea el presupuesto mensual `aletheia-mensual` (15 USD por defecto) con avisos por correo al 50 % y 80 % del gasto real y cuando el pronóstico lo supera. Se ejecuta una vez desde CloudShell.
+
+## Fechas que no se pueden olvidar
+
+Están como incidencias abiertas en el repositorio, con etiqueta `recordatorio`:
+
+- Rotar la llave de despliegue de IAM, a más tardar el 28 de enero de 2027.
+- Pasar la cuenta de AWS del plan gratuito a un plan de pago, antes del 30 de abril de 2027. Si no, AWS cierra la cuenta.
