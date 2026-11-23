@@ -1,11 +1,11 @@
-// Phosphor Icons, peso light, versión 2.1.10. Licencia MIT: ../LICENSE-phosphor.
+// Phosphor Icons, peso regular, versión 2.1.1 (arrow-up-right). Licencia MIT: ../LICENSE-phosphor.
 import { crearIcono } from "./fabrica.tsx";
 
 export const FlechaDiagonalIcon = /* @__PURE__ */ crearIcono("FlechaDiagonal", [
   [
     "path",
     {
-      d: "M198,64V168a6,6,0,0,1-12,0V78.48L68.24,196.24a6,6,0,0,1-8.48-8.48L177.52,70H88a6,6,0,0,1,0-12H192A6,6,0,0,1,198,64Z",
+      d: "M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z",
     },
   ],
 ]);

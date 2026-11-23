@@ -1,11 +1,11 @@
-// Phosphor Icons, peso light, versión 2.1.10. Licencia MIT: ../LICENSE-phosphor.
+// Phosphor Icons, peso regular, versión 2.1.1 (check). Licencia MIT: ../LICENSE-phosphor.
 import { crearIcono } from "./fabrica.tsx";
 
 export const VistoIcon = /* @__PURE__ */ crearIcono("Visto", [
   [
     "path",
     {
-      d: "M228.24,76.24l-128,128a6,6,0,0,1-8.48,0l-56-56a6,6,0,0,1,8.48-8.48L96,191.51,219.76,67.76a6,6,0,0,1,8.48,8.48Z",
+      d: "M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z",
     },
   ],
 ]);

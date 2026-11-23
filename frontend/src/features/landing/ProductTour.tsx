@@ -116,7 +116,7 @@ export function ProductTour() {
           <img
             key={active.id}
             className="parallax"
-            src={"/media/producto-" + active.id + ".webp"}
+            src={"/media/producto/" + active.id + ".webp"}
             width={1260}
             height={720}
             loading="lazy"

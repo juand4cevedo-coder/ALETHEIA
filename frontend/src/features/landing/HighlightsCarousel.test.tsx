@@ -17,20 +17,20 @@ it("permite cambiar de capacidad y pausar el avance", async () => {
   expect(
     screen.getByRole("heading", {
       level: 3,
-      name: "Vea el estado de su práctica sin reconstruirlo a mano.",
+      name: "Cada responsabilidad, con su fecha y su responsable.",
     }),
   ).toBeInTheDocument();
 
-  await user.click(screen.getByRole("button", { name: /2 de 5: Casos/ }));
+  await user.click(screen.getByRole("button", { name: /2 de 5: Evidencias/ }));
   expect(
     screen.getByRole("heading", {
       level: 3,
-      name: "Cada asunto conserva su identidad y su recorrido.",
+      name: "Cada archivo conserva su huella y su origen.",
     }),
   ).toBeInTheDocument();
   expect(
-    screen.getByRole("link", { name: /Conocer la gestión de casos/ }),
-  ).toHaveAttribute("href", "/docs/crear-un-caso");
+    screen.getByRole("link", { name: /Revisar cómo se protege/ }),
+  ).toHaveAttribute("href", "/seguridad");
 
   const pause = screen.getByRole("button", { name: "Pausar" });
   await user.click(pause);

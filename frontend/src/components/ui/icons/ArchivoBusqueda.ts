@@ -1,9 +1,16 @@
-// Phosphor Icons, peso light, versión 2.1.10. Licencia MIT: ../LICENSE-phosphor.
+// Phosphor Icons, peso duotone, versión 2.1.1 (file-magnifying-glass). Licencia MIT: ../LICENSE-phosphor.
 import { crearIcono } from "./fabrica.tsx";
 
 export const ArchivoBusquedaIcon = /* @__PURE__ */ crearIcono(
   "ArchivoBusqueda",
   [
+    [
+      "path",
+      {
+        d: "M208,88H152V32Z",
+        opacity: "0.2",
+      },
+    ],
     [
       "path",
       {

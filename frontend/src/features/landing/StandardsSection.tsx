@@ -9,7 +9,6 @@ import {
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
 import styles from "./StandardsSection.module.css";
-import { photoProps } from "../../config/media.ts";
 
 export function StandardsSection() {
   return (
@@ -18,15 +17,6 @@ export function StandardsSection() {
       className={`${section.section} ${styles.section} on-ink`}
       aria-labelledby="titulo-estandares"
     >
-      <img
-        {...photoProps("hero-real", "100vw")}
-        alt=""
-        width={2400}
-        height={1350}
-        loading="lazy"
-        decoding="async"
-        className={styles.photo}
-      />
       <div className={section.inner}>
         <SectionHeading
           id="titulo-estandares"

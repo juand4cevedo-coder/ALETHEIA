@@ -3,6 +3,7 @@
 }
 
 .list {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 2px;
@@ -11,14 +12,39 @@
   list-style: none;
 }
 
+/* Indicador común: una sola pastilla que se desliza hasta la opción abierta, en lugar de un
+   fondo que aparece y desaparece en cada botón. */
+.indicator {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 40px;
+  margin-top: -20px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink-900) 8%, var(--paper));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 320ms var(--ease-out),
+    width 320ms var(--ease-out),
+    opacity 200ms var(--ease-standard);
+}
+
+.indicator[data-visible="true"] {
+  opacity: 1;
+}
+
 .list button,
 .list > li > a {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: var(--space-2);
   min-height: var(--touch-target);
-  padding: 0 10px;
+  padding: 0 14px;
   border: 0;
+  border-radius: 999px;
   background: transparent;
   color: var(--text);
   font: inherit;
@@ -30,88 +56,139 @@
   transition: color var(--motion-base) var(--ease-standard);
 }
 
-.list button:hover,
-.list button[aria-expanded="true"],
-.list a:hover,
-.list a[aria-current] {
-  color: var(--brass-600);
+.list > li > a:hover,
+.list > li > a[aria-current] {
+  background: color-mix(in srgb, var(--ink-900) 8%, var(--paper));
+}
+
+.list button[aria-expanded="true"] {
+  color: var(--ink-900);
 }
 
 .list button svg {
-  transition: transform var(--motion-base) var(--ease-standard);
+  transition: transform 260ms var(--ease-out);
 }
 
 .list button[aria-expanded="true"] svg {
   transform: rotate(180deg);
 }
 
+/* El resto de la página se atenúa mientras el panel está abierto: la atención va al menú. No
+   recibe el puntero, así el clic llega a la página y el panel se cierra. */
+.scrim {
+  position: fixed;
+  z-index: 25;
+  inset: var(--header-height) 0 0;
+  background: rgb(26 0 41 / 26%);
+  backdrop-filter: blur(3px);
+  pointer-events: none;
+  animation: scrim-in 240ms var(--ease-standard) both;
+}
+
+/* Panel flotante: una tarjeta separada del encabezado, no una franja a todo el ancho. */
 .panel {
   position: fixed;
   z-index: 30;
-  top: var(--header-height);
-  right: 0;
-  left: 0;
-  padding: var(--space-12) var(--space-6);
-  border-top: 1px solid var(--ink-hairline);
-  border-radius: 0 0 28px 28px;
+  top: calc(var(--header-height) + 8px);
+  left: 50%;
+  width: min(1040px, calc(100% - 48px));
+  padding: var(--space-6);
+  border: 1px solid var(--ink-hairline);
+  border-radius: 28px;
   background: var(--paper);
-  box-shadow: 0 28px 70px rgb(17 17 17 / 16%);
-  animation: panel-in var(--motion-base) var(--ease-standard);
+  box-shadow: 0 32px 80px rgb(35 0 48 / 20%);
+  transform: translateX(-50%);
+  transform-origin: top center;
+  animation: panel-in 260ms var(--ease-out) both;
+}
+
+/* Puente invisible hacia el encabezado: el puntero cruza el hueco sin cerrar el panel. */
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: -12px 0 auto;
+  height: 12px;
 }
 
 .panelContent {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
-  gap: var(--space-12);
-  width: min(984px, 100%);
-  margin: 0 auto;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+  gap: var(--space-6);
 }
 
 .feature {
   display: grid;
   align-content: start;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--ink-900) 7%, var(--paper));
   color: var(--text);
   text-decoration: none;
+  transition: background-color var(--motion-base) var(--ease-standard);
 }
 
-.feature img {
-  width: 100%;
-  height: 132px;
-  object-fit: cover;
-  border-radius: var(--radius-lg);
+.feature:hover {
+  background: color-mix(in srgb, var(--ink-900) 11%, var(--paper));
 }
 
 .featureTitle {
-  margin-top: var(--space-5);
-  font-family: var(--font-editorial);
+  margin-top: var(--space-4);
   font-size: var(--font-size-title);
-  font-weight: 500;
+  font-weight: 650;
+  letter-spacing: var(--tracking-title);
   line-height: var(--line-height-title);
 }
 
 .feature small {
-  max-width: 38ch;
-  margin-top: var(--space-2);
+  max-width: 34ch;
   color: var(--text-2);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
+}
+
+.featureCta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  color: var(--ink-900);
+  font-size: var(--font-size-ui);
+  font-weight: 650;
+}
+
+.featureCta svg {
+  transition: transform 260ms var(--ease-out);
+}
+
+.feature:hover .featureCta svg {
+  transform: translateX(4px);
 }
 
 .links {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-content: start;
-  gap: var(--space-2) var(--space-8);
+  gap: var(--space-1);
 }
 
 .links a {
   display: grid;
   align-content: center;
-  min-height: 88px;
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--ink-hairline);
+  gap: 2px;
+  min-height: 84px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: 18px;
   color: var(--text);
   text-decoration: none;
+  transition: background-color var(--motion-base) var(--ease-standard);
+  animation: link-in 360ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 40ms + 60ms);
+}
+
+.links a:hover,
+.links a:focus-visible {
+  background: color-mix(in srgb, var(--ink-900) 7%, var(--paper));
 }
 
 .links a > span {
@@ -119,17 +196,18 @@
   justify-content: space-between;
   gap: var(--space-3);
   font-size: var(--font-size-body);
-  font-weight: 600;
+  font-weight: 650;
   line-height: var(--line-height-body);
 }
 
 .links svg {
   flex: none;
-  transform: translateX(-4px);
+  color: var(--ink-900);
+  transform: translateX(-6px);
   opacity: 0;
   transition:
     opacity var(--motion-base) var(--ease-standard),
-    transform var(--motion-base) var(--ease-standard);
+    transform 260ms var(--ease-out);
 }
 
 .links a:hover svg,
@@ -139,7 +217,6 @@
 }
 
 .links small {
-  margin-top: var(--space-1);
   color: var(--text-2);
   font-size: var(--font-size-support);
   line-height: var(--line-height-support);
@@ -147,7 +224,20 @@
 
 @keyframes panel-in {
   from {
-    transform: translateY(-8px);
+    transform: translate(-50%, -10px) scale(0.985);
+    opacity: 0;
+  }
+}
+
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes link-in {
+  from {
+    transform: translateY(8px);
     opacity: 0;
   }
 }
@@ -159,12 +249,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .panel {
+  .panel,
+  .scrim,
+  .links a {
     animation: none;
   }
 
+  .indicator,
   .list button svg,
-  .links svg {
+  .links svg,
+  .featureCta svg {
     transition: none;
   }
 }

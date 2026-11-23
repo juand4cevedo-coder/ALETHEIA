@@ -1,3 +1,10 @@
+import type { IconComponent } from "../components/ui/icons.tsx";
+import {
+  CarpetaAbiertaIcon,
+  LibroIcon,
+  OjoIcon,
+  UsuariosIcon,
+} from "../components/ui/icons.tsx";
 import { LEGAL_PAGES, legalRoute, ROUTES } from "./routes.ts";
 
 export type NavigationLink = {
@@ -8,7 +15,7 @@ export type NavigationLink = {
 export type NavigationGroup = {
   title: string;
   links: NavigationLink[];
-  feature: { to: string; title: string; text: string; image: string };
+  feature: { to: string; title: string; text: string; icon: IconComponent };
 };
 
 export const NAVIGATION: NavigationGroup[] = [
@@ -40,22 +47,38 @@ export const NAVIGATION: NavigationGroup[] = [
       to: "/#recorrido",
       title: "Su espacio de trabajo",
       text: "Conozca Aletheia por dentro.",
-      image: "/media/campaign/producto-real-640.webp",
+      icon: CarpetaAbiertaIcon,
     },
   },
   {
     title: "Equipos",
     links: [
-      { to: "/empresa", label: "Para firmas jurídicas" },
-      { to: "/docs/invitar-al-equipo", label: "Colaboración y roles" },
-      { to: "/seguridad", label: "Controles de acceso" },
-      { to: "/soporte", label: "Hablemos de su equipo" },
+      {
+        to: "/empresa",
+        label: "Para firmas jurídicas",
+        description: "Despachos con varias personas y casos.",
+      },
+      {
+        to: "/docs/invitar-al-equipo",
+        label: "Colaboración y roles",
+        description: "Quién ve y hace qué en cada caso.",
+      },
+      {
+        to: "/seguridad",
+        label: "Controles de acceso",
+        description: "Sesiones, permisos y auditoría.",
+      },
+      {
+        to: "/soporte",
+        label: "Hablemos de su equipo",
+        description: "Resolvemos sus dudas de implementación.",
+      },
     ],
     feature: {
       to: "/empresa",
       title: "Un mismo contexto",
       text: "Personas, casos y responsabilidades.",
-      image: "/media/campaign/equipo-real-640.webp",
+      icon: UsuariosIcon,
     },
   },
   {
@@ -66,30 +89,58 @@ export const NAVIGATION: NavigationGroup[] = [
         label: "Documentación",
         description: "Empiece a trabajar con Aletheia.",
       },
-      { to: "/blog", label: "Artículos y novedades" },
-      { to: ROUTES.verifierSection, label: "Probar el comprobador" },
-      { to: "/ayuda", label: "Base de conocimiento" },
+      {
+        to: "/blog",
+        label: "Artículos y novedades",
+        description: "Ideas para trabajar con evidencia digital.",
+      },
+      {
+        to: ROUTES.verifierSection,
+        label: "Probar el comprobador",
+        description: "Calcule una huella sin subir el archivo.",
+      },
+      {
+        to: "/ayuda",
+        label: "Base de conocimiento",
+        description: "Respuestas a las preguntas frecuentes.",
+      },
     ],
     feature: {
       to: "/docs",
       title: "Del primer paso al caso",
       text: "Guías, respuestas y recursos en español.",
-      image: "/media/campaign/producto-real-640.webp",
+      icon: LibroIcon,
     },
   },
   {
     title: "Aletheia",
     links: [
-      { to: "/nosotros", label: "Sobre Aletheia" },
-      { to: "/filosofia", label: "Nuestra filosofía" },
-      { to: "/seguridad", label: "Seguridad" },
-      { to: "/estado", label: "Estado del servicio" },
+      {
+        to: "/nosotros",
+        label: "Sobre Aletheia",
+        description: "Quiénes somos y qué hacemos.",
+      },
+      {
+        to: "/filosofia",
+        label: "Nuestra filosofía",
+        description: "Preservar y documentar, nada más.",
+      },
+      {
+        to: "/seguridad",
+        label: "Seguridad",
+        description: "Cifrado, custodia y control de acceso.",
+      },
+      {
+        to: "/estado",
+        label: "Estado del servicio",
+        description: "Disponibilidad en tiempo real.",
+      },
     ],
     feature: {
       to: "/nosotros",
       title: "La claridad empieza aquí",
       text: "Conozca el propósito detrás de Aletheia.",
-      image: "/media/campaign/hero-real-640.webp",
+      icon: OjoIcon,
     },
   },
 ];

@@ -13,18 +13,54 @@
   box-shadow: 0 30px 90px rgb(64 0 87 / 12%);
 }
 
-.visual {
+.stage {
   position: relative;
   min-width: 0;
-  background: #ddd1e6;
-  animation: image-in 700ms var(--ease-out) both;
+  min-height: 620px;
+  overflow: hidden;
+  background: #e6d8f2;
+  touch-action: pan-y;
+}
+
+/* Todas las diapositivas están montadas una sobre otra; la activa se funde hacia adelante y la
+   anterior se desvanece. Así el cambio es un cruce y no un corte. */
+.visual {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(1.025);
+  transition:
+    opacity 700ms var(--ease-standard),
+    transform 900ms var(--ease-out),
+    visibility 0s linear 700ms;
+}
+
+.visual[data-active="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
 }
 
 .visual img {
   width: 100%;
   height: 100%;
-  min-height: 620px;
   object-fit: cover;
+  user-select: none;
+}
+
+/* La captura de producto no se recorta como una fotografía: se ancla arriba a la izquierda, más
+   grande que el marco, y se corta por el borde derecho e inferior como una ventana abierta
+   sobre el producto. */
+.visual[data-kind="product"] img {
+  position: absolute;
+  top: 9%;
+  left: 8%;
+  width: 128%;
+  height: auto;
+  border-radius: 20px 0 0 0;
+  box-shadow: 0 24px 60px rgb(64 0 87 / 22%);
 }
 
 .counter {
@@ -174,6 +210,42 @@
   animation: progress 6.5s linear both;
 }
 
+.buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.round {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--ink-hairline);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-base) var(--ease-standard),
+    border-color var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
+}
+
+.round:hover {
+  border-color: var(--ink-900);
+  background: var(--paper-sunken);
+}
+
+.round:active {
+  transform: scale(0.94);
+}
+
+.flip {
+  transform: rotate(180deg);
+}
+
 .toggle {
   min-height: 44px;
   padding: 0 18px;
@@ -214,7 +286,7 @@
     border-radius: 24px;
   }
 
-  .visual img {
+  .stage {
     min-height: 0;
     aspect-ratio: 4 / 3;
   }
@@ -248,7 +320,13 @@
     animation: none;
   }
 
-  .link {
+  .link,
+  .round {
     transition: none;
+  }
+
+  .visual {
+    transform: none;
+    transition: opacity 1ms;
   }
 }

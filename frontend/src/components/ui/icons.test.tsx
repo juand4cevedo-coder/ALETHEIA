@@ -58,12 +58,12 @@ describe("Íconos de la interfaz", () => {
     ["SelloIcon", SelloIcon],
     ["CadenaIcon", CadenaIcon],
     ["PaqueteIcon", PaqueteIcon],
-  ])("%s usa el trazo común de 1,125 y hereda el color", (_nombre, Icono) => {
+  ])("%s usa el trazo común de 1,5 y hereda el color", (_nombre, Icono) => {
     const { container } = render(<Icono />);
     const svg = container.querySelector("svg");
     expect(svg).toHaveAttribute("viewBox", "0 0 24 24");
     expect(svg).toHaveAttribute("stroke", "currentColor");
-    expect(svg).toHaveAttribute("stroke-width", "1.125");
+    expect(svg).toHaveAttribute("stroke-width", "1.5");
     expect(svg).toHaveAttribute("stroke-linecap", "round");
   });
 
