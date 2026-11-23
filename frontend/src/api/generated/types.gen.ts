@@ -1693,6 +1693,12 @@ export type Me = {
    * Su aceptación de los textos legales.
    */
   legal: LegalStatus;
+  /**
+   * Two Factor Setup Required
+   *
+   * Su despacho exige el segundo factor y todavía no lo tiene: solo puede activarlo.
+   */
+  two_factor_setup_required?: boolean;
 };
 
 /**
@@ -1988,6 +1994,12 @@ export type OrganizationPolicies = {
    * Días que dura una sesión. Solo afecta a los ingresos nuevos.
    */
   session_days: number;
+  /**
+   * Require Two Factor
+   *
+   * Exige el segundo factor a todo el equipo. Quien no lo tenga solo puede activarlo.
+   */
+  require_two_factor?: boolean;
 };
 
 /**
@@ -2006,6 +2018,12 @@ export type OrganizationPoliciesRequest = {
    * Días que dura una sesión. Solo afecta a los ingresos nuevos.
    */
   session_days: number;
+  /**
+   * Require Two Factor
+   *
+   * Exige el segundo factor a todo el equipo. Quien no lo tenga solo puede activarlo.
+   */
+  require_two_factor?: boolean;
 };
 
 /**

@@ -43,7 +43,12 @@ function download(codes: readonly string[]) {
 // Verificación en dos pasos: una aplicación de autenticación genera un código cada 30 segundos.
 // Activarlo, desactivarlo y renovar los códigos de respaldo piden un código vigente, para que una
 // sesión robada no baste para quitar la protección.
-export function TwoFactorCard() {
+export function TwoFactorCard({
+  onCodesSaved,
+}: {
+  /** Se llama cuando la persona confirma que guardó sus códigos de respaldo. */
+  onCodesSaved?: () => void;
+} = {}) {
   const queryClient = useQueryClient();
   const status = useQuery(twoFactorStatusOptions());
   const [mode, setMode] = useState<Mode>("idle");
@@ -290,6 +295,7 @@ export function TwoFactorCard() {
               onClick={() => {
                 setCodes([]);
                 setMode("idle");
+                onCodesSaved?.();
               }}
             >
               Ya los guardé

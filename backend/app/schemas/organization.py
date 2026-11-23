@@ -204,6 +204,11 @@ class OrganizationPolicies(BaseModel):
         le=14,
         description="Días que dura una sesión. Solo afecta a los ingresos nuevos.",
     )
+    require_two_factor: bool = Field(
+        default=False,
+        description="Exige el segundo factor a todo el equipo. Quien no lo tenga solo puede "
+        "activarlo.",
+    )
 
 
 class OrganizationPoliciesRequest(OrganizationPolicies):

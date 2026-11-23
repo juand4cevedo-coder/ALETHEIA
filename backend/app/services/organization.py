@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.models import AuditLog, Organization
 from app.repositories.organization import organization_for_update
 from app.services.audit import audit_ip, audit_user_agent
-from app.services.sessions import Principal
+from app.services.sessions import Principal, has_second_factor
 
 
 def rename(
@@ -45,12 +45,17 @@ def rename(
     return organization
 
 
+class TwoFactorSetupRequiredForPolicyError(Exception):
+    """El propietario todavía no tiene el segundo factor: no puede exigirlo a los demás."""
+
+
 def update_policies(
     session: Session,
     principal: Principal,
     *,
     default_retention_years: int,
     session_days: int,
+    require_two_factor: bool,
     client_ip: str,
     user_agent: str | None,
 ) -> Organization:
@@ -63,14 +68,24 @@ def update_policies(
     if organization is None:
         msg = "La organización de la sesión desapareció"
         raise LookupError(msg)
+    turning_on = require_two_factor and not organization.require_two_factor
+    # Quien lo exige no puede quedarse fuera: primero tiene que tenerlo activo.
+    if turning_on and not has_second_factor(session, principal.user_id):
+        raise TwoFactorSetupRequiredForPolicyError
     previous = {
         "default_retention_years": organization.default_retention_years,
         "session_days": organization.session_days,
+        "require_two_factor": organization.require_two_factor,
     }
-    current = {"default_retention_years": default_retention_years, "session_days": session_days}
+    current = {
+        "default_retention_years": default_retention_years,
+        "session_days": session_days,
+        "require_two_factor": require_two_factor,
+    }
     if previous != current:
         organization.default_retention_years = default_retention_years
         organization.session_days = session_days
+        organization.require_two_factor = require_two_factor
         session.add(
             AuditLog(
                 organization_id=organization_id,

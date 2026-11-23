@@ -48,7 +48,11 @@ def test_los_valores_por_omision_son_los_de_siempre(dispositivo: NuevoCliente, d
 
     assert response.status_code == 200, response.text
     assert response.headers["cache-control"] == "no-store"
-    assert response.json() == {"default_retention_years": 10, "session_days": 14}
+    assert response.json() == {
+        "default_retention_years": 10,
+        "session_days": 14,
+        "require_two_factor": False,
+    }
 
 
 def test_solo_el_propietario_cambia_las_politicas_y_queda_en_la_auditoria(
@@ -57,7 +61,7 @@ def test_solo_el_propietario_cambia_las_politicas_y_queda_en_la_auditoria(
     office = crear_oficina(db)
     admin = crear_miembro(db, office, "admin-politicas@example.com", "admin")
     lawyer = crear_miembro(db, office, "abogada-politicas@example.com", "lawyer")
-    body = {"default_retention_years": 5, "session_days": 7}
+    body = {"default_retention_years": 5, "session_days": 7, "require_two_factor": False}
 
     assert _login(dispositivo, lawyer).get(PATH).status_code == 403
     admin_client = _login(dispositivo, admin)

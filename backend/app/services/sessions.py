@@ -97,6 +97,8 @@ class Principal:
     role: str | None
     # Fecha de los textos legales que la persona aceptó por última vez (RN-029).
     legal_version: str
+    # El despacho exige el segundo factor y esta persona todavía no lo tiene: solo puede activarlo.
+    two_factor_setup_required: bool = False
 
     @property
     def accepted_current_legal(self) -> bool:
@@ -348,6 +350,19 @@ def sign_out_everywhere(
     session.commit()
 
 
+def _must_set_up_two_factor(
+    session: Session, user_id: uuid.UUID, organization_id: uuid.UUID | None
+) -> bool:
+    """Si el despacho exige el segundo factor y la persona aún no lo tiene. Una sola lectura de
+    la organización cuando la política está apagada, que es el caso común."""
+    if organization_id is None:
+        return False
+    required = session.scalar(
+        select(Organization.require_two_factor).where(Organization.id == organization_id)
+    )
+    return bool(required) and not has_second_factor(session, user_id)
+
+
 def authenticate(session: Session, settings: Settings, access_token: str | None) -> Principal:
     """Comprueba el token de acceso y que su sesión siga viva, y deja fijado el contexto de
     la organización para el resto de la petición.
@@ -368,12 +383,14 @@ def authenticate(session: Session, settings: Settings, access_token: str | None)
         raise NotAuthenticatedError
 
     membership = _enter_organization(session, claims.subject)
+    organization_id = membership.organization_id if membership is not None else None
     return Principal(
         user_id=claims.subject,
         session_id=claims.session_id,
-        organization_id=membership.organization_id if membership is not None else None,
+        organization_id=organization_id,
         role=membership.role if membership is not None else None,
         legal_version=legal_version,
+        two_factor_setup_required=_must_set_up_two_factor(session, claims.subject, organization_id),
     )
 
 

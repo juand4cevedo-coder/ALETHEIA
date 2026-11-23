@@ -73,3 +73,8 @@ class Me(BaseModel):
     )
     subscription: MySubscription | None = None
     legal: LegalStatus = Field(description="Su aceptación de los textos legales.")
+    two_factor_setup_required: bool = Field(
+        default=False,
+        description="Su despacho exige el segundo factor y todavía no lo tiene: solo puede "
+        "activarlo.",
+    )

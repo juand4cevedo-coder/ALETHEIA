@@ -31,6 +31,40 @@ beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock);
 });
 
+describe("Segundo factor obligatorio", () => {
+  it("reemplaza el espacio de trabajo por la activación cuando el despacho lo exige", async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const path = new URL((input as Request).url).pathname;
+      if (path === "/api/v1/me") {
+        return jsonResponse({ ...ME, two_factor_setup_required: true });
+      }
+      if (path === "/api/v1/account/two-factor") {
+        return jsonResponse({ enabled: false, recovery_codes_remaining: 0 });
+      }
+      throw new Error(`Ruta inesperada: ${path}`);
+    });
+    await renderRoute("/app");
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Active la verificación en dos pasos",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", {
+        name: "Activar la verificación en dos pasos",
+      }),
+    ).toBeInTheDocument();
+    // El menú del espacio de trabajo no aparece: solo puede activarlo o cerrar sesión.
+    expect(
+      screen.queryByRole("navigation", { name: "Espacio de trabajo" }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("button", { name: /Cerrar sesión/ }),
+    ).toBeInTheDocument();
+  });
+});
+
 describe("Espacio de trabajo protegido (API-014)", () => {
   it("mantiene la cuenta propietaria en la consola administrativa", async () => {
     fetchMock.mockImplementation(async (input) => {

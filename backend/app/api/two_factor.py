@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_app_settings, get_client_ip, get_principal, get_session
+from app.api.deps import get_app_settings, get_client_ip, get_principal_bare, get_session
 from app.core.config import Settings
 from app.models import User
 from app.schemas.two_factor import (
@@ -32,7 +32,7 @@ def _user(session: Session, principal: Principal) -> User:
 @router.get("", summary="Estado del segundo factor de la cuenta")
 def two_factor_status(
     response: Response,
-    principal: Annotated[Principal, Depends(get_principal)],
+    principal: Annotated[Principal, Depends(get_principal_bare)],
     session: Annotated[Session, Depends(get_session)],
 ) -> TwoFactorStatus:
     response.headers["Cache-Control"] = "no-store"
@@ -45,7 +45,7 @@ def two_factor_status(
 @router.post("/setup", summary="Empezar la activación: entrega el secreto una vez")
 def two_factor_setup(
     response: Response,
-    principal: Annotated[Principal, Depends(get_principal)],
+    principal: Annotated[Principal, Depends(get_principal_bare)],
     session: Annotated[Session, Depends(get_session)],
     settings: Annotated[Settings, Depends(get_app_settings)],
 ) -> TwoFactorSetup:
@@ -60,6 +60,11 @@ def two_factor_setup(
 
 
 def _reject(error: Exception) -> HTTPException:
+    if isinstance(error, two_factor_service.TwoFactorRequiredByPolicyError):
+        return HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="Su despacho exige la verificación en dos pasos: no se puede desactivar.",
+        )
     if isinstance(error, two_factor_service.InvalidTwoFactorCodeError):
         return HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=_INVALID_CODE)
     if isinstance(error, two_factor_service.TwoFactorAlreadyEnabledError):
@@ -72,6 +77,7 @@ def _reject(error: Exception) -> HTTPException:
 
 
 _HANDLED = (
+    two_factor_service.TwoFactorRequiredByPolicyError,
     two_factor_service.InvalidTwoFactorCodeError,
     two_factor_service.TwoFactorAlreadyEnabledError,
     two_factor_service.TwoFactorNotEnabledError,
@@ -83,7 +89,7 @@ _HANDLED = (
 def two_factor_enable(
     request: TwoFactorCode,
     response: Response,
-    principal: Annotated[Principal, Depends(get_principal)],
+    principal: Annotated[Principal, Depends(get_principal_bare)],
     session: Annotated[Session, Depends(get_session)],
     settings: Annotated[Settings, Depends(get_app_settings)],
     client_ip: Annotated[str, Depends(get_client_ip)],
@@ -112,7 +118,7 @@ def two_factor_enable(
 def two_factor_disable(
     request: TwoFactorCode,
     response: Response,
-    principal: Annotated[Principal, Depends(get_principal)],
+    principal: Annotated[Principal, Depends(get_principal_bare)],
     session: Annotated[Session, Depends(get_session)],
     settings: Annotated[Settings, Depends(get_app_settings)],
     client_ip: Annotated[str, Depends(get_client_ip)],
@@ -136,7 +142,7 @@ def two_factor_disable(
 def two_factor_recovery_codes(
     request: TwoFactorCode,
     response: Response,
-    principal: Annotated[Principal, Depends(get_principal)],
+    principal: Annotated[Principal, Depends(get_principal_bare)],
     session: Annotated[Session, Depends(get_session)],
     settings: Annotated[Settings, Depends(get_app_settings)],
     client_ip: Annotated[str, Depends(get_client_ip)],
