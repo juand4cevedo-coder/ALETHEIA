@@ -14,8 +14,10 @@ import hashlib
 import hmac
 import json
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from typing import Any, Final
 
 from app.core.config import Settings
@@ -23,6 +25,7 @@ from app.core.config import Settings
 _SANDBOX_URL: Final = "https://sandbox.wompi.co/v1"
 _PRODUCTION_URL: Final = "https://production.wompi.co/v1"
 _ESPERA_SEGUNDOS: Final = 15
+_CHECKOUT_WEB_URL: Final = "https://checkout.wompi.co/p/"
 
 
 class WompiNoConfiguradoError(RuntimeError):
@@ -124,6 +127,40 @@ def tokens_de_aceptacion(creds: Credenciales) -> TokensDeAceptacion:
 def firma_de_integridad(reference: str, amount_in_cents: int, currency: str, secreto: str) -> str:
     cadena = f"{reference}{amount_in_cents}{currency}{secreto}"
     return hashlib.sha256(cadena.encode()).hexdigest()
+
+
+def url_de_checkout_web(
+    creds: Credenciales,
+    *,
+    reference: str,
+    amount_in_cents: int,
+    redirect_url: str,
+    customer_email: str,
+    vigencia: timedelta,
+    ahora: datetime | None = None,
+) -> tuple[str, datetime]:
+    """La dirección del Checkout Web de Wompi para una transacción, y cuándo vence.
+
+    La persona paga en la página de Wompi con tarjeta, PSE, Nequi u otros medios que el comercio
+    tenga habilitados; los datos de pago nunca pasan por ALETHEIA. La firma de integridad cubre la
+    referencia, el monto, la moneda, la fecha de vencimiento y el secreto, en ese orden: Wompi la
+    exige y rechaza una dirección alterada. La redirección de regreso solo informa; lo que activa
+    el plan es el webhook o la consulta firmada con la llave privada."""
+    vence = (ahora or datetime.now(UTC)) + vigencia
+    expiracion = vence.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    cadena = f"{reference}{amount_in_cents}COP{expiracion}{creds.integrity_secret}"
+    firma = hashlib.sha256(cadena.encode()).hexdigest()
+    parametros = {
+        "public-key": creds.public_key,
+        "currency": "COP",
+        "amount-in-cents": str(amount_in_cents),
+        "reference": reference,
+        "signature:integrity": firma,
+        "redirect-url": redirect_url,
+        "expiration-time": expiracion,
+        "customer-data:email": customer_email,
+    }
+    return f"{_CHECKOUT_WEB_URL}?{urllib.parse.urlencode(parametros)}", vence
 
 
 @dataclass(frozen=True, slots=True)

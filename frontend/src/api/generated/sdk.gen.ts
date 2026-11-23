@@ -53,6 +53,9 @@ import type {
   CompleteRecoveryData,
   CompleteRecoveryErrors,
   CompleteRecoveryResponses,
+  ConfirmCheckoutWebData,
+  ConfirmCheckoutWebErrors,
+  ConfirmCheckoutWebResponses,
   ConfirmRecoveryData,
   ConfirmRecoveryErrors,
   ConfirmRecoveryResponses,
@@ -71,6 +74,9 @@ import type {
   CreateCheckoutData,
   CreateCheckoutErrors,
   CreateCheckoutResponses,
+  CreateCheckoutWebData,
+  CreateCheckoutWebErrors,
+  CreateCheckoutWebResponses,
   CreateInvitationData,
   CreateInvitationErrors,
   CreateInvitationResponses,
@@ -2753,6 +2759,66 @@ export const createCheckout = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/billing/checkout",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Iniciar un cobro en el Checkout Web de Wompi (tarjeta, PSE, Nequi y otros)
+ */
+export const createCheckoutWeb = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCheckoutWebData, ThrowOnError>,
+): RequestResult<
+  CreateCheckoutWebResponses,
+  CreateCheckoutWebErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    CreateCheckoutWebResponses,
+    CreateCheckoutWebErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/billing/checkout-web",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Confirmar el resultado de un cobro al volver del Checkout Web
+ */
+export const confirmCheckoutWeb = <ThrowOnError extends boolean = false>(
+  options: Options<ConfirmCheckoutWebData, ThrowOnError>,
+): RequestResult<
+  ConfirmCheckoutWebResponses,
+  ConfirmCheckoutWebErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    ConfirmCheckoutWebResponses,
+    ConfirmCheckoutWebErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/billing/checkout-web/confirm",
     ...options,
     headers: {
       "Content-Type": "application/json",

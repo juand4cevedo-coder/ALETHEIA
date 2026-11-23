@@ -11,7 +11,15 @@ from sqlalchemy.orm import Session
 from app.adapters import wompi
 from app.api.deps import get_app_settings, get_principal, get_session
 from app.core.config import Settings
-from app.schemas.billing import CheckoutCreate, CheckoutOut, WompiTermsOut
+from app.schemas.billing import (
+    CheckoutCreate,
+    CheckoutOut,
+    CheckoutWebConfirm,
+    CheckoutWebCreate,
+    CheckoutWebOut,
+    CheckoutWebResult,
+    WompiTermsOut,
+)
 from app.services import checkout as checkout_service
 from app.services import payments as payments_service
 from app.services.sessions import Principal
@@ -116,6 +124,98 @@ def create_checkout(
         transaction_id=cobro.transaction_id,
         reference=cobro.reference,
         status=cast(Literal["PENDING", "APPROVED", "DECLINED", "VOIDED", "ERROR"], cobro.status),
+    )
+
+
+@router.post(
+    "/billing/checkout-web",
+    summary="Iniciar un cobro en el Checkout Web de Wompi (tarjeta, PSE, Nequi y otros)",
+    responses={
+        status.HTTP_403_FORBIDDEN: {"description": "El rol no administra la facturación."},
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {
+            "description": "El plan o el ciclo no son válidos."
+        },
+        status.HTTP_503_SERVICE_UNAVAILABLE: {"description": "La pasarela no está disponible."},
+    },
+)
+def create_checkout_web(
+    body: CheckoutWebCreate,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+) -> CheckoutWebOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        url = checkout_service.iniciar_checkout_web(
+            session, settings, principal, body.plan_code, body.billing_cycle
+        )
+        session.commit()
+    except checkout_service.CheckoutNoPermitidoError:
+        session.rollback()
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="No se pudo iniciar el cobro con esos datos.",
+            headers=_NO_STORE,
+        ) from None
+    except wompi.WompiNoConfiguradoError:
+        session.rollback()
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="La pasarela de pagos no está disponible.",
+            headers=_NO_STORE,
+        ) from None
+    return CheckoutWebOut(checkout_url=url)
+
+
+@router.post(
+    "/billing/checkout-web/confirm",
+    summary="Confirmar el resultado de un cobro al volver del Checkout Web",
+    responses={
+        status.HTTP_403_FORBIDDEN: {"description": "El rol no administra la facturación."},
+        status.HTTP_404_NOT_FOUND: {"description": "La transacción no es de este despacho."},
+        status.HTTP_503_SERVICE_UNAVAILABLE: {"description": "Wompi no respondió."},
+    },
+)
+def confirm_checkout_web(
+    body: CheckoutWebConfirm,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+) -> CheckoutWebResult:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        estado = checkout_service.confirmar_regreso(
+            session, settings, principal, body.transaction_id
+        )
+        session.commit()
+    except checkout_service.CheckoutNoPermitidoError:
+        session.rollback()
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="No tiene permiso para esta acción.",
+            headers=_NO_STORE,
+        ) from None
+    except checkout_service.TransaccionAjenaError, wompi.WompiRechazadoError:
+        session.rollback()
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail="No encontramos esa transacción para este despacho.",
+            headers=_NO_STORE,
+        ) from None
+    except wompi.WompiNoConfiguradoError, wompi.WompiNoDisponibleError:
+        session.rollback()
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Wompi no respondió; inténtelo de nuevo en un momento.",
+            headers=_NO_STORE,
+        ) from None
+    if estado not in _ESTADOS:
+        logger.error("Wompi devolvió un estado de transacción desconocido: %s", estado)
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, headers=_NO_STORE)
+    return CheckoutWebResult(
+        status=cast(Literal["PENDING", "APPROVED", "DECLINED", "VOIDED", "ERROR"], estado)
     )
 
 

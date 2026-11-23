@@ -1,9 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
+import { useSearchParams } from "react-router";
 
 import type { Me, PublicPlan } from "../api/generated";
 import {
+  confirmCheckoutWebMutation,
   createCheckoutMutation,
+  createCheckoutWebMutation,
   readMeQueryKey,
   wompiTermsOptions,
 } from "../api/generated/@tanstack/react-query.gen.ts";
@@ -31,7 +34,98 @@ const POLL_INTERVAL_MS = 5_000;
 const POLL_TIMEOUT_MS = 120_000;
 const MAX_POLLS = Math.floor(POLL_TIMEOUT_MS / POLL_INTERVAL_MS);
 
-/** Tarjeta «Pagar con Nequi» (HU-027, prototipo en Administración / sección de suscripción):
+// Wompi devuelve a la persona a esta página con el identificador de su transacción. El estado
+// definitivo puede tardar (PSE y Nequi son asíncronos): se vuelve a preguntar hasta que termine.
+const RETURN_POLL_MS = 5_000;
+const RETURN_MAX_POLLS = 24;
+
+type ReturnState = "checking" | "approved" | "pending" | "failed" | "error";
+
+/** La persona vuelve del Checkout Web de Wompi: se confirma con el servidor, que le pregunta a
+ * Wompi con la llave privada. La dirección de regreso solo informa y nunca activa nada por sí
+ * sola. */
+function CheckoutReturn({
+  transactionId,
+  onDone,
+}: {
+  transactionId: string;
+  onDone: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const [state, setState] = useState<ReturnState>("checking");
+  const confirm = useMutation({
+    ...confirmCheckoutWebMutation(),
+    onSuccess: (result) => {
+      if (result.status === "APPROVED") {
+        setState("approved");
+        void queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
+      } else if (result.status === "PENDING") setState("pending");
+      else setState("failed");
+    },
+    onError: () => setState("error"),
+  });
+  const { mutate } = confirm;
+
+  useEffect(() => {
+    mutate({ body: { transaction_id: transactionId } });
+  }, [transactionId, mutate]);
+
+  useEffect(() => {
+    if (state !== "pending") return;
+    let polls = 0;
+    const timer = setInterval(() => {
+      polls += 1;
+      if (polls > RETURN_MAX_POLLS) {
+        clearInterval(timer);
+        return;
+      }
+      mutate({ body: { transaction_id: transactionId } });
+    }, RETURN_POLL_MS);
+    return () => clearInterval(timer);
+  }, [state, transactionId, mutate]);
+
+  if (state === "approved")
+    return (
+      <Notice tone="success">
+        <p role="status">Su pago quedó aprobado y el plan ya está activo.</p>
+      </Notice>
+    );
+  if (state === "failed")
+    return (
+      <Notice tone="error">
+        <p role="alert">
+          El pago no se completó: lo rechazó el banco o se canceló. No se cobró
+          nada. Puede intentarlo de nuevo con otro medio de pago.
+        </p>
+        <Button variant="secondary" size="sm" onClick={onDone}>
+          Intentar de nuevo
+        </Button>
+      </Notice>
+    );
+  if (state === "error")
+    return (
+      <Notice tone="warning">
+        <p role="alert">
+          No pudimos confirmar el pago con Wompi en este momento. Si ya pagó, el
+          plan se activa solo en unos minutos; si no, inténtelo de nuevo.
+        </p>
+        <Button variant="secondary" size="sm" onClick={onDone}>
+          Volver
+        </Button>
+      </Notice>
+    );
+  return (
+    <Notice tone="info">
+      <p role="status">
+        {state === "pending"
+          ? "Su pago está en proceso. Con PSE puede tardar unos minutos: esta página se actualiza sola."
+          : "Confirmando su pago con Wompi"}
+      </p>
+    </Notice>
+  );
+}
+
+/** Tarjeta «Pagar» (HU-027, prototipo en Administración / sección de suscripción):
  * solo se muestra cuando puede cobrar algo (prueba o periodo vencido) y la persona puede
  * administrar la facturación. El cobro se confirma por un cargo en Nequi, nunca aquí; esta
  * tarjeta solo arranca la transacción y dice qué esperar.
@@ -45,6 +139,8 @@ export function CheckoutCard({ me }: { me: Me }) {
   const [pollTimedOut, setPollTimedOut] = useState(false);
   const [retryToken, setRetryToken] = useState(0);
   const queryClient = useQueryClient();
+  const [params, setParams] = useSearchParams();
+  const returnId = params.get("id");
   const active = me.subscription?.status === "active";
 
   const canPay =
@@ -74,6 +170,15 @@ export function CheckoutCard({ me }: { me: Me }) {
     setPollTimedOut(false);
     void queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
     setRetryToken((token) => token + 1);
+  }
+
+  if (returnId) {
+    return (
+      <CheckoutReturn
+        transactionId={returnId}
+        onDone={() => setParams({}, { replace: true })}
+      />
+    );
   }
 
   if (started) {
@@ -116,12 +221,14 @@ export function CheckoutCard({ me }: { me: Me }) {
 }
 
 type Step = "elegir" | "confirmar";
+type Method = "web" | "nequi";
 
 function Checkout({ onStarted }: { onStarted: () => void }) {
   const { plans, isPending, isError } = usePlanCatalog();
   const [step, setStep] = useState<Step>("elegir");
   const [planCode, setPlanCode] = useState<string | null>(null);
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
+  const [method, setMethod] = useState<Method>("web");
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState<string>();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -143,6 +250,11 @@ function Checkout({ onStarted }: { onStarted: () => void }) {
     ...createCheckoutMutation(),
     onSuccess: onStarted,
   });
+  // Tarjeta, PSE y otros medios: se paga en la página de Wompi, adonde se envía a la persona.
+  const web = useMutation({
+    ...createCheckoutWebMutation(),
+    onSuccess: (result) => window.location.assign(result.checkout_url),
+  });
 
   // El foco entra a la confirmación al pasar de paso, como en el resto del sitio.
   useEffect(() => {
@@ -151,6 +263,13 @@ function Checkout({ onStarted }: { onStarted: () => void }) {
 
   function goToConfirm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (method === "web") {
+      if (selected && !web.isPending)
+        web.mutate({
+          body: { plan_code: selected.code, billing_cycle: cycle },
+        });
+      return;
+    }
     if (!PHONE_PATTERN.test(phone)) {
       setPhoneError("Escriba un celular colombiano, como 3001234567.");
       return phoneRef.current?.focus();
@@ -222,20 +341,60 @@ function Checkout({ onStarted }: { onStarted: () => void }) {
             </label>
           )}
         </fieldset>
-        <Field
-          ref={phoneRef}
-          label="Celular Nequi"
-          name="celular"
-          inputMode="numeric"
-          autoComplete="tel-national"
-          required
-          help="A este número le llega la notificación para aprobar el cobro."
-          error={phoneError}
-          value={phone}
-          onChange={(event) => setPhone(event.target.value.trim())}
-        />
+        <fieldset className={styles.cycle}>
+          <legend>Medio de pago</legend>
+          <label>
+            <input
+              type="radio"
+              name="medio-checkout"
+              checked={method === "web"}
+              onChange={() => setMethod("web")}
+            />
+            Tarjeta, PSE u otros medios
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="medio-checkout"
+              checked={method === "nequi"}
+              onChange={() => setMethod("nequi")}
+            />
+            Nequi, con una notificación a su celular
+          </label>
+        </fieldset>
+        {method === "web" ? (
+          <p className={styles.help}>
+            Lo llevaremos a la página segura de Wompi para pagar. Los datos de
+            su tarjeta o de su banco los recibe Wompi; ALETHEIA nunca los ve. Al
+            terminar, vuelve aquí.
+          </p>
+        ) : (
+          <Field
+            ref={phoneRef}
+            label="Celular Nequi"
+            name="celular"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            required
+            help="A este número le llega la notificación para aprobar el cobro."
+            error={phoneError}
+            value={phone}
+            onChange={(event) => setPhone(event.target.value.trim())}
+          />
+        )}
+        {web.isError && (
+          <Notice tone="error">
+            <p role="alert">
+              {apiProblem(web.error).status === 422
+                ? "No se pudo iniciar el pago. Si ya tiene uno en curso, espere a que termine o venza (una hora)."
+                : "No pudimos conectar con la pasarela de pagos. Inténtelo de nuevo en un momento."}
+            </p>
+          </Notice>
+        )}
         <div className={styles.actions}>
-          <Button type="submit">Continuar</Button>
+          <Button type="submit" busy={web.isPending}>
+            {method === "web" ? "Ir a pagar" : "Continuar"}
+          </Button>
         </div>
       </form>
     );

@@ -92,6 +92,9 @@ it("permite a la propietaria en prueba pagar el plan con Nequi", async () => {
   const user = userEvent.setup();
   await renderRoute("/app/cuenta");
 
+  await user.click(
+    await screen.findByRole("radio", { name: /Nequi, con una notificación/ }),
+  );
   await user.type(await screen.findByLabelText("Celular Nequi"), "3001234567");
   await user.click(screen.getByRole("button", { name: "Continuar" }));
 
@@ -219,6 +222,9 @@ it("confirma el pago con Nequi cuando la suscripción queda activa", async () =>
   const user = userEvent.setup();
   await renderRoute("/app/cuenta");
 
+  await user.click(
+    await screen.findByRole("radio", { name: /Nequi, con una notificación/ }),
+  );
   await user.type(await screen.findByLabelText("Celular Nequi"), "3001234567");
   await user.click(screen.getByRole("button", { name: "Continuar" }));
 
@@ -324,4 +330,113 @@ it("activa la verificación en dos pasos y muestra los códigos de respaldo una 
   expect(
     await screen.findByText(/está activa. Le quedan 2 códigos de respaldo/),
   ).toBeInTheDocument();
+});
+
+const PLANS = [
+  {
+    code: "essential",
+    name: "Esencial",
+    monthly_price_cop: 29_900,
+    annual_price_cop: 299_000,
+    included_users: 3,
+    extra_user_price_cop: null,
+    storage_limit_bytes: 1024 ** 3,
+    max_file_bytes: 1024 ** 3,
+    trial_days: 14,
+    is_public: true,
+  },
+];
+
+function serveCheckoutWeb(handlers: {
+  web?: (body: Record<string, unknown>) => Response;
+  confirm?: (body: Record<string, unknown>) => Response;
+}) {
+  fetchMock.mockImplementation(async (input, init) => {
+    const isRequest = typeof input !== "string";
+    const url = isRequest ? (input as Request).url : input;
+    const path = new URL(url, "http://localhost").pathname;
+    const method = isRequest
+      ? (input as Request).method
+      : (init?.method ?? "GET");
+    if (path === "/api/v1/me") return jsonResponse(ownerEnPrueba());
+    if (path === "/api/v1/plans") return jsonResponse(PLANS);
+    if (path === "/api/v1/auth/google/status")
+      return jsonResponse({ configured: false });
+    if (path === "/api/v1/billing/checkout-web" && method === "POST")
+      return handlers.web!(
+        (await (input as Request).json()) as Record<string, unknown>,
+      );
+    if (path === "/api/v1/billing/checkout-web/confirm" && method === "POST")
+      return handlers.confirm!(
+        (await (input as Request).json()) as Record<string, unknown>,
+      );
+    throw new Error(`Ruta inesperada: ${method} ${path}`);
+  });
+}
+
+it("por omisión paga en la página de Wompi con tarjeta, PSE u otros medios", async () => {
+  let body: Record<string, unknown> | null = null;
+  serveCheckoutWeb({
+    web: (sent) => {
+      body = sent;
+      return jsonResponse({
+        checkout_url: "https://checkout.wompi.co/p/?public-key=pub_test_x",
+      });
+    },
+  });
+  const assign = vi.fn();
+  vi.stubGlobal("location", { ...window.location, assign });
+  const user = userEvent.setup();
+  await renderRoute("/app/cuenta");
+
+  expect(
+    await screen.findByRole("radio", { name: /Tarjeta, PSE u otros medios/ }),
+  ).toBeChecked();
+  expect(screen.queryByLabelText("Celular Nequi")).not.toBeInTheDocument();
+  expect(screen.getByText(/ALETHEIA nunca los ve/)).toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Ir a pagar" }));
+
+  await waitFor(() =>
+    expect(assign).toHaveBeenCalledWith(
+      "https://checkout.wompi.co/p/?public-key=pub_test_x",
+    ),
+  );
+  expect(body).toEqual({ plan_code: "essential", billing_cycle: "monthly" });
+  vi.unstubAllGlobals();
+});
+
+it("al volver de Wompi confirma el pago con el servidor y dice que quedó aprobado", async () => {
+  let confirmed: Record<string, unknown> | null = null;
+  serveCheckoutWeb({
+    confirm: (sent) => {
+      confirmed = sent;
+      return jsonResponse({ status: "APPROVED" });
+    },
+  });
+  await renderRoute("/app/cuenta?id=1292-1602113476-10985");
+
+  expect(
+    await screen.findByText("Su pago quedó aprobado y el plan ya está activo."),
+  ).toBeInTheDocument();
+  expect(confirmed).toEqual({ transaction_id: "1292-1602113476-10985" });
+});
+
+it("si el pago no se completó lo dice y deja intentarlo de nuevo", async () => {
+  serveCheckoutWeb({ confirm: () => jsonResponse({ status: "DECLINED" }) });
+  const user = userEvent.setup();
+  await renderRoute("/app/cuenta?id=1292-1602113476-10985");
+
+  expect(await screen.findByText(/El pago no se completó/)).toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Intentar de nuevo" }));
+
+  expect(
+    await screen.findByRole("button", { name: "Ir a pagar" }),
+  ).toBeInTheDocument();
+});
+
+it("un pago pendiente, como PSE, se sigue consultando y avisa que puede tardar", async () => {
+  serveCheckoutWeb({ confirm: () => jsonResponse({ status: "PENDING" }) });
+  await renderRoute("/app/cuenta?id=1292-1602113476-10985");
+
+  expect(await screen.findByText(/Con PSE puede tardar/)).toBeInTheDocument();
 });

@@ -935,6 +935,54 @@ export type CheckoutOut = {
 };
 
 /**
+ * CheckoutWebConfirm
+ */
+export type CheckoutWebConfirm = {
+  /**
+   * Transaction Id
+   *
+   * El identificador que Wompi agrega a la dirección de regreso (id).
+   */
+  transaction_id: string;
+};
+
+/**
+ * CheckoutWebCreate
+ */
+export type CheckoutWebCreate = {
+  /**
+   * Plan Code
+   */
+  plan_code: string;
+  /**
+   * Billing Cycle
+   */
+  billing_cycle: "monthly" | "annual";
+};
+
+/**
+ * CheckoutWebOut
+ */
+export type CheckoutWebOut = {
+  /**
+   * Checkout Url
+   *
+   * Página de Wompi donde la persona paga con tarjeta, PSE, Nequi u otros medios.
+   */
+  checkout_url: string;
+};
+
+/**
+ * CheckoutWebResult
+ */
+export type CheckoutWebResult = {
+  /**
+   * Status
+   */
+  status: "PENDING" | "APPROVED" | "DECLINED" | "VOIDED" | "ERROR";
+};
+
+/**
  * CloseAccountRequest
  *
  * Confirmación reforzada para cerrar y anonimizar la cuenta.
@@ -7464,6 +7512,80 @@ export type CreateCheckoutResponses = {
 
 export type CreateCheckoutResponse =
   CreateCheckoutResponses[keyof CreateCheckoutResponses];
+
+export type CreateCheckoutWebData = {
+  body: CheckoutWebCreate;
+  path?: never;
+  query?: never;
+  url: "/api/v1/billing/checkout-web";
+};
+
+export type CreateCheckoutWebErrors = {
+  /**
+   * El rol no administra la facturación.
+   */
+  403: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * La pasarela no está disponible.
+   */
+  503: Problem;
+};
+
+export type CreateCheckoutWebError =
+  CreateCheckoutWebErrors[keyof CreateCheckoutWebErrors];
+
+export type CreateCheckoutWebResponses = {
+  /**
+   * Successful Response
+   */
+  200: CheckoutWebOut;
+};
+
+export type CreateCheckoutWebResponse =
+  CreateCheckoutWebResponses[keyof CreateCheckoutWebResponses];
+
+export type ConfirmCheckoutWebData = {
+  body: CheckoutWebConfirm;
+  path?: never;
+  query?: never;
+  url: "/api/v1/billing/checkout-web/confirm";
+};
+
+export type ConfirmCheckoutWebErrors = {
+  /**
+   * El rol no administra la facturación.
+   */
+  403: Problem;
+  /**
+   * La transacción no es de este despacho.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Wompi no respondió.
+   */
+  503: Problem;
+};
+
+export type ConfirmCheckoutWebError =
+  ConfirmCheckoutWebErrors[keyof ConfirmCheckoutWebErrors];
+
+export type ConfirmCheckoutWebResponses = {
+  /**
+   * Successful Response
+   */
+  200: CheckoutWebResult;
+};
+
+export type ConfirmCheckoutWebResponse =
+  ConfirmCheckoutWebResponses[keyof ConfirmCheckoutWebResponses];
 
 export type ListPortalAccessesData = {
   body?: never;
