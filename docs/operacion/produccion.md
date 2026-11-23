@@ -22,7 +22,7 @@ Los identificadores reales de la cuenta (ID de cuenta, IP elástica, ARN de KMS,
 | Nombre | `aletheia-prod` |
 | Tipo | t3.small x86 (2 vCPU y 2 GB) |
 | Sistema | Debian 13 (trixie), kernel `6.12.113+deb13-cloud-amd64` |
-| Disco | EBS gp3 de 30 GiB |
+| Disco | EBS gp3 de 30 GiB, cifrado con la llave `aws/ebs` desde el 23 de noviembre de 2026 |
 | IP elástica | Fija, reservada para el dominio; el valor real está en el runbook interno |
 | Metadatos | IMDSv2 obligatorio, con límite de saltos 2 para que los contenedores reciban las credenciales del rol |
 | Perfil de instancia | `aletheia-prod-instancia` |
@@ -243,7 +243,9 @@ La cuenta cifra por omisión todo disco nuevo, pero el disco raíz de `aletheia-
 3. **Cambiar** (`--cambiar`, el corte): pide escribir `CIFRAR`. Apaga la instancia (desde ese momento nada escribe en el disco), toma la instantánea definitiva, la copia cifrada (AWS solo mueve lo que cambió desde el ensayo), crea un disco nuevo de las mismas características y comprueba que quedó cifrado; si no lo está, vuelve a encender la instancia con el disco anterior. Después separa el disco anterior (lo etiqueta `aletheia-raiz-anterior-sin-cifrar`), conecta el nuevo en el mismo dispositivo, enciende y espera hasta cinco minutos a que `/api/v1/health` responda con la base en orden. `--ejecutar` hace las dos partes seguidas.
 4. **Revertir** (`--revertir vol-...`): apaga, separa el disco nuevo, vuelve a conectar el anterior y enciende. Sirve mientras el disco anterior no se haya borrado.
 
-El sitio queda fuera de línea de 8 a 15 minutos con el ensayo hecho (más si se omite): conviene una hora de poco uso, por ejemplo de madrugada en Colombia. La IP elástica no cambia, así que el DNS sigue valiendo, y las llaves, los volúmenes de Docker y los certificados de Caddy viven en el mismo disco y no se pierden. Durante el corte las tareas programadas (respaldo y métricas) simplemente no corren.
+El sitio queda fuera de línea unos 5 minutos con el ensayo hecho (el corte real de producción fue de 5; sin ensayo previo serían unos 15 o 20): conviene una hora de poco uso, por ejemplo de madrugada en Colombia. La IP elástica no cambia, así que el DNS sigue valiendo, y las llaves, los volúmenes de Docker y los certificados de Caddy viven en el mismo disco y no se pierden. Durante el corte las tareas programadas (respaldo y métricas) simplemente no corren.
+
+Se hizo el 23 de noviembre de 2026, con la versión 0.18.1 en producción. El ensayo (`--preparar`) tardó unos 14 minutos, casi todos en la copia cifrada, y el corte (`--cambiar`) apagó el sitio de las 08:45:09 a las 08:50:22 UTC, cinco minutos: con el ensayo hecho, la instantánea y la copia definitivas fueron de 1 minuto cada una. Un fallo del ensayo mostró que la espera integrada de AWS se rinde a los 10 minutos; el script espera ahora por su cuenta, hasta una hora. Al terminar, `auditar-aws.sh` quedó con 0 fallas.
 
 Después de cifrar:
 
