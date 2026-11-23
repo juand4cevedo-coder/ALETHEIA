@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type FormEvent, useEffect, useId, useState } from "react";
+import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 
 import {
   inviteClientMutation,
   listPortalAccessesOptions,
   listPortalAccessesQueryKey,
+  listPortalDocumentsOptions,
+  listPortalDocumentsQueryKey,
+  removePortalDocumentMutation,
   listPortalMessagesOptions,
   listPortalMessagesQueryKey,
   markPortalMessagesReadMutation,
@@ -17,7 +20,9 @@ import type { PortalAccessOut } from "../../api/generated/index.ts";
 import { Button } from "../../components/ui/Button.tsx";
 import { Field } from "../../components/ui/Field.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
+import { sessionUpload } from "../../api/sessionFetch.ts";
 import { apiProblem } from "../auth/apiProblem.ts";
+import { formatBytes } from "../billing/format.ts";
 import { EMAIL_MAX_LENGTH, EMAIL_PATTERN } from "../auth/signUp.ts";
 import { formatColombiaTime } from "./dates.ts";
 import styles from "./ClientPortalSection.module.css";
@@ -64,6 +69,78 @@ export function ClientPortalSection({
       markAsRead({ path: { case_id: caseId } });
   }, [unread, marking, markFailed, markAsRead, caseId]);
   const countId = useId();
+  const documents = useQuery(listPortalDocumentsOptions({ path }));
+  const removeDocument = useMutation({
+    ...removePortalDocumentMutation(),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: listPortalDocumentsQueryKey({ path }),
+      }),
+  });
+  const fileForm = useRef<HTMLFormElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState<number | null>(null);
+  const [uploadFailure, setUploadFailure] = useState("");
+
+  async function submitDocument(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (uploading) return;
+    const file = (
+      event.currentTarget.elements.namedItem("archivo") as HTMLInputElement
+    ).files?.[0];
+    if (!file || file.size === 0) {
+      setUploadFailure("Seleccione un archivo con contenido.");
+      return;
+    }
+    setUploading(true);
+    setUploadFailure("");
+    try {
+      // El cuerpo tiene la misma forma que el de la evidencia; aquí tipo y origen son fijos.
+      const body = new FormData();
+      body.append("tipo", "document");
+      body.append("origen", "Copia para el cliente");
+      body.append("archivo", file, file.name);
+      const response = await sessionUpload(
+        new URL(
+          `/api/v1/cases/${caseId}/portal/documents`,
+          window.location.origin,
+        ),
+        body,
+        {
+          headers: { "X-Aletheia-Request": "1" },
+          onProgress: (next) =>
+            setProgress(
+              next.total > 0
+                ? Math.round((next.loaded / next.total) * 100)
+                : null,
+            ),
+        },
+      );
+      if (!response.ok) {
+        setUploadFailure(
+          response.status === 413
+            ? "El archivo pesa más de 25 MB o supera el espacio disponible del plan."
+            : response.status === 409
+              ? "Un caso archivado no admite documentos nuevos."
+              : response.status === 403
+                ? "Ya no tiene permiso para subir documentos a este caso."
+                : "No pudimos conservar el archivo. Inténtelo de nuevo.",
+        );
+        return;
+      }
+      fileForm.current?.reset();
+      await queryClient.invalidateQueries({
+        queryKey: listPortalDocumentsQueryKey({ path }),
+      });
+    } catch {
+      setUploadFailure(
+        "Se interrumpió la carga. Compruebe su conexión e inténtelo de nuevo.",
+      );
+    } finally {
+      setUploading(false);
+      setProgress(null);
+    }
+  }
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -284,6 +361,74 @@ export function ClientPortalSection({
           <Notice tone="error">
             <p role="alert">No pudimos quitar el acceso. Inténtelo de nuevo.</p>
           </Notice>
+        )}
+      </div>
+
+      <div className={styles.block}>
+        <h3>Documentos para el cliente</h3>
+        <p className={styles.muted}>
+          Suba una copia pensada para el cliente, de hasta 25 MB. No es
+          evidencia: no entra a la cadena de custodia ni reemplaza el original.
+          Va cifrada, y cada descarga queda en la auditoría.
+        </p>
+        {caseOpen && (
+          <form
+            ref={fileForm}
+            className={styles.form}
+            onSubmit={(event) => void submitDocument(event)}
+          >
+            <label className={styles.fileLabel}>
+              Archivo
+              <input type="file" name="archivo" disabled={uploading} required />
+            </label>
+            <Button type="submit" busy={uploading}>
+              {uploading
+                ? progress === null
+                  ? "Subiendo"
+                  : `Subiendo ${progress}%`
+                : "Subir documento"}
+            </Button>
+            {uploadFailure && (
+              <Notice tone="error">
+                <p role="alert">{uploadFailure}</p>
+              </Notice>
+            )}
+          </form>
+        )}
+        {documents.isPending && <p role="status">Cargando documentos</p>}
+        {documents.isSuccess && documents.data.items.length === 0 && (
+          <p className={styles.muted}>Todavía no subió ningún documento.</p>
+        )}
+        {documents.isSuccess && documents.data.items.length > 0 && (
+          <ul className={styles.list} aria-label="Documentos para el cliente">
+            {documents.data.items.map((item) => (
+              <li key={item.id} className={styles.row}>
+                <div>
+                  <strong>{item.filename}</strong>
+                  <span className={styles.muted}>
+                    {formatBytes(item.size_bytes)}, subido por{" "}
+                    {item.uploaded_by_name} el{" "}
+                    {formatColombiaTime(item.created_at)}
+                  </span>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  busy={
+                    removeDocument.isPending &&
+                    removeDocument.variables?.path.document_id === item.id
+                  }
+                  onClick={() =>
+                    removeDocument.mutate({
+                      path: { case_id: caseId, document_id: item.id },
+                    })
+                  }
+                >
+                  Quitar
+                </Button>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 

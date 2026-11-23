@@ -43,6 +43,7 @@ function serve(state: {
   accesses: unknown[];
   updates: unknown[];
   messages?: unknown[];
+  documents?: unknown[];
 }) {
   fetchMock.mockImplementation(async (input) => {
     const request = input as Request;
@@ -87,6 +88,13 @@ function serve(state: {
           (item) => (item as { read_at: string | null }).read_at === null,
         ).length,
       });
+    }
+    if (path.endsWith("/portal/documents")) {
+      return jsonResponse({ items: state.documents ?? [] });
+    }
+    if (request.method === "DELETE" && path.includes("/portal/documents/")) {
+      state.documents = [];
+      return new Response(null, { status: 204 });
     }
     if (request.method === "DELETE") {
       state.accesses = [access("revoked")];
@@ -240,4 +248,42 @@ it("sin mensajes de clientes lo dice y explica cómo responder", async () => {
   expect(
     await screen.findByText(/Todavía no le escribió ningún cliente/),
   ).toBeInTheDocument();
+});
+
+it("lista los documentos para el cliente y deja quitarlos", async () => {
+  const state = {
+    accesses: [],
+    updates: [],
+    documents: [
+      {
+        id: "01890a5d-ac96-774b-bcce-b302099a8010",
+        filename: "resumen.pdf",
+        size_bytes: 2048,
+        created_at: "2026-11-22T21:30:00Z",
+        uploaded_by_name: "Laura Gómez",
+        sha256: "a".repeat(64),
+      },
+    ],
+  };
+  serve(state);
+  const user = userEvent.setup();
+  renderPortal();
+
+  expect(await screen.findByText("resumen.pdf")).toBeInTheDocument();
+  expect(screen.getByText(/subido por Laura Gómez/)).toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Quitar" }));
+
+  expect(
+    await screen.findByText("Todavía no subió ningún documento."),
+  ).toBeInTheDocument();
+});
+
+it("en un caso archivado no deja subir documentos", async () => {
+  serve({ accesses: [], updates: [], documents: [] });
+  renderPortal(false);
+
+  expect(await screen.findByText(/El caso está archivado/)).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "Subir documento" }),
+  ).not.toBeInTheDocument();
 });

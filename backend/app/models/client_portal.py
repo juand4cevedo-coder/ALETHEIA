@@ -3,7 +3,7 @@
 import datetime
 import uuid
 
-from sqlalchemy import CheckConstraint, ForeignKey, ForeignKeyConstraint, Index, text
+from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, ForeignKeyConstraint, Index, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -97,4 +97,38 @@ class ClientPortalMessage(Base):
     access_id: Mapped[uuid.UUID]
     body: Mapped[str]
     read_at: Mapped[datetime.datetime | None]
+    created_at: Mapped[CreatedAt]
+
+
+class ClientPortalDocument(Base):
+    """Una copia que el despacho sube aparte para el cliente. No es evidencia: no entra a la
+    cadena de custodia ni se mezcla con los originales. Va cifrada con la llave del caso."""
+
+    __tablename__ = "client_portal_documents"
+    __table_args__ = (
+        CheckConstraint("char_length(filename) BETWEEN 1 AND 255", name="filename_length"),
+        CheckConstraint("octet_length(sha256) = 32", name="sha256_length"),
+        CheckConstraint("size_bytes > 0", name="size_bytes"),
+        CheckConstraint("char_length(storage_key) BETWEEN 1 AND 200", name="storage_key_length"),
+        ForeignKeyConstraint(
+            ["organization_id", "case_id"],
+            ["cases.organization_id", "cases.id"],
+            ondelete="CASCADE",
+        ),
+        Index("ix_client_portal_documents_case_id_id", "case_id", "id"),
+    )
+
+    id: Mapped[UUIDv7Pk]
+    organization_id: Mapped[uuid.UUID]
+    case_id: Mapped[uuid.UUID]
+    uploaded_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    filename: Mapped[str]
+    content_type: Mapped[str]
+    size_bytes: Mapped[int] = mapped_column(BigInteger)
+    sha256: Mapped[bytes]
+    storage_key: Mapped[str] = mapped_column(unique=True)
+    removed_at: Mapped[datetime.datetime | None]
+    removed_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT")
+    )
     created_at: Mapped[CreatedAt]

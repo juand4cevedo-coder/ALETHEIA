@@ -82,6 +82,20 @@ export type BodyDownloadExport = {
 };
 
 /**
+ * Body_download_portal_document
+ */
+export type BodyDownloadPortalDocument = {
+  /**
+   * Token
+   */
+  token: string;
+  /**
+   * Document Id
+   */
+  document_id: string;
+};
+
+/**
  * Body_download_shared_evidence
  */
 export type BodyDownloadSharedEvidence = {
@@ -2281,6 +2295,74 @@ export type PortalAccessOut = {
 };
 
 /**
+ * PortalDocumentAdminOut
+ *
+ * El mismo documento, como lo ve el despacho.
+ */
+export type PortalDocumentAdminOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Filename
+   */
+  filename: string;
+  /**
+   * Size Bytes
+   */
+  size_bytes: number;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Uploaded By Name
+   */
+  uploaded_by_name: string;
+  /**
+   * Sha256
+   *
+   * Huella SHA-256 en hexadecimal.
+   */
+  sha256: string;
+};
+
+/**
+ * PortalDocumentList
+ */
+export type PortalDocumentList = {
+  /**
+   * Items
+   */
+  items: Array<PortalDocumentAdminOut>;
+};
+
+/**
+ * PortalDocumentOut
+ *
+ * Un documento que el despacho le dejó al cliente.
+ */
+export type PortalDocumentOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Filename
+   */
+  filename: string;
+  /**
+   * Size Bytes
+   */
+  size_bytes: number;
+  /**
+   * Created At
+   */
+  created_at: string;
+};
+
+/**
  * PortalInbox
  */
 export type PortalInbox = {
@@ -2478,6 +2560,10 @@ export type PortalView = {
    * Messages
    */
   messages: Array<PortalMessageOut>;
+  /**
+   * Documents
+   */
+  documents: Array<PortalDocumentOut>;
   /**
    * Expires At
    */
@@ -7230,6 +7316,122 @@ export type MarkPortalMessagesReadResponses = {
 export type MarkPortalMessagesReadResponse =
   MarkPortalMessagesReadResponses[keyof MarkPortalMessagesReadResponses];
 
+export type ListPortalDocumentsData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/portal/documents";
+};
+
+export type ListPortalDocumentsErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListPortalDocumentsError =
+  ListPortalDocumentsErrors[keyof ListPortalDocumentsErrors];
+
+export type ListPortalDocumentsResponses = {
+  /**
+   * Successful Response
+   */
+  200: PortalDocumentList;
+};
+
+export type ListPortalDocumentsResponse =
+  ListPortalDocumentsResponses[keyof ListPortalDocumentsResponses];
+
+export type UploadPortalDocumentData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/portal/documents";
+};
+
+export type UploadPortalDocumentErrors = {
+  /**
+   * El caso o el despacho no admiten documentos nuevos.
+   */
+  409: Problem;
+  /**
+   * El archivo supera el límite de 25 MB o el espacio del plan.
+   */
+  413: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiadas subidas.
+   */
+  429: Problem;
+  /**
+   * No se pudo acceder a la llave de cifrado del caso.
+   */
+  503: Problem;
+};
+
+export type UploadPortalDocumentError =
+  UploadPortalDocumentErrors[keyof UploadPortalDocumentErrors];
+
+export type UploadPortalDocumentResponses = {
+  /**
+   * Successful Response
+   */
+  201: PortalDocumentOut;
+};
+
+export type UploadPortalDocumentResponse =
+  UploadPortalDocumentResponses[keyof UploadPortalDocumentResponses];
+
+export type RemovePortalDocumentData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+    /**
+     * Document Id
+     */
+    document_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/portal/documents/{document_id}";
+};
+
+export type RemovePortalDocumentErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RemovePortalDocumentError =
+  RemovePortalDocumentErrors[keyof RemovePortalDocumentErrors];
+
+export type RemovePortalDocumentResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type RemovePortalDocumentResponse =
+  RemovePortalDocumentResponses[keyof RemovePortalDocumentResponses];
+
 export type ViewPortalData = {
   body: PortalTokenRequest;
   path?: never;
@@ -7262,6 +7464,49 @@ export type ViewPortalResponses = {
 };
 
 export type ViewPortalResponse = ViewPortalResponses[keyof ViewPortalResponses];
+
+export type DownloadPortalDocumentData = {
+  body: BodyDownloadPortalDocument;
+  path?: never;
+  query?: never;
+  url: "/api/v1/client-portal/documents/download";
+};
+
+export type DownloadPortalDocumentErrors = {
+  /**
+   * El enlace o el documento no existen o ya no están vigentes.
+   */
+  404: Problem;
+  /**
+   * Falta aceptar el aviso de datos.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados intentos.
+   */
+  429: Problem;
+  /**
+   * No se pudo verificar o leer el archivo conservado.
+   */
+  503: Problem;
+};
+
+export type DownloadPortalDocumentError =
+  DownloadPortalDocumentErrors[keyof DownloadPortalDocumentErrors];
+
+export type DownloadPortalDocumentResponses = {
+  /**
+   * Archivo verificado contra su huella.
+   */
+  200: Blob | File;
+};
+
+export type DownloadPortalDocumentResponse =
+  DownloadPortalDocumentResponses[keyof DownloadPortalDocumentResponses];
 
 export type SendPortalMessageData = {
   body: PortalMessageCreate;

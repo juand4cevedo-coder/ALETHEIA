@@ -27,6 +27,7 @@ from app.models import (
     Case,
     CaseMember,
     ClientPortalAccess,
+    ClientPortalDocument,
     ClientPortalMessage,
     ClientPortalUpdate,
     Membership,
@@ -96,6 +97,14 @@ class PublicUpdate:
 
 
 @dataclass(frozen=True, slots=True)
+class PublicDocument:
+    id: uuid.UUID
+    filename: str
+    size_bytes: int
+    created_at: datetime.datetime
+
+
+@dataclass(frozen=True, slots=True)
 class PublicMessage:
     id: uuid.UUID
     body: str
@@ -117,6 +126,7 @@ class PublicView:
     case_status: str | None
     updates: list[PublicUpdate]
     messages: list[PublicMessage]
+    documents: list[PublicDocument]
     expires_at: datetime.datetime
 
 
@@ -388,6 +398,22 @@ def view(session: Session, settings: Settings, token: str) -> PublicView:
         PublicUpdate(item.update.id, item.author_name, item.update.body, item.update.created_at)
         for item in (_updates(session, case.id) if accepted else [])
     ]
+    documents = (
+        [
+            PublicDocument(row.id, row.filename, row.size_bytes, row.created_at)
+            for row in session.scalars(
+                select(ClientPortalDocument)
+                .where(
+                    ClientPortalDocument.case_id == case.id,
+                    ClientPortalDocument.removed_at.is_(None),
+                )
+                .order_by(ClientPortalDocument.id.desc())
+                .limit(MAX_UPDATES)
+            )
+        ]
+        if accepted
+        else []
+    )
     messages = [
         PublicMessage(message.id, message.body, message.created_at)
         for message in (_own_messages(session, access.id) if accepted else [])
@@ -400,6 +426,7 @@ def view(session: Session, settings: Settings, token: str) -> PublicView:
         case_status=case.status if accepted else None,
         updates=updates,
         messages=messages,
+        documents=documents,
         expires_at=access.expires_at,
     )
     session.commit()

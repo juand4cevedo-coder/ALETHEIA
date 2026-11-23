@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.24.0"
+    "version": "0.25.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -6621,6 +6621,192 @@
         }
       }
     },
+    "/api/v1/cases/{case_id}/portal/documents": {
+      "get": {
+        "tags": [
+          "portal del cliente"
+        ],
+        "summary": "Listar los documentos del cliente",
+        "operationId": "list_portal_documents",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalDocumentList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "portal del cliente"
+        ],
+        "summary": "Subir una copia para el cliente",
+        "description": "Multipart como la evidencia: `tipo` y `origen` antes del `archivo`. Aquí solo aseguran\nque el cuerpo tenga la misma forma; la copia no es evidencia.",
+        "operationId": "upload_portal_document",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalDocumentOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El caso o el despacho no admiten documentos nuevos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "El archivo supera el límite de 25 MB o el espacio del plan.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiadas subidas.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "No se pudo acceder a la llave de cifrado del caso.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/portal/documents/{document_id}": {
+      "delete": {
+        "tags": [
+          "portal del cliente"
+        ],
+        "summary": "Quitar un documento del portal",
+        "operationId": "remove_portal_document",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/client-portal/view": {
       "post": {
         "tags": [
@@ -6661,6 +6847,88 @@
           },
           "429": {
             "description": "Demasiados intentos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/client-portal/documents/download": {
+      "post": {
+        "tags": [
+          "portal del cliente"
+        ],
+        "summary": "Descargar un documento del portal",
+        "operationId": "download_portal_document",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_download_portal_document"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Archivo verificado contra su huella.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El enlace o el documento no existen o ya no están vigentes.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Falta aceptar el aviso de datos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "No se pudo verificar o leer el archivo conservado.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -7024,6 +7292,27 @@
           "token"
         ],
         "title": "Body_download_export"
+      },
+      "Body_download_portal_document": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 1,
+            "title": "Token"
+          },
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "document_id"
+        ],
+        "title": "Body_download_portal_document"
       },
       "Body_download_shared_evidence": {
         "properties": {
@@ -10412,6 +10701,95 @@
         ],
         "title": "PortalAccessOut"
       },
+      "PortalDocumentAdminOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "uploaded_by_name": {
+            "type": "string",
+            "title": "Uploaded By Name"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256",
+            "description": "Huella SHA-256 en hexadecimal."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "filename",
+          "size_bytes",
+          "created_at",
+          "uploaded_by_name",
+          "sha256"
+        ],
+        "title": "PortalDocumentAdminOut",
+        "description": "El mismo documento, como lo ve el despacho."
+      },
+      "PortalDocumentList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PortalDocumentAdminOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "PortalDocumentList"
+      },
+      "PortalDocumentOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "filename",
+          "size_bytes",
+          "created_at"
+        ],
+        "title": "PortalDocumentOut",
+        "description": "Un documento que el despacho le dejó al cliente."
+      },
       "PortalInbox": {
         "properties": {
           "items": {
@@ -10700,6 +11078,13 @@
             "type": "array",
             "title": "Messages"
           },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/PortalDocumentOut"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
           "expires_at": {
             "type": "string",
             "format": "date-time",
@@ -10715,6 +11100,7 @@
           "case_status",
           "updates",
           "messages",
+          "documents",
           "expires_at"
         ],
         "title": "PortalView",

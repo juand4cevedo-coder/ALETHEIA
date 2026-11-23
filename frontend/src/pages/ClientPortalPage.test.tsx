@@ -19,6 +19,7 @@ const BASE_VIEW = {
   expires_at: "2026-12-24T15:00:00Z",
   updates: [],
   messages: [],
+  documents: [],
 };
 
 function requests(path: string): Request[] {
@@ -137,6 +138,48 @@ describe("Portal del cliente (ADR-054)", () => {
     expect(screen.getByText("Se radicó la demanda.")).toBeInTheDocument();
     expect(await requests(ACCEPT)[0]!.json()).toEqual({ token: TOKEN });
     expect(await requests(VIEW)[0]!.json()).toEqual({ token: TOKEN });
+  });
+
+  it("lista los documentos y ofrece descargarlos con un envío del formulario", async () => {
+    serve({
+      [VIEW]: () =>
+        jsonResponse({
+          ...BASE_VIEW,
+          notice_accepted: true,
+          case_title: "Caso de María",
+          case_status: "open",
+          documents: [
+            {
+              id: "019e0000-0000-7000-8000-000000000009",
+              filename: "resumen.pdf",
+              size_bytes: 2048,
+              created_at: "2026-11-24T15:00:00Z",
+            },
+          ],
+        }),
+    });
+    const { container } = await renderRoute(`${RUTA}#t=${TOKEN}`);
+
+    expect(
+      await screen.findByRole("list", { name: "Documentos" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("resumen.pdf")).toBeInTheDocument();
+    const button = screen.getByRole("button", {
+      name: "Descargar resumen.pdf",
+    });
+    const form = button.closest("form")!;
+    expect(form).toHaveAttribute(
+      "action",
+      "/api/v1/client-portal/documents/download",
+    );
+    expect(form).toHaveAttribute("method", "post");
+    expect((form.elements.namedItem("token") as HTMLInputElement).value).toBe(
+      TOKEN,
+    );
+    expect(
+      (form.elements.namedItem("document_id") as HTMLInputElement).value,
+    ).toBe("019e0000-0000-7000-8000-000000000009");
+    expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
   it("el cliente le escribe al despacho y ve su mensaje", async () => {
