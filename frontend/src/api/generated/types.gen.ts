@@ -3076,6 +3076,121 @@ export type VerifyEmailRequest = {
 };
 
 /**
+ * VitalSummaryRow
+ */
+export type VitalSummaryRow = {
+  /**
+   * Version
+   */
+  version: string;
+  /**
+   * Device
+   */
+  device: "movil" | "escritorio";
+  /**
+   * Metric
+   */
+  metric: "LCP" | "INP" | "CLS" | "FCP" | "TTFB";
+  /**
+   * Samples
+   *
+   * Cuántas medidas entraron en el cálculo.
+   */
+  samples: number;
+  /**
+   * P75
+   *
+   * Percentil 75: lo que Google usa para valorar cada métrica.
+   */
+  p75: number;
+  /**
+   * Good Share
+   *
+   * Parte de las medidas dentro del umbral bueno, de 0 a 1.
+   */
+  good_share: number;
+  /**
+   * Rating
+   *
+   * Valoración del p75 contra los umbrales de Core Web Vitals.
+   */
+  rating: "good" | "needs-improvement" | "poor";
+};
+
+/**
+ * VitalValue
+ */
+export type VitalValue = {
+  /**
+   * Name
+   */
+  name: "LCP" | "INP" | "CLS" | "FCP" | "TTFB";
+  /**
+   * Value
+   *
+   * Milisegundos; en CLS, el puntaje sin unidad.
+   */
+  value: number;
+};
+
+/**
+ * VitalsReport
+ *
+ * Lo que entrega una visita al terminar. Nada de esto identifica a una persona.
+ */
+export type VitalsReport = {
+  /**
+   * Page
+   *
+   * Grupo de la página medida, nunca su dirección.
+   */
+  page:
+    | "inicio"
+    | "precios"
+    | "ingreso"
+    | "documentacion"
+    | "legal"
+    | "espacio"
+    | "otra";
+  /**
+   * Device
+   *
+   * Según el ancho de la pantalla.
+   */
+  device: "movil" | "escritorio";
+  /**
+   * Connection
+   *
+   * Tipo efectivo de conexión, si el navegador lo informa.
+   */
+  connection?: "slow-2g" | "2g" | "3g" | "4g" | null;
+  /**
+   * Metrics
+   *
+   * Una medida por métrica, como máximo.
+   */
+  metrics: Array<VitalValue>;
+};
+
+/**
+ * VitalsSummary
+ */
+export type VitalsSummary = {
+  /**
+   * Days
+   */
+  days: number;
+  /**
+   * Total Samples
+   */
+  total_samples: number;
+  /**
+   * Rows
+   */
+  rows: Array<VitalSummaryRow>;
+};
+
+/**
  * WompiTermsOut
  *
  * Los dos contratos que Wompi exige aceptar; el cliente debe mostrarlos y solo mandar
@@ -6168,6 +6283,40 @@ export type PlatformAuditResponses = {
 export type PlatformAuditResponse =
   PlatformAuditResponses[keyof PlatformAuditResponses];
 
+export type PlatformWebVitalsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Days
+     *
+     * Días hacia atrás que entran.
+     */
+    days?: number;
+  };
+  url: "/api/v1/platform/web-vitals";
+};
+
+export type PlatformWebVitalsErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type PlatformWebVitalsError =
+  PlatformWebVitalsErrors[keyof PlatformWebVitalsErrors];
+
+export type PlatformWebVitalsResponses = {
+  /**
+   * Successful Response
+   */
+  200: VitalsSummary;
+};
+
+export type PlatformWebVitalsResponse =
+  PlatformWebVitalsResponses[keyof PlatformWebVitalsResponses];
+
 export type OwnSupportTicketsData = {
   body?: never;
   path?: never;
@@ -6354,3 +6503,34 @@ export type CreateCheckoutResponses = {
 
 export type CreateCheckoutResponse =
   CreateCheckoutResponses[keyof CreateCheckoutResponses];
+
+export type SubmitWebVitalsData = {
+  body: VitalsReport;
+  path?: never;
+  query?: never;
+  url: "/api/v1/web-vitals";
+};
+
+export type SubmitWebVitalsErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiadas entregas.
+   */
+  429: Problem;
+};
+
+export type SubmitWebVitalsError =
+  SubmitWebVitalsErrors[keyof SubmitWebVitalsErrors];
+
+export type SubmitWebVitalsResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type SubmitWebVitalsResponse =
+  SubmitWebVitalsResponses[keyof SubmitWebVitalsResponses];

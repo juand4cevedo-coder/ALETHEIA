@@ -65,6 +65,7 @@ import {
   platformAudit,
   platformBilling,
   platformSupportTickets,
+  platformWebVitals,
   previewInvitation,
   putPolicies,
   readCase,
@@ -86,6 +87,7 @@ import {
   signInSecondFactor,
   signOut,
   signOutEverywhere,
+  submitWebVitals,
   taskCalendar,
   taskInbox,
   twoFactorDisable,
@@ -254,6 +256,9 @@ import type {
   PlatformSupportTicketsData,
   PlatformSupportTicketsError,
   PlatformSupportTicketsResponse,
+  PlatformWebVitalsData,
+  PlatformWebVitalsError,
+  PlatformWebVitalsResponse,
   PreviewInvitationData,
   PreviewInvitationError,
   PreviewInvitationResponse,
@@ -317,6 +322,9 @@ import type {
   SignOutEverywhereError,
   SignOutEverywhereResponse,
   SignOutResponse,
+  SubmitWebVitalsData,
+  SubmitWebVitalsError,
+  SubmitWebVitalsResponse,
   TaskCalendarData,
   TaskCalendarError,
   TaskCalendarResponse,
@@ -3167,6 +3175,34 @@ export const platformAuditInfiniteOptions = (
   return opts as Omit<typeof opts, "initialData">;
 };
 
+export const platformWebVitalsQueryKey = (
+  options?: Options<PlatformWebVitalsData>,
+) => createQueryKey("platformWebVitals", options);
+
+/**
+ * Rendimiento real: percentil 75 por versión, dispositivo y métrica
+ */
+export const platformWebVitalsOptions = (
+  options?: Options<PlatformWebVitalsData>,
+) =>
+  queryOptions<
+    PlatformWebVitalsResponse,
+    PlatformWebVitalsError,
+    PlatformWebVitalsResponse,
+    ReturnType<typeof platformWebVitalsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await platformWebVitals({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: platformWebVitalsQueryKey(options),
+  });
+
 export const ownSupportTicketsQueryKey = (
   options?: Options<OwnSupportTicketsData>,
 ) => createQueryKey("ownSupportTickets", options);
@@ -3425,6 +3461,33 @@ export const createCheckoutMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await createCheckout({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Entregar las medidas de rendimiento de una visita
+ */
+export const submitWebVitalsMutation = (
+  options?: Partial<Options<SubmitWebVitalsData>>,
+): UseMutationOptions<
+  SubmitWebVitalsResponse,
+  SubmitWebVitalsError,
+  Options<SubmitWebVitalsData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    SubmitWebVitalsResponse,
+    SubmitWebVitalsError,
+    Options<SubmitWebVitalsData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await submitWebVitals({
         ...options,
         ...fnOptions,
         throwOnError: true,

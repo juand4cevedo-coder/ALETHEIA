@@ -25,7 +25,9 @@ from app.schemas.platform import (
     PlatformUserPage,
     UserStatusChange,
 )
+from app.schemas.web_vitals import VitalsSummary, VitalSummaryRow
 from app.services import courtesy
+from app.services import web_vitals as vitals_service
 from app.services.audit import audit_ip
 from app.services.sessions import Principal
 
@@ -389,4 +391,24 @@ def platform_audit(
         ],
         next_cursor=events[49].id if len(events) > 50 else None,
         total=total,
+    )
+
+
+@router.get(
+    "/web-vitals",
+    summary="Rendimiento real: percentil 75 por versión, dispositivo y métrica",
+)
+def platform_web_vitals(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_platform_admin)],
+    session: Annotated[Session, Depends(get_session)],
+    days: Annotated[int, Query(ge=1, le=90, description="Días hacia atrás que entran.")] = 14,
+) -> VitalsSummary:
+    del principal
+    response.headers["Cache-Control"] = "no-store"
+    total, rows = vitals_service.summary(session, days)
+    return VitalsSummary(
+        days=days,
+        total_samples=total,
+        rows=[VitalSummaryRow.model_validate(row, from_attributes=True) for row in rows],
     )

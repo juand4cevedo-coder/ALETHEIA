@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.19.3"
+    "version": "0.20.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -5652,6 +5652,58 @@
         }
       }
     },
+    "/api/v1/platform/web-vitals": {
+      "get": {
+        "tags": [
+          "plataforma"
+        ],
+        "summary": "Rendimiento real: percentil 75 por versión, dispositivo y métrica",
+        "operationId": "platform_web_vitals",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 90,
+              "minimum": 1,
+              "description": "Días hacia atrás que entran.",
+              "default": 14,
+              "title": "Days"
+            },
+            "description": "Días hacia atrás que entran."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VitalsSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/support/tickets": {
       "post": {
         "tags": [
@@ -5969,6 +6021,50 @@
             "sesion": []
           }
         ]
+      }
+    },
+    "/api/v1/web-vitals": {
+      "post": {
+        "tags": [
+          "rendimiento"
+        ],
+        "summary": "Entregar las medidas de rendimiento de una visita",
+        "operationId": "submit_web_vitals",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VitalsReport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "429": {
+            "description": "Demasiadas entregas.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -10651,6 +10747,188 @@
         ],
         "title": "VerifyEmailRequest",
         "description": "Token del enlace de verificación (API-004). La página lo toma del fragmento #t=."
+      },
+      "VitalSummaryRow": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "device": {
+            "type": "string",
+            "enum": [
+              "movil",
+              "escritorio"
+            ],
+            "title": "Device"
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "LCP",
+              "INP",
+              "CLS",
+              "FCP",
+              "TTFB"
+            ],
+            "title": "Metric"
+          },
+          "samples": {
+            "type": "integer",
+            "title": "Samples",
+            "description": "Cuántas medidas entraron en el cálculo."
+          },
+          "p75": {
+            "type": "number",
+            "title": "P75",
+            "description": "Percentil 75: lo que Google usa para valorar cada métrica."
+          },
+          "good_share": {
+            "type": "number",
+            "title": "Good Share",
+            "description": "Parte de las medidas dentro del umbral bueno, de 0 a 1."
+          },
+          "rating": {
+            "type": "string",
+            "enum": [
+              "good",
+              "needs-improvement",
+              "poor"
+            ],
+            "title": "Rating",
+            "description": "Valoración del p75 contra los umbrales de Core Web Vitals."
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "device",
+          "metric",
+          "samples",
+          "p75",
+          "good_share",
+          "rating"
+        ],
+        "title": "VitalSummaryRow"
+      },
+      "VitalValue": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "LCP",
+              "INP",
+              "CLS",
+              "FCP",
+              "TTFB"
+            ],
+            "title": "Name"
+          },
+          "value": {
+            "type": "number",
+            "maximum": 600000.0,
+            "minimum": 0.0,
+            "title": "Value",
+            "description": "Milisegundos; en CLS, el puntaje sin unidad."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "value"
+        ],
+        "title": "VitalValue"
+      },
+      "VitalsReport": {
+        "properties": {
+          "page": {
+            "type": "string",
+            "enum": [
+              "inicio",
+              "precios",
+              "ingreso",
+              "documentacion",
+              "legal",
+              "espacio",
+              "otra"
+            ],
+            "title": "Page",
+            "description": "Grupo de la página medida, nunca su dirección."
+          },
+          "device": {
+            "type": "string",
+            "enum": [
+              "movil",
+              "escritorio"
+            ],
+            "title": "Device",
+            "description": "Según el ancho de la pantalla."
+          },
+          "connection": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "slow-2g",
+                  "2g",
+                  "3g",
+                  "4g"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connection",
+            "description": "Tipo efectivo de conexión, si el navegador lo informa."
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/VitalValue"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Metrics",
+            "description": "Una medida por métrica, como máximo."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "page",
+          "device",
+          "metrics"
+        ],
+        "title": "VitalsReport",
+        "description": "Lo que entrega una visita al terminar. Nada de esto identifica a una persona."
+      },
+      "VitalsSummary": {
+        "properties": {
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "total_samples": {
+            "type": "integer",
+            "title": "Total Samples"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/VitalSummaryRow"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "total_samples",
+          "rows"
+        ],
+        "title": "VitalsSummary"
       },
       "WompiTermsOut": {
         "properties": {

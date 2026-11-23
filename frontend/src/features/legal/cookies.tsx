@@ -11,7 +11,7 @@ export const cookiePolicy: LegalDocument = {
   slug: "cookies",
   title: "Política de cookies",
   description:
-    "Qué cookies usa ALETHEIA, para qué sirve cada una, cuánto dura y cómo borrarla. El sitio no usa cookies de analítica ni de publicidad.",
+    "Qué cookies usa ALETHEIA, para qué sirve cada una, cuánto dura y cómo borrarla, y qué mide el sitio si usted acepta la medición de rendimiento. No hay publicidad ni seguimiento.",
   keyPoints: [
     {
       title: "Solo dos cookies",
@@ -19,11 +19,11 @@ export const cookiePolicy: LegalDocument = {
     },
     {
       title: "Nadie lo sigue",
-      text: "No hay cookies de analítica, de publicidad ni de redes sociales, y ningún tercero carga recursos en el sitio.",
+      text: "No hay cookies de publicidad ni de redes sociales, y ningún tercero carga recursos en el sitio. La medición de rendimiento es opcional y anónima.",
     },
     {
       title: "Usted decide",
-      text: "Si algún día agregamos cookies opcionales, quedarán apagadas hasta que las acepte.",
+      text: "La medición de rendimiento queda apagada hasta que la acepte, y puede cambiar de opinión cuando quiera.",
     },
   ],
   sections: [
@@ -107,7 +107,10 @@ export const cookiePolicy: LegalDocument = {
       body: (
         <>
           <ul>
-            <li>Cookies de analítica o de estadísticas de visitas.</li>
+            <li>
+              Herramientas de estadísticas de visitas ni de comportamiento: la
+              medición de rendimiento de abajo no cuenta personas ni recorridos.
+            </li>
             <li>Cookies de publicidad o de redes sociales.</li>
             <li>
               Recursos de terceros que puedan seguirlo: las fuentes y las
@@ -123,16 +126,62 @@ export const cookiePolicy: LegalDocument = {
       ),
     },
     {
+      id: "medicion-de-rendimiento",
+      title: "Medición de rendimiento (opcional)",
+      body: (
+        <>
+          <p>
+            Si usted acepta la categoría «Analítica» del panel de cookies,
+            medimos qué tan rápido carga y responde el sitio en su navegador:
+            cuánto tarda en aparecer el contenido principal, cuánto se mueve la
+            página mientras carga y cuánto demora en responder a un toque. Al
+            salir de la página, el navegador envía a ALETHEIA una sola petición
+            con esas medidas.
+          </p>
+          <ul>
+            <li>
+              <strong>Qué se guarda:</strong> el nombre de la métrica, su valor,
+              el grupo de la página (inicio, precios, ingreso, documentación,
+              textos legales, espacio de trabajo u otra, nunca la dirección
+              completa), si la pantalla es de móvil o de escritorio, el tipo de
+              conexión que informa el navegador y la versión del sitio.
+            </li>
+            <li>
+              <strong>Qué no se guarda:</strong> su cuenta, su correo, su
+              sesión, su dirección IP, su navegador ni ningún identificador. No
+              usa cookies ni almacenamiento en su navegador, y no se puede saber
+              qué medidas vienen de la misma visita.
+            </li>
+            <li>
+              <strong>Para qué:</strong> saber si el sitio es lento para alguien
+              y corregirlo. No se vende ni se entrega a terceros, y ningún
+              tercero la recibe.
+            </li>
+            <li>
+              <strong>Cuánto dura:</strong> 90 días; después se borra sola.
+            </li>
+          </ul>
+          <p>
+            Como protección contra abusos, la petición cuenta contra un límite
+            por dirección de red. Ese límite guarda solo un resumen irreversible
+            de la dirección, durante 15 minutos, igual que el de los intentos de
+            ingreso. Si deja la categoría apagada, no se envía nada y el sitio
+            funciona igual.
+          </p>
+        </>
+      ),
+    },
+    {
       id: "consentimiento",
       title: "Su consentimiento",
       body: (
         <p>
           Las cookies de sesión no necesitan su consentimiento, porque sin ellas
-          no sería posible ingresar de forma segura. Si en el futuro agregamos
-          cookies que no sean indispensables, quedarán apagadas hasta que usted
-          las acepte, y podrá cambiar su decisión cuando quiera con el botón
-          Configurar cookies, al pie de cualquier página. Lo que esas cookies
-          revelen sobre usted se tratará según la{" "}
+          no sería posible ingresar de forma segura. La medición de rendimiento
+          sí: queda apagada hasta que usted la acepte, y podrá cambiar su
+          decisión cuando quiera con el botón Configurar cookies, al pie de
+          cualquier página. Si cambiamos lo que se mide, le volveremos a
+          preguntar. Lo que se mida se tratará según la{" "}
           <Link to={legalRoute("privacidad")}>
             política de tratamiento de datos
           </Link>
@@ -157,9 +206,9 @@ export const cookiePolicy: LegalDocument = {
       title: "Cambios en esta política",
       body: (
         <p>
-          Si cambiamos las cookies que usamos, actualizaremos esta página con la
-          fecha nueva. Si el cambio incluye cookies que no sean indispensables,
-          le pediremos su consentimiento antes de activarlas.
+          Si cambiamos las cookies o las mediciones que usamos, actualizaremos
+          esta página. Si el cambio incluye algo que no sea indispensable, le
+          pediremos su consentimiento antes de activarlo.
         </p>
       ),
     },
