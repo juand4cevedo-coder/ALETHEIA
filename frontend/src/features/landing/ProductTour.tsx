@@ -1,3 +1,4 @@
+import { productShotProps } from "../../config/media.ts";
 import { useRef, useState } from "react";
 import {
   CarpetaAbiertaIcon,
@@ -116,7 +117,10 @@ export function ProductTour() {
           <img
             key={active.id}
             className="parallax"
-            src={"/media/producto/" + active.id + ".webp"}
+            {...productShotProps(
+              "/media/producto/" + active.id + ".webp",
+              "(min-width: 900px) 60vw, 92vw",
+            )}
             width={1260}
             height={720}
             loading="lazy"

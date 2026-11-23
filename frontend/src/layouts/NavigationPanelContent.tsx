@@ -1,3 +1,4 @@
+import { productShotProps } from "../config/media.ts";
 import type { CSSProperties } from "react";
 import { Link } from "react-router";
 import {
@@ -64,7 +65,7 @@ export default function NavigationPanelContent({
         {FEATURE_SHOTS[group.title] && (
           <img
             className={styles.featureShot}
-            src={FEATURE_SHOTS[group.title]}
+            {...productShotProps(FEATURE_SHOTS[group.title]!, "320px")}
             alt=""
             width={1260}
             height={720}
