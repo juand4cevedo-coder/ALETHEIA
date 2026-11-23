@@ -43,7 +43,8 @@ export function OrganizationHealthPanel() {
       </p>
     );
   }
-  if (health.isError || !health.data) {
+  // Una respuesta con otra forma no debe tumbar el inicio: se trata como «sin datos».
+  if (health.isError || !health.data?.security) {
     return (
       <Notice tone="error">
         <p>No pudimos consultar la salud del despacho.</p>
