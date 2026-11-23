@@ -21,7 +21,7 @@ if [[ -n "$api" ]]; then
     registros="$(docker logs --since "${VENTANA}s" "$api" 2>&1 || true)"
     atendidas="$(grep -c '"message": "Petición atendida"' <<<"$registros" || true)"
     errores_5xx="$(grep '"message": "Petición atendida"' <<<"$registros" | grep -c '"status": 5[0-9][0-9]' || true)"
-    p95="$(grep '"message": "Petición atendida"' <<<"$registros" \
+    p95="$({ grep '"message": "Petición atendida"' <<<"$registros" || true; } \
         | sed -n 's/.*"duration_ms": \([0-9.]*\).*/\1/p' | sort -n \
         | awk '{ v[NR] = $1 } END { if (NR) { i = int(NR * 0.95); if (i < 1) i = 1; print v[i] } else print 0 }')"
     registros_error="$(grep -c '"level": "ERROR"' <<<"$registros" || true)"

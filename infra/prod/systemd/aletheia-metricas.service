@@ -4,5 +4,5 @@ After=docker.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/aletheia/infra/prod/metricas.sh
+ExecStart=/bin/bash /opt/aletheia/infra/prod/metricas.sh
 TimeoutStartSec=45
