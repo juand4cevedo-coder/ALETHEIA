@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.20.1"
+    "version": "0.21.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -4459,6 +4459,256 @@
             "sesion": []
           }
         ]
+      }
+    },
+    "/api/v1/auth/two-factor-recovery": {
+      "post": {
+        "tags": [
+          "segundo factor"
+        ],
+        "summary": "Pedir recuperar el segundo factor por correo",
+        "operationId": "request_recovery",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryRequested"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiadas solicitudes.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/two-factor-recovery/confirm": {
+      "post": {
+        "tags": [
+          "segundo factor"
+        ],
+        "summary": "Confirmar el pedido con el enlace del correo y la contraseña",
+        "operationId": "confirm_recovery",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryConfirm"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryStarted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El enlace no es válido o ya venció.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "La contraseña no coincide.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/two-factor-recovery/cancel": {
+      "post": {
+        "tags": [
+          "segundo factor"
+        ],
+        "summary": "Cancelar la recuperación con el enlace del aviso",
+        "operationId": "cancel_recovery",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryCancel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "El enlace no es válido o ya no sirve.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/two-factor-recovery/complete": {
+      "post": {
+        "tags": [
+          "segundo factor"
+        ],
+        "summary": "Terminar la recuperación pasada la espera de seguridad",
+        "operationId": "complete_recovery",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryComplete"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Correo o contraseña incorrectos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No hay una recuperación abierta.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La espera de seguridad no ha terminado.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados intentos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/cases/{case_id}/evidences/{evidence_id}/share-links": {
@@ -9609,6 +9859,124 @@
         ],
         "title": "PublicPlan",
         "description": "Plan que se muestra en la página de precios, con sus precios y límites del catálogo."
+      },
+      "RecoveryCancel": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Token",
+            "description": "Token del enlace."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "RecoveryCancel",
+        "description": "Token del enlace de cancelación que llega por correo (API-053)."
+      },
+      "RecoveryComplete": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo de la cuenta."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Password",
+            "description": "Contraseña de la cuenta."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "RecoveryComplete",
+        "description": "Correo y contraseña de quien termina la recuperación pasada la espera (API-054)."
+      },
+      "RecoveryConfirm": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Token",
+            "description": "Token del enlace."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Password",
+            "description": "Contraseña de la cuenta."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token",
+          "password"
+        ],
+        "title": "RecoveryConfirm",
+        "description": "Token del enlace del correo y contraseña de la cuenta (API-052)."
+      },
+      "RecoveryRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo de la cuenta."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "RecoveryRequest",
+        "description": "Correo de la cuenta que perdió el teléfono y los códigos de respaldo (API-051)."
+      },
+      "RecoveryRequested": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Qué sigue."
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "RecoveryRequested",
+        "description": "La misma respuesta exista o no la cuenta, tenga o no segundo factor."
+      },
+      "RecoveryStarted": {
+        "properties": {
+          "available_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Available At",
+            "description": "Primer momento en que se puede terminar la recuperación."
+          }
+        },
+        "type": "object",
+        "required": [
+          "available_at"
+        ],
+        "title": "RecoveryStarted"
       },
       "RegisterRequest": {
         "properties": {

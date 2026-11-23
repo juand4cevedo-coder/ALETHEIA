@@ -61,6 +61,9 @@ class LinkPurpose(StrEnum):
     EMAIL_VERIFICATION = "email_verification"
     ACCOUNT_RECOVERY = "account_recovery"
     TWO_FACTOR_CHALLENGE = "two_factor_challenge"
+    # Confirmar el pedido de recuperar el segundo factor, y cancelarlo (ADR-053).
+    TWO_FACTOR_RECOVERY = "two_factor_recovery"
+    TWO_FACTOR_RECOVERY_CANCEL = "two_factor_recovery_cancel"
 
 
 class InvalidLinkError(Exception):

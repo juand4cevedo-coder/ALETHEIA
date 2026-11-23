@@ -1,10 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
+import { Link } from "react-router";
 
 import { signInSecondFactorMutation } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../../components/ui/Button.tsx";
 import { Field } from "../../components/ui/Field.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
+import { ROUTES } from "../../config/routes.ts";
 import { apiProblem } from "./apiProblem.ts";
 import styles from "./AccessScreen.module.css";
 
@@ -100,6 +102,11 @@ export function SecondFactorStep({
           >
             Volver a empezar
           </button>
+        </p>
+        <p className={styles.lead}>
+          <Link to={ROUTES.recoverTwoFactor}>
+            No tengo mi teléfono ni mis códigos
+          </Link>
         </p>
       </form>
     </div>

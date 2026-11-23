@@ -16,7 +16,7 @@ from app.core import two_factor as totp
 from app.core.config import Settings
 from app.core.tokens import InvalidLinkError, LinkPurpose, read_link, state_matches
 from app.models import Organization, TwoFactorRecoveryCode, User, UserTwoFactor
-from app.services import rate_limit
+from app.services import rate_limit, two_factor_recovery
 from app.services.sessions import (
     IssuedSession,
     _audit,
@@ -326,6 +326,8 @@ def complete_sign_in(
     ):
         raise InvalidChallengeError
     verify(session, settings, user.id, code, client_ip=client_ip, user_agent=user_agent)
+    # Si la persona encontró su teléfono, una recuperación pendiente ya no hace falta.
+    two_factor_recovery.cancel_open_for(session, user.id)
     membership = _enter_organization(session, user.id)
     issued = start_session(
         session,

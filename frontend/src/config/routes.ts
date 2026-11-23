@@ -17,6 +17,7 @@ export const ROUTES = {
   verifyEmail: "/verificar-correo",
   forgotPassword: "/recuperar",
   resetPassword: "/restablecer-contrasena",
+  recoverTwoFactor: "/recuperar-segundo-factor",
   acceptInvitation: "/invitacion",
   // Espacio de trabajo: todo lo que exige sesión vive bajo /app.
   app: "/app",

@@ -23,6 +23,7 @@ import {
   loadOrganizationPage,
   loadNewCasePage,
   loadPlatformPage,
+  loadRecoverTwoFactorPage,
   loadPlatformVitalsPage,
   loadPlatformBillingPage,
   loadPlatformSupportPage,
@@ -180,6 +181,17 @@ export const routes: RouteObject[] = [
               redirectSignedIn: true,
               authSwitch: {
                 question: "¿Recordó su contraseña?",
+                label: "Volver a ingresar",
+                to: ROUTES.signIn,
+              } satisfies AuthSwitch,
+            },
+          },
+          {
+            path: ROUTES.recoverTwoFactor.slice(1),
+            lazy: { Component: loadRecoverTwoFactorPage },
+            handle: {
+              authSwitch: {
+                question: "¿Encontró su teléfono?",
                 label: "Volver a ingresar",
                 to: ROUTES.signIn,
               } satisfies AuthSwitch,

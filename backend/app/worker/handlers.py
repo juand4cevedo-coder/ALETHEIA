@@ -31,6 +31,7 @@ from app.services import (
     subscription_expiration,
 )
 from app.services import organization_emails as _organization_emails  # noqa: F401
+from app.services import two_factor_recovery_emails as _two_factor_recovery_emails  # noqa: F401
 from app.services.jobs import PermanentJobError
 
 

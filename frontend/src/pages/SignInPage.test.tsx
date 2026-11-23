@@ -319,6 +319,10 @@ describe("Acceso con una sesión abierta (Diseño UX/UI, 4.2)", () => {
     // La contraseña no se vuelve a pedir y la sesión todavía no existe.
     expect(screen.queryByLabelText("Contraseña")).toBeNull();
     expect(verified).toBe(false);
+    // Quien perdió el teléfono y los códigos tiene a dónde ir.
+    expect(
+      screen.getByRole("link", { name: "No tengo mi teléfono ni mis códigos" }),
+    ).toHaveAttribute("href", "/recuperar-segundo-factor");
 
     await user.type(screen.getByLabelText("Código"), "123 456");
     await user.click(screen.getByRole("button", { name: "Verificar" }));

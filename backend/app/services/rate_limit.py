@@ -67,6 +67,9 @@ UPLOAD_ACCOUNT: Final = Limit("upload_account", 60, _WINDOW)
 EXPORT_ACCOUNT: Final = Limit("export_account", 15, _WINDOW)
 # Entrega de medidas de rendimiento (ADR-052): una visita entrega una vez al salir de la página.
 VITALS_IP: Final = Limit("vitals_ip", 60, _WINDOW)
+# Recuperar el segundo factor (ADR-053): pedir el enlace, confirmarlo, cancelarlo y terminarlo.
+TWO_FACTOR_RECOVERY_ACCOUNT: Final = Limit("two_factor_recovery_account", 3, _WINDOW)
+TWO_FACTOR_RECOVERY_IP: Final = Limit("two_factor_recovery_ip", 10, _WINDOW)
 
 LIMITS: Final = (
     LOGIN_ACCOUNT,
@@ -86,6 +89,8 @@ LIMITS: Final = (
     UPLOAD_ACCOUNT,
     EXPORT_ACCOUNT,
     VITALS_IP,
+    TWO_FACTOR_RECOVERY_ACCOUNT,
+    TWO_FACTOR_RECOVERY_IP,
 )
 # Un intento más viejo que la ventana más larga ya no cuenta para ningún límite.
 RETENTION: Final = max(limit.window for limit in LIMITS)
