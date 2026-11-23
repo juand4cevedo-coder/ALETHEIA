@@ -3,7 +3,7 @@
 import datetime
 
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.db.tenancy import TenantContext, set_tenant
@@ -14,7 +14,15 @@ from tests.organizations import CLAVE, Oficina, crear_miembro, crear_oficina
 PATH = "/api/v1/organization/policies"
 
 
-def _login(dispositivo: NuevoCliente, user: User) -> TestClient:
+def _login(dispositivo: NuevoCliente, user: User, db: Session | None = None) -> TestClient:
+    # Abrir casos exige el correo verificado; quien no necesita casos no toca la base.
+    if db is not None:
+        db.execute(
+            update(User)
+            .where(User.id == user.id)
+            .values(email_verified_at=datetime.datetime.now(datetime.UTC))
+        )
+        db.flush()
     client = dispositivo()
     response = client.post("/api/v1/auth/login", json={"email": user.email, "password": CLAVE})
     assert response.status_code == 204, response.text
@@ -90,7 +98,7 @@ def test_un_caso_archivado_conserva_los_anos_de_la_politica(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
     office = crear_oficina(db)
-    client = _login(dispositivo, office.owner)
+    client = _login(dispositivo, office.owner, db)
     assert (
         client.put(PATH, json={"default_retention_years": 3, "session_days": 14}).status_code == 200
     )
