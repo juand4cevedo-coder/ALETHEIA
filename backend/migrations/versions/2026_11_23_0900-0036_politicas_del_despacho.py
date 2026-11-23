@@ -140,7 +140,9 @@ $$
 def upgrade() -> None:
     op.add_column(
         "organizations",
-        sa.Column("default_retention_years", sa.SmallInteger(), server_default="10", nullable=False),
+        sa.Column(
+            "default_retention_years", sa.SmallInteger(), server_default="10", nullable=False
+        ),
     )
     op.add_column(
         "organizations",
