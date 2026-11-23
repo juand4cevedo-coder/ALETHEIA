@@ -12,6 +12,7 @@ from app.models.evidence import (
     Evidence,
     Export,
 )
+from app.models.evidence_share_links import EvidenceShareLink
 from app.models.identity import AuditLog, LegalAcceptance, OAuthIdentity, RefreshToken, User
 from app.models.jobs import Job
 from app.models.limits import RateLimitEvent
@@ -33,6 +34,7 @@ __all__ = [
     "CustodyEvent",
     "DeletionRecord",
     "Evidence",
+    "EvidenceShareLink",
     "Export",
     "Invitation",
     "Job",

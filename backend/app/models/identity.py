@@ -64,6 +64,7 @@ AUDIT_ACTIONS: Final = (
     "two_factor_failed",
     "two_factor_recovery_used",
     "two_factor_codes_regenerated",
+    "evidence_link_downloaded",
     "account_closed",
 )
 

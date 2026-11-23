@@ -14,6 +14,7 @@ from app.api import (
     auth,
     billing,
     cases,
+    evidence_shares,
     exports,
     health,
     invitations,
@@ -87,6 +88,8 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(notes.router, prefix=API_PREFIX)
     app.include_router(task_templates.router, prefix=API_PREFIX)
     app.include_router(two_factor.router, prefix=API_PREFIX)
+    app.include_router(evidence_shares.router, prefix=API_PREFIX)
+    app.include_router(evidence_shares.public_router, prefix=API_PREFIX)
     app.include_router(tasks.inbox_router, prefix=API_PREFIX)
     app.include_router(exports.router, prefix=API_PREFIX)
     app.include_router(exports.case_router, prefix=API_PREFIX)
@@ -119,6 +122,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         form_post_paths=[
             f"{API_PREFIX}/auth/google/register",
             f"{API_PREFIX}/exports/download",
+            f"{API_PREFIX}/shared-evidence/download",
         ],
         # Wompi llama a esta ruta directamente desde su servidor: no hay Origin ni el
         # encabezado propio que verifican las demás. La firma de la notificación es su
