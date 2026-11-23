@@ -305,6 +305,11 @@ it("activa la verificación en dos pasos y muestra los códigos de respaldo una 
   expect(screen.getByLabelText("Clave de configuración")).toHaveTextContent(
     "JBSW Y3DP EHPK 3PXP",
   );
+  // El QR se dibuja en el navegador con el mismo enlace; no sale de la pantalla.
+  expect(await screen.findByAltText(/Código QR/)).toHaveAttribute(
+    "src",
+    expect.stringMatching(/^data:image\/gif;base64,/),
+  );
   await user.type(screen.getByLabelText("Código de la aplicación"), "123456");
   await user.click(screen.getByRole("button", { name: "Confirmar y activar" }));
 

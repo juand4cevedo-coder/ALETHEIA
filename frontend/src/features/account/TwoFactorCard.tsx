@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
 import type { TwoFactorSetup } from "../../api/generated";
 import {
@@ -18,6 +18,29 @@ import { apiProblem } from "../auth/apiProblem.ts";
 import styles from "./TwoFactorCard.module.css";
 
 type Mode = "idle" | "setup" | "codes" | "disable" | "renew";
+
+// Dibuja el código QR del enlace otpauth en el navegador: el secreto no sale de esta pantalla. La
+// biblioteca se descarga solo al activar el segundo factor, no con el resto de la cuenta.
+function useQrCode(uri: string | undefined): string | undefined {
+  const [url, setUrl] = useState<string>();
+  useEffect(() => {
+    if (!uri) {
+      setUrl(undefined);
+      return;
+    }
+    let current = true;
+    void import("qrcode-generator").then(({ default: qrcode }) => {
+      const qr = qrcode(0, "M");
+      qr.addData(uri);
+      qr.make();
+      if (current) setUrl(qr.createDataURL(4, 4));
+    });
+    return () => {
+      current = false;
+    };
+  }, [uri]);
+  return url;
+}
 
 // El secreto en grupos de cuatro: se lee y se teclea sin perder el lugar.
 function grouped(secret: string): string {
@@ -55,6 +78,7 @@ export function TwoFactorCard({
   const [setup, setSetup] = useState<TwoFactorSetup>();
   const [codes, setCodes] = useState<string[]>([]);
   const [code, setCode] = useState("");
+  const qr = useQrCode(setup?.uri);
   const [error, setError] = useState<string>();
 
   async function refresh() {
@@ -203,9 +227,17 @@ export function TwoFactorCard({
               Microsoft Authenticator, Authy o 1Password).
             </li>
             <li>
-              Agregue una cuenta nueva con esta clave. Desde el teléfono puede
+              Escanee este código con la aplicación. Si no puede, agregue la
+              cuenta con la clave de abajo; desde el teléfono también puede
               tocar{" "}
               <a href={setup.uri}>abrir en mi aplicación de autenticación</a>.
+              {qr && (
+                <img
+                  className={styles.qr}
+                  src={qr}
+                  alt="Código QR para agregar la cuenta en su aplicación de autenticación"
+                />
+              )}
               <code
                 className={styles.secret}
                 aria-label="Clave de configuración"

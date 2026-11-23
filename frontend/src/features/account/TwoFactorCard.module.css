@@ -52,3 +52,13 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* El QR va sobre fondo blanco y con margen propio: así lo leen las cámaras también en modo oscuro. */
+.qr {
+  display: block;
+  max-width: 100%;
+  margin-top: var(--space-3);
+  border-radius: 14px;
+  background: #fff;
+  image-rendering: pixelated;
+}
