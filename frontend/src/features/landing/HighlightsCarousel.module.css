@@ -181,22 +181,23 @@
   gap: 10px;
 }
 
+/* El botón mide 24 px de alto, el mínimo táctil de WCAG 2.2; la barra que se ve sigue siendo de
+   4 px, dibujada al centro con el fondo y el relleno de progreso. */
 .dot {
   position: relative;
   width: min(100%, 88px);
-  height: 4px;
+  height: 24px;
   padding: 0;
   border: 0;
-  border-radius: 99px;
   overflow: hidden;
-  background: #ddd6e1;
+  background: linear-gradient(#ddd6e1, #ddd6e1) center / 100% 4px no-repeat;
   cursor: pointer;
 }
 
 .progress {
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
+  inset: 10px 0;
+  border-radius: 99px;
   background: var(--ink-900);
   transform: scaleX(0);
   transform-origin: left;

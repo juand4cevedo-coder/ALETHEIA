@@ -15,6 +15,19 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=3" />
     <link rel="icon" href="/favicon.ico?v=3" sizes="16x16 32x32 48x48" />
+    <!-- La fotografía de la portada es lo más grande que se pinta al entrar: se pide desde el
+         HTML y no cuando React la dibuja, lo que adelanta el contenido más grande de la página. Los
+         anchos y el tamaño son los mismos de la imagen del Hero, para que el navegador reutilice
+         la descarga. -->
+    <link
+      rel="preload"
+      as="image"
+      type="image/webp"
+      href="/media/campaign/hero-real-1280.webp"
+      imagesrcset="/media/campaign/hero-real-640.webp 640w, /media/campaign/hero-real-1280.webp 1280w, /media/campaign/hero-real-1920.webp 1920w"
+      imagesizes="100vw"
+      fetchpriority="high"
+    />
     <!-- La fuente de interfaz se precarga desde el mismo origen. -->
     <link
       rel="preload"
