@@ -1,7 +1,7 @@
 /** Fotografías de la campaña, publicadas en tres anchos WebP (640, 1280 y 1920 px). El
  * navegador elige el más cercano al tamaño con que se dibuja, así un teléfono no descarga la
  * imagen de escritorio. Los originales JPG ya no se publican. */
-export type Photo = "hero-real" | "equipo-real" | "producto-real";
+export type Photo = "hero-real" | "equipo-real" | "producto-real" | "pie";
 
 const WIDTHS = [640, 1280, 1920] as const;
 

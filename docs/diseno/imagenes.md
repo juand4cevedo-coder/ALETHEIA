@@ -19,6 +19,7 @@ una campaña de producto contemporánea sin copiar recursos de otra marca.
 | `campaign/hero-real.jpg` | Hero de la portada | Vitaly Gariev, Unsplash License | [Colleagues collaborating at a modern office desk](https://unsplash.com/photos/colleagues-collaborating-at-a-modern-office-desk-0iTp1WNlMGc) |
 | `campaign/producto-real.jpg` | Explicación del producto | Vitaly Gariev, Unsplash License | [Personas que trabajan en oficinas modernas](https://unsplash.com/es/fotos/personas-que-trabajan-en-oficinas-modernas-kT5IXQVyUtU) |
 | `campaign/equipo-real.jpg` | Recurso reservado para páginas de equipos | Yusuf Çelik, Pexels License | [Young Professionals Collaborating in Modern Office](https://www.pexels.com/photo/young-professionals-collaborating-in-modern-office-31120848/) |
+| `campaign/pie.jpg` | Fondo del pie de página | Vitaly Gariev, Unsplash License | [Business people signing a contract at a table](https://unsplash.com/photos/business-people-signing-a-contract-at-a-table-iPheGw7_UaI) |
 
 Los originales descargados se guardan con el producto para no entregar a un
 tercero la dirección IP de los visitantes. Las exploraciones descartadas no se
@@ -79,4 +80,4 @@ Los íconos de 16 y 32 px usan una variante reducida del símbolo: el ojo ocupa 
 
 ## 5. Fotografías de campaña
 
-Las fotografías del sitio público (`hero-real`, `equipo-real` y `producto-real`) se publican solo como WebP en tres anchos, 640, 1280 y 1920 px, en `frontend/public/media/campaign/`. El navegador elige el ancho con `srcset` y `sizes` (`frontend/src/config/media.ts`). Un original JPG de unos 350 KB queda entre 17 y 70 KB. Los originales no se versionan.
+Las fotografías del sitio público (`hero-real`, `equipo-real`, `producto-real` y `pie`) se publican solo como WebP en tres anchos, 640, 1280 y 1920 px, en `frontend/public/media/campaign/`. El navegador elige el ancho con `srcset` y `sizes` (`frontend/src/config/media.ts`). Un original JPG de unos 350 KB queda entre 17 y 70 KB. Los originales no se versionan.
