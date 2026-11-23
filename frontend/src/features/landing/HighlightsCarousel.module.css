@@ -50,17 +50,17 @@
   user-select: none;
 }
 
-/* La captura de producto no se recorta como una fotografía: se ancla arriba a la izquierda, más
-   grande que el marco, y se corta por el borde derecho e inferior como una ventana abierta
-   sobre el producto. */
+/* La captura de producto se muestra completa, centrada en el marco y con todas sus esquinas
+   redondeadas: ninguna parte de la pantalla queda cortada. */
 .visual[data-kind="product"] img {
   position: absolute;
-  top: 9%;
-  left: 8%;
-  width: 128%;
+  top: 50%;
+  left: 7%;
+  width: 86%;
   height: auto;
-  border-radius: 20px 0 0 0;
+  border-radius: 18px;
   box-shadow: 0 24px 60px rgb(64 0 87 / 22%);
+  transform: translateY(-50%);
 }
 
 .counter {
