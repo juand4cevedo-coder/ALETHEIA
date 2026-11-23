@@ -308,41 +308,51 @@ describe("Página del caso (HU-015)", () => {
   });
 
   it("solicita el paquete y muestra el enlace al terminar", async () => {
-    sessionStorage.clear();
     serve(() => jsonResponse(DETAIL));
     const original = fetchMock.getMockImplementation()!;
     const exportId = "01890a5d-ac96-774b-bcce-b302099a8099";
+    let requested = false;
     fetchMock.mockImplementation(async (input, init) => {
       const request = input as Request;
       const path = new URL(request.url).pathname;
-      if (
-        path === `/api/v1/cases/${CASE_ID}/exports` &&
-        request.method === "POST"
-      ) {
-        return jsonResponse(
-          {
-            id: exportId,
-            status: "queued",
-            created_at: "2026-11-17T15:00:00Z",
-            expires_at: null,
-            download_url: null,
-          },
-          202,
-        );
-      }
-      if (path === `/api/v1/cases/${CASE_ID}/exports/${exportId}`) {
+      if (path === `/api/v1/cases/${CASE_ID}/exports`) {
+        if (request.method === "POST") {
+          requested = true;
+          return jsonResponse(
+            {
+              id: exportId,
+              status: "queued",
+              created_at: "2026-11-17T15:00:00Z",
+              expires_at: null,
+              download_url: null,
+            },
+            202,
+          );
+        }
         return jsonResponse({
-          id: exportId,
-          status: "ready",
-          created_at: "2026-11-17T15:00:00Z",
-          expires_at: "2026-11-18T15:00:00Z",
-          download_url: "https://aletheia.sbs/descargar-paquete#t=token",
+          items: requested
+            ? [
+                {
+                  id: exportId,
+                  status: "ready",
+                  created_at: "2026-11-17T15:00:00Z",
+                  expires_at: "2026-11-18T15:00:00Z",
+                  download_url:
+                    "https://aletheia.sbs/descargar-paquete#t=token",
+                  requested_by_name: "Laura Gómez",
+                  manifest_sha256: "c".repeat(64),
+                },
+              ]
+            : [],
         });
       }
       return original(input, init);
     });
     await openCase();
     await userEvent.click(screen.getByRole("tab", { name: "Paquete" }));
+    expect(
+      await screen.findByText(/Todavía no se ha solicitado ningún paquete/),
+    ).toBeInTheDocument();
     await userEvent.click(
       screen.getByRole("button", { name: "Solicitar paquete" }),
     );
@@ -350,7 +360,8 @@ describe("Página del caso (HU-015)", () => {
     expect(
       await screen.findByRole("link", { name: "Abrir descarga" }),
     ).toHaveAttribute("href", "https://aletheia.sbs/descargar-paquete#t=token");
-    expect(sessionStorage.getItem(`aletheia-export:${CASE_ID}`)).toBe(exportId);
+    expect(screen.getByText(/Pedido por Laura Gómez/)).toBeInTheDocument();
+    expect(screen.getByText("Listo")).toBeInTheDocument();
   });
 
   it("muestra el radicado por bloques, el título y los chips de especialidad, despacho y apertura", async () => {

@@ -137,6 +137,9 @@ import type {
   InviteClientData,
   InviteClientErrors,
   InviteClientResponses,
+  ListCaseExportsData,
+  ListCaseExportsErrors,
+  ListCaseExportsResponses,
   ListCaseNotesData,
   ListCaseNotesErrors,
   ListCaseNotesResponses,
@@ -2298,6 +2301,32 @@ export const downloadExport = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/x-www-form-urlencoded",
       ...options.headers,
     },
+  });
+
+/**
+ * Listar los paquetes de preservación de un caso
+ */
+export const listCaseExports = <ThrowOnError extends boolean = false>(
+  options: Options<ListCaseExportsData, ThrowOnError>,
+): RequestResult<
+  ListCaseExportsResponses,
+  ListCaseExportsErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    ListCaseExportsResponses,
+    ListCaseExportsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/cases/{case_id}/exports",
+    ...options,
   });
 
 /**

@@ -29,6 +29,7 @@ from app.services.export_requests import (
     ExportForbidden,
     ExportNotFound,
     get_export,
+    list_exports,
     request_export,
 )
 from app.services.sessions import Principal
@@ -54,6 +55,17 @@ class ExportResponse(BaseModel):
     created_at: datetime.datetime
     expires_at: datetime.datetime | None
     download_url: str | None
+
+
+class ExportListItemOut(ExportResponse):
+    requested_by_name: str
+    manifest_sha256: str | None = Field(
+        description="Huella SHA-256 del manifiesto del paquete, si ya está listo."
+    )
+
+
+class ExportList(BaseModel):
+    items: list[ExportListItemOut]
 
 
 @case_router.post(
@@ -87,6 +99,43 @@ def create_case_export(
     except CaseUnavailable:
         raise HTTPException(409, detail="El caso no permite exportación.") from None
     return ExportResponse.model_validate(view, from_attributes=True)
+
+
+@case_router.get(
+    "/{case_id}/exports",
+    response_model=ExportList,
+    summary="Listar los paquetes de preservación de un caso",
+)
+def list_case_exports(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal_allowing_outdated_legal)],
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+) -> ExportList:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        items = list_exports(session, settings, principal, case_id)
+    except ExportNotFound:
+        raise HTTPException(404, detail="El caso no existe para esta persona.") from None
+    except ExportForbidden:
+        raise HTTPException(403, detail="No puede exportar este caso.") from None
+    except CaseUnavailable:
+        raise HTTPException(409, detail="El caso no permite exportación.") from None
+    return ExportList(
+        items=[
+            ExportListItemOut(
+                id=item.id,
+                status=item.status,
+                created_at=item.created_at,
+                expires_at=item.expires_at,
+                download_url=item.download_url,
+                requested_by_name=item.requested_by_name,
+                manifest_sha256=item.manifest_sha256.hex() if item.manifest_sha256 else None,
+            )
+            for item in items
+        ]
+    )
 
 
 @case_router.get(

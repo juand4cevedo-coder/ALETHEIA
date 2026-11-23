@@ -1391,6 +1391,52 @@ export type ExportInspectResponse = {
 };
 
 /**
+ * ExportList
+ */
+export type ExportList = {
+  /**
+   * Items
+   */
+  items: Array<ExportListItemOut>;
+};
+
+/**
+ * ExportListItemOut
+ */
+export type ExportListItemOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Status
+   */
+  status: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Expires At
+   */
+  expires_at: string | null;
+  /**
+   * Download Url
+   */
+  download_url: string | null;
+  /**
+   * Requested By Name
+   */
+  requested_by_name: string;
+  /**
+   * Manifest Sha256
+   *
+   * Huella SHA-256 del manifiesto del paquete, si ya está listo.
+   */
+  manifest_sha256: string | null;
+};
+
+/**
  * ExportResponse
  */
 export type ExportResponse = {
@@ -6814,6 +6860,38 @@ export type DownloadExportResponses = {
 
 export type DownloadExportResponse =
   DownloadExportResponses[keyof DownloadExportResponses];
+
+export type ListCaseExportsData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/exports";
+};
+
+export type ListCaseExportsErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListCaseExportsError =
+  ListCaseExportsErrors[keyof ListCaseExportsErrors];
+
+export type ListCaseExportsResponses = {
+  /**
+   * Successful Response
+   */
+  200: ExportList;
+};
+
+export type ListCaseExportsResponse =
+  ListCaseExportsResponses[keyof ListCaseExportsResponses];
 
 export type CreateCaseExportData = {
   body?: never;
