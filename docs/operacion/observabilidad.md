@@ -4,7 +4,7 @@ El objetivo es enterarse antes de que algo falle y, si falla, enterarse en menos
 
 1. **Métricas desde el servidor.** `infra/prod/metricas.sh` corre cada minuto y publica en CloudWatch, en el espacio `ALETHEIA/Produccion`: peticiones, errores 5xx, latencia p95, errores registrados por la API y por el trabajador, contenedores activos, memoria, disco y tiempo de respuesta de la salud. Sale de los registros JSON que la API ya escribe; no agrega dependencias ni toca la aplicación.
 2. **Alarmas y panel en AWS.** `infra/aws/observabilidad.sh` crea las alarmas, un tema de avisos por correo y el panel `ALETHEIA`.
-3. **Sonda externa.** Una comprobación de Route 53 pide `https://aletheia.sbs/api/v1/health` cada 30 segundos desde fuera de AWS. Cubre lo que el servidor no puede ver de sí mismo: caída total, certificado vencido o DNS roto.
+3. **Sonda externa.** Un flujo de GitHub (`.github/workflows/sonda.yml`) pide `https://aletheia.sbs/api/v1/health` cada 10 minutos desde fuera de AWS y revisa que el certificado no venza en menos de 10 días. Si falla, abre una incidencia en el repositorio con la etiqueta `sonda-externa` y la cierra sola cuando el sitio vuelve; GitHub la envía por correo a quienes siguen el repositorio. Para recibirla, la persona administradora debe estar en «Watch > All Activity» o «Custom > Issues» del repositorio, con las notificaciones por correo activas en su perfil de GitHub. Cubre lo que el servidor no puede ver de sí mismo: caída total, certificado vencido o DNS roto. No usa Route 53 porque el plan gratuito de AWS bloquea la región de Norte de Virginia, donde viven sus métricas.
 
 ## Alarmas
 
@@ -23,7 +23,7 @@ Avisan de una falla en curso:
 
 | Alarma | Se activa cuando |
 | --- | --- |
-| `aletheia-sonda-externa` | Desde fuera, el sitio no responde 3 minutos seguidos |
+| Incidencia «sonda-externa» de GitHub | Desde fuera, el sitio no responde tras tres intentos, o el certificado vence en menos de 10 días |
 | `aletheia-salud-api` | La API o la base no responden desde el servidor |
 | `aletheia-sin-metricas` | El servidor dejó de publicar métricas: puede estar apagado |
 | `aletheia-errores-5xx` | Cinco o más errores 5xx en cinco minutos, dos veces seguidas |
@@ -33,7 +33,7 @@ Avisan de una falla en curso:
 
 ## Instalación, una sola vez
 
-La hace la persona administradora. No cuesta más de unos pocos dólares al mes: las métricas propias son nueve y la sonda de Route 53 vale cerca de 1 dólar.
+La hace la persona administradora. Cuesta cerca de 4 dólares al mes: nueve métricas propias y las alarmas que pasan de las diez gratuitas. El plan gratuito de AWS solo permite trabajar en Ohio, y el script no usa otra región.
 
 **A. En AWS (CloudShell, región Ohio).**
 
@@ -41,7 +41,7 @@ La hace la persona administradora. No cuesta más de unos pocos dólares al mes:
 2. Verifique que arriba a la derecha dice «Ohio» (us-east-2). Abra CloudShell con el ícono `>_` de la barra superior.
 3. Descargue el repositorio: `git clone --depth 1 https://github.com/juand4cevedo-coder/ALETHEIA.git`
 4. Ejecute: `bash ALETHEIA/infra/aws/observabilidad.sh su-correo@ejemplo.com`
-5. Abra su correo y confirme las dos suscripciones de Amazon SNS. Sin ese clic no llega ningún aviso.
+5. Abra su correo y confirme la suscripción de Amazon SNS. Sin ese clic no llega ningún aviso.
 
 **B. En el servidor (Session Manager, como root).**
 
