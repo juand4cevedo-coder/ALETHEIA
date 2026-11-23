@@ -84,3 +84,80 @@
 .item > a {
   margin-top: var(--space-4);
 }
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-5);
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--paper-sunken);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+}
+
+.summary strong {
+  color: var(--text);
+  font-size: var(--font-size-ui);
+}
+
+.warn {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.toolbar {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-6);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line-control);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--font-size-support);
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--text-2);
+  color: var(--text);
+}
+
+.chip[aria-pressed="true"] {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--paper);
+}
+
+.count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.hashRow dd {
+  margin: 0;
+}
