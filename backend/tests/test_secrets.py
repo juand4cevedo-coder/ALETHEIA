@@ -41,6 +41,10 @@ _VARIABLES = (
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
     "GOOGLE_CLIENT_SECRET_PARAMETER",
+    "WOMPI_PUBLIC_KEY",
+    "WOMPI_PRIVATE_KEY_PARAMETER",
+    "WOMPI_INTEGRITY_SECRET_PARAMETER",
+    "WOMPI_EVENTS_SECRET_PARAMETER",
 )
 
 
@@ -289,3 +293,79 @@ def test_con_parametro_la_url_no_puede_traer_clave() -> None:
 def test_el_nombre_del_parametro_debe_ser_una_ruta(nombre: str) -> None:
     with pytest.raises(ValidationError):
         _produccion(database_password_parameter=nombre)
+
+
+# --- Wompi ------------------------------------------------------------------------------
+
+_WOMPI = "/aletheia/prod/wompi/"
+_PARAMETROS_WOMPI = {
+    "wompi_public_key": "pub_prod_x",
+    "wompi_private_key_parameter": _WOMPI + "private-key",
+    "wompi_integrity_secret_parameter": _WOMPI + "integrity-secret",
+    "wompi_events_secret_parameter": _WOMPI + "events-secret",
+}
+
+
+def test_las_llaves_de_wompi_se_leen_de_parameter_store(cliente: SSMClient) -> None:
+    settings = _produccion(**_PARAMETROS_WOMPI)
+    with Stubber(cliente) as stub:
+        for nombre, valor in (
+            ("private-key", "prv_prod_x"),
+            ("integrity-secret", "integridad-x"),
+            ("events-secret", "eventos-x"),
+        ):
+            stub.add_response(
+                "get_parameter",
+                _respuesta(valor),
+                {"Name": _WOMPI + nombre, "WithDecryption": True},
+            )
+        loaded = secrets.with_wompi_secrets(settings, cliente)
+    assert loaded.wompi_private_key is not None
+    assert loaded.wompi_private_key.get_secret_value() == "prv_prod_x"
+    assert loaded.wompi_integrity_secret is not None
+    assert loaded.wompi_integrity_secret.get_secret_value() == "integridad-x"
+    assert loaded.wompi_events_secret is not None
+    assert loaded.wompi_events_secret.get_secret_value() == "eventos-x"
+
+
+def test_sin_wompi_configurado_no_se_llama_a_aws(cliente: SSMClient) -> None:
+    with Stubber(cliente):
+        loaded = secrets.with_wompi_secrets(_produccion(), cliente)
+    assert loaded.wompi_private_key is None
+
+
+def test_wompi_vacio_de_compose_cuenta_como_sin_configurar() -> None:
+    settings = _produccion(
+        wompi_public_key="",
+        wompi_private_key_parameter="",
+        wompi_integrity_secret_parameter="",
+        wompi_events_secret_parameter="",
+    )
+    assert settings.wompi_public_key is None
+    assert settings.wompi_private_key_parameter is None
+
+
+def test_wompi_en_produccion_no_admite_secretos_en_variable() -> None:
+    with pytest.raises(ValidationError, match="secretos de Wompi no pueden venir"):
+        _produccion(wompi_private_key="prv_prod_x")
+
+
+def test_wompi_en_produccion_exige_los_tres_parametros() -> None:
+    incompletos = {
+        k: v for k, v in _PARAMETROS_WOMPI.items() if k != "wompi_events_secret_parameter"
+    }
+    with pytest.raises(ValidationError, match="exige la llave pública y los tres parámetros"):
+        _produccion(**incompletos)
+
+
+def test_parametros_de_wompi_sin_llave_publica_se_rechazan() -> None:
+    sin_publica = {k: v for k, v in _PARAMETROS_WOMPI.items() if k != "wompi_public_key"}
+    with pytest.raises(ValidationError, match="exige la llave pública"):
+        _produccion(**sin_publica)
+
+
+def test_fuera_de_produccion_wompi_no_usa_parameter_store() -> None:
+    with pytest.raises(ValidationError):
+        Settings.model_validate(
+            {"environment": "test", "wompi_private_key_parameter": _WOMPI + "private-key"}
+        )

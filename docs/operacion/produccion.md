@@ -160,6 +160,9 @@ La llave se rota al publicar v1.0.0 y ante cualquier sospecha. El procedimiento 
 | `/aletheia/prod/postgres/support-password` | SecureString (`aws/ssm`) | `aletheia_support`: consultas de solo lectura |
 | `/aletheia/prod/app/token-signing-key` | SecureString (`aws/ssm`) | Clave de firma de los enlaces de un solo uso: API y trabajador |
 | `/aletheia/prod/google/client-secret` | SecureString (`aws/ssm`) | Secreto OIDC de Google; se crea solo al activar la integración |
+| `/aletheia/prod/wompi/private-key` | SecureString (`aws/ssm`) | Llave privada de Wompi: consulta el estado de cada pago |
+| `/aletheia/prod/wompi/integrity-secret` | SecureString (`aws/ssm`) | Secreto de integridad: firma cada pago antes de enviarlo a Wompi |
+| `/aletheia/prod/wompi/events-secret` | SecureString (`aws/ssm`) | Secreto de eventos: verifica los avisos que Wompi envía al sistema |
 
 Las claves se generaron en CloudShell con 40 letras y números, por una tubería directo a AWS, así que nunca aparecieron en pantalla, en el historial ni como argumento de un comando. El procedimiento exacto está en el runbook interno.
 
@@ -328,6 +331,17 @@ En el servidor, el documento trae la etiqueta, comprueba su firma y deja `/opt/a
 Sin `/etc/aletheia/entorno.env`, o si falta el bucket o cualquiera de los dos valores de Google, `desplegar.sh` se niega a desplegar. Después de levantar los contenedores también exige que `/api/v1/auth/google/status` responda con la integración habilitada; si no lo hace, revierte el despliegue.
 
 El cliente web de Google Cloud debe registrar exactamente `https://aletheia.sbs/api/v1/auth/google/callback` como URI de redirección autorizada. El secreto se guarda en `/aletheia/prod/google/client-secret` como `SecureString`; el archivo de entorno solo contiene el ID público del cliente y el nombre de ese parámetro.
+
+### Wompi (cobro de planes)
+
+Sin estas variables el cobro queda apagado y `GET /api/v1/billing/wompi-terms` responde 503. Para encenderlo:
+
+1. En el panel de Wompi, en Desarrolladores, copie la llave pública y las tres llaves de producción (privada, secreto de integridad y secreto de eventos). No las envíe por chat ni por correo.
+2. En CloudShell, ejecute `bash infra/prod/guardar-llaves-wompi.sh`. Pide las tres llaves sin mostrarlas y las guarda como `SecureString` bajo `/aletheia/prod/wompi/`.
+3. Agregue a `/etc/aletheia/entorno.env` las cuatro líneas que imprime el script: `ALETHEIA_WOMPI_PUBLIC_KEY` (la llave pública, que no es secreta) y los nombres de los tres parámetros.
+4. En el panel de Wompi, en Desarrolladores, registre como URL de eventos `https://aletheia.sbs/api/v1/webhooks/wompi`.
+5. Despliegue (o reinicie la API): al arrancar lee las tres llaves de Parameter Store. En producción la aplicación se niega a arrancar si las llaves vienen en variables, o si está la llave pública sin los tres parámetros.
+6. Compruebe `GET /api/v1/billing/wompi-terms` (debe responder 200) y haga un pago real del plan más barato.
 
 Las migraciones nunca se revierten. Cada una debe dejar funcionando la versión anterior de la API: primero se amplía el esquema y, en una versión posterior, se retira lo que sobra.
 

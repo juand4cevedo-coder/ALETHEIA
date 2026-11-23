@@ -122,8 +122,26 @@ def with_google_client_secret(settings: Settings, client: SSMClient | None = Non
     return settings.model_copy(update={"google_client_secret": Secret[str](secret)})
 
 
+def with_wompi_secrets(settings: Settings, client: SSMClient | None = None) -> Settings:
+    """Agrega las tres llaves secretas de Wompi si están configuradas en producción."""
+    nombres = {
+        "wompi_private_key": settings.wompi_private_key_parameter,
+        "wompi_integrity_secret": settings.wompi_integrity_secret_parameter,
+        "wompi_events_secret": settings.wompi_events_secret_parameter,
+    }
+    if all(nombre is None for nombre in nombres.values()):
+        return settings
+    lector = client or _default_client()
+    valores = {
+        campo: Secret[str](read_secure_parameter(nombre, lector))
+        for campo, nombre in nombres.items()
+        if nombre is not None
+    }
+    return settings.model_copy(update=valores)
+
+
 def with_production_secrets(settings: Settings, client: SSMClient | None = None) -> Settings:
     """Configuración de producción con los secretos leídos mediante un mismo cliente."""
     client = client or _default_client()
     loaded = with_token_signing_key(with_database_password(settings, client), client)
-    return with_google_client_secret(loaded, client)
+    return with_wompi_secrets(with_google_client_secret(loaded, client), client)

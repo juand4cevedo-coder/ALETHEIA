@@ -8,3 +8,7 @@
 - Los medios que se ofrecen en la página de Wompi (tarjeta, PSE, Nequi, etc.) los decide la configuración de la cuenta de comercio en Wompi: si tarjeta o PSE no aparecen allá, hay que pedírselos a Wompi.
 - Esta integración no se probó contra Wompi desde el desarrollo. Antes de anunciarla, haga un pago de prueba (con llaves `pub_test_` en un entorno de pruebas, o un pago real del plan más barato) y compruebe que la dirección se acepta, que el regreso muestra «Su pago quedó aprobado» y que el correo de comprobante llega.
 - Queda pendiente vincular Nequi o la tarjeta como fuente de pago para renovar solo (ADR-057): exige decidir el texto de consentimiento y la cancelación.
+
+**Configuración en el servidor**
+- Las llaves de Wompi se leen de Parameter Store (`/aletheia/prod/wompi/*`), como las demás credenciales; el contenedor solo recibe el nombre de cada parámetro y la llave pública. `compose.prod.yaml` ahora pasa esas cuatro variables (vacías si Wompi no está configurado). En producción la API se niega a arrancar con las llaves secretas en variables o con la configuración a medias.
+- Paso a paso en `docs/operacion/produccion.md`, sección «Wompi», con `infra/prod/guardar-llaves-wompi.sh` para guardar las llaves sin mostrarlas. Falta registrar `https://aletheia.sbs/api/v1/webhooks/wompi` como URL de eventos en el panel de Wompi.
