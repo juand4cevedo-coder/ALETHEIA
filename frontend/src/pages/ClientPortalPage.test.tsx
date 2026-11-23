@@ -10,6 +10,7 @@ const TOKEN = "un-token-de-prueba";
 const VIEW = "/api/v1/client-portal/view";
 const ACCEPT = "/api/v1/client-portal/accept-notice";
 const RENEW = "/api/v1/client-portal/renew";
+const MESSAGES = "/api/v1/client-portal/messages";
 const RUTA = "/portal";
 
 const BASE_VIEW = {
@@ -17,6 +18,7 @@ const BASE_VIEW = {
   client_name: "María Pérez",
   expires_at: "2026-12-24T15:00:00Z",
   updates: [],
+  messages: [],
 };
 
 function requests(path: string): Request[] {
@@ -137,6 +139,79 @@ describe("Portal del cliente (ADR-054)", () => {
     expect(await requests(VIEW)[0]!.json()).toEqual({ token: TOKEN });
   });
 
+  it("el cliente le escribe al despacho y ve su mensaje", async () => {
+    let sent = false;
+    serve({
+      [VIEW]: () =>
+        jsonResponse({
+          ...BASE_VIEW,
+          notice_accepted: true,
+          case_title: "Caso de María",
+          case_status: "open",
+          messages: sent
+            ? [
+                {
+                  id: "019e0000-0000-7000-8000-000000000002",
+                  body: "¿Cómo va mi caso?",
+                  created_at: "2026-11-24T16:00:00Z",
+                },
+              ]
+            : [],
+        }),
+      [MESSAGES]: () => {
+        sent = true;
+        return jsonResponse(
+          {
+            id: "019e0000-0000-7000-8000-000000000002",
+            body: "¿Cómo va mi caso?",
+            created_at: "2026-11-24T16:00:00Z",
+          },
+          201,
+        );
+      },
+    });
+    const user = userEvent.setup();
+    await renderRoute(`${RUTA}#t=${TOKEN}`);
+
+    expect(
+      await screen.findByRole("button", { name: "Enviar mensaje" }),
+    ).toBeDisabled();
+    await user.type(
+      screen.getByRole("textbox", { name: "Su mensaje" }),
+      "¿Cómo va mi caso?",
+    );
+    await user.click(screen.getByRole("button", { name: "Enviar mensaje" }));
+
+    expect(
+      await screen.findByRole("list", { name: "Sus mensajes" }),
+    ).toBeInTheDocument();
+    expect(await requests(MESSAGES)[0]!.json()).toEqual({
+      token: TOKEN,
+      body: "¿Cómo va mi caso?",
+    });
+    expect(screen.getByRole("textbox", { name: "Su mensaje" })).toHaveValue("");
+  });
+
+  it("en un caso archivado no ofrece escribir", async () => {
+    serve({
+      [VIEW]: () =>
+        jsonResponse({
+          ...BASE_VIEW,
+          notice_accepted: true,
+          case_title: "Caso de María",
+          case_status: "closed",
+        }),
+    });
+    await renderRoute(`${RUTA}#t=${TOKEN}`);
+
+    expect(
+      await screen.findByText(/ya no recibe mensajes/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Enviar mensaje" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("sin avisos publicados lo dice con claridad", async () => {
     serve({
       [VIEW]: () =>
@@ -152,7 +227,7 @@ describe("Portal del cliente (ADR-054)", () => {
     expect(
       await screen.findByText(/todavía no le ha publicado avisos/),
     ).toBeInTheDocument();
-    expect(screen.getByText(/archivado/)).toBeInTheDocument();
+    expect(screen.getByText(/Caso archivado en/)).toBeInTheDocument();
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 });

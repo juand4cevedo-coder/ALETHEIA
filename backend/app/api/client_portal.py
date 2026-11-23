@@ -14,7 +14,11 @@ from app.core.tokens import InvalidPortalLinkError
 from app.schemas.client_portal import (
     PortalAccessList,
     PortalAccessOut,
+    PortalInbox,
+    PortalInboxMessage,
     PortalInvite,
+    PortalMessageCreate,
+    PortalMessageOut,
     PortalRenewed,
     PortalTokenRequest,
     PortalUpdateCreate,
@@ -234,8 +238,105 @@ def view_portal(
             )
             for item in data.updates
         ],
+        messages=[
+            PortalMessageOut(id=item.id, body=item.body, created_at=item.created_at)
+            for item in data.messages
+        ],
         expires_at=data.expires_at,
     )
+
+
+@router.get("/{case_id}/portal/messages", summary="Mensajes que los clientes escribieron")
+def list_portal_messages(
+    case_id: uuid.UUID,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> PortalInbox:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        views = portal.list_messages(session, principal, case_id)
+    except portal.CaseNotFoundError:
+        raise HTTPException(404, detail=_NOT_FOUND, headers=_NO_STORE) from None
+    except portal.PortalNotAllowedError:
+        raise HTTPException(403, detail=_NOT_ALLOWED, headers=_NO_STORE) from None
+    return PortalInbox(
+        items=[
+            PortalInboxMessage(
+                id=view.message.id,
+                client_name=view.client_name,
+                body=view.message.body,
+                created_at=view.message.created_at,
+                read_at=view.message.read_at,
+            )
+            for view in views
+        ],
+        unread_count=sum(1 for view in views if view.message.read_at is None),
+    )
+
+
+@router.post(
+    "/{case_id}/portal/messages/read",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Marcar como leídos los mensajes de los clientes",
+)
+def mark_portal_messages_read(
+    case_id: uuid.UUID,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> Response:
+    try:
+        portal.mark_messages_read(session, principal, case_id)
+    except portal.CaseNotFoundError:
+        raise HTTPException(404, detail=_NOT_FOUND, headers=_NO_STORE) from None
+    except portal.PortalNotAllowedError:
+        raise HTTPException(403, detail=_NOT_ALLOWED, headers=_NO_STORE) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT, headers=_NO_STORE)
+
+
+@public_router.post(
+    "/messages",
+    status_code=status.HTTP_201_CREATED,
+    summary="Escribirle al despacho desde el portal",
+    responses={
+        404: {"description": "El enlace no existe o ya no está vigente."},
+        409: {"description": "El caso está archivado o falta aceptar el aviso de datos."},
+        429: {"description": "Demasiados mensajes."},
+    },
+)
+def send_portal_message(
+    body: PortalMessageCreate,
+    response: Response,
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> PortalMessageOut:
+    response.headers["Cache-Control"] = "no-store"
+    rate_limit.hit(session, rate_limit.PORTAL_IP, client_ip)
+    session.commit()
+    try:
+        sent = portal.send_message(
+            session,
+            settings,
+            body.token,
+            body.body,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+    except InvalidPortalLinkError:
+        raise HTTPException(404, detail=_GONE, headers=_NO_STORE) from None
+    except portal.NoticeNotAcceptedError:
+        raise HTTPException(
+            409, detail="Acepte primero el aviso sobre sus datos.", headers=_NO_STORE
+        ) from None
+    except portal.ClosedCasePortalError:
+        raise HTTPException(
+            409,
+            detail="El caso está archivado y ya no recibe mensajes.",
+            headers=_NO_STORE,
+        ) from None
+    return PortalMessageOut(id=sent.id, body=sent.body, created_at=sent.created_at)
 
 
 @public_router.post(

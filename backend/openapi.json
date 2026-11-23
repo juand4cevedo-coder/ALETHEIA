@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.23.0"
+    "version": "0.24.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -6532,6 +6532,95 @@
         }
       }
     },
+    "/api/v1/cases/{case_id}/portal/messages": {
+      "get": {
+        "tags": [
+          "portal del cliente"
+        ],
+        "summary": "Mensajes que los clientes escribieron",
+        "operationId": "list_portal_messages",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalInbox"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/portal/messages/read": {
+      "post": {
+        "tags": [
+          "portal del cliente"
+        ],
+        "summary": "Marcar como leídos los mensajes de los clientes",
+        "operationId": "mark_portal_messages_read",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/client-portal/view": {
       "post": {
         "tags": [
@@ -6572,6 +6661,77 @@
           },
           "429": {
             "description": "Demasiados intentos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/client-portal/messages": {
+      "post": {
+        "tags": [
+          "portal del cliente"
+        ],
+        "summary": "Escribirle al despacho desde el portal",
+        "operationId": "send_portal_message",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalMessageCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalMessageOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El enlace no existe o ya no está vigente.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El caso está archivado o falta aceptar el aviso de datos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiados mensajes.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10252,6 +10412,71 @@
         ],
         "title": "PortalAccessOut"
       },
+      "PortalInbox": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PortalInboxMessage"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "unread_count": {
+            "type": "integer",
+            "title": "Unread Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "unread_count"
+        ],
+        "title": "PortalInbox"
+      },
+      "PortalInboxMessage": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "client_name": {
+            "type": "string",
+            "title": "Client Name"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "read_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "client_name",
+          "body",
+          "created_at",
+          "read_at"
+        ],
+        "title": "PortalInboxMessage",
+        "description": "Un mensaje de un cliente, como lo ve el despacho."
+      },
       "PortalInvite": {
         "properties": {
           "client_name": {
@@ -10276,6 +10501,56 @@
           "client_email"
         ],
         "title": "PortalInvite"
+      },
+      "PortalMessageCreate": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Token",
+            "description": "Token del enlace."
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Body",
+            "description": "Mensaje para el despacho."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token",
+          "body"
+        ],
+        "title": "PortalMessageCreate"
+      },
+      "PortalMessageOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "body",
+          "created_at"
+        ],
+        "title": "PortalMessageOut"
       },
       "PortalRenewed": {
         "properties": {
@@ -10418,6 +10693,13 @@
             "type": "array",
             "title": "Updates"
           },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/PortalMessageOut"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
           "expires_at": {
             "type": "string",
             "format": "date-time",
@@ -10432,6 +10714,7 @@
           "case_title",
           "case_status",
           "updates",
+          "messages",
           "expires_at"
         ],
         "title": "PortalView",

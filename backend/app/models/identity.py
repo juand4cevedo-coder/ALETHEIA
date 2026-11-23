@@ -77,6 +77,7 @@ AUDIT_ACTIONS: Final = (
     "client_portal_notice_accepted",
     "client_portal_update_published",
     "client_portal_renewed",
+    "client_portal_message_sent",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.

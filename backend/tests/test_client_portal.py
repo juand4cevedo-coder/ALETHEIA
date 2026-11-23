@@ -13,8 +13,8 @@ from app.core.config import Settings
 from app.core.tokens import InvalidPortalLinkError, issue_portal_link, read_portal_link
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, ClientPortalAccess, Job
-from app.services.client_portal import INVITE_TEMPLATE
-from app.services.client_portal_emails import invite_email
+from app.services.client_portal import INVITE_TEMPLATE, MESSAGE_TEMPLATE
+from app.services.client_portal_emails import invite_email, message_email
 from tests.conftest import NuevoCliente
 from tests.organizations import Oficina, crear_miembro, crear_oficina
 from tests.test_case_notes import _session
@@ -310,3 +310,103 @@ def test_pedir_un_enlace_nuevo_responde_igual_cuando_no_hay_nada_que_renovar(
     assert len({answer.text for answer in answers}) == 1
     assert len(_invites(db)) == 1
     assert _actions(db, office, "client_portal_renewed") == 0
+
+
+_MESSAGES = "/api/v1/client-portal/messages"
+
+
+def _message_jobs(db: Session) -> list[dict[str, Any]]:
+    jobs = db.scalars(select(Job).where(Job.kind == "email_send").order_by(Job.id)).all()
+    return [dict(job.payload) for job in jobs if job.payload.get("template") == MESSAGE_TEMPLATE]
+
+
+def _ready_client(
+    dispositivo: NuevoCliente, db: Session, settings: Settings
+) -> tuple[Oficina, TestClient, str, TestClient, str]:
+    """Un despacho con un caso, un cliente invitado que ya aceptó el aviso y su enlace."""
+    office, lawyer, case_id = _case(dispositivo, db)
+    _invite(lawyer, case_id)
+    token = _token_of_last_invite(db, settings)
+    anonymous = dispositivo()
+    assert anonymous.post(_ACCEPT, json={"token": token}).status_code == 204
+    return office, lawyer, case_id, anonymous, token
+
+
+def test_el_cliente_escribe_y_el_despacho_lo_lee_sin_que_el_correo_copie_el_texto(
+    dispositivo: NuevoCliente, db: Session, settings: Settings
+) -> None:
+    office, lawyer, case_id, anonymous, token = _ready_client(dispositivo, db, settings)
+
+    sent = anonymous.post(_MESSAGES, json={"token": token, "body": "  ¿Cómo va mi caso?  "})
+    second = anonymous.post(_MESSAGES, json={"token": token, "body": "Otra duda"})
+
+    assert sent.status_code == 201, sent.text
+    assert sent.json()["body"] == "¿Cómo va mi caso?"
+    assert second.status_code == 201
+    assert len(_message_jobs(db)) == 1  # los mensajes seguidos se juntan en un solo aviso
+    email = message_email(db, _message_jobs(db)[0], settings)
+    assert email is not None
+    assert "María Pérez" in email.subject
+    assert "¿Cómo va mi caso?" not in email.text
+    assert f"/app/casos/{case_id}" in email.text
+    assert _actions(db, office, "client_portal_message_sent") == 2
+    own = anonymous.post(_VIEW, json={"token": token}).json()["messages"]
+    assert [item["body"] for item in own] == ["Otra duda", "¿Cómo va mi caso?"]
+
+    inbox = lawyer.get(f"{_CASES}/{case_id}/portal/messages").json()
+    assert inbox["unread_count"] == 2
+    assert inbox["items"][0]["client_name"] == "María Pérez"
+    assert lawyer.post(f"{_CASES}/{case_id}/portal/messages/read").status_code == 204
+    after = lawyer.get(f"{_CASES}/{case_id}/portal/messages").json()
+    assert after["unread_count"] == 0
+    assert all(item["read_at"] is not None for item in after["items"])
+
+
+def test_el_cliente_no_escribe_sin_aceptar_el_aviso_ni_con_un_enlace_cerrado(
+    dispositivo: NuevoCliente, db: Session, settings: Settings
+) -> None:
+    _, lawyer, case_id = _case(dispositivo, db)
+    access = _invite(lawyer, case_id)
+    token = _token_of_last_invite(db, settings)
+    anonymous = dispositivo()
+
+    before = anonymous.post(_MESSAGES, json={"token": token, "body": "Hola"})
+    anonymous.post(_ACCEPT, json={"token": token})
+    empty = anonymous.post(_MESSAGES, json={"token": token, "body": "   "})
+    lawyer.delete(f"{_CASES}/{case_id}/portal/accesses/{access['id']}")
+    after = anonymous.post(_MESSAGES, json={"token": token, "body": "Hola"})
+
+    assert before.status_code == 409
+    assert empty.status_code == 422
+    assert after.status_code == 404
+    assert _message_jobs(db) == []
+
+
+def test_un_caso_archivado_ya_no_recibe_mensajes(
+    dispositivo: NuevoCliente, db: Session, settings: Settings
+) -> None:
+    _, lawyer, case_id, anonymous, token = _ready_client(dispositivo, db, settings)
+    assert lawyer.post(f"{_CASES}/{case_id}/close").status_code == 200
+
+    response = anonymous.post(_MESSAGES, json={"token": token, "body": "Hola"})
+
+    assert response.status_code == 409
+
+
+def test_solo_quien_maneja_el_portal_lee_los_mensajes_y_hay_tope_por_acceso(
+    dispositivo: NuevoCliente, db: Session, settings: Settings
+) -> None:
+    office, lawyer, case_id, anonymous, token = _ready_client(dispositivo, db, settings)
+    assistant = crear_miembro(db, office, "asistente.mensajes@example.com", "assistant")
+    lawyer.post(f"{_CASES}/{case_id}/members", json={"user_id": str(assistant.id)})
+    assistant_client = _session(dispositivo, db, assistant)
+
+    codes = [
+        anonymous.post(_MESSAGES, json={"token": token, "body": f"Mensaje {n}"}).status_code
+        for n in range(11)
+    ]
+
+    assert assistant_client.get(f"{_CASES}/{case_id}/portal/messages").status_code == 403
+    assert assistant_client.post(f"{_CASES}/{case_id}/portal/messages/read").status_code == 403
+    assert codes[:10] == [201] * 10
+    assert codes[10] == 429

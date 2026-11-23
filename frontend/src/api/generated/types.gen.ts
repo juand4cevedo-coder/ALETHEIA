@@ -2281,6 +2281,48 @@ export type PortalAccessOut = {
 };
 
 /**
+ * PortalInbox
+ */
+export type PortalInbox = {
+  /**
+   * Items
+   */
+  items: Array<PortalInboxMessage>;
+  /**
+   * Unread Count
+   */
+  unread_count: number;
+};
+
+/**
+ * PortalInboxMessage
+ *
+ * Un mensaje de un cliente, como lo ve el despacho.
+ */
+export type PortalInboxMessage = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Client Name
+   */
+  client_name: string;
+  /**
+   * Body
+   */
+  body: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Read At
+   */
+  read_at: string | null;
+};
+
+/**
  * PortalInvite
  */
 export type PortalInvite = {
@@ -2296,6 +2338,42 @@ export type PortalInvite = {
    * Correo al que llega el enlace del portal.
    */
   client_email: string;
+};
+
+/**
+ * PortalMessageCreate
+ */
+export type PortalMessageCreate = {
+  /**
+   * Token
+   *
+   * Token del enlace.
+   */
+  token: string;
+  /**
+   * Body
+   *
+   * Mensaje para el despacho.
+   */
+  body: string;
+};
+
+/**
+ * PortalMessageOut
+ */
+export type PortalMessageOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Body
+   */
+  body: string;
+  /**
+   * Created At
+   */
+  created_at: string;
 };
 
 /**
@@ -2396,6 +2474,10 @@ export type PortalView = {
    * Updates
    */
   updates: Array<PortalUpdateOut>;
+  /**
+   * Messages
+   */
+  messages: Array<PortalMessageOut>;
   /**
    * Expires At
    */
@@ -7084,6 +7166,70 @@ export type PublishPortalUpdateResponses = {
 export type PublishPortalUpdateResponse =
   PublishPortalUpdateResponses[keyof PublishPortalUpdateResponses];
 
+export type ListPortalMessagesData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/portal/messages";
+};
+
+export type ListPortalMessagesErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ListPortalMessagesError =
+  ListPortalMessagesErrors[keyof ListPortalMessagesErrors];
+
+export type ListPortalMessagesResponses = {
+  /**
+   * Successful Response
+   */
+  200: PortalInbox;
+};
+
+export type ListPortalMessagesResponse =
+  ListPortalMessagesResponses[keyof ListPortalMessagesResponses];
+
+export type MarkPortalMessagesReadData = {
+  body?: never;
+  path: {
+    /**
+     * Case Id
+     */
+    case_id: string;
+  };
+  query?: never;
+  url: "/api/v1/cases/{case_id}/portal/messages/read";
+};
+
+export type MarkPortalMessagesReadErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type MarkPortalMessagesReadError =
+  MarkPortalMessagesReadErrors[keyof MarkPortalMessagesReadErrors];
+
+export type MarkPortalMessagesReadResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type MarkPortalMessagesReadResponse =
+  MarkPortalMessagesReadResponses[keyof MarkPortalMessagesReadResponses];
+
 export type ViewPortalData = {
   body: PortalTokenRequest;
   path?: never;
@@ -7116,6 +7262,45 @@ export type ViewPortalResponses = {
 };
 
 export type ViewPortalResponse = ViewPortalResponses[keyof ViewPortalResponses];
+
+export type SendPortalMessageData = {
+  body: PortalMessageCreate;
+  path?: never;
+  query?: never;
+  url: "/api/v1/client-portal/messages";
+};
+
+export type SendPortalMessageErrors = {
+  /**
+   * El enlace no existe o ya no está vigente.
+   */
+  404: Problem;
+  /**
+   * El caso está archivado o falta aceptar el aviso de datos.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiados mensajes.
+   */
+  429: Problem;
+};
+
+export type SendPortalMessageError =
+  SendPortalMessageErrors[keyof SendPortalMessageErrors];
+
+export type SendPortalMessageResponses = {
+  /**
+   * Successful Response
+   */
+  201: PortalMessageOut;
+};
+
+export type SendPortalMessageResponse =
+  SendPortalMessageResponses[keyof SendPortalMessageResponses];
 
 export type RenewPortalLinkData = {
   body: PortalTokenRequest;
