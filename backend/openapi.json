@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.31.0"
+    "version": "0.32.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -5630,6 +5630,52 @@
             }
           }
         }
+      },
+      "get": {
+        "tags": [
+          "exportaciones"
+        ],
+        "summary": "Listar los paquetes de preservación de un caso",
+        "operationId": "list_case_exports",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/cases/{case_id}/exports/{export_id}": {
@@ -9716,6 +9762,90 @@
           "expires_at"
         ],
         "title": "ExportInspectResponse"
+      },
+      "ExportList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ExportListItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "ExportList"
+      },
+      "ExportListItemOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "download_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Download Url"
+          },
+          "requested_by_name": {
+            "type": "string",
+            "title": "Requested By Name"
+          },
+          "manifest_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manifest Sha256",
+            "description": "Huella SHA-256 del manifiesto del paquete, si ya está listo."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "created_at",
+          "expires_at",
+          "download_url",
+          "requested_by_name",
+          "manifest_sha256"
+        ],
+        "title": "ExportListItemOut"
       },
       "ExportResponse": {
         "properties": {

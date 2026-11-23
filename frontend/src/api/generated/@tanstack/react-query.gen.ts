@@ -53,6 +53,7 @@ import {
   inspectExport,
   inspectSharedEvidence,
   inviteClient,
+  listCaseExports,
   listCaseNotes,
   listCases,
   listCaseTasks,
@@ -248,6 +249,9 @@ import type {
   InviteClientData,
   InviteClientError,
   InviteClientResponse,
+  ListCaseExportsData,
+  ListCaseExportsError,
+  ListCaseExportsResponse,
   ListCaseNotesData,
   ListCaseNotesError,
   ListCaseNotesResponse,
@@ -3113,6 +3117,32 @@ export const downloadExportMutation = (
   };
   return mutationOptions;
 };
+
+export const listCaseExportsQueryKey = (
+  options: Options<ListCaseExportsData>,
+) => createQueryKey("listCaseExports", options);
+
+/**
+ * Listar los paquetes de preservación de un caso
+ */
+export const listCaseExportsOptions = (options: Options<ListCaseExportsData>) =>
+  queryOptions<
+    ListCaseExportsResponse,
+    ListCaseExportsError,
+    ListCaseExportsResponse,
+    ReturnType<typeof listCaseExportsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listCaseExports({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listCaseExportsQueryKey(options),
+  });
 
 /**
  * Solicitar un paquete de preservación

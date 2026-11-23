@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.core.permissions import has_permission
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import Case, CustodyEvent, Export, Membership
+from app.models import Case, CustodyEvent, Export, Membership, User
 from app.repositories import cases as cases_repository
 from app.services import jobs
 from app.services.export_links import link_for_export
@@ -36,6 +36,19 @@ class ExportView:
     created_at: datetime.datetime
     expires_at: datetime.datetime | None
     download_url: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class ExportListItem:
+    """Un paquete del historial del caso, con quién lo pidió y su huella."""
+
+    id: uuid.UUID
+    status: str
+    created_at: datetime.datetime
+    expires_at: datetime.datetime | None
+    download_url: str | None
+    requested_by_name: str
+    manifest_sha256: bytes | None
 
 
 def _case_member(session: Session, principal: Principal, case_id: uuid.UUID, *, lock: bool) -> Case:
@@ -131,3 +144,45 @@ def get_export(
         return ExportView(export.id, "expired", export.created_at, export.expires_at, None)
     link = link_for_export(settings, export, now=now) if export.status == "ready" else None
     return ExportView(export.id, export.status, export.created_at, export.expires_at, link)
+
+
+def list_exports(
+    session: Session,
+    settings: Settings,
+    principal: Principal,
+    case_id: uuid.UUID,
+    *,
+    limit: int = 20,
+) -> list[ExportListItem]:
+    """Los paquetes más recientes del caso, del más nuevo al más antiguo. Un paquete listo cuyo
+    enlace ya venció aparece como vencido, sin enlace."""
+    _case_member(session, principal, case_id, lock=False)
+    rows = session.execute(
+        select(Export, User.full_name)
+        .join(User, User.id == Export.requested_by)
+        .where(Export.case_id == case_id, Export.organization_id == principal.organization_id)
+        .order_by(Export.id.desc())
+        .limit(limit)
+    ).all()
+    now = datetime.datetime.now(datetime.UTC)
+    items: list[ExportListItem] = []
+    for export, name in rows:
+        status = export.status
+        link = None
+        if status == "ready":
+            if export.expires_at is not None and export.expires_at <= now:
+                status = "expired"
+            else:
+                link = link_for_export(settings, export, now=now)
+        items.append(
+            ExportListItem(
+                export.id,
+                status,
+                export.created_at,
+                export.expires_at,
+                link,
+                name,
+                export.manifest_sha256,
+            )
+        )
+    return items
