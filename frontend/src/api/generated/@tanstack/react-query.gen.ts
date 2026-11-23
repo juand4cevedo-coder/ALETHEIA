@@ -95,6 +95,7 @@ import {
   twoFactorStatus,
   updateCaseRetention,
   updateCaseTaskStatus,
+  updateTaskTemplate,
   uploadEvidence,
   verifyCustody,
   verifyEmail,
@@ -341,6 +342,9 @@ import type {
   UpdateCaseTaskStatusData,
   UpdateCaseTaskStatusError,
   UpdateCaseTaskStatusResponse,
+  UpdateTaskTemplateData,
+  UpdateTaskTemplateError,
+  UpdateTaskTemplateResponse,
   UploadEvidenceData,
   UploadEvidenceError,
   UploadEvidenceResponse,
@@ -2381,6 +2385,33 @@ export const deleteTaskTemplateMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await deleteTaskTemplate({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Editar una plantilla de tareas: cambia el nombre y reemplaza sus tareas
+ */
+export const updateTaskTemplateMutation = (
+  options?: Partial<Options<UpdateTaskTemplateData>>,
+): UseMutationOptions<
+  UpdateTaskTemplateResponse,
+  UpdateTaskTemplateError,
+  Options<UpdateTaskTemplateData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    UpdateTaskTemplateResponse,
+    UpdateTaskTemplateError,
+    Options<UpdateTaskTemplateData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await updateTaskTemplate({
         ...options,
         ...fnOptions,
         throwOnError: true,
