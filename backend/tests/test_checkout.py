@@ -293,3 +293,26 @@ def test_al_volver_del_checkout_web_se_confirma_con_wompi_y_solo_la_transaccion_
     assert subscription.status == "active"
     assert subscription.billing_cycle == "monthly"
     assert subscription.pending_checkout_reference is None
+
+
+@pytest.mark.parametrize(
+    "identificador",
+    ["../merchants/info", "tx/1", "tx?x=1", "tx#a", "", "a" * 101, "tx 1", "https://evil.test"],
+)
+def test_un_identificador_que_no_es_de_wompi_nunca_llega_a_la_url(
+    identificador: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    llamadas: list[str] = []
+    monkeypatch.setattr(wompi, "_llamar", lambda url, **_kw: llamadas.append(url) or {})
+    creds = wompi.Credenciales(
+        public_key="pub_test_x",
+        private_key="prv_test_x",
+        integrity_secret="test_integrity_x",  # noqa: S106
+        events_secret="test_events_x",  # noqa: S106
+        base_url="https://sandbox.wompi.co/v1",
+    )
+
+    with pytest.raises(wompi.WompiRechazadoError):
+        wompi.consultar_transaccion(creds, identificador)
+
+    assert llamadas == []

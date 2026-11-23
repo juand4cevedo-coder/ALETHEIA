@@ -13,6 +13,7 @@ Wompi advierte que esa lista de propiedades puede cambiar, así que nunca se asu
 import hashlib
 import hmac
 import json
+import re
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -26,6 +27,9 @@ _SANDBOX_URL: Final = "https://sandbox.wompi.co/v1"
 _PRODUCTION_URL: Final = "https://production.wompi.co/v1"
 _ESPERA_SEGUNDOS: Final = 15
 _CHECKOUT_WEB_URL: Final = "https://checkout.wompi.co/p/"
+# Los identificadores de Wompi son letras, números, guiones y guiones bajos (por ejemplo
+# 1292-1602113476-10985). Cualquier otra cosa no es un identificador y nunca llega a la URL.
+_ID_DE_TRANSACCION: Final = re.compile(r"[A-Za-z0-9_-]{1,100}")
 
 
 class WompiNoConfiguradoError(RuntimeError):
@@ -213,7 +217,10 @@ def consultar_transaccion(creds: Credenciales, transaction_id: str) -> Transacci
     """GET /transactions/{id}: la versión de la transacción en la que Wompi manda, no la que
     venga en un webhook. El webhook solo avisa que algo cambió (HU-027); nunca se activa un
     plan con datos que no salgan de aquí o de una respuesta de POST /transactions."""
-    respuesta = _llamar(f"{creds.base_url}/transactions/{transaction_id}", bearer=creds.private_key)
+    if _ID_DE_TRANSACCION.fullmatch(transaction_id) is None:
+        raise WompiRechazadoError("El identificador de la transacción no es válido.")
+    ruta = urllib.parse.quote(transaction_id, safe="")
+    respuesta = _llamar(f"{creds.base_url}/transactions/{ruta}", bearer=creds.private_key)
     data = respuesta["data"]
     return Transaccion(
         id=data["id"],
