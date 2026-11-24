@@ -21,6 +21,7 @@ JOB_KINDS: Final = (
     "audit_anonymize",
     "subscription_expire",
     "custody_anchor",
+    "renewal_charge",
 )
 JOB_STATUSES: Final = ("queued", "running", "done", "dead")
 

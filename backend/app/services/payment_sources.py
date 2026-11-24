@@ -196,8 +196,26 @@ def confirm(
     source.status = "active"
     source.linked_at = now
     session.flush()
+    _schedule_current_period(session, organization_id)
     _audit(session, principal, "payment_source_linked", source, client_ip, user_agent, now)
     return SourceView("active", source.phone_last4, now)
+
+
+def _schedule_current_period(session: Session, organization_id: uuid.UUID) -> None:
+    """Al vincular la fuente, el periodo que ya está pagado se renueva solo al vencer."""
+    from app.models import Subscription
+    from app.services import renewals
+
+    subscription = session.scalar(
+        select(Subscription).where(Subscription.organization_id == organization_id)
+    )
+    if (
+        subscription is not None
+        and subscription.status == "active"
+        and subscription.access_source == "payment"
+        and subscription.current_period_end is not None
+    ):
+        renewals.schedule(session, organization_id, subscription.current_period_end)
 
 
 def _owner_email(session: Session, principal: Principal) -> str:
