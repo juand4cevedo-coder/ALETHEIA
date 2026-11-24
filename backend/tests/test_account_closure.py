@@ -88,6 +88,9 @@ def test_propietaria_unica_cierra_acceso_y_organizacion_sin_borrar_historia(
             linked_at=ahora,
         )
     )
+    db.flush()
+    # Se vuelve al contexto de la persona, como en el resto de la prueba.
+    set_tenant(db, TenantContext(user_id=owner.id))
     db.commit()
     client = _login(dispositivo, owner.email)
 
