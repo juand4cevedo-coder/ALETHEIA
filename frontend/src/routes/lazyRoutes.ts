@@ -13,6 +13,10 @@ export const loadSignInPage = () =>
   import("../pages/SignInPage.tsx").then((module) => module.SignInPage);
 export const loadSignUpPage = () =>
   import("../pages/SignUpPage.tsx").then((module) => module.SignUpPage);
+export const loadSignUpWithEmailPage = () =>
+  import("../pages/SignUpWithEmailPage.tsx").then(
+    (module) => module.SignUpWithEmailPage,
+  );
 export const loadVerifyEmailPage = () =>
   import("../pages/VerifyEmailPage.tsx").then(
     (module) => module.VerifyEmailPage,

@@ -24,6 +24,7 @@ const CONNECTIONS = ["slow-2g", "2g", "3g", "4g"] as const;
 const SIGN_IN_ROUTES: readonly string[] = [
   ROUTES.signIn,
   ROUTES.signUp,
+  ROUTES.signUpEmail,
   ROUTES.verifyEmail,
   ROUTES.forgotPassword,
   ROUTES.resetPassword,

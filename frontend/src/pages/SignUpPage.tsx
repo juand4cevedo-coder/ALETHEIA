@@ -134,6 +134,12 @@ export function SignUpPage() {
             identificador estable. No recibirá su contraseña de Google.
           </p>
         </form>
+        <p className={styles.lead}>
+          ¿Prefiere no usar Google?{" "}
+          <Link to={ROUTES.signUpEmail}>
+            Crear la cuenta con correo y contraseña
+          </Link>
+        </p>
       </div>
     </>
   );
