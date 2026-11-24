@@ -44,7 +44,9 @@ const CURRENT_YEAR = new Date().getFullYear();
 export function AuthLayout() {
   const { pathname } = useLocation();
   const primaryAccess =
-    pathname === ROUTES.signIn || pathname === ROUTES.signUp;
+    pathname === ROUTES.signIn ||
+    pathname === ROUTES.signUp ||
+    pathname === ROUTES.signUpEmail;
   const {
     panel: cookiePanel,
     openPanel: openCookies,

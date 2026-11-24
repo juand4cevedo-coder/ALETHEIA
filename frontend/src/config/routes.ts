@@ -14,6 +14,7 @@ export const ROUTES = {
   verifierSection: "/#verificador",
   signIn: "/ingresar",
   signUp: "/registro",
+  signUpEmail: "/registro/correo",
   verifyEmail: "/verificar-correo",
   forgotPassword: "/recuperar",
   resetPassword: "/restablecer-contrasena",

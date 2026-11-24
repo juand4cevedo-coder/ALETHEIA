@@ -35,6 +35,7 @@ import {
   loadResetPasswordPage,
   loadSignInPage,
   loadSignUpPage,
+  loadSignUpWithEmailPage,
   loadVerifyEmailPage,
   loadWorkspacePage,
 } from "./lazyRoutes.ts";
@@ -166,6 +167,18 @@ export const routes: RouteObject[] = [
           {
             path: ROUTES.signUp.slice(1),
             lazy: { Component: loadSignUpPage },
+            handle: {
+              redirectSignedIn: true,
+              authSwitch: {
+                question: "¿Ya tiene cuenta?",
+                label: "Ingresar",
+                to: ROUTES.signIn,
+              } satisfies AuthSwitch,
+            },
+          },
+          {
+            path: ROUTES.signUpEmail.slice(1),
+            lazy: { Component: loadSignUpWithEmailPage },
             handle: {
               redirectSignedIn: true,
               authSwitch: {

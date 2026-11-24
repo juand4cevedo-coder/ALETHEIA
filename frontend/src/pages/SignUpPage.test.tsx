@@ -35,6 +35,16 @@ describe("Crear cuenta con Google", () => {
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
+  it("ofrece crear la cuenta con correo y contraseña como alternativa", async () => {
+    await renderRoute("/registro");
+
+    expect(
+      await screen.findByRole("link", {
+        name: "Crear la cuenta con correo y contraseña",
+      }),
+    ).toHaveAttribute("href", "/registro/correo");
+  });
+
   it("no presume la aceptación legal y enfoca la casilla", async () => {
     const user = userEvent.setup();
     await renderRoute("/registro");
