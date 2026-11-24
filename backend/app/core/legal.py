@@ -8,7 +8,7 @@ obligaciones, la fecha cambia en los dos lugares a la vez.
 
 from typing import Final
 
-LEGAL_VERSION: Final = "2026-11-21"
+LEGAL_VERSION: Final = "2026-11-24"
 
 # Tipo de Problem Details de un 403 por textos sin aceptar. Es un identificador, no una página:
 # la interfaz lo compara tal cual para mostrar los textos nuevos.

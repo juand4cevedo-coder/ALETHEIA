@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 
 import type { Me, PublicPlan } from "../api/generated";
 import {
@@ -22,6 +22,7 @@ import {
   usePlanCatalog,
 } from "../features/billing/catalog.tsx";
 import { type BillingCycle, formatCop } from "../features/billing/format.ts";
+import { legalRoute } from "../config/routes.ts";
 import styles from "./CheckoutCard.module.css";
 
 // Solo un celular colombiano (3 + 9 dígitos): la misma forma que valida el servicio
@@ -405,6 +406,13 @@ function Checkout({
             </p>
           </Notice>
         )}
+        <p className={styles.help}>
+          Al pagar acepta los{" "}
+          <Link to={legalRoute("terminos")}>términos y condiciones</Link> y la{" "}
+          <Link to={legalRoute("reembolsos")}>política de reembolsos</Link>. El
+          plan no se renueva solo, salvo que usted active la renovación
+          automática.
+        </p>
         <div className={styles.actions}>
           <Button type="submit" busy={web.isPending}>
             {method === "web" || renewing ? "Ir a pagar" : "Continuar"}

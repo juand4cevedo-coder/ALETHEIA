@@ -5,6 +5,13 @@ import { LEGAL_VERSION } from "../../config/legal.ts";
 // LEGAL_VERSION necesita aquí su resumen; una prueba lo exige. Solo resume: lo que rige es el
 // texto completo de cada política.
 export const LEGAL_CHANGES: Readonly<Record<string, readonly string[]>> = {
+  "2026-11-24": [
+    "Aclaramos que el plan no se renueva solo: por omisión usted decide cada periodo, y le avisamos siete días antes de que venza.",
+    "Nueva renovación automática, opcional: la activa la persona responsable con su Nequi, autoriza el cobro con un texto exacto, la cancela cuando quiera y recibe un aviso siete días antes de cada cobro.",
+    "Explicamos que cobrar después de cancelar la renovación automática se devuelve completo.",
+    "Explicamos cómo funciona el portal del cliente, quién responde por lo que se comparte y que el cliente acepta un aviso antes de entrar.",
+    "Aclaramos que eliminar un caso cerrado es definitivo y que los plazos y recordatorios de ALETHEIA no sustituyen la vigilancia de los términos procesales.",
+  ],
   "2026-11-21": [
     "Ahora puede cerrar su cuenta desde Mi cuenta con su contraseña y una confirmación expresa.",
     "Al cerrar la cuenta se revocan las sesiones, se desvincula Google y la identidad directa se reemplaza por un seudónimo.",

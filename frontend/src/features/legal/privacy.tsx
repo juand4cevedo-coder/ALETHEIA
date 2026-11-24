@@ -107,8 +107,12 @@ export const privacyPolicy: LegalDocument = {
             </li>
             <li>
               <strong>Datos de suscripción.</strong> Plan, fechas y estado de
-              los pagos. Los datos de su tarjeta los recibe directamente la
-              pasarela de pagos; ALETHEIA nunca los ve ni los guarda.
+              los pagos y, si activa la renovación automática, el identificador
+              de su fuente de pago en la pasarela, los últimos cuatro dígitos de
+              su celular Nequi y el registro de su autorización (versión del
+              texto, fecha y dirección IP). Los datos de su tarjeta o de su
+              cuenta los recibe directamente la pasarela de pagos; ALETHEIA
+              nunca los ve ni los guarda.
             </li>
             <li>
               <strong>Prueba de su autorización.</strong> La fecha de los textos
