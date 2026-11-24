@@ -13,7 +13,7 @@ from app.api.deps import get_principal, get_session
 from app.core.legal import LEGAL_VERSION
 from app.core.passwords import hash_password
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, Membership, OAuthIdentity, Organization, User
+from app.models import AuditLog, Membership, OAuthIdentity, Organization, PaymentSource, User
 from app.services.sessions import Principal
 from tests.conftest import NuevoCliente
 
@@ -73,6 +73,21 @@ def test_propietaria_unica_cierra_acceso_y_organizacion_sin_borrar_historia(
     owner, _, organization = _organization(db)
     set_tenant(db, TenantContext(user_id=owner.id))
     db.add(OAuthIdentity(user_id=owner.id, provider="google", subject="google-ana"))
+    set_tenant(db, TenantContext(organization_id=organization.id, user_id=owner.id))
+    ahora = datetime.datetime.now(datetime.UTC)
+    db.add(
+        PaymentSource(
+            organization_id=organization.id,
+            created_by=owner.id,
+            kind="nequi",
+            status="active",
+            gateway_source_id=3891,
+            phone_last4="4567",
+            consent_version="2026-11-24",
+            consent_accepted_at=ahora,
+            linked_at=ahora,
+        )
+    )
     db.commit()
     client = _login(dispositivo, owner.email)
 
@@ -80,6 +95,11 @@ def test_propietaria_unica_cierra_acceso_y_organizacion_sin_borrar_historia(
 
     assert response.status_code == 204
     assert client.get("/api/v1/me").status_code == 401
+    set_tenant(db, TenantContext(organization_id=organization.id, user_id=owner.id))
+    fuente = db.scalars(select(PaymentSource)).one()
+    # Cerrar el despacho cancela la renovación automática: nada se cobra después.
+    assert fuente.status == "canceled"
+    assert fuente.canceled_at is not None
     db.refresh(owner)
     db.refresh(organization)
     assert owner.status == "closed"

@@ -35,6 +35,9 @@ import type {
   AvailableCaseMembersData,
   AvailableCaseMembersErrors,
   AvailableCaseMembersResponses,
+  CancelPaymentSourceData,
+  CancelPaymentSourceErrors,
+  CancelPaymentSourceResponses,
   CancelRecoveryData,
   CancelRecoveryErrors,
   CancelRecoveryResponses,
@@ -62,6 +65,9 @@ import type {
   ConfirmCheckoutWebData,
   ConfirmCheckoutWebErrors,
   ConfirmCheckoutWebResponses,
+  ConfirmPaymentSourceData,
+  ConfirmPaymentSourceErrors,
+  ConfirmPaymentSourceResponses,
   ConfirmRecoveryData,
   ConfirmRecoveryErrors,
   ConfirmRecoveryResponses,
@@ -252,6 +258,9 @@ import type {
   ReadMeData,
   ReadMeErrors,
   ReadMeResponses,
+  ReadPaymentSourceData,
+  ReadPaymentSourceErrors,
+  ReadPaymentSourceResponses,
   RefreshSessionData,
   RefreshSessionErrors,
   RefreshSessionResponses,
@@ -318,6 +327,9 @@ import type {
   SignOutEverywhereErrors,
   SignOutEverywhereResponses,
   SignOutResponses,
+  StartPaymentSourceData,
+  StartPaymentSourceErrors,
+  StartPaymentSourceResponses,
   SubmitWebVitalsData,
   SubmitWebVitalsErrors,
   SubmitWebVitalsResponses,
@@ -2986,6 +2998,118 @@ export const downloadReceipt = <ThrowOnError extends boolean = false>(
     ],
     url: "/api/v1/billing/receipts/{receipt_id}/pdf",
     ...options,
+  });
+
+/**
+ * Cancelar la renovación automática
+ */
+export const cancelPaymentSource = <ThrowOnError extends boolean = false>(
+  options?: Options<CancelPaymentSourceData, ThrowOnError>,
+): RequestResult<
+  CancelPaymentSourceResponses,
+  CancelPaymentSourceErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).delete<
+    CancelPaymentSourceResponses,
+    CancelPaymentSourceErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/billing/payment-source",
+    ...options,
+  });
+
+/**
+ * La fuente de pago para la renovación automática
+ */
+export const readPaymentSource = <ThrowOnError extends boolean = false>(
+  options?: Options<ReadPaymentSourceData, ThrowOnError>,
+): RequestResult<
+  ReadPaymentSourceResponses,
+  ReadPaymentSourceErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    ReadPaymentSourceResponses,
+    ReadPaymentSourceErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/billing/payment-source",
+    ...options,
+  });
+
+/**
+ * Empezar a vincular el Nequi para renovar solo
+ */
+export const startPaymentSource = <ThrowOnError extends boolean = false>(
+  options: Options<StartPaymentSourceData, ThrowOnError>,
+): RequestResult<
+  StartPaymentSourceResponses,
+  StartPaymentSourceErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    StartPaymentSourceResponses,
+    StartPaymentSourceErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/billing/payment-source",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Confirmar que la persona aprobó la vinculación en su celular
+ */
+export const confirmPaymentSource = <ThrowOnError extends boolean = false>(
+  options: Options<ConfirmPaymentSourceData, ThrowOnError>,
+): RequestResult<
+  ConfirmPaymentSourceResponses,
+  ConfirmPaymentSourceErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    ConfirmPaymentSourceResponses,
+    ConfirmPaymentSourceErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/billing/payment-source/confirm",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
   });
 
 /**

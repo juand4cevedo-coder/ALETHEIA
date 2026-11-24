@@ -88,6 +88,8 @@ AUDIT_ACTIONS: Final = (
     "ownership_transferred",
     "plan_updated",
     "archive_exported",
+    "payment_source_linked",
+    "payment_source_canceled",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.

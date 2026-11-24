@@ -147,6 +147,9 @@ class Settings(DatabaseSettings):
     # Tope de ingresos del año (en UVT) a partir del cual el operador debería facturar
     # electrónicamente, y el valor de la UVT del año. El panel de la plataforma los usa para
     # avisar cuánto falta; el contador confirma ambos cada año.
+    # La renovación automática con una fuente de pago vinculada (ADR-058) nace apagada: se
+    # enciende solo después de probarla contra el entorno de pruebas de Wompi.
+    recurring_payments_enabled: bool = Field(default=False)
     invoicing_threshold_uvt: int = Field(default=3_500, ge=1)
     uvt_value_cop: int = Field(default=52_374, ge=1)
     wompi_events_secret: Secret[str] | None = Field(

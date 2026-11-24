@@ -2,7 +2,13 @@
 
 from app.db.base import Base
 from app.models import custody_hooks as _custody_hooks  # noqa: F401
-from app.models.billing import PaymentEvent, PaymentReceipt, Plan, Subscription
+from app.models.billing import (
+    PaymentEvent,
+    PaymentReceipt,
+    PaymentSource,
+    Plan,
+    Subscription,
+)
 from app.models.client_portal import (
     ClientPortalAccess,
     ClientPortalDocument,
@@ -55,6 +61,7 @@ __all__ = [
     "Organization",
     "PaymentEvent",
     "PaymentReceipt",
+    "PaymentSource",
     "Plan",
     "RateLimitEvent",
     "RefreshToken",

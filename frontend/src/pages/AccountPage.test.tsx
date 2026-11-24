@@ -526,3 +526,133 @@ it("Plan y facturación lista los comprobantes de pago con su descarga en PDF", 
   );
   expect(screen.getByText(/No es una factura electrónica/)).toBeInTheDocument();
 });
+
+function serveRenewal(state: {
+  enabled: boolean;
+  source: {
+    status: string;
+    phone_last4: string;
+    linked_at: string | null;
+  } | null;
+  started?: (body: Record<string, unknown>) => void;
+  cancelled?: () => void;
+}) {
+  fetchMock.mockImplementation(async (input, init) => {
+    const isRequest = typeof input !== "string";
+    const url = isRequest ? (input as Request).url : input;
+    const path = new URL(url, "http://localhost").pathname;
+    const method = isRequest
+      ? (input as Request).method
+      : (init?.method ?? "GET");
+    if (path === "/api/v1/me") return jsonResponse(ownerEnPrueba());
+    if (path === "/api/v1/plans") return jsonResponse(PLANS);
+    if (path === "/api/v1/billing/receipts") return jsonResponse([]);
+    if (path === "/api/v1/auth/google/status")
+      return jsonResponse({ configured: false });
+    if (path === "/api/v1/billing/wompi-terms")
+      return jsonResponse({
+        acceptance_token: "acc",
+        acceptance_permalink: "https://wompi.example/terminos",
+        accept_personal_auth: "auth",
+        personal_auth_permalink: "https://wompi.example/datos",
+      });
+    if (path === "/api/v1/billing/payment-source" && method === "GET")
+      return jsonResponse({
+        enabled: state.enabled,
+        consent_version: "2026-11-24",
+        consent_text:
+          "Autorizo a ALETHEIA a cobrar, al vencer cada periodo, el valor del plan de mi despacho a mi Nequi, hasta que yo lo cancele.",
+        source: state.source,
+      });
+    if (path === "/api/v1/billing/payment-source" && method === "POST") {
+      state.started?.(
+        (await (input as Request).json()) as Record<string, unknown>,
+      );
+      state.source = {
+        status: "pending",
+        phone_last4: "4567",
+        linked_at: null,
+      };
+      return jsonResponse(state.source, 202);
+    }
+    if (path === "/api/v1/billing/payment-source" && method === "DELETE") {
+      state.cancelled?.();
+      state.source = null;
+      return new Response(null, { status: 204 });
+    }
+    throw new Error(`Ruta inesperada: ${method} ${path}`);
+  });
+}
+
+it("la renovación automática no aparece mientras esté apagada en el servidor", async () => {
+  serveRenewal({ enabled: false, source: null });
+  await renderRoute("/app/facturacion");
+
+  await screen.findByText("Comprobantes de pago");
+  expect(screen.queryByText("Renovación automática")).not.toBeInTheDocument();
+});
+
+it("vincular exige el celular y la autorización, y manda la versión del texto aceptado", async () => {
+  let body: Record<string, unknown> | null = null;
+  serveRenewal({
+    enabled: true,
+    source: null,
+    started: (sent) => (body = sent),
+  });
+  const user = userEvent.setup();
+  await renderRoute("/app/facturacion");
+
+  await user.click(
+    await screen.findByRole("button", { name: "Vincular mi Nequi" }),
+  );
+  expect(
+    await screen.findByText(/Escriba un celular colombiano/),
+  ).toBeInTheDocument();
+  await user.type(screen.getByLabelText("Celular Nequi"), "3001234567");
+  await user.click(screen.getByRole("button", { name: "Vincular mi Nequi" }));
+  expect(
+    await screen.findByText("Marque la autorización para continuar."),
+  ).toBeInTheDocument();
+  expect(body).toBeNull();
+
+  await user.click(
+    screen.getByRole("checkbox", { name: /Autorizo a ALETHEIA/ }),
+  );
+  await user.click(screen.getByRole("button", { name: "Vincular mi Nequi" }));
+
+  await waitFor(() =>
+    expect(body).toEqual({
+      phone_number: "3001234567",
+      consent_version: "2026-11-24",
+      accept_consent: true,
+    }),
+  );
+  expect(
+    await screen.findByText(/Abra la notificación de Nequi/),
+  ).toBeInTheDocument();
+});
+
+it("con la renovación activa dice con qué Nequi y se cancela con un clic", async () => {
+  let cancelled = 0;
+  serveRenewal({
+    enabled: true,
+    source: {
+      status: "active",
+      phone_last4: "4567",
+      linked_at: "2026-11-24T15:00:00Z",
+    },
+    cancelled: () => (cancelled += 1),
+  });
+  const user = userEvent.setup();
+  await renderRoute("/app/facturacion");
+
+  expect(await screen.findByText("4567")).toBeInTheDocument();
+  await user.click(
+    screen.getByRole("button", { name: "Cancelar la renovación automática" }),
+  );
+
+  await waitFor(() => expect(cancelled).toBe(1));
+  expect(
+    await screen.findByRole("button", { name: "Vincular mi Nequi" }),
+  ).toBeInTheDocument();
+});
