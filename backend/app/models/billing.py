@@ -136,13 +136,16 @@ class PaymentReceipt(Base):
         CheckConstraint("amount_cop > 0", name="amount_cop"),
         CheckConstraint("billing_cycle IN ('monthly', 'annual')", name="billing_cycle"),
         CheckConstraint("char_length(number) BETWEEN 1 AND 30", name="number"),
+        Index("ix_payment_receipts_organization_id_issued_at", "organization_id", "issued_at"),
     )
 
     id: Mapped[UUIDv7Pk]
-    organization_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("organizations.id"))
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("organizations.id", ondelete="RESTRICT")
+    )
     # Un solo comprobante por pago: la notificación repetida no emite otro.
     payment_event_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("payment_events.id"), unique=True
+        ForeignKey("payment_events.id", ondelete="RESTRICT"), unique=True
     )
     number: Mapped[str] = mapped_column(unique=True)
     gateway_transaction_id: Mapped[str]
