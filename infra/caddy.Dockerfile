@@ -3,7 +3,7 @@
 # Solo entra a la construcción lo que permite infra/caddy.Dockerfile.dockerignore.
 
 # --- Etapa 1: interfaz ------------------------------------------------------------------
-FROM node:26.12.1-trixie-slim@sha256:94816674c62774da0d099a947bf4613b9e1972a2733abd0d0cd80e795f8411d0 AS interfaz
+FROM node:26.13.0-trixie-slim@sha256:5adad64f9a1fca2d51972caa65983634c8a774eb300d72b20f7f2a0f60368072 AS interfaz
 
 # pnpm 12.14.0, la misma versión de la CI, como binario oficial verificado con la suma SHA-256
 # que publica GitHub para ese archivo. Así la imagen no necesita npm.
@@ -30,7 +30,7 @@ ENV VITE_CDN_URL=$VITE_CDN_URL
 RUN pnpm build
 
 # --- Etapa 2: Caddy ---------------------------------------------------------------------
-FROM caddy:2.11.7-alpine@sha256:e70b164da81ef698b3ad19af799ea6086ce6d9e48ed4079eb9fe26f6fbf14ee5
+FROM caddy:2.11.8-alpine@sha256:f6228111e5fafa1a5238258d0858e103f10599b8d1659a146e7726681a002bb9
 
 LABEL org.opencontainers.image.source="https://github.com/juand4cevedo-coder/ALETHEIA" \
       org.opencontainers.image.title="aletheia-web" \
