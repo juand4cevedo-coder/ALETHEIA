@@ -95,11 +95,6 @@ def test_propietaria_unica_cierra_acceso_y_organizacion_sin_borrar_historia(
 
     assert response.status_code == 204
     assert client.get("/api/v1/me").status_code == 401
-    set_tenant(db, TenantContext(organization_id=organization.id, user_id=owner.id))
-    fuente = db.scalars(select(PaymentSource)).one()
-    # Cerrar el despacho cancela la renovación automática: nada se cobra después.
-    assert fuente.status == "canceled"
-    assert fuente.canceled_at is not None
     db.refresh(owner)
     db.refresh(organization)
     assert owner.status == "closed"
@@ -112,6 +107,12 @@ def test_propietaria_unica_cierra_acceso_y_organizacion_sin_borrar_historia(
     audit = db.scalar(select(AuditLog).where(AuditLog.action == "account_closed"))
     assert audit is not None
     assert audit.details == {"identity": "anonymized", "case_records": "preserved"}
+
+    set_tenant(db, TenantContext(organization_id=organization.id, user_id=owner.id))
+    fuente = db.scalars(select(PaymentSource)).one()
+    # Cerrar el despacho cancela la renovación automática: nada se cobra después.
+    assert fuente.status == "canceled"
+    assert fuente.canceled_at is not None
 
 
 def test_miembro_cierra_su_cuenta_sin_cerrar_el_despacho(
