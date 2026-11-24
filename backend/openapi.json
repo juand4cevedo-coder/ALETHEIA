@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.34.1"
+    "version": "0.35.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -3076,10 +3076,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Título, radicado, referencia interna o despacho.",
+              "description": "Título, radicado, referencia interna, despacho, nombre de un archivo o el comienzo de su huella SHA-256.",
               "title": "Search"
             },
-            "description": "Título, radicado, referencia interna o despacho."
+            "description": "Título, radicado, referencia interna, despacho, nombre de un archivo o el comienzo de su huella SHA-256."
           },
           {
             "name": "closed_from",
@@ -3181,6 +3181,34 @@
               "title": "Retention Review"
             },
             "description": "Conservación vencida para revisión o todavía vigente."
+          },
+          {
+            "name": "practice_area",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "civil",
+                    "commercial",
+                    "family",
+                    "labor",
+                    "criminal",
+                    "administrative",
+                    "constitutional",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Especialidad del caso.",
+              "title": "Practice Area"
+            },
+            "description": "Especialidad del caso."
           }
         ],
         "responses": {
@@ -3999,6 +4027,376 @@
                   "$ref": "#/components/schemas/Problem"
                 }
               }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/archive/summary": {
+      "get": {
+        "tags": [
+          "archivo"
+        ],
+        "summary": "Cifras del archivo de casos cerrados",
+        "operationId": "archive_summary",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Título, radicado, referencia interna, despacho, nombre de un archivo o el comienzo de su huella SHA-256.",
+              "title": "Search"
+            },
+            "description": "Título, radicado, referencia interna, despacho, nombre de un archivo o el comienzo de su huella SHA-256."
+          },
+          {
+            "name": "closed_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha inicial de cierre en Colombia.",
+              "title": "Closed From"
+            },
+            "description": "Fecha inicial de cierre en Colombia."
+          },
+          {
+            "name": "closed_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha final de cierre en Colombia.",
+              "title": "Closed To"
+            },
+            "description": "Fecha final de cierre en Colombia."
+          },
+          {
+            "name": "retention_basis",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "organization_policy",
+                    "legal_or_contractual_duty",
+                    "litigation_hold"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fundamento de conservación.",
+              "title": "Retention Basis"
+            },
+            "description": "Fundamento de conservación."
+          },
+          {
+            "name": "legal_hold",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Si el caso tiene bloqueo jurídico.",
+              "title": "Legal Hold"
+            },
+            "description": "Si el caso tiene bloqueo jurídico."
+          },
+          {
+            "name": "retention_review",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "due",
+                    "upcoming"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Conservación vencida para revisión o todavía vigente.",
+              "title": "Retention Review"
+            },
+            "description": "Conservación vencida para revisión o todavía vigente."
+          },
+          {
+            "name": "practice_area",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "civil",
+                    "commercial",
+                    "family",
+                    "labor",
+                    "criminal",
+                    "administrative",
+                    "constitutional",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Especialidad del caso.",
+              "title": "Practice Area"
+            },
+            "description": "Especialidad del caso."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveSummaryOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/archive/export": {
+      "get": {
+        "tags": [
+          "archivo"
+        ],
+        "summary": "Descargar el índice del archivo como hoja de cálculo (CSV)",
+        "operationId": "archive_export",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Título, radicado, referencia interna, despacho, nombre de un archivo o el comienzo de su huella SHA-256.",
+              "title": "Search"
+            },
+            "description": "Título, radicado, referencia interna, despacho, nombre de un archivo o el comienzo de su huella SHA-256."
+          },
+          {
+            "name": "closed_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha inicial de cierre en Colombia.",
+              "title": "Closed From"
+            },
+            "description": "Fecha inicial de cierre en Colombia."
+          },
+          {
+            "name": "closed_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha final de cierre en Colombia.",
+              "title": "Closed To"
+            },
+            "description": "Fecha final de cierre en Colombia."
+          },
+          {
+            "name": "retention_basis",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "organization_policy",
+                    "legal_or_contractual_duty",
+                    "litigation_hold"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fundamento de conservación.",
+              "title": "Retention Basis"
+            },
+            "description": "Fundamento de conservación."
+          },
+          {
+            "name": "legal_hold",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Si el caso tiene bloqueo jurídico.",
+              "title": "Legal Hold"
+            },
+            "description": "Si el caso tiene bloqueo jurídico."
+          },
+          {
+            "name": "retention_review",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "due",
+                    "upcoming"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Conservación vencida para revisión o todavía vigente.",
+              "title": "Retention Review"
+            },
+            "description": "Conservación vencida para revisión o todavía vigente."
+          },
+          {
+            "name": "practice_area",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "civil",
+                    "commercial",
+                    "family",
+                    "labor",
+                    "criminal",
+                    "administrative",
+                    "constitutional",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Especialidad del caso.",
+              "title": "Practice Area"
+            },
+            "description": "Especialidad del caso."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/csv": {}
             }
           },
           "422": {
@@ -7887,6 +8285,167 @@
           "assigned_to"
         ],
         "title": "ApplyTaskTemplate"
+      },
+      "ArchiveAreaOut": {
+        "properties": {
+          "practice_area": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "civil",
+                  "commercial",
+                  "family",
+                  "labor",
+                  "criminal",
+                  "administrative",
+                  "constitutional",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Practice Area",
+            "description": "Especialidad, o null si no se indicó."
+          },
+          "cases": {
+            "type": "integer",
+            "title": "Cases",
+            "description": "Casos de esa especialidad."
+          }
+        },
+        "type": "object",
+        "required": [
+          "practice_area",
+          "cases"
+        ],
+        "title": "ArchiveAreaOut"
+      },
+      "ArchiveBasisOut": {
+        "properties": {
+          "retention_basis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "organization_policy",
+                  "legal_or_contractual_duty",
+                  "litigation_hold"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Basis",
+            "description": "Fundamento de conservación, o null si no se indicó."
+          },
+          "cases": {
+            "type": "integer",
+            "title": "Cases",
+            "description": "Casos con ese fundamento."
+          }
+        },
+        "type": "object",
+        "required": [
+          "retention_basis",
+          "cases"
+        ],
+        "title": "ArchiveBasisOut"
+      },
+      "ArchiveSummaryOut": {
+        "properties": {
+          "cases": {
+            "type": "integer",
+            "title": "Cases",
+            "description": "Casos cerrados."
+          },
+          "evidences": {
+            "type": "integer",
+            "title": "Evidences",
+            "description": "Evidencias conservadas en ellos."
+          },
+          "stored_bytes": {
+            "type": "integer",
+            "title": "Stored Bytes",
+            "description": "Tamaño total de esas evidencias, en bytes."
+          },
+          "legal_hold": {
+            "type": "integer",
+            "title": "Legal Hold",
+            "description": "Casos con bloqueo por litigio."
+          },
+          "review_due": {
+            "type": "integer",
+            "title": "Review Due",
+            "description": "Casos cuyo plazo de conservación ya venció."
+          },
+          "review_upcoming": {
+            "type": "integer",
+            "title": "Review Upcoming",
+            "description": "Casos cuyo plazo de conservación sigue vigente."
+          },
+          "by_year": {
+            "items": {
+              "$ref": "#/components/schemas/ArchiveYearOut"
+            },
+            "type": "array",
+            "title": "By Year",
+            "description": "Casos por año de cierre, del más reciente."
+          },
+          "by_retention_basis": {
+            "items": {
+              "$ref": "#/components/schemas/ArchiveBasisOut"
+            },
+            "type": "array",
+            "title": "By Retention Basis",
+            "description": "Casos por fundamento."
+          },
+          "by_practice_area": {
+            "items": {
+              "$ref": "#/components/schemas/ArchiveAreaOut"
+            },
+            "type": "array",
+            "title": "By Practice Area",
+            "description": "Casos por especialidad."
+          }
+        },
+        "type": "object",
+        "required": [
+          "cases",
+          "evidences",
+          "stored_bytes",
+          "legal_hold",
+          "review_due",
+          "review_upcoming",
+          "by_year",
+          "by_retention_basis",
+          "by_practice_area"
+        ],
+        "title": "ArchiveSummaryOut",
+        "description": "Cifras del banco de datos: los casos cerrados donde la persona es miembro."
+      },
+      "ArchiveYearOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year",
+            "description": "Año de cierre, en hora de Colombia."
+          },
+          "cases": {
+            "type": "integer",
+            "title": "Cases",
+            "description": "Casos cerrados ese año."
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "cases"
+        ],
+        "title": "ArchiveYearOut"
       },
       "Body_download_export": {
         "properties": {

@@ -11,6 +11,7 @@ from fastapi.routing import APIRoute
 from app.adapters.keys import build_key_wrapper
 from app.api import (
     API_PREFIX,
+    archive,
     auth,
     billing,
     cases,
@@ -42,7 +43,7 @@ from app.core.middleware import (
 from app.core.openapi import install_problem_details
 from app.db.session import create_db_engine
 
-API_VERSION: Final = "0.34.1"
+API_VERSION: Final = "0.35.0"
 
 
 def _operation_id(route: APIRoute) -> str:
@@ -86,6 +87,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(invitations.router, prefix=API_PREFIX)
     app.include_router(cases.router, prefix=API_PREFIX)
     app.include_router(cases.download_router, prefix=API_PREFIX)
+    app.include_router(archive.router, prefix=API_PREFIX)
     app.include_router(tasks.router, prefix=API_PREFIX)
     app.include_router(notes.router, prefix=API_PREFIX)
     app.include_router(task_templates.router, prefix=API_PREFIX)

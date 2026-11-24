@@ -2,6 +2,7 @@ import type { Me } from "../../api/generated";
 import { ROUTES } from "../../config/routes.ts";
 import {
   CalendarioIcon,
+  ArchivoBusquedaIcon,
   CarpetaAbiertaIcon,
   CorreoIcon,
   TareasIcon,
@@ -46,6 +47,12 @@ export const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
         label: "Casos",
         icon: CarpetaAbiertaIcon,
         openCount: true,
+        visible: (me) => me.organization != null && !me.platform_admin,
+      },
+      {
+        to: ROUTES.archive,
+        label: "Banco de datos",
+        icon: ArchivoBusquedaIcon,
         visible: (me) => me.organization != null && !me.platform_admin,
       },
       {

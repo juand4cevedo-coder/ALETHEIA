@@ -56,6 +56,7 @@ def _caso(
     retencion_hasta: datetime.datetime | None = None,
     fundamento: str = "organization_policy",
     bloqueo: bool = False,
+    especialidad: str | None = None,
     acciones: tuple[str, ...] = (),
     evidencias: tuple[tuple[str, str], ...] = (),
 ) -> uuid.UUID:
@@ -84,6 +85,7 @@ def _caso(
             ),
             retention_basis=None if estado == "open" else fundamento,
             legal_hold=bloqueo,
+            practice_area=especialidad,
             wrapped_key=os.urandom(40),
             key_version="prueba",
             created_by=creador.id,

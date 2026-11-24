@@ -15,6 +15,7 @@ import {
   loadAuthLayout,
   loadCasePage,
   loadEvidenceDetailPage,
+  loadArchivePage,
   loadCasesPage,
   loadForgotPasswordPage,
   loadLegalPage,
@@ -300,6 +301,11 @@ export const routes: RouteObject[] = [
           {
             path: ROUTES.organizationAudit.slice(ROUTES.app.length + 1),
             lazy: { Component: loadOrganizationAuditPage },
+          },
+          {
+            path: ROUTES.archive.slice(ROUTES.app.length + 1),
+            Component: CaseAccessGuard,
+            children: [{ index: true, lazy: { Component: loadArchivePage } }],
           },
           {
             path: ROUTES.cases.slice(ROUTES.app.length + 1),

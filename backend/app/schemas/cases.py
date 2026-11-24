@@ -303,3 +303,34 @@ class CaseDeletionRequest(BaseModel):
 
 class CaseDeletionAccepted(BaseModel):
     detail: str
+
+
+class ArchiveYearOut(BaseModel):
+    year: int = Field(description="Año de cierre, en hora de Colombia.")
+    cases: int = Field(description="Casos cerrados ese año.")
+
+
+class ArchiveBasisOut(BaseModel):
+    retention_basis: (
+        Literal["organization_policy", "legal_or_contractual_duty", "litigation_hold"] | None
+    ) = Field(description="Fundamento de conservación, o null si no se indicó.")
+    cases: int = Field(description="Casos con ese fundamento.")
+
+
+class ArchiveAreaOut(BaseModel):
+    practice_area: PracticeArea | None = Field(description="Especialidad, o null si no se indicó.")
+    cases: int = Field(description="Casos de esa especialidad.")
+
+
+class ArchiveSummaryOut(BaseModel):
+    """Cifras del banco de datos: los casos cerrados donde la persona es miembro."""
+
+    cases: int = Field(description="Casos cerrados.")
+    evidences: int = Field(description="Evidencias conservadas en ellos.")
+    stored_bytes: int = Field(description="Tamaño total de esas evidencias, en bytes.")
+    legal_hold: int = Field(description="Casos con bloqueo por litigio.")
+    review_due: int = Field(description="Casos cuyo plazo de conservación ya venció.")
+    review_upcoming: int = Field(description="Casos cuyo plazo de conservación sigue vigente.")
+    by_year: list[ArchiveYearOut] = Field(description="Casos por año de cierre, del más reciente.")
+    by_retention_basis: list[ArchiveBasisOut] = Field(description="Casos por fundamento.")
+    by_practice_area: list[ArchiveAreaOut] = Field(description="Casos por especialidad.")

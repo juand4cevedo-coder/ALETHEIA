@@ -666,6 +666,7 @@ def list_cases(
     retention_basis: str | None = None,
     legal_hold: bool | None = None,
     retention_review: Literal["due", "upcoming"] | None = None,
+    practice_area: str | None = None,
 ) -> CaseListing:
     """Los casos donde la persona es miembro, de la actividad más reciente a la más antigua.
 
@@ -693,6 +694,7 @@ def list_cases(
         legal_hold=legal_hold,
         retention_review=retention_review,
         review_at=datetime.datetime.now(datetime.UTC),
+        practice_area=practice_area,
     )
     totals = cases_repository.member_case_totals(
         session, organization_id, principal.user_id, statuses=STATUS_FILTERS["all"]

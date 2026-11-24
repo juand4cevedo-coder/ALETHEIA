@@ -36,6 +36,7 @@ export const ROUTES = {
   calendar: "/app/calendario",
   taskTemplates: "/app/plantillas",
   cases: "/app/casos",
+  archive: "/app/banco-de-datos",
   newCase: "/app/casos/nuevo",
   caseDetail: (id: string) => `/app/casos/${id}`,
   evidenceDetail: (caseId: string, evidenceId: string) =>
