@@ -73,11 +73,17 @@ def test_propietaria_unica_cierra_acceso_y_organizacion_sin_borrar_historia(
     owner, _, organization = _organization(db)
     set_tenant(db, TenantContext(user_id=owner.id))
     db.add(OAuthIdentity(user_id=owner.id, provider="google", subject="google-ana"))
-    set_tenant(db, TenantContext(organization_id=organization.id, user_id=owner.id))
+    # El id sale de la membresía: tocar `organization` aquí la recargaría sin el contexto de la
+    # organización, que la política de filas no deja ver.
+    organization_id = db.scalar(
+        select(Membership.organization_id).where(Membership.user_id == owner.id)
+    )
+    assert organization_id is not None
+    set_tenant(db, TenantContext(organization_id=organization_id, user_id=owner.id))
     ahora = datetime.datetime.now(datetime.UTC)
     db.add(
         PaymentSource(
-            organization_id=organization.id,
+            organization_id=organization_id,
             created_by=owner.id,
             kind="nequi",
             status="active",
@@ -111,7 +117,7 @@ def test_propietaria_unica_cierra_acceso_y_organizacion_sin_borrar_historia(
     assert audit is not None
     assert audit.details == {"identity": "anonymized", "case_records": "preserved"}
 
-    set_tenant(db, TenantContext(organization_id=organization.id, user_id=owner.id))
+    set_tenant(db, TenantContext(organization_id=organization_id, user_id=owner.id))
     fuente = db.scalars(select(PaymentSource)).one()
     # Cerrar el despacho cancela la renovación automática: nada se cobra después.
     assert fuente.status == "canceled"
