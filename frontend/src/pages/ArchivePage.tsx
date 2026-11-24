@@ -24,7 +24,7 @@ import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { formatBytes } from "../features/billing/format.ts";
-import { formatColombiaTime } from "../features/cases/dates.ts";
+import { formatColombiaDate } from "../features/cases/dates.ts";
 import {
   PRACTICE_AREA_LABELS,
   type PracticeArea,
@@ -346,7 +346,7 @@ export function ArchivePage() {
                   <span>
                     Cerrado el{" "}
                     <time dateTime={item.closed_at}>
-                      {formatColombiaTime(item.closed_at).split(",")[0]}
+                      {formatColombiaDate(item.closed_at)}
                     </time>
                   </span>
                 )}

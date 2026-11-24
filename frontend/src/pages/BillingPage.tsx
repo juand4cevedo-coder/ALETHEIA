@@ -9,7 +9,7 @@ import { Panel } from "../components/ui/Panel.tsx";
 import { pageTitle } from "../config/site.ts";
 import { formatCop } from "../features/billing/format.ts";
 import { RenewalCard } from "../features/billing/RenewalCard.tsx";
-import { formatColombiaTime } from "../features/cases/dates.ts";
+import { formatColombiaDate } from "../features/cases/dates.ts";
 import { CheckoutCard } from "./CheckoutCard.tsx";
 import styles from "./AccountPage.module.css";
 
@@ -115,7 +115,7 @@ function Receipts() {
               <div>
                 <strong translate="no">{receipt.number}</strong>
                 <p className={styles.muted}>
-                  {formatColombiaTime(receipt.issued_at).split(",")[0]}
+                  {formatColombiaDate(receipt.issued_at)}
                   {", plan "}
                   {receipt.plan_name},{" "}
                   {receipt.billing_cycle === "annual" ? "anual" : "mensual"}
