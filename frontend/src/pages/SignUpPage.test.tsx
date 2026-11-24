@@ -123,6 +123,8 @@ describe("Crear cuenta con Google", () => {
     expect(
       await screen.findByRole("button", { name: "Crear cuenta con Google" }),
     ).toBeDisabled();
-    expect(screen.getByText(/termine su configuración/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/termine su configuración/),
+    ).toBeInTheDocument();
   });
 });
