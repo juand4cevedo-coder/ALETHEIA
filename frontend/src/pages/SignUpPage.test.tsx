@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -21,9 +21,11 @@ describe("Crear cuenta con Google", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "Cree su cuenta" }),
     ).toBeInTheDocument();
-    expect(
-      await screen.findByRole("button", { name: "Crear cuenta con Google" }),
-    ).toBeEnabled();
+    // El botón nace deshabilitado y se habilita cuando el servidor confirma Google.
+    const google = await screen.findByRole("button", {
+      name: "Crear cuenta con Google",
+    });
+    await waitFor(() => expect(google).toBeEnabled());
     expect(
       screen.queryByLabelText("Correo electrónico"),
     ).not.toBeInTheDocument();
