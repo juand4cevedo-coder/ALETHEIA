@@ -217,6 +217,32 @@ it("confirma el pago con Nequi cuando la suscripción queda activa", async () =>
         status: "PENDING",
       });
     }
+    if (path === "/api/v1/billing/receipts")
+      return jsonResponse(
+        active
+          ? [
+              {
+                id: "01890a5d-ac96-774b-bcce-b302099a8301",
+                number: "CP-2026-000001",
+                issued_at: "2026-11-24T18:14:50Z",
+                plan_name: "Esencial",
+                billing_cycle: "monthly",
+                amount_cop: 5000,
+                payment_method: "NEQUI",
+                period_start: "2026-11-24T18:14:50Z",
+                period_end: "2026-12-24T18:14:50Z",
+                transaction_id: "tx-1",
+              },
+            ]
+          : [],
+      );
+    if (path === "/api/v1/billing/payment-source")
+      return jsonResponse({
+        enabled: false,
+        consent_version: "2026-11-24",
+        consent_text: "x",
+        source: null,
+      });
     throw new Error(`Ruta inesperada: ${method} ${path}`);
   });
   const user = userEvent.setup();
@@ -249,7 +275,11 @@ it("confirma el pago con Nequi cuando la suscripción queda activa", async () =>
       timeout: 10_000,
     }),
   ).toBeInTheDocument();
-}, 15_000);
+  // El comprobante del pago recién aprobado aparece sin recargar la página.
+  expect(
+    await screen.findByText("CP-2026-000001", undefined, { timeout: 10_000 }),
+  ).toBeInTheDocument();
+}, 20_000);
 
 it("no muestra el pago con Nequi a quien no administra la facturación", async () => {
   fetchMock.mockImplementation(async (input) => {

@@ -7,6 +7,7 @@ import {
   confirmCheckoutWebMutation,
   createCheckoutMutation,
   createCheckoutWebMutation,
+  listReceiptsQueryKey,
   readMeQueryKey,
   wompiTermsOptions,
 } from "../api/generated/@tanstack/react-query.gen.ts";
@@ -53,6 +54,9 @@ function CheckoutReturn({ onDone }: { onDone: () => void }) {
       if (result.status === "APPROVED") {
         setState("approved");
         void queryClient.invalidateQueries({ queryKey: readMeQueryKey() });
+        void queryClient.invalidateQueries({
+          queryKey: listReceiptsQueryKey(),
+        });
       } else if (result.status === "PENDING") setState("pending");
       else setState("failed");
     },
@@ -158,6 +162,13 @@ export function CheckoutCard({ me }: { me: Me }) {
     }, POLL_INTERVAL_MS);
     return () => clearInterval(id);
   }, [started, active, queryClient, retryToken]);
+
+  // Aprobado el pago, el comprobante nuevo ya existe: la lista se vuelve a pedir en lugar de seguir
+  // diciendo que no hay pagos.
+  useEffect(() => {
+    if (started && active)
+      void queryClient.invalidateQueries({ queryKey: listReceiptsQueryKey() });
+  }, [started, active, queryClient]);
 
   function verifyAgain() {
     setPollTimedOut(false);
