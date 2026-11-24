@@ -115,6 +115,18 @@ export const termsOfService: LegalDocument = {
               guarda lo que usted carga.
             </li>
             <li>No presta asesoría jurídica.</li>
+            <li>
+              No vigila los términos de ningún proceso. Los plazos, tareas,
+              recordatorios y avisos de ALETHEIA son una ayuda de organización y
+              pueden fallar o llegar tarde: no sustituyen la revisión de los
+              términos procesales, y cumplirlos es responsabilidad de quien
+              lleva el caso.
+            </li>
+            <li>
+              No decide por usted qué compartir con sus clientes ni con su
+              equipo. Lo que carga, a quién se lo comparte y con qué permisos lo
+              decide el despacho.
+            </li>
           </ul>
         </>
       ),
@@ -273,12 +285,88 @@ export const termsOfService: LegalDocument = {
       title: "Duración y renovación",
       basis: ["Ley 1480 de 2011, art. 50, literal b"],
       body: (
-        <p>
-          No hay permanencia mínima: el contrato dura el periodo pagado, un mes
-          o un año, y se renueva automáticamente por un periodo igual hasta que
-          usted lo cancele. La fecha de la próxima renovación y su valor están
-          siempre a la vista en el resumen de su suscripción.
-        </p>
+        <>
+          <p>
+            No hay permanencia mínima: el contrato dura el periodo pagado, un
+            mes o un año. Por omisión el plan no se renueva solo: siete días
+            antes de que venza le avisamos por correo y usted decide si paga el
+            periodo siguiente. Si no lo paga, al terminar el periodo la cuenta
+            pasa a solo lectura y sus evidencias siguen disponibles.
+          </p>
+          <p>
+            El plan solo se renueva automáticamente si la persona responsable
+            del despacho activa la renovación automática, que es opcional y se
+            explica en la sección siguiente. La fecha de vencimiento y el valor
+            del plan están siempre a la vista en Plan y facturación.
+          </p>
+        </>
+      ),
+    },
+    {
+      id: "renovacion-automatica",
+      title: "Renovación automática (opcional)",
+      basis: ["Ley 1480 de 2011, art. 50, literal b"],
+      body: (
+        <>
+          <ul>
+            <li>
+              <strong>Quién la activa y cómo.</strong> Solo la persona
+              responsable del despacho, desde Plan y facturación. Escribe su
+              celular Nequi, marca la autorización, acepta los contratos de la
+              pasarela de pagos y aprueba la vinculación en la aplicación de
+              Nequi. Sin esos pasos no se cobra nada.
+            </li>
+            <li>
+              <strong>Qué autoriza.</strong> «Autorizo a ALETHEIA a cobrar, al
+              vencer cada periodo, el valor del plan de mi despacho a mi Nequi,
+              hasta que yo lo cancele. Me avisará por correo siete días antes de
+              cada cobro, y puedo cancelar cuando quiera desde Plan y
+              facturación.» Guardamos la versión de ese texto, la fecha y la
+              dirección IP desde la que se aceptó.
+            </li>
+            <li>
+              <strong>Cuándo y cuánto cobra.</strong> Un día antes de que venza
+              el periodo, por el valor y la periodicidad del plan vigentes. Si
+              cambiamos un precio, se lo avisamos con al menos 30 días de
+              anticipación y el valor nuevo solo se aplica desde la renovación
+              siguiente.
+            </li>
+            <li>
+              <strong>Aviso previo.</strong> Siete días antes le escribimos con
+              el valor, la fecha aproximada del cobro, los últimos cuatro
+              dígitos de su Nequi y el enlace para cancelar.
+            </li>
+            <li>
+              <strong>Cómo cancelarla.</strong> Cuando quiera, desde Plan y
+              facturación o escribiendo a {mail}. La cancelación es inmediata:
+              no se cobra nada después, y el periodo ya pagado sigue activo.
+              Cerrar la cuenta del despacho también la cancela.
+            </li>
+            <li>
+              <strong>Si el cobro no entra.</strong> Lo reintentamos a los tres
+              y a los seis días del primer intento. Si tampoco entra, se lo
+              avisamos por correo y el plan sigue su curso: al vencer, la cuenta
+              queda en solo lectura. Nunca retenemos su evidencia.
+            </li>
+            <li>
+              <strong>Lo que le corresponde a usted.</strong> Mantener saldo y
+              la cuenta de Nequi activa. ALETHEIA no responde porque Nequi, su
+              banco o la pasarela rechacen un cobro por saldo insuficiente,
+              límites, bloqueos o fallas de sus sistemas.
+            </li>
+            <li>
+              <strong>Sus datos de pago.</strong> ALETHEIA nunca ve ni guarda su
+              número completo: solo el identificador de la fuente de pago en la
+              pasarela y los últimos cuatro dígitos del celular.
+            </li>
+            <li>
+              <strong>Cobros que usted no autorizó.</strong> Si se le cobra
+              después de cancelar, o un valor distinto del que aceptó, se lo
+              devolvemos completo. La política de reembolsos explica cómo
+              pedirlo.
+            </li>
+          </ul>
+        </>
       ),
     },
     {
@@ -321,6 +409,15 @@ export const termsOfService: LegalDocument = {
             orden o instrucción documentada que exija otro plazo. Las
             solicitudes de supresión se evalúan antes de ejecutarse y no
             proceden mientras exista un deber legal o contractual de conservar.
+            Eliminar un caso cerrado es una decisión distinta y definitiva: la
+            persona autorizada lo pide, ALETHEIA le explica lo que se perderá,
+            exige una confirmación expresa y, al ejecutarla, borra sus archivos,
+            sus llaves y su contenido. Una vez eliminado no se puede recuperar,
+            ni siquiera por soporte, y la obligación de conservar lo que la ley
+            o un cliente exijan es del despacho. Queda constancia de quién lo
+            eliminó y cuándo.
+          </p>
+          <p>
             Cuándo procede una devolución de dinero lo explica la{" "}
             <Link to={legalRoute("reembolsos")}>
               política de reembolsos y cancelación
@@ -367,6 +464,44 @@ export const termsOfService: LegalDocument = {
             Nada de esto limita los derechos que la ley le reconoce como
             consumidor y que no se pueden renunciar.
           </p>
+        </>
+      ),
+    },
+    {
+      id: "portal-del-cliente",
+      title: "Portal del cliente",
+      basis: ["Ley 1581 de 2012"],
+      body: (
+        <>
+          <p>
+            El portal permite que un despacho comparta con su cliente avisos,
+            mensajes y documentos de un caso. Es una herramienta de
+            comunicación: el despacho es quien decide a qué cliente invita, qué
+            publica y qué documentos recibe.
+          </p>
+          <ul>
+            <li>
+              El despacho responde por tener la autorización de su cliente para
+              tratar y compartir sus datos por este medio, y por lo que publica.
+              ALETHEIA no revisa esos contenidos.
+            </li>
+            <li>
+              El cliente entra con un enlace personal y vigente por tiempo
+              limitado, y antes de ver nada acepta un aviso sobre el tratamiento
+              de sus datos. El despacho puede revocar el acceso o renovar el
+              enlace cuando quiera.
+            </li>
+            <li>
+              Lo que el cliente ve es solo lo que el despacho publicó: nunca el
+              resto del expediente, la cadena de custodia ni a otras personas
+              del despacho.
+            </li>
+            <li>
+              Quien recibe un enlace es responsable de no compartirlo. Si
+              sospecha que lo conoció un tercero, debe avisar al despacho para
+              que lo revoque.
+            </li>
+          </ul>
         </>
       ),
     },

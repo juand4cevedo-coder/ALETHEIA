@@ -95,9 +95,10 @@ export const refundPolicy: LegalDocument = {
       title: "Cobros duplicados o por error",
       body: (
         <p>
-          Si se le cobró dos veces o un valor distinto del que aceptó, le
-          devolvemos la diferencia completa, sin importar cuántos días hayan
-          pasado desde el cobro.
+          Si se le cobró dos veces, un valor distinto del que aceptó, o se le
+          hizo un cobro automático después de cancelar la renovación automática,
+          le devolvemos el valor completo del cobro indebido, sin importar
+          cuántos días hayan pasado desde el cobro.
         </p>
       ),
     },

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useEffect, useState } from "react";
+import { Link } from "react-router";
 
 import type { WompiTermsOut } from "../../api/generated";
 import {
@@ -15,6 +16,7 @@ import { Button } from "../../components/ui/Button.tsx";
 import { Checkbox } from "../../components/ui/Checkbox.tsx";
 import { Field } from "../../components/ui/Field.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
+import { legalRoute } from "../../config/routes.ts";
 import { Panel } from "../../components/ui/Panel.tsx";
 import { SystemError } from "../../components/ui/SystemError.tsx";
 import { apiProblem } from "../auth/apiProblem.ts";
@@ -381,6 +383,14 @@ function LinkForm({
       >
         {consentText}
       </Checkbox>
+      <p>
+        Cómo funciona, qué pasa si un cobro no entra y cómo pedir una
+        devolución:{" "}
+        <Link to={`${legalRoute("terminos")}#renovacion-automatica`}>
+          términos de la renovación automática
+        </Link>{" "}
+        y <Link to={legalRoute("reembolsos")}>política de reembolsos</Link>.
+      </p>
       <WompiAcceptance
         key={terms?.acceptance_token}
         terms={terms}
