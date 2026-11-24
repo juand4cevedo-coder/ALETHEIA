@@ -137,11 +137,10 @@ export function CheckoutCard({ me }: { me: Me }) {
   const returnId = params.get("id");
   const active = me.subscription?.status === "active";
 
+  // Se puede pagar en cualquier estado del plan: en la prueba o con el periodo vencido es
+  // contratar; con el plan activo es renovar o cambiar de plan.
   const canPay =
-    me.subscription != null &&
-    (me.subscription.status === "trial" ||
-      me.subscription.status === "expired") &&
-    me.permissions.includes("billing.manage");
+    me.subscription != null && me.permissions.includes("billing.manage");
 
   // Nequi no avisa cuando la persona aprueba el cobro en su teléfono: hay que seguir
   // preguntando por la suscripción hasta verla activa, o avisar que se puede tardar más.
@@ -204,7 +203,7 @@ export function CheckoutCard({ me }: { me: Me }) {
 
   return (
     <PlanCatalogProvider>
-      <Checkout onStarted={() => setStarted(true)} />
+      <Checkout renewing={active} onStarted={() => setStarted(true)} />
     </PlanCatalogProvider>
   );
 }
@@ -212,7 +211,13 @@ export function CheckoutCard({ me }: { me: Me }) {
 type Step = "elegir" | "confirmar";
 type Method = "web" | "nequi";
 
-function Checkout({ onStarted }: { onStarted: () => void }) {
+function Checkout({
+  renewing,
+  onStarted,
+}: {
+  renewing: boolean;
+  onStarted: () => void;
+}) {
   const { plans, isPending, isError } = usePlanCatalog();
   const [step, setStep] = useState<Step>("elegir");
   const [planCode, setPlanCode] = useState<string | null>(null);
@@ -252,7 +257,7 @@ function Checkout({ onStarted }: { onStarted: () => void }) {
 
   function goToConfirm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (method === "web") {
+    if (method === "web" || renewing) {
       if (selected && !web.isPending)
         web.mutate({
           body: { plan_code: selected.code, billing_cycle: cycle },
@@ -330,28 +335,37 @@ function Checkout({ onStarted }: { onStarted: () => void }) {
             </label>
           )}
         </fieldset>
-        <fieldset className={styles.cycle}>
-          <legend>Medio de pago</legend>
-          <label>
-            <input
-              type="radio"
-              name="medio-checkout"
-              checked={method === "web"}
-              onChange={() => setMethod("web")}
-            />
-            Tarjeta, PSE u otros medios
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="medio-checkout"
-              checked={method === "nequi"}
-              onChange={() => setMethod("nequi")}
-            />
-            Nequi, con una notificación a su celular
-          </label>
-        </fieldset>
-        {method === "web" ? (
+        {!renewing && (
+          <fieldset className={styles.cycle}>
+            <legend>Medio de pago</legend>
+            <label>
+              <input
+                type="radio"
+                name="medio-checkout"
+                checked={method === "web"}
+                onChange={() => setMethod("web")}
+              />
+              Tarjeta, PSE u otros medios
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="medio-checkout"
+                checked={method === "nequi"}
+                onChange={() => setMethod("nequi")}
+              />
+              Nequi, con una notificación a su celular
+            </label>
+          </fieldset>
+        )}
+        {renewing && (
+          <p className={styles.help}>
+            Renovar el mismo plan suma el nuevo periodo al que ya tiene pagado.
+            Si elige otro plan, empieza hoy. En la página de Wompi puede pagar
+            con tarjeta, PSE, Nequi u otros medios.
+          </p>
+        )}
+        {method === "web" || renewing ? (
           <p className={styles.help}>
             Lo llevaremos a la página segura de Wompi para pagar. Los datos de
             su tarjeta o de su banco los recibe Wompi; ALETHEIA nunca los ve. Al
@@ -382,7 +396,7 @@ function Checkout({ onStarted }: { onStarted: () => void }) {
         )}
         <div className={styles.actions}>
           <Button type="submit" busy={web.isPending}>
-            {method === "web" ? "Ir a pagar" : "Continuar"}
+            {method === "web" || renewing ? "Ir a pagar" : "Continuar"}
           </Button>
         </div>
       </form>

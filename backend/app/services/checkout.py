@@ -128,8 +128,8 @@ def iniciar_checkout_web(
     )
     if subscription is None:
         raise CheckoutNoPermitidoError
-    if subscription.status == "active" and subscription.billing_cycle != "none":
-        raise CheckoutNoPermitidoError
+    # Con el plan activo también se puede pagar: es renovar o cambiar de plan (el Checkout Web
+    # no depende de que la persona tenga la prueba o un periodo vencido).
     ahora = datetime.datetime.now(datetime.UTC)
     if _pendiente_vigente(subscription.pending_checkout_reference, ahora):
         raise CheckoutNoPermitidoError
@@ -141,7 +141,7 @@ def iniciar_checkout_web(
         creds,
         reference=reference,
         amount_in_cents=amount_cop * 100,
-        redirect_url=f"{settings.public_url}/app/cuenta",
+        redirect_url=f"{settings.public_url}/app/facturacion",
         customer_email=user.email,
         vigencia=VIGENCIA_CHECKOUT_WEB,
         ahora=ahora,

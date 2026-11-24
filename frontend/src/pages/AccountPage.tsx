@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { type FormEvent, useRef, useState } from "react";
-import { useLocation, useOutletContext } from "react-router";
+import { Link, useLocation, useOutletContext } from "react-router";
 
 import type { Me } from "../api/generated";
 import { changePasswordMutation } from "../api/generated/@tanstack/react-query.gen.ts";
@@ -10,6 +10,7 @@ import { Notice } from "../components/ui/Notice.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
+import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
@@ -21,7 +22,6 @@ import { CloseAccountDialog } from "../features/account/CloseAccountDialog.tsx";
 import { EmailStatus } from "../features/session/EmailStatus.tsx";
 import { SignOutEverywhereDialog } from "../features/session/SignOutEverywhereDialog.tsx";
 import { useSignOut } from "../features/session/useSignOut.ts";
-import { CheckoutCard } from "./CheckoutCard.tsx";
 import { TwoFactorCard } from "../features/account/TwoFactorCard.tsx";
 import styles from "./AccountPage.module.css";
 
@@ -97,7 +97,9 @@ export function AccountPage() {
               </dd>
             </div>
           </dl>
-          <CheckoutCard me={me} />
+          <p>
+            <Link to={ROUTES.billing}>Ver el plan, pagar o cambiarlo</Link>
+          </p>
         </Panel>
       )}
 

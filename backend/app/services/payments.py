@@ -147,11 +147,23 @@ def _aplicar(
         # activa nada con un cobro que no corresponde (RN-032).
         action = "payment_declined"
     elif transaccion.status == "APPROVED":
+        # Renovar el mismo plan antes de que venza suma el periodo al que ya estaba pagado; un
+        # plan distinto, o un acceso que no era de pago, empieza hoy.
+        renews = (
+            subscription.status == "active"
+            and subscription.access_source == "payment"
+            and subscription.plan_id == plan.id
+            and subscription.current_period_end is not None
+            and subscription.current_period_end > now
+        )
+        starts = (
+            subscription.current_period_end if renews and subscription.current_period_end else now
+        )
         subscription.plan_id = plan.id
         subscription.status = "active"
         subscription.billing_cycle = referencia.billing_cycle
         subscription.access_source = "payment"
-        subscription.current_period_end = now + _DURACION[referencia.billing_cycle]
+        subscription.current_period_end = starts + _DURACION[referencia.billing_cycle]
         subscription.read_only_until = None
         if organization.status == "read_only":
             organization.status = "active"

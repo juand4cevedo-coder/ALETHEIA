@@ -90,7 +90,7 @@ it("permite a la propietaria en prueba pagar el plan con Nequi", async () => {
     throw new Error(`Ruta inesperada: ${method} ${path}`);
   });
   const user = userEvent.setup();
-  await renderRoute("/app/cuenta");
+  await renderRoute("/app/facturacion");
 
   await user.click(
     await screen.findByRole("radio", { name: /Nequi, con una notificación/ }),
@@ -220,7 +220,7 @@ it("confirma el pago con Nequi cuando la suscripción queda activa", async () =>
     throw new Error(`Ruta inesperada: ${method} ${path}`);
   });
   const user = userEvent.setup();
-  await renderRoute("/app/cuenta");
+  await renderRoute("/app/facturacion");
 
   await user.click(
     await screen.findByRole("radio", { name: /Nequi, con una notificación/ }),
@@ -267,7 +267,7 @@ it("no muestra el pago con Nequi a quien no administra la facturación", async (
       });
     throw new Error(`Ruta inesperada: ${request.method} ${path}`);
   });
-  await renderRoute("/app/cuenta");
+  await renderRoute("/app/facturacion");
 
   await screen.findByText("Esencial");
   expect(screen.queryByLabelText("Celular Nequi")).not.toBeInTheDocument();
@@ -385,7 +385,7 @@ it("por omisión paga en la página de Wompi con tarjeta, PSE u otros medios", a
   const assign = vi.fn();
   vi.stubGlobal("location", { ...window.location, assign });
   const user = userEvent.setup();
-  await renderRoute("/app/cuenta");
+  await renderRoute("/app/facturacion");
 
   expect(
     await screen.findByRole("radio", { name: /Tarjeta, PSE u otros medios/ }),
@@ -411,7 +411,7 @@ it("al volver de Wompi confirma el pago con el servidor y dice que quedó aproba
       return jsonResponse({ status: "APPROVED" });
     },
   });
-  await renderRoute("/app/cuenta?id=1292-1602113476-10985");
+  await renderRoute("/app/facturacion?id=1292-1602113476-10985");
 
   expect(
     await screen.findByText("Su pago quedó aprobado y el plan ya está activo."),
@@ -422,7 +422,7 @@ it("al volver de Wompi confirma el pago con el servidor y dice que quedó aproba
 it("si el pago no se completó lo dice y deja intentarlo de nuevo", async () => {
   serveCheckoutWeb({ confirm: () => jsonResponse({ status: "DECLINED" }) });
   const user = userEvent.setup();
-  await renderRoute("/app/cuenta?id=1292-1602113476-10985");
+  await renderRoute("/app/facturacion?id=1292-1602113476-10985");
 
   expect(await screen.findByText(/El pago no se completó/)).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "Intentar de nuevo" }));
@@ -434,7 +434,55 @@ it("si el pago no se completó lo dice y deja intentarlo de nuevo", async () => 
 
 it("un pago pendiente, como PSE, se sigue consultando y avisa que puede tardar", async () => {
   serveCheckoutWeb({ confirm: () => jsonResponse({ status: "PENDING" }) });
-  await renderRoute("/app/cuenta?id=1292-1602113476-10985");
+  await renderRoute("/app/facturacion?id=1292-1602113476-10985");
 
   expect(await screen.findByText(/Con PSE puede tardar/)).toBeInTheDocument();
+});
+
+it("con el plan activo la propietaria puede renovar o cambiar de plan, solo por la página de Wompi", async () => {
+  const activa = ownerEnPrueba();
+  fetchMock.mockImplementation(async (input) => {
+    const url = typeof input === "string" ? input : (input as Request).url;
+    const path = new URL(url, "http://localhost").pathname;
+    if (path === "/api/v1/me")
+      return jsonResponse({
+        ...activa,
+        subscription: {
+          ...activa.subscription,
+          status: "active",
+          access_source: "payment",
+        },
+      });
+    if (path === "/api/v1/plans") return jsonResponse(PLANS);
+    if (path === "/api/v1/auth/google/status")
+      return jsonResponse({ configured: false });
+    throw new Error(`Ruta inesperada: ${path}`);
+  });
+  await renderRoute("/app/facturacion");
+
+  expect(await screen.findByText("Activo")).toBeInTheDocument();
+  expect(
+    await screen.findByRole("button", { name: "Ir a pagar" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("radio", { name: /Nequi, con una notificación/ }),
+  ).not.toBeInTheDocument();
+  expect(screen.getByText(/suma el nuevo periodo/)).toBeInTheDocument();
+});
+
+it("Mi cuenta resume el plan y lleva a Plan y facturación", async () => {
+  fetchMock.mockImplementation(async (input) => {
+    const path = new URL((input as Request).url).pathname;
+    if (path === "/api/v1/me") return jsonResponse(ownerEnPrueba());
+    if (path === "/api/v1/auth/google/status")
+      return jsonResponse({ configured: false });
+    throw new Error(`Ruta inesperada: ${path}`);
+  });
+  await renderRoute("/app/cuenta");
+
+  expect(
+    await screen.findByRole("link", {
+      name: "Ver el plan, pagar o cambiarlo",
+    }),
+  ).toHaveAttribute("href", "/app/facturacion");
 });
