@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy.orm import Session
 
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import Case, Evidence
+from app.models import Evidence
 from app.services import archive
 from app.services.cases import list_cases
 from tests.conftest import NuevoCliente
@@ -57,6 +57,7 @@ def _cerrados(db: Session, oficina: Oficina) -> dict[str, uuid.UUID]:
             estado="closed",
             cerrado_en=datetime.datetime(2025, 3, 10, 15, 0, tzinfo=datetime.UTC),
             retencion_hasta=_AHORA - datetime.timedelta(days=2),
+            especialidad="labor",
         ),
         "familia": _caso(
             db,
@@ -67,18 +68,10 @@ def _cerrados(db: Session, oficina: Oficina) -> dict[str, uuid.UUID]:
             cerrado_en=datetime.datetime(2026, 6, 1, 15, 0, tzinfo=datetime.UTC),
             bloqueo=True,
             fundamento="litigation_hold",
+            especialidad="family",
         ),
         "abierto": _caso(db, oficina, [dueno], titulo="Caso todavía abierto"),
     }
-
-
-def _area(db: Session, oficina: Oficina, caso_id: uuid.UUID, area: str) -> None:
-    set_tenant(db, TenantContext(organization_id=oficina.organization_id, user_id=oficina.owner.id))
-    caso = db.get(Case, caso_id)
-    assert caso is not None
-    caso.practice_area = area
-    db.flush()
-    set_tenant(db, TenantContext())
 
 
 def test_la_busqueda_encuentra_un_caso_por_el_nombre_de_su_archivo_y_por_su_huella(
@@ -104,8 +97,6 @@ def test_la_busqueda_encuentra_un_caso_por_el_nombre_de_su_archivo_y_por_su_huel
 def test_el_filtro_por_especialidad_solo_aplica_al_archivo(db: Session) -> None:
     oficina = crear_oficina(db, "firm")
     casos = _cerrados(db, oficina)
-    _area(db, oficina, casos["laboral"], "labor")
-    _area(db, oficina, casos["familia"], "family")
     principal = _principal(oficina, oficina.owner)
 
     listado = list_cases(
