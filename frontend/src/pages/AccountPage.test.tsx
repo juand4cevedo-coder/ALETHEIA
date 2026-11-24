@@ -649,6 +649,22 @@ it("vincular exige el celular y la autorización, y manda la versión del texto 
     screen.getByRole("checkbox", { name: /Autorizo a ALETHEIA/ }),
   );
   await user.click(screen.getByRole("button", { name: "Vincular mi Nequi" }));
+  // Los contratos de Wompi también se aceptan de forma explícita, y cada token sirve una vez.
+  expect(
+    await screen.findByText(
+      "Acepte los dos contratos de Wompi para continuar.",
+    ),
+  ).toBeInTheDocument();
+  expect(body).toBeNull();
+  await user.click(
+    screen.getByRole("checkbox", { name: /términos de uso de Wompi/ }),
+  );
+  await user.click(
+    screen.getByRole("checkbox", {
+      name: /tratamiento de mis datos personales/,
+    }),
+  );
+  await user.click(screen.getByRole("button", { name: "Vincular mi Nequi" }));
 
   await waitFor(() =>
     expect(body).toEqual({

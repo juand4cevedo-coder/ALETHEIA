@@ -65,8 +65,13 @@ def _vence_en(
     return subscription, fin
 
 
-def _cobro(monkeypatch: pytest.MonkeyPatch, estado: str) -> list[dict[str, object]]:
+def _cobro(
+    monkeypatch: pytest.MonkeyPatch, estado: str, *, final: str | None = None
+) -> list[dict[str, object]]:
+    """Simula Wompi: el cobro nace con `estado` y, si hay `final`, se resuelve a la primera
+    consulta, como en el entorno de pruebas de Wompi."""
     llamadas: list[dict[str, object]] = []
+    monkeypatch.setattr(renewals, "_pause", lambda: None)
 
     def cobrar(_creds: object, **kwargs: object) -> wompi.Transaccion:
         llamadas.append(dict(kwargs))
@@ -78,7 +83,18 @@ def _cobro(monkeypatch: pytest.MonkeyPatch, estado: str) -> list[dict[str, objec
             payment_method_type="NEQUI",
         )
 
+    def consultar(_creds: object, identificador: str) -> wompi.Transaccion:
+        cobro = llamadas[-1]
+        return wompi.Transaccion(
+            id=identificador,
+            status=final or estado,
+            reference=str(cobro["reference"]),
+            amount_in_cents=int(str(cobro["amount_in_cents"])),
+            payment_method_type="NEQUI",
+        )
+
     monkeypatch.setattr(wompi, "cobrar_con_fuente", cobrar)
+    monkeypatch.setattr(wompi, "consultar_transaccion", consultar)
     return llamadas
 
 
@@ -362,3 +378,31 @@ def test_el_trabajador_conoce_la_tarea_de_renovacion() -> None:
     from app.worker.handlers import HANDLERS
 
     assert renewals.CHARGE_JOB in HANDLERS
+
+
+def test_un_cobro_que_nace_pendiente_y_se_resuelve_en_segundos_se_aplica_de_inmediato(
+    db: Session, settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    office = crear_oficina(db)
+    subscription, fin = _vence_en(db, office, 1)
+    _cobro(monkeypatch, "PENDING", final="APPROVED")
+
+    resultado = renewals.attempt(db, _con_wompi(settings), office.organization_id, fin, 1)
+
+    assert resultado == "approved"
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    db.refresh(subscription)
+    assert subscription.current_period_end is not None
+    assert subscription.current_period_end > fin + datetime.timedelta(days=28)
+
+
+def test_un_cobro_que_nace_pendiente_y_se_rechaza_en_segundos_cuenta_como_fallido(
+    db: Session, settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    office = crear_oficina(db)
+    _, fin = _vence_en(db, office, 1)
+    _cobro(monkeypatch, "PENDING", final="DECLINED")
+
+    resultado = renewals.attempt(db, _con_wompi(settings), office.organization_id, fin, 1)
+
+    assert resultado == "failed"
