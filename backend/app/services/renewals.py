@@ -11,6 +11,7 @@ que siga valiendo la pena cobrar: la fuente activa, el plan sin renovar, ningún
 """
 
 import datetime
+import time
 import uuid
 from dataclasses import dataclass
 from typing import Final, Literal, cast
@@ -33,6 +34,10 @@ MAX_ATTEMPTS: Final = 3
 # Si el resultado de un cobro sigue sin conocerse, la reconciliación lo resuelve más tarde.
 RECONCILE_AFTER: Final = datetime.timedelta(minutes=20)
 _FINAL_FAILURES: Final = frozenset({"DECLINED", "ERROR", "VOIDED"})
+# En el entorno de pruebas de Wompi un cobro con una fuente nace PENDING y se resuelve en segundos,
+# sin aprobación en el celular. Se le pregunta unas veces antes de dejarlo al aviso de Wompi.
+_POLLS: Final = 4
+_POLL_SECONDS: Final = 2
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,6 +48,24 @@ class _Charge:
     reference: str
     plan_code: str
     billing_cycle: str
+
+
+def _pause() -> None:
+    time.sleep(_POLL_SECONDS)
+
+
+def _resolve(creds: wompi.Credenciales, transaction: wompi.Transaccion) -> wompi.Transaccion:
+    """Pregunta unas veces por un cobro que nació pendiente. Si Wompi no responde, se queda con lo
+    que tiene: el aviso de Wompi y la reconciliación lo resuelven después."""
+    for _ in range(_POLLS):
+        if transaction.status != "PENDING":
+            break
+        _pause()
+        try:
+            transaction = wompi.consultar_transaccion(creds, transaction.id)
+        except wompi.WompiNoDisponibleError, wompi.WompiRechazadoError:
+            break
+    return transaction
 
 
 def _key(organization_id: uuid.UUID, period_end: datetime.datetime, attempt: int) -> str:
@@ -190,6 +213,7 @@ def attempt(
         )
     except wompi.WompiRechazadoError:
         return _failed(session, organization_id, period_end, number, now)
+    transaction = _resolve(creds, transaction)
     set_tenant(session, TenantContext(organization_id=organization_id))
     if transaction.status in _FINAL_FAILURES:
         payments.aplicar_consultada(session, transaction)
