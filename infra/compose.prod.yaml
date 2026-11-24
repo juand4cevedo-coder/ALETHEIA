@@ -117,6 +117,10 @@ services:
       ALETHEIA_WOMPI_PRIVATE_KEY_PARAMETER: ${ALETHEIA_WOMPI_PRIVATE_KEY_PARAMETER:-}
       ALETHEIA_WOMPI_INTEGRITY_SECRET_PARAMETER: ${ALETHEIA_WOMPI_INTEGRITY_SECRET_PARAMETER:-}
       ALETHEIA_WOMPI_EVENTS_SECRET_PARAMETER: ${ALETHEIA_WOMPI_EVENTS_SECRET_PARAMETER:-}
+      # Renovación automática (ADR-058): apagada salvo que /etc/aletheia/entorno.env diga true.
+      ALETHEIA_RECURRING_PAYMENTS_ENABLED: ${ALETHEIA_RECURRING_PAYMENTS_ENABLED:-false}
+      # Tope de ingresos para la factura electrónica y valor de la UVT; el contador confirma el valor.
+      ALETHEIA_UVT_VALUE_COP: ${ALETHEIA_UVT_VALUE_COP:-52374}
     # Sin "ports": solo Caddy llega a la API, por la red frontal.
     networks:
       - frontal
