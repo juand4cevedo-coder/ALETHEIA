@@ -748,7 +748,7 @@ describe("Libro de casos (HU-017)", () => {
       "Banco de datos",
       "Calendario",
       "Plantillas de tareas",
-      "Miembros",
+      "Equipo",
     ]);
     expect(casos).toHaveAccessibleName("Casos, 3 abiertos");
   });

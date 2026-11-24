@@ -108,10 +108,10 @@ export const DOCUMENTATION: DocArticle[] = [
         id: "invitar",
         title: "Envíe una invitación",
         paragraphs: [
-          "Las personas con permisos de administración pueden gestionar las invitaciones desde Miembros.",
+          "Las personas con permisos de administración pueden gestionar las invitaciones desde Equipo.",
         ],
         steps: [
-          "Abra Miembros y seleccione la opción de invitar.",
+          "Abra Equipo y seleccione la opción de invitar.",
           "Revise el correo de destino y el rol que necesita esa persona.",
           "Envíe la invitación. La persona recibirá un enlace para aceptarla.",
           "Consulte el estado en la lista antes de reenviar o revocar el acceso.",

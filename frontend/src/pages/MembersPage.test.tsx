@@ -96,7 +96,7 @@ beforeEach(() => {
 });
 
 describe("Menú del espacio de trabajo (CMP-UI-011)", () => {
-  it("el propietario ve Miembros y llega a la sección", async () => {
+  it("el propietario ve Equipo y llega a la sección", async () => {
     serve("owner");
     const user = userEvent.setup();
     const { router } = await renderRoute("/app");
@@ -104,20 +104,20 @@ describe("Menú del espacio de trabajo (CMP-UI-011)", () => {
     const nav = await screen.findByRole("navigation", {
       name: "Espacio de trabajo",
     });
-    await user.click(within(nav).getByRole("link", { name: "Miembros" }));
+    await user.click(within(nav).getByRole("link", { name: "Equipo" }));
 
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/app/miembros"),
     );
-    await screen.findByRole("heading", { level: 1, name: "Miembros" });
-    expect(within(nav).getByRole("link", { name: "Miembros" })).toHaveAttribute(
+    await screen.findByRole("heading", { level: 1, name: "Equipo" });
+    expect(within(nav).getByRole("link", { name: "Equipo" })).toHaveAttribute(
       "aria-current",
       "page",
     );
   });
 
   it.each(["lawyer", "assistant"] as const)(
-    "un %s no ve Miembros en el menú",
+    "un %s no ve Equipo en el menú",
     async (role) => {
       serve(role);
       await renderRoute("/app");
@@ -126,7 +126,7 @@ describe("Menú del espacio de trabajo (CMP-UI-011)", () => {
         name: "Espacio de trabajo",
       });
       expect(
-        within(nav).queryByRole("link", { name: "Miembros" }),
+        within(nav).queryByRole("link", { name: "Equipo" }),
       ).not.toBeInTheDocument();
       expect(
         within(nav).getByRole("link", { name: "Mi cuenta" }),
@@ -286,13 +286,40 @@ describe("Miembros e invitaciones (UI-021, HU-011)", () => {
     await renderRoute("/app/miembros");
 
     expect(
-      await screen.findByText(/Su plan ya no tiene cupo/),
+      await screen.findByText(
+        /Su plan incluye 2 usuarios y todas están en uso/,
+      ),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "cambie de plan" }),
-    ).toHaveAttribute("href", "/precios");
+      screen.getByRole("link", {
+        name: "cambie de plan en Plan y facturación",
+      }),
+    ).toHaveAttribute("href", "/app/facturacion");
     expect(
       screen.queryByRole("button", { name: "Invitar a una persona" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("a quien administra pero no es el responsable le dice a quién pedir el cambio de plan", async () => {
+    serve("admin", {
+      "GET /api/v1/organization/members": () =>
+        jsonResponse({
+          ...MEMBERS,
+          seats: {
+            used: 1,
+            included: 1,
+            extra_user_price_cop: null,
+            full: true,
+          },
+        }),
+    });
+    await renderRoute("/app/miembros");
+
+    expect(
+      await screen.findByText(/pida a la persona responsable del despacho/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /cambie de plan/ }),
     ).not.toBeInTheDocument();
   });
 

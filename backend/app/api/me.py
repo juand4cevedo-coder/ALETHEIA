@@ -229,7 +229,7 @@ def close_account(
             status.HTTP_409_CONFLICT,
             detail=(
                 "Antes de cerrar su cuenta entregue el despacho a otro miembro "
-                "(Miembros, Entregar el despacho) "
+                "(Equipo, Entregar el despacho) "
                 "o retirar a sus demás miembros."
             ),
         ) from None

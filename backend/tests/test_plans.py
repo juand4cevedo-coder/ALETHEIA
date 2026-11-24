@@ -105,3 +105,9 @@ def test_sin_base_responde_503_en_problem_details(
     assert response.headers["cache-control"] == "no-store"
     assert response.json()["detail"] == "El servicio no está disponible en este momento."
     assert "sin-uso" not in response.text
+
+
+def test_la_prueba_gratuita_incluye_tres_personas_para_probar_el_equipo(db: Session) -> None:
+    prueba = db.scalars(select(Plan).where(Plan.code == "trial")).one()
+
+    assert prueba.included_users == 3

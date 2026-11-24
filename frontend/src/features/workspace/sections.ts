@@ -69,7 +69,7 @@ export const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
       },
       {
         to: ROUTES.members,
-        label: "Miembros",
+        label: "Equipo",
         icon: UsuariosIcon,
         visible: (me) => managesTeam(me.organization?.role),
       },

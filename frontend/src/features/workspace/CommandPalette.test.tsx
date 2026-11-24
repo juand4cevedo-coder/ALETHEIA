@@ -46,8 +46,8 @@ it("ofrece solo las pantallas del rol y filtra sin importar tildes", async () =>
   const box = await screen.findByRole("combobox");
 
   expect(screen.getByRole("option", { name: /Casos/ })).toBeInTheDocument();
-  // La abogada no administra el equipo: no ve Miembros ni la auditoría del despacho.
-  expect(screen.queryByRole("option", { name: /Miembros/ })).toBeNull();
+  // La abogada no administra el equipo: no ve Equipo ni la auditoría del despacho.
+  expect(screen.queryByRole("option", { name: /Equipo/ })).toBeNull();
   expect(screen.queryByRole("option", { name: /Auditoría/ })).toBeNull();
 
   await user.type(box, "pedir");

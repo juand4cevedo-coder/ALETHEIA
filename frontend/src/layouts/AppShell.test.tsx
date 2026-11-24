@@ -86,7 +86,7 @@ describe("Espacio de trabajo protegido (API-014)", () => {
     );
     const nav = screen.getByRole("navigation", { name: "Espacio de trabajo" });
     expect(
-      within(nav).getByRole("link", { name: "Miembros" }),
+      within(nav).getByRole("link", { name: "Equipo" }),
     ).toBeInTheDocument();
     expect(
       within(nav).getByRole("link", { name: "Solicitudes de usuarios" }),
@@ -133,9 +133,9 @@ describe("Espacio de trabajo protegido (API-014)", () => {
       expect(
         within(nav).getByRole("link", { name: "Pedir soporte" }),
       ).toBeInTheDocument();
-      expect(
-        Boolean(within(nav).queryByRole("link", { name: "Miembros" })),
-      ).toBe(managesMembers);
+      expect(Boolean(within(nav).queryByRole("link", { name: "Equipo" }))).toBe(
+        managesMembers,
+      );
       expect(
         within(nav).queryByRole("link", { name: "Solicitudes de usuarios" }),
       ).not.toBeInTheDocument();
