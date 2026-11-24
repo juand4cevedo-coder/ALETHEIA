@@ -206,10 +206,10 @@ def test_una_organizacion_en_solo_lectura_no_invita(dispositivo: NuevoCliente, d
 # --- Cupo del plan (CA-HU-011-02, RN-012) ---------------------------------------------------
 
 
-def test_la_prueba_gratis_no_tiene_cupo_para_invitar(
+def test_un_plan_de_una_sola_persona_no_tiene_cupo_para_invitar(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    oficina = crear_oficina(db, "trial")
+    oficina = crear_oficina(db, "essential")
 
     respuesta = _invitar(_sesion(dispositivo, oficina.owner), "carlos@example.com")
 

@@ -133,9 +133,9 @@ describe("Espacio de trabajo protegido (API-014)", () => {
       expect(
         within(nav).getByRole("link", { name: "Pedir soporte" }),
       ).toBeInTheDocument();
-      expect(
-        Boolean(within(nav).queryByRole("link", { name: "Equipo" })),
-      ).toBe(managesMembers);
+      expect(Boolean(within(nav).queryByRole("link", { name: "Equipo" }))).toBe(
+        managesMembers,
+      );
       expect(
         within(nav).queryByRole("link", { name: "Solicitudes de usuarios" }),
       ).not.toBeInTheDocument();
