@@ -21,6 +21,16 @@ export function formatColombiaTime(
   return opts.seconds ? `${formatted} (hora de Colombia)` : formatted;
 }
 
+/** Solo la fecha de Colombia, sin la hora: «24 de noviembre de 2026». */
+export function formatColombiaDate(iso: string): string {
+  return new Intl.DateTimeFormat("es-CO", {
+    timeZone: TIME_ZONE,
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(iso));
+}
+
 function colombiaDay(date: Date): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE }).format(date);
 }

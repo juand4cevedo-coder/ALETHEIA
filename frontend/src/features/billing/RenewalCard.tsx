@@ -18,7 +18,7 @@ import { Notice } from "../../components/ui/Notice.tsx";
 import { Panel } from "../../components/ui/Panel.tsx";
 import { SystemError } from "../../components/ui/SystemError.tsx";
 import { apiProblem } from "../auth/apiProblem.ts";
-import { formatColombiaTime } from "../cases/dates.ts";
+import { formatColombiaDate } from "../cases/dates.ts";
 
 const PHONE_PATTERN = /^3\d{9}$/;
 const POLL_MS = 5_000;
@@ -232,8 +232,7 @@ function Active({
         <p role="status">
           La renovación automática está activa con el Nequi que termina en{" "}
           <strong translate="no">{last4}</strong>
-          {since ? `, desde el ${formatColombiaTime(since).split(",")[0]}` : ""}
-          .
+          {since ? `, desde el ${formatColombiaDate(since)}` : ""}.
         </p>
       </Notice>
       <p>
