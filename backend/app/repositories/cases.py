@@ -11,6 +11,7 @@ import unicodedata
 import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 from sqlalchemy import Select, func, or_, select, true, tuple_
 from sqlalchemy.dialects.postgresql import aggregate_order_by
@@ -220,6 +221,104 @@ class CaseTotalsRow:
     custody_events: int
 
 
+@dataclass(frozen=True, slots=True)
+class ArchiveSummaryRow:
+    """Lo que guarda el archivo de casos cerrados de una persona."""
+
+    cases: int
+    evidences: int
+    stored_bytes: int
+    legal_hold: int
+    review_due: int
+    review_upcoming: int
+    by_year: list[tuple[int, int]]
+    by_basis: list[tuple[str | None, int]]
+    by_practice_area: list[tuple[str | None, int]]
+
+
+def archive_summary(
+    session: Session,
+    organization_id: uuid.UUID,
+    user_id: uuid.UUID,
+    *,
+    review_at: datetime.datetime,
+    search: str | None = None,
+    closed_from: datetime.datetime | None = None,
+    closed_to: datetime.datetime | None = None,
+    retention_basis: str | None = None,
+    legal_hold: bool | None = None,
+    retention_review: str | None = None,
+    practice_area: str | None = None,
+) -> ArchiveSummaryRow:
+    """Cifras de los casos cerrados donde la persona es miembro, con los mismos filtros que la
+    lista, para que el panel y los resultados siempre cuenten lo mismo."""
+    mine = (
+        _member_cases(
+            organization_id,
+            user_id,
+            ("closed",),
+            search=search,
+            closed_from=closed_from,
+            closed_to=closed_to,
+            retention_basis=retention_basis,
+            legal_hold=legal_hold,
+            retention_review=retention_review,
+            review_at=review_at,
+            practice_area=practice_area,
+        )
+        .with_only_columns(
+            Case.id,
+            Case.closed_at,
+            Case.retention_basis,
+            Case.retention_until,
+            Case.legal_hold,
+            Case.practice_area,
+        )
+        .cte("archive_mine")
+    )
+    totals = session.execute(
+        select(
+            func.count().label("cases"),
+            func.count().filter(mine.c.legal_hold.is_(True)).label("legal_hold"),
+            func.count().filter(mine.c.retention_until <= review_at).label("review_due"),
+            func.count().filter(mine.c.retention_until > review_at).label("review_upcoming"),
+        ).select_from(mine)
+    ).one()
+    stored = session.execute(
+        select(func.count(), func.coalesce(func.sum(Evidence.size_bytes), 0))
+        .join(mine, mine.c.id == Evidence.case_id)
+        .where(Evidence.organization_id == organization_id)
+    ).one()
+    year = func.extract("year", func.timezone("America/Bogota", mine.c.closed_at))
+    by_year = session.execute(
+        select(year.label("year"), func.count()).group_by(year).order_by(year.desc())
+    ).all()
+
+    def grouped(column: Any) -> list[tuple[str | None, int]]:
+        rows = session.execute(
+            select(column, func.count())
+            .select_from(mine)
+            .group_by(column)
+            .order_by(func.count().desc(), column)
+        ).all()
+        return [(row[0], row[1]) for row in rows]
+
+    return ArchiveSummaryRow(
+        cases=totals.cases,
+        evidences=stored[0],
+        stored_bytes=int(stored[1]),
+        legal_hold=totals.legal_hold,
+        review_due=totals.review_due,
+        review_upcoming=totals.review_upcoming,
+        by_year=[(int(row[0]), row[1]) for row in by_year if row[0] is not None],
+        by_basis=grouped(mine.c.retention_basis),
+        by_practice_area=grouped(mine.c.practice_area),
+    )
+
+
+_HEX_PREFIX = re.compile(r"[0-9a-f]{8,64}")
+
+
 def _fold_search(value: str) -> str:
     return "".join(
         character
@@ -240,6 +339,7 @@ def _member_cases(
     legal_hold: bool | None = None,
     retention_review: str | None = None,
     review_at: datetime.datetime | None = None,
+    practice_area: str | None = None,
 ) -> Select[Case]:
     # Los casos de la organización donde la persona es miembro, en los estados pedidos.
     query = (
@@ -260,6 +360,8 @@ def _member_cases(
         query = query.where(Case.retention_basis == retention_basis)
     if legal_hold is not None:
         query = query.where(Case.legal_hold.is_(legal_hold))
+    if practice_area is not None:
+        query = query.where(Case.practice_area == practice_area)
     if retention_review is not None and review_at is not None:
         query = query.where(
             Case.retention_until <= review_at
@@ -279,6 +381,24 @@ def _member_cases(
     digits = re.sub(r"\D", "", search or "")
     if digits:
         predicates.append(Case.filing_number.contains(digits))
+    # También por lo que el caso guarda: el nombre de sus archivos o el comienzo de una huella
+    # SHA-256 (8 a 64 caracteres hexadecimales), para encontrar un caso desde su evidencia.
+    evidence_match = [
+        func.translate(func.lower(Evidence.original_filename), "áéíóúüñ", "aeiouun").contains(
+            folded, autoescape=True
+        )
+    ]
+    if _HEX_PREFIX.fullmatch(folded):
+        evidence_match.append(func.encode(Evidence.sha256, "hex").startswith(folded))
+    predicates.append(
+        select(1)
+        .where(
+            Evidence.case_id == Case.id,
+            Evidence.organization_id == Case.organization_id,
+            or_(*evidence_match),
+        )
+        .exists()
+    )
     return query.where(or_(*predicates))
 
 
@@ -298,6 +418,7 @@ def member_cases(
     legal_hold: bool | None = None,
     retention_review: str | None = None,
     review_at: datetime.datetime | None = None,
+    practice_area: str | None = None,
 ) -> list[CaseActivityRow]:
     """Una página de los casos de la persona, de la actividad más reciente a la más antigua.
 
@@ -384,6 +505,7 @@ def member_cases(
             legal_hold=legal_hold,
             retention_review=retention_review,
             review_at=review_at,
+            practice_area=practice_area,
         )
         .with_only_columns(
             Case.id,

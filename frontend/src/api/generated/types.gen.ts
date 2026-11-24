@@ -86,6 +86,135 @@ export type ApplyTaskTemplate = {
 };
 
 /**
+ * ArchiveAreaOut
+ */
+export type ArchiveAreaOut = {
+  /**
+   * Practice Area
+   *
+   * Especialidad, o null si no se indicó.
+   */
+  practice_area:
+    | "civil"
+    | "commercial"
+    | "family"
+    | "labor"
+    | "criminal"
+    | "administrative"
+    | "constitutional"
+    | "other"
+    | null;
+  /**
+   * Cases
+   *
+   * Casos de esa especialidad.
+   */
+  cases: number;
+};
+
+/**
+ * ArchiveBasisOut
+ */
+export type ArchiveBasisOut = {
+  /**
+   * Retention Basis
+   *
+   * Fundamento de conservación, o null si no se indicó.
+   */
+  retention_basis:
+    | "organization_policy"
+    | "legal_or_contractual_duty"
+    | "litigation_hold"
+    | null;
+  /**
+   * Cases
+   *
+   * Casos con ese fundamento.
+   */
+  cases: number;
+};
+
+/**
+ * ArchiveSummaryOut
+ *
+ * Cifras del banco de datos: los casos cerrados donde la persona es miembro.
+ */
+export type ArchiveSummaryOut = {
+  /**
+   * Cases
+   *
+   * Casos cerrados.
+   */
+  cases: number;
+  /**
+   * Evidences
+   *
+   * Evidencias conservadas en ellos.
+   */
+  evidences: number;
+  /**
+   * Stored Bytes
+   *
+   * Tamaño total de esas evidencias, en bytes.
+   */
+  stored_bytes: number;
+  /**
+   * Legal Hold
+   *
+   * Casos con bloqueo por litigio.
+   */
+  legal_hold: number;
+  /**
+   * Review Due
+   *
+   * Casos cuyo plazo de conservación ya venció.
+   */
+  review_due: number;
+  /**
+   * Review Upcoming
+   *
+   * Casos cuyo plazo de conservación sigue vigente.
+   */
+  review_upcoming: number;
+  /**
+   * By Year
+   *
+   * Casos por año de cierre, del más reciente.
+   */
+  by_year: Array<ArchiveYearOut>;
+  /**
+   * By Retention Basis
+   *
+   * Casos por fundamento.
+   */
+  by_retention_basis: Array<ArchiveBasisOut>;
+  /**
+   * By Practice Area
+   *
+   * Casos por especialidad.
+   */
+  by_practice_area: Array<ArchiveAreaOut>;
+};
+
+/**
+ * ArchiveYearOut
+ */
+export type ArchiveYearOut = {
+  /**
+   * Year
+   *
+   * Año de cierre, en hora de Colombia.
+   */
+  year: number;
+  /**
+   * Cases
+   *
+   * Casos cerrados ese año.
+   */
+  cases: number;
+};
+
+/**
  * Body_download_export
  */
 export type BodyDownloadExport = {
@@ -5520,7 +5649,7 @@ export type ListCasesData = {
     /**
      * Search
      *
-     * Título, radicado, referencia interna o despacho.
+     * Título, radicado, referencia interna, despacho, nombre de un archivo o el comienzo de su huella SHA-256.
      */
     search?: string | null;
     /**
@@ -5557,6 +5686,21 @@ export type ListCasesData = {
      * Conservación vencida para revisión o todavía vigente.
      */
     retention_review?: "due" | "upcoming" | null;
+    /**
+     * Practice Area
+     *
+     * Especialidad del caso.
+     */
+    practice_area?:
+      | "civil"
+      | "commercial"
+      | "family"
+      | "labor"
+      | "criminal"
+      | "administrative"
+      | "constitutional"
+      | "other"
+      | null;
   };
   url: "/api/v1/cases";
 };
@@ -6036,6 +6180,168 @@ export type DownloadEvidenceError =
 export type DownloadEvidenceResponses = {
   /**
    * Archivo original; su descarga queda en la cadena de custodia.
+   */
+  200: unknown;
+};
+
+export type ArchiveSummaryData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Search
+     *
+     * Título, radicado, referencia interna, despacho, nombre de un archivo o el comienzo de su huella SHA-256.
+     */
+    search?: string | null;
+    /**
+     * Closed From
+     *
+     * Fecha inicial de cierre en Colombia.
+     */
+    closed_from?: string | null;
+    /**
+     * Closed To
+     *
+     * Fecha final de cierre en Colombia.
+     */
+    closed_to?: string | null;
+    /**
+     * Retention Basis
+     *
+     * Fundamento de conservación.
+     */
+    retention_basis?:
+      | "organization_policy"
+      | "legal_or_contractual_duty"
+      | "litigation_hold"
+      | null;
+    /**
+     * Legal Hold
+     *
+     * Si el caso tiene bloqueo jurídico.
+     */
+    legal_hold?: boolean | null;
+    /**
+     * Retention Review
+     *
+     * Conservación vencida para revisión o todavía vigente.
+     */
+    retention_review?: "due" | "upcoming" | null;
+    /**
+     * Practice Area
+     *
+     * Especialidad del caso.
+     */
+    practice_area?:
+      | "civil"
+      | "commercial"
+      | "family"
+      | "labor"
+      | "criminal"
+      | "administrative"
+      | "constitutional"
+      | "other"
+      | null;
+  };
+  url: "/api/v1/archive/summary";
+};
+
+export type ArchiveSummaryErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ArchiveSummaryError =
+  ArchiveSummaryErrors[keyof ArchiveSummaryErrors];
+
+export type ArchiveSummaryResponses = {
+  /**
+   * Successful Response
+   */
+  200: ArchiveSummaryOut;
+};
+
+export type ArchiveSummaryResponse =
+  ArchiveSummaryResponses[keyof ArchiveSummaryResponses];
+
+export type ArchiveExportData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Search
+     *
+     * Título, radicado, referencia interna, despacho, nombre de un archivo o el comienzo de su huella SHA-256.
+     */
+    search?: string | null;
+    /**
+     * Closed From
+     *
+     * Fecha inicial de cierre en Colombia.
+     */
+    closed_from?: string | null;
+    /**
+     * Closed To
+     *
+     * Fecha final de cierre en Colombia.
+     */
+    closed_to?: string | null;
+    /**
+     * Retention Basis
+     *
+     * Fundamento de conservación.
+     */
+    retention_basis?:
+      | "organization_policy"
+      | "legal_or_contractual_duty"
+      | "litigation_hold"
+      | null;
+    /**
+     * Legal Hold
+     *
+     * Si el caso tiene bloqueo jurídico.
+     */
+    legal_hold?: boolean | null;
+    /**
+     * Retention Review
+     *
+     * Conservación vencida para revisión o todavía vigente.
+     */
+    retention_review?: "due" | "upcoming" | null;
+    /**
+     * Practice Area
+     *
+     * Especialidad del caso.
+     */
+    practice_area?:
+      | "civil"
+      | "commercial"
+      | "family"
+      | "labor"
+      | "criminal"
+      | "administrative"
+      | "constitutional"
+      | "other"
+      | null;
+  };
+  url: "/api/v1/archive/export";
+};
+
+export type ArchiveExportErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ArchiveExportError = ArchiveExportErrors[keyof ArchiveExportErrors];
+
+export type ArchiveExportResponses = {
+  /**
+   * Successful Response
    */
   200: unknown;
 };

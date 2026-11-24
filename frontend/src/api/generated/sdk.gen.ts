@@ -26,6 +26,12 @@ import type {
   ApplyTaskTemplateData,
   ApplyTaskTemplateErrors,
   ApplyTaskTemplateResponses,
+  ArchiveExportData,
+  ArchiveExportErrors,
+  ArchiveExportResponses,
+  ArchiveSummaryData,
+  ArchiveSummaryErrors,
+  ArchiveSummaryResponses,
   AvailableCaseMembersData,
   AvailableCaseMembersErrors,
   AvailableCaseMembersResponses,
@@ -1645,6 +1651,50 @@ export const downloadEvidence = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/cases/{case_id}/evidences/{evidence_id}/download",
+    ...options,
+  });
+
+/**
+ * Cifras del archivo de casos cerrados
+ */
+export const archiveSummary = <ThrowOnError extends boolean = false>(
+  options?: Options<ArchiveSummaryData, ThrowOnError>,
+): RequestResult<ArchiveSummaryResponses, ArchiveSummaryErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    ArchiveSummaryResponses,
+    ArchiveSummaryErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/archive/summary",
+    ...options,
+  });
+
+/**
+ * Descargar el índice del archivo como hoja de cálculo (CSV)
+ */
+export const archiveExport = <ThrowOnError extends boolean = false>(
+  options?: Options<ArchiveExportData, ThrowOnError>,
+): RequestResult<ArchiveExportResponses, ArchiveExportErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    ArchiveExportResponses,
+    ArchiveExportErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/archive/export",
     ...options,
   });
 

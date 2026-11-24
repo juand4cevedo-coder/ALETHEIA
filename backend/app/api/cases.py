@@ -61,6 +61,7 @@ from app.schemas.cases import (
     EvidenceSummaryOut,
     EvidenceUploadOut,
     LastEventOut,
+    PracticeArea,
 )
 from app.services import case_deletion as deletion_service
 from app.services import cases as cases_service
@@ -678,7 +679,10 @@ def list_cases(
         Query(
             min_length=1,
             max_length=120,
-            description="Título, radicado, referencia interna o despacho.",
+            description=(
+                "Título, radicado, referencia interna, despacho, nombre de un archivo o el "
+                "comienzo de su huella SHA-256."
+            ),
         ),
     ] = None,
     closed_from: Annotated[
@@ -698,9 +702,19 @@ def list_cases(
         Literal["due", "upcoming"] | None,
         Query(description="Conservación vencida para revisión o todavía vigente."),
     ] = None,
+    practice_area: Annotated[
+        PracticeArea | None, Query(description="Especialidad del caso.")
+    ] = None,
 ) -> CasePage:
     response.headers["Cache-Control"] = "no-store"
-    archive_filters = (closed_from, closed_to, retention_basis, legal_hold, retention_review)
+    archive_filters = (
+        closed_from,
+        closed_to,
+        retention_basis,
+        legal_hold,
+        retention_review,
+        practice_area,
+    )
     if any(value is not None for value in archive_filters) and case_status != "closed":
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -726,6 +740,7 @@ def list_cases(
             retention_basis=retention_basis,
             legal_hold=legal_hold,
             retention_review=retention_review,
+            practice_area=practice_area,
         )
     except cases_service.InvalidCursorError:
         raise HTTPException(

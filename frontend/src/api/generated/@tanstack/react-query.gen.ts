@@ -15,6 +15,8 @@ import {
   acceptPortalNotice,
   addCaseMember,
   applyTaskTemplate,
+  archiveExport,
+  archiveSummary,
   availableCaseMembers,
   cancelRecovery,
   changeMemberRole,
@@ -146,6 +148,11 @@ import type {
   ApplyTaskTemplateData,
   ApplyTaskTemplateError,
   ApplyTaskTemplateResponse,
+  ArchiveExportData,
+  ArchiveExportError,
+  ArchiveSummaryData,
+  ArchiveSummaryError,
+  ArchiveSummaryResponse,
   AvailableCaseMembersData,
   AvailableCaseMembersError,
   AvailableCaseMembersResponse,
@@ -2301,6 +2308,56 @@ export const downloadEvidenceOptions = (
       return data;
     },
     queryKey: downloadEvidenceQueryKey(options),
+  });
+
+export const archiveSummaryQueryKey = (options?: Options<ArchiveSummaryData>) =>
+  createQueryKey("archiveSummary", options);
+
+/**
+ * Cifras del archivo de casos cerrados
+ */
+export const archiveSummaryOptions = (options?: Options<ArchiveSummaryData>) =>
+  queryOptions<
+    ArchiveSummaryResponse,
+    ArchiveSummaryError,
+    ArchiveSummaryResponse,
+    ReturnType<typeof archiveSummaryQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await archiveSummary({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: archiveSummaryQueryKey(options),
+  });
+
+export const archiveExportQueryKey = (options?: Options<ArchiveExportData>) =>
+  createQueryKey("archiveExport", options);
+
+/**
+ * Descargar el índice del archivo como hoja de cálculo (CSV)
+ */
+export const archiveExportOptions = (options?: Options<ArchiveExportData>) =>
+  queryOptions<
+    unknown,
+    ArchiveExportError,
+    unknown,
+    ReturnType<typeof archiveExportQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await archiveExport({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: archiveExportQueryKey(options),
   });
 
 export const listCaseTasksQueryKey = (options: Options<ListCaseTasksData>) =>
