@@ -486,3 +486,43 @@ it("Mi cuenta resume el plan y lleva a Plan y facturación", async () => {
     }),
   ).toHaveAttribute("href", "/app/facturacion");
 });
+
+it("Plan y facturación lista los comprobantes de pago con su descarga en PDF", async () => {
+  fetchMock.mockImplementation(async (input) => {
+    const url = typeof input === "string" ? input : (input as Request).url;
+    const path = new URL(url, "http://localhost").pathname;
+    if (path === "/api/v1/me") return jsonResponse(ownerEnPrueba());
+    if (path === "/api/v1/plans") return jsonResponse(PLANS);
+    if (path === "/api/v1/auth/google/status")
+      return jsonResponse({ configured: false });
+    if (path === "/api/v1/billing/receipts")
+      return jsonResponse([
+        {
+          id: "01890a5d-ac96-774b-bcce-b302099a8201",
+          number: "CP-2026-000007",
+          issued_at: "2026-11-20T15:00:00Z",
+          plan_name: "Esencial",
+          billing_cycle: "monthly",
+          amount_cop: 29_900,
+          payment_method: "PSE",
+          period_start: "2026-11-20T15:00:00Z",
+          period_end: "2026-12-20T15:00:00Z",
+          transaction_id: "1292-1602113476-10985",
+        },
+      ]);
+    throw new Error(`Ruta inesperada: ${path}`);
+  });
+  await renderRoute("/app/facturacion");
+
+  expect(await screen.findByText("CP-2026-000007")).toBeInTheDocument();
+  expect(screen.getByText(/plan Esencial, mensual, PSE/)).toBeInTheDocument();
+  expect(
+    screen.getByRole("link", {
+      name: "Descargar el comprobante CP-2026-000007 en PDF",
+    }),
+  ).toHaveAttribute(
+    "href",
+    "/api/v1/billing/receipts/01890a5d-ac96-774b-bcce-b302099a8201/pdf",
+  );
+  expect(screen.getByText(/No es una factura electrónica/)).toBeInTheDocument();
+});

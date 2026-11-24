@@ -45,6 +45,12 @@ class PlatformBilling(BaseModel):
     subscription_counts: dict[str, int]
     payment_events_received: int
     payment_events_pending: int
+    collected_year: int
+    receipts_year: int
+    collected_year_cop: int
+    invoicing_threshold_uvt: int
+    uvt_value_cop: int
+    invoicing_threshold_cop: int
 
 
 class CourtesyTarget(BaseModel):

@@ -72,3 +72,38 @@
     width: 100%;
   }
 }
+
+/* Comprobantes de pago */
+.muted {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.receipts {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.receipt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  padding: var(--space-3) 0;
+}
+
+.receipt + .receipt {
+  border-top: 1px solid var(--ink-hairline);
+}
+
+.receiptEnd {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-variant-numeric: tabular-nums;
+}

@@ -113,6 +113,9 @@ import type {
   DownloadPortalDocumentData,
   DownloadPortalDocumentErrors,
   DownloadPortalDocumentResponses,
+  DownloadReceiptData,
+  DownloadReceiptErrors,
+  DownloadReceiptResponses,
   DownloadSharedEvidenceData,
   DownloadSharedEvidenceErrors,
   DownloadSharedEvidenceResponses,
@@ -191,6 +194,9 @@ import type {
   ListPortalUpdatesData,
   ListPortalUpdatesErrors,
   ListPortalUpdatesResponses,
+  ListReceiptsData,
+  ListReceiptsErrors,
+  ListReceiptsResponses,
   ListShareLinksData,
   ListShareLinksErrors,
   ListShareLinksResponses,
@@ -2902,6 +2908,54 @@ export const confirmCheckoutWeb = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/billing/checkout-web/confirm",
+    ...options,
+  });
+
+/**
+ * Comprobantes de pago del despacho
+ */
+export const listReceipts = <ThrowOnError extends boolean = false>(
+  options?: Options<ListReceiptsData, ThrowOnError>,
+): RequestResult<ListReceiptsResponses, ListReceiptsErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    ListReceiptsResponses,
+    ListReceiptsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/billing/receipts",
+    ...options,
+  });
+
+/**
+ * Descargar un comprobante de pago en PDF
+ */
+export const downloadReceipt = <ThrowOnError extends boolean = false>(
+  options: Options<DownloadReceiptData, ThrowOnError>,
+): RequestResult<
+  DownloadReceiptResponses,
+  DownloadReceiptErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).get<
+    DownloadReceiptResponses,
+    DownloadReceiptErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/billing/receipts/{receipt_id}/pdf",
     ...options,
   });
 

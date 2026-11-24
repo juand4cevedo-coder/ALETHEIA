@@ -4,13 +4,15 @@ import datetime
 import uuid
 from contextlib import suppress
 from typing import Annotated, Literal, cast
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.elements import ColumnElement
 
-from app.api.deps import get_client_ip, get_principal, get_session
+from app.api.deps import get_app_settings, get_client_ip, get_principal, get_session
+from app.core.config import Settings
 from app.models import AuditLog, Organization, PaymentEvent, Plan, Subscription, User
 from app.repositories.sessions import revoke_user_sessions
 from app.schemas.platform import (
@@ -29,6 +31,7 @@ from app.schemas.platform import (
 from app.schemas.web_vitals import VitalsSummary, VitalSummaryRow
 from app.services import courtesy
 from app.services import platform_accounts as accounts_service
+from app.services import receipts as receipts_service
 from app.services import web_vitals as vitals_service
 from app.services.audit import audit_ip
 from app.services.sessions import Principal
@@ -309,6 +312,7 @@ def platform_billing(
     response: Response,
     principal: Annotated[Principal, Depends(get_platform_admin)],
     session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
 ) -> PlatformBilling:
     del principal
     response.headers["Cache-Control"] = "no-store"
@@ -325,7 +329,15 @@ def platform_billing(
         )
         or 0
     )
+    year = datetime.datetime.now(ZoneInfo("America/Bogota")).year
+    collected = receipts_service.collected_in(session, year)
     return PlatformBilling(
+        collected_year=collected.year,
+        receipts_year=collected.receipts,
+        collected_year_cop=collected.collected_cop,
+        invoicing_threshold_uvt=settings.invoicing_threshold_uvt,
+        uvt_value_cop=settings.uvt_value_cop,
+        invoicing_threshold_cop=settings.invoicing_threshold_uvt * settings.uvt_value_cop,
         plans=[
             PlatformPlan(
                 code=plan.code,

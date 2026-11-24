@@ -144,6 +144,11 @@ class Settings(DatabaseSettings):
     wompi_integrity_secret: Secret[str] | None = Field(
         default=None, description="Secreto de integridad de Wompi, para firmar transacciones."
     )
+    # Tope de ingresos del año (en UVT) a partir del cual el operador debería facturar
+    # electrónicamente, y el valor de la UVT del año. El panel de la plataforma los usa para
+    # avisar cuánto falta; el contador confirma ambos cada año.
+    invoicing_threshold_uvt: int = Field(default=3_500, ge=1)
+    uvt_value_cop: int = Field(default=52_374, ge=1)
     wompi_events_secret: Secret[str] | None = Field(
         default=None, description="Secreto de eventos de Wompi, para verificar sus webhooks."
     )

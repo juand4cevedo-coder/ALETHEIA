@@ -243,8 +243,9 @@ export const termsOfService: LegalDocument = {
             <li>
               El operador está inscrito en el RUT como persona natural no
               responsable de IVA, así que no cobra IVA. Por la misma razón no
-              está obligado a expedir factura electrónica de venta; con cada
-              pago recibe el comprobante por correo.
+              está obligado a expedir factura electrónica de venta. En su lugar,
+              con cada pago recibe un comprobante de pago numerado de ALETHEIA,
+              por correo y para descargar en PDF desde Plan y facturación.
             </li>
             <li>
               Si su firma es responsable de IVA y necesita soportar la compra,

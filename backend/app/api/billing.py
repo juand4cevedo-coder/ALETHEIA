@@ -2,6 +2,7 @@
 
 import json
 import logging
+import uuid
 from typing import Annotated, Any, Final, Literal, cast
 
 import anyio.from_thread
@@ -11,16 +12,19 @@ from sqlalchemy.orm import Session
 from app.adapters import wompi
 from app.api.deps import get_app_settings, get_principal, get_session
 from app.core.config import Settings
+from app.core.permissions import has_permission
 from app.schemas.billing import (
     CheckoutCreate,
     CheckoutOut,
     CheckoutWebCreate,
     CheckoutWebOut,
     CheckoutWebResult,
+    ReceiptOut,
     WompiTermsOut,
 )
 from app.services import checkout as checkout_service
 from app.services import payments as payments_service
+from app.services import receipts as receipts_service
 from app.services.sessions import Principal
 
 router = APIRouter(tags=["facturación"])
@@ -251,3 +255,74 @@ def wompi_webhook(
         # 500: que Wompi reintente. Si el problema es nuestro, el reintento sí puede ayudar.
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR) from None
     return Response(status_code=status.HTTP_200_OK)
+
+
+def _may_see_receipts(principal: Principal) -> None:
+    if principal.organization_id is None or not has_permission(principal.role, "billing.manage"):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="Solo la persona responsable del despacho consulta sus comprobantes.",
+            headers=_NO_STORE,
+        )
+
+
+@router.get(
+    "/billing/receipts",
+    summary="Comprobantes de pago del despacho",
+    responses={status.HTTP_403_FORBIDDEN: {"description": "El rol no administra la facturación."}},
+)
+def list_receipts(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> list[ReceiptOut]:
+    response.headers["Cache-Control"] = "no-store"
+    _may_see_receipts(principal)
+    return [
+        ReceiptOut(
+            id=receipt.id,
+            number=receipt.number,
+            issued_at=receipt.issued_at,
+            plan_name=receipt.plan_name,
+            billing_cycle=cast(Literal["monthly", "annual"], receipt.billing_cycle),
+            amount_cop=receipt.amount_cop,
+            payment_method=receipt.payment_method,
+            period_start=receipt.period_start,
+            period_end=receipt.period_end,
+            transaction_id=receipt.gateway_transaction_id,
+        )
+        for receipt in receipts_service.list_for(session, principal)
+    ]
+
+
+@router.get(
+    "/billing/receipts/{receipt_id}/pdf",
+    summary="Descargar un comprobante de pago en PDF",
+    response_class=Response,
+    responses={
+        status.HTTP_200_OK: {"content": {"application/pdf": {}}},
+        status.HTTP_403_FORBIDDEN: {"description": "El rol no administra la facturación."},
+        status.HTTP_404_NOT_FOUND: {"description": "No hay un comprobante así en este despacho."},
+    },
+)
+def download_receipt(
+    receipt_id: uuid.UUID,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> Response:
+    _may_see_receipts(principal)
+    receipt = receipts_service.get_for(session, principal, receipt_id)
+    if receipt is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail="No encontramos ese comprobante.",
+            headers=_NO_STORE,
+        )
+    return Response(
+        content=receipts_service.render_pdf(receipt),
+        media_type="application/pdf",
+        headers={
+            **_NO_STORE,
+            "Content-Disposition": f'attachment; filename="comprobante-{receipt.number}.pdf"',
+        },
+    )

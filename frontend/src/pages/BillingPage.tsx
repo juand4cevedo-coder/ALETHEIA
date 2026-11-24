@@ -1,10 +1,14 @@
+import { useQuery } from "@tanstack/react-query";
 import { useOutletContext } from "react-router";
 
 import type { Me } from "../api/generated";
+import { listReceiptsOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
 import { pageTitle } from "../config/site.ts";
+import { formatCop } from "../features/billing/format.ts";
+import { formatColombiaTime } from "../features/cases/dates.ts";
 import { CheckoutCard } from "./CheckoutCard.tsx";
 import styles from "./AccountPage.module.css";
 
@@ -69,6 +73,69 @@ export function BillingPage() {
       ) : (
         <Notice tone="info">Su cuenta todavía no tiene un plan.</Notice>
       )}
+      {mayPay && <Receipts />}
     </div>
+  );
+}
+
+const METHODS: Record<string, string> = {
+  CARD: "Tarjeta",
+  PSE: "PSE",
+  NEQUI: "Nequi",
+  BANCOLOMBIA_TRANSFER: "Transferencia Bancolombia",
+  BANCOLOMBIA_COLLECT: "Bancolombia",
+  DAVIPLATA: "Daviplata",
+};
+
+// Un comprobante de pago numerado por cada pago aprobado. No es una factura electrónica: el
+// operador no está obligado a facturar, y el comprobante es el documento que ALETHEIA entrega.
+function Receipts() {
+  const receipts = useQuery({ ...listReceiptsOptions() });
+  return (
+    <Panel
+      title="Comprobantes de pago"
+      description="Cada pago aprobado deja un comprobante numerado de ALETHEIA, que también le llega por correo. No es una factura electrónica."
+    >
+      {receipts.isPending && <p role="status">Cargando los comprobantes</p>}
+      {receipts.isError && (
+        <Notice tone="error">No pudimos cargar los comprobantes.</Notice>
+      )}
+      {receipts.isSuccess && receipts.data.length === 0 && (
+        <p className={styles.muted}>
+          Todavía no hay pagos aprobados. Cuando pague, su comprobante aparece
+          aquí.
+        </p>
+      )}
+      {receipts.isSuccess && receipts.data.length > 0 && (
+        <ul className={styles.receipts} aria-label="Comprobantes de pago">
+          {receipts.data.map((receipt) => (
+            <li key={receipt.id} className={styles.receipt}>
+              <div>
+                <strong translate="no">{receipt.number}</strong>
+                <p className={styles.muted}>
+                  {formatColombiaTime(receipt.issued_at).split(",")[0]}
+                  {", plan "}
+                  {receipt.plan_name},{" "}
+                  {receipt.billing_cycle === "annual" ? "anual" : "mensual"}
+                  {receipt.payment_method
+                    ? `, ${METHODS[receipt.payment_method.toUpperCase()] ?? receipt.payment_method}`
+                    : ""}
+                </p>
+              </div>
+              <div className={styles.receiptEnd}>
+                <span>{formatCop(receipt.amount_cop)}</span>
+                <a
+                  href={`/api/v1/billing/receipts/${receipt.id}/pdf`}
+                  download
+                  aria-label={`Descargar el comprobante ${receipt.number} en PDF`}
+                >
+                  Descargar PDF
+                </a>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Panel>
   );
 }

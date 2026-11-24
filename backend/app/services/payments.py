@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 from app.adapters import wompi
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, Organization, PaymentEvent, Plan, Subscription
-from app.services import payment_emails, subscription_expiration
+from app.services import payment_emails, receipts, subscription_expiration
 from app.services.checkout import Referencia, leer_referencia
 
 _DURACION: Final = {"monthly": relativedelta(months=1), "annual": relativedelta(years=1)}
@@ -169,6 +169,20 @@ def _aplicar(
             organization.status = "active"
         subscription_expiration.schedule(
             session, referencia.organization_id, subscription.current_period_end
+        )
+        receipts.issue(
+            session,
+            organization_id=referencia.organization_id,
+            organization_name=organization.name,
+            payment_event_id=event_id,
+            transaction_id=transaccion.id,
+            payment_method=transaccion.payment_method_type,
+            amount_cop=transaccion.amount_in_cents // 100,
+            plan_name=plan.name,
+            billing_cycle=referencia.billing_cycle,
+            period_start=starts,
+            period_end=subscription.current_period_end,
+            issued_at=now,
         )
         payment_emails.schedule_for_owners(
             session,

@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 from app.adapters.email import REPLY_TO, OutgoingEmail
 from app.core.config import Settings
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import Membership, Organization, Plan, Subscription, User
+from app.models import Membership, Organization, PaymentReceipt, Plan, Subscription, User
 from app.services import jobs
 from app.services.email_layout import email_layout
 from app.services.jobs import PermanentJobError
@@ -57,6 +57,7 @@ def schedule_for_owners(
             "plan_code": plan_code,
             "cycle": cycle,
             "period_end": period_end.isoformat(),
+            "event_id": str(event_id),
         }
         jobs.enqueue(
             session,
@@ -104,6 +105,16 @@ def _facts(
     return user, organization, plan, subscription, cycle, period_end
 
 
+def _receipt_number(session: Session, payload: dict[str, Any]) -> str | None:
+    try:
+        event_id = uuid.UUID(str(payload["event_id"]))
+    except KeyError, ValueError:
+        return None
+    return session.scalar(
+        select(PaymentReceipt.number).where(PaymentReceipt.payment_event_id == event_id)
+    )
+
+
 @email_template(APPROVED_TEMPLATE)
 def receipt_email(
     session: Session, payload: dict[str, Any], settings: Settings
@@ -114,6 +125,8 @@ def receipt_email(
     user, organization, plan, _, cycle, period_end = facts
     amount = plan.monthly_price_cop if cycle == "monthly" else plan.annual_price_cop
     price = _cop(amount) if amount else "sin costo"
+    number = _receipt_number(session, payload)
+    where = f"{settings.public_url}/app/facturacion"
     until = colombian_datetime(period_end)
     name = user.full_name
     cycle_text = _CYCLES.get(cycle, cycle)
@@ -126,7 +139,12 @@ def receipt_email(
             f"{price}.\n\n"
             f"El plan queda activo hasta el {until} (hora de Colombia). Le avisaremos "
             f"{REMINDER_DAYS} días antes para que lo renueve.\n\n"
-            "Este correo es su comprobante. Si algo no coincide, escríbanos a "
+            + (
+                f"Comprobante de pago N.º {number}. Descargue el PDF en {where}.\n\n"
+                if number
+                else ""
+            )
+            + "Si algo no coincide, escríbanos a "
             f"{REPLY_TO}.\n\nALETHEIA"
         ),
         html=email_layout(
@@ -138,8 +156,12 @@ def receipt_email(
                 f"El plan queda activo hasta el {html.escape(until)} (hora de Colombia). Le "
                 f"avisaremos {REMINDER_DAYS} días antes para que lo renueve.",
             ],
-            ("Ir a ALETHEIA", settings.public_url),
-            "Este correo es su comprobante. Si algo no coincide, escríbanos a "
+            (
+                "Descargar el comprobante" if number else "Ir a ALETHEIA",
+                where if number else settings.public_url,
+            ),
+            (f"Comprobante de pago N.º {html.escape(number)}. " if number else "")
+            + "Si algo no coincide, escríbanos a "
             f"{html.escape(REPLY_TO)}.",
             site_url=settings.public_url,
         ),
