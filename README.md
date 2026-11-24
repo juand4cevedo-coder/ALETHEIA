@@ -85,7 +85,7 @@ Los textos legales viven en `frontend/src/features/legal` y su fecha de vigencia
 
 ### Requisitos
 
-- Python 3.14 con uv 0.13 o posterior. La versión exacta está fijada en `backend/.python-version`.
+- Python 3.14 con uv 0.13.7 o posterior. La versión exacta de Python está fijada en `backend/.python-version` y la de uv en la CI y en `backend/Dockerfile`.
 - Node.js 26 con pnpm 12.
 - Docker Engine 29 con Docker Compose 5. En Windows se ejecuta dentro de WSL 2.
 - Visual Studio Code con las extensiones que recomienda el repositorio.

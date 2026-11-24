@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  UV_VERSION: "0.13.5"
-  UV_CHECKSUM: f68d291c75783122dad58ab77def0e13f3233f358731db5d6d7e8715603b928f
+  UV_VERSION: "0.13.7"
+  UV_CHECKSUM: c5221ff41b7892bfc223543883600125f6a47fe845093e0f5bdff4f359196d83
   UV_ARCHIVE: uv-x86_64-unknown-linux-gnu.tar.gz
   PNPM_VERSION: "12.14.0"
 
@@ -67,7 +67,7 @@ jobs:
           persist-credentials: false
 
       - name: Instalar uv
-        # Descarga directa del release oficial: el manifiesto que usa setup-uv aún no lista 0.13.5.
+        # Descarga directa del release oficial, verificada con la suma SHA-256 publicada.
         run: |
           curl --fail --silent --show-error --location --output "$RUNNER_TEMP/$UV_ARCHIVE" \
             "https://github.com/astral-sh/uv/releases/download/$UV_VERSION/$UV_ARCHIVE"
@@ -178,7 +178,7 @@ jobs:
           persist-credentials: false
 
       - name: Instalar uv
-        # Descarga directa del release oficial: el manifiesto que usa setup-uv aún no lista 0.13.5.
+        # Descarga directa del release oficial, verificada con la suma SHA-256 publicada.
         run: |
           curl --fail --silent --show-error --location --output "$RUNNER_TEMP/$UV_ARCHIVE" \
             "https://github.com/astral-sh/uv/releases/download/$UV_VERSION/$UV_ARCHIVE"
