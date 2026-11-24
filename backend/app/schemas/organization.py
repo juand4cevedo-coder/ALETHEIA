@@ -31,6 +31,7 @@ class OrganizationAuditAction(StrEnum):
     INVITATION_ACCEPTED = "invitation_accepted"
     ROLE_CHANGED = "role_changed"
     OWNERSHIP_TRANSFERRED = "ownership_transferred"
+    ARCHIVE_EXPORTED = "archive_exported"
     MEMBER_REMOVED = "member_removed"
     ORGANIZATION_POLICY_CHANGED = "organization_policy_changed"
     TASK_TEMPLATE_CREATED = "task_template_created"

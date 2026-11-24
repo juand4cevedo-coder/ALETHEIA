@@ -2145,6 +2145,7 @@ export type OrganizationAuditAction =
   | "invitation_accepted"
   | "role_changed"
   | "ownership_transferred"
+  | "archive_exported"
   | "member_removed"
   | "organization_policy_changed"
   | "task_template_created"
@@ -2425,6 +2426,40 @@ export type PasswordResetRequested = {
 };
 
 /**
+ * PlanUpdate
+ *
+ * Los campos que la plataforma edita de un plan. Los que no se envían no cambian.
+ */
+export type PlanUpdate = {
+  /**
+   * Monthly Price Cop
+   */
+  monthly_price_cop?: number | null;
+  /**
+   * Annual Price Cop
+   */
+  annual_price_cop?: number | null;
+  /**
+   * Included Users
+   */
+  included_users?: number | null;
+  /**
+   * Extra User Price Cop
+   */
+  extra_user_price_cop?: number | null;
+  /**
+   * Is Public
+   */
+  is_public?: boolean | null;
+  /**
+   * Clear Extra User Price
+   *
+   * Quita el usuario adicional: el plan ya no lo admite.
+   */
+  clear_extra_user_price?: boolean;
+};
+
+/**
  * PlatformAuditEvent
  */
 export type PlatformAuditEvent = {
@@ -2558,6 +2593,10 @@ export type PlatformPlan = {
    * Included Users
    */
   included_users: number;
+  /**
+   * Extra User Price Cop
+   */
+  extra_user_price_cop: number | null;
   /**
    * Is Public
    */
@@ -7659,6 +7698,40 @@ export type DeletePlatformUserResponses = {
 
 export type DeletePlatformUserResponse =
   DeletePlatformUserResponses[keyof DeletePlatformUserResponses];
+
+export type UpdatePlanData = {
+  body: PlanUpdate;
+  path: {
+    /**
+     * Code
+     */
+    code: string;
+  };
+  query?: never;
+  url: "/api/v1/platform/plans/{code}";
+};
+
+export type UpdatePlanErrors = {
+  /**
+   * No hay un plan con ese código.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type UpdatePlanError = UpdatePlanErrors[keyof UpdatePlanErrors];
+
+export type UpdatePlanResponses = {
+  /**
+   * Successful Response
+   */
+  200: PlatformPlan;
+};
+
+export type UpdatePlanResponse = UpdatePlanResponses[keyof UpdatePlanResponses];
 
 export type PlatformBillingData = {
   body?: never;

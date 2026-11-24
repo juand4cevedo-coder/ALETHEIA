@@ -141,9 +141,11 @@ def test_el_indice_exportado_trae_las_tildes_y_neutraliza_formulas(db: Session) 
         cerrado_en=datetime.datetime(2026, 6, 1, 15, 0, tzinfo=datetime.UTC),
     )
 
-    texto = archive.export_index(
+    texto, filas = archive.export_index(
         db, _principal(oficina, oficina.owner), archive.ArchiveFilters(), _BOGOTA
     )
+
+    assert filas == 1
 
     assert texto.startswith("﻿Título,Radicado,")
     assert "'=HYPERLINK" in texto

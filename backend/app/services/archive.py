@@ -14,9 +14,11 @@ from typing import Final, Literal
 from sqlalchemy.orm import Session
 
 from app.db.tenancy import TenantContext, set_tenant
+from app.models import AuditLog
 from app.repositories import cases as cases_repository
 from app.repositories.cases import ArchiveSummaryRow
 from app.services import cases as cases_service
+from app.services.audit import audit_ip, audit_user_agent
 from app.services.sessions import Principal
 
 # Tope del índice exportado: más allá, conviene filtrar por año o por especialidad.
@@ -85,9 +87,10 @@ def _date(value: datetime.datetime | None, zone: datetime.tzinfo) -> str:
 
 def export_index(
     session: Session, principal: Principal, filters: ArchiveFilters, zone: datetime.tzinfo
-) -> str:
-    """El índice del archivo como CSV. Empieza con la marca de orden de bytes para que Excel
-    lea las tildes. Son a lo sumo EXPORT_MAX_ROWS filas: cabe entera en memoria."""
+) -> tuple[str, int]:
+    """El índice del archivo como CSV y cuántas filas trae. Empieza con la marca de orden de
+    bytes para que Excel lea las tildes. Son a lo sumo EXPORT_MAX_ROWS filas: cabe entera en
+    memoria."""
     buffer = io.StringIO()
     buffer.write("﻿")
     writer = csv.writer(buffer, lineterminator="\r\n")
@@ -144,4 +147,31 @@ def export_index(
         cursor = page.next_cursor
         if cursor is None:
             break
-    return buffer.getvalue()
+    return buffer.getvalue(), exported
+
+
+def record_export(
+    session: Session,
+    principal: Principal,
+    rows: int,
+    filters: ArchiveFilters,
+    *,
+    client_ip: str,
+    user_agent: str | None,
+) -> None:
+    """Deja en la auditoría del despacho que alguien se llevó el índice del archivo."""
+    session.add(
+        AuditLog(
+            organization_id=principal.organization_id,
+            actor_user_id=principal.user_id,
+            action="archive_exported",
+            details={
+                "filas": str(rows),
+                "con_filtros": "si" if filters != ArchiveFilters() else "no",
+            },
+            ip=audit_ip(client_ip),
+            user_agent=audit_user_agent(user_agent),
+            created_at=datetime.datetime.now(datetime.UTC),
+        )
+    )
+    session.flush()

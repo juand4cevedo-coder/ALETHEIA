@@ -31,6 +31,7 @@ SECURITY_ACTIONS = (
     "invitation_accepted",
     "role_changed",
     "ownership_transferred",
+    "archive_exported",
     "member_removed",
     "organization_policy_changed",
     "task_template_created",

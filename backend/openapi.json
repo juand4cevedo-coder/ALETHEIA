@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.39.0"
+    "version": "0.40.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -6611,6 +6611,73 @@
         }
       }
     },
+    "/api/v1/platform/plans/{code}": {
+      "patch": {
+        "tags": [
+          "plataforma"
+        ],
+        "summary": "Editar un plan del catálogo",
+        "operationId": "update_plan",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Code"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformPlan"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No hay un plan con ese código.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/platform/billing": {
       "get": {
         "tags": [
@@ -11493,6 +11560,7 @@
           "invitation_accepted",
           "role_changed",
           "ownership_transferred",
+          "archive_exported",
           "member_removed",
           "organization_policy_changed",
           "task_template_created",
@@ -11906,6 +11974,83 @@
         "title": "PasswordResetRequested",
         "description": "La misma respuesta exista o no una cuenta con ese correo (CA-HU-010-02)."
       },
+      "PlanUpdate": {
+        "properties": {
+          "monthly_price_cop": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Price Cop"
+          },
+          "annual_price_cop": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annual Price Cop"
+          },
+          "included_users": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10000.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Included Users"
+          },
+          "extra_user_price_cop": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extra User Price Cop"
+          },
+          "is_public": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Public"
+          },
+          "clear_extra_user_price": {
+            "type": "boolean",
+            "title": "Clear Extra User Price",
+            "description": "Quita el usuario adicional: el plan ya no lo admite.",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PlanUpdate",
+        "description": "Los campos que la plataforma edita de un plan. Los que no se envían no cambian."
+      },
       "PlatformAuditEvent": {
         "properties": {
           "id": {
@@ -12131,6 +12276,17 @@
             "type": "integer",
             "title": "Included Users"
           },
+          "extra_user_price_cop": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extra User Price Cop"
+          },
           "is_public": {
             "type": "boolean",
             "title": "Is Public"
@@ -12143,6 +12299,7 @@
           "monthly_price_cop",
           "annual_price_cop",
           "included_users",
+          "extra_user_price_cop",
           "is_public"
         ],
         "title": "PlatformPlan"

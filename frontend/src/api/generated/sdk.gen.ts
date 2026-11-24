@@ -349,6 +349,9 @@ import type {
   UpdateCaseTaskStatusData,
   UpdateCaseTaskStatusErrors,
   UpdateCaseTaskStatusResponses,
+  UpdatePlanData,
+  UpdatePlanErrors,
+  UpdatePlanResponses,
   UpdateTaskTemplateData,
   UpdateTaskTemplateErrors,
   UpdateTaskTemplateResponses,
@@ -2628,6 +2631,32 @@ export const deletePlatformUser = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/platform/users/{user_id}/deletion",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Editar un plan del catálogo
+ */
+export const updatePlan = <ThrowOnError extends boolean = false>(
+  options: Options<UpdatePlanData, ThrowOnError>,
+): RequestResult<UpdatePlanResponses, UpdatePlanErrors, ThrowOnError> =>
+  (options.client ?? client).patch<
+    UpdatePlanResponses,
+    UpdatePlanErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/plans/{code}",
     ...options,
     headers: {
       "Content-Type": "application/json",

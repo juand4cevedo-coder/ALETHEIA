@@ -31,6 +31,8 @@ const ACTION_LABELS: Record<string, string> = {
   invitation_revoked: "Invitación revocada",
   invitation_accepted: "Invitación aceptada",
   role_changed: "Rol cambiado",
+  ownership_transferred: "Despacho entregado a otra persona",
+  archive_exported: "Índice del archivo descargado",
   member_removed: "Miembro retirado",
   organization_renamed: "Nombre del despacho actualizado",
   organization_policy_changed: "Políticas del despacho cambiadas",

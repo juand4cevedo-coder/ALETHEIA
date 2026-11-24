@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 import { useOutletContext } from "react-router";
 
-import type { Me, SupportTicketOut } from "../api/generated";
+import type { Me, PlatformPlan, SupportTicketOut } from "../api/generated";
 import {
   changeSupportTicketStatusMutation,
   grantCourtesyMutation,
@@ -19,6 +19,7 @@ import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
 import { StatTile } from "../components/ui/StatTile.tsx";
 import { formatCop } from "../features/billing/format.ts";
+import { PlatformPlanDialog } from "./PlatformPlanDialog.tsx";
 import { pageTitle } from "../config/site.ts";
 import styles from "./PlatformPage.module.css";
 
@@ -48,6 +49,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export function PlatformBillingPage() {
   const me = useOutletContext<Me>();
+  const [editing, setEditing] = useState<PlatformPlan | null>(null);
   const billing = useQuery({
     ...platformBillingOptions(),
     enabled: me.platform_admin,
@@ -131,7 +133,7 @@ export function PlatformBillingPage() {
               </Panel>
               <Panel
                 title="Planes del catálogo"
-                description="Este panel refleja los registros actuales. No emite facturas ni cobra pagos."
+                description="Edite precios, usuarios incluidos y visibilidad de cada plan. Cada cambio queda en la auditoría de la plataforma; no emite facturas ni cobra pagos."
               >
                 <div className={styles.tableScroll}>
                   <table className={styles.table} role="table">
@@ -151,6 +153,9 @@ export function PlatformBillingPage() {
                         </th>
                         <th scope="col" role="columnheader">
                           En precios
+                        </th>
+                        <th scope="col" role="columnheader">
+                          Acciones
                         </th>
                       </tr>
                     </thead>
@@ -172,6 +177,16 @@ export function PlatformBillingPage() {
                           <td role="cell" data-label="En precios">
                             {plan.is_public ? "Sí" : "Por cotización"}
                           </td>
+                          <td role="cell" data-label="Acciones">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              aria-label={`Editar el plan ${plan.name}`}
+                              onClick={() => setEditing(plan)}
+                            >
+                              Editar
+                            </Button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -179,6 +194,11 @@ export function PlatformBillingPage() {
                 </div>
               </Panel>
               <PlanAccessManager plans={billing.data.plans} />
+              <PlatformPlanDialog
+                key={editing?.code ?? "ninguno"}
+                plan={editing}
+                onClose={() => setEditing(null)}
+              />
             </>
           )}
         </>
@@ -539,6 +559,9 @@ const ACTION_LABELS: Record<string, string> = {
   payment_declined: "Pago rechazado",
   organization_renamed: "Organización renombrada",
   account_closed: "Cuenta cerrada",
+  plan_updated: "Plan del catálogo editado",
+  ownership_transferred: "Despacho entregado a otra persona",
+  archive_exported: "Índice del archivo descargado",
 };
 
 type AuditFilters = {
