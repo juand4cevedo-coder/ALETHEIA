@@ -37,7 +37,23 @@ class PlatformPlan(BaseModel):
     monthly_price_cop: int | None
     annual_price_cop: int | None
     included_users: int
+    extra_user_price_cop: int | None
     is_public: bool
+
+
+class PlanUpdate(BaseModel):
+    """Los campos que la plataforma edita de un plan. Los que no se envían no cambian."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    monthly_price_cop: int | None = Field(default=None, ge=0, le=100_000_000)
+    annual_price_cop: int | None = Field(default=None, ge=0, le=1_000_000_000)
+    included_users: int | None = Field(default=None, ge=1, le=10_000)
+    extra_user_price_cop: int | None = Field(default=None, ge=0, le=100_000_000)
+    is_public: bool | None = None
+    clear_extra_user_price: bool = Field(
+        default=False, description="Quita el usuario adicional: el plan ya no lo admite."
+    )
 
 
 class PlatformBilling(BaseModel):

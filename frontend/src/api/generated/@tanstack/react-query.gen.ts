@@ -126,6 +126,7 @@ import {
   twoFactorStatus,
   updateCaseRetention,
   updateCaseTaskStatus,
+  updatePlan,
   updateTaskTemplate,
   uploadEvidence,
   uploadPortalDocument,
@@ -467,6 +468,9 @@ import type {
   UpdateCaseTaskStatusData,
   UpdateCaseTaskStatusError,
   UpdateCaseTaskStatusResponse,
+  UpdatePlanData,
+  UpdatePlanError,
+  UpdatePlanResponse,
   UpdateTaskTemplateData,
   UpdateTaskTemplateError,
   UpdateTaskTemplateResponse,
@@ -3507,6 +3511,33 @@ export const deletePlatformUserMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await deletePlatformUser({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Editar un plan del catálogo
+ */
+export const updatePlanMutation = (
+  options?: Partial<Options<UpdatePlanData>>,
+): UseMutationOptions<
+  UpdatePlanResponse,
+  UpdatePlanError,
+  Options<UpdatePlanData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    UpdatePlanResponse,
+    UpdatePlanError,
+    Options<UpdatePlanData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await updatePlan({
         ...options,
         ...fnOptions,
         throwOnError: true,

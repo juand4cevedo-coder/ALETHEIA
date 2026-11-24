@@ -20,6 +20,7 @@ from app.schemas.platform import (
     CourtesyGrant,
     CourtesyRevoke,
     CourtesyTarget,
+    PlanUpdate,
     PlatformAuditEvent,
     PlatformAuditPage,
     PlatformBilling,
@@ -29,7 +30,7 @@ from app.schemas.platform import (
     UserStatusChange,
 )
 from app.schemas.web_vitals import VitalsSummary, VitalSummaryRow
-from app.services import courtesy
+from app.services import courtesy, plan_admin
 from app.services import platform_accounts as accounts_service
 from app.services import receipts as receipts_service
 from app.services import web_vitals as vitals_service
@@ -307,6 +308,53 @@ def delete_platform_user(
     return Response(status_code=status.HTTP_204_NO_CONTENT, headers={"Cache-Control": "no-store"})
 
 
+@router.patch(
+    "/plans/{code}",
+    summary="Editar un plan del catálogo",
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "No hay un plan con ese código."},
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {"description": "El cambio no es válido."},
+    },
+)
+def update_plan(
+    code: str,
+    change: PlanUpdate,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_platform_admin)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+) -> PlatformPlan:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        plan = plan_admin.update(session, principal.user_id, code, change, client_ip)
+        session.commit()
+    except plan_admin.PlanNotFoundError:
+        session.rollback()
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="No encontramos ese plan.") from None
+    except plan_admin.PlanChangeInvalidError:
+        session.rollback()
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=(
+                "Ese cambio dejaría el plan mal: un plan público lleva precio mensual y el "
+                "anual no puede costar más que doce meses."
+            ),
+        ) from None
+    return _platform_plan(plan)
+
+
+def _platform_plan(plan: Plan) -> PlatformPlan:
+    return PlatformPlan(
+        code=plan.code,
+        name=plan.name,
+        monthly_price_cop=plan.monthly_price_cop,
+        annual_price_cop=plan.annual_price_cop,
+        included_users=plan.included_users,
+        extra_user_price_cop=plan.extra_user_price_cop,
+        is_public=plan.is_public,
+    )
+
+
 @router.get("/billing", summary="Resumen comercial de la plataforma")
 def platform_billing(
     response: Response,
@@ -338,17 +386,7 @@ def platform_billing(
         invoicing_threshold_uvt=settings.invoicing_threshold_uvt,
         uvt_value_cop=settings.uvt_value_cop,
         invoicing_threshold_cop=settings.invoicing_threshold_uvt * settings.uvt_value_cop,
-        plans=[
-            PlatformPlan(
-                code=plan.code,
-                name=plan.name,
-                monthly_price_cop=plan.monthly_price_cop,
-                annual_price_cop=plan.annual_price_cop,
-                included_users=plan.included_users,
-                is_public=plan.is_public,
-            )
-            for plan in plans
-        ],
+        plans=[_platform_plan(plan) for plan in plans],
         subscription_counts={status: count for status, count in counts},
         payment_events_received=received,
         payment_events_pending=pending,

@@ -4,11 +4,11 @@ import datetime
 from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.cases import _archive_boundary, get_case_worker
-from app.api.deps import get_session
+from app.api.deps import get_client_ip, get_session
 from app.schemas.cases import (
     ArchiveAreaOut,
     ArchiveBasisOut,
@@ -112,8 +112,15 @@ def archive_export(
     principal: Annotated[Principal, Depends(get_case_worker)],
     session: Annotated[Session, Depends(get_session)],
     filters: Annotated[archive_service.ArchiveFilters, Depends(_filters)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
 ) -> Response:
-    content = archive_service.export_index(session, principal, filters, _BOGOTA)
+    content, rows = archive_service.export_index(session, principal, filters, _BOGOTA)
+    # Llevarse el índice del archivo queda en la auditoría del despacho, con cuántas filas salieron.
+    archive_service.record_export(
+        session, principal, rows, filters, client_ip=client_ip, user_agent=user_agent
+    )
+    session.commit()
     stamp = datetime.datetime.now(_BOGOTA).strftime("%Y%m%d")
     return Response(
         content=content,

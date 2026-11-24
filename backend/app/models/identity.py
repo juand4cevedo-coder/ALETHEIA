@@ -86,6 +86,8 @@ AUDIT_ACTIONS: Final = (
     "account_deleted_by_platform",
     "evidence_stamp_retried",
     "ownership_transferred",
+    "plan_updated",
+    "archive_exported",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.
