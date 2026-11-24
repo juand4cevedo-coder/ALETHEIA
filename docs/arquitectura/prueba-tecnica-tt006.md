@@ -1,21 +1,12 @@
-# TT-006 · Prueba técnica de cifrado por flujos y sello de tiempo
+# TT-006: prueba técnica de cifrado por flujos y sello de tiempo
 
-Antes de construir el núcleo de evidencia había que comprobar tres cosas: que un archivo de hasta 5 GB se puede cifrar mientras llega, con memoria constante y sin quedar sin cifrar en disco; que la subida multipart se puede leer así desde FastAPI; y que una autoridad de sellado real devuelve un sello RFC 3161 que cualquiera puede verificar. Este código existe para decidir, no para producción: vive fuera de la integración continua y sus bibliotecas están en el grupo `spike` de uv.
+Antes de construir el núcleo de evidencia había que comprobar tres cosas: que un archivo de hasta 5 GB se puede cifrar mientras llega, con memoria constante y sin quedar sin cifrar en disco; que la subida multipart se puede leer así desde FastAPI; y que una autoridad de sellado real devuelve un sello RFC 3161 que cualquiera puede verificar. Fue código para decidir, no para producción. Cuando las dos decisiones llegaron a la aplicación se retiró del repositorio; sigue disponible en el historial de Git. Los sellos reales que obtuvo quedaron como datos de prueba en `backend/tests/fixtures/sellos`.
 
-Las decisiones quedaron en [ADR-014](../../../docs/adr/adr-014.md) (cifrado por flujos) y [ADR-015](../../../docs/adr/adr-015.md) (sellado de tiempo).
+Las decisiones quedaron en [ADR-014](../adr/adr-014.md) (cifrado por flujos) y [ADR-015](../adr/adr-015.md) (sellado de tiempo).
 
-## Cómo repetirla
+## Cómo verificar un sello
 
-Desde `backend/`:
-
-```powershell
-uv run --group spike pytest spikes/tt006                     # 40 pruebas
-uv run --group spike python -m spikes.tt006.medir_tink        # memoria y velocidad de Tink
-uv run --group spike python -m spikes.tt006.medir_comparacion # Tink frente a cryptography
-uv run --group spike python -m spikes.tt006.sellar            # pide sellos reales (WSL encendido)
-```
-
-Verificar un sello guardado con openssl, en Debian:
+Desde `backend/tests/fixtures`, en Debian:
 
 ```bash
 openssl ts -verify -data sellos/muestra.txt -in sellos/digicert.tsr -CAfile /etc/ssl/certs/ca-certificates.crt
