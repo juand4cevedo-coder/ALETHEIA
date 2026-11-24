@@ -2508,6 +2508,30 @@ export type PlatformBilling = {
    * Payment Events Pending
    */
   payment_events_pending: number;
+  /**
+   * Collected Year
+   */
+  collected_year: number;
+  /**
+   * Receipts Year
+   */
+  receipts_year: number;
+  /**
+   * Collected Year Cop
+   */
+  collected_year_cop: number;
+  /**
+   * Invoicing Threshold Uvt
+   */
+  invoicing_threshold_uvt: number;
+  /**
+   * Uvt Value Cop
+   */
+  uvt_value_cop: number;
+  /**
+   * Invoicing Threshold Cop
+   */
+  invoicing_threshold_cop: number;
 };
 
 /**
@@ -3026,6 +3050,60 @@ export type PublicPlan = {
    * Días de duración si el plan es la prueba gratuita; nulo en los demás.
    */
   trial_days: number | null;
+};
+
+/**
+ * ReceiptOut
+ *
+ * Un comprobante de pago de ALETHEIA.
+ */
+export type ReceiptOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Number
+   *
+   * Número del comprobante, por ejemplo CP-2026-000001.
+   */
+  number: string;
+  /**
+   * Issued At
+   */
+  issued_at: string;
+  /**
+   * Plan Name
+   */
+  plan_name: string;
+  /**
+   * Billing Cycle
+   */
+  billing_cycle: "monthly" | "annual";
+  /**
+   * Amount Cop
+   */
+  amount_cop: number;
+  /**
+   * Payment Method
+   *
+   * Medio con que se pagó, como lo informó Wompi.
+   */
+  payment_method: string | null;
+  /**
+   * Period Start
+   */
+  period_start: string;
+  /**
+   * Period End
+   */
+  period_end: string;
+  /**
+   * Transaction Id
+   *
+   * Identificador de la transacción en Wompi.
+   */
+  transaction_id: string;
 };
 
 /**
@@ -7942,6 +8020,74 @@ export type ConfirmCheckoutWebResponses = {
 
 export type ConfirmCheckoutWebResponse =
   ConfirmCheckoutWebResponses[keyof ConfirmCheckoutWebResponses];
+
+export type ListReceiptsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/billing/receipts";
+};
+
+export type ListReceiptsErrors = {
+  /**
+   * El rol no administra la facturación.
+   */
+  403: Problem;
+};
+
+export type ListReceiptsError = ListReceiptsErrors[keyof ListReceiptsErrors];
+
+export type ListReceiptsResponses = {
+  /**
+   * Response List Receipts
+   *
+   * Successful Response
+   */
+  200: Array<ReceiptOut>;
+};
+
+export type ListReceiptsResponse =
+  ListReceiptsResponses[keyof ListReceiptsResponses];
+
+export type DownloadReceiptData = {
+  body?: never;
+  path: {
+    /**
+     * Receipt Id
+     */
+    receipt_id: string;
+  };
+  query?: never;
+  url: "/api/v1/billing/receipts/{receipt_id}/pdf";
+};
+
+export type DownloadReceiptErrors = {
+  /**
+   * El rol no administra la facturación.
+   */
+  403: Problem;
+  /**
+   * No hay un comprobante así en este despacho.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type DownloadReceiptError =
+  DownloadReceiptErrors[keyof DownloadReceiptErrors];
+
+export type DownloadReceiptResponses = {
+  /**
+   * Successful Response
+   */
+  200: Blob | File;
+};
+
+export type DownloadReceiptResponse =
+  DownloadReceiptResponses[keyof DownloadReceiptResponses];
 
 export type ListPortalAccessesData = {
   body?: never;

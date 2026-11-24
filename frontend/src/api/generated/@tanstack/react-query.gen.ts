@@ -44,6 +44,7 @@ import {
   downloadEvidenceTimestamp,
   downloadExport,
   downloadPortalDocument,
+  downloadReceipt,
   downloadSharedEvidence,
   forgotPassword,
   getPolicies,
@@ -71,6 +72,7 @@ import {
   listPortalDocuments,
   listPortalMessages,
   listPortalUpdates,
+  listReceipts,
   listShareLinks,
   listTaskTemplates,
   lookupCourtesy,
@@ -233,6 +235,9 @@ import type {
   DownloadPortalDocumentData,
   DownloadPortalDocumentError,
   DownloadPortalDocumentResponse,
+  DownloadReceiptData,
+  DownloadReceiptError,
+  DownloadReceiptResponse,
   DownloadSharedEvidenceData,
   DownloadSharedEvidenceError,
   DownloadSharedEvidenceResponse,
@@ -307,6 +312,9 @@ import type {
   ListPortalUpdatesData,
   ListPortalUpdatesError,
   ListPortalUpdatesResponse,
+  ListReceiptsData,
+  ListReceiptsError,
+  ListReceiptsResponse,
   ListShareLinksData,
   ListShareLinksError,
   ListShareLinksResponse,
@@ -3964,6 +3972,57 @@ export const confirmCheckoutWebMutation = (
   };
   return mutationOptions;
 };
+
+export const listReceiptsQueryKey = (options?: Options<ListReceiptsData>) =>
+  createQueryKey("listReceipts", options);
+
+/**
+ * Comprobantes de pago del despacho
+ */
+export const listReceiptsOptions = (options?: Options<ListReceiptsData>) =>
+  queryOptions<
+    ListReceiptsResponse,
+    ListReceiptsError,
+    ListReceiptsResponse,
+    ReturnType<typeof listReceiptsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listReceipts({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listReceiptsQueryKey(options),
+  });
+
+export const downloadReceiptQueryKey = (
+  options: Options<DownloadReceiptData>,
+) => createQueryKey("downloadReceipt", options);
+
+/**
+ * Descargar un comprobante de pago en PDF
+ */
+export const downloadReceiptOptions = (options: Options<DownloadReceiptData>) =>
+  queryOptions<
+    DownloadReceiptResponse,
+    DownloadReceiptError,
+    DownloadReceiptResponse,
+    ReturnType<typeof downloadReceiptQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await downloadReceipt({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: downloadReceiptQueryKey(options),
+  });
 
 export const listPortalAccessesQueryKey = (
   options: Options<ListPortalAccessesData>,

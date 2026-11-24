@@ -125,3 +125,33 @@ class PaymentEvent(Base):
     payload: Mapped[dict[str, Any]] = mapped_column(JSONB)
     received_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
     processed_at: Mapped[datetime.datetime | None]
+
+
+class PaymentReceipt(Base):
+    """Comprobante de pago de ALETHEIA: uno por cada pago aprobado, numerado en orden. Mientras
+    el operador no esté obligado a facturar, es el documento que se entrega por cada cobro."""
+
+    __tablename__ = "payment_receipts"
+    __table_args__ = (
+        CheckConstraint("amount_cop > 0", name="amount_cop"),
+        CheckConstraint("billing_cycle IN ('monthly', 'annual')", name="billing_cycle"),
+        CheckConstraint("char_length(number) BETWEEN 1 AND 30", name="number"),
+    )
+
+    id: Mapped[UUIDv7Pk]
+    organization_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("organizations.id"))
+    # Un solo comprobante por pago: la notificación repetida no emite otro.
+    payment_event_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("payment_events.id"), unique=True
+    )
+    number: Mapped[str] = mapped_column(unique=True)
+    gateway_transaction_id: Mapped[str]
+    payment_method: Mapped[str | None]
+    amount_cop: Mapped[int] = mapped_column(BigInteger)
+    plan_name: Mapped[str]
+    billing_cycle: Mapped[str]
+    period_start: Mapped[datetime.datetime]
+    period_end: Mapped[datetime.datetime]
+    buyer_name: Mapped[str]
+    buyer_email: Mapped[str | None]
+    issued_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())

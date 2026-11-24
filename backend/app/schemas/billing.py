@@ -1,5 +1,7 @@
 """Contrato del primer cobro de una suscripción con Wompi (HU-027)."""
 
+import datetime
+import uuid
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -50,6 +52,21 @@ class CheckoutWebOut(BaseModel):
     checkout_url: str = Field(
         description="Página de Wompi donde la persona paga con tarjeta, PSE, Nequi u otros medios."
     )
+
+
+class ReceiptOut(BaseModel):
+    """Un comprobante de pago de ALETHEIA."""
+
+    id: uuid.UUID
+    number: str = Field(description="Número del comprobante, por ejemplo CP-2026-000001.")
+    issued_at: datetime.datetime
+    plan_name: str
+    billing_cycle: Literal["monthly", "annual"]
+    amount_cop: int
+    payment_method: str | None = Field(description="Medio con que se pagó, como lo informó Wompi.")
+    period_start: datetime.datetime
+    period_end: datetime.datetime
+    transaction_id: str = Field(description="Identificador de la transacción en Wompi.")
 
 
 class CheckoutWebResult(BaseModel):

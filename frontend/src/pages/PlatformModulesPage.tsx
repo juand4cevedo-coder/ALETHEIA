@@ -18,6 +18,7 @@ import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
 import { StatTile } from "../components/ui/StatTile.tsx";
+import { formatCop } from "../features/billing/format.ts";
 import { pageTitle } from "../config/site.ts";
 import styles from "./PlatformPage.module.css";
 
@@ -82,6 +83,37 @@ export function PlatformBillingPage() {
                       billing.data.payment_events_pending > 0
                         ? "Esperando que Wompi confirme el pago."
                         : undefined
+                    }
+                  />
+                </div>
+              </Panel>
+              <Panel title="Ingresos del año y factura electrónica">
+                <div className={styles.stats}>
+                  <StatTile
+                    label={`Cobrado en ${billing.data.collected_year}`}
+                    value={formatCop(billing.data.collected_year_cop)}
+                    note={`${billing.data.receipts_year} comprobantes de pago`}
+                  />
+                  <StatTile
+                    label="Tope para facturar"
+                    value={formatCop(billing.data.invoicing_threshold_cop)}
+                    note={`${billing.data.invoicing_threshold_uvt.toLocaleString("es-CO")} UVT, con la UVT en ${formatCop(billing.data.uvt_value_cop)}`}
+                  />
+                  <StatTile
+                    label="Del tope usado"
+                    value={`${Math.min(
+                      100,
+                      (billing.data.collected_year_cop * 100) /
+                        billing.data.invoicing_threshold_cop,
+                    ).toFixed(1)} %`}
+                    note={
+                      billing.data.collected_year_cop >=
+                      billing.data.invoicing_threshold_cop
+                        ? "Superó el tope: hable con su contador sobre la factura electrónica."
+                        : billing.data.collected_year_cop >=
+                            billing.data.invoicing_threshold_cop * 0.8
+                          ? "Se acerca al tope: avise a su contador."
+                          : "Mientras no lo supere, el comprobante de pago de ALETHEIA reemplaza la factura."
                     }
                   />
                 </div>

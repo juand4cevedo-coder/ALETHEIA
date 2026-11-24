@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.36.0"
+    "version": "0.37.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -7263,6 +7263,110 @@
         ]
       }
     },
+    "/api/v1/billing/receipts": {
+      "get": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "Comprobantes de pago del despacho",
+        "operationId": "list_receipts",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReceiptOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Receipts"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no administra la facturación.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/billing/receipts/{receipt_id}/pdf": {
+      "get": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "Descargar un comprobante de pago en PDF",
+        "operationId": "download_receipt",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "receipt_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Receipt Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/pdf": {}
+            }
+          },
+          "403": {
+            "description": "El rol no administra la facturación.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No hay un comprobante así en este despacho.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cases/{case_id}/portal/accesses": {
       "get": {
         "tags": [
@@ -11950,6 +12054,30 @@
           "payment_events_pending": {
             "type": "integer",
             "title": "Payment Events Pending"
+          },
+          "collected_year": {
+            "type": "integer",
+            "title": "Collected Year"
+          },
+          "receipts_year": {
+            "type": "integer",
+            "title": "Receipts Year"
+          },
+          "collected_year_cop": {
+            "type": "integer",
+            "title": "Collected Year Cop"
+          },
+          "invoicing_threshold_uvt": {
+            "type": "integer",
+            "title": "Invoicing Threshold Uvt"
+          },
+          "uvt_value_cop": {
+            "type": "integer",
+            "title": "Uvt Value Cop"
+          },
+          "invoicing_threshold_cop": {
+            "type": "integer",
+            "title": "Invoicing Threshold Cop"
           }
         },
         "type": "object",
@@ -11957,7 +12085,13 @@
           "plans",
           "subscription_counts",
           "payment_events_received",
-          "payment_events_pending"
+          "payment_events_pending",
+          "collected_year",
+          "receipts_year",
+          "collected_year_cop",
+          "invoicing_threshold_uvt",
+          "uvt_value_cop",
+          "invoicing_threshold_cop"
         ],
         "title": "PlatformBilling"
       },
@@ -12722,6 +12856,83 @@
         ],
         "title": "PublicPlan",
         "description": "Plan que se muestra en la página de precios, con sus precios y límites del catálogo."
+      },
+      "ReceiptOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "number": {
+            "type": "string",
+            "title": "Number",
+            "description": "Número del comprobante, por ejemplo CP-2026-000001."
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Issued At"
+          },
+          "plan_name": {
+            "type": "string",
+            "title": "Plan Name"
+          },
+          "billing_cycle": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "annual"
+            ],
+            "title": "Billing Cycle"
+          },
+          "amount_cop": {
+            "type": "integer",
+            "title": "Amount Cop"
+          },
+          "payment_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Method",
+            "description": "Medio con que se pagó, como lo informó Wompi."
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period End"
+          },
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id",
+            "description": "Identificador de la transacción en Wompi."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "issued_at",
+          "plan_name",
+          "billing_cycle",
+          "amount_cop",
+          "payment_method",
+          "period_start",
+          "period_end",
+          "transaction_id"
+        ],
+        "title": "ReceiptOut",
+        "description": "Un comprobante de pago de ALETHEIA."
       },
       "RecoveryCancel": {
         "properties": {
