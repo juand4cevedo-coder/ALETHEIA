@@ -267,6 +267,38 @@ def crear_fuente_nequi(
     return int(data["id"])
 
 
+def cobrar_con_fuente(
+    creds: Credenciales,
+    *,
+    source_id: int,
+    amount_in_cents: int,
+    reference: str,
+    customer_email: str,
+) -> Transaccion:
+    """POST /transactions con una fuente de pago vinculada: el cobro de una renovación automática.
+    Con una fuente que no es tarjeta, Wompi no pide `payment_method`. El resultado definitivo llega
+    por el aviso de Wompi o por su consulta firmada, como en cualquier otro pago."""
+    cuerpo = {
+        "amount_in_cents": amount_in_cents,
+        "currency": "COP",
+        "customer_email": customer_email,
+        "reference": reference,
+        "payment_source_id": source_id,
+        "signature": firma_de_integridad(reference, amount_in_cents, "COP", creds.integrity_secret),
+    }
+    respuesta = _llamar(
+        f"{creds.base_url}/transactions", cuerpo=cuerpo, metodo="POST", bearer=creds.private_key
+    )
+    data = respuesta["data"]
+    return Transaccion(
+        id=data["id"],
+        status=data["status"],
+        reference=data["reference"],
+        amount_in_cents=data["amount_in_cents"],
+        payment_method_type=data.get("payment_method_type"),
+    )
+
+
 def consultar_transaccion(creds: Credenciales, transaction_id: str) -> Transaccion:
     """GET /transactions/{id}: la versión de la transacción en la que Wompi manda, no la que
     venga en un webhook. El webhook solo avisa que algo cambió (HU-027); nunca se activa un

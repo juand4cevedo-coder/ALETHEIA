@@ -184,6 +184,11 @@ def _aplicar(
             period_end=subscription.current_period_end,
             issued_at=now,
         )
+        from app.services import renewals
+
+        renewals.schedule_if_linked(
+            session, referencia.organization_id, subscription.current_period_end
+        )
         payment_emails.schedule_for_owners(
             session,
             referencia.organization_id,

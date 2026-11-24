@@ -6,6 +6,7 @@ después de confirmarlas (ADR-038). La cola entrega cada tarea al menos una vez,
 manejador define cómo se comporta si se repite; la tabla está en ADR-038.
 """
 
+import datetime
 import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -29,6 +30,7 @@ from app.services import (
     export_expiration,
     notifications,
     payments,
+    renewals,
     subscription_expiration,
 )
 from app.services import case_deletion_emails as _case_deletion_emails  # noqa: F401
@@ -161,6 +163,23 @@ def reconcile_payment(run: JobRun) -> None:
         raise PermanentJobError(str(exc)) from exc
 
 
+def charge_renewal(run: JobRun) -> None:
+    """renewal_charge (ADR-058): cobra la renovación a la fuente de pago vinculada. Cada intento
+    comprueba de nuevo, bajo candado, que valga la pena cobrar; si un cobro ya está en curso, no
+    cobra dos veces, así que repetir la tarea es seguro."""
+    try:
+        organization_id = uuid.UUID(str(run.payload["organization_id"]))
+        period_end = datetime.datetime.fromisoformat(str(run.payload["period_end"]))
+        number = int(run.payload.get("attempt", 1))
+    except (KeyError, ValueError, TypeError) as exc:
+        raise PermanentJobError("La tarea de renovación no trae datos válidos.") from exc
+    try:
+        with run.open_session() as session:
+            renewals.attempt(session, run.context.settings, organization_id, period_end, number)
+    except wompi.WompiNoConfiguradoError as exc:
+        raise PermanentJobError(str(exc)) from exc
+
+
 def expire_export(run: JobRun) -> None:
     try:
         export_id = uuid.UUID(str(run.payload["export_id"]))
@@ -180,4 +199,5 @@ HANDLERS: Final[Mapping[str, Handler]] = {
     "custody_anchor": anchor_custody,
     "case_purge": purge_case_job,
     "payment_reconcile": reconcile_payment,
+    "renewal_charge": charge_renewal,
 }
