@@ -24,6 +24,7 @@ export const ROUTES = {
   // Espacio de trabajo: todo lo que exige sesión vive bajo /app.
   app: "/app",
   account: "/app/cuenta",
+  billing: "/app/facturacion",
   platform: "/app/plataforma",
   platformBilling: "/app/plataforma/facturacion",
   platformSupport: "/app/plataforma/soporte",

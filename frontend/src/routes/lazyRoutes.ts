@@ -85,6 +85,8 @@ export const loadOrganizationAuditPage = () =>
   );
 export const loadCasesPage = () =>
   import("../pages/CasesPage.tsx").then((module) => module.CasesPage);
+export const loadBillingPage = () =>
+  import("../pages/BillingPage.tsx").then((module) => module.BillingPage);
 export const loadArchivePage = () =>
   import("../pages/ArchivePage.tsx").then((module) => module.ArchivePage);
 export const loadNewCasePage = () =>

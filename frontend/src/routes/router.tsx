@@ -16,6 +16,7 @@ import {
   loadCasePage,
   loadEvidenceDetailPage,
   loadArchivePage,
+  loadBillingPage,
   loadCasesPage,
   loadForgotPasswordPage,
   loadLegalPage,
@@ -285,6 +286,10 @@ export const routes: RouteObject[] = [
           {
             path: ROUTES.members.slice(ROUTES.app.length + 1),
             lazy: { Component: loadMembersPage },
+          },
+          {
+            path: ROUTES.billing.slice(ROUTES.app.length + 1),
+            lazy: { Component: loadBillingPage },
           },
           {
             path: ROUTES.organization.slice(ROUTES.app.length + 1),

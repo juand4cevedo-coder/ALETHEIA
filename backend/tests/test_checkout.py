@@ -14,7 +14,7 @@ from app.adapters import wompi
 from app.core.config import Settings
 from app.core.legal import LEGAL_VERSION
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import Job, Subscription
+from app.models import Job, Plan, Subscription
 from app.services import checkout
 from app.services.sessions import Principal
 from tests.organizations import Oficina, crear_oficina
@@ -375,3 +375,77 @@ def test_un_identificador_que_no_es_de_wompi_nunca_llega_a_la_url(
         wompi.consultar_transaccion(creds, identificador)
 
     assert llamadas == []
+
+
+def _suscripcion(db: Session, office: Oficina) -> Subscription:
+    set_tenant(db, TenantContext(office.organization_id, office.owner.id))
+    return db.scalars(
+        select(Subscription).where(Subscription.organization_id == office.organization_id)
+    ).one()
+
+
+def test_con_el_plan_activo_el_checkout_web_sirve_para_renovar(
+    db: Session, settings: Settings
+) -> None:
+    office = crear_oficina(db)  # un plan activo y pagado
+    principal = _principal(office.organization_id, office.owner.id, "owner")
+
+    url = checkout.iniciar_checkout_web(db, _con_wompi(settings), principal, "essential", "annual")
+
+    assert url.startswith("https://checkout.wompi.co/p/?")
+    assert "/app/facturacion" in urllib.parse.unquote(url)
+
+
+def _pagar(
+    db: Session,
+    settings: Settings,
+    office: Oficina,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    plan_previo: str,
+) -> tuple[Subscription, datetime.datetime]:
+    """Un despacho con un plan pagado que vence en diez días, y un pago aprobado de «essential»."""
+    subscription = _suscripcion(db, office)
+    previo = db.scalars(select(Plan).where(Plan.code == plan_previo)).one()
+    en_diez_dias = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=10)
+    subscription.plan_id = previo.id
+    subscription.status = "active"
+    subscription.access_source = "payment"
+    subscription.billing_cycle = "monthly"
+    subscription.current_period_end = en_diez_dias
+    db.flush()
+    principal = _principal(office.organization_id, office.owner.id, "owner")
+    con_wompi = _con_wompi(settings)
+    checkout.iniciar_checkout_web(db, con_wompi, principal, "essential", "monthly")
+    monkeypatch.setattr(
+        wompi,
+        "consultar_por_referencia",
+        lambda _creds, referencia: wompi.Transaccion("tx-r", "APPROVED", referencia, 29_900 * 100),
+    )
+    assert checkout.confirmar_regreso(db, con_wompi, principal) == "APPROVED"
+    db.refresh(subscription)
+    return subscription, en_diez_dias
+
+
+def test_renovar_el_mismo_plan_suma_el_periodo_que_le_quedaba(
+    db: Session, settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    office = crear_oficina(db)
+
+    subscription, en_diez_dias = _pagar(db, settings, office, monkeypatch, plan_previo="essential")
+
+    assert subscription.current_period_end is not None
+    assert subscription.current_period_end >= en_diez_dias + datetime.timedelta(days=28)
+
+
+def test_cambiar_de_plan_empieza_hoy_y_no_suma_el_periodo_anterior(
+    db: Session, settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    office = crear_oficina(db)
+    otro = db.scalars(select(Plan).where(Plan.code != "essential").limit(1)).one()
+
+    subscription, en_diez_dias = _pagar(db, settings, office, monkeypatch, plan_previo=otro.code)
+
+    assert subscription.current_period_end is not None
+    assert subscription.current_period_end < en_diez_dias + datetime.timedelta(days=25)
+    assert subscription.current_period_end > datetime.datetime.now(datetime.UTC)

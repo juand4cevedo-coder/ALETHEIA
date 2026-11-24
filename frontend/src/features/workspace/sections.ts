@@ -80,6 +80,15 @@ export const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
         visible: (me) => managesOrganization(me.organization?.role),
       },
       {
+        to: ROUTES.billing,
+        label: "Plan y facturación",
+        icon: ReciboIcon,
+        visible: (me) =>
+          me.organization != null &&
+          !me.platform_admin &&
+          managesOrganization(me.organization.role),
+      },
+      {
         to: ROUTES.organizationAudit,
         label: "Auditoría de seguridad",
         icon: HuellaIcon,
