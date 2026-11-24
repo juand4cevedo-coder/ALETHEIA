@@ -6,11 +6,11 @@ import uuid
 from typing import Annotated, Any, Final, Literal, cast
 
 import anyio.from_thread
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
 from app.adapters import wompi
-from app.api.deps import get_app_settings, get_principal, get_session
+from app.api.deps import get_app_settings, get_client_ip, get_principal, get_session
 from app.core.config import Settings
 from app.core.permissions import has_permission
 from app.schemas.billing import (
@@ -19,10 +19,15 @@ from app.schemas.billing import (
     CheckoutWebCreate,
     CheckoutWebOut,
     CheckoutWebResult,
+    PaymentSourceConfirm,
+    PaymentSourceOut,
+    PaymentSourceStart,
+    PaymentSourceStatusOut,
     ReceiptOut,
     WompiTermsOut,
 )
 from app.services import checkout as checkout_service
+from app.services import payment_sources as sources_service
 from app.services import payments as payments_service
 from app.services import receipts as receipts_service
 from app.services.sessions import Principal
@@ -326,3 +331,186 @@ def download_receipt(
             "Content-Disposition": f'attachment; filename="comprobante-{receipt.number}.pdf"',
         },
     )
+
+
+def _source_view(view: sources_service.SourceView | None) -> PaymentSourceStatusOut | None:
+    if view is None:
+        return None
+    return PaymentSourceStatusOut(
+        status=cast(Literal["pending", "active", "declined", "canceled"], view.status),
+        phone_last4=view.phone_last4,
+        linked_at=view.linked_at,
+    )
+
+
+def _source_errors(exc: Exception) -> HTTPException:
+    if isinstance(exc, sources_service.RecurringUnavailableError):
+        return HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail="La renovación automática todavía no está disponible.",
+            headers=_NO_STORE,
+        )
+    if isinstance(exc, sources_service.NotAllowedError):
+        return HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="Solo la persona responsable del despacho vincula una fuente de pago.",
+            headers=_NO_STORE,
+        )
+    if isinstance(exc, sources_service.ConsentMismatchError):
+        return HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="El texto de la autorización cambió. Recargue la página y léalo de nuevo.",
+            headers=_NO_STORE,
+        )
+    if isinstance(exc, sources_service.AlreadyLinkedError):
+        return HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="Ya hay una fuente de pago vinculada o en trámite. Cancélela primero.",
+            headers=_NO_STORE,
+        )
+    if isinstance(exc, sources_service.NothingToConfirmError):
+        return HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail="No hay una vinculación en trámite.",
+            headers=_NO_STORE,
+        )
+    if isinstance(exc, wompi.WompiRechazadoError):
+        return HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Wompi no aceptó la vinculación. Revise el número e inténtelo de nuevo.",
+            headers=_NO_STORE,
+        )
+    return HTTPException(
+        status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail="Wompi no respondió; inténtelo de nuevo en un momento.",
+        headers=_NO_STORE,
+    )
+
+
+_SOURCE_EXCEPTIONS = (
+    sources_service.RecurringUnavailableError,
+    sources_service.NotAllowedError,
+    sources_service.ConsentMismatchError,
+    sources_service.AlreadyLinkedError,
+    sources_service.NothingToConfirmError,
+    wompi.WompiRechazadoError,
+    wompi.WompiNoConfiguradoError,
+    wompi.WompiNoDisponibleError,
+)
+
+
+@router.get(
+    "/billing/payment-source",
+    summary="La fuente de pago para la renovación automática",
+    responses={status.HTTP_403_FORBIDDEN: {"description": "El rol no administra la facturación."}},
+)
+def read_payment_source(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+) -> PaymentSourceOut:
+    response.headers["Cache-Control"] = "no-store"
+    if not settings.recurring_payments_enabled:
+        return PaymentSourceOut(
+            enabled=False,
+            consent_version=sources_service.CONSENT_VERSION,
+            consent_text=sources_service.CONSENT_TEXT,
+            source=None,
+        )
+    try:
+        view = sources_service.current(session, settings, principal)
+    except _SOURCE_EXCEPTIONS as exc:
+        raise _source_errors(exc) from None
+    return PaymentSourceOut(
+        enabled=True,
+        consent_version=sources_service.CONSENT_VERSION,
+        consent_text=sources_service.CONSENT_TEXT,
+        source=_source_view(view),
+    )
+
+
+@router.post(
+    "/billing/payment-source",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Empezar a vincular el Nequi para renovar solo",
+)
+def start_payment_source(
+    body: PaymentSourceStart,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> PaymentSourceStatusOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        view = sources_service.start(
+            session,
+            settings,
+            principal,
+            phone_number=body.phone_number,
+            consent_version=body.consent_version,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+        session.commit()
+    except _SOURCE_EXCEPTIONS as exc:
+        session.rollback()
+        raise _source_errors(exc) from None
+    return cast(PaymentSourceStatusOut, _source_view(view))
+
+
+@router.post(
+    "/billing/payment-source/confirm",
+    summary="Confirmar que la persona aprobó la vinculación en su celular",
+)
+def confirm_payment_source(
+    body: PaymentSourceConfirm,
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> PaymentSourceStatusOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        view = sources_service.confirm(
+            session,
+            settings,
+            principal,
+            acceptance_token=body.acceptance_token,
+            accept_personal_auth=body.accept_personal_auth,
+            client_ip=client_ip,
+            user_agent=user_agent,
+        )
+        session.commit()
+    except _SOURCE_EXCEPTIONS as exc:
+        session.rollback()
+        raise _source_errors(exc) from None
+    return cast(PaymentSourceStatusOut, _source_view(view))
+
+
+@router.delete(
+    "/billing/payment-source",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Cancelar la renovación automática",
+)
+def cancel_payment_source(
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+    user_agent: Annotated[str | None, Header(include_in_schema=False)] = None,
+) -> Response:
+    try:
+        sources_service.cancel(
+            session, settings, principal, client_ip=client_ip, user_agent=user_agent
+        )
+        session.commit()
+    except _SOURCE_EXCEPTIONS as exc:
+        session.rollback()
+        raise _source_errors(exc) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT, headers=_NO_STORE)

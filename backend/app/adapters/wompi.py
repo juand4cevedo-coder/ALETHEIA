@@ -213,6 +213,60 @@ def crear_transaccion_nequi(
     )
 
 
+def crear_token_nequi(creds: Credenciales, phone_number: str) -> str:
+    """POST /tokens/nequi con la llave pública: Wompi manda a la persona una notificación para que
+    apruebe la vinculación en su celular. Devuelve el identificador del token, que queda en trámite
+    hasta que la persona aprueba (PENDING)."""
+    respuesta = _llamar(
+        f"{creds.base_url}/tokens/nequi",
+        cuerpo={"phone_number": phone_number},
+        metodo="POST",
+        bearer=creds.public_key,
+    )
+    token = str(respuesta["data"]["id"])
+    if _ID_DE_TRANSACCION.fullmatch(token) is None:
+        raise WompiNoDisponibleError("Wompi devolvió un identificador de token que no se reconoce.")
+    return token
+
+
+def consultar_token_nequi(creds: Credenciales, token: str) -> str:
+    """GET /tokens/nequi/{token}: el estado de la vinculación (PENDING, APPROVED o DECLINED). El
+    token sale de la base, no de la petición, y se valida igual antes de ir a la ruta."""
+    if _ID_DE_TRANSACCION.fullmatch(token) is None:
+        raise WompiRechazadoError("El identificador del token no es válido.")
+    ruta = urllib.parse.quote(token, safe="")
+    respuesta = _llamar(f"{creds.base_url}/tokens/nequi/{ruta}", bearer=creds.public_key)
+    return str(respuesta["data"]["status"])
+
+
+def crear_fuente_nequi(
+    creds: Credenciales,
+    *,
+    token: str,
+    customer_email: str,
+    acceptance_token: str,
+    accept_personal_auth: str,
+) -> int:
+    """POST /payment_sources con la llave privada: con el token aprobado crea la fuente de pago.
+    Devuelve su identificador, que es lo único que ALETHEIA guarda."""
+    respuesta = _llamar(
+        f"{creds.base_url}/payment_sources",
+        cuerpo={
+            "type": "NEQUI",
+            "token": token,
+            "customer_email": customer_email,
+            "acceptance_token": acceptance_token,
+            "accept_personal_auth": accept_personal_auth,
+        },
+        metodo="POST",
+        bearer=creds.private_key,
+    )
+    data = respuesta["data"]
+    if data.get("status") != "AVAILABLE":
+        raise WompiRechazadoError("Wompi no dejó disponible la fuente de pago.")
+    return int(data["id"])
+
+
 def consultar_transaccion(creds: Credenciales, transaction_id: str) -> Transaccion:
     """GET /transactions/{id}: la versión de la transacción en la que Wompi manda, no la que
     venga en un webhook. El webhook solo avisa que algo cambió (HU-027); nunca se activa un

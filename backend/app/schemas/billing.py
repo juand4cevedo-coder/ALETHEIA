@@ -54,6 +54,36 @@ class CheckoutWebOut(BaseModel):
     )
 
 
+class PaymentSourceStatusOut(BaseModel):
+    status: Literal["pending", "active", "declined", "canceled"]
+    phone_last4: str | None
+    linked_at: datetime.datetime | None
+
+
+class PaymentSourceOut(BaseModel):
+    """La renovación automática del despacho: si está disponible y qué fuente tiene."""
+
+    enabled: bool = Field(description="Si la renovación automática está encendida.")
+    consent_version: str
+    consent_text: str = Field(description="El texto exacto que la persona acepta al vincular.")
+    source: PaymentSourceStatusOut | None
+
+
+class PaymentSourceStart(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    phone_number: str = Field(pattern=r"^3\d{9}$", description="Celular Nequi de 10 dígitos.")
+    consent_version: str = Field(max_length=20, description="Versión del texto que se aceptó.")
+    accept_consent: Literal[True] = Field(description="La casilla del consentimiento marcada.")
+
+
+class PaymentSourceConfirm(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    acceptance_token: str = Field(min_length=1, max_length=2000)
+    accept_personal_auth: str = Field(min_length=1, max_length=2000)
+
+
 class ReceiptOut(BaseModel):
     """Un comprobante de pago de ALETHEIA."""
 

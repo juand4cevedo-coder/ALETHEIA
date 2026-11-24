@@ -4,7 +4,7 @@ import datetime
 import uuid
 from typing import Any, Final
 
-from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, Index, func
+from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, Index, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -158,3 +158,47 @@ class PaymentReceipt(Base):
     buyer_name: Mapped[str]
     buyer_email: Mapped[str | None]
     issued_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
+
+
+class PaymentSource(Base):
+    """Fuente de pago que una organización vincula para renovar su plan sin intervención.
+
+    Guarda el consentimiento exacto que dio la persona y el identificador de la fuente en la
+    pasarela; nunca datos de pago. Una sola fuente viva (en trámite o activa) por organización.
+    """
+
+    __tablename__ = "payment_sources"
+    __table_args__ = (
+        CheckConstraint("kind IN ('nequi')", name="kind"),
+        CheckConstraint("status IN ('pending', 'active', 'declined', 'canceled')", name="status"),
+        CheckConstraint("char_length(phone_last4) = 4", name="phone_last4"),
+        CheckConstraint(
+            "status <> 'active' OR gateway_source_id IS NOT NULL", name="active_has_source"
+        ),
+        Index(
+            "uq_payment_sources_one_live_per_organization",
+            "organization_id",
+            unique=True,
+            postgresql_where=text("status IN ('pending', 'active')"),
+        ),
+    )
+
+    id: Mapped[UUIDv7Pk]
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("organizations.id", ondelete="RESTRICT")
+    )
+    created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    kind: Mapped[str]
+    status: Mapped[str]
+    gateway_token: Mapped[str | None]
+    gateway_source_id: Mapped[int | None] = mapped_column(BigInteger)
+    phone_last4: Mapped[str]
+    consent_version: Mapped[str]
+    consent_accepted_at: Mapped[datetime.datetime]
+    consent_ip: Mapped[str | None]
+    linked_at: Mapped[datetime.datetime | None]
+    canceled_at: Mapped[datetime.datetime | None]
+    canceled_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT")
+    )
+    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())

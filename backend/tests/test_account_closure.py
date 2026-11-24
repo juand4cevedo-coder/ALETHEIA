@@ -13,7 +13,7 @@ from app.api.deps import get_principal, get_session
 from app.core.legal import LEGAL_VERSION
 from app.core.passwords import hash_password
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import AuditLog, Membership, OAuthIdentity, Organization, User
+from app.models import AuditLog, Membership, OAuthIdentity, Organization, PaymentSource, User
 from app.services.sessions import Principal
 from tests.conftest import NuevoCliente
 
@@ -73,6 +73,30 @@ def test_propietaria_unica_cierra_acceso_y_organizacion_sin_borrar_historia(
     owner, _, organization = _organization(db)
     set_tenant(db, TenantContext(user_id=owner.id))
     db.add(OAuthIdentity(user_id=owner.id, provider="google", subject="google-ana"))
+    # El id sale de la membresía: tocar `organization` aquí la recargaría sin el contexto de la
+    # organización, que la política de filas no deja ver.
+    organization_id = db.scalar(
+        select(Membership.organization_id).where(Membership.user_id == owner.id)
+    )
+    assert organization_id is not None
+    set_tenant(db, TenantContext(organization_id=organization_id, user_id=owner.id))
+    ahora = datetime.datetime.now(datetime.UTC)
+    db.add(
+        PaymentSource(
+            organization_id=organization_id,
+            created_by=owner.id,
+            kind="nequi",
+            status="active",
+            gateway_source_id=3891,
+            phone_last4="4567",
+            consent_version="2026-11-24",
+            consent_accepted_at=ahora,
+            linked_at=ahora,
+        )
+    )
+    db.flush()
+    # Se vuelve al contexto de la persona, como en el resto de la prueba.
+    set_tenant(db, TenantContext(user_id=owner.id))
     db.commit()
     client = _login(dispositivo, owner.email)
 
@@ -92,6 +116,12 @@ def test_propietaria_unica_cierra_acceso_y_organizacion_sin_borrar_historia(
     audit = db.scalar(select(AuditLog).where(AuditLog.action == "account_closed"))
     assert audit is not None
     assert audit.details == {"identity": "anonymized", "case_records": "preserved"}
+
+    set_tenant(db, TenantContext(organization_id=organization_id, user_id=owner.id))
+    fuente = db.scalars(select(PaymentSource)).one()
+    # Cerrar el despacho cancela la renovación automática: nada se cobra después.
+    assert fuente.status == "canceled"
+    assert fuente.canceled_at is not None
 
 
 def test_miembro_cierra_su_cuenta_sin_cerrar_el_despacho(

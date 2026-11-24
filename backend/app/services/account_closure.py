@@ -12,6 +12,7 @@ from app.models import (
     Membership,
     OAuthIdentity,
     Organization,
+    PaymentSource,
     Subscription,
     User,
 )
@@ -82,6 +83,15 @@ def close_account(
                 Invitation.revoked_at.is_(None),
             )
             .values(revoked_at=now)
+        )
+        # Cerrar el despacho cancela la renovación automática: nada se cobra después de cerrar.
+        session.execute(
+            update(PaymentSource)
+            .where(
+                PaymentSource.organization_id == membership.organization_id,
+                PaymentSource.status.in_(("pending", "active")),
+            )
+            .values(status="canceled", canceled_at=now, canceled_by=user.id)
         )
     else:
         now = datetime.datetime.now(datetime.UTC)

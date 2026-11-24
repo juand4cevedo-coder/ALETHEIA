@@ -2426,6 +2426,87 @@ export type PasswordResetRequested = {
 };
 
 /**
+ * PaymentSourceConfirm
+ */
+export type PaymentSourceConfirm = {
+  /**
+   * Acceptance Token
+   */
+  acceptance_token: string;
+  /**
+   * Accept Personal Auth
+   */
+  accept_personal_auth: string;
+};
+
+/**
+ * PaymentSourceOut
+ *
+ * La renovación automática del despacho: si está disponible y qué fuente tiene.
+ */
+export type PaymentSourceOut = {
+  /**
+   * Enabled
+   *
+   * Si la renovación automática está encendida.
+   */
+  enabled: boolean;
+  /**
+   * Consent Version
+   */
+  consent_version: string;
+  /**
+   * Consent Text
+   *
+   * El texto exacto que la persona acepta al vincular.
+   */
+  consent_text: string;
+  source: PaymentSourceStatusOut | null;
+};
+
+/**
+ * PaymentSourceStart
+ */
+export type PaymentSourceStart = {
+  /**
+   * Phone Number
+   *
+   * Celular Nequi de 10 dígitos.
+   */
+  phone_number: string;
+  /**
+   * Consent Version
+   *
+   * Versión del texto que se aceptó.
+   */
+  consent_version: string;
+  /**
+   * Accept Consent
+   *
+   * La casilla del consentimiento marcada.
+   */
+  accept_consent: true;
+};
+
+/**
+ * PaymentSourceStatusOut
+ */
+export type PaymentSourceStatusOut = {
+  /**
+   * Status
+   */
+  status: "pending" | "active" | "declined" | "canceled";
+  /**
+   * Phone Last4
+   */
+  phone_last4: string | null;
+  /**
+   * Linked At
+   */
+  linked_at: string | null;
+};
+
+/**
  * PlanUpdate
  *
  * Los campos que la plataforma edita de un plan. Los que no se envían no cambian.
@@ -8161,6 +8242,114 @@ export type DownloadReceiptResponses = {
 
 export type DownloadReceiptResponse =
   DownloadReceiptResponses[keyof DownloadReceiptResponses];
+
+export type CancelPaymentSourceData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/billing/payment-source";
+};
+
+export type CancelPaymentSourceErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type CancelPaymentSourceError =
+  CancelPaymentSourceErrors[keyof CancelPaymentSourceErrors];
+
+export type CancelPaymentSourceResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type CancelPaymentSourceResponse =
+  CancelPaymentSourceResponses[keyof CancelPaymentSourceResponses];
+
+export type ReadPaymentSourceData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/billing/payment-source";
+};
+
+export type ReadPaymentSourceErrors = {
+  /**
+   * El rol no administra la facturación.
+   */
+  403: Problem;
+};
+
+export type ReadPaymentSourceError =
+  ReadPaymentSourceErrors[keyof ReadPaymentSourceErrors];
+
+export type ReadPaymentSourceResponses = {
+  /**
+   * Successful Response
+   */
+  200: PaymentSourceOut;
+};
+
+export type ReadPaymentSourceResponse =
+  ReadPaymentSourceResponses[keyof ReadPaymentSourceResponses];
+
+export type StartPaymentSourceData = {
+  body: PaymentSourceStart;
+  path?: never;
+  query?: never;
+  url: "/api/v1/billing/payment-source";
+};
+
+export type StartPaymentSourceErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type StartPaymentSourceError =
+  StartPaymentSourceErrors[keyof StartPaymentSourceErrors];
+
+export type StartPaymentSourceResponses = {
+  /**
+   * Successful Response
+   */
+  202: PaymentSourceStatusOut;
+};
+
+export type StartPaymentSourceResponse =
+  StartPaymentSourceResponses[keyof StartPaymentSourceResponses];
+
+export type ConfirmPaymentSourceData = {
+  body: PaymentSourceConfirm;
+  path?: never;
+  query?: never;
+  url: "/api/v1/billing/payment-source/confirm";
+};
+
+export type ConfirmPaymentSourceErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ConfirmPaymentSourceError =
+  ConfirmPaymentSourceErrors[keyof ConfirmPaymentSourceErrors];
+
+export type ConfirmPaymentSourceResponses = {
+  /**
+   * Successful Response
+   */
+  200: PaymentSourceStatusOut;
+};
+
+export type ConfirmPaymentSourceResponse =
+  ConfirmPaymentSourceResponses[keyof ConfirmPaymentSourceResponses];
 
 export type ListPortalAccessesData = {
   body?: never;

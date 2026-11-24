@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.40.0"
+    "version": "0.41.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -7434,6 +7434,159 @@
         }
       }
     },
+    "/api/v1/billing/payment-source": {
+      "get": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "La fuente de pago para la renovación automática",
+        "operationId": "read_payment_source",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentSourceOut"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no administra la facturación.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "Empezar a vincular el Nequi para renovar solo",
+        "operationId": "start_payment_source",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentSourceStart"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentSourceStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "Cancelar la renovación automática",
+        "operationId": "cancel_payment_source",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/billing/payment-source/confirm": {
+      "post": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "Confirmar que la persona aprobó la vinculación en su celular",
+        "operationId": "confirm_payment_source",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentSourceConfirm"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentSourceStatusOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
     "/api/v1/cases/{case_id}/portal/accesses": {
       "get": {
         "tags": [
@@ -11973,6 +12126,140 @@
         ],
         "title": "PasswordResetRequested",
         "description": "La misma respuesta exista o no una cuenta con ese correo (CA-HU-010-02)."
+      },
+      "PaymentSourceConfirm": {
+        "properties": {
+          "acceptance_token": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Acceptance Token"
+          },
+          "accept_personal_auth": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Accept Personal Auth"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "acceptance_token",
+          "accept_personal_auth"
+        ],
+        "title": "PaymentSourceConfirm"
+      },
+      "PaymentSourceOut": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Si la renovación automática está encendida."
+          },
+          "consent_version": {
+            "type": "string",
+            "title": "Consent Version"
+          },
+          "consent_text": {
+            "type": "string",
+            "title": "Consent Text",
+            "description": "El texto exacto que la persona acepta al vincular."
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentSourceStatusOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "consent_version",
+          "consent_text",
+          "source"
+        ],
+        "title": "PaymentSourceOut",
+        "description": "La renovación automática del despacho: si está disponible y qué fuente tiene."
+      },
+      "PaymentSourceStart": {
+        "properties": {
+          "phone_number": {
+            "type": "string",
+            "pattern": "^3\\d{9}$",
+            "title": "Phone Number",
+            "description": "Celular Nequi de 10 dígitos."
+          },
+          "consent_version": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Consent Version",
+            "description": "Versión del texto que se aceptó."
+          },
+          "accept_consent": {
+            "type": "boolean",
+            "const": true,
+            "title": "Accept Consent",
+            "description": "La casilla del consentimiento marcada."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "phone_number",
+          "consent_version",
+          "accept_consent"
+        ],
+        "title": "PaymentSourceStart"
+      },
+      "PaymentSourceStatusOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "declined",
+              "canceled"
+            ],
+            "title": "Status"
+          },
+          "phone_last4": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Last4"
+          },
+          "linked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linked At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "phone_last4",
+          "linked_at"
+        ],
+        "title": "PaymentSourceStatusOut"
       },
       "PlanUpdate": {
         "properties": {

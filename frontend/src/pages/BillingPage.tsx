@@ -8,6 +8,7 @@ import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
 import { pageTitle } from "../config/site.ts";
 import { formatCop } from "../features/billing/format.ts";
+import { RenewalCard } from "../features/billing/RenewalCard.tsx";
 import { formatColombiaTime } from "../features/cases/dates.ts";
 import { CheckoutCard } from "./CheckoutCard.tsx";
 import styles from "./AccountPage.module.css";
@@ -73,6 +74,7 @@ export function BillingPage() {
       ) : (
         <Notice tone="info">Su cuenta todavía no tiene un plan.</Notice>
       )}
+      {mayPay && <RenewalCard />}
       {mayPay && <Receipts />}
     </div>
   );

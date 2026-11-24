@@ -18,6 +18,7 @@ import {
   archiveExport,
   archiveSummary,
   availableCaseMembers,
+  cancelPaymentSource,
   cancelRecovery,
   changeMemberRole,
   changePassword,
@@ -27,6 +28,7 @@ import {
   closeCase,
   completeRecovery,
   confirmCheckoutWeb,
+  confirmPaymentSource,
   confirmRecovery,
   createCase,
   createCaseExport,
@@ -93,6 +95,7 @@ import {
   readCaseExport,
   readEvidence,
   readMe,
+  readPaymentSource,
   refreshSession,
   registerAccount,
   removeCaseMember,
@@ -115,6 +118,7 @@ import {
   signInSecondFactor,
   signOut,
   signOutEverywhere,
+  startPaymentSource,
   submitWebVitals,
   taskCalendar,
   taskInbox,
@@ -159,6 +163,9 @@ import type {
   AvailableCaseMembersData,
   AvailableCaseMembersError,
   AvailableCaseMembersResponse,
+  CancelPaymentSourceData,
+  CancelPaymentSourceError,
+  CancelPaymentSourceResponse,
   CancelRecoveryData,
   CancelRecoveryError,
   CancelRecoveryResponse,
@@ -186,6 +193,9 @@ import type {
   ConfirmCheckoutWebData,
   ConfirmCheckoutWebError,
   ConfirmCheckoutWebResponse,
+  ConfirmPaymentSourceData,
+  ConfirmPaymentSourceError,
+  ConfirmPaymentSourceResponse,
   ConfirmRecoveryData,
   ConfirmRecoveryError,
   ConfirmRecoveryResponse,
@@ -371,6 +381,9 @@ import type {
   ReadMeData,
   ReadMeError,
   ReadMeResponse,
+  ReadPaymentSourceData,
+  ReadPaymentSourceError,
+  ReadPaymentSourceResponse,
   RefreshSessionData,
   RefreshSessionError,
   RefreshSessionResponse,
@@ -437,6 +450,9 @@ import type {
   SignOutEverywhereError,
   SignOutEverywhereResponse,
   SignOutResponse,
+  StartPaymentSourceData,
+  StartPaymentSourceError,
+  StartPaymentSourceResponse,
   SubmitWebVitalsData,
   SubmitWebVitalsError,
   SubmitWebVitalsResponse,
@@ -4054,6 +4070,115 @@ export const downloadReceiptOptions = (options: Options<DownloadReceiptData>) =>
     },
     queryKey: downloadReceiptQueryKey(options),
   });
+
+/**
+ * Cancelar la renovación automática
+ */
+export const cancelPaymentSourceMutation = (
+  options?: Partial<Options<CancelPaymentSourceData>>,
+): UseMutationOptions<
+  CancelPaymentSourceResponse,
+  CancelPaymentSourceError,
+  Options<CancelPaymentSourceData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CancelPaymentSourceResponse,
+    CancelPaymentSourceError,
+    Options<CancelPaymentSourceData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await cancelPaymentSource({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const readPaymentSourceQueryKey = (
+  options?: Options<ReadPaymentSourceData>,
+) => createQueryKey("readPaymentSource", options);
+
+/**
+ * La fuente de pago para la renovación automática
+ */
+export const readPaymentSourceOptions = (
+  options?: Options<ReadPaymentSourceData>,
+) =>
+  queryOptions<
+    ReadPaymentSourceResponse,
+    ReadPaymentSourceError,
+    ReadPaymentSourceResponse,
+    ReturnType<typeof readPaymentSourceQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await readPaymentSource({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: readPaymentSourceQueryKey(options),
+  });
+
+/**
+ * Empezar a vincular el Nequi para renovar solo
+ */
+export const startPaymentSourceMutation = (
+  options?: Partial<Options<StartPaymentSourceData>>,
+): UseMutationOptions<
+  StartPaymentSourceResponse,
+  StartPaymentSourceError,
+  Options<StartPaymentSourceData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    StartPaymentSourceResponse,
+    StartPaymentSourceError,
+    Options<StartPaymentSourceData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await startPaymentSource({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Confirmar que la persona aprobó la vinculación en su celular
+ */
+export const confirmPaymentSourceMutation = (
+  options?: Partial<Options<ConfirmPaymentSourceData>>,
+): UseMutationOptions<
+  ConfirmPaymentSourceResponse,
+  ConfirmPaymentSourceError,
+  Options<ConfirmPaymentSourceData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ConfirmPaymentSourceResponse,
+    ConfirmPaymentSourceError,
+    Options<ConfirmPaymentSourceData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await confirmPaymentSource({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
 
 export const listPortalAccessesQueryKey = (
   options: Options<ListPortalAccessesData>,
