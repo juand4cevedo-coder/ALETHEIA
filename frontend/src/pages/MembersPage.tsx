@@ -52,7 +52,7 @@ export function MembersPage() {
 
   return (
     <div className={styles.screen}>
-      <title>{pageTitle("Miembros")}</title>
+      <title>{pageTitle("Equipo")}</title>
       <meta name="robots" content="noindex" />
 
       {managesTeam(me.organization?.role) ? (
@@ -75,7 +75,7 @@ export function MembersPage() {
 function Header({ action }: { action?: ReactNode }) {
   return (
     <PageHeader
-      title="Miembros"
+      title="Equipo"
       description="Cada persona entra con su propio acceso. Lo que ve depende de su rol."
       actions={action}
     />
@@ -221,7 +221,7 @@ function Team({
         </Notice>
       )}
 
-      <SeatsBar seats={seats} loading={members.isPending} />
+      <SeatsBar seats={seats} loading={members.isPending} isOwner={isOwner} />
 
       <div className={styles.filters}>
         <label className={styles.searchField}>
@@ -493,9 +493,11 @@ function isManageable(member: MemberOut, currentUserId: string): boolean {
 function SeatsBar({
   seats,
   loading,
+  isOwner,
 }: {
   seats: SeatsOut | undefined;
   loading: boolean;
+  isOwner: boolean;
 }) {
   const meterId = useId();
   if (loading || !seats) {
@@ -549,9 +551,18 @@ function SeatsBar({
       {seats.full && (
         <Notice tone="warning">
           <p>
-            Su plan ya no tiene cupo. Para invitar a alguien más,{" "}
-            <Link to={ROUTES.pricing}>cambie de plan</Link> o revoque una
-            invitación pendiente.
+            Su plan incluye {seats.included} {users} y todas están en uso. Para
+            sumar abogados o asistentes,{" "}
+            {isOwner ? (
+              <>
+                <Link to={ROUTES.billing}>
+                  cambie de plan en Plan y facturación
+                </Link>
+              </>
+            ) : (
+              "pida a la persona responsable del despacho que cambie de plan"
+            )}{" "}
+            o revoque una invitación pendiente.
           </p>
         </Notice>
       )}

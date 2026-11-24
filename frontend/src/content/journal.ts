@@ -117,7 +117,7 @@ export const HELP = [
   {
     slug: "invitar-al-equipo",
     title: "Invitar a su equipo",
-    text: "Desde Miembros, las personas con permisos de administración pueden invitar a un correo y asignar un rol. La persona recibe un enlace para aceptar la invitación. Antes de reenviar o revocar una invitación, revise su estado en la lista.",
+    text: "Desde Equipo, las personas con permisos de administración pueden invitar a un correo y asignar un rol. La persona recibe un enlace para aceptar la invitación. Antes de reenviar o revocar una invitación, revise su estado en la lista.",
     related: "/app/miembros",
   },
   {
