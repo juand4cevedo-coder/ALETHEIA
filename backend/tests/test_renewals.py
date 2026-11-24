@@ -257,7 +257,10 @@ def test_agendar_solo_ocurre_con_una_fuente_activa(db: Session) -> None:
     _, fin_con = _vence_en(db, con, 10)
     _, fin_sin = _vence_en(db, sin, 10, con_fuente=False)
 
+    # Como en producción: el cobro se agenda con el contexto del propio despacho.
+    set_tenant(db, TenantContext(con.organization_id, con.owner.id))
     renewals.schedule_if_linked(db, con.organization_id, fin_con)
+    set_tenant(db, TenantContext(sin.organization_id, sin.owner.id))
     renewals.schedule_if_linked(db, sin.organization_id, fin_sin)
 
     tareas = _tareas(db, "renewal_charge")
