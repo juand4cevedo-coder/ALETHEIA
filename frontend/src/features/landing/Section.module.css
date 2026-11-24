@@ -43,25 +43,6 @@
   line-height: var(--line-height-subtitle);
 }
 
-.card {
-  position: relative;
-  border: 0;
-  border-radius: var(--radius-lg);
-  background: var(--paper-sunken);
-}
-
-.cardTitle {
-  font-size: var(--font-size-body);
-  font-weight: 500;
-  line-height: var(--line-height-body);
-}
-
-.cardText {
-  color: var(--text-2);
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
-}
-
 @media (max-width: 760px) {
   .section {
     padding: 72px 0 84px;

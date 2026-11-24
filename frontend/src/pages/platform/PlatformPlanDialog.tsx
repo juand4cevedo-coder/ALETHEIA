@@ -1,15 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 
-import type { PlatformPlan } from "../api/generated";
-import { updatePlanMutation } from "../api/generated/@tanstack/react-query.gen.ts";
-import { Button } from "../components/ui/Button.tsx";
-import { Checkbox } from "../components/ui/Checkbox.tsx";
-import { Dialog } from "../components/ui/Dialog.tsx";
-import { Field } from "../components/ui/Field.tsx";
-import { Notice } from "../components/ui/Notice.tsx";
-import { SystemError } from "../components/ui/SystemError.tsx";
-import { apiProblem } from "../features/auth/apiProblem.ts";
+import type { PlatformPlan } from "../../api/generated";
+import { updatePlanMutation } from "../../api/generated/@tanstack/react-query.gen.ts";
+import { Button } from "../../components/ui/Button.tsx";
+import { Checkbox } from "../../components/ui/Checkbox.tsx";
+import { Dialog } from "../../components/ui/Dialog.tsx";
+import { Field } from "../../components/ui/Field.tsx";
+import { Notice } from "../../components/ui/Notice.tsx";
+import { SystemError } from "../../components/ui/SystemError.tsx";
+import { apiProblem } from "../../features/auth/apiProblem.ts";
 
 type Props = { plan: PlatformPlan | null; onClose: () => void };
 

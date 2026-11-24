@@ -1,27 +1,30 @@
 import type { Me } from "../../api/generated";
 import { ROUTES } from "../../config/routes.ts";
 import {
-  CalendarioIcon,
   ArchivoBusquedaIcon,
+  BalanzaIcon,
+  CalendarioIcon,
   CarpetaAbiertaIcon,
   CorreoIcon,
-  TareasIcon,
   EdificioIcon,
+  EtiquetaIcon,
   GraficaIcon,
   HuellaIcon,
   InicioIcon,
+  PulsoIcon,
   ReciboIcon,
+  TareasIcon,
   UsuarioIcon,
   UsuariosIcon,
   type IconComponent,
 } from "../../components/ui/icons.tsx";
 import { managesOrganization, managesTasks, managesTeam } from "./roles.ts";
 
-type Item = {
+export type SectionItem = {
   to: string;
   label: string;
   icon: IconComponent;
-  /** Solo el inicio coincide exacto: las demás secciones incluyen sus subrutas. */
+  /** Solo las portadas coinciden exacto: las demás secciones incluyen sus subrutas. */
   end?: boolean;
   /** Si la persona ve la opción; sin regla, la ven todos los roles. */
   visible?: (me: Me) => boolean;
@@ -29,11 +32,23 @@ type Item = {
   openCount?: boolean;
 };
 
-// Secciones del espacio de trabajo en el orden del menú lateral (Diseño UX/UI, 4.2). Cada
-// historia agrega la suya cuando existe: el menú nunca anuncia lo que todavía no funciona.
-export const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
+export type SectionGroup = {
+  /** Identificador estable: con él se recuerda si el grupo quedó plegado. */
+  id: string;
+  label: string;
+  items: readonly SectionItem[];
+};
+
+const inFirm = (me: Me) => me.organization != null && !me.platform_admin;
+const platform = (me: Me) => me.platform_admin;
+
+// Secciones del espacio de trabajo en el orden del menú lateral. Cada grupo responde a una
+// pregunta distinta: qué trabajo tengo, cómo está mi despacho, cómo va la plataforma y quién
+// soy. El menú nunca anuncia lo que todavía no funciona ni lo que el rol no puede hacer.
+export const GROUPS: readonly SectionGroup[] = [
   {
-    label: "Despacho",
+    id: "trabajo",
+    label: "Trabajo",
     items: [
       {
         to: ROUTES.app,
@@ -47,19 +62,19 @@ export const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
         label: "Casos",
         icon: CarpetaAbiertaIcon,
         openCount: true,
-        visible: (me) => me.organization != null && !me.platform_admin,
-      },
-      {
-        to: ROUTES.archive,
-        label: "Banco de datos",
-        icon: ArchivoBusquedaIcon,
-        visible: (me) => me.organization != null && !me.platform_admin,
+        visible: inFirm,
       },
       {
         to: ROUTES.calendar,
         label: "Calendario",
         icon: CalendarioIcon,
-        visible: (me) => me.organization != null && !me.platform_admin,
+        visible: inFirm,
+      },
+      {
+        to: ROUTES.archive,
+        label: "Banco de datos",
+        icon: ArchivoBusquedaIcon,
+        visible: inFirm,
       },
       {
         to: ROUTES.taskTemplates,
@@ -67,6 +82,12 @@ export const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
         icon: TareasIcon,
         visible: (me) => managesTasks(me.organization?.role),
       },
+    ],
+  },
+  {
+    id: "despacho",
+    label: "Despacho",
+    items: [
       {
         to: ROUTES.members,
         label: "Equipo",
@@ -84,9 +105,7 @@ export const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
         label: "Plan y facturación",
         icon: ReciboIcon,
         visible: (me) =>
-          me.organization != null &&
-          !me.platform_admin &&
-          managesOrganization(me.organization.role),
+          inFirm(me) && managesOrganization(me.organization?.role),
       },
       {
         to: ROUTES.organizationAudit,
@@ -97,42 +116,86 @@ export const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
     ],
   },
   {
+    id: "plataforma",
     label: "Plataforma",
     items: [
       {
         to: ROUTES.platform,
-        label: "Cuentas de plataforma",
-        icon: UsuariosIcon,
+        label: "Resumen",
+        icon: InicioIcon,
         end: true,
-        visible: (me) => me.platform_admin,
-      },
-      {
-        to: ROUTES.platformBilling,
-        label: "Facturación",
-        icon: ReciboIcon,
-        visible: (me) => me.platform_admin,
+        visible: platform,
       },
       {
         to: ROUTES.platformSupport,
-        label: "Solicitudes de usuarios",
-        icon: CorreoIcon,
-        visible: (me) => me.platform_admin,
+        label: "Solicitudes y PQR",
+        icon: BalanzaIcon,
+        visible: platform,
+      },
+    ],
+  },
+  {
+    id: "clientes",
+    label: "Clientes",
+    items: [
+      {
+        to: ROUTES.platformOrganizations,
+        label: "Despachos",
+        icon: EdificioIcon,
+        visible: platform,
       },
       {
-        to: ROUTES.platformAudit,
-        label: "Auditoría",
-        icon: HuellaIcon,
-        visible: (me) => me.platform_admin,
+        to: ROUTES.platformAccounts,
+        label: "Cuentas",
+        icon: UsuariosIcon,
+        visible: platform,
+      },
+    ],
+  },
+  {
+    id: "comercial",
+    label: "Comercial",
+    items: [
+      {
+        to: ROUTES.platformPlans,
+        label: "Planes y cortesías",
+        icon: EtiquetaIcon,
+        visible: platform,
+      },
+      {
+        to: ROUTES.platformBilling,
+        label: "Ingresos",
+        icon: ReciboIcon,
+        visible: platform,
+      },
+    ],
+  },
+  {
+    id: "operacion",
+    label: "Operación",
+    items: [
+      {
+        to: ROUTES.platformOperations,
+        label: "Tareas y pagos",
+        icon: PulsoIcon,
+        visible: platform,
       },
       {
         to: ROUTES.platformVitals,
         label: "Rendimiento real",
         icon: GraficaIcon,
-        visible: (me) => me.platform_admin,
+        visible: platform,
+      },
+      {
+        to: ROUTES.platformAudit,
+        label: "Auditoría",
+        icon: HuellaIcon,
+        visible: platform,
       },
     ],
   },
   {
+    id: "cuenta",
     label: "Cuenta",
     items: [
       { to: ROUTES.account, label: "Mi cuenta", icon: UsuarioIcon },
@@ -146,12 +209,25 @@ export const GROUPS: readonly { label: string; items: readonly Item[] }[] = [
   },
 ];
 
+/** Los grupos que ve esta persona, cada uno con solo sus secciones visibles. */
+export function visibleGroups(me: Me): SectionGroup[] {
+  return GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => item.visible?.(me) ?? true),
+  })).filter((group) => group.items.length > 0);
+}
+
 /** Las secciones que ve esta persona, en el orden del menú. La paleta de comandos las ofrece
  * como destinos para que ambas muestren siempre lo mismo. */
 export function visibleSections(
   me: Me,
-): { to: string; label: string; icon: IconComponent }[] {
-  return GROUPS.flatMap((group) => group.items)
-    .filter((item) => item.visible?.(me) ?? true)
-    .map(({ to, label, icon }) => ({ to, label, icon }));
+): { to: string; label: string; icon: IconComponent; group: string }[] {
+  return visibleGroups(me).flatMap((group) =>
+    group.items.map(({ to, label, icon }) => ({
+      to,
+      label,
+      icon,
+      group: group.label,
+    })),
+  );
 }

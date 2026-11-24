@@ -464,7 +464,7 @@ describe("Inicio del espacio de trabajo", () => {
       const user = userEvent.setup();
       const { router } = await renderRoute("/app");
 
-      await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
+      await screen.findByRole("heading", { level: 1, name: /, Laura$/ });
       // El administrador y el asistente no abren casos (ADR-056).
       const opensCases = role === "owner" || role === "lawyer";
       if (!opensCases) {

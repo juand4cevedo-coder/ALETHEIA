@@ -1,3 +1,4 @@
+import { BrandMark } from "../../components/ui/BrandMark.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
@@ -14,7 +15,6 @@ import {
   legalRoute,
   type LegalSlug,
 } from "../../config/routes.ts";
-import logoUrl from "../../assets/simbolo.svg";
 import { CONTACT_EMAIL, WORDMARK, pageTitle } from "../../config/site.ts";
 import { useSignOut } from "../session/useSignOut.ts";
 import { currentLegalChanges } from "./changes.ts";
@@ -115,7 +115,7 @@ export function LegalRenewal({ me }: { me: Me }) {
 
       <header className={styles.header}>
         <p className={styles.brand}>
-          <img src={logoUrl} alt="" width={24} height={24} />
+          <BrandMark size={24} />
           {WORDMARK}
         </p>
       </header>

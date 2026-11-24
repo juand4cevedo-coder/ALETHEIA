@@ -53,7 +53,6 @@ def update_policies(
     session: Session,
     principal: Principal,
     *,
-    default_retention_years: int,
     session_days: int,
     require_two_factor: bool,
     client_ip: str,
@@ -73,17 +72,14 @@ def update_policies(
     if turning_on and not has_second_factor(session, principal.user_id):
         raise TwoFactorSetupRequiredForPolicyError
     previous = {
-        "default_retention_years": organization.default_retention_years,
         "session_days": organization.session_days,
         "require_two_factor": organization.require_two_factor,
     }
     current = {
-        "default_retention_years": default_retention_years,
         "session_days": session_days,
         "require_two_factor": require_two_factor,
     }
     if previous != current:
-        organization.default_retention_years = default_retention_years
         organization.session_days = session_days
         organization.require_two_factor = require_two_factor
         session.add(

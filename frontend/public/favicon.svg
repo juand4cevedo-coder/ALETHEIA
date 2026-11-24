@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" data-brand="aletheia-eye" data-variant="small">
+  <style>@media (prefers-color-scheme: dark){rect{fill:#9b3ee0}}</style>
   <rect width="64" height="64" rx="18" fill="#820ad1"/>
   <g transform="translate(0.000 0.000) scale(1)" fill="none" stroke-linejoin="round">
   <path d="M6 32C15 17 24 12 32 12s17 5 26 20c-9 15-18 20-26 20S15 47 6 32Z" stroke="#ffffff" stroke-width="5.5"/>

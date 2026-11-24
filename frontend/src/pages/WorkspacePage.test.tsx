@@ -156,7 +156,7 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     serve("owner");
     const { container } = await renderRoute("/app");
 
-    await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
+    await screen.findByRole("heading", { level: 1, name: /, Laura$/ });
     expect(
       screen.getByText("Ruiz & Asociados, Responsable del despacho"),
     ).toBeInTheDocument();
@@ -197,7 +197,7 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     serve("assistant");
     await renderRoute("/app");
 
-    await screen.findByRole("heading", { level: 1, name: "Laura Gómez" });
+    await screen.findByRole("heading", { level: 1, name: /, Laura$/ });
     expect(
       screen.getByRole("link", { name: "Ver mis casos asignados" }),
     ).toBeInTheDocument();
@@ -220,7 +220,7 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     ).toBe(true);
   });
 
-  it("avisa cuando la prueba está por vencer y enlaza a Mi cuenta", async () => {
+  it("con la prueba activa no repite el aviso: el plan ya está en Salud del despacho", async () => {
     serve("owner", {
       subscription: {
         plan_name: "Esencial",
@@ -230,13 +230,27 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
       },
     });
     await renderRoute("/app");
+    await screen.findByRole("heading", { level: 1 });
+    expect(screen.queryByText(/período de prueba/)).not.toBeInTheDocument();
+  });
 
-    const notice = await screen.findByText(/Su período de prueba está activo/);
+  it("con la prueba vencida avisa y lleva a elegir un plan", async () => {
+    serve("owner", {
+      subscription: {
+        plan_name: "Esencial",
+        status: "expired",
+        access_source: "trial",
+        ends_at: "2026-11-01T00:00:00Z",
+      },
+    });
+    await renderRoute("/app");
+
+    const notice = await screen.findByText(/Su período de prueba venció/);
     expect(
       within(notice.closest("div")!).getByRole("link", {
-        name: "Revise el plan en Mi cuenta",
+        name: "Elija un plan",
       }),
-    ).toHaveAttribute("href", "/app/cuenta");
+    ).toHaveAttribute("href", "/app/facturacion");
   });
 
   it("cuando no hay casos todavía, invita a abrir el primero", async () => {
@@ -277,7 +291,7 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     await renderRoute("/app");
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Laura Gómez" }),
+      await screen.findByRole("heading", { level: 1, name: /, Laura$/ }),
     ).toBeInTheDocument();
   });
 });

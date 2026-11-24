@@ -28,7 +28,7 @@
 
 .text a,
 .link {
-  color: var(--ink-900);
+  color: var(--brand-text);
   text-underline-offset: var(--underline-offset);
 }
 

@@ -8,10 +8,10 @@
 
 .label {
   color: var(--text);
-  font-size: var(--font-size-label);
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0;
-  line-height: var(--line-height-label);
+  letter-spacing: -0.003em;
+  line-height: 18px;
   text-transform: none;
 }
 
@@ -23,19 +23,52 @@
   min-width: 0;
   height: var(--control-height);
   border: 1px solid var(--line-control);
-  border-radius: 16px;
+  border-radius: 14px;
   background: var(--paper-raised);
+  /* Un hundimiento de un píxel arriba: el campo se lee como un hueco donde se escribe. */
+  box-shadow: inset 0 1px 2px rgb(17 17 17 / 5%);
   transition:
     border-color var(--motion-fast) var(--ease-standard),
-    box-shadow var(--motion-fast) var(--ease-standard);
+    background-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-out);
 }
 
 .control:hover {
-  border-color: var(--ink-900);
+  border-color: var(--text-2);
 }
 
 .control[data-invalid] {
   border-color: var(--err);
+  background: color-mix(in srgb, var(--err) 4%, var(--paper-raised));
+  animation: invalid-nudge 320ms var(--ease-out);
+}
+
+/* Una sola sacudida corta cuando el campo pasa a tener error: dice «aquí» sin alarmar. */
+@keyframes invalid-nudge {
+  20% {
+    transform: translateX(-3px);
+  }
+  45% {
+    transform: translateX(3px);
+  }
+  70% {
+    transform: translateX(-1px);
+  }
+}
+
+.control:has(:disabled) {
+  border-style: dashed;
+  background: var(--paper-sunken);
+  box-shadow: none;
+}
+
+.control:has(:disabled) .input {
+  color: var(--text-3);
+  cursor: not-allowed;
+}
+
+.control:has(:is(input, textarea):read-only:not(:disabled)) {
+  background: var(--tint-1);
 }
 
 /* Un textarea crece con su contenido en vez de quedar atado al alto fijo del control. */
@@ -46,6 +79,7 @@
 
 .control:focus-within {
   border-color: var(--ink-900);
+  background: var(--paper-raised);
   box-shadow: var(--ring-focus);
 }
 
@@ -79,6 +113,11 @@ textarea.input {
 
 /* El navegador pinta de claro los campos que autocompleta; el sombreado interno los devuelve a
    la superficie del campo. */
+.input::placeholder {
+  color: var(--text-3);
+  opacity: 1;
+}
+
 .input:-webkit-autofill {
   -webkit-text-fill-color: var(--text);
   box-shadow: inset 0 0 0 40px var(--paper-raised);
@@ -116,11 +155,31 @@ textarea.input {
 }
 
 .error {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
   color: var(--err);
+  font-weight: 500;
+  animation: message-in 220ms var(--ease-out);
+}
+
+.error svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .control {
+  .control,
+  .control[data-invalid],
+  .error {
     transition: none;
+    animation: none;
   }
 }

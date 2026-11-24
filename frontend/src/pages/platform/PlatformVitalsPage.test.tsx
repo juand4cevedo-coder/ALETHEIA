@@ -2,8 +2,8 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 
-import { LEGAL_VERSION } from "../config/legal.ts";
-import { jsonResponse, renderRoute } from "../test/render.tsx";
+import { LEGAL_VERSION } from "../../config/legal.ts";
+import { jsonResponse, renderRoute } from "../../test/render.tsx";
 
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -83,19 +83,26 @@ it("muestra el percentil 75 por versión y pide la ventana elegida", async () =>
   const user = userEvent.setup();
   await renderRoute("/app/plataforma/rendimiento");
 
-  const table = await screen.findByRole("table");
-  const lcp = within(table).getByRole("row", { name: /Contenido principal/ });
+  const lcp = (
+    await screen.findByRole("heading", {
+      name: "¿Cuánto tarda en verse lo principal?",
+    })
+  ).closest("article")!;
   expect(within(lcp).getByText("2,65 s")).toBeInTheDocument();
-  expect(within(lcp).getByText("62 %")).toBeInTheDocument();
   expect(within(lcp).getByText("Por mejorar")).toBeInTheDocument();
-  const cls = within(table).getByRole("row", { name: /Estabilidad visual/ });
-  expect(within(cls).getByText("0.012")).toBeInTheDocument();
-  expect(screen.getByText("1.234")).toBeInTheDocument();
+  expect(
+    within(lcp).getByRole("meter", { name: "Visitas en el umbral bueno" }),
+  ).toHaveAttribute("aria-valuetext", "62 %");
+  const cls = screen
+    .getByRole("heading", { name: "¿Se mueve la página mientras carga?" })
+    .closest("article")!;
+  expect(within(cls).getByText("0,012")).toBeInTheDocument();
+  expect(screen.getByText(/1\.234 medidas/)).toBeInTheDocument();
   expect(days).toEqual(["14"]);
 
-  await user.selectOptions(screen.getByLabelText("Periodo"), "30");
+  await user.click(screen.getByRole("radio", { name: "30 días" }));
 
-  await screen.findByText(/En los últimos 30 días/);
+  await screen.findByText(/en los últimos 30 días/);
   expect(days).toContain("30");
 });
 

@@ -2,8 +2,8 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 
-import { LEGAL_VERSION } from "../config/legal.ts";
-import { jsonResponse, renderRoute } from "../test/render.tsx";
+import { LEGAL_VERSION } from "../../config/legal.ts";
+import { jsonResponse, renderRoute } from "../../test/render.tsx";
 
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -158,7 +158,7 @@ it("edita un plan del catálogo y envía solo números válidos", async () => {
     throw new Error(`Ruta inesperada: ${request.method} ${path}`);
   });
   const user = userEvent.setup();
-  await renderRoute("/app/plataforma/facturacion");
+  await renderRoute("/app/plataforma/planes");
 
   await user.click(
     await screen.findByRole("button", { name: "Editar el plan Esencial" }),

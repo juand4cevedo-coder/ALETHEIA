@@ -5,8 +5,8 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 
-import { LEGAL_VERSION } from "../config/legal.ts";
-import { jsonResponse, renderRoute } from "../test/render.tsx";
+import { LEGAL_VERSION } from "../../config/legal.ts";
+import { jsonResponse, renderRoute } from "../../test/render.tsx";
 
 const fetchMock = vi.fn<typeof fetch>();
 const ADMIN_ID = "01890a5d-ac96-774b-bcce-b302099a8057";
@@ -72,7 +72,7 @@ beforeEach(() => {
 
 it("impide cargar cuentas a quien no administra la plataforma", async () => {
   serve(false);
-  await renderRoute("/app/plataforma");
+  await renderRoute("/app/plataforma/cuentas");
   expect(
     await screen.findByText("Esta cuenta no administra la plataforma."),
   ).toBeInTheDocument();
@@ -86,7 +86,7 @@ it("impide cargar cuentas a quien no administra la plataforma", async () => {
 it("confirma el bloqueo y actualiza el estado de la cuenta", async () => {
   serve(true);
   const user = userEvent.setup();
-  await renderRoute("/app/plataforma");
+  await renderRoute("/app/plataforma/cuentas");
   expect(await screen.findByText("carlos@example.com")).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "Bloquear" }));
   const dialog = screen.getByRole("dialog", { name: "Bloquear cuenta" });
@@ -107,7 +107,7 @@ it("confirma el bloqueo y actualiza el estado de la cuenta", async () => {
 it("envía la búsqueda y los filtros de cuentas al backend", async () => {
   serve(true);
   const user = userEvent.setup();
-  await renderRoute("/app/plataforma");
+  await renderRoute("/app/plataforma/cuentas");
   await screen.findByText("carlos@example.com");
 
   await user.type(screen.getByLabelText("Nombre o correo"), "Carlos Gómez");
@@ -136,7 +136,7 @@ it("envía la búsqueda y los filtros de cuentas al backend", async () => {
 
 // jsdom no aplica CSS Modules: lo que sostiene el celular se lee del disco.
 const css = readFileSync(
-  join(import.meta.dirname, "PlatformPage.module.css"),
+  join(import.meta.dirname, "Platform.module.css"),
   "utf8",
 );
 
@@ -174,9 +174,14 @@ function regla(selector: string): string {
   );
 }
 
-const paginas = ["PlatformPage.tsx", "PlatformModulesPage.tsx"].map((archivo) =>
-  readFileSync(join(import.meta.dirname, archivo), "utf8"),
-);
+const paginas = [
+  "PlatformAccountsPage.tsx",
+  "PlatformPlansPage.tsx",
+  "PlatformAuditPage.tsx",
+  "PlatformOrganizationsPage.tsx",
+  "PlatformOperationsPage.tsx",
+  "PlatformVitalsPage.tsx",
+].map((archivo) => readFileSync(join(import.meta.dirname, archivo), "utf8"));
 
 it("el apartado de reglas base no se queda vacío por un corte mal hecho", () => {
   expect(base).toMatch(/\.ticket\s*\{/);
@@ -225,19 +230,19 @@ it("cuando la tabla aparece, la persona conserva 150 px de texto", () => {
 it.each([
   [".ticket", css],
   [".targetCard", css],
-])("%s lleva borde transparente de un píxel", (selector) => {
-  expect(regla(selector)).toMatch(/border:\s*1px solid transparent/);
+])("%s lleva un borde de un píxel", (selector) => {
+  expect(regla(selector)).toMatch(/border:\s*1px solid/);
 });
 
-it("la fila convertida en tarjeta lleva borde transparente de un píxel", () => {
+it("la fila convertida en tarjeta lleva un borde de un píxel", () => {
   const consulta = css.slice(css.indexOf("@container"));
   const fila = /\.table tbody tr \{([^}]*)\}/.exec(consulta)?.[1] ?? "";
-  expect(fila).toMatch(/border:\s*1px solid transparent/);
+  expect(fila).toMatch(/border:\s*1px solid/);
 });
 
 it("los dígitos del radicado llevan borde transparente de un píxel", () => {
   const filing = readFileSync(
-    join(import.meta.dirname, "../components/ui/FilingNumber.module.css"),
+    join(import.meta.dirname, "../../components/ui/FilingNumber.module.css"),
     "utf8",
   );
   expect(/\.digits\s*\{([^}]*)\}/.exec(filing)?.[1]).toMatch(
@@ -256,7 +261,7 @@ it("la tarjeta no desborda con un correo sin puntos de corte", () => {
   expect(regla(".targetCard")).toMatch(
     /grid-template-columns:\s*minmax\(0,\s*1fr\)/,
   );
-  expect(regla(".targetCard span")).toMatch(/overflow-wrap:\s*anywhere/);
+  expect(regla(".targetCard dd")).toMatch(/overflow-wrap:\s*anywhere/);
   expect(regla(".note")).toMatch(/overflow-wrap:\s*anywhere/);
 });
 
@@ -300,12 +305,12 @@ it("cada rótulo de tarjeta repite el texto de su encabezado de columna", () => 
       revisadas++;
     }
   }
-  expect(revisadas).toBe(3);
+  expect(revisadas).toBe(paginas.length);
 });
 
 it("rotula cada celda de la tabla para la tarjeta del celular", async () => {
   serve(true);
-  await renderRoute("/app/plataforma");
+  await renderRoute("/app/plataforma/cuentas");
   await screen.findByText("carlos@example.com");
   const celdas = [...document.querySelectorAll("tbody td")];
   expect(celdas.map((celda) => celda.getAttribute("data-label"))).toEqual([
@@ -320,7 +325,7 @@ it("rotula cada celda de la tabla para la tarjeta del celular", async () => {
 it("elimina una cuenta solo después de escribir su correo exacto", async () => {
   serve(true);
   const user = userEvent.setup();
-  await renderRoute("/app/plataforma");
+  await renderRoute("/app/plataforma/cuentas");
 
   await user.click(await screen.findByRole("button", { name: "Eliminar" }));
   const confirm = screen.getByRole("button", { name: "Eliminar para siempre" });
@@ -373,7 +378,7 @@ it("explica por qué no se pudo eliminar", async () => {
     return original(input, init);
   });
   const user = userEvent.setup();
-  await renderRoute("/app/plataforma");
+  await renderRoute("/app/plataforma/cuentas");
 
   await user.click(await screen.findByRole("button", { name: "Eliminar" }));
   await user.type(

@@ -30,7 +30,7 @@ describe("contrato responsive", () => {
   });
 
   it("reordena las superficies operativas en móvil y tablet", () => {
-    const platform = css("pages/PlatformPage.module.css");
+    const platform = css("pages/platform/Platform.module.css");
     const newCase = css("pages/NewCasePage.module.css");
     const taskSection = css("features/cases/TaskSection.module.css");
     const dialog = css("components/ui/Dialog.module.css");

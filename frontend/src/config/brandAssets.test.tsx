@@ -16,7 +16,7 @@ function pngSize(path: string): [number, number] {
 
 describe("recursos de la marca", () => {
   it.each([
-    "src/assets/simbolo.svg",
+    "public/brand/symbol-dark-mode.svg",
     "public/brand/symbol-dark.svg",
     "public/brand/symbol-white.svg",
   ])(
@@ -66,5 +66,27 @@ describe("recursos de la marca", () => {
         expect.objectContaining({ sizes: "512x512", purpose: "any maskable" }),
       ]),
     );
+  });
+});
+
+describe("Lo que se guarda en el navegador", () => {
+  it("las claves de la portada son las mismas del registro central", async () => {
+    const { BROWSER_STORAGE } = await import("./browserStorage.ts");
+    const { COOKIE_CHOICE_KEY } =
+      await import("../features/consent/cookieConsent.ts");
+    const { SESSION_HINT_KEY } =
+      await import("../features/session/sessionHint.ts");
+    expect(BROWSER_STORAGE.cookieChoice.key).toBe(COOKIE_CHOICE_KEY);
+    expect(BROWSER_STORAGE.sessionHint.key).toBe(SESSION_HINT_KEY);
+  });
+
+  it("la política de cookies nombra cada clave que usa el sitio", async () => {
+    const { BROWSER_STORAGE } = await import("./browserStorage.ts");
+    const { cookiePolicy } = await import("../features/legal/cookies.tsx");
+    const { render } = await import("@testing-library/react");
+    const section = cookiePolicy.sections.find((s) => s.id === "preferencias")!;
+    const { container } = render(<>{section.body}</>);
+    for (const entry of Object.values(BROWSER_STORAGE))
+      expect(container.textContent).toContain(entry.key);
   });
 });

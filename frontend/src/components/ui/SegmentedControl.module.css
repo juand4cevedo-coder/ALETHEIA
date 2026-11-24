@@ -1,0 +1,63 @@
+.control {
+  position: relative;
+  display: inline-flex;
+  justify-self: start;
+  gap: 2px;
+  margin: 0;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--tint-2);
+}
+
+.thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  border-radius: var(--radius-pill);
+  background: var(--paper-raised);
+  box-shadow:
+    0 1px 3px rgb(35 0 48 / 12%),
+    var(--brass-hairline);
+  transition:
+    transform 320ms var(--ease-out),
+    width 320ms var(--ease-out);
+}
+
+.option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: color var(--motion-base) var(--ease-standard);
+}
+
+.option input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.option:hover,
+.option:has(input:checked) {
+  color: var(--text);
+}
+
+.option:has(input:focus-visible) {
+  box-shadow: var(--ring-focus);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb {
+    transition: none;
+  }
+}

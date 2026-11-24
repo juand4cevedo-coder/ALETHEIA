@@ -23,6 +23,8 @@ import {
 } from "../features/billing/catalog.tsx";
 import { type BillingCycle, formatCop } from "../features/billing/format.ts";
 import { legalRoute } from "../config/routes.ts";
+import { ChoiceCards } from "../components/ui/ChoiceCards.tsx";
+import { Select } from "../components/ui/Select.tsx";
 import styles from "./CheckoutCard.module.css";
 
 // Solo un celular colombiano (3 + 9 dígitos): la misma forma que valida el servicio
@@ -309,66 +311,58 @@ function Checkout({
   if (step === "elegir") {
     return (
       <form className={styles.form} noValidate onSubmit={goToConfirm}>
-        <div className={styles.field}>
-          <label htmlFor="plan-checkout">Plan</label>
-          <select
-            id="plan-checkout"
-            value={selected?.code}
-            onChange={(event) => setPlanCode(event.target.value)}
-          >
-            {payable.map((plan) => (
-              <option key={plan.code} value={plan.code}>
-                {plan.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <fieldset className={styles.cycle}>
-          <legend className="visually-hidden">Forma de pago</legend>
-          <label>
-            <input
-              type="radio"
-              name="ciclo-checkout"
-              checked={cycle === "monthly"}
-              onChange={() => setCycle("monthly")}
-            />
-            Mensual
-            {selected && `, ${formatCop(selected.monthly_price_cop)} al mes`}
-          </label>
-          {selected?.annual_price_cop != null && (
-            <label>
-              <input
-                type="radio"
-                name="ciclo-checkout"
-                checked={cycle === "annual"}
-                onChange={() => setCycle("annual")}
-              />
-              Anual, {formatCop(selected.annual_price_cop)} al año
-            </label>
-          )}
-        </fieldset>
+        <Select
+          label="Plan"
+          value={selected?.code ?? ""}
+          onChange={(event) => setPlanCode(event.target.value)}
+          options={payable.map((plan) => ({
+            value: plan.code,
+            label: plan.name,
+          }))}
+        />
+        <ChoiceCards
+          legend="Forma de pago"
+          columns={2}
+          value={cycle}
+          onChange={setCycle}
+          options={[
+            {
+              value: "monthly",
+              label: "Mensual",
+              description: selected
+                ? `${formatCop(selected.monthly_price_cop)} al mes`
+                : undefined,
+            },
+            ...(selected?.annual_price_cop != null
+              ? [
+                  {
+                    value: "annual" as const,
+                    label: "Anual",
+                    description: `${formatCop(selected.annual_price_cop)} al año`,
+                  },
+                ]
+              : []),
+          ]}
+        />
         {!renewing && (
-          <fieldset className={styles.cycle}>
-            <legend>Medio de pago</legend>
-            <label>
-              <input
-                type="radio"
-                name="medio-checkout"
-                checked={method === "web"}
-                onChange={() => setMethod("web")}
-              />
-              Tarjeta, PSE u otros medios
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="medio-checkout"
-                checked={method === "nequi"}
-                onChange={() => setMethod("nequi")}
-              />
-              Nequi, con una notificación a su celular
-            </label>
-          </fieldset>
+          <ChoiceCards
+            legend="Medio de pago"
+            columns={2}
+            value={method}
+            onChange={setMethod}
+            options={[
+              {
+                value: "web",
+                label: "Tarjeta, PSE u otros",
+                description: "En la página segura de Wompi.",
+              },
+              {
+                value: "nequi",
+                label: "Nequi",
+                description: "Con una notificación a su celular.",
+              },
+            ]}
+          />
         )}
         {renewing && (
           <p className={styles.help}>

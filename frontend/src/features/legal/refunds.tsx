@@ -157,10 +157,11 @@ export const refundPolicy: LegalDocument = {
       body: (
         <>
           <p>
-            Escriba a {mail} desde el correo de la cuenta, con el asunto
-            Reembolso, e indique la fecha y el valor del pago. Le confirmamos el
-            recibo con un número de radicado, la fecha y la hora, y con ese
-            número puede preguntar por el estado de su solicitud.
+            Desde su cuenta, entre a Pedir soporte, elija «Reembolso» e indique
+            la fecha y el valor del pago. La solicitud recibe al instante su
+            número de radicado y la fecha límite para devolverle el dinero. Si
+            no puede ingresar, escriba a {mail} desde el correo de la cuenta,
+            con el asunto Reembolso, y le confirmamos el recibo con su radicado.
           </p>
           <p>
             Si no está conforme con la respuesta, puede acudir a la{" "}

@@ -154,7 +154,7 @@ describe("Políticas del despacho", () => {
     require_two_factor: false,
   };
 
-  it("la propietaria cambia la conservación y la duración de la sesión", async () => {
+  it("la propietaria cambia la sesión; la conservación es fija y solo se informa", async () => {
     let sent: unknown;
     serve("owner", {
       "GET /api/v1/organization/policies": () => jsonResponse(POLICIES),
@@ -166,10 +166,12 @@ describe("Políticas del despacho", () => {
     const user = userEvent.setup();
     await renderRoute("/app/organizacion");
 
-    const retention = await screen.findByLabelText(
-      "Conservación de los casos archivados",
-    );
-    await user.selectOptions(retention, "5");
+    expect(
+      await screen.findByText("10 años desde el cierre del caso"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("Conservación de los casos archivados"),
+    ).not.toBeInTheDocument();
     await user.selectOptions(
       screen.getByLabelText("Duración de la sesión"),
       "7",
@@ -185,7 +187,6 @@ describe("Políticas del despacho", () => {
       await screen.findByText("Guardamos las políticas."),
     ).toBeInTheDocument();
     expect(sent).toEqual({
-      default_retention_years: 5,
       session_days: 7,
       require_two_factor: true,
     });

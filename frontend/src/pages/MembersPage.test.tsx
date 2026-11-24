@@ -109,7 +109,12 @@ describe("Menú del espacio de trabajo (CMP-UI-011)", () => {
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/app/miembros"),
     );
-    await screen.findByRole("heading", { level: 1, name: "Equipo" });
+    // Equipo se descarga aparte al abrirla: en el navegador simulado puede tardar más de 1 s.
+    await screen.findByRole(
+      "heading",
+      { level: 1, name: "Equipo" },
+      { timeout: 4000 },
+    );
     expect(within(nav).getByRole("link", { name: "Equipo" })).toHaveAttribute(
       "aria-current",
       "page",

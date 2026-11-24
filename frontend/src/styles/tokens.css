@@ -17,6 +17,14 @@
   --ink-700: #5f007d;
   --ink-500: #7209b7;
 
+  /* Violeta como texto: enlaces, íconos activos y etiquetas de marca. Es el mismo de la marca
+     en el modo claro y uno más luminoso en el oscuro, donde el de relleno no alcanza 4,5 a 1. */
+  --brand-text: #820ad1;
+  --brand-text-strong: #5f007d;
+  /* Violeta oscuro sobre superficies que siguen blancas en los dos modos: el botón principal
+     invertido sobre una superficie de tinta. */
+  --brand-on-light: #5f007d;
+
   /* Acento: filetes, subrayados, anillo de foco y estado activo. */
   --brass-600: #820ad1;
   --brass-400: #d9a6f7;
@@ -162,6 +170,88 @@
   --viewport-fill: 100vh;
 
   --underline-offset: 3px;
+
+  /* Superficies con nombre propio. Cada una tiene su valor en el modo oscuro, más abajo, así
+     que ningún componente escribe un color a mano. */
+  /* Lienzo del espacio de trabajo: un gris apenas más bajo que el papel de las tarjetas. */
+  --canvas-app: #f7f7f7;
+  /* Tintes violeta para filas resaltadas, menús y bloques secundarios, de más suave a más
+     marcado. */
+  --tint-1: #faf5fd;
+  --tint-2: #f1e9f7;
+  --tint-3: #e6d8f2;
+  /* Encabezados fijos: el papel casi opaco para que el contenido que pasa por debajo se lea
+     como movimiento y no como texto. */
+  --chrome: rgb(255 255 255 / 94%);
+  /* Velo de los diálogos y paneles. */
+  --scrim: rgb(26 0 41 / 52%);
+  --scrim-soft: rgb(26 0 41 / 22%);
+  /* Pie del sitio público: la única superficie siempre oscura. */
+  --surface-inverse: #111111;
+  --on-inverse: #ffffff;
+  --on-inverse-2: #c9c9c9;
+  /* Acciones destructivas: el rojo de error a baja intensidad como fondo. */
+  --err-tint: rgb(155 34 38 / 8%);
+  --ok-tint: rgb(31 107 74 / 10%);
+  --warn-tint: rgb(138 90 24 / 10%);
+  /* Profundidad de la tarjeta al apuntarla. */
+  --shadow-lift: 0 2px 6px rgb(35 0 48 / 6%), 0 22px 48px rgb(35 0 48 / 12%);
+
+  color-scheme: light;
+}
+
+/* Modo oscuro. Lo fija /theme.js en <html data-theme="dark"> antes de pintar, según la
+   preferencia guardada o la del sistema. No invierte la marca: el violeta se aclara para
+   leerse sobre fondo oscuro y las superficies suben de tono en lugar de llevar sombra. */
+:root[data-theme="dark"] {
+  --paper: #131017;
+  --paper-raised: #1b1720;
+  --paper-sunken: #0e0c11;
+
+  --ink-900: #8f2fd9;
+  --ink-700: #7d22c4;
+  --ink-500: #c08af2;
+
+  --brand-text: #cda3f6;
+  --brand-text-strong: #e2c6fb;
+
+  --brass-600: #c99cf5;
+  --brass-400: #e2c2fa;
+
+  --text: #f3eff7;
+  --text-2: #c6bfd0;
+  --text-3: #a59eb0;
+
+  --on-ink: #ffffff;
+  --on-ink-2: #f1dcff;
+
+  --ok: #74d3a3;
+  --warn: #e8bb6f;
+  --err: #ff9499;
+
+  --line-control: #7a7285;
+  --ink-hairline: rgb(255 255 255 / 10%);
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 40%), 0 14px 36px rgb(0 0 0 / 28%);
+  --shadow-float: 0 4px 12px rgb(0 0 0 / 45%), 0 28px 70px rgb(0 0 0 / 50%);
+  --shadow-lift: 0 2px 6px rgb(0 0 0 / 40%), 0 22px 48px rgb(0 0 0 / 40%);
+  --brass-hairline: inset 0 0 0 1px rgb(255 255 255 / 6%);
+
+  --canvas-app: #0f0d12;
+  --tint-1: #1e1825;
+  --tint-2: #261e2f;
+  --tint-3: #33283f;
+  --chrome: rgb(19 16 23 / 88%);
+  --scrim: rgb(5 3 8 / 68%);
+  --scrim-soft: rgb(5 3 8 / 45%);
+  --surface-inverse: #09080b;
+  --on-inverse: #ffffff;
+  --on-inverse-2: #b9b2c2;
+  --err-tint: rgb(255 148 153 / 10%);
+  --ok-tint: rgb(116 211 163 / 10%);
+  --warn-tint: rgb(232 187 111 / 12%);
+
+  color-scheme: dark;
 }
 
 /* Desde 900 px el cuerpo gana un punto de tamaño y dos de interlineado. */

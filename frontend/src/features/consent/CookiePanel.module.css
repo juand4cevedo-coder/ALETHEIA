@@ -16,7 +16,7 @@
 }
 
 .panel a {
-  color: var(--ink-900);
+  color: var(--brand-text);
   text-underline-offset: var(--underline-offset);
 }
 
@@ -96,7 +96,7 @@
   border: 0;
   border-radius: var(--radius-sm);
   background: none;
-  color: var(--ink-900);
+  color: var(--brand-text);
   font: inherit;
   font-size: var(--font-size-ui);
   font-weight: 500;

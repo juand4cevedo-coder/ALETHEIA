@@ -4,7 +4,7 @@ import datetime
 import uuid
 from typing import Annotated, Literal, cast
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -18,6 +18,7 @@ from app.schemas.support import (
     SupportTicketStatusChange,
 )
 from app.services import rate_limit
+from app.services import support as support_service
 from app.services.audit import audit_ip
 from app.services.sessions import Principal
 
@@ -42,12 +43,16 @@ def get_support_customer(
 def _out(ticket: SupportTicket, *, email: str | None = None) -> SupportTicketOut:
     return SupportTicketOut(
         id=ticket.id,
+        filing_number=ticket.filing_number,
+        category=cast(support_service.TicketCategory, ticket.category),
         subject=ticket.subject,
         message=ticket.message,
         status=cast(Literal["open", "closed"], ticket.status),
+        due_on=ticket.due_on,
         created_at=ticket.created_at,
         updated_at=ticket.updated_at,
         closed_at=ticket.closed_at,
+        deletable_on=support_service.deletable_on(ticket.category, ticket.status, ticket.closed_at),
         user_email=email,
     )
 
@@ -67,9 +72,15 @@ def create_support_ticket(
 ) -> SupportTicketOut:
     response.headers["Cache-Control"] = "no-store"
     rate_limit.hit(session, rate_limit.SUPPORT_ACCOUNT, str(principal.user_id))
+    received_at = datetime.datetime.now(datetime.UTC)
     ticket = SupportTicket(
         user_id=principal.user_id,
         organization_id=principal.organization_id,
+        category=body.category,
+        filing_number=support_service.next_filing_number(session, received_at),
+        due_on=support_service.due_on(body.category, received_at),
+        created_at=received_at,
+        updated_at=received_at,
         subject=body.subject,
         message=body.message,
     )
@@ -118,6 +129,7 @@ def platform_support_tickets(
     principal: Annotated[Principal, Depends(get_platform_admin)],
     session: Annotated[Session, Depends(get_session)],
     cursor: uuid.UUID | None = None,
+    ticket_status: Annotated[Literal["open", "closed"] | None, Query(alias="status")] = None,
 ) -> SupportTicketPage:
     del principal
     response.headers["Cache-Control"] = "no-store"
@@ -127,6 +139,8 @@ def platform_support_tickets(
         .order_by(SupportTicket.id.desc())
         .limit(51)
     )
+    if ticket_status is not None:
+        query = query.where(SupportTicket.status == ticket_status)
     if cursor is not None:
         query = query.where(SupportTicket.id < cursor)
     rows = session.execute(query).all()
@@ -174,3 +188,51 @@ def change_support_ticket_status(
         session.commit()
     email = session.scalar(select(User.email).where(User.id == ticket.user_id))
     return _out(ticket, email=email)
+
+
+@router.delete(
+    "/platform/support/tickets/{ticket_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Eliminar una solicitud resuelta",
+    responses={
+        404: {"description": "La solicitud no existe."},
+        409: {"description": "Sigue abierta o todavía debe conservarse."},
+    },
+)
+def delete_support_ticket(
+    ticket_id: uuid.UUID,
+    principal: Annotated[Principal, Depends(get_platform_admin)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+) -> Response:
+    ticket = session.scalar(
+        select(SupportTicket).where(SupportTicket.id == ticket_id).with_for_update()
+    )
+    if ticket is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="La solicitud no existe.")
+    allowed_from = support_service.deletable_on(ticket.category, ticket.status, ticket.closed_at)
+    today = datetime.datetime.now(datetime.UTC).astimezone(support_service.BOGOTA).date()
+    if allowed_from is None or allowed_from > today:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail=(
+                "Esta solicitud debe conservarse: solo se elimina una vez resuelta y, si es de "
+                "datos personales, consumidor o reembolso, tres años después de cerrada."
+            ),
+        )
+    filing_number = ticket.filing_number
+    category = ticket.category
+    session.delete(ticket)
+    session.add(
+        AuditLog(
+            organization_id=None,
+            actor_user_id=principal.user_id,
+            action="support_ticket_deleted",
+            target_id=ticket_id,
+            details={"filing_number": filing_number, "category": category},
+            ip=audit_ip(client_ip),
+            user_agent=None,
+        )
+    )
+    session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT, headers={"Cache-Control": "no-store"})

@@ -1,8 +1,8 @@
+import { BrandMark } from "../../components/ui/BrandMark.tsx";
 import { useQueryClient } from "@tanstack/react-query";
 
 import type { Me } from "../../api/generated";
 import { readMeQueryKey } from "../../api/generated/@tanstack/react-query.gen.ts";
-import logoUrl from "../../assets/simbolo.svg";
 import { Button } from "../../components/ui/Button.tsx";
 import { SalirIcon } from "../../components/ui/icons.tsx";
 import { WORDMARK, pageTitle } from "../../config/site.ts";
@@ -20,7 +20,7 @@ export function TwoFactorRequired({ me }: { me: Me }) {
       <title>{pageTitle("Active la verificación en dos pasos")}</title>
       <meta name="robots" content="noindex" />
       <header className={styles.brand}>
-        <img src={logoUrl} alt="" width={28} height={28} />
+        <BrandMark />
         <span>{WORDMARK}</span>
       </header>
       <main className={styles.main}>

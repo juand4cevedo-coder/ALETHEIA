@@ -18,11 +18,6 @@
   justify-self: start;
 }
 
-.ready {
-  display: grid;
-  gap: var(--space-4);
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;

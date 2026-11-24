@@ -147,7 +147,7 @@
   padding: 2px 8px;
   border-radius: 8px;
   background: color-mix(in srgb, var(--ink-900) 12%, var(--paper-raised));
-  color: var(--ink-700);
+  color: var(--brand-text-strong);
   font-size: var(--font-size-label);
   font-weight: 600;
   text-overflow: ellipsis;
@@ -211,7 +211,7 @@
 }
 
 .link {
-  color: var(--ink-900);
+  color: var(--brand-text);
   font-weight: 650;
 }
 
@@ -235,7 +235,7 @@
 
 .time {
   min-width: 7ch;
-  color: var(--ink-900);
+  color: var(--brand-text);
   font-family: var(--font-mono);
   font-size: var(--font-size-support);
   font-weight: 600;
@@ -254,7 +254,7 @@
 }
 
 .body a:hover {
-  color: var(--ink-900);
+  color: var(--brand-text);
   text-decoration: underline;
 }
 

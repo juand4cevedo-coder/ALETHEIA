@@ -1,0 +1,111 @@
+/* Botón del encabezado: el sol y la luna ocupan el mismo lugar y se relevan girando, para que
+   el cambio se lea como un interruptor y no como dos botones. */
+.switch {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-base) var(--ease-standard),
+    color var(--motion-base) var(--ease-standard);
+}
+
+.switch:hover {
+  background: var(--tint-2);
+  color: var(--text);
+}
+
+.switch:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+.switch svg {
+  grid-area: 1 / 1;
+  transition:
+    transform 420ms var(--ease-out),
+    opacity 240ms var(--ease-standard);
+}
+
+.switch[data-mode="light"] .moon,
+.switch[data-mode="dark"] .sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+
+/* Selector de tres posiciones: una pista hundida y la opción elegida en relieve. */
+.chooser {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--tint-2);
+}
+
+.option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  font-weight: 550;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-base) var(--ease-standard),
+    color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard);
+}
+
+.option input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.option:hover {
+  color: var(--text);
+}
+
+.option:has(input:checked) {
+  background: var(--paper-raised);
+  color: var(--text);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 12%),
+    var(--brass-hairline);
+}
+
+.option:has(input:focus-visible) {
+  box-shadow: var(--ring-focus);
+}
+
+.chooser[data-tone="inverse"] {
+  background: rgb(255 255 255 / 8%);
+}
+
+.chooser[data-tone="inverse"] .option {
+  color: var(--on-inverse-2);
+}
+
+.chooser[data-tone="inverse"] .option:has(input:checked) {
+  background: rgb(255 255 255 / 14%);
+  color: var(--on-inverse);
+  box-shadow: none;
+}

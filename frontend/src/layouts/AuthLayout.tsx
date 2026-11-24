@@ -1,3 +1,4 @@
+import { BrandMark } from "../components/ui/BrandMark.tsx";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import {
@@ -16,7 +17,7 @@ import { SITE_NAME, WORDMARK } from "../config/site.ts";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import styles from "./AuthLayout.module.css";
-import { mediaUrl, photoProps } from "../config/media.ts";
+import { photoProps } from "../config/media.ts";
 
 /** Cambio a la otra pantalla de acceso, declarado en la ruta: va debajo del formulario. */
 export type AuthSwitch = { question: string; label: string; to: string };
@@ -38,7 +39,6 @@ function isAuthSwitch(value: unknown): value is AuthSwitch {
   );
 }
 
-const logoUrl = mediaUrl("/brand/symbol-dark.svg");
 const CURRENT_YEAR = new Date().getFullYear();
 
 export function AuthLayout() {
@@ -89,7 +89,7 @@ export function AuthLayout() {
 
       <header className={styles.header}>
         <Link to={ROUTES.home} className={styles.brand}>
-          <img src={logoUrl} alt="" width={30} height={30} />
+          <BrandMark size={30} />
           <span>{WORDMARK}</span>
         </Link>
         <Link to={ROUTES.home} className={styles.back}>

@@ -7,7 +7,7 @@ import {
 } from "react";
 
 import styles from "./Field.module.css";
-import { OjoIcon, OjoTachadoIcon } from "./icons.tsx";
+import { CirculoAlertaIcon, OjoIcon, OjoTachadoIcon } from "./icons.tsx";
 
 type FieldProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -15,7 +15,16 @@ type FieldProps = Omit<
 > & {
   /** Etiqueta del campo, siempre visible encima de él. */
   label: string;
-  type?: "text" | "email" | "password" | "datetime-local";
+  type?:
+    | "text"
+    | "email"
+    | "password"
+    | "search"
+    | "tel"
+    | "url"
+    | "number"
+    | "date"
+    | "datetime-local";
   /** Ayuda fija bajo el campo. El error la reemplaza mientras exista. */
   help?: string;
   /** Qué pasó y cómo corregirlo. */
@@ -105,7 +114,8 @@ export function Field({
       {children}
       {error ? (
         <p id={errorId} className={styles.error}>
-          {error}
+          <CirculoAlertaIcon size={14} aria-hidden="true" />
+          <span>{error}</span>
         </p>
       ) : (
         help && (

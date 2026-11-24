@@ -130,7 +130,7 @@ describe("Textos legales nuevos por aceptar (TT-012)", () => {
     expect(
       await screen.findByRole("heading", {
         level: 1,
-        name: "Ana María Restrepo",
+        name: /, Ana$/,
       }),
     ).toBeInTheDocument();
     const [request] = acceptanceRequests();

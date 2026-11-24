@@ -5,6 +5,7 @@ import { listCasesOptions } from "../api/generated/@tanstack/react-query.gen.ts"
 import type { CaseSummaryOut, Me } from "../api/generated";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
+import { greeting } from "../features/session/greeting.ts";
 import { Panel } from "../components/ui/Panel.tsx";
 import { StatTile } from "../components/ui/StatTile.tsx";
 import { StatusBadge } from "../components/ui/StatusBadge.tsx";
@@ -79,10 +80,9 @@ export function WorkspacePage() {
   const recentItems = recent.data?.items;
 
   const subscription = me.subscription;
+  const hello = greeting(me.full_name);
   const needsAttention =
-    canPay &&
-    subscription != null &&
-    (subscription.status === "trial" || subscription.status === "expired");
+    canPay && subscription != null && subscription.status === "expired";
 
   return (
     <div className={styles.screen}>
@@ -90,7 +90,7 @@ export function WorkspacePage() {
       <meta name="robots" content="noindex" />
 
       <PageHeader
-        title={me.full_name}
+        title={hello}
         description={
           me.organization
             ? `${me.organization.name}, ${ROLE_LABELS[me.organization.role]}`
@@ -164,11 +164,8 @@ export function WorkspacePage() {
 
           {needsAttention && (
             <Notice tone="warning">
-              {subscription?.status === "trial"
-                ? "Su período de prueba está activo. "
-                : "Su período de prueba venció. "}
-              <a href={ROUTES.account}>Revise el plan en Mi cuenta</a> para no
-              perder el acceso.
+              Su período de prueba venció y el despacho está en solo lectura.{" "}
+              <a href={ROUTES.billing}>Elija un plan</a> para seguir trabajando.
             </Notice>
           )}
 

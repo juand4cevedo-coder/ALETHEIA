@@ -36,12 +36,15 @@ it("permite enviar una solicitud y verla en la cuenta", async () => {
       return jsonResponse({ items: ticket ? [ticket] : [], next_cursor: null });
     if (path === "/api/v1/support/tickets" && request.method === "POST") {
       const body = (await request.json()) as {
+        category: string;
         subject: string;
         message: string;
       };
       ticket = {
         id: "01890a5d-ac96-774b-bcce-b302099a8058",
         ...body,
+        filing_number: "PQR-2026-00007",
+        due_on: "2026-12-04",
         status: "open",
         created_at: "2026-11-13T15:00:00Z",
         updated_at: "2026-11-13T15:00:00Z",
@@ -53,6 +56,11 @@ it("permite enviar una solicitud y verla en la cuenta", async () => {
   });
   const user = userEvent.setup();
   await renderRoute("/app/soporte");
+  await user.click(
+    await screen.findByRole("radio", {
+      name: /Consulta sobre mis datos personales/,
+    }),
+  );
   await user.type(
     await screen.findByRole("textbox", { name: "Asunto" }),
     "Consulta de ingreso",
@@ -62,7 +70,10 @@ it("permite enviar una solicitud y verla en la cuenta", async () => {
     "No puedo ingresar a mi cuenta.",
   );
   await user.click(screen.getByRole("button", { name: "Enviar solicitud" }));
-  expect(await screen.findByText("Solicitud enviada.")).toBeInTheDocument();
+  expect(
+    await screen.findByText("PQR-2026-00007", { selector: "strong" }),
+  ).toBeInTheDocument();
+  expect((ticket as { category?: string } | null)?.category).toBe("data_query");
   await waitFor(() =>
     expect(screen.getByText("Consulta de ingreso")).toBeInTheDocument(),
   );
@@ -94,7 +105,7 @@ it("dirige al propietario a las solicitudes recibidas y oculta el soporte de cli
   await renderRoute("/app/soporte");
 
   expect(
-    await screen.findByRole("heading", { name: "Solicitudes de usuarios" }),
+    await screen.findByRole("heading", { name: "Solicitudes y PQR" }),
   ).toBeInTheDocument();
   expect(
     screen.queryByRole("link", { name: "Pedir soporte" }),
@@ -103,6 +114,6 @@ it("dirige al propietario a las solicitudes recibidas y oculta el soporte de cli
     screen.queryByRole("textbox", { name: "Asunto" }),
   ).not.toBeInTheDocument();
   expect(
-    screen.getByRole("link", { name: "Solicitudes de usuarios" }),
+    screen.getByRole("link", { name: "Solicitudes y PQR" }),
   ).toBeInTheDocument();
 });

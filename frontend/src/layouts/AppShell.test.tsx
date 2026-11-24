@@ -89,7 +89,7 @@ describe("Espacio de trabajo protegido (API-014)", () => {
       within(nav).getByRole("link", { name: "Equipo" }),
     ).toBeInTheDocument();
     expect(
-      within(nav).getByRole("link", { name: "Solicitudes de usuarios" }),
+      within(nav).getByRole("link", { name: "Solicitudes y PQR" }),
     ).toBeInTheDocument();
     expect(
       within(nav).queryByRole("link", { name: "Casos" }),
@@ -168,7 +168,7 @@ describe("Espacio de trabajo protegido (API-014)", () => {
     const { container } = await renderRoute("/app");
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" }),
+      await screen.findByRole("heading", { level: 1, name: /, Ana$/ }),
     ).toBeInTheDocument();
     // La organización va en el botón; el rol, en su propia línea dentro del panel.
     expect(
@@ -252,7 +252,7 @@ describe("Sesión vencida (NAV-004, MSG-012)", () => {
     queryClient.setQueryData(["private-case"], {
       name: "Expediente de prueba",
     });
-    await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" });
+    await screen.findByRole("heading", { level: 1, name: /, Ana$/ });
 
     alive = false;
     act(() => {

@@ -1,24 +1,24 @@
-import { FilterPanel } from "../components/ui/FilterPanel.tsx";
+import { FilterPanel } from "../../components/ui/FilterPanel.tsx";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 import { useOutletContext } from "react-router";
 
-import type { Me, PlatformUser } from "../api/generated";
+import type { Me, PlatformUser } from "../../api/generated";
 import {
   changePlatformUserStatusMutation,
   deletePlatformUserMutation,
   listPlatformUsersOptions,
-} from "../api/generated/@tanstack/react-query.gen.ts";
-import { Button } from "../components/ui/Button.tsx";
-import { Dialog } from "../components/ui/Dialog.tsx";
-import { Field } from "../components/ui/Field.tsx";
-import { apiProblem } from "../features/auth/apiProblem.ts";
-import { Notice } from "../components/ui/Notice.tsx";
-import { PageHeader } from "../components/ui/PageHeader.tsx";
-import { Panel } from "../components/ui/Panel.tsx";
-import { StatusBadge } from "../components/ui/StatusBadge.tsx";
-import { pageTitle } from "../config/site.ts";
-import styles from "./PlatformPage.module.css";
+} from "../../api/generated/@tanstack/react-query.gen.ts";
+import { Button } from "../../components/ui/Button.tsx";
+import { Dialog } from "../../components/ui/Dialog.tsx";
+import { Field } from "../../components/ui/Field.tsx";
+import { apiProblem } from "../../features/auth/apiProblem.ts";
+import { Notice } from "../../components/ui/Notice.tsx";
+import { PageHeader } from "../../components/ui/PageHeader.tsx";
+import { Panel } from "../../components/ui/Panel.tsx";
+import { StatusBadge } from "../../components/ui/StatusBadge.tsx";
+import { pageTitle } from "../../config/site.ts";
+import styles from "./Platform.module.css";
 
 type AccountFilters = {
   search: string;
@@ -34,7 +34,7 @@ const EMPTY_FILTERS: AccountFilters = {
   accountType: "",
 };
 
-export function PlatformPage() {
+export function PlatformAccountsPage() {
   const me = useOutletContext<Me>();
   const [filters, setFilters] = useState<AccountFilters>(EMPTY_FILTERS);
   const [appliedFilters, setAppliedFilters] =
@@ -104,19 +104,16 @@ export function PlatformPage() {
 
   return (
     <div className={styles.screen}>
-      <title>{pageTitle("Administración de la plataforma")}</title>
+      <title>{pageTitle("Cuentas de la plataforma")}</title>
       <meta name="robots" content="noindex" />
       <PageHeader
-        title="Administración de la plataforma"
-        description="Gestione el acceso a Aletheia sin entrar a los expedientes de los despachos."
+        title="Cuentas"
+        description="Cada persona registrada en Aletheia. Bloquear una cuenta cierra sus sesiones en todos los dispositivos."
       />
       {!me.platform_admin ? (
         <Notice tone="error">Esta cuenta no administra la plataforma.</Notice>
       ) : (
-        <Panel
-          title="Cuentas"
-          description="Bloquear una cuenta cierra sus sesiones en todos los dispositivos."
-        >
+        <Panel density="compact">
           <FilterPanel
             active={Object.values(appliedFilters).filter(Boolean).length}
           >
@@ -292,7 +289,7 @@ export function PlatformPage() {
                         {!user.platform_admin && (
                           <Button
                             size="sm"
-                            variant="secondary"
+                            variant="danger"
                             onClick={() => {
                               remove.reset();
                               setConfirmation("");
@@ -406,6 +403,7 @@ export function PlatformPage() {
             </Button>
             <Button
               size="sm"
+              variant="danger"
               busy={remove.isPending}
               disabled={
                 !removing ||

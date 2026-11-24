@@ -9,7 +9,10 @@ import { Panel } from "../components/ui/Panel.tsx";
 import { pageTitle } from "../config/site.ts";
 import { formatCop } from "../features/billing/format.ts";
 import { RenewalCard } from "../features/billing/RenewalCard.tsx";
-import { formatColombiaDate } from "../features/cases/dates.ts";
+import {
+  formatColombiaDate,
+  formatColombiaTime,
+} from "../features/cases/dates.ts";
 import { CheckoutCard } from "./CheckoutCard.tsx";
 import styles from "./AccountPage.module.css";
 
@@ -45,10 +48,13 @@ export function BillingPage() {
               <dt>Plan</dt>
               <dd>{subscription.plan_name}</dd>
             </div>
-            <div className={styles.row}>
-              <dt>Estado</dt>
-              <dd>{STATUS_LABELS[subscription.status] ?? "Solo lectura"}</dd>
-            </div>
+            {(STATUS_LABELS[subscription.status] ?? "Solo lectura") !==
+              subscription.plan_name && (
+              <div className={styles.row}>
+                <dt>Estado</dt>
+                <dd>{STATUS_LABELS[subscription.status] ?? "Solo lectura"}</dd>
+              </div>
+            )}
             <div className={styles.row}>
               <dt>
                 {subscription.status === "trial"
@@ -57,7 +63,7 @@ export function BillingPage() {
               </dt>
               <dd>
                 {subscription.ends_at
-                  ? new Date(subscription.ends_at).toLocaleString("es-CO")
+                  ? formatColombiaTime(subscription.ends_at)
                   : "Sin fecha definida"}
               </dd>
             </div>

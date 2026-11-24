@@ -222,6 +222,9 @@ def test_solicitud_de_soporte_y_resolucion_dejan_auditoria(
     assert created.status_code == 201
     ticket_id = created.json()["id"]
     assert created.json()["status"] == "open"
+    assert created.json()["filing_number"].startswith("PQR-")
+    assert created.json()["category"] == "support"
+    assert created.json()["due_on"] > created.json()["created_at"][:10]
     own = client.get("/api/v1/support/tickets")
     assert [item["id"] for item in own.json()["items"]] == [ticket_id]
     assert client.get("/api/v1/platform/support/tickets").status_code == 403
@@ -254,6 +257,8 @@ def test_cada_cuenta_solo_lee_sus_solicitudes_en_rls(db: Session) -> None:
         SupportTicket(
             user_id=first.user_id,
             organization_id=first.organization_id,
+            filing_number="PQR-2026-80001",
+            due_on=datetime.date(2026, 12, 16),
             subject="Consulta primera",
             message="Necesito ayuda con mi cuenta.",
         )
@@ -264,6 +269,8 @@ def test_cada_cuenta_solo_lee_sus_solicitudes_en_rls(db: Session) -> None:
         SupportTicket(
             user_id=second.user_id,
             organization_id=second.organization_id,
+            filing_number="PQR-2026-80002",
+            due_on=datetime.date(2026, 12, 16),
             subject="Consulta segunda",
             message="Necesito ayuda con el ingreso.",
         )

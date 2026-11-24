@@ -49,7 +49,7 @@
 .hero {
   padding: 40px 40px 0;
   border-bottom: 1px solid var(--ink-hairline);
-  background: #f6f1f8;
+  background: var(--tint-1);
 }
 
 .reference {
@@ -169,12 +169,12 @@
 }
 
 .tab:hover {
-  color: var(--ink-700);
-  background: rgb(130 10 209 / 8%);
+  color: var(--brand-text-strong);
+  background: color-mix(in srgb, var(--ink-900) 10%, transparent);
 }
 
 .tab[aria-selected="true"] {
-  color: #fff;
+  color: var(--on-ink);
   background: var(--ink-900);
   box-shadow: none;
 }
@@ -190,8 +190,8 @@
 }
 
 .tab[aria-selected="true"] .count {
-  background: rgb(255 255 255 / 18%);
-  color: #fff;
+  background: color-mix(in srgb, var(--on-ink) 18%, transparent);
+  color: var(--on-ink);
 }
 
 .tabPanel {

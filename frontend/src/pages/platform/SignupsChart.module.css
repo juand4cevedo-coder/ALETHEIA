@@ -1,0 +1,149 @@
+.figure {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.caption {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+}
+
+.total {
+  color: var(--text);
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.plot {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  grid-template-rows: 160px auto;
+  column-gap: var(--space-2);
+}
+
+/* Rejilla recesiva: solo el máximo y el cero, en el gris más tenue. */
+.grid {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: var(--text-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: right;
+}
+
+.bars {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  align-items: end;
+  gap: 2px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--ink-hairline);
+  list-style: none;
+}
+
+/* El área que responde al puntero es toda la columna, no solo la barra. */
+.slot {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  cursor: default;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: color-mix(in srgb, var(--ink-900) 72%, var(--paper-raised));
+  transform-origin: bottom;
+  animation: bar-rise 640ms var(--ease-out) both;
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.slot[data-active] .bar {
+  background: var(--ink-900);
+}
+
+@keyframes bar-rise {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.axis {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--space-2);
+  color: var(--text-3);
+  font-size: 11px;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% - 140px);
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  min-width: 120px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface-inverse);
+  color: var(--on-inverse-2);
+  font-size: 12px;
+  line-height: 16px;
+  box-shadow: var(--shadow-float);
+  pointer-events: none;
+  transform: translateX(calc(-50% + 14px));
+}
+
+.tooltip strong {
+  color: var(--on-inverse);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.details summary {
+  width: fit-content;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  cursor: pointer;
+}
+
+.details summary:hover {
+  color: var(--text);
+}
+
+.table {
+  width: 100%;
+  margin-top: var(--space-3);
+  border-collapse: collapse;
+  font-size: var(--font-size-support);
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(th, td) {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--ink-hairline);
+  text-align: left;
+}
+
+.table td {
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+}

@@ -1,5 +1,5 @@
 .check {
-  --check-size: 24px;
+  --check-size: 22px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-3);
@@ -15,8 +15,52 @@
   height: var(--check-size);
   /* Centrada en el alto táctil de la etiqueta: si ese alto cambia, la casilla lo sigue. */
   margin: calc((var(--control-height-sm) - var(--check-size)) / 2) 0 0;
-  accent-color: var(--ink-900);
+  display: grid;
+  place-content: center;
+  border: 1.5px solid var(--line-control);
+  border-radius: 7px;
+  background: var(--paper-raised);
+  appearance: none;
   cursor: pointer;
+  transition:
+    background-color 160ms var(--ease-standard),
+    border-color 160ms var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-out);
+}
+
+/* La marca de verificación se dibuja con un recorte y entra creciendo desde el centro. */
+.check input::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  background: var(--on-ink);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform: scale(0);
+  transition: transform 200ms var(--ease-out);
+}
+
+.check input:hover {
+  border-color: var(--ink-900);
+}
+
+.check input:checked {
+  border-color: var(--ink-900);
+  background: var(--ink-900);
+}
+
+.check input:checked::before {
+  transform: scale(1);
+}
+
+.check input:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+.check input:disabled {
+  border-style: dashed;
+  background: var(--paper-sunken);
+  cursor: not-allowed;
 }
 
 .check label {

@@ -36,7 +36,7 @@ const QUESTIONS = [
   {
     question: "¿Dónde encuentro las condiciones del servicio?",
     answer:
-      "En el pie de cada página están los términos, la política de privacidad, las cookies y los reembolsos. Cada documento incluye su fecha de vigencia y una copia que puede descargar.",
+      "En el pie de cada página están los términos, la política de tratamiento de datos, las cookies y los reembolsos. Cada documento incluye su fecha de vigencia y una copia que puede descargar.",
   },
 ] as const;
 

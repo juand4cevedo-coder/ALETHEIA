@@ -1,3 +1,4 @@
+import { BrandMark } from "../components/ui/BrandMark.tsx";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
@@ -5,7 +6,6 @@ import { FlechaDerechaIcon } from "../components/ui/icons.tsx";
 import { LEGAL_PAGES, legalRoute } from "../config/routes.ts";
 import { CONTACT_EMAIL, pageTitle, SITE_URL } from "../config/site.ts";
 import { HELP } from "../content/journal.ts";
-import logo from "../assets/simbolo.svg";
 import { NotFoundPage } from "./NotFoundPage.tsx";
 import styles from "./EditorialPage.module.css";
 
@@ -211,7 +211,7 @@ export function InformationPage() {
       <link rel="canonical" href={SITE_URL + pathname} />
       <header className={styles.centerHead}>
         <div className={styles.brandTile}>
-          <img src={logo} width={84} height={84} alt="" />
+          <BrandMark size={84} />
         </div>
         <h1>{title}</h1>
         <p>{lead}</p>
@@ -246,7 +246,7 @@ export function InformationPage() {
       {key === "marca" && (
         <>
           <div className={styles.wordmarkSample}>
-            <img src={logo} alt="" width={80} height={80} />
+            <BrandMark size={80} />
             <span>Aletheia</span>
           </div>
           <div className={styles.prose}>

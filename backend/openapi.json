@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.43.0"
+    "version": "0.44.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -6889,6 +6889,221 @@
         }
       }
     },
+    "/api/v1/platform/overview": {
+      "get": {
+        "tags": [
+          "plataforma"
+        ],
+        "summary": "Resumen de la plataforma",
+        "operationId": "platform_overview",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformOverview"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/organizations": {
+      "get": {
+        "tags": [
+          "plataforma"
+        ],
+        "summary": "Directorio de despachos",
+        "operationId": "platform_organizations",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120,
+                  "pattern": ".*\\S.*"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Nombre del despacho, o nombre o correo de su responsable.",
+              "title": "Search"
+            },
+            "description": "Nombre del despacho, o nombre o correo de su responsable."
+          },
+          {
+            "name": "subscription_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "trial",
+                    "active",
+                    "past_due",
+                    "canceled",
+                    "expired"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Estado de la suscripción.",
+              "title": "Subscription Status"
+            },
+            "description": "Estado de la suscripción."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformOrganizationPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/operations": {
+      "get": {
+        "tags": [
+          "plataforma"
+        ],
+        "summary": "Cola de tareas y pagos por procesar",
+        "operationId": "platform_operations",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformOperations"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/platform/jobs/{job_id}/retry": {
+      "post": {
+        "tags": [
+          "plataforma"
+        ],
+        "summary": "Devolver a la cola una tarea fallida",
+        "description": "La tarea vuelve con sus intentos en cero y corre en la próxima vuelta del trabajador.",
+        "operationId": "retry_platform_job",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "La tarea no existe.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La tarea no está fallida.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/support/tickets": {
       "post": {
         "tags": [
@@ -7027,6 +7242,26 @@
               ],
               "title": "Cursor"
             }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "open",
+                    "closed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
           }
         ],
         "responses": {
@@ -7094,6 +7329,67 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SupportTicketOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/support/tickets/{ticket_id}": {
+      "delete": {
+        "tags": [
+          "soporte"
+        ],
+        "summary": "Eliminar una solicitud resuelta",
+        "operationId": "delete_support_ticket",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ticket Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "La solicitud no existe.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sigue abierta o todavía debe conservarse.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -11999,13 +12295,6 @@
       },
       "OrganizationPolicies": {
         "properties": {
-          "default_retention_years": {
-            "type": "integer",
-            "maximum": 30.0,
-            "minimum": 1.0,
-            "title": "Default Retention Years",
-            "description": "Años que se conserva un caso archivado; solo cuenta para los futuros."
-          },
           "session_days": {
             "type": "integer",
             "maximum": 14.0,
@@ -12018,25 +12307,23 @@
             "title": "Require Two Factor",
             "description": "Exige el segundo factor a todo el equipo. Quien no lo tenga solo puede activarlo.",
             "default": false
+          },
+          "default_retention_years": {
+            "type": "integer",
+            "title": "Default Retention Years",
+            "description": "Años que se conserva un caso archivado desde su cierre. Es el mismo para todos los despachos y no se cambia desde la aplicación."
           }
         },
         "type": "object",
         "required": [
-          "default_retention_years",
-          "session_days"
+          "session_days",
+          "default_retention_years"
         ],
         "title": "OrganizationPolicies",
-        "description": "Políticas del despacho que afectan a todo el equipo."
+        "description": "Políticas vigentes del despacho, con el plazo de conservación, que es fijo."
       },
       "OrganizationPoliciesRequest": {
         "properties": {
-          "default_retention_years": {
-            "type": "integer",
-            "maximum": 30.0,
-            "minimum": 1.0,
-            "title": "Default Retention Years",
-            "description": "Años que se conserva un caso archivado; solo cuenta para los futuros."
-          },
           "session_days": {
             "type": "integer",
             "maximum": 14.0,
@@ -12054,10 +12341,10 @@
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "default_retention_years",
           "session_days"
         ],
-        "title": "OrganizationPoliciesRequest"
+        "title": "OrganizationPoliciesRequest",
+        "description": "Políticas del despacho que el propietario puede cambiar."
       },
       "OrganizationRenameRequest": {
         "properties": {
@@ -12527,6 +12814,462 @@
         ],
         "title": "PlatformBilling"
       },
+      "PlatformExpiring": {
+        "properties": {
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Organization Id"
+          },
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name"
+          },
+          "plan_name": {
+            "type": "string",
+            "title": "Plan Name"
+          },
+          "access_source": {
+            "type": "string",
+            "title": "Access Source"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ends At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_id",
+          "organization_name",
+          "plan_name",
+          "access_source",
+          "ends_at"
+        ],
+        "title": "PlatformExpiring"
+      },
+      "PlatformFailedJob": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "failed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Failed At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Solo el tipo de error, nunca su mensaje."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "attempts",
+          "failed_at",
+          "error"
+        ],
+        "title": "PlatformFailedJob"
+      },
+      "PlatformJobKind": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "queued": {
+            "type": "integer",
+            "title": "Queued"
+          },
+          "running": {
+            "type": "integer",
+            "title": "Running"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "done_24_hours": {
+            "type": "integer",
+            "title": "Done 24 Hours"
+          },
+          "oldest_waiting_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldest Waiting At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "queued",
+          "running",
+          "failed",
+          "done_24_hours",
+          "oldest_waiting_at"
+        ],
+        "title": "PlatformJobKind"
+      },
+      "PlatformOperations": {
+        "properties": {
+          "kinds": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformJobKind"
+            },
+            "type": "array",
+            "title": "Kinds"
+          },
+          "failed": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformFailedJob"
+            },
+            "type": "array",
+            "title": "Failed"
+          },
+          "payment_events_pending": {
+            "type": "integer",
+            "title": "Payment Events Pending"
+          },
+          "oldest_payment_event_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldest Payment Event At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kinds",
+          "failed",
+          "payment_events_pending",
+          "oldest_payment_event_at"
+        ],
+        "title": "PlatformOperations"
+      },
+      "PlatformOrganization": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "owner_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Name"
+          },
+          "owner_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Email"
+          },
+          "members": {
+            "type": "integer",
+            "title": "Members"
+          },
+          "plan_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Name"
+          },
+          "subscription_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscription Status"
+          },
+          "access_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Source"
+          },
+          "billing_cycle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Billing Cycle"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "storage_used_bytes": {
+            "type": "integer",
+            "title": "Storage Used Bytes"
+          },
+          "storage_limit_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storage Limit Bytes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "status",
+          "owner_name",
+          "owner_email",
+          "members",
+          "plan_name",
+          "subscription_status",
+          "access_source",
+          "billing_cycle",
+          "ends_at",
+          "storage_used_bytes",
+          "storage_limit_bytes",
+          "created_at"
+        ],
+        "title": "PlatformOrganization"
+      },
+      "PlatformOrganizationPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformOrganization"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "next_cursor"
+        ],
+        "title": "PlatformOrganizationPage"
+      },
+      "PlatformOverview": {
+        "properties": {
+          "accounts_total": {
+            "type": "integer",
+            "title": "Accounts Total"
+          },
+          "accounts_new_7_days": {
+            "type": "integer",
+            "title": "Accounts New 7 Days"
+          },
+          "accounts_new_30_days": {
+            "type": "integer",
+            "title": "Accounts New 30 Days"
+          },
+          "accounts_blocked": {
+            "type": "integer",
+            "title": "Accounts Blocked"
+          },
+          "organizations_total": {
+            "type": "integer",
+            "title": "Organizations Total"
+          },
+          "organizations_read_only": {
+            "type": "integer",
+            "title": "Organizations Read Only"
+          },
+          "subscriptions": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Subscriptions",
+            "description": "Suscripciones por estado."
+          },
+          "collected_30_days_cop": {
+            "type": "integer",
+            "title": "Collected 30 Days Cop"
+          },
+          "receipts_30_days": {
+            "type": "integer",
+            "title": "Receipts 30 Days"
+          },
+          "tickets_open": {
+            "type": "integer",
+            "title": "Tickets Open"
+          },
+          "tickets_overdue": {
+            "type": "integer",
+            "title": "Tickets Overdue",
+            "description": "Solicitudes abiertas con el plazo vencido."
+          },
+          "tickets_due_soon": {
+            "type": "integer",
+            "title": "Tickets Due Soon",
+            "description": "Abiertas que vencen en los próximos 7 días."
+          },
+          "jobs_failed": {
+            "type": "integer",
+            "title": "Jobs Failed"
+          },
+          "jobs_waiting": {
+            "type": "integer",
+            "title": "Jobs Waiting"
+          },
+          "payment_events_pending": {
+            "type": "integer",
+            "title": "Payment Events Pending"
+          },
+          "storage_used_bytes": {
+            "type": "integer",
+            "title": "Storage Used Bytes"
+          },
+          "expiring": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformExpiring"
+            },
+            "type": "array",
+            "title": "Expiring"
+          },
+          "recent_accounts": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformRecentAccount"
+            },
+            "type": "array",
+            "title": "Recent Accounts"
+          },
+          "signups": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformSignupDay"
+            },
+            "type": "array",
+            "title": "Signups",
+            "description": "Cuentas nuevas en los últimos 30 días."
+          }
+        },
+        "type": "object",
+        "required": [
+          "accounts_total",
+          "accounts_new_7_days",
+          "accounts_new_30_days",
+          "accounts_blocked",
+          "organizations_total",
+          "organizations_read_only",
+          "subscriptions",
+          "collected_30_days_cop",
+          "receipts_30_days",
+          "tickets_open",
+          "tickets_overdue",
+          "tickets_due_soon",
+          "jobs_failed",
+          "jobs_waiting",
+          "payment_events_pending",
+          "storage_used_bytes",
+          "expiring",
+          "recent_accounts",
+          "signups"
+        ],
+        "title": "PlatformOverview"
+      },
       "PlatformPlan": {
         "properties": {
           "code": {
@@ -12590,6 +13333,55 @@
           "is_public"
         ],
         "title": "PlatformPlan"
+      },
+      "PlatformRecentAccount": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "full_name",
+          "email",
+          "created_at"
+        ],
+        "title": "PlatformRecentAccount"
+      },
+      "PlatformSignupDay": {
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          },
+          "accounts": {
+            "type": "integer",
+            "title": "Accounts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "accounts"
+        ],
+        "title": "PlatformSignupDay"
       },
       "PlatformUser": {
         "properties": {
@@ -13923,6 +14715,19 @@
       },
       "SupportTicketCreate": {
         "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "support",
+              "data_query",
+              "data_claim",
+              "consumer",
+              "refund"
+            ],
+            "title": "Category",
+            "description": "support: ayuda con el servicio; data_query: consulta sobre datos personales; data_claim: corregir, actualizar o suprimir datos; consumer: petición, queja o reclamo de consumidor; refund: devolución de un pago.",
+            "default": "support"
+          },
           "subject": {
             "type": "string",
             "maxLength": 120,
@@ -13951,6 +14756,22 @@
             "format": "uuid",
             "title": "Id"
           },
+          "filing_number": {
+            "type": "string",
+            "title": "Filing Number",
+            "description": "Radicado con el que se consulta la solicitud."
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "support",
+              "data_query",
+              "data_claim",
+              "consumer",
+              "refund"
+            ],
+            "title": "Category"
+          },
           "subject": {
             "type": "string",
             "title": "Subject"
@@ -13966,6 +14787,12 @@
               "closed"
             ],
             "title": "Status"
+          },
+          "due_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Due On",
+            "description": "Último día para responder, hora de Colombia."
           },
           "created_at": {
             "type": "string",
@@ -13989,6 +14816,19 @@
             ],
             "title": "Closed At"
           },
+          "deletable_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deletable On",
+            "description": "Desde qué día la plataforma puede eliminarla: al resolverse si es de soporte; tres años después de cerrada si es de datos personales, consumidor o reembolso."
+          },
           "user_email": {
             "anyOf": [
               {
@@ -14004,9 +14844,12 @@
         "type": "object",
         "required": [
           "id",
+          "filing_number",
+          "category",
           "subject",
           "message",
           "status",
+          "due_on",
           "created_at",
           "updated_at",
           "closed_at"

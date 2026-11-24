@@ -14,17 +14,13 @@ import { Select } from "../../components/ui/Select.tsx";
 import { apiProblem } from "../auth/apiProblem.ts";
 import styles from "./PoliciesCard.module.css";
 
-const RETENTION_OPTIONS = [1, 3, 5, 7, 10, 15, 20, 30].map((years) => ({
-  value: String(years),
-  label: years === 1 ? "1 año" : `${years} años`,
-}));
-
 const SESSION_OPTIONS = [1, 3, 7, 14].map((days) => ({
   value: String(days),
   label: days === 1 ? "1 día" : `${days} días`,
 }));
 
-// Políticas del despacho: dos decisiones que afectan a todo el equipo. Las ve quien gestiona el
+// Políticas del despacho: dos decisiones que afectan a todo el equipo. El plazo de conservación
+// de los casos archivados es el mismo para todos los despachos y aquí solo se informa. Las ve quien gestiona el
 // despacho y solo el propietario las cambia. Cada cambio queda en la auditoría de seguridad.
 export function PoliciesCard({ canEdit }: { canEdit: boolean }) {
   const policies = useQuery(getPoliciesOptions());
@@ -40,7 +36,7 @@ export function PoliciesCard({ canEdit }: { canEdit: boolean }) {
       {policies.data && (
         <PoliciesForm
           // Si el servidor devuelve otros valores, el formulario se reinicia con ellos.
-          key={`${policies.data.default_retention_years}-${policies.data.session_days}-${policies.data.require_two_factor}`}
+          key={`${policies.data.session_days}-${policies.data.require_two_factor}`}
           retention={policies.data.default_retention_years}
           session={policies.data.session_days}
           requireTwoFactor={policies.data.require_two_factor ?? false}
@@ -63,7 +59,6 @@ function PoliciesForm({
   canEdit: boolean;
 }) {
   const queryClient = useQueryClient();
-  const [years, setYears] = useState(String(retention));
   const [days, setDays] = useState(String(session));
   const [required, setRequired] = useState(requireTwoFactor);
   const [error, setError] = useState<string>();
@@ -86,10 +81,7 @@ function PoliciesForm({
     },
   });
 
-  const unchanged =
-    years === String(retention) &&
-    days === String(session) &&
-    required === requireTwoFactor;
+  const unchanged = days === String(session) && required === requireTwoFactor;
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -97,7 +89,6 @@ function PoliciesForm({
     setError(undefined);
     save.mutate({
       body: {
-        default_retention_years: Number(years),
         session_days: Number(days),
         require_two_factor: required,
       },
@@ -106,14 +97,18 @@ function PoliciesForm({
 
   return (
     <form className={styles.form} onSubmit={submit}>
-      <Select
-        label="Conservación de los casos archivados"
-        value={years}
-        onChange={(event) => setYears(event.target.value)}
-        options={RETENTION_OPTIONS}
-        disabled={!canEdit}
-        help="Cuánto tiempo se guarda un caso después de archivarlo, antes de su revisión. Solo cuenta para los que se archiven desde ahora; los ya archivados conservan su plazo."
-      />
+      <div className={styles.fixed}>
+        <p className={styles.fixedLabel}>
+          Conservación de los casos archivados
+        </p>
+        <p className={styles.fixedValue}>
+          {retention} años desde el cierre del caso
+        </p>
+        <p className={styles.hint}>
+          Es el mismo plazo para todos los despachos y no se cambia desde la
+          aplicación.
+        </p>
+      </div>
       <Select
         label="Duración de la sesión"
         value={days}
@@ -130,15 +125,13 @@ function PoliciesForm({
         Exigir la verificación en dos pasos a todo el equipo
       </Checkbox>
       <p className={styles.hint}>
-        Quien no la tenga podrá ingresar, pero solo llegará a activarla; hasta
-        entonces nada más del espacio de trabajo le responde. Usted debe tenerla
-        activa antes de exigirla, y mientras esté exigida nadie podrá
-        desactivarla.
+        Quien no la tenga solo podrá activarla al ingresar. Usted debe tenerla
+        activa antes de exigirla.
       </p>
       {!canEdit && (
-        <Notice tone="info">
-          <p>Solo la persona propietaria puede cambiar estas políticas.</p>
-        </Notice>
+        <p className={styles.hint}>
+          Solo la persona propietaria puede cambiar estas políticas.
+        </p>
       )}
       {error && (
         <Notice tone="error">

@@ -5,6 +5,15 @@ import { LEGAL_VERSION } from "../../config/legal.ts";
 // LEGAL_VERSION necesita aquí su resumen; una prueba lo exige. Solo resume: lo que rige es el
 // texto completo de cada política.
 export const LEGAL_CHANGES: Readonly<Record<string, readonly string[]>> = {
+  "2026-11-25": [
+    "Ahora puede radicar consultas, reclamos y reembolsos desde Pedir soporte: cada solicitud recibe al instante su radicado y la fecha límite de respuesta, contada en días hábiles de Colombia.",
+    "Explicamos qué datos guardamos de los clientes del portal y de quienes descargan una evidencia compartida, y cómo pueden ejercer sus derechos.",
+    "Contamos que la medición de rendimiento es opcional y anónima, y listamos todo lo que el sitio guarda en su navegador, incluido el modo de color que elija.",
+    "Nombramos a Wompi como pasarela de pagos y aclaramos que Estados Unidos tiene un nivel adecuado de protección para la transmisión de sus datos.",
+    "El plazo de conservación de los casos archivados es de diez años para todos los despachos y ya no se cambia desde la aplicación.",
+    "Las solicitudes resueltas de ayuda pueden eliminarse; las de datos personales, consumidor y reembolsos se conservan tres años después de cerradas como prueba de la respuesta.",
+    "Agregamos la garantía del servicio, cómo nos comunicamos con usted, la fuerza mayor y qué pasa si el servicio cambia de dueño.",
+  ],
   "2026-11-24": [
     "Aclaramos que el plan no se renueva solo: por omisión usted decide cada periodo, y le avisamos siete días antes de que venza.",
     "Nueva renovación automática, opcional: la activa la persona responsable con su Nequi, autoriza el cobro con un texto exacto, la cancela cuando quiera y recibe un aviso siete días antes de cada cobro.",

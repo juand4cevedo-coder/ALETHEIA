@@ -9,7 +9,7 @@
 }
 
 .shell :where(a:not([class])) {
-  color: var(--ink-900);
+  color: var(--brand-text);
   text-underline-offset: var(--underline-offset);
 }
 
@@ -226,7 +226,7 @@
   border: 0;
   border-radius: var(--radius-md);
   background: none;
-  color: var(--ink-900);
+  color: var(--brand-text);
   font: inherit;
   font-size: var(--font-size-ui);
   font-weight: 500;

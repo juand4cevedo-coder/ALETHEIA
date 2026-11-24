@@ -63,6 +63,13 @@ export { ChatIcon } from "./icons/Chat.ts";
 export { RayoIcon } from "./icons/Rayo.ts";
 export { DocumentoIcon } from "./icons/Documento.ts";
 
+export { SolIcon } from "./icons/Sol.tsx";
+export { LunaIcon } from "./icons/Luna.tsx";
+export { MonitorIcon } from "./icons/Monitor.tsx";
+export { PanelLateralIcon } from "./icons/PanelLateral.tsx";
+export { PulsoIcon } from "./icons/Pulso.tsx";
+export { EtiquetaIcon } from "./icons/Etiqueta.tsx";
+
 // Íconos propios: ver crearPropio.
 
 /** Sello de tiempo: borde dentado y las manecillas de un reloj. */

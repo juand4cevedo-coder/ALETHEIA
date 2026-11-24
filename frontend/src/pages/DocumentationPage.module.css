@@ -64,7 +64,7 @@
   line-height: 1.5;
 }
 .group a:hover {
-  color: var(--ink-900);
+  color: var(--brand-text);
   background: color-mix(in srgb, var(--ink-900) 2%, transparent);
 }
 .group a[aria-current="page"] {

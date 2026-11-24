@@ -187,7 +187,7 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
       screen.getByRole("link", { name: /términos y condiciones/ }),
     ).toHaveAttribute("target", "_blank");
     expect(
-      screen.getByRole("link", { name: /política de privacidad/ }),
+      screen.getByRole("link", { name: /política de tratamiento de datos/ }),
     ).toHaveAttribute("href", "/legal/privacidad");
   });
 

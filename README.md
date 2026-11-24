@@ -7,8 +7,13 @@ ALETHEIA preserva y documenta. No determina la autenticidad, la veracidad, la ad
 ## Contenido
 
 - [Estado](#estado)
+- [Qué hace cada rol](#qué-hace-cada-rol)
+- [Cumplimiento legal](#cumplimiento-legal)
+- [Diseño, accesibilidad y modos de color](#diseño-accesibilidad-y-modos-de-color)
 - [Tecnologías](#tecnologías)
+- [Estructura del repositorio](#estructura-del-repositorio)
 - [Desarrollo](#desarrollo)
+- [Pruebas](#pruebas)
 - [Producción](#producción)
 - [Derechos de autor](#derechos-de-autor)
 
@@ -16,12 +21,65 @@ ALETHEIA preserva y documenta. No determina la autenticidad, la veracidad, la ad
 
 En producción, en desarrollo activo. `develop` reúne el trabajo integrado y cada versión se publica desde `develop` con una etiqueta firmada (sección Producción). El trabajador solicita un sello RFC 3161 por evidencia. El paquete incluye el token cuando el sellado ha tenido éxito. Quedan pendientes la validación operativa del proveedor y el anclaje externo de la cabeza de custodia. [Estado y comprobaciones de las integraciones](docs/operacion/integraciones-externas.md).
 
+## Qué hace cada rol
+
+| Rol | Qué ve y qué puede hacer |
+| --- | --- |
+| Responsable del despacho | Todo lo del despacho: casos, calendario, banco de datos, plantillas de tareas, equipo, organización y sus políticas, plan y facturación, auditoría de seguridad. Paga y cambia el plan. |
+| Administrador | Gestiona el equipo y la organización; no abre casos. |
+| Abogado | Abre casos, asigna a su equipo y trabaja en los que le asignen. |
+| Asistente | Trabaja en los casos que le asignen. |
+| Cliente del despacho | Entra sin cuenta, con un enlace personal, al portal de su caso: avisos, mensajes y documentos que el despacho decide compartir. |
+| Dueño de la plataforma | Una sola cuenta, sin acceso a expedientes. Su consola tiene: Resumen (lo que exige acción hoy, cifras del negocio, crecimiento, vencimientos), Solicitudes y PQR (con radicado y fecha límite legal), Despachos (directorio con plan, consumo y vencimiento, exportable a CSV), Cuentas (bloquear, desbloquear, eliminar cuentas de prueba), Planes y cortesías, Ingresos (frente al tope de facturación electrónica), Tareas y pagos (cola del trabajador, con reintento de tareas fallidas), Rendimiento real y Auditoría. |
+
+El menú lateral (`frontend/src/features/workspace/sections.ts`) agrupa las secciones en Trabajo, Despacho, Plataforma, Clientes, Comercial, Operación y Cuenta. Cada persona ve solo los grupos de su rol, y la API vuelve a exigir el permiso en cada petición.
+
+## Cumplimiento legal
+
+Los textos legales viven en `frontend/src/features/legal` y su fecha de vigencia en `frontend/src/config/legal.ts` y `backend/app/core/legal.py`. Un cambio que altera derechos u obligaciones lleva una fecha nueva, su resumen en `changes.ts`, y cada persona debe aceptarlo al ingresar.
+
+| Obligación | Dónde se cumple |
+| --- | --- |
+| Identificación del responsable y del vendedor (Decreto 1377 de 2013, art. 13; Ley 1480 de 2011, art. 50) | `config/legal.ts`, pie de todas las páginas, también dentro del espacio de trabajo |
+| Enlace a la Superintendencia de Industria y Comercio donde se contrata (Ley 1480, art. 50) | Pie del sitio público y del espacio de trabajo |
+| Consultas en 10 días hábiles y reclamos en 15 (Ley 1581 de 2012, arts. 14 y 15) | Pedir soporte: cada solicitud recibe radicado y fecha límite calculada con los festivos de Colombia (`backend/app/core/business_days.py`) |
+| Reembolso en máximo 15 días calendario | Tipo «Reembolso» de las solicitudes |
+| IP y navegador anonimizados a los 90 días | Mantenimiento del trabajador (migración 0058) |
+| Prueba de las respuestas a titulares y consumidores | Las solicitudes de datos personales, consumidor y reembolso se conservan tres años desde su cierre; la base impide borrarlas antes (migración 0059) |
+| Conservación de casos archivados | Diez años desde el cierre, igual para todos los despachos (migración 0060) |
+| Consentimiento de la medición opcional | Panel de cookies; la política lista cada dato que se guarda en el navegador (`config/browserStorage.ts`) |
+
+## Diseño, accesibilidad y modos de color
+
+- Un solo sistema de tokens en `frontend/src/styles/tokens.css`, con su paleta clara y su paleta oscura. Ningún componente escribe un color a mano.
+- El modo se elige con el interruptor del encabezado o con el selector de tres posiciones (claro, oscuro, sistema) del menú de la cuenta y del pie. `frontend/public/theme.js` lo fija antes de pintar, sin destello; el cambio se anima como un círculo que crece desde el botón.
+- El símbolo tiene una versión para cada modo (`public/brand/symbol-dark.svg` y `symbol-dark-mode.svg`).
+- Contraste AA en los dos modos: `src/styles/tokens.test.ts` lo comprueba para cada par de texto y superficie. Las pantallas pasan axe-core (WCAG 2.2 AA) en claro y oscuro, en celular y escritorio.
+- Responsive desde 360 px. En celular el menú del espacio de trabajo es un cajón lateral; en escritorio, una columna que se puede compactar a íconos y cuyos grupos se pliegan.
+- Movimiento con propósito: transiciones entre pantallas con View Transitions, indicador del menú que se desliza, diálogos y menús que crecen desde su origen. Todo respeta `prefers-reduced-motion`.
+
 ## Tecnologías
 
 - Backend: Python, FastAPI, SQLAlchemy y Alembic.
 - Frontend: React, TypeScript y Vite.
 - Base de datos: PostgreSQL.
 - Contenedores: Docker y Docker Compose.
+
+## Estructura del repositorio
+
+| Carpeta | Contenido |
+| --- | --- |
+| `backend/app` | API FastAPI y trabajador: `api` (rutas), `services` (reglas), `models`, `schemas`, `adapters` (correo, almacenamiento, llaves, sellado), `worker` |
+| `backend/migrations` | Migraciones de Alembic, una por cambio de esquema |
+| `backend/tests` | Pruebas del backend; `fixtures/sellos` guarda sellos RFC 3161 reales |
+| `frontend/src` | Interfaz React (detalle en la sección Frontend) |
+| `frontend/public` | Archivos publicados tal cual: marca, fotografías, íconos y `theme.js` |
+| `infra` | Compose de desarrollo y producción, Caddy, AWS y PostgreSQL |
+| `docs/adr` | Decisiones de arquitectura, una por archivo |
+| `docs/arquitectura` | Diagramas y la prueba técnica TT-006 |
+| `docs/diseno` | Identidad, especificaciones de pantallas e imágenes |
+| `docs/operacion` | Producción, observabilidad, integraciones, pruebas manuales y notas de cada versión |
+| `docs/producto` | Análisis competitivo y hoja de ruta |
 
 ## Desarrollo
 
@@ -208,7 +266,7 @@ El acceso y el espacio de trabajo piden los datos de la API con TanStack Query y
 
 Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css` (ADR-049). Una prueba falla si algún archivo usa los nombres del sistema anterior, como `--color-ink-900`. Al imprimir, `tokens.css` cambia los tonos de texto, enlaces y estados a tinta oscura sobre blanco.
 
-Los íconos se importan solo de `src/components/ui/icons.tsx`: Phosphor en peso regular, copiado en `src/components/ui/icons/` con un archivo por ícono, más cuatro propios (huella, sello, cadena y paquete). Para agregar uno, se copia su trazado regular de Phosphor en un archivo nuevo de esa carpeta, igual a los demás, y se exporta desde `icons.tsx`. Como cada ícono vive en su archivo, cada pantalla descarga solo los que dibuja.
+Los íconos se importan solo de `src/components/ui/icons.tsx`: Phosphor en peso regular, copiado en `src/components/ui/icons/` con un archivo por ícono, más los propios dibujados con `crearPropio` (sello, cadena, paquete, sol, luna, pantalla, panel lateral, pulso y etiqueta). Para agregar uno, se copia su trazado regular de Phosphor en un archivo nuevo de esa carpeta, igual a los demás, y se exporta desde `icons.tsx`. Como cada ícono vive en su archivo, cada pantalla descarga solo los que dibuja.
 
 Las fuentes son Inter y Geist Mono, alojadas en el propio sitio con subconjunto latino (`src/styles/fonts.css`). Mientras cargan se ve la fuente del sistema, e Inter se precarga en `index.html`.
 
@@ -216,11 +274,13 @@ La landing tiene un presupuesto de carga (especificación de identidad, sección
 
 Las políticas legales comparten una sola versión y fecha de vigencia, definidas en `src/config/legal.ts`. Si un cambio de texto altera derechos u obligaciones, se sube la versión ahí y en ningún otro lugar: el registro guarda qué versión aceptó cada persona.
 
-El sitio solo usa las cookies de sesión. Cualquier herramienta no esencial que se agregue, como una de analítica, se carga únicamente si `hasCookieConsent("analytics")` devuelve `true`, y su llegada sube `CONSENT_VERSION` en `src/features/consent/cookieConsent.ts` para que el panel vuelva a preguntar.
+El sitio solo usa las cookies de sesión. La medición de rendimiento es la única herramienta opcional y se carga únicamente si `hasCookieConsent("analytics")` devuelve `true`; una herramienta nueva sube `CONSENT_VERSION` en `src/features/consent/cookieConsent.ts` para que el panel vuelva a preguntar. Lo que se guarda en el almacenamiento local se declara en `src/config/browserStorage.ts`, y la política de cookies lo lista solo.
 
-Las pantallas bajo `/app` exigen sesión. Su marco, `AppShell`, consulta `GET /api/v1/me` antes de mostrar nada: sin sesión lleva a `/ingresar` (si la sesión venció, con el aviso MSG-012) y, al entrar, la persona vuelve a la pantalla que intentaba abrir. El menú lateral (`WorkspaceNav`) lista las secciones que ya existen y cada persona ve solo las de su rol: Miembros y auditoría de seguridad del despacho aparecen solo al propietario y al administrador; facturación, bandeja de soporte y auditoría transversal solo a la cuenta propietaria de plataforma. Cualquier cuenta puede abrir y consultar sus propias solicitudes de soporte. En el equipo de un caso, un propietario, administrador o abogado asignado puede agregar a personas de su despacho o retirarlas solo de ese caso; cada cambio queda en su cadena de custodia. Una sección nueva se agrega en `GROUPS`, con su regla de visibilidad si la tiene.
+Las pantallas bajo `/app` exigen sesión. Su marco, `AppShell`, consulta `GET /api/v1/me` antes de mostrar nada: sin sesión lleva a `/ingresar` (si la sesión venció, con el aviso MSG-012) y, al entrar, la persona vuelve a la pantalla que intentaba abrir. El menú lateral (`WorkspaceNav`) lista las secciones que ya existen, en grupos plegables, y cada persona ve solo las de su rol (sección Qué hace cada rol). Las preferencias del menú se recuerdan en el navegador. Cualquier cuenta puede abrir y consultar sus propias solicitudes de soporte. En el equipo de un caso, un propietario, administrador o abogado asignado puede agregar a personas de su despacho o retirarlas solo de ese caso; cada cambio queda en su cadena de custodia. Una sección nueva se agrega en `GROUPS`, con su regla de visibilidad si la tiene.
 
 Las pruebas de componentes usan Vitest, Testing Library y axe-core (ADR-022). Cada prueba vive junto al archivo que prueba, con el sufijo `.test.tsx`. `pnpm test` las ejecuta una vez y `pnpm test:watch` las repite cada vez que se guarda un archivo.
+
+La consola de la plataforma vive en `src/pages/platform`, una pantalla por archivo, con sus utilidades compartidas (`shared.tsx`, `labels.ts`, `pager.ts`, `csv.ts`).
 
 ### Revisiones antes de cada commit
 
@@ -265,6 +325,16 @@ pnpm build
 ```
 
 El segundo comando no debe listar nada: si lista archivos, el cliente generado no estaba al día.
+
+## Pruebas
+
+| Capa | Qué cubre | Cómo se corre |
+| --- | --- | --- |
+| Backend | Unas 900 pruebas con pytest contra PostgreSQL real: reglas, permisos y Row-Level Security, migraciones de ida y vuelta, plazos legales, trabajador | Sección Revisiones antes de abrir un pull request |
+| Frontend | Unas 650 pruebas con Vitest: componentes, pantallas con la API simulada, axe-core, contraste de la paleta en los dos modos, contratos de CSS | `pnpm test` desde `frontend/` |
+| Presupuesto | JavaScript inicial de la portada menor a 120 KB comprimido | `pnpm build` |
+
+Antes de publicar conviene recorrer la app en el navegador en 375, 768, 1024 y 1440 px y en los dos modos de color; `docs/operacion/pruebas-manuales.md` lista los recorridos.
 
 ## Producción
 

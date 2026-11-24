@@ -21,7 +21,7 @@
 }
 .tabs button[aria-selected="true"] {
   background: var(--ink-900);
-  color: #fff;
+  color: var(--on-ink);
 }
 .travelingBorder {
   display: none;
@@ -53,10 +53,10 @@
   height: 28px;
   border-radius: 50%;
   border: 0;
-  background: rgb(255 255 255 / 72%);
+  background: color-mix(in srgb, var(--paper-raised) 72%, transparent);
 }
 .tabs button[aria-selected="true"] .icon {
-  color: var(--ink-900);
+  color: var(--brand-text);
 }
 .panel {
   border: 0;
@@ -66,6 +66,7 @@
 }
 .panel img {
   display: block;
+  animation: shot-in 420ms var(--ease-out) both;
   width: 100%;
   height: auto;
   aspect-ratio: 1260/720;
@@ -116,5 +117,13 @@
   }
   .tabs button[aria-selected="true"] .travelingBorder rect {
     animation: none;
+  }
+}
+
+/* Cambiar de vista cruza las capturas: la nueva se aclara y se enfoca, sin escalarse. */
+@keyframes shot-in {
+  from {
+    opacity: 0;
+    filter: blur(6px);
   }
 }

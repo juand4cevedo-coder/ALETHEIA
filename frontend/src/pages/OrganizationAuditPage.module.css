@@ -128,7 +128,7 @@
   color: var(--text-2);
   font-size: var(--font-size-label);
   font-weight: 500;
-  background: #f6f2f8;
+  background: var(--tint-1);
   letter-spacing: 0;
   text-transform: none;
   /* El encabezado nunca se parte: con el corte de palabra de las celdas, "Dirección IP" bajaría
@@ -156,7 +156,7 @@
 
 .table tbody tr:hover,
 .table tbody tr:focus-within {
-  background: #faf4fe;
+  background: var(--tint-1);
 }
 
 /* El nombre reemplaza el identificador crudo; el id queda solo en title= para depuración. */

@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from app.adapters.email import EmailDeliveryError
 from app.repositories import jobs as jobs_repository
 from app.repositories.jobs import ClaimedJob
-from app.services import rate_limit, web_vitals
+from app.services import audit, rate_limit, web_vitals
 from app.services.jobs import (
     LEASE,
     MAX_ATTEMPTS,
@@ -116,14 +116,16 @@ class Worker:
                 limits = rate_limit.purge_expired(session)
                 jobs = purge_finished(session, datetime.datetime.now(datetime.UTC))
                 vitals = web_vitals.purge_expired(session)
+                anonymized = audit.anonymize_expired_network(session)
         except SQLAlchemyError as exc:
             logger.error("No se pudo hacer el mantenimiento: %s", type(exc).__name__)
             return
         logger.info(
-            "Mantenimiento: %d intentos, %d tareas y %d medidas de rendimiento borrados",
+            "Mantenimiento: %d intentos, %d tareas y %d medidas borrados; %d eventos anonimizados",
             limits,
             jobs,
             vitals,
+            anonymized,
         )
 
     def _execute(self, job: ClaimedJob) -> None:
