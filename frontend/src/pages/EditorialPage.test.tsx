@@ -35,7 +35,8 @@ it("filtra el blog por categoría y búsqueda sin depender de acentos", async ()
     within(screen.getByRole("main")).getAllByRole("heading", { level: 2 }),
   ).toHaveLength(JOURNAL.length);
   expect(await seriousAxeViolations(container)).toEqual([]);
-});
+  // Las láminas del blog son SVG detallados: axe necesita más de los 5 segundos por omisión.
+}, 15_000);
 
 it("el artículo conserva el alcance de la comparación", async () => {
   await renderRoute("/blog/que-dice-una-huella-sha256");
