@@ -50,6 +50,9 @@ def _build_settings(database_url: str, local_key_path: Path) -> Settings:
             "database_url": database_url,
             "token_signing_key": TEST_SIGNING_KEY,
             "local_key_path": local_key_path,
+            # La verificación de persona se prueba aparte (test_captcha.py); el resto de la suite
+            # ingresa sin resolver retos.
+            "captcha_required": False,
         }
     )
 

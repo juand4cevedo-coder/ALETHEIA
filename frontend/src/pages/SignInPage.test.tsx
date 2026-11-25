@@ -177,6 +177,10 @@ describe("Ingresar (HU-007, CP-007)", () => {
     const [request] = loginRequests();
     expect(request!.method).toBe("POST");
     expect(request!.headers.get(SAME_ORIGIN_HEADER)).toBe("1");
+    // Cada ingreso viaja con su verificación de persona.
+    expect(request!.headers.get("X-Aletheia-Captcha")).toBe(
+      "solucion-de-prueba",
+    );
     expect(await request!.json()).toEqual({
       email: "Ana@Example.com",
       password: "una frase larga y fácil",

@@ -20,6 +20,7 @@ import {
   availableCaseMembers,
   cancelPaymentSource,
   cancelRecovery,
+  captchaChallenge,
   changeMemberRole,
   changePassword,
   changePlatformUserStatus,
@@ -174,6 +175,8 @@ import type {
   CancelRecoveryData,
   CancelRecoveryError,
   CancelRecoveryResponse,
+  CaptchaChallengeData,
+  CaptchaChallengeResponse,
   ChangeMemberRoleData,
   ChangeMemberRoleError,
   ChangeMemberRoleResponse,
@@ -616,6 +619,34 @@ export const listPlansOptions = (options?: Options<ListPlansData>) =>
       return data;
     },
     queryKey: listPlansQueryKey(options),
+  });
+
+export const captchaChallengeQueryKey = (
+  options?: Options<CaptchaChallengeData>,
+) => createQueryKey("captchaChallenge", options);
+
+/**
+ * Reto de la verificación de persona
+ */
+export const captchaChallengeOptions = (
+  options?: Options<CaptchaChallengeData>,
+) =>
+  queryOptions<
+    CaptchaChallengeResponse,
+    DefaultError,
+    CaptchaChallengeResponse,
+    ReturnType<typeof captchaChallengeQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await captchaChallenge({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: captchaChallengeQueryKey(options),
   });
 
 export const googleStatusQueryKey = (options?: Options<GoogleStatusData>) =>

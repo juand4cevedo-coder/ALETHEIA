@@ -29,6 +29,7 @@ from app.schemas.billing import (
 from app.services import checkout as checkout_service
 from app.services import payment_sources as sources_service
 from app.services import payments as payments_service
+from app.services import receipt_pdf
 from app.services import receipts as receipts_service
 from app.services.sessions import Principal
 
@@ -324,7 +325,7 @@ def download_receipt(
             headers=_NO_STORE,
         )
     return Response(
-        content=receipts_service.render_pdf(receipt),
+        content=receipt_pdf.render(receipt),
         media_type="application/pdf",
         headers={
             **_NO_STORE,

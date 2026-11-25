@@ -9,29 +9,3 @@
   color: var(--text-2);
   font-size: var(--font-size-support);
 }
-
-/* Un dato fijo se muestra como información, no como un control apagado. */
-.fixed {
-  display: grid;
-  gap: var(--space-1);
-  padding: var(--space-4);
-  border-radius: var(--radius-sm);
-  background: var(--tint-1);
-}
-
-.fixed .hint {
-  margin-top: 0;
-}
-
-.fixedLabel {
-  color: var(--text-2);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.fixedValue {
-  color: var(--text);
-  font-size: var(--font-size-subtitle);
-  font-weight: 650;
-  letter-spacing: var(--tracking-subtitle);
-}

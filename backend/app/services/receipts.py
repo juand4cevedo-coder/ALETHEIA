@@ -7,18 +7,11 @@ edita: solo se agrega, y el mismo pago nunca emite dos.
 """
 
 import datetime
-import io
 import uuid
 from dataclasses import dataclass
-from importlib.resources import files
 from typing import Final
 from zoneinfo import ZoneInfo
 
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.utils import simpleSplit
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
 from sqlalchemy import extract, func, select, text
 from sqlalchemy.orm import Session
 
@@ -27,13 +20,6 @@ from app.models import Membership, PaymentReceipt, User
 from app.services.sessions import Principal
 
 _BOGOTA = ZoneInfo("America/Bogota")
-FONT: Final = "AletheiaReceipt"
-FONT_BOLD: Final = "AletheiaReceiptBold"
-
-# Quien vende. El operador es una persona natural no responsable de IVA.
-SELLER_NAME: Final = "Juan Diego Acevedo Calderón"
-SELLER_ID: Final = "NIT 1214744661-9"
-SELLER_TAX: Final = "No responsable de IVA"
 
 CYCLES: Final = {"monthly": "Mensual", "annual": "Anual"}
 METHODS: Final = {
@@ -159,77 +145,3 @@ def collected_in(session: Session, year: int) -> YearCollected:
         )
     ).one()
     return YearCollected(year=year, receipts=int(row[0]), collected_cop=int(row[1]))
-
-
-def _register_fonts() -> None:
-    root = files("reportlab").joinpath("fonts")
-    if FONT not in pdfmetrics.getRegisteredFontNames():
-        pdfmetrics.registerFont(TTFont(FONT, str(root.joinpath("Vera.ttf"))))
-        pdfmetrics.registerFont(TTFont(FONT_BOLD, str(root.joinpath("VeraBd.ttf"))))
-
-
-def _day(value: datetime.datetime) -> str:
-    return value.astimezone(_BOGOTA).strftime("%d/%m/%Y")
-
-
-def render_pdf(receipt: PaymentReceipt) -> bytes:
-    """El comprobante en una página A4."""
-    _register_fonts()
-    buffer = io.BytesIO()
-    pdf = canvas.Canvas(buffer, pagesize=A4, invariant=1, pageCompression=0)
-    pdf.setTitle(f"Comprobante de pago {receipt.number}")
-    pdf.setAuthor("ALETHEIA")
-    width, height = A4
-    x = 48
-    y = height - 56
-
-    def line(value: str, *, font: str = FONT, size: int = 10, gap: int = 16) -> None:
-        nonlocal y
-        pdf.setFont(font, size)
-        for segment in simpleSplit(value, font, size, width - 2 * x):
-            pdf.drawString(x, y, segment)
-            y -= gap
-
-    def pair(label: str, value: str) -> None:
-        nonlocal y
-        pdf.setFont(FONT, 9)
-        pdf.setFillGray(0.4)
-        pdf.drawString(x, y, label)
-        pdf.setFillGray(0)
-        pdf.setFont(FONT_BOLD, 10)
-        for index, segment in enumerate(simpleSplit(value, FONT_BOLD, 10, width - 2 * x - 150)):
-            pdf.drawString(x + 150, y, segment)
-            y -= 16 if index == 0 else 14
-        if not value:
-            y -= 16
-
-    line("ALETHEIA", font=FONT_BOLD, size=12, gap=26)
-    line("Comprobante de pago", font=FONT_BOLD, size=20, gap=28)
-    line(f"N.º {receipt.number}", font=FONT_BOLD, size=12, gap=24)
-    pair("Fecha de emisión", _day(receipt.issued_at))
-    y -= 10
-    line("Vendedor", font=FONT_BOLD, size=11, gap=20)
-    pair("Nombre", SELLER_NAME)
-    pair("Identificación", SELLER_ID)
-    pair("Régimen", SELLER_TAX)
-    y -= 10
-    line("Comprador", font=FONT_BOLD, size=11, gap=20)
-    pair("Despacho", receipt.buyer_name)
-    if receipt.buyer_email:
-        pair("Correo", receipt.buyer_email)
-    y -= 10
-    line("Detalle", font=FONT_BOLD, size=11, gap=20)
-    pair("Servicio", f"Plan {receipt.plan_name} de ALETHEIA ({CYCLES[receipt.billing_cycle]})")
-    pair("Periodo cubierto", f"{_day(receipt.period_start)} al {_day(receipt.period_end)}")
-    pair("Valor total", cop(receipt.amount_cop))
-    pair("Medio de pago", method_label(receipt.payment_method))
-    pair("Transacción (Wompi)", receipt.gateway_transaction_id)
-    y -= 14
-    pdf.setFont(FONT, 9)
-    pdf.setFillGray(0.35)
-    for segment in simpleSplit(NOT_AN_INVOICE, FONT, 9, width - 2 * x):
-        pdf.drawString(x, y, segment)
-        y -= 13
-    pdf.showPage()
-    pdf.save()
-    return buffer.getvalue()

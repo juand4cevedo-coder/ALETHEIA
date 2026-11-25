@@ -249,6 +249,42 @@ export type BodyDownloadSharedEvidence = {
 };
 
 /**
+ * CaptchaChallenge
+ */
+export type CaptchaChallenge = {
+  /**
+   * Algorithm
+   *
+   * Siempre SHA-256.
+   */
+  algorithm: string;
+  /**
+   * Challenge
+   *
+   * SHA-256 en hexadecimal de la sal seguida del número.
+   */
+  challenge: string;
+  /**
+   * Maxnumber
+   *
+   * El número buscado está entre 0 y este valor.
+   */
+  maxnumber: number;
+  /**
+   * Salt
+   *
+   * Sal del reto; incluye su vencimiento.
+   */
+  salt: string;
+  /**
+   * Signature
+   *
+   * Firma HMAC del reto; se devuelve tal cual.
+   */
+  signature: string;
+};
+
+/**
  * CaseCandidate
  *
  * Persona disponible para asignar a este caso.
@@ -4600,6 +4636,23 @@ export type ListPlansResponses = {
 
 export type ListPlansResponse = ListPlansResponses[keyof ListPlansResponses];
 
+export type CaptchaChallengeData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/auth/captcha";
+};
+
+export type CaptchaChallengeResponses = {
+  /**
+   * Successful Response
+   */
+  200: CaptchaChallenge;
+};
+
+export type CaptchaChallengeResponse =
+  CaptchaChallengeResponses[keyof CaptchaChallengeResponses];
+
 export type GoogleStatusData = {
   body?: never;
   path?: never;
@@ -4708,6 +4761,14 @@ export type GoogleCallbackResponses = {
 
 export type RegisterAccountData = {
   body: RegisterRequest;
+  headers?: {
+    /**
+     * X-Aletheia-Captcha
+     *
+     * Solución del reto de GET /auth/captcha, en JSON y Base64.
+     */
+    "X-Aletheia-Captcha"?: string | null;
+  };
   path?: never;
   query?: never;
   url: "/api/v1/auth/register";
@@ -4743,6 +4804,14 @@ export type RegisterAccountResponse =
 
 export type ResendVerificationData = {
   body: ResendVerificationRequest;
+  headers?: {
+    /**
+     * X-Aletheia-Captcha
+     *
+     * Solución del reto de GET /auth/captcha, en JSON y Base64.
+     */
+    "X-Aletheia-Captcha"?: string | null;
+  };
   path?: never;
   query?: never;
   url: "/api/v1/auth/verify-email/resend";
@@ -4808,6 +4877,14 @@ export type VerifyEmailResponse =
 
 export type SignInData = {
   body: LoginRequest;
+  headers?: {
+    /**
+     * X-Aletheia-Captcha
+     *
+     * Solución del reto de GET /auth/captcha, en JSON y Base64.
+     */
+    "X-Aletheia-Captcha"?: string | null;
+  };
   path?: never;
   query?: never;
   url: "/api/v1/auth/login";
@@ -4975,6 +5052,14 @@ export type SignOutEverywhereResponse =
 
 export type ForgotPasswordData = {
   body: ForgotPasswordRequest;
+  headers?: {
+    /**
+     * X-Aletheia-Captcha
+     *
+     * Solución del reto de GET /auth/captcha, en JSON y Base64.
+     */
+    "X-Aletheia-Captcha"?: string | null;
+  };
   path?: never;
   query?: never;
   url: "/api/v1/auth/password/forgot";

@@ -14,6 +14,7 @@ from app.api import (
     archive,
     auth,
     billing,
+    captcha,
     cases,
     client_portal,
     evidence_shares,
@@ -44,7 +45,7 @@ from app.core.middleware import (
 from app.core.openapi import install_problem_details
 from app.db.session import create_db_engine
 
-API_VERSION: Final = "0.44.0"
+API_VERSION: Final = "0.45.0"
 
 
 def _operation_id(route: APIRoute) -> str:
@@ -82,6 +83,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     register_exception_handlers(app)
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(plans.router, prefix=API_PREFIX)
+    app.include_router(captcha.router, prefix=API_PREFIX)
     app.include_router(auth.router, prefix=API_PREFIX)
     app.include_router(me.router, prefix=API_PREFIX)
     app.include_router(organization.router, prefix=API_PREFIX)

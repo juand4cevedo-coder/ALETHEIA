@@ -1,0 +1,48 @@
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 20px;
+  margin: 0;
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.notice[data-status="ready"] svg {
+  color: var(--ok);
+}
+
+.notice[data-status="failed"] {
+  color: var(--err);
+}
+
+.spin {
+  animation: spin var(--motion-spin) linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.retry {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brand-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}

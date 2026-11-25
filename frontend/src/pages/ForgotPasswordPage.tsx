@@ -1,3 +1,6 @@
+import { CAPTCHA_HEADER } from "../features/captcha/captcha.ts";
+import { CaptchaNotice } from "../features/captcha/CaptchaNotice.tsx";
+import { useCaptcha } from "../features/captcha/useCaptcha.ts";
 import { useMutation } from "@tanstack/react-query";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
@@ -32,6 +35,7 @@ export function ForgotPasswordPage() {
   const emailRef = useRef<HTMLInputElement>(null);
   const noticeRef = useRef<HTMLHeadingElement>(null);
 
+  const captcha = useCaptcha();
   const request = useMutation({
     ...forgotPasswordMutation(),
     onSuccess: (_, variables) => setSentTo(variables.body.email),
@@ -65,7 +69,16 @@ export function ForgotPasswordPage() {
       return;
     }
     setError(undefined);
-    request.mutate({ body: { email: value } });
+    // Cada envío gasta una verificación de persona; si aún no termina, se espera.
+    void captcha
+      .take()
+      .then((token) =>
+        request.mutate({
+          body: { email: value },
+          headers: { [CAPTCHA_HEADER]: token },
+        }),
+      )
+      .catch(() => undefined);
   }
 
   return (
@@ -150,11 +163,16 @@ export function ForgotPasswordPage() {
             </fieldset>
 
             <div className={styles.submit}>
-              <Button type="submit" block busy={request.isPending}>
+              <Button
+                type="submit"
+                block
+                busy={request.isPending || captcha.waiting}
+              >
                 {request.isPending
                   ? "Enviando el enlace"
                   : "Enviarme el enlace"}
               </Button>
+              <CaptchaNotice status={captcha.status} onRetry={captcha.retry} />
             </div>
           </form>
         )}

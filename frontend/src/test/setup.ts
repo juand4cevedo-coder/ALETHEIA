@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 
 import { cleanup } from "@testing-library/react";
-import { afterEach } from "vitest";
+import { afterEach, vi } from "vitest";
 
 import { client } from "../api/generated/client.gen.ts";
 
@@ -33,3 +33,10 @@ if (!HTMLDialogElement.prototype.showModal) {
     this.dispatchEvent(new Event("close"));
   };
 }
+
+// La verificación de persona resuelve un reto real en el navegador. En las pruebas de las
+// pantallas se reemplaza por una solución fija; su cálculo se prueba en features/captcha.
+vi.mock("../features/captcha/captcha.ts", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../features/captcha/captcha.ts")>()),
+  solveCaptcha: () => Promise.resolve("solucion-de-prueba"),
+}));

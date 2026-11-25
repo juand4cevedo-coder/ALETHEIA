@@ -1,7 +1,9 @@
 """Operación: intentos que cuentan para el límite de peticiones (RN-026, RNF-006)."""
 
+import datetime
+
 from sqlalchemy import CheckConstraint, Index
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
 from app.models._columns import CreatedAt, UUIDv7Pk
@@ -30,3 +32,19 @@ class RateLimitEvent(Base):
     bucket: Mapped[str]
     key_hash: Mapped[bytes]
     created_at: Mapped[CreatedAt]
+
+
+class CaptchaSolution(Base):
+    """Un reto de la verificación de persona que ya se usó (services/captcha.py).
+
+    Guarda solo el resumen del reto, nunca quién lo resolvió, para que la misma solución no
+    sirva dos veces. La fila vive lo que vive el reto; después el trabajador la borra.
+    """
+
+    __tablename__ = "captcha_solutions"
+    __table_args__ = (
+        CheckConstraint("octet_length(challenge_hash) = 32", name="challenge_hash_length"),
+    )
+
+    challenge_hash: Mapped[bytes] = mapped_column(primary_key=True)
+    expires_at: Mapped[datetime.datetime] = mapped_column(index=True)

@@ -19,8 +19,7 @@ const SESSION_OPTIONS = [1, 3, 7, 14].map((days) => ({
   label: days === 1 ? "1 día" : `${days} días`,
 }));
 
-// Políticas del despacho: dos decisiones que afectan a todo el equipo. El plazo de conservación
-// de los casos archivados es el mismo para todos los despachos y aquí solo se informa. Las ve quien gestiona el
+// Políticas del despacho: dos decisiones que afectan a todo el equipo. Las ve quien gestiona el
 // despacho y solo el propietario las cambia. Cada cambio queda en la auditoría de seguridad.
 export function PoliciesCard({ canEdit }: { canEdit: boolean }) {
   const policies = useQuery(getPoliciesOptions());
@@ -37,7 +36,6 @@ export function PoliciesCard({ canEdit }: { canEdit: boolean }) {
         <PoliciesForm
           // Si el servidor devuelve otros valores, el formulario se reinicia con ellos.
           key={`${policies.data.session_days}-${policies.data.require_two_factor}`}
-          retention={policies.data.default_retention_years}
           session={policies.data.session_days}
           requireTwoFactor={policies.data.require_two_factor ?? false}
           canEdit={canEdit}
@@ -48,12 +46,10 @@ export function PoliciesCard({ canEdit }: { canEdit: boolean }) {
 }
 
 function PoliciesForm({
-  retention,
   session,
   requireTwoFactor,
   canEdit,
 }: {
-  retention: number;
   session: number;
   requireTwoFactor: boolean;
   canEdit: boolean;
@@ -97,18 +93,6 @@ function PoliciesForm({
 
   return (
     <form className={styles.form} onSubmit={submit}>
-      <div className={styles.fixed}>
-        <p className={styles.fixedLabel}>
-          Conservación de los casos archivados
-        </p>
-        <p className={styles.fixedValue}>
-          {retention} años desde el cierre del caso
-        </p>
-        <p className={styles.hint}>
-          Es el mismo plazo para todos los despachos y no se cambia desde la
-          aplicación.
-        </p>
-      </div>
       <Select
         label="Duración de la sesión"
         value={days}
