@@ -90,8 +90,12 @@ describe("generarSitio", () => {
       expect(sitio.mapa).toContain("https://aletheia.sbs/legal</loc>");
       expect(sitio.mapa).not.toContain("https://aletheia.sbs/docs</loc>");
       expect(sitio.caddy).toMatch(/^@aplicacion path .*\/ingresar /m);
+      // La CSP prohíbe scripts en línea: solo valen los que cargan un archivo (src) y los datos
+      // estructurados, que el navegador no ejecuta.
+      const enLinea =
+        /<script\b(?![^>]*\bsrc\s*=)(?![^>]*application\/ld\+json)[^>]*>/i;
       for (const contenido of sitio.archivos.values()) {
-        expect(contenido).not.toMatch(/<script>|<script [^>]*>[^<]*\$R/);
+        expect(contenido).not.toMatch(enLinea);
       }
     },
   );
