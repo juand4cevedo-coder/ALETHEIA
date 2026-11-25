@@ -26,8 +26,7 @@ export function Emblema({
   const ref = useRef<SVGSVGElement>(null);
   // Espera a entrar en pantalla solo si hay con qué observarlo y el movimiento está permitido.
   const [dibujo, setDibujo] = useState<"listo" | "espera" | "dibuja">(() =>
-    typeof IntersectionObserver !== "undefined" &&
-    !movimientoReducido()
+    typeof IntersectionObserver !== "undefined" && !movimientoReducido()
       ? "espera"
       : "listo",
   );

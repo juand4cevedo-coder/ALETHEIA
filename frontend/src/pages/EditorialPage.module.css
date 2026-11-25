@@ -8,11 +8,17 @@
   max-width: 1040px;
   margin: 0 auto 88px;
 }
+/* Títulos editoriales en Newsreader con su tamaño óptico: grandes sin apretar las letras. */
 .centerHead h1,
 .blogHead h1,
 .articleHead h1 {
-  font: 650 clamp(3.5rem, 7vw, 6.5rem)/0.98 var(--font-sans);
-  letter-spacing: -0.055em;
+  font-family: var(--font-editorial);
+  font-size: clamp(2.6rem, 1.5rem + 3.6vw, 4.6rem);
+  font-weight: 440;
+  font-variation-settings: "opsz" 72;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 .centerHead > p,
 .articleHead > p {
@@ -107,9 +113,12 @@
   font-size: 14px;
 }
 .kicker {
-  color: var(--text-3);
-  font-size: 13px;
-  margin-bottom: 16px;
+  color: var(--seal);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
 .blogHead {
   display: flex;
@@ -178,138 +187,118 @@
   text-decoration: none;
   color: var(--text);
 }
-.blogCard h2 {
-  font-size: 22px;
-  line-height: 1.3;
-  font-weight: 500;
-  letter-spacing: -0.035em;
-  margin: 12px 0;
-}
-.blogCard > p:not(.kicker) {
-  color: var(--text-2);
-  font-size: 15px;
-  line-height: 1.7;
-}
-.articleVisual {
-  position: relative;
+.blogCard {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  aspect-ratio: 1.8;
-  border: 0;
-  border-radius: 28px;
-  margin-bottom: 24px;
-  background:
-    radial-gradient(
-      ellipse at 50% 0%,
-      color-mix(in srgb, var(--ink-900) 40%, transparent),
-      transparent 60%
-    ),
-    var(--ink-700);
+}
+.blogCard h2 {
+  margin: 4px 0 12px;
+  font-family: var(--font-editorial);
+  font-size: 24px;
+  font-weight: 460;
+  font-variation-settings: "opsz" 36;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.blogCard > p:not(.kicker) {
+  display: -webkit-box;
   overflow: hidden;
-  transition: border-color 0.2s;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.65;
 }
-.articleVisual span {
+/* Portada de cada artículo y de cada tarjeta: la lámina ilustrada del tema. Al apuntar la
+   tarjeta, la lámina se acerca un poco; el marco no se mueve. */
+.cardCover,
+.articleCover {
   position: relative;
-  z-index: 1;
-  font: 400 clamp(40px, 4.5vw, 62px)/1 var(--font-editorial);
-  letter-spacing: -0.03em;
-  color: var(--on-ink);
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--ink-hairline);
+  border-radius: var(--radius-md);
+  background: var(--tint-1);
 }
-.articleVisual small {
-  position: relative;
-  z-index: 1;
-  font: 12px var(--font-mono);
-  color: var(--on-ink-2);
-  margin-top: 24px;
+
+.cardCover {
+  aspect-ratio: 3 / 2;
+  margin-bottom: 20px;
 }
-.articleVisual[data-kind="Integridad"] {
-  background:
-    radial-gradient(
-      ellipse at 75% 20%,
-      color-mix(in srgb, var(--paper-sunken) 40%, transparent),
-      transparent 70%
-    ),
-    var(--ink-700);
+
+.cardCover svg {
+  transition: transform 700ms var(--ease-out);
 }
-.articleVisual[data-kind="Seguridad"] {
-  background:
-    radial-gradient(
-      ellipse at 30% 10%,
-      color-mix(in srgb, var(--paper-sunken) 40%, transparent),
-      transparent 70%
-    ),
-    var(--ink-700);
+
+.blogCard:hover .cardCover svg,
+.featured:hover .cardCover svg {
+  transform: scale(1.04);
 }
-.blogCard:hover .articleVisual {
-  border-color: var(--line-control);
+
+.articleCover {
+  aspect-ratio: 16 / 9;
+  max-width: 980px;
+  margin: 0 auto 72px;
 }
-.articleVisual::before {
-  content: "";
-  position: absolute;
-  width: 260px;
-  height: 260px;
-  border-radius: 50%;
-  top: 15%;
-  left: 35%;
-  background: repeating-radial-gradient(
-    ellipse at center,
-    transparent 0 11px,
-    color-mix(in srgb, var(--ink-900) 8%, transparent) 12px 13px,
-    transparent 14px 20px
-  );
-  transform: rotate(-25deg) scaleX(0.8);
-  mask-image: linear-gradient(var(--paper), transparent);
-  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+/* El artículo más reciente, a todo el ancho: lámina a la izquierda, texto a la derecha. */
+.featured {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 56px);
+  margin-bottom: 72px;
+  padding-bottom: 72px;
+  border-bottom: 1px solid var(--ink-hairline);
+  color: var(--text);
+  text-decoration: none;
 }
-.articleVisual[data-kind="Seguridad"]::before {
-  border-radius: 28px;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 19px,
-      color-mix(in srgb, var(--ink-900) 7%, transparent) 20px 21px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 19px,
-      color-mix(in srgb, var(--ink-900) 7%, transparent) 20px 21px
-    );
-  transform: perspective(500px) rotateY(-30deg) rotateZ(20deg);
+
+.featured .cardCover {
+  margin: 0;
 }
-.articleVisual[data-kind="Práctica"]::before {
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--ink-900) 14%, transparent);
-  box-shadow:
-    20px 20px 0 -1px var(--paper-raised),
-    20px 20px 0 color-mix(in srgb, var(--ink-900) 13%, transparent),
-    40px 40px 0 -1px var(--paper-raised),
-    40px 40px 0 color-mix(in srgb, var(--ink-900) 7%, transparent);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--ink-900) 5%, transparent),
-    transparent
-  );
-  transform: rotate(-28deg);
+
+.featuredText h2 {
+  margin: 4px 0 16px;
+  font-family: var(--font-editorial);
+  font-size: clamp(28px, 2.6vw, 38px);
+  font-weight: 450;
+  font-variation-settings: "opsz" 48;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
 }
-.blogCard:hover .articleVisual::before {
-  transform: translateY(-8px) rotate(-15deg);
+
+.featuredText > p:not(.kicker) {
+  color: var(--text-2);
+  font-size: 17px;
+  line-height: 1.65;
 }
-.articleHero {
-  aspect-ratio: 2.2;
-  max-width: 760px;
-  margin: 0 auto 64px;
+
+@media (prefers-reduced-motion: reduce) {
+  .cardCover svg {
+    transition: none;
+  }
 }
-.blogHead h1 {
-  font-size: clamp(72px, 9vw, 112px);
-}
+
+
 .read {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  margin-top: 20px;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 18px;
+  color: var(--brand-text);
+  font-size: 14px;
+  font-weight: 560;
+}
+.read svg {
+  transition: transform 260ms var(--ease-out);
+}
+.blogCard:hover .read svg,
+.featured:hover .read svg {
+  transform: translateX(4px);
 }
 .article {
   max-width: 900px;
@@ -496,7 +485,17 @@
   .centerHead h1,
   .blogHead h1,
   .articleHead h1 {
-    font-size: 54px;
+    font-size: 40px;
+  }
+
+  .featured {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 48px;
+    padding-bottom: 48px;
+  }
+
+  .articleCover {
+    margin-bottom: 48px;
   }
   .blogHead {
     flex-direction: column;
@@ -746,4 +745,11 @@
 }
 .prose a:hover {
   color: var(--brand-text-strong);
+}
+
+/* En tablet, el blog va de a dos tarjetas por fila. */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .blogGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
