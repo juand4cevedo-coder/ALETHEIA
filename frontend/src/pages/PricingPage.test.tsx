@@ -37,7 +37,7 @@ describe("Planes y precios (UI-002, HU-002)", () => {
       .getAllByRole("link")
       .filter((link) => link.getAttribute("href")?.startsWith("/registro"));
     expect(signUp[0]!.textContent).toBe("Probar 14 días gratis");
-    expect(signUp.at(-1)!.textContent).toBe("Empezar la prueba gratuita");
+    expect(signUp.at(-1)!.textContent).toBe("Probar 14 días gratis");
     for (const plan of CATALOG) {
       const tarjeta = within(main).getByRole("article", { name: plan.name });
       expect(within(tarjeta).getByRole("link")).toHaveAttribute(

@@ -23,9 +23,7 @@ describe("plan más barato por tamaño del equipo", () => {
   });
 
   it("nunca recomienda la prueba gratuita", () => {
-    expect(cheapestPlanFor(CATALOGO_PUBLICADO, 1)!.plan.code).not.toBe(
-      "trial",
-    );
+    expect(cheapestPlanFor(CATALOGO_PUBLICADO, 1)!.plan.code).not.toBe("trial");
   });
 });
 

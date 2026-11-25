@@ -99,7 +99,7 @@ function Pricing() {
 
           <div className={styles.again}>
             <ButtonLink to={ROUTES.signUp} variant="secondary">
-              Empezar la prueba gratuita
+              {SIGN_UP_LABEL}
             </ButtonLink>
             <p className={styles.trial}>
               {days === null

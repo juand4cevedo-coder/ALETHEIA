@@ -31,7 +31,10 @@ const inter =
       "node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2",
     ),
   ).toString("base64");
-const simbolo = readFileSync(join(raiz, "public/brand/symbol-white.svg"), "utf8");
+const simbolo = readFileSync(
+  join(raiz, "public/brand/symbol-white.svg"),
+  "utf8",
+);
 
 function escapar(texto) {
   return texto

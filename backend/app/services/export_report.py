@@ -16,6 +16,10 @@ from app.services.export_manifest import FORMAT, FORMAT_VERSION, SCOPE, BuiltMan
 
 FONT = "AletheiaVera"
 FONT_BOLD = "AletheiaVeraBold"
+# El comprobador público y la guía del sello viven en el sitio de producción: quien recibe el
+# paquete no tiene por qué conocer otro entorno.
+VERIFIER_URL = "https://aletheia.sbs/verificador"
+STAMP_GUIDE_URL = "https://aletheia.sbs/docs/revisar-un-sello-de-tiempo"
 
 
 def _register_fonts() -> None:
@@ -82,6 +86,22 @@ def render_report(manifest: BuiltManifest) -> bytes:
             "Sin anclaje externo, la cadena no protege frente a una reescritura completa "
             "por quien controle la base de datos."
         )
+    y -= 12
+    line("Cómo comprobarlo sin ALETHEIA", font=FONT_BOLD, size=12, gap=22)
+    line(
+        f"1. Abra {VERIFIER_URL}, elija manifest.json y el archivo de files/ que quiere "
+        "revisar. La huella se calcula en el navegador y el archivo no se envía a ninguna parte."
+    )
+    line(
+        "2. Para revisar el sello de tiempo de un archivo con OpenSSL, use su .tsr de "
+        "timestamps/, que lleva el mismo identificador:"
+    )
+    line(
+        "openssl ts -verify -data files/<id> -in timestamps/<id>.tsr -CAfile <certificados raíz>",
+        font="Courier",
+        size=8,
+    )
+    line(f"Guía paso a paso: {STAMP_GUIDE_URL}")
     pdf.showPage()
     pdf.save()
     return buffer.getvalue()

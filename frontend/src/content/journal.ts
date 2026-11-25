@@ -32,7 +32,8 @@ export const JOURNAL: JournalArticle[] = [
     category: "Práctica",
     date: "2026-11-24",
     visual: "Original",
-    tagline: "Ley 527, Código General del Proceso y una rutina para el despacho.",
+    tagline:
+      "Ley 527, Código General del Proceso y una rutina para el despacho.",
     title:
       "Cómo conservar un chat, un correo o un video como evidencia digital en Colombia",
     seoTitle: "Conservar chats, correos y videos como evidencia",
@@ -89,7 +90,8 @@ export const JOURNAL: JournalArticle[] = [
     category: "Comparación",
     date: "2026-11-25",
     visual: "Custodia",
-    tagline: "WhatsApp, correo y carpeta en la nube frente a un caso con custodia.",
+    tagline:
+      "WhatsApp, correo y carpeta en la nube frente a un caso con custodia.",
     title:
       "Carpeta compartida, WhatsApp y correo frente a un caso con cadena de custodia",
     seoTitle: "Carpeta compartida frente a un caso con custodia",
@@ -142,7 +144,8 @@ export const JOURNAL: JournalArticle[] = [
     category: "Comparación",
     date: "2026-11-25",
     visual: "Procesos",
-    tagline: "Consultar la Rama Judicial y preservar la prueba son tareas distintas.",
+    tagline:
+      "Consultar la Rama Judicial y preservar la prueba son tareas distintas.",
     title:
       "Vigilancia de procesos y preservación de evidencia: dos herramientas distintas",
     seoTitle: "Vigilancia de procesos y evidencia digital",
@@ -290,7 +293,8 @@ export const JOURNAL: JournalArticle[] = [
     date: "2026-11-10",
     updated: "2026-11-25",
     visual: "Acceso",
-    tagline: "Roles del despacho, miembros de cada caso y el portal del cliente.",
+    tagline:
+      "Roles del despacho, miembros de cada caso y el portal del cliente.",
     title: "Dar acceso también es una decisión",
     summary:
       "Cómo separar las responsabilidades del despacho del acceso a cada caso, qué ve cada rol y qué revisar cuando alguien entra o sale del equipo.",
@@ -338,7 +342,8 @@ export const JOURNAL: JournalArticle[] = [
     date: "2026-10-05",
     updated: "2026-11-25",
     visual: "Contexto",
-    tagline: "Qué anotar al abrir un caso para retomarlo sin preguntar a nadie.",
+    tagline:
+      "Qué anotar al abrir un caso para retomarlo sin preguntar a nadie.",
     title: "Un caso necesita algo más que un nombre",
     summary:
       "Radicado, despacho judicial, responsables y plazos: los datos que conviene anotar al abrir un caso para que cualquiera del equipo lo pueda retomar.",

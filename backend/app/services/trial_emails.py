@@ -4,6 +4,11 @@ Cinco correos, cada uno con una sola cosa por hacer: abrir el primer caso (día 
 evidencia (día 3), invitar al equipo (día 7), el aviso de que la prueba termina (día 11) y el de
 que terminó (día 14). Solo los reciben los despachos que siguen en prueba y nunca han pagado.
 
+Cada correo mira lo que el despacho ya hizo al momento de salir: si no ha abierto un caso, el del
+día 3 se lo pide antes que la evidencia; si ya subió evidencia, le propone exportar el paquete;
+si ya invitó a su equipo, el del día 7 le muestra el portal del cliente; y el aviso de que
+termina cuenta lo que guardó.
+
 El trabajador los revisa en su mantenimiento (`dispatch`). Cada etapa se anota en trial_emails
 antes de encolar el correo, y la llave primaria de esa tabla impide anotarla dos veces: el mismo
 correo nunca sale dos veces a la misma organización, aunque el mantenimiento se repita o corra
@@ -22,14 +27,26 @@ from dataclasses import dataclass
 from typing import Any, Final
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import exists, select, text
+from sqlalchemy import exists, func, select, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.adapters.email import REPLY_TO, OutgoingEmail
 from app.core.config import Settings
 from app.db.tenancy import TenantContext, set_tenant
-from app.models import Organization, PaymentReceipt, Plan, Subscription, TrialEmail, User
+from app.models import (
+    Case,
+    Evidence,
+    Export,
+    Invitation,
+    Membership,
+    Organization,
+    PaymentReceipt,
+    Plan,
+    Subscription,
+    TrialEmail,
+    User,
+)
 from app.services import jobs
 from app.services.email_layout import email_layout
 from app.services.jobs import PermanentJobError
@@ -225,7 +242,9 @@ def trial_email(
         return None
     plan = session.get(Plan, subscription.plan_id)
     included = plan.included_users if plan is not None else 1
-    content = _CONTENT[stage](subscription.trial_ends_at, included)
+    content = _CONTENT[stage](
+        subscription.trial_ends_at, included, activity(session, organization_id)
+    )
     url = f"{settings.public_url}{content.path}"
     name = user.full_name
     closing = f"Si tiene alguna duda, escríbanos a {REPLY_TO} y le respondemos."
@@ -248,6 +267,55 @@ def trial_email(
 
 
 @dataclass(frozen=True, slots=True)
+class Activity:
+    """Lo que el despacho ya hizo en la prueba, contado al momento de armar el correo."""
+
+    cases: int
+    evidences: int
+    people: int
+    exports: int
+
+
+def activity(session: Session, organization_id: uuid.UUID) -> Activity:
+    """Cuenta casos, evidencias, personas (miembros e invitaciones abiertas) y paquetes. La
+    seguridad por filas ya limita cada tabla al despacho del contexto."""
+
+    def count(model: Any) -> int:
+        return (
+            session.scalar(
+                select(func.count())
+                .select_from(model)
+                .where(model.organization_id == organization_id)
+            )
+            or 0
+        )
+
+    open_invitations = (
+        session.scalar(
+            select(func.count())
+            .select_from(Invitation)
+            .where(
+                Invitation.organization_id == organization_id,
+                Invitation.accepted_at.is_(None),
+                Invitation.revoked_at.is_(None),
+                Invitation.expires_at > func.now(),
+            )
+        )
+        or 0
+    )
+    return Activity(
+        cases=count(Case),
+        evidences=count(Evidence),
+        people=count(Membership) + open_invitations,
+        exports=count(Export),
+    )
+
+
+def _plural(amount: int, one: str, many: str) -> str:
+    return f"{amount} {one if amount == 1 else many}"
+
+
+@dataclass(frozen=True, slots=True)
 class _Content:
     subject: str
     paragraphs: tuple[str, ...]
@@ -255,7 +323,7 @@ class _Content:
     path: str
 
 
-def _welcome(ends_at: datetime.datetime, included: int) -> _Content:
+def _welcome(ends_at: datetime.datetime, included: int, done: Activity) -> _Content:
     return _Content(
         subject="Su prueba de ALETHEIA ya empezó",
         paragraphs=(
@@ -269,7 +337,34 @@ def _welcome(ends_at: datetime.datetime, included: int) -> _Content:
     )
 
 
-def _evidence(ends_at: datetime.datetime, included: int) -> _Content:
+def _evidence(ends_at: datetime.datetime, included: int, done: Activity) -> _Content:
+    if done.cases == 0:
+        return _Content(
+            subject="Abra su primer caso en ALETHEIA",
+            paragraphs=(
+                "Todavía no ha abierto un caso. Tome uno real, aunque sea pequeño: el nombre, el "
+                "radicado si lo tiene y el despacho judicial bastan para empezar.",
+                "Después suba un archivo que le haya mandado el cliente. ALETHEIA calcula su "
+                "huella SHA-256 y le pide un sello de tiempo RFC 3161 a DigiCert, con Sectigo de "
+                "respaldo. Así ve en un minuto lo que el producto hace con su evidencia.",
+            ),
+            action="Abrir mi primer caso",
+            path="/app/casos/nuevo",
+        )
+    if done.evidences > 0:
+        return _Content(
+            subject="Exporte el paquete de su caso y compruébelo usted mismo",
+            paragraphs=(
+                f"Ya guardó {_plural(done.evidences, 'evidencia', 'evidencias')} con su huella y "
+                "su sello de tiempo. El paso siguiente es ver lo que recibiría otra persona: "
+                "en el caso, pida el paquete de preservación.",
+                "Es un ZIP con los originales, el manifiesto de huellas, la cadena de custodia, "
+                "los sellos y un informe en PDF. Ábralo en el comprobador público con el "
+                "manifest.json y uno de los archivos, y vea que las huellas coinciden.",
+            ),
+            action="Abrir mis casos",
+            path="/app/casos",
+        )
     return _Content(
         subject="Suba una evidencia y vea su huella y su sello de tiempo",
         paragraphs=(
@@ -285,7 +380,20 @@ def _evidence(ends_at: datetime.datetime, included: int) -> _Content:
     )
 
 
-def _team(ends_at: datetime.datetime, included: int) -> _Content:
+def _team(ends_at: datetime.datetime, included: int, done: Activity) -> _Content:
+    if done.people > 1:
+        return _Content(
+            subject="Comparta el estado del caso con su cliente",
+            paragraphs=(
+                f"Su despacho ya tiene {_plural(done.people, 'persona', 'personas')} en "
+                "ALETHEIA. Falta alguien que siempre pregunta cómo va el caso: el cliente.",
+                "Desde el caso, invítelo al portal del cliente. Entra con un enlace, sin crear "
+                "cuenta, y ve el estado del caso, los avisos que usted publique y los documentos "
+                "que le comparta. No ve la evidencia ni nada más del despacho.",
+            ),
+            action="Abrir mis casos",
+            path="/app/casos",
+        )
     others = included - 1
     people = "otra persona" if others == 1 else f"otras {others} personas"
     return _Content(
@@ -302,11 +410,20 @@ def _team(ends_at: datetime.datetime, included: int) -> _Content:
     )
 
 
-def _ending(ends_at: datetime.datetime, included: int) -> _Content:
+def _ending(ends_at: datetime.datetime, included: int, done: Activity) -> _Content:
     return _Content(
         subject=f"Su prueba de ALETHEIA termina el {colombian_date(ends_at)}",
         paragraphs=(
             f"Su prueba gratuita termina el {colombian_datetime(ends_at)} (hora de Colombia).",
+            *(
+                (
+                    f"En estos días abrió {_plural(done.cases, 'caso', 'casos')} y guardó "
+                    f"{_plural(done.evidences, 'evidencia', 'evidencias')} con su huella y su "
+                    "sello de tiempo. Todo eso sigue ahí si elige un plan.",
+                )
+                if done.cases > 0
+                else ()
+            ),
             "Para seguir trabajando igual, elija un plan en Plan y facturación. Si no elige "
             f"ninguno, el despacho pasa a solo lectura durante {READ_ONLY_DAYS} días: podrá "
             "consultar sus casos y descargar sus archivos, pero no abrir casos nuevos ni subir "
@@ -317,7 +434,7 @@ def _ending(ends_at: datetime.datetime, included: int) -> _Content:
     )
 
 
-def _ended(ends_at: datetime.datetime, included: int) -> _Content:
+def _ended(ends_at: datetime.datetime, included: int, done: Activity) -> _Content:
     return _Content(
         subject="Su prueba de ALETHEIA terminó",
         paragraphs=(

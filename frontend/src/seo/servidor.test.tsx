@@ -23,11 +23,7 @@ vi.mock("react", async (importOriginal) => {
 import { JOURNAL } from "../content/journal.ts";
 import { FaqSection } from "../features/landing/FaqSection.tsx";
 import { MARCA_CABECERA, MARCA_CONTENIDO } from "./html.ts";
-import {
-  generarSitio,
-  paginasPublicas,
-  preguntasDe,
-} from "./servidor.tsx";
+import { generarSitio, paginasPublicas, preguntasDe } from "./servidor.tsx";
 
 const PLANTILLA = `<!doctype html><html><head>${MARCA_CABECERA}</head><body><div id="root">${MARCA_CONTENIDO}</div></body></html>`;
 
@@ -70,7 +66,9 @@ describe("páginas públicas", () => {
   it("no repiten un paso en la ruta de navegación", () => {
     for (const { meta } of paginasPublicas()) {
       const rutas = (meta.migas ?? []).map((miga) => miga.ruta);
-      expect(rutas, meta.ruta).not.toContain(meta.canonica.replace(/^https:\/\/[^/]+/, ""));
+      expect(rutas, meta.ruta).not.toContain(
+        meta.canonica.replace(/^https:\/\/[^/]+/, ""),
+      );
       expect(new Set(rutas).size, meta.ruta).toBe(rutas.length);
     }
   });

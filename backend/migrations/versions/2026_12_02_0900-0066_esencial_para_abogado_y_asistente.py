@@ -12,6 +12,7 @@ Revises: 0065
 
 from collections.abc import Sequence
 
+import sqlalchemy as sa
 from alembic import op
 
 revision: str = "0066"
@@ -28,17 +29,16 @@ CAMBIOS = (
 )
 
 
+_ACTUALIZAR = sa.text(
+    "UPDATE plans SET included_users = :nuevo WHERE code = :codigo AND included_users = :actual"
+)
+
+
 def upgrade() -> None:
     for codigo, antes, despues in CAMBIOS:
-        op.execute(
-            f"UPDATE plans SET included_users = {despues} "
-            f"WHERE code = '{codigo}' AND included_users = {antes}"
-        )
+        op.execute(_ACTUALIZAR.bindparams(codigo=codigo, actual=antes, nuevo=despues))
 
 
 def downgrade() -> None:
     for codigo, antes, despues in CAMBIOS:
-        op.execute(
-            f"UPDATE plans SET included_users = {antes} "
-            f"WHERE code = '{codigo}' AND included_users = {despues}"
-        )
+        op.execute(_ACTUALIZAR.bindparams(codigo=codigo, actual=despues, nuevo=antes))

@@ -10,10 +10,8 @@ import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
 import { PAGINAS } from "../seo/fichas.ts";
 import { metaArticulo } from "../seo/contenidos.ts";
 import { NotFoundPage } from "./NotFoundPage.tsx";
-import {
-  LinkedParagraph,
-  plainText,
-} from "../components/content/LinkedParagraph.tsx";
+import { LinkedParagraph } from "../components/content/LinkedParagraph.tsx";
+import { plainText } from "../components/content/plainText.ts";
 import styles from "./EditorialPage.module.css";
 
 // Fecha de publicación, sin hora: se formatea en UTC para que "2026-10-05" lea 5 de octubre,
@@ -26,7 +24,6 @@ function formatPublishDate(iso: string): string {
     year: "numeric",
   }).format(new Date(iso));
 }
-
 
 // Del más reciente al más antiguo.
 const BY_DATE = [...JOURNAL].sort((a, b) => b.date.localeCompare(a.date));
@@ -73,9 +70,7 @@ export function JournalPage() {
           data-kind={article.category}
           aria-hidden="true"
         >
-          <span>
-            {article.visual}
-          </span>
+          <span>{article.visual}</span>
           <small>ALETHEIA</small>
         </div>
         <div className={styles.prose}>
@@ -158,9 +153,7 @@ export function JournalPage() {
               data-kind={item.category}
               aria-hidden="true"
             >
-              <span>
-                {item.visual}
-              </span>
+              <span>{item.visual}</span>
               <small>{item.tagline}</small>
             </div>
             <p className={styles.kicker}>

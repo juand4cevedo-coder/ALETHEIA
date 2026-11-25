@@ -2,6 +2,7 @@ import { Reveal } from "../../components/ui/Reveal.tsx";
 import { useEffect } from "react";
 import { useLocation } from "react-router";
 
+import { PlanCatalogProvider } from "../billing/catalog.tsx";
 import { ClosingSection } from "./ClosingSection.tsx";
 import { FaqSection } from "./FaqSection.tsx";
 import { HowItWorks } from "./HowItWorks.tsx";
@@ -32,8 +33,10 @@ export function BelowFold() {
     if (id) document.getElementById(id)?.scrollIntoView();
   }, [hash]);
 
+  // Los planes y el cierre leen el mismo catálogo, pedido una sola vez. Empieza con la copia
+  // publicada, así el HTML prerenderizado ya trae los precios.
   return (
-    <>
+    <PlanCatalogProvider publicado>
       <Reveal>
         <ProblemSection />
       </Reveal>
@@ -67,6 +70,6 @@ export function BelowFold() {
       <Reveal>
         <ClosingSection />
       </Reveal>
-    </>
+    </PlanCatalogProvider>
   );
 }

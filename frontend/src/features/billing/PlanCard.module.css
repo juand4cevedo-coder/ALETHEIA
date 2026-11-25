@@ -135,3 +135,16 @@
 .action:empty {
   display: none;
 }
+
+/* En la tarjeta recomendada, el fondo ya es oscuro o violeta: el botón principal se invierte para
+   no perderse contra él. */
+.card[data-recommended] .action a {
+  border-color: var(--on-ink);
+  background: var(--on-ink);
+  color: var(--ink-900);
+}
+
+.card[data-recommended] .action a:hover {
+  border-color: var(--on-ink-2);
+  background: var(--on-ink-2);
+}

@@ -5,10 +5,8 @@ import { BuscarIcon, FlechaDerechaIcon } from "../components/ui/icons.tsx";
 import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
 import { metaGuia } from "../seo/contenidos.ts";
 import { NotFoundPage } from "./NotFoundPage.tsx";
-import {
-  LinkedParagraph,
-  plainText,
-} from "../components/content/LinkedParagraph.tsx";
+import { LinkedParagraph } from "../components/content/LinkedParagraph.tsx";
+import { plainText } from "../components/content/plainText.ts";
 import styles from "./DocumentationPage.module.css";
 
 const normalize = (value: string) =>

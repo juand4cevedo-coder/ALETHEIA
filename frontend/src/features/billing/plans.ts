@@ -9,7 +9,8 @@ export const RECOMMENDED_PLAN = "professional";
 export const PLAN_TAGLINES: Readonly<Record<string, string>> = {
   trial: "Para probar ALETHEIA con sus casos reales y su equipo.",
   essential: "Para un abogado independiente y su asistente.",
-  professional: "Para un despacho de hasta cuatro personas, con espacio para crecer.",
+  professional:
+    "Para un despacho de hasta cuatro personas, con espacio para crecer.",
   firm: "Para firmas de diez personas o más.",
 };
 
@@ -28,7 +29,10 @@ export function trialDays(plans: readonly PublicPlan[]): number | null {
 /** Lo que paga al mes un equipo de `people` personas en un plan, o null si el plan no admite
  * tantas. Sigue la regla del cobro (services/pricing.py): el plan más cada persona por encima
  * de las incluidas, si el plan admite adicionales. */
-export function monthlyCostFor(plan: PublicPlan, people: number): number | null {
+export function monthlyCostFor(
+  plan: PublicPlan,
+  people: number,
+): number | null {
   const extra = Math.max(people - plan.included_users, 0);
   if (extra === 0) return plan.monthly_price_cop;
   if (plan.extra_user_price_cop == null) return null;
@@ -46,7 +50,11 @@ export function cheapestPlanFor(
     const monthly = monthlyCostFor(plan, people);
     if (monthly === null) continue;
     if (best === null || monthly < best.monthly) {
-      best = { plan, monthly, extra: Math.max(people - plan.included_users, 0) };
+      best = {
+        plan,
+        monthly,
+        extra: Math.max(people - plan.included_users, 0),
+      };
     }
   }
   return best;
