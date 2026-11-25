@@ -6,13 +6,7 @@
 /* Bloque superior: sube por detrás del encabezado transparente, que se superpone a la página.
    Sin focos de luz ni retícula: el texto y su huella bastan. */
 .head {
-  background:
-    radial-gradient(
-      ellipse at 50% 0%,
-      color-mix(in srgb, var(--ink-900) 3%, transparent),
-      transparent 65%
-    ),
-    var(--paper);
+  background: var(--paper);
   margin-top: calc(-1 * var(--header-height));
   padding: calc(var(--header-height) + var(--space-12)) 0 var(--space-12);
   border-bottom: 1px solid var(--ink-hairline);

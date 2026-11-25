@@ -1,10 +1,29 @@
-/* Fuentes alojadas con el producto, sin solicitudes a servicios externos. */
+/* Fuentes alojadas con el producto, sin solicitudes a servicios externos. Geist es la letra de
+   la interfaz y del texto; Newsreader, con tamaño óptico, la de los títulos editoriales; Geist
+   Mono, la de huellas, radicados y fechas. Solo el subconjunto latino: el español no necesita
+   más y cada archivo pesa menos. */
 @font-face {
-  font-family: "Inter Variable";
+  font-family: "Geist Variable";
   font-style: normal;
   font-display: swap;
   font-weight: 100 900;
-  src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2")
+  src: url("@fontsource-variable/geist/files/geist-latin-wght-normal.woff2")
+    format("woff2-variations");
+}
+@font-face {
+  font-family: "Newsreader Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("@fontsource-variable/newsreader/files/newsreader-latin-opsz-normal.woff2")
+    format("woff2-variations");
+}
+@font-face {
+  font-family: "Newsreader Variable";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("@fontsource-variable/newsreader/files/newsreader-latin-opsz-italic.woff2")
     format("woff2-variations");
 }
 @font-face {

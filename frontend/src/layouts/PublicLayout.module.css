@@ -55,7 +55,7 @@
   to {
     box-shadow:
       0 1px 0 var(--ink-hairline),
-      0 12px 32px rgb(35 0 48 / 6%);
+      0 12px 32px rgb(22 19 28 / 6%);
   }
 }
 
@@ -69,15 +69,13 @@
   margin: auto;
   padding: 0 24px;
 }
+/* Símbolo y logotipo: el logotipo es un dibujo de trazos, así que no depende de la fuente. El
+   espacio entre los dos es la mitad del alto del símbolo. */
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 12px;
   color: var(--text);
-  font-family: var(--font-sans);
-  font-size: 22px;
-  font-weight: 750;
-  letter-spacing: -0.045em;
   text-decoration: none;
   line-height: 1;
 }

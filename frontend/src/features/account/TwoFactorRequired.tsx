@@ -9,6 +9,7 @@ import { WORDMARK, pageTitle } from "../../config/site.ts";
 import { useSignOut } from "../session/useSignOut.ts";
 import { TwoFactorCard } from "./TwoFactorCard.tsx";
 import styles from "./TwoFactorRequired.module.css";
+import { Logotipo } from "../../components/brand/Logotipo.tsx";
 
 // Pantalla que reemplaza al espacio de trabajo cuando el despacho exige la verificación en dos
 // pasos y esta persona todavía no la tiene. La API tampoco responde el resto hasta que la active.
@@ -21,7 +22,8 @@ export function TwoFactorRequired({ me }: { me: Me }) {
       <meta name="robots" content="noindex" />
       <header className={styles.brand}>
         <BrandMark />
-        <span>{WORDMARK}</span>
+        <Logotipo />
+        <span className="visually-hidden">{WORDMARK}</span>
       </header>
       <main className={styles.main}>
         <h1>Active la verificación en dos pasos</h1>

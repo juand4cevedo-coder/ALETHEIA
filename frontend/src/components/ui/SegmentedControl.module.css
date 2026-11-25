@@ -18,7 +18,7 @@
   border-radius: var(--radius-pill);
   background: var(--paper-raised);
   box-shadow:
-    0 1px 3px rgb(35 0 48 / 12%),
+    0 1px 3px rgb(22 19 28 / 12%),
     var(--brass-hairline);
   transition:
     transform 320ms var(--ease-out),

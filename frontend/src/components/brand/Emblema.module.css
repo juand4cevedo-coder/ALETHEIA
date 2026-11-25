@@ -1,0 +1,74 @@
+/* El emblema toma sus colores de los tokens: tinta en el texto de marca y latón en el sello. */
+.emblema {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.tinta {
+  fill: none;
+  stroke: var(--brand-text);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.laton {
+  fill: none;
+  stroke: var(--seal);
+}
+
+.pupila {
+  fill: var(--seal);
+  stroke: none;
+}
+
+.leyenda {
+  fill: var(--brand-text);
+  font-family: var(--font-sans);
+  font-size: 8.4px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+}
+
+/* El dibujo: cuando el emblema entra en pantalla, cada trazo se traza de 0 a 1 de su largo y
+   las marcas aparecen una tras otra, como una huella que se calcula. Sin JavaScript o con
+   movimiento reducido, el emblema se ve completo desde el principio. */
+.emblema[data-dibujo="espera"] .trazo {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.emblema[data-dibujo="espera"] :is(.marcas path, .pupila, .leyenda) {
+  opacity: 0;
+}
+
+.emblema[data-dibujo="dibuja"] .trazo {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: trazar 1.6s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 120ms);
+}
+
+.emblema[data-dibujo="dibuja"] .marcas path {
+  opacity: 0;
+  animation: aparecer 0.24s ease-out forwards;
+  animation-delay: calc(400ms + var(--i) * 14ms);
+}
+
+.emblema[data-dibujo="dibuja"] :is(.pupila, .leyenda) {
+  opacity: 0;
+  animation: aparecer 0.6s ease-out 1.4s forwards;
+}
+
+@keyframes trazar {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes aparecer {
+  to {
+    opacity: 1;
+  }
+}

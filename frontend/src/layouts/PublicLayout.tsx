@@ -32,6 +32,7 @@ import {
   MenuIcon,
 } from "../components/ui/icons.tsx";
 import styles from "./PublicLayout.module.css";
+import { Logotipo } from "../components/brand/Logotipo.tsx";
 
 // El detalle de un grupo del menú móvil se descarga al tocarlo o al abrir el menú, no con la entrada.
 const loadMobileGroupDetail = () => import("./MobileGroupDetail.tsx");
@@ -54,7 +55,7 @@ function Brand() {
   return (
     <Link to={ROUTES.home} className={styles.brand} aria-label={WORDMARK}>
       <BrandMark size={32} />
-      <span aria-hidden="true">{WORDMARK}</span>
+      <Logotipo alto={16} />
     </Link>
   );
 }

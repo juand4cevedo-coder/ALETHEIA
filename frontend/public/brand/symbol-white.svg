@@ -1,8 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" data-brand="aletheia-eye" data-variant="inverse">
-  <rect width="64" height="64" rx="18" fill="#ffffff"/>
-  <g transform="translate(0.000 0.000) scale(1)" fill="none" stroke-linejoin="round">
-  <path d="M9 32C17 21 25 16 32 16s15 5 23 16c-8 11-16 16-23 16S17 43 9 32Z" stroke="#820ad1" stroke-width="4"/>
-  <circle cx="32" cy="32" r="8.5" fill="#820ad1" stroke="none"/>
-  <circle cx="32" cy="32" r="3.5" fill="#ffffff" stroke="none"/>
-</g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" data-brand="aletheia-eye" data-variant="default"><rect width="64" height="64" rx="15" fill="#ffffff"/><path d="M8 32 Q32 10 56 32 Q32 54 8 32 Z" fill="none" stroke="#55278a" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="32" r="9.4" fill="none" stroke="#55278a" stroke-width="3.4"/><circle cx="32" cy="32" r="4.3" fill="#7a5a22"/></svg>

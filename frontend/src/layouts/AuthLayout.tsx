@@ -19,6 +19,7 @@ import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import styles from "./AuthLayout.module.css";
 import { photoProps } from "../config/media.ts";
+import { Logotipo } from "../components/brand/Logotipo.tsx";
 
 /** Cambio a la otra pantalla de acceso, declarado en la ruta: va debajo del formulario. */
 export type AuthSwitch = { question: string; label: string; to: string };
@@ -90,7 +91,8 @@ export function AuthLayout() {
       <header className={styles.header}>
         <Link to={ROUTES.home} className={styles.brand}>
           <BrandMark size={30} />
-          <span>{WORDMARK}</span>
+          <Logotipo />
+          <span className="visually-hidden">{WORDMARK}</span>
         </Link>
         <Link to={ROUTES.home} className={styles.back}>
           Inicio

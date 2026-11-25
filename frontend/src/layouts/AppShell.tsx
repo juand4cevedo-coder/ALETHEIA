@@ -33,6 +33,7 @@ import { CommandPalette } from "../features/workspace/CommandPalette.tsx";
 import { useNavPreferences } from "../features/workspace/navPreferences.ts";
 import { WorkspaceNav } from "../features/workspace/WorkspaceNav.tsx";
 import styles from "./AppShell.module.css";
+import { Logotipo } from "../components/brand/Logotipo.tsx";
 
 function isUnauthorized(error: unknown): boolean {
   return (
@@ -146,7 +147,8 @@ export function AppShell() {
             viewTransition
           >
             <BrandMark />
-            <span>{WORDMARK}</span>
+            <Logotipo />
+            <span className="visually-hidden">{WORDMARK}</span>
           </Link>
         </div>
         {signedIn && (
@@ -247,7 +249,8 @@ export function AppShell() {
             <div className={styles.drawerHead}>
               <span className={styles.brand}>
                 <BrandMark />
-                <span>{WORDMARK}</span>
+                <Logotipo />
+                <span className="visually-hidden">{WORDMARK}</span>
               </span>
               <button
                 type="button"
