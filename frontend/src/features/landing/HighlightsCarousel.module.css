@@ -109,7 +109,7 @@
   font-size: clamp(2.25rem, 3.5vw, 4rem);
   font-weight: 650;
   line-height: 0.98;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.018em;
 }
 
 .description {
@@ -131,7 +131,7 @@
 .metric strong {
   color: var(--brand-text);
   font-size: 24px;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.018em;
 }
 
 .metric span {

@@ -72,7 +72,7 @@
   color: var(--text);
   font-size: clamp(32px, 4vw, 46px);
   font-weight: 650;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.018em;
   line-height: 1.04;
   overflow-wrap: anywhere;
 }

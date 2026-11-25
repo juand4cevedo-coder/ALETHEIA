@@ -90,7 +90,7 @@
   font-size: clamp(30px, 3.5vw, 42px);
   line-height: 1.15;
   font-weight: 550;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.018em;
   text-wrap: pretty;
 }
 .lead {

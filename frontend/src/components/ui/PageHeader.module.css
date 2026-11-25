@@ -19,7 +19,7 @@
   color: var(--text);
   font-size: clamp(36px, 4vw, 54px);
   font-weight: 650;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.018em;
   line-height: 1;
   /* Nombres de personas y títulos de casos los escribe el usuario: una palabra larga baja de
      línea en vez de desbordar. */
