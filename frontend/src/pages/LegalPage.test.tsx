@@ -36,7 +36,7 @@ describe("Páginas legales (HU-003, CP-003)", () => {
       );
       // Los textos se identifican por su vigencia: ninguna página muestra un número de versión.
       expect(within(main).queryByText(/versión\s*\d/i)).not.toBeInTheDocument();
-      expect(within(main).getByText("25 de noviembre de 2026")).toHaveAttribute(
+      expect(within(main).getByText("26 de noviembre de 2026")).toHaveAttribute(
         "datetime",
         LEGAL_EFFECTIVE_DATE,
       );
@@ -170,7 +170,7 @@ describe("Páginas legales (HU-003, CP-003)", () => {
     const bytes = new Uint8Array(await blob.arrayBuffer());
     const text = new TextDecoder().decode(bytes);
     expect(text.startsWith("TÉRMINOS Y CONDICIONES\n")).toBe(true);
-    expect(text).toContain("Vigente desde el 25 de noviembre de 2026");
+    expect(text).toContain("Vigente desde el 26 de noviembre de 2026");
     for (const section of LEGAL_DOCUMENTS.terminos.sections) {
       expect(text).toContain(section.title.toUpperCase());
     }

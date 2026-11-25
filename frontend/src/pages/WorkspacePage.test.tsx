@@ -220,21 +220,48 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     ).toBe(true);
   });
 
-  it("con la prueba activa no repite el aviso: el plan ya está en Salud del despacho", async () => {
+  it("durante la prueba muestra los días que quedan y lleva a elegir un plan", async () => {
+    const inTenDays = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
     serve("owner", {
       subscription: {
-        plan_name: "Esencial",
+        plan_name: "Prueba",
         status: "trial",
         access_source: "trial",
-        ends_at: "2026-12-01T00:00:00Z",
+        ends_at: inTenDays.toISOString(),
       },
     });
     await renderRoute("/app");
-    await screen.findByRole("heading", { level: 1 });
-    expect(screen.queryByText(/período de prueba/)).not.toBeInTheDocument();
+
+    const notice = await screen.findByRole("region", {
+      name: "Su prueba gratuita",
+    });
+    expect(notice).toHaveTextContent("Le quedan 10 días de prueba.");
+    expect(
+      within(notice).getByRole("link", { name: "Elegir un plan" }),
+    ).toHaveAttribute("href", "/app/facturacion");
   });
 
-  it("con la prueba vencida avisa y lleva a elegir un plan", async () => {
+  it("a quien no puede pagar le pide avisar a la persona responsable", async () => {
+    serve("lawyer", {
+      subscription: {
+        plan_name: "Prueba",
+        status: "trial",
+        access_source: "trial",
+        ends_at: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+    });
+    await renderRoute("/app");
+
+    const notice = await screen.findByRole("region", {
+      name: "Su prueba gratuita",
+    });
+    expect(notice).toHaveTextContent(
+      "Avise a la persona responsable del despacho",
+    );
+    expect(within(notice).queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("con la prueba vencida lo dice y lleva a elegir un plan", async () => {
     serve("owner", {
       subscription: {
         plan_name: "Esencial",
@@ -245,12 +272,31 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     });
     await renderRoute("/app");
 
-    const notice = await screen.findByText(/Su período de prueba venció/);
+    const notice = await screen.findByRole("region", {
+      name: "Su prueba venció",
+    });
+    expect(notice).toHaveTextContent("Su período de prueba venció.");
     expect(
-      within(notice.closest("div")!).getByRole("link", {
-        name: "Elija un plan",
-      }),
+      within(notice).getByRole("link", { name: "Elegir un plan" }),
     ).toHaveAttribute("href", "/app/facturacion");
+  });
+
+  it("con un plan pagado vencido dice que venció el plan, no la prueba", async () => {
+    serve("owner", {
+      subscription: {
+        plan_name: "Profesional",
+        status: "expired",
+        access_source: "payment",
+        ends_at: "2026-11-01T00:00:00Z",
+      },
+    });
+    await renderRoute("/app");
+
+    const notice = await screen.findByRole("region", {
+      name: "Su plan venció",
+    });
+    expect(notice).toHaveTextContent("Su plan venció.");
+    expect(screen.queryByText(/período de prueba/)).not.toBeInTheDocument();
   });
 
   it("cuando no hay casos todavía, invita a abrir el primero", async () => {

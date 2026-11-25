@@ -43,8 +43,10 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
   it("en la primera visita avisa sin instalar ninguna cookie ni quitar el foco (CA-HU-004-01)", async () => {
     const { container } = await renderRoute(PAGE);
 
-    const panel = cookiePanel();
-    expect(panel).toBeInTheDocument();
+    // El panel se descarga aparte de la carga inicial: llega un instante después.
+    const panel = await screen.findByRole("region", {
+      name: "Cookies en ALETHEIA",
+    });
     expect(
       within(panel!).getByRole("button", { name: "Rechazar" }),
     ).toBeVisible();
@@ -148,11 +150,28 @@ describe("Panel de cookies (HU-004, CP-004)", () => {
     expect(storedChoice()).toMatchObject({ analytics: false });
   });
 
+  it("la primera vez es una barra baja con dos botones del mismo peso", async () => {
+    await renderRoute(PAGE);
+
+    const panel = cookiePanel()!;
+    const buttons = within(panel).getAllByRole("button");
+    expect(buttons.map((button) => button.textContent)).toEqual([
+      "Elegir por categoría",
+      "Rechazar",
+      "Aceptar",
+    ]);
+    expect(buttons[1]!.className).toBe(buttons[2]!.className);
+    expect(
+      within(panel).getByRole("link", { name: "Política de cookies" }),
+    ).toBeInTheDocument();
+  });
+
   it("cerrar el aviso sin elegir cuenta como rechazo", async () => {
     const user = userEvent.setup();
     await renderRoute(PAGE);
 
-    await user.click(screen.getByRole("button", { name: "Cerrar" }));
+    screen.getByRole("button", { name: "Aceptar" }).focus();
+    await user.keyboard("{Escape}");
 
     expect(cookiePanel()).not.toBeInTheDocument();
     expect(storedChoice()).toMatchObject({ analytics: false });

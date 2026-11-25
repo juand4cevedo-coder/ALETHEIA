@@ -8,6 +8,7 @@ from app.models.billing import (
     PaymentSource,
     Plan,
     Subscription,
+    TrialEmail,
 )
 from app.models.client_portal import (
     ClientPortalAccess,
@@ -70,6 +71,7 @@ __all__ = [
     "SupportTicket",
     "TaskTemplate",
     "TaskTemplateItem",
+    "TrialEmail",
     "TwoFactorRecovery",
     "TwoFactorRecoveryCode",
     "User",

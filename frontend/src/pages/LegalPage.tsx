@@ -8,18 +8,15 @@ import {
   LEGAL_EFFECTIVE_DATE,
 } from "../config/legal.ts";
 import { LEGAL_PAGES, legalRoute, type LegalSlug } from "../config/routes.ts";
-import {
-  CONTACT_EMAIL,
-  SITE_NAME,
-  SITE_URL,
-  pageTitle,
-} from "../config/site.ts";
+import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from "../config/site.ts";
 import { findLegalDocument } from "../features/legal/documents.ts";
 import { formatEffectiveDate } from "../features/legal/format.ts";
 import { extractPlainText } from "../features/legal/plainText.ts";
 import type { LegalDocument } from "../features/legal/types.ts";
 import { useActiveSection } from "../features/legal/useActiveSection.ts";
 import { NotFoundPage } from "./NotFoundPage.tsx";
+import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
+import { metaLegal } from "../seo/contenidos.ts";
 import styles from "./LegalPage.module.css";
 import {
   BalanzaIcon,
@@ -84,9 +81,7 @@ function LegalDocumentView({ doc }: { doc: LegalDocument }) {
 
   return (
     <>
-      <title>{pageTitle(doc.title)}</title>
-      <meta name="description" content={doc.description} />
-      <link rel="canonical" href={`${SITE_URL}${legalRoute(doc.slug)}`} />
+      <CabeceraSeo meta={metaLegal(doc)} />
 
       <div className={styles.head}>
         <div className={styles.inner}>

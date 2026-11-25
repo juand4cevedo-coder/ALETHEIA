@@ -21,8 +21,8 @@ export function StandardsSection() {
         <SectionHeading
           id="titulo-estandares"
           className={styles.heading}
-          title="Saber qué ocurre. Decidir quién participa."
-          lead="Su información merece atención. Cada caso tiene sus miembros y usted puede revisar sus accesos desde su cuenta."
+          title="Solo ven el caso las personas que usted agrega"
+          lead="Administrar el despacho no abre todos los casos: cada uno tiene sus miembros. Desde su cuenta revisa sus sesiones y puede cerrarlas en todos sus dispositivos."
         />
         <ul className={styles.guarantees}>
           <li data-reveal>

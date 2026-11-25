@@ -192,7 +192,31 @@ def render(receipt: PaymentReceipt) -> bytes:
     )
     pdf.setFont(FONT, 10)
     pdf.setFillColor(INK)
-    pdf.drawRightString(columns[2], y, cop(receipt.amount_cop))
+    pdf.drawRightString(columns[2], y, cop(receipt.amount_cop - receipt.extra_users_cop))
+    if receipt.extra_users > 0:
+        # Las personas por encima de las que incluye el plan, en una fila propia.
+        y -= 36
+        people = "usuario adicional" if receipt.extra_users == 1 else "usuarios adicionales"
+        unit = receipt.extra_users_cop // receipt.extra_users
+        _text(pdf, columns[0], y, f"{receipt.extra_users} {people}", bold=True, size=10)
+        _text(
+            pdf,
+            columns[0],
+            y - 14,
+            f"{cop(unit)} cada uno, {'al mes' if receipt.billing_cycle == 'monthly' else 'al año'}",
+            color=MUTED,
+            size=9,
+        )
+        _text(
+            pdf,
+            columns[1],
+            y,
+            f"{_day(receipt.period_start)} al {_day(receipt.period_end)}",
+            size=9.5,
+        )
+        pdf.setFont(FONT, 10)
+        pdf.setFillColor(INK)
+        pdf.drawRightString(columns[2], y, cop(receipt.extra_users_cop))
     y -= 32
     _hairline(pdf, y)
 

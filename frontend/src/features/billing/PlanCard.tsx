@@ -1,6 +1,7 @@
 import type { PublicPlan } from "../../api/generated";
 import {
-  annualMonthsCharged,
+  annualMonthlyEquivalent,
+  annualSavingsCop,
   type BillingCycle,
   formatBytes,
   formatCop,
@@ -36,7 +37,8 @@ export function PlanCard({
 }: PlanCardProps) {
   const isFree = plan.monthly_price_cop === 0;
   const showsAnnual = cycle === "annual" && plan.annual_price_cop != null;
-  const months = annualMonthsCharged(plan);
+  const monthly = annualMonthlyEquivalent(plan);
+  const saving = annualSavingsCop(plan);
   const headingId = `plan-${plan.code}`;
   const Heading = headingLevel === 2 ? "h2" : "h3";
 
@@ -66,15 +68,17 @@ export function PlanCard({
               </span>
             )}
           </>
-        ) : showsAnnual ? (
+        ) : showsAnnual && monthly !== null ? (
           <>
+            {/* El equivalente mensual va grande; el total que se paga, justo debajo. */}
             <span className={styles.amount}>
-              {formatCop(plan.annual_price_cop!)}
-              <span className={styles.period}> al año</span>
+              {formatCop(monthly)}
+              <span className={styles.period}> al mes</span>
             </span>
-            {months !== null && (
-              <span className={styles.note}>El valor de {months} meses</span>
-            )}
+            <span className={styles.note}>
+              Pagando {formatCop(plan.annual_price_cop!)} al año
+              {saving !== null && `. Ahorra ${formatCop(saving)}`}
+            </span>
           </>
         ) : (
           <>

@@ -9,13 +9,13 @@ import { greeting } from "../features/session/greeting.ts";
 import { Panel } from "../components/ui/Panel.tsx";
 import { StatTile } from "../components/ui/StatTile.tsx";
 import { StatusBadge } from "../components/ui/StatusBadge.tsx";
-import { Notice } from "../components/ui/Notice.tsx";
 import { EmptyState } from "../components/ui/EmptyState.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { pageTitle } from "../config/site.ts";
 import { ResendVerification } from "../features/auth/ResendVerification.tsx";
 import { EmailStatus } from "../features/session/EmailStatus.tsx";
 import { OrganizationHealthPanel } from "../features/workspace/OrganizationHealthPanel.tsx";
+import { PlanStatusNotice } from "../features/workspace/PlanStatusNotice.tsx";
 import { TaskInbox } from "../features/workspace/TaskInbox.tsx";
 import {
   managesOrganization,
@@ -79,10 +79,7 @@ export function WorkspacePage() {
   const caseTotals = totals.data?.totals;
   const recentItems = recent.data?.items;
 
-  const subscription = me.subscription;
   const hello = greeting(me.full_name);
-  const needsAttention =
-    canPay && subscription != null && subscription.status === "expired";
 
   return (
     <div className={styles.screen}>
@@ -112,6 +109,8 @@ export function WorkspacePage() {
 
       {me.organization && (
         <>
+          <PlanStatusNotice subscription={me.subscription} canPay={canPay} />
+
           <section
             className={styles.overview}
             aria-label="Resumen de sus casos"
@@ -160,13 +159,6 @@ export function WorkspacePage() {
               No pudimos cargar el resumen. Puede seguir trabajando desde la
               lista de casos.
             </p>
-          )}
-
-          {needsAttention && (
-            <Notice tone="warning">
-              Su período de prueba venció y el despacho está en solo lectura.{" "}
-              <a href={ROUTES.billing}>Elija un plan</a> para seguir trabajando.
-            </Notice>
           )}
 
           {managesOrganization(me.organization?.role) && (

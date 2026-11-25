@@ -34,7 +34,6 @@ function problem(status: number, extra: Record<string, unknown> = {}) {
 async function fillForm(
   user: ReturnType<typeof userEvent.setup>,
   password = "una frase larga y fácil",
-  confirmPassword = password,
 ) {
   await user.type(screen.getByLabelText("Nombre completo"), "Ana Restrepo");
   await user.type(
@@ -42,10 +41,6 @@ async function fillForm(
     "ana@example.com",
   );
   await user.type(screen.getByLabelText("Contraseña"), password);
-  await user.type(
-    screen.getByLabelText("Confirmar contraseña"),
-    confirmPassword,
-  );
   await user.click(screen.getByRole("checkbox"));
 }
 
@@ -127,43 +122,26 @@ describe("Crear cuenta (HU-005, CP-005)", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("exige confirmar la contraseña y enfoca ese campo si queda vacío", async () => {
-    const user = userEvent.setup();
+  it("pide la contraseña una sola vez y recuerda la prueba junto al botón", async () => {
     await renderRoute("/registro/correo");
 
-    await user.type(screen.getByLabelText("Nombre completo"), "Ana Restrepo");
-    await user.type(
-      screen.getByLabelText("Correo electrónico"),
-      "ana@example.com",
-    );
-    await user.type(
-      screen.getByLabelText("Contraseña"),
-      "una frase larga y fácil",
-    );
-    await user.click(screen.getByRole("checkbox"));
-    await submit(user);
-
-    const confirmar = screen.getByLabelText("Confirmar contraseña");
-    expect(confirmar).toHaveFocus();
-    expect(confirmar).toHaveAccessibleDescription(
-      "Las contraseñas no coinciden.",
-    );
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("Confirmar contraseña")).toBeNull();
+    expect(
+      screen.getByText(
+        "Empieza con 14 días de prueba, sin tarjeta de crédito.",
+      ),
+    ).toBeInTheDocument();
   });
 
-  it("avisa si la confirmación no coincide y no llama a la API", async () => {
-    const user = userEvent.setup();
+  it("el panel lateral recuerda lo que trae la prueba, sin fotografía", async () => {
     await renderRoute("/registro/correo");
 
-    await fillForm(user, "una frase larga y fácil", "otra frase distinta");
-    await submit(user);
-
-    const confirmar = screen.getByLabelText("Confirmar contraseña");
-    expect(confirmar).toHaveFocus();
-    expect(confirmar).toHaveAccessibleDescription(
-      "Las contraseñas no coinciden.",
-    );
-    expect(fetchMock).not.toHaveBeenCalled();
+    const panel = screen.getByRole("complementary", {
+      name: "La prueba trae todas las funciones",
+    });
+    expect(panel).toHaveTextContent("14 días gratis, sin tarjeta de crédito");
+    expect(panel).toHaveTextContent("Nada se cobra solo");
+    expect(document.querySelector("img[srcset*='equipo-real']")).toBeNull();
   });
 
   it("permite ver la contraseña escrita", async () => {

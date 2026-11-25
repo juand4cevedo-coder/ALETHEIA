@@ -1,5 +1,8 @@
 import { useId, useState } from "react";
 import { Button } from "../../components/ui/Button.tsx";
+import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
+import { ROUTES } from "../../config/routes.ts";
+import { SIGN_UP_LABEL, TRIAL_DAYS } from "../../config/site.ts";
 import { Field } from "../../components/ui/Field.tsx";
 import {
   ArchivoBusquedaIcon,
@@ -33,8 +36,8 @@ export function VerifierSection() {
           <div className={styles.copy}>
             <SectionHeading
               id="titulo-verificador"
-              title="La confianza también se comprueba."
-              lead="Calcule la huella de un archivo y compárela con una huella de referencia. Sin cuenta y sin enviar su archivo."
+              title="Compruebe la huella de un archivo sin enviarlo a ninguna parte"
+              lead="Calcule la huella SHA-256 de un archivo y compárela con la que le entregaron. No necesita una cuenta."
               className={section.headingStacked}
             />
             <p className={styles.privacy}>
@@ -134,6 +137,18 @@ export function VerifierSection() {
                       ? "El archivo seleccionado tiene la misma huella que la referencia indicada."
                       : "Compruebe que eligió el archivo y la referencia correctos."}
                 </p>
+              </div>
+            )}
+            {hash && (
+              <div className={styles.next}>
+                <p>
+                  Para conservar este archivo con su sello de tiempo y su cadena
+                  de custodia, súbalo a un caso. La prueba dura {TRIAL_DAYS}{" "}
+                  días y no pide tarjeta.
+                </p>
+                <ButtonLink to={ROUTES.signUp} variant="secondary" size="sm">
+                  {SIGN_UP_LABEL}
+                </ButtonLink>
               </div>
             )}
           </form>

@@ -215,6 +215,86 @@ export type ArchiveYearOut = {
 };
 
 /**
+ * BillingQuoteOption
+ *
+ * Lo que costaría un plan en un ciclo para el equipo de hoy.
+ */
+export type BillingQuoteOption = {
+  /**
+   * Plan Code
+   */
+  plan_code: string;
+  /**
+   * Plan Name
+   */
+  plan_name: string;
+  /**
+   * Billing Cycle
+   */
+  billing_cycle: "monthly" | "annual";
+  /**
+   * Included Users
+   *
+   * Usuarios que incluye el precio del plan.
+   */
+  included_users: number;
+  /**
+   * Fits
+   *
+   * Si el equipo cabe en el plan. Si no cabe, no se puede pagar ese plan.
+   */
+  fits: boolean;
+  /**
+   * Plan Cop
+   *
+   * Precio del plan en este ciclo.
+   */
+  plan_cop: number;
+  /**
+   * Extra Users
+   *
+   * Personas por encima de las incluidas.
+   */
+  extra_users: number;
+  /**
+   * Extra User Unit Cop
+   *
+   * Lo que vale cada usuario adicional en este ciclo, o null si no se admiten.
+   */
+  extra_user_unit_cop: number | null;
+  /**
+   * Extra Users Cop
+   *
+   * Lo que suman los usuarios adicionales.
+   */
+  extra_users_cop: number;
+  /**
+   * Total Cop
+   *
+   * Lo que se cobraría: el plan más los adicionales.
+   */
+  total_cop: number;
+};
+
+/**
+ * BillingQuoteOut
+ *
+ * El desglose de cada plan antes de pagar, con las personas que cuentan hoy.
+ */
+export type BillingQuoteOut = {
+  /**
+   * Users
+   *
+   * Miembros del despacho más invitaciones abiertas.
+   */
+  users: number;
+  /**
+   * Options
+   */
+  options: Array<BillingQuoteOption>;
+};
+
+/**
  * Body_download_export
  */
 export type BodyDownloadExport = {
@@ -3548,8 +3628,22 @@ export type ReceiptOut = {
   billing_cycle: "monthly" | "annual";
   /**
    * Amount Cop
+   *
+   * Total pagado: el plan más los usuarios adicionales.
    */
   amount_cop: number;
+  /**
+   * Extra Users
+   *
+   * Usuarios adicionales cobrados en este pago.
+   */
+  extra_users: number;
+  /**
+   * Extra Users Cop
+   *
+   * Lo que sumaron los usuarios adicionales.
+   */
+  extra_users_cop: number;
   /**
    * Payment Method
    *
@@ -3780,6 +3874,58 @@ export type RoleChangeRequest = {
 };
 
 /**
+ * SalesInquiryAccepted
+ */
+export type SalesInquiryAccepted = {
+  /**
+   * Filing Number
+   *
+   * Radicado de la solicitud.
+   */
+  filing_number: string;
+  /**
+   * Detail
+   */
+  detail: string;
+};
+
+/**
+ * SalesInquiryCreate
+ */
+export type SalesInquiryCreate = {
+  /**
+   * Name
+   *
+   * Nombre de quien escribe.
+   */
+  name: string;
+  /**
+   * Organization
+   *
+   * Firma, oficina o entidad.
+   */
+  organization: string;
+  /**
+   * Email
+   *
+   * Correo al que se responde la cotización.
+   */
+  email: string;
+  /**
+   * Users
+   *
+   * Número aproximado de usuarios.
+   */
+  users: number;
+  /**
+   * Message
+   *
+   * Cómo trabaja el despacho, si quiere contarlo.
+   */
+  message?: string | null;
+};
+
+/**
  * SeatsOut
  *
  * Cupo de usuarios del plan (RN-012).
@@ -3969,7 +4115,7 @@ export type SupportTicketCreate = {
   /**
    * Category
    *
-   * support: ayuda con el servicio; data_query: consulta sobre datos personales; data_claim: corregir, actualizar o suprimir datos; consumer: petición, queja o reclamo de consumidor; refund: devolución de un pago.
+   * support: ayuda con el servicio; data_query: consulta sobre datos personales; data_claim: corregir, actualizar o suprimir datos; consumer: petición, queja o reclamo de consumidor; refund: devolución de un pago. Las cotizaciones (sales) llegan por POST /sales-inquiries.
    */
   category?: "support" | "data_query" | "data_claim" | "consumer" | "refund";
   /**
@@ -3999,7 +4145,8 @@ export type SupportTicketOut = {
   /**
    * Category
    */
-  category: "support" | "data_query" | "data_claim" | "consumer" | "refund";
+  category:
+    "support" | "data_query" | "data_claim" | "consumer" | "refund" | "sales";
   /**
    * Subject
    */
@@ -4033,13 +4180,19 @@ export type SupportTicketOut = {
   /**
    * Deletable On
    *
-   * Desde qué día la plataforma puede eliminarla: al resolverse si es de soporte; tres años después de cerrada si es de datos personales, consumidor o reembolso.
+   * Desde qué día la plataforma puede eliminarla: al resolverse si es de soporte o comercial; tres años después de cerrada si es de datos personales, consumidor o reembolso.
    */
   deletable_on?: string | null;
   /**
    * User Email
    */
   user_email?: string | null;
+  /**
+   * Contact Name
+   *
+   * Nombre de quien pidió la cotización, si no tiene cuenta.
+   */
+  contact_name?: string | null;
 };
 
 /**
@@ -8631,6 +8784,32 @@ export type DeleteSupportTicketResponses = {
 export type DeleteSupportTicketResponse =
   DeleteSupportTicketResponses[keyof DeleteSupportTicketResponses];
 
+export type BillingQuoteData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/billing/quote";
+};
+
+export type BillingQuoteErrors = {
+  /**
+   * El rol no administra la facturación.
+   */
+  403: Problem;
+};
+
+export type BillingQuoteError = BillingQuoteErrors[keyof BillingQuoteErrors];
+
+export type BillingQuoteResponses = {
+  /**
+   * Successful Response
+   */
+  200: BillingQuoteOut;
+};
+
+export type BillingQuoteResponse =
+  BillingQuoteResponses[keyof BillingQuoteResponses];
+
 export type WompiTermsData = {
   body?: never;
   path?: never;
@@ -8669,6 +8848,10 @@ export type CreateCheckoutErrors = {
    */
   403: Problem;
   /**
+   * El equipo tiene más personas de las que admite.
+   */
+  409: Problem;
+  /**
    * La solicitud tiene datos inválidos.
    */
   422: ValidationProblem;
@@ -8703,6 +8886,10 @@ export type CreateCheckoutWebErrors = {
    * El rol no administra la facturación.
    */
   403: Problem;
+  /**
+   * El equipo tiene más personas de las que admite.
+   */
+  409: Problem;
   /**
    * La solicitud tiene datos inválidos.
    */
@@ -9491,3 +9678,46 @@ export type SubmitWebVitalsResponses = {
 
 export type SubmitWebVitalsResponse =
   SubmitWebVitalsResponses[keyof SubmitWebVitalsResponses];
+
+export type CreateSalesInquiryData = {
+  body: SalesInquiryCreate;
+  headers?: {
+    /**
+     * X-Aletheia-Captcha
+     *
+     * Solución del reto de GET /auth/captcha, en JSON y Base64.
+     */
+    "X-Aletheia-Captcha"?: string | null;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v1/sales-inquiries";
+};
+
+export type CreateSalesInquiryErrors = {
+  /**
+   * Falta la verificación de persona.
+   */
+  400: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+  /**
+   * Demasiadas solicitudes.
+   */
+  429: Problem;
+};
+
+export type CreateSalesInquiryError =
+  CreateSalesInquiryErrors[keyof CreateSalesInquiryErrors];
+
+export type CreateSalesInquiryResponses = {
+  /**
+   * Successful Response
+   */
+  201: SalesInquiryAccepted;
+};
+
+export type CreateSalesInquiryResponse =
+  CreateSalesInquiryResponses[keyof CreateSalesInquiryResponses];

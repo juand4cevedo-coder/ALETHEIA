@@ -134,6 +134,10 @@ class PaymentReceipt(Base):
     __tablename__ = "payment_receipts"
     __table_args__ = (
         CheckConstraint("amount_cop > 0", name="amount_cop"),
+        CheckConstraint("extra_users >= 0", name="extra_users"),
+        CheckConstraint(
+            "extra_users_cop >= 0 AND extra_users_cop < amount_cop", name="extra_users_cop"
+        ),
         CheckConstraint("billing_cycle IN ('monthly', 'annual')", name="billing_cycle"),
         CheckConstraint("char_length(number) BETWEEN 1 AND 30", name="number"),
         Index("ix_payment_receipts_organization_id_issued_at", "organization_id", "issued_at"),
@@ -151,6 +155,9 @@ class PaymentReceipt(Base):
     gateway_transaction_id: Mapped[str]
     payment_method: Mapped[str | None]
     amount_cop: Mapped[int] = mapped_column(BigInteger)
+    # Los usuarios adicionales cobrados en este pago y lo que sumaron; el resto es el plan.
+    extra_users: Mapped[int] = mapped_column(server_default="0")
+    extra_users_cop: Mapped[int] = mapped_column(BigInteger, server_default="0")
     plan_name: Mapped[str]
     billing_cycle: Mapped[str]
     period_start: Mapped[datetime.datetime]
@@ -201,4 +208,23 @@ class PaymentSource(Base):
     canceled_by: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="RESTRICT")
     )
+    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
+
+
+TRIAL_EMAIL_STAGES: Final = ("day_0", "day_3", "day_7", "day_11", "day_14")
+
+
+class TrialEmail(Base):
+    """Cada correo del ciclo de la prueba que ya le tocó a una organización. La llave primaria
+    impide que el mismo correo salga dos veces. `emailed` es falso cuando la etapa se dio por
+    pasada sin enviarla, porque ya había llegado la siguiente."""
+
+    __tablename__ = "trial_emails"
+    __table_args__ = (CheckConstraint(text_values("stage", TRIAL_EMAIL_STAGES), name="stage"),)
+
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"), primary_key=True
+    )
+    stage: Mapped[str] = mapped_column(primary_key=True)
+    emailed: Mapped[bool]
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())

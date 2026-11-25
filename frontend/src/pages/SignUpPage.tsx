@@ -4,16 +4,20 @@ import { Link, useLocation } from "react-router";
 import { Field } from "../components/ui/Field.tsx";
 import { LEGAL_VERSION } from "../config/legal.ts";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_URL, pageTitle } from "../config/site.ts";
+import { TRIAL_DAYS } from "../config/site.ts";
 import { AccountTypeChoice } from "../features/auth/AccountTypeChoice.tsx";
 import { LegalConsent } from "../features/auth/LegalConsent.tsx";
 import { SocialAccess } from "../features/auth/SocialAccess.tsx";
 import type { AccountType } from "../features/auth/signUp.ts";
 import styles from "../features/auth/AccessScreen.module.css";
+import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
+import { PAGINAS } from "../seo/fichas.ts";
 
 const TITLE_ID = "titulo-registro";
 
 const GOOGLE_NOTICES: Record<string, string> = {
+  "sin-cuenta":
+    "Ese correo de Google todavía no tiene cuenta en ALETHEIA. Elija el tipo de cuenta, acepte los términos y créela aquí con Google.",
   "correo-en-uso":
     "Ya existe una cuenta con ese correo. Ingrese y vincule Google desde Mi cuenta.",
   "legal-cambio":
@@ -59,12 +63,7 @@ export function SignUpPage() {
 
   return (
     <>
-      <title>{pageTitle("Crear cuenta")}</title>
-      <meta
-        name="description"
-        content="Cree su cuenta de ALETHEIA con Google y empiece la prueba gratuita, sin tarjeta de crédito."
-      />
-      <link rel="canonical" href={`${SITE_URL}${ROUTES.signUp}`} />
+      <CabeceraSeo meta={PAGINAS.registro} />
 
       <div className={styles.screen}>
         <header className={styles.intro}>
@@ -128,6 +127,9 @@ export function SignUpPage() {
 
           <div className={styles.submit}>
             <SocialAccess mode="register" />
+            <p className={styles.trialHint}>
+              Empieza con {TRIAL_DAYS} días de prueba, sin tarjeta de crédito.
+            </p>
           </div>
           <p className={styles.help}>
             Aletheia recibirá de Google su nombre, correo verificado e

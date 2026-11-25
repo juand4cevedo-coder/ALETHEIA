@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.45.0"
+    "version": "0.46.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -7508,6 +7508,42 @@
         }
       }
     },
+    "/api/v1/billing/quote": {
+      "get": {
+        "tags": [
+          "facturación"
+        ],
+        "summary": "Lo que costaría cada plan para el equipo de hoy, antes de pagar",
+        "operationId": "billing_quote",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingQuoteOut"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El rol no administra la facturación.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
     "/api/v1/billing/wompi-terms": {
       "get": {
         "tags": [
@@ -7587,6 +7623,16 @@
               }
             }
           },
+          "409": {
+            "description": "El equipo tiene más personas de las que admite.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
           "503": {
             "description": "Wompi no respondió.",
             "content": {
@@ -7649,6 +7695,16 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El equipo tiene más personas de las que admite.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
                 }
               }
             }
@@ -8881,6 +8937,87 @@
           }
         }
       }
+    },
+    "/api/v1/sales-inquiries": {
+      "post": {
+        "tags": [
+          "comercial"
+        ],
+        "summary": "Pedir una cotización del plan Corporativo",
+        "operationId": "create_sales_inquiry",
+        "parameters": [
+          {
+            "name": "X-Aletheia-Captcha",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Solución del reto de GET /auth/captcha, en JSON y Base64.",
+              "title": "X-Aletheia-Captcha"
+            },
+            "description": "Solución del reto de GET /auth/captcha, en JSON y Base64."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SalesInquiryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesInquiryAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falta la verificación de persona.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiadas solicitudes.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -9167,6 +9304,106 @@
           "cases"
         ],
         "title": "ArchiveYearOut"
+      },
+      "BillingQuoteOption": {
+        "properties": {
+          "plan_code": {
+            "type": "string",
+            "title": "Plan Code"
+          },
+          "plan_name": {
+            "type": "string",
+            "title": "Plan Name"
+          },
+          "billing_cycle": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "annual"
+            ],
+            "title": "Billing Cycle"
+          },
+          "included_users": {
+            "type": "integer",
+            "title": "Included Users",
+            "description": "Usuarios que incluye el precio del plan."
+          },
+          "fits": {
+            "type": "boolean",
+            "title": "Fits",
+            "description": "Si el equipo cabe en el plan. Si no cabe, no se puede pagar ese plan."
+          },
+          "plan_cop": {
+            "type": "integer",
+            "title": "Plan Cop",
+            "description": "Precio del plan en este ciclo."
+          },
+          "extra_users": {
+            "type": "integer",
+            "title": "Extra Users",
+            "description": "Personas por encima de las incluidas."
+          },
+          "extra_user_unit_cop": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extra User Unit Cop",
+            "description": "Lo que vale cada usuario adicional en este ciclo, o null si no se admiten."
+          },
+          "extra_users_cop": {
+            "type": "integer",
+            "title": "Extra Users Cop",
+            "description": "Lo que suman los usuarios adicionales."
+          },
+          "total_cop": {
+            "type": "integer",
+            "title": "Total Cop",
+            "description": "Lo que se cobraría: el plan más los adicionales."
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan_code",
+          "plan_name",
+          "billing_cycle",
+          "included_users",
+          "fits",
+          "plan_cop",
+          "extra_users",
+          "extra_user_unit_cop",
+          "extra_users_cop",
+          "total_cop"
+        ],
+        "title": "BillingQuoteOption",
+        "description": "Lo que costaría un plan en un ciclo para el equipo de hoy."
+      },
+      "BillingQuoteOut": {
+        "properties": {
+          "users": {
+            "type": "integer",
+            "title": "Users",
+            "description": "Miembros del despacho más invitaciones abiertas."
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/BillingQuoteOption"
+            },
+            "type": "array",
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "users",
+          "options"
+        ],
+        "title": "BillingQuoteOut",
+        "description": "El desglose de cada plan antes de pagar, con las personas que cuentan hoy."
       },
       "Body_download_export": {
         "properties": {
@@ -14263,7 +14500,18 @@
           },
           "amount_cop": {
             "type": "integer",
-            "title": "Amount Cop"
+            "title": "Amount Cop",
+            "description": "Total pagado: el plan más los usuarios adicionales."
+          },
+          "extra_users": {
+            "type": "integer",
+            "title": "Extra Users",
+            "description": "Usuarios adicionales cobrados en este pago."
+          },
+          "extra_users_cop": {
+            "type": "integer",
+            "title": "Extra Users Cop",
+            "description": "Lo que sumaron los usuarios adicionales."
           },
           "payment_method": {
             "anyOf": [
@@ -14301,6 +14549,8 @@
           "plan_name",
           "billing_cycle",
           "amount_cop",
+          "extra_users",
+          "extra_users_cop",
           "payment_method",
           "period_start",
           "period_end",
@@ -14578,6 +14828,79 @@
         ],
         "title": "RoleChangeRequest",
         "description": "El rol nuevo de un miembro (API-020). El propietario no se asigna: nace con la\norganización (RN-010)."
+      },
+      "SalesInquiryAccepted": {
+        "properties": {
+          "filing_number": {
+            "type": "string",
+            "title": "Filing Number",
+            "description": "Radicado de la solicitud."
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filing_number",
+          "detail"
+        ],
+        "title": "SalesInquiryAccepted"
+      },
+      "SalesInquiryCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Name",
+            "description": "Nombre de quien escribe."
+          },
+          "organization": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Organization",
+            "description": "Firma, oficina o entidad."
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "description": "Correo al que se responde la cotización."
+          },
+          "users": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Users",
+            "description": "Número aproximado de usuarios."
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Cómo trabaja el despacho, si quiere contarlo."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "organization",
+          "email",
+          "users"
+        ],
+        "title": "SalesInquiryCreate"
       },
       "SeatsOut": {
         "properties": {
@@ -14864,7 +15187,7 @@
               "refund"
             ],
             "title": "Category",
-            "description": "support: ayuda con el servicio; data_query: consulta sobre datos personales; data_claim: corregir, actualizar o suprimir datos; consumer: petición, queja o reclamo de consumidor; refund: devolución de un pago.",
+            "description": "support: ayuda con el servicio; data_query: consulta sobre datos personales; data_claim: corregir, actualizar o suprimir datos; consumer: petición, queja o reclamo de consumidor; refund: devolución de un pago. Las cotizaciones (sales) llegan por POST /sales-inquiries.",
             "default": "support"
           },
           "subject": {
@@ -14907,7 +15230,8 @@
               "data_query",
               "data_claim",
               "consumer",
-              "refund"
+              "refund",
+              "sales"
             ],
             "title": "Category"
           },
@@ -14966,7 +15290,7 @@
               }
             ],
             "title": "Deletable On",
-            "description": "Desde qué día la plataforma puede eliminarla: al resolverse si es de soporte; tres años después de cerrada si es de datos personales, consumidor o reembolso."
+            "description": "Desde qué día la plataforma puede eliminarla: al resolverse si es de soporte o comercial; tres años después de cerrada si es de datos personales, consumidor o reembolso."
           },
           "user_email": {
             "anyOf": [
@@ -14978,6 +15302,18 @@
               }
             ],
             "title": "User Email"
+          },
+          "contact_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Name",
+            "description": "Nombre de quien pidió la cotización, si no tiene cuenta."
           }
         },
         "type": "object",

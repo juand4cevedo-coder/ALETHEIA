@@ -1,6 +1,6 @@
 import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../../config/routes.ts";
-import { SIGN_UP_LABEL } from "../../config/site.ts";
+import { SIGN_UP_LABEL, SIGN_UP_NOTE } from "../../config/site.ts";
 import { usePlanCatalog } from "../billing/catalog.tsx";
 import { trialDays } from "../billing/plans.ts";
 import styles from "./ClosingSection.module.css";
@@ -23,13 +23,17 @@ export function ClosingSection() {
             Pruebe ALETHEIA con uno de sus casos
           </h2>
           <p className={styles.text}>
-            Cree su cuenta y abra su primer caso.{" "}
+            Suba los archivos de un caso real y vea cómo quedan con su huella,
+            su sello de tiempo y su cadena de custodia.{" "}
             {days === null
               ? "La prueba es gratuita y no pide tarjeta de crédito."
               : `La prueba dura ${days} días y no pide tarjeta de crédito.`}
           </p>
         </div>
-        <ButtonLink to={ROUTES.signUp}>{SIGN_UP_LABEL}</ButtonLink>
+        <div className={styles.action}>
+          <ButtonLink to={ROUTES.signUp}>{SIGN_UP_LABEL}</ButtonLink>
+          <p className={styles.note}>{SIGN_UP_NOTE}</p>
+        </div>
       </div>
     </section>
   );

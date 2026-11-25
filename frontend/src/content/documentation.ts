@@ -51,7 +51,7 @@ export const DOCUMENTATION: DocArticle[] = [
         ],
       },
     ],
-    action: { to: "/registro", label: "Crear una cuenta" },
+    action: { to: "/registro", label: "Probar 14 días gratis" },
   },
   {
     slug: "crear-un-caso",

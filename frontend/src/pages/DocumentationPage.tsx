@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { DOCUMENTATION } from "../content/documentation.ts";
-import { SITE_URL, pageTitle } from "../config/site.ts";
 import { BuscarIcon, FlechaDerechaIcon } from "../components/ui/icons.tsx";
+import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
+import { metaGuia } from "../seo/contenidos.ts";
 import { NotFoundPage } from "./NotFoundPage.tsx";
 import styles from "./DocumentationPage.module.css";
 
@@ -25,9 +26,7 @@ export function DocumentationPage() {
   const next = DOCUMENTATION[index + 1];
   return (
     <div className={styles.layout}>
-      <title>{pageTitle(article.title + " | Documentación")}</title>
-      <meta name="description" content={article.description} />
-      <link rel="canonical" href={SITE_URL + "/docs/" + article.slug} />
+      <CabeceraSeo meta={metaGuia(article)} />
       <aside className={styles.sidebar}>
         <Link className={styles.docsBrand} to="/docs">
           Documentación

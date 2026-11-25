@@ -81,7 +81,11 @@
 			Cache-Control "public, max-age=31536000, immutable"
 			defer
 		}
-		file_server
+		# El build deja junto a cada archivo de texto su versión .br y .gz: se entregan tal cual
+		# y Caddy no comprime en cada visita. encode queda para lo que no traiga la suya.
+		file_server {
+			precompressed br gzip
+		}
 	}
 
 	# Imágenes, íconos y manifiesto: nombres fijos, así que no llevan huella. Una semana en el
@@ -97,13 +101,48 @@
 		file_server
 	}
 
-	# Todo lo demás es la aplicación de una sola página: las rutas de React reciben index.html,
-	# que se revalida en cada visita para que un despliegue se vea de inmediato.
+	# El HTML se revalida en cada visita para que un despliegue se vea de inmediato. Cada página
+	# pública tiene el suyo, prerenderizado al construir (dist/<ruta>/index.html); también se
+	# sirven así los archivos de la raíz, como robots.txt o el mapa del sitio.
+	@archivo {
+		not path /api/* /assets/* /media/* /brand/*
+		file {
+			root /srv
+			try_files {path}/index.html {path}
+		}
+	}
+	handle @archivo {
+		root * /srv
+		header Cache-Control "no-cache"
+		try_files {path}/index.html {path}
+		file_server {
+			precompressed br gzip
+		}
+	}
+
+	# Las pantallas de la aplicación sin HTML propio (ingreso, espacio de trabajo, enlaces que
+	# llegan por correo) reciben la aplicación vacía y React las dibuja. La lista la genera el
+	# build desde el enrutador: frontend/src/seo/html.ts, rutasDeLaAplicacion.
+	import /etc/caddy/rutas-aplicacion.caddy
+	handle @aplicacion {
+		root * /srv
+		header Cache-Control "no-cache"
+		rewrite * /aplicacion.html
+		file_server {
+			precompressed br gzip
+		}
+	}
+
+	# Cualquier otra dirección no existe: página 404 de verdad, con estado 404 y noindex, para
+	# que los buscadores no la indexen como si fuera una página.
 	handle {
 		root * /srv
 		header Cache-Control "no-cache"
-		try_files {path} /index.html
-		file_server
+		rewrite * /404.html
+		file_server {
+			status 404
+			precompressed br gzip
+		}
 	}
 
 	# Errores (404 de un archivo, 502 si la API no responde): mensaje mínimo, sin detalles

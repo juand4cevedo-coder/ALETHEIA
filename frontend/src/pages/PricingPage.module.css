@@ -41,6 +41,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: var(--space-3) var(--space-4);
   margin-top: var(--space-3);
 }
@@ -124,6 +125,99 @@
 .taxNote a {
   color: var(--brand-text);
   text-underline-offset: var(--underline-offset);
+}
+
+/* La misma acción, repetida al terminar de comparar las tarjetas. */
+.again {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-8);
+  text-align: center;
+}
+
+/* Condiciones de compra en una franja de tres columnas, separadas por la línea. */
+.guarantees {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: var(--space-12) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--ink-hairline);
+  border-bottom: 1px solid var(--ink-hairline);
+  list-style: none;
+}
+
+.guarantees li {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-6) var(--space-6) var(--space-6) 0;
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.guarantees li + li {
+  padding-left: var(--space-6);
+  border-left: 1px solid var(--ink-hairline);
+}
+
+.guarantees strong {
+  color: var(--text);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  line-height: var(--line-height-body);
+}
+
+.guarantees span {
+  color: var(--text-2);
+}
+
+.faq {
+  padding: 0 0 var(--space-24);
+}
+
+.faqLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: var(--space-12);
+  align-items: start;
+}
+
+.faqTitle {
+  font-family: var(--font-editorial);
+  font-size: var(--font-size-section-sm);
+  font-weight: 550;
+  line-height: var(--line-height-section-sm);
+  letter-spacing: var(--tracking-section);
+}
+
+@media (max-width: 900px) {
+  .faqLayout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+}
+
+@media (max-width: 760px) {
+  .guarantees {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .guarantees li,
+  .guarantees li + li {
+    padding: var(--space-4) 0;
+    border-left: 0;
+  }
+
+  .guarantees li + li {
+    border-top: 1px solid var(--ink-hairline);
+  }
+
+  .faq {
+    padding-bottom: var(--space-16);
+  }
 }
 
 @media (max-width: 640px) {

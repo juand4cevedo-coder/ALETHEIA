@@ -21,7 +21,7 @@ it("permite cambiar de capacidad y pausar el avance", async () => {
     }),
   ).toBeInTheDocument();
 
-  await user.click(screen.getByRole("button", { name: /2 de 5: Evidencias/ }));
+  await user.click(screen.getByRole("button", { name: /2 de 4: Evidencias/ }));
   expect(
     screen.getByRole("heading", {
       level: 3,
@@ -31,6 +31,11 @@ it("permite cambiar de capacidad y pausar el avance", async () => {
   expect(
     screen.getByRole("link", { name: /Revisar cómo se protege/ }),
   ).toHaveAttribute("href", "/seguridad");
+
+  // El paquete de preservación tiene su propia sección fija, fuera del carrusel.
+  expect(
+    screen.queryByRole("button", { name: /Paquete de preservación/ }),
+  ).not.toBeInTheDocument();
 
   const pause = screen.getByRole("button", { name: "Pausar" });
   await user.click(pause);

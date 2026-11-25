@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 from app.adapters import wompi
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, Organization, PaymentEvent, Plan, Subscription
-from app.services import payment_emails, receipts, subscription_expiration
+from app.services import payment_emails, pricing, receipts, subscription_expiration
 from app.services.checkout import Referencia, leer_referencia
 
 _DURACION: Final = {"monthly": relativedelta(months=1), "annual": relativedelta(years=1)}
@@ -137,16 +137,15 @@ def _aplicar(
     if subscription.pending_checkout_reference == transaccion.reference:
         subscription.pending_checkout_reference = None
 
-    esperado = (
-        plan.monthly_price_cop if referencia.billing_cycle == "monthly" else plan.annual_price_cop
-    )
+    # El plan más los usuarios adicionales que se cobraron, según la referencia.
+    esperado = pricing.quote(plan, referencia.billing_cycle, referencia.extra_users)
     if transaccion.status == "APPROVED" and (
-        esperado is None or transaccion.amount_in_cents != esperado * 100
+        esperado is None or transaccion.amount_in_cents != esperado.total_cop * 100
     ):
-        # El monto que de verdad cobró Wompi no es el del plan que pide la referencia: no se
-        # activa nada con un cobro que no corresponde (RN-032).
+        # El monto que de verdad cobró Wompi no es el que pide la referencia (el plan y sus
+        # usuarios adicionales): no se activa nada con un cobro que no corresponde (RN-032).
         action = "payment_declined"
-    elif transaccion.status == "APPROVED":
+    elif transaccion.status == "APPROVED" and esperado is not None:
         # Renovar el mismo plan antes de que venza suma el periodo al que ya estaba pagado; un
         # plan distinto, o un acceso que no era de pago, empieza hoy.
         renews = (
@@ -178,6 +177,8 @@ def _aplicar(
             transaction_id=transaccion.id,
             payment_method=transaccion.payment_method_type,
             amount_cop=transaccion.amount_in_cents // 100,
+            extra_users=esperado.extra_users,
+            extra_users_cop=esperado.extra_users_cop,
             plan_name=plan.name,
             billing_cycle=referencia.billing_cycle,
             period_start=starts,

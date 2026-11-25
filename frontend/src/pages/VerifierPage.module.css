@@ -116,3 +116,16 @@
     padding: var(--space-6);
   }
 }
+
+/* Paso siguiente después del resultado: conservar archivos propios en un caso. */
+.next {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--ink-hairline);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+}

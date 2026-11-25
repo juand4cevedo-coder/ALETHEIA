@@ -252,6 +252,24 @@ def test_no_asocia_por_correo_si_la_identidad_no_esta_vinculada(
     assert client.get("/api/v1/me").status_code == 401
 
 
+def test_ingresar_con_google_sin_cuenta_lleva_al_registro(
+    app: FastAPI, dispositivo: NuevoCliente
+) -> None:
+    google = FakeGoogle(subject="google-sin-cuenta", email="nueva@example.com")
+    app.dependency_overrides[get_google_oidc] = lambda: google
+    client = dispositivo()
+
+    state = _start(client, "/api/v1/auth/google/login")
+    callback = client.get(
+        "/api/v1/auth/google/callback",
+        params={"state": state, "code": "codigo-de-google"},
+        follow_redirects=False,
+    )
+
+    assert callback.headers["location"] == "/registro?google=sin-cuenta"
+    assert client.get("/api/v1/me").status_code == 401
+
+
 def test_rechaza_state_alterado_antes_de_intercambiar_el_codigo(
     app: FastAPI, dispositivo: NuevoCliente
 ) -> None:

@@ -264,7 +264,8 @@ El código del frontend se organiza así (ADR-021):
 | `src/styles` | Los tokens del sistema de diseño y los estilos globales |
 | `src/config` | Datos del sitio que se repiten: el correo de contacto, las rutas públicas y, en `legal.ts`, la versión vigente de las políticas y los datos del responsable |
 | `src/test` | Lo que comparten las pruebas: configuración, catálogo de ejemplo y revisión con axe |
-| `public` | Archivos que se publican tal cual: íconos, imagen para redes, `robots.txt` y `sitemap.xml` |
+| `public` | Archivos que se publican tal cual: íconos, imagen para redes y `robots.txt` |
+| `src/seo` | Título, descripción y dirección canónica de cada página pública (`paginas.ts`, `fichas.ts` y `contenidos.ts`), los datos estructurados y la entrada del prerender que usa `scripts/prerender.mjs` al construir para escribir el HTML de cada página, `404.html`, `sitemap.xml` y las rutas de la aplicación para Caddy |
 | `src/api/generated` | El cliente generado desde el contrato; no se edita a mano |
 | `src/api/runtimeConfig.ts` | La configuración con que nace el cliente generado: el encabezado propio que la API exige contra CSRF |
 
@@ -380,4 +381,4 @@ git push origin vX.Y.Z
 
 Este repositorio es público para consulta y evaluación, pero no incluye licencia de uso. El código conserva todos los derechos de autor y no puede copiarse, modificarse ni distribuirse sin autorización escrita del autor.
 
-© 2026 Juan Diego Acevedo Calderon.
+© 2026 Juan Diego Acevedo Calderón.

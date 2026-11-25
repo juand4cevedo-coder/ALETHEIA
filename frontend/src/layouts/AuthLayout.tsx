@@ -13,7 +13,8 @@ import {
 import { readMeOptions } from "../api/generated/@tanstack/react-query.gen.ts";
 
 import { LEGAL_PAGES, legalRoute, ROUTES } from "../config/routes.ts";
-import { SITE_NAME, WORDMARK } from "../config/site.ts";
+import { SITE_NAME, TRIAL_DAYS, WORDMARK } from "../config/site.ts";
+import { VistoIcon } from "../components/ui/icons.tsx";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import styles from "./AuthLayout.module.css";
@@ -43,10 +44,9 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 export function AuthLayout() {
   const { pathname } = useLocation();
-  const primaryAccess =
-    pathname === ROUTES.signIn ||
-    pathname === ROUTES.signUp ||
-    pathname === ROUTES.signUpEmail;
+  const signingUp =
+    pathname === ROUTES.signUp || pathname === ROUTES.signUpEmail;
+  const primaryAccess = pathname === ROUTES.signIn || signingUp;
   const {
     panel: cookiePanel,
     openPanel: openCookies,
@@ -81,7 +81,7 @@ export function AuthLayout() {
   }
 
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} data-signup={signingUp || undefined}>
       <a className={styles.skipLink} href="#contenido">
         Saltar al contenido
       </a>
@@ -97,21 +97,23 @@ export function AuthLayout() {
         </Link>
       </header>
 
-      <section className={styles.visual} aria-label="Trabajo colaborativo">
-        <img
-          {...photoProps("equipo-real", "(min-width: 900px) 50vw, 100vw")}
-          alt="Equipo profesional colaborando en un espacio contemporáneo"
-          width={2000}
-          height={1333}
-          fetchPriority="high"
-          decoding="async"
-          className={styles.photo}
-        />
-        <div className={styles.visualCopy}>
-          <p>Un acceso claro a todo lo que importa.</p>
-          <span>Casos, equipo y actividad en un mismo espacio.</span>
-        </div>
-      </section>
+      {!signingUp && (
+        <section className={styles.visual} aria-label="Trabajo colaborativo">
+          <img
+            {...photoProps("equipo-real", "(min-width: 900px) 50vw, 100vw")}
+            alt="Equipo profesional colaborando en un espacio contemporáneo"
+            width={2000}
+            height={1333}
+            fetchPriority="high"
+            decoding="async"
+            className={styles.photo}
+          />
+          <div className={styles.visualCopy}>
+            <p>Un acceso claro a todo lo que importa.</p>
+            <span>Casos, equipo y actividad en un mismo espacio.</span>
+          </div>
+        </section>
+      )}
       <main id="contenido" className={styles.main} tabIndex={-1}>
         <div className={styles.panel}>
           <Outlet />
@@ -125,6 +127,9 @@ export function AuthLayout() {
           </nav>
         )}
       </main>
+      {/* Al crear la cuenta, el panel lateral recuerda lo que trae la prueba. En el teléfono
+          va después del formulario, para no empujarlo hacia abajo. */}
+      {signingUp && <TrialReminder />}
 
       <footer className={styles.footer}>
         <p>
@@ -152,5 +157,40 @@ export function AuthLayout() {
       </footer>
       <ScrollRestoration />
     </div>
+  );
+}
+
+const TRIAL_INCLUDES = [
+  "Cada archivo que suba queda con su huella SHA-256 y su sello de tiempo.",
+  "La cadena de custodia anota quién subió, descargó o exportó cada evidencia.",
+  "El caso se exporta en un paquete que cualquier persona puede verificar.",
+  "Usted invita a su equipo y decide quién entra a cada caso.",
+] as const;
+
+function TrialReminder() {
+  return (
+    <aside className={styles.trial} aria-labelledby="titulo-prueba">
+      <div className={styles.trialInner}>
+        <p className={styles.trialKicker}>
+          {TRIAL_DAYS} días gratis, sin tarjeta de crédito
+        </p>
+        <h2 id="titulo-prueba" className={styles.trialTitle}>
+          La prueba trae todas las funciones
+        </h2>
+        <ul className={styles.trialList}>
+          {TRIAL_INCLUDES.map((item) => (
+            <li key={item}>
+              <VistoIcon size={18} aria-hidden="true" />
+              {item}
+            </li>
+          ))}
+        </ul>
+        <p className={styles.trialNote}>
+          Al terminar, usted elige el plan. Nada se cobra solo: si no elige
+          ninguno, la cuenta queda 30 días en solo lectura para que exporte lo
+          que guardó.
+        </p>
+      </div>
+    </aside>
   );
 }

@@ -2,7 +2,9 @@
 
 Solo arranca el cobro: la activación llega por el webhook de Wompi (app.services.payments),
 nunca desde aquí. La referencia que se le manda a Wompi lleva codificada la organización, el
-plan y el ciclo, así que la activación no necesita guardar nada mientras el pago está pendiente.
+plan, el ciclo y los usuarios adicionales cobrados, así que la activación no necesita guardar
+nada mientras el pago está pendiente y compara el monto con lo que de verdad se cobró, aunque el
+equipo cambie entre tanto.
 """
 
 import datetime
@@ -19,7 +21,8 @@ from app.core.config import Settings
 from app.core.permissions import has_permission
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import Organization, Plan, Subscription, User
-from app.services import jobs
+from app.repositories import plans as plans_repository
+from app.services import jobs, pricing
 from app.services.sessions import Principal
 
 # Cuánto se le da a la notificación push de Nequi y al webhook de Wompi antes de ir a
@@ -30,7 +33,7 @@ _ESPERA_RECONCILIACION: Final = datetime.timedelta(minutes=15)
 _PREFIJO: Final = "aletheia"
 _REFERENCIA: Final = re.compile(
     r"^aletheia:(?P<organization_id>[0-9a-f-]{36}):(?P<plan_code>[a-z_]{1,30}):"
-    r"(?P<billing_cycle>monthly|annual):(?P<nonce>[0-9a-f-]{36})$"
+    r"(?P<billing_cycle>monthly|annual):(?:(?P<extra_users>\d{1,4}):)?(?P<nonce>[0-9a-f-]{36})$"
 )
 _TELEFONO_COLOMBIA: Final = re.compile(r"^3\d{9}$")
 
@@ -43,6 +46,15 @@ _MARGEN_PENDIENTE: Final = datetime.timedelta(minutes=5)
 
 class CheckoutNoPermitidoError(Exception):
     """La persona, el plan o el ciclo no admiten iniciar un cobro."""
+
+
+class EquipoNoCabeError(CheckoutNoPermitidoError):
+    """El equipo tiene más personas de las que admite el plan, y el plan no tiene adicionales."""
+
+    def __init__(self, users: int, included: int) -> None:
+        super().__init__("El equipo no cabe en el plan.")
+        self.users = users
+        self.included = included
 
 
 class TransaccionAjenaError(Exception):
@@ -61,12 +73,17 @@ class Referencia:
     organization_id: uuid.UUID
     plan_code: str
     billing_cycle: Literal["monthly", "annual"]
+    # Las referencias anteriores a los usuarios adicionales no lo traen: valen cero.
+    extra_users: int = 0
 
 
 def referencia_nueva(
-    organization_id: uuid.UUID, plan_code: str, billing_cycle: Literal["monthly", "annual"]
+    organization_id: uuid.UUID,
+    plan_code: str,
+    billing_cycle: Literal["monthly", "annual"],
+    extra_users: int = 0,
 ) -> str:
-    return f"{_PREFIJO}:{organization_id}:{plan_code}:{billing_cycle}:{uuid.uuid7()}"
+    return f"{_PREFIJO}:{organization_id}:{plan_code}:{billing_cycle}:{extra_users}:{uuid.uuid7()}"
 
 
 def leer_referencia(reference: str) -> Referencia | None:
@@ -81,6 +98,7 @@ def leer_referencia(reference: str) -> Referencia | None:
         organization_id=uuid.UUID(coincide["organization_id"]),
         plan_code=coincide["plan_code"],
         billing_cycle=ciclo,
+        extra_users=int(coincide["extra_users"] or 0),
     )
 
 
@@ -97,6 +115,25 @@ def _pendiente_vigente(reference: str | None, ahora: datetime.datetime) -> bool:
         int.from_bytes(nonce.bytes[:6], "big") / 1000, datetime.UTC
     )
     return ahora - creada < VIGENCIA_CHECKOUT_WEB + _MARGEN_PENDIENTE
+
+
+def cotizar(
+    session: Session,
+    organization_id: uuid.UUID,
+    plan: Plan,
+    billing_cycle: Literal["monthly", "annual"],
+    now: datetime.datetime,
+) -> pricing.Quote:
+    """Lo que vale el periodo para el equipo de hoy. EquipoNoCabeError si el equipo pasa de las
+    personas que admite el plan; CheckoutNoPermitidoError si el plan no se vende en ese ciclo."""
+    users = pricing.users_counted(session, organization_id, now)
+    extra = pricing.extra_users_for(plan, users)
+    if extra is None:
+        raise EquipoNoCabeError(users, plan.included_users)
+    cotizacion = pricing.quote(plan, billing_cycle, extra)
+    if cotizacion is None:
+        raise CheckoutNoPermitidoError
+    return cotizacion
 
 
 def iniciar_checkout_web(
@@ -118,9 +155,9 @@ def iniciar_checkout_web(
     user = session.get(User, principal.user_id)
     if organization is None or plan is None or user is None:
         raise CheckoutNoPermitidoError
-    amount_cop = plan.monthly_price_cop if billing_cycle == "monthly" else plan.annual_price_cop
-    if amount_cop is None or amount_cop <= 0:
-        raise CheckoutNoPermitidoError
+    cotizacion = cotizar(
+        session, organization_id, plan, billing_cycle, datetime.datetime.now(datetime.UTC)
+    )
     subscription = session.scalar(
         select(Subscription)
         .where(Subscription.organization_id == organization_id)
@@ -134,13 +171,13 @@ def iniciar_checkout_web(
     if _pendiente_vigente(subscription.pending_checkout_reference, ahora):
         raise CheckoutNoPermitidoError
 
-    reference = referencia_nueva(organization_id, plan_code, billing_cycle)
+    reference = referencia_nueva(organization_id, plan_code, billing_cycle, cotizacion.extra_users)
     subscription.pending_checkout_reference = reference
     creds = wompi.credenciales_de(settings)
     url, _ = wompi.url_de_checkout_web(
         creds,
         reference=reference,
-        amount_in_cents=amount_cop * 100,
+        amount_in_cents=cotizacion.total_cop * 100,
         redirect_url=f"{settings.public_url}/app/facturacion",
         customer_email=user.email,
         vigencia=VIGENCIA_CHECKOUT_WEB,
@@ -203,9 +240,9 @@ def iniciar(
     user = session.get(User, principal.user_id)
     if organization is None or plan is None or user is None:
         raise CheckoutNoPermitidoError
-    amount_cop = plan.monthly_price_cop if billing_cycle == "monthly" else plan.annual_price_cop
-    if amount_cop is None or amount_cop <= 0:
-        raise CheckoutNoPermitidoError
+    cotizacion = cotizar(
+        session, organization_id, plan, billing_cycle, datetime.datetime.now(datetime.UTC)
+    )
     # Bloqueada, para que dos peticiones a la vez no pasen las dos el siguiente chequeo.
     subscription = session.scalar(
         select(Subscription)
@@ -224,14 +261,14 @@ def iniciar(
     ):
         raise CheckoutNoPermitidoError
 
-    reference = referencia_nueva(organization_id, plan_code, billing_cycle)
+    reference = referencia_nueva(organization_id, plan_code, billing_cycle, cotizacion.extra_users)
     subscription.pending_checkout_reference = reference
 
     creds = wompi.credenciales_de(settings)
     transaccion = wompi.crear_transaccion_nequi(
         creds,
         reference=reference,
-        amount_in_cents=amount_cop * 100,
+        amount_in_cents=cotizacion.total_cop * 100,
         customer_email=user.email,
         phone_number=phone_number,
         acceptance_token=acceptance_token,
@@ -250,3 +287,33 @@ def iniciar(
     return Cobro(
         transaction_id=transaccion.id, reference=transaccion.reference, status=transaccion.status
     )
+
+
+@dataclass(frozen=True, slots=True)
+class Opcion:
+    """Lo que costaría un plan en un ciclo para el equipo de hoy."""
+
+    plan: Plan
+    billing_cycle: Literal["monthly", "annual"]
+    # None si el equipo no cabe en ese plan.
+    cotizacion: pricing.Quote | None
+
+
+def opciones(session: Session, principal: Principal) -> tuple[int, list[Opcion]]:
+    """Las personas que cuentan hoy y lo que valdría cada plan de pago en cada ciclo, para
+    mostrar el desglose antes de pagar. Usa la misma cuenta que el cobro."""
+    organization_id = principal.organization_id
+    if organization_id is None or not has_permission(principal.role, "billing.manage"):
+        raise CheckoutNoPermitidoError
+    set_tenant(session, TenantContext(organization_id=organization_id, user_id=principal.user_id))
+    users = pricing.users_counted(session, organization_id, datetime.datetime.now(datetime.UTC))
+    resultado: list[Opcion] = []
+    for plan in plans_repository.list_public_plans(session):
+        cycles: tuple[Literal["monthly", "annual"], ...] = ("monthly", "annual")
+        for cycle in cycles:
+            if pricing.plan_price(plan, cycle) is None:
+                continue
+            extra = pricing.extra_users_for(plan, users)
+            cotizacion = pricing.quote(plan, cycle, extra) if extra is not None else None
+            resultado.append(Opcion(plan=plan, billing_cycle=cycle, cotizacion=cotizacion))
+    return users, resultado

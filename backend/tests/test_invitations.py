@@ -224,14 +224,15 @@ def test_un_plan_de_una_sola_persona_no_tiene_cupo_para_invitar(
 def test_las_invitaciones_abiertas_ocupan_cupo_hasta_revocarlas_o_vencer(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    # Profesional incluye 2 usuarios: el propietario y una persona más.
-    oficina = crear_oficina(db, "professional")
+    # La prueba incluye 3 usuarios y no admite adicionales: el propietario y dos personas más.
+    oficina = crear_oficina(db, "trial")
     cliente = _sesion(dispositivo, oficina.owner)
+    assert _invitar(cliente, "ana@example.com").status_code == 201
     primera = _invitar(cliente, "carlos@example.com").json()
 
     sin_cupo = _invitar(cliente, "laura@example.com")
     assert sin_cupo.status_code == 409
-    assert sin_cupo.json()["detail"].startswith("Su plan incluye 2 usuarios")
+    assert sin_cupo.json()["detail"].startswith("Su plan incluye 3 usuarios")
 
     assert cliente.delete(f"{_INVITACIONES}/{primera['id']}").status_code == 204
     segunda = _invitar(cliente, "laura@example.com")
@@ -241,10 +242,15 @@ def test_las_invitaciones_abiertas_ocupan_cupo_hasta_revocarlas_o_vencer(
     assert _invitar(cliente, "marta@example.com").status_code == 201
 
 
-def test_el_plan_firma_admite_usuarios_adicionales(dispositivo: NuevoCliente, db: Session) -> None:
-    oficina = crear_oficina(db, "firm")
+@pytest.mark.parametrize(("plan", "precio"), [("firm", 14_900), ("professional", 19_900)])
+def test_el_plan_firma_admite_usuarios_adicionales(
+    dispositivo: NuevoCliente, db: Session, plan: str, precio: int
+) -> None:
+    # Firma y, desde la migración 0062, Profesional cobran cada persona por encima de las
+    # incluidas en vez de frenar la invitación.
+    oficina = crear_oficina(db, plan)
     _contexto(db, oficina)
-    incluidos = db.scalar(select(Plan.included_users).where(Plan.code == "firm"))
+    incluidos = db.scalar(select(Plan.included_users).where(Plan.code == plan))
     assert incluidos is not None
     for numero in range(incluidos - 1):
         crear_miembro(db, oficina, f"persona{numero}@example.com", "lawyer")
@@ -256,7 +262,7 @@ def test_el_plan_firma_admite_usuarios_adicionales(dispositivo: NuevoCliente, db
     cupo = cliente.get(_MIEMBROS).json()["seats"]
     assert cupo["used"] == incluidos + 1
     assert cupo["full"] is False
-    assert cupo["extra_user_price_cop"] is not None
+    assert cupo["extra_user_price_cop"] == precio
 
 
 def test_dueno_de_plataforma_no_administra_miembros_de_un_despacho(

@@ -1,12 +1,13 @@
 {
   "name": "aletheia-frontend",
   "private": true,
-  "version": "0.45.0",
+  "version": "0.46.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "api:generate": "openapi-ts && prettier --write --log-level warn src/api/generated",
-    "build": "tsc -b && vite build && node scripts/check-bundle-budget.mjs",
+    "build": "tsc -b && vite build && node scripts/prerender.mjs && node scripts/check-bundle-budget.mjs",
+    "prerender": "node scripts/prerender.mjs",
     "check:budget": "node scripts/check-bundle-budget.mjs",
     "lint": "oxlint",
     "preview": "vite preview",

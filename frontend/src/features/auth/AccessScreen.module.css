@@ -82,6 +82,15 @@
   margin-top: var(--space-2);
 }
 
+/* Recordatorio de la prueba, pegado al botón que crea la cuenta. */
+.trialHint {
+  margin: var(--space-2) 0 0;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+  text-align: center;
+}
+
 .alert {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

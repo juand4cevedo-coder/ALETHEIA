@@ -1,8 +1,9 @@
 import { lazy, Suspense } from "react";
 
-import { pageTitle, SITE_URL } from "../config/site.ts";
 import { PlanCatalogProvider } from "../features/billing/catalog.tsx";
 import { Hero } from "../features/landing/Hero.tsx";
+import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
+import { PAGINA_INICIO } from "../seo/paginas.ts";
 import styles from "./HomePage.module.css";
 
 // Lo que queda debajo del primer pantallazo llega aparte (BelowFold.tsx).
@@ -18,12 +19,7 @@ const BelowFold = lazy(() =>
 export function HomePage() {
   return (
     <PlanCatalogProvider>
-      <title>{pageTitle("Casos y evidencia de su despacho")}</title>
-      <meta
-        name="description"
-        content="Organice sus casos y su equipo jurídico. Compruebe huellas SHA-256 en su navegador y explore los fundamentos de la evidencia digital."
-      />
-      <link rel="canonical" href={`${SITE_URL}/`} />
+      <CabeceraSeo meta={PAGINA_INICIO} />
 
       <Hero />
       {/* Mientras llega, el espacio reservado mantiene el pie fuera de la vista. */}

@@ -45,8 +45,8 @@ export function ProductTour() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-producto"
-          title="Todo tiene su lugar."
-          lead="Una vista clara del trabajo. El detalle, cuando lo necesita."
+          title="Así se ve su espacio de trabajo"
+          lead="Capturas del producto real con una cuenta de ejemplo: el resumen, el libro de casos y el historial de un caso."
         />
         <div
           className={styles.tabs}

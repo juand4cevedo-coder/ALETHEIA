@@ -8,10 +8,15 @@
 #
 # Revisa la salud de la API y la base, las cabeceras de seguridad (también en un error), las
 # redirecciones de HTTP y de www, que la documentación interactiva no exista y que la API no
-# acepte otros orígenes. Muestra todas las fallas antes de terminar, no solo la primera.
+# acepte otros orígenes, que una dirección inventada responda 404 y que las páginas públicas
+# traigan su propio HTML (descripción única, og:url propio y datos estructurados). Muestra todas
+# las fallas antes de terminar, no solo la primera. Lee JSON con Node, o con python3 si no hay
+# Node, así que también corre en Git Bash de Windows.
 set -euo pipefail
 
 readonly DOMINIO="${1:-aletheia.sbs}"
+# Las direcciones canónicas y og:url siempre dicen el dominio público, también en localhost.
+readonly SITIO="https://aletheia.sbs"
 fallas=0
 
 ok() { printf 'ok     %s\n' "$1"; }
@@ -25,6 +30,25 @@ falla() {
 cabeceras() {
     curl --silent --show-error --suppress-connect-headers --max-time 10 --output /dev/null --dump-header - "$@" \
         | tr -d '\r' | tr '[:upper:]' '[:lower:]'
+}
+
+# Evalúa una condición sobre el JSON que llega por la entrada estándar, guardado en d. Recibe la
+# condición en JavaScript y en Python; usa Node si existe y python3 si no.
+json_cumple() {
+    local javascript=$1 python=$2
+    if command -v node >/dev/null 2>&1; then
+        node -e "let t='';process.stdin.on('data',(c)=>{t+=c}).on('end',()=>{let d;try{d=JSON.parse(t)}catch{process.exit(1)}process.exit(($javascript)?0:1)})"
+    elif command -v python3 >/dev/null 2>&1; then
+        python3 -c "import json,sys; d=json.load(sys.stdin); sys.exit(0 if ($python) else 1)"
+    else
+        echo "Se necesita node o python3 para leer JSON." >&2
+        return 1
+    fi
+}
+
+# Cuerpo de una página, sin seguir redirecciones.
+pagina() {
+    curl --silent --show-error --max-time 10 "$@"
 }
 
 # Código HTTP y destino de la redirección, si la hay.
@@ -66,7 +90,8 @@ echo "Prueba de humo en https://$DOMINIO"
 # 1. Salud. Los reintentos cubren los segundos que tardan el DNS o el primer certificado.
 if salud="$(curl --silent --show-error --fail --max-time 10 --retry 10 --retry-delay 3 \
     --retry-all-errors "https://$DOMINIO/api/v1/health")" && \
-    python3 -c 'import json,sys; data=json.load(sys.stdin); sys.exit(data.get("status") != "ok" or data.get("database") != "ok")' <<<"$salud"; then
+    json_cumple 'd.status === "ok" && d.database === "ok"' \
+        'd.get("status") == "ok" and d.get("database") == "ok"' <<<"$salud"; then
     ok "salud de la API y la base"
 else
     falla "salud: la API no confirmó la disponibilidad de la base"
@@ -76,7 +101,8 @@ fi
 # evita publicar una web sana en apariencia pero sin planes disponibles.
 if curl --silent --show-error --fail --max-time 10 \
     "https://$DOMINIO/api/v1/plans" \
-    | python3 -c 'import json,sys; plans=json.load(sys.stdin); codes={p["code"] for p in plans}; sys.exit(0 if {"trial","essential","professional","firm"} <= codes else 1)'; then
+    | json_cumple '["trial", "essential", "professional", "firm"].every((c) => d.some((p) => p.code === c))' \
+        '{"trial", "essential", "professional", "firm"} <= {p["code"] for p in d}'; then
     ok "catálogo público de planes"
 else
     falla "planes: faltan los planes públicos esperados"
@@ -141,6 +167,55 @@ exigir "$portada" cache-control "no-cache" "página principal"
 # llegar a la aplicación (solo la subida de evidencias admite cuerpos grandes).
 read -r codigo _ <<<"$(head -c 2097152 /dev/zero | curl --silent --max-time 20 --output /dev/null     --write-out '%{http_code} %{redirect_url}' --request POST --header 'X-Aletheia-Request: 1'     --header 'Content-Type: application/json' --data-binary @- "https://$DOMINIO/api/v1/auth/login")"
 if [[ $codigo == 413 ]]; then ok "cuerpo excesivo rechazado (413)"; else falla "un cuerpo de 2 MiB respondió $codigo y no 413"; fi
+
+# 10. Cada página pública trae su propio HTML: una sola descripción, og:url con su dirección y
+# datos estructurados. Se revisan precios y el último artículo del mapa del sitio.
+mapa="$(pagina "https://$DOMINIO/sitemap.xml" || true)"
+articulo="$(grep -o "<loc>$SITIO/blog/[^<]*" <<<"$mapa" | tail -n 1 | sed "s|<loc>$SITIO||" || true)"
+if [[ -n $articulo ]]; then
+    ok "el mapa del sitio lista artículos ($articulo)"
+else
+    falla "el mapa del sitio no lista artículos del blog"
+fi
+for ruta in /precios ${articulo:+"$articulo"}; do
+    html="$(pagina "https://$DOMINIO$ruta" || true)"
+    descripciones="$(grep -o '<meta name="description"' <<<"$html" | wc -l | tr -d ' ')"
+    if [[ $descripciones == 1 ]]; then
+        ok "$ruta: una sola descripción"
+    else
+        falla "$ruta: tiene $descripciones descripciones"
+    fi
+    if grep --quiet --fixed-strings "<meta property=\"og:url\" content=\"$SITIO$ruta\"" <<<"$html"; then
+        ok "$ruta: og:url propio"
+    else
+        falla "$ruta: og:url no es $SITIO$ruta"
+    fi
+    estructurados="$(grep -o '<script type="application/ld+json">.*</script>' <<<"$html" \
+        | sed -e 's|^<script type="application/ld+json">||' -e 's|</script>$||' | head -n 1)"
+    if json_cumple 'Array.isArray(d["@graph"]) && d["@graph"].length > 0' \
+        'len(d.get("@graph", [])) > 0' <<<"$estructurados"; then
+        ok "$ruta: datos estructurados"
+    else
+        falla "$ruta: sin datos estructurados válidos"
+    fi
+done
+
+# 11. Una dirección inventada responde 404 con noindex; las pantallas de la aplicación, 200.
+inventada="/no-existe-$RANDOM"
+read -r codigo _ <<<"$(respuesta "https://$DOMINIO$inventada")"
+if [[ $codigo == 404 ]]; then ok "$inventada responde 404"; else falla "$inventada respondió $codigo y no 404"; fi
+if pagina "https://$DOMINIO$inventada" | grep --quiet '<meta name="robots" content="noindex"'; then
+    ok "la página 404 lleva noindex"
+else
+    falla "la página 404 no lleva noindex"
+fi
+for ruta in /ingresar /app; do
+    read -r codigo _ <<<"$(respuesta "https://$DOMINIO$ruta")"
+    if [[ $codigo == 200 ]]; then ok "$ruta responde 200"; else falla "$ruta respondió $codigo"; fi
+done
+
+# 12. El HTML sale en Brotli, desde el archivo que comprimió el build.
+exigir "$(cabeceras --header 'Accept-Encoding: br' "https://$DOMINIO/")" content-encoding br "página principal"
 
 if ((fallas > 0)); then
     echo "La prueba de humo encontró $fallas fallas."

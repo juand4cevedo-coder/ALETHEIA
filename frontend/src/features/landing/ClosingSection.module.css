@@ -42,3 +42,15 @@
     line-height: var(--line-height-body);
   }
 }
+
+.action {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+.note {
+  color: var(--on-ink-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}

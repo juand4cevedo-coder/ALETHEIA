@@ -53,7 +53,9 @@ def _out(ticket: SupportTicket, *, email: str | None = None) -> SupportTicketOut
         updated_at=ticket.updated_at,
         closed_at=ticket.closed_at,
         deletable_on=support_service.deletable_on(ticket.category, ticket.status, ticket.closed_at),
-        user_email=email,
+        # Una cotización sin cuenta responde al correo que dejó en el formulario.
+        user_email=email or ticket.contact_email,
+        contact_name=ticket.contact_name,
     )
 
 
@@ -135,7 +137,7 @@ def platform_support_tickets(
     response.headers["Cache-Control"] = "no-store"
     query = (
         select(SupportTicket, User.email)
-        .join(User, User.id == SupportTicket.user_id)
+        .outerjoin(User, User.id == SupportTicket.user_id)
         .order_by(SupportTicket.id.desc())
         .limit(51)
     )
@@ -186,7 +188,11 @@ def change_support_ticket_status(
             )
         )
         session.commit()
-    email = session.scalar(select(User.email).where(User.id == ticket.user_id))
+    email = (
+        session.scalar(select(User.email).where(User.id == ticket.user_id))
+        if ticket.user_id is not None
+        else None
+    )
     return _out(ticket, email=email)
 
 

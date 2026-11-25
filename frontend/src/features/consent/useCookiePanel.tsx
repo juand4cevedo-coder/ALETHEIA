@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 
-import { CookiePanel } from "./CookiePanel.tsx";
+import { LazyCookiePanel } from "./LazyCookiePanel.tsx";
 import { useCookieChoice } from "./useCookieChoice.ts";
 
 // Panel de cookies de cualquier marco del sitio. Aparece solo mientras no haya una elección
@@ -28,13 +28,15 @@ export function useCookiePanel() {
   const panel = (
     <>
       {(open || cookieChoice === null) && (
-        <CookiePanel
-          // Abrirlo desde el pie reinicia el panel en la vista de configuración.
-          key={open ? "pie" : "aviso"}
-          choice={cookieChoice}
-          openedByVisitor={open}
-          onClose={closePanel}
-        />
+        <Suspense fallback={null}>
+          <LazyCookiePanel
+            // Abrirlo desde el pie reinicia el panel en la vista de configuración.
+            key={open ? "pie" : "aviso"}
+            choice={cookieChoice}
+            openedByVisitor={open}
+            onClose={closePanel}
+          />
+        </Suspense>
       )}
       <p role="status" className="visually-hidden">
         {notice}

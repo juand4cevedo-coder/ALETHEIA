@@ -4,6 +4,8 @@ import { Button } from "../components/ui/Button.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { CONTACT_EMAIL, pageTitle } from "../config/site.ts";
+import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
+import { PAGINA_NO_ENCONTRADA } from "../seo/paginas.ts";
 import styles from "./NotFoundPage.module.css";
 
 // Ruta inexistente o error al mostrar una página. Son dos cosas distintas y cada una dice cómo
@@ -19,8 +21,7 @@ export function NotFoundPage() {
   if (notFound) {
     return (
       <section className={styles.page} aria-labelledby="titulo-error">
-        <title>{pageTitle("Página no encontrada")}</title>
-        <meta name="robots" content="noindex" />
+        <CabeceraSeo meta={PAGINA_NO_ENCONTRADA} />
         <h1 id="titulo-error" className={styles.title}>
           No encontramos esta página
         </h1>

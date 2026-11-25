@@ -10,11 +10,10 @@ import { registerAccountMutation } from "../api/generated/@tanstack/react-query.
 import { Button } from "../components/ui/Button.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_URL, pageTitle } from "../config/site.ts";
+import { SITE_URL, TRIAL_DAYS, pageTitle } from "../config/site.ts";
 import { MESSAGES } from "../content/messages.ts";
 import { AccountTypeChoice } from "../features/auth/AccountTypeChoice.tsx";
 import { Field } from "../components/ui/Field.tsx";
-import { confirmPasswordError } from "../features/auth/newPassword.ts";
 import { PasswordMeter } from "../features/auth/PasswordMeter.tsx";
 import {
   fieldErrorsFromApi,
@@ -71,13 +70,9 @@ export function SignUpWithEmailPage() {
   const [submitted, setSubmitted] = useState(false);
   const [problem, setProblem] = useState<FormProblem | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [confirmPasswordErrorMessage, setConfirmPasswordErrorMessage] =
-    useState<string | undefined>(undefined);
   const fieldRefs = useRef<
     Partial<Record<SignUpField, HTMLInputElement | null>>
   >({});
-  const confirmPasswordRef = useRef<HTMLInputElement>(null);
   const noticeRef = useRef<HTMLHeadingElement>(null);
 
   const captcha = useCaptcha();
@@ -87,7 +82,6 @@ export function SignUpWithEmailPage() {
       setSentTo(values.email.trim());
       // La contraseña no se queda en la memoria de la página una vez enviada.
       setValues(EMPTY);
-      setConfirmPassword("");
     },
     onError: (error) => {
       setProblem(problemFrom(error));
@@ -121,23 +115,7 @@ export function SignUpWithEmailPage() {
   ) {
     const next = { ...values, [field]: value };
     setValues(next);
-    if (submitted) {
-      setErrors(validateSignUp(next));
-      if (field === "password") {
-        setConfirmPasswordErrorMessage(
-          confirmPasswordError(next.password, confirmPassword),
-        );
-      }
-    }
-  }
-
-  function updateConfirmPassword(value: string) {
-    setConfirmPassword(value);
-    if (submitted) {
-      setConfirmPasswordErrorMessage(
-        confirmPasswordError(values.password, value),
-      );
-    }
+    if (submitted) setErrors(validateSignUp(next));
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -149,12 +127,6 @@ export function SignUpWithEmailPage() {
     setErrors(found);
     if (Object.keys(found).length > 0) {
       focusFirstError(found);
-      return;
-    }
-    const mismatch = confirmPasswordError(values.password, confirmPassword);
-    setConfirmPasswordErrorMessage(mismatch);
-    if (mismatch) {
-      confirmPasswordRef.current?.focus();
       return;
     }
     // Cada envío gasta una verificación de persona; si aún no termina, se espera.
@@ -285,18 +257,6 @@ export function SignUpWithEmailPage() {
               >
                 <PasswordMeter id={METER_ID} password={values.password} />
               </Field>
-              <Field
-                ref={confirmPasswordRef}
-                label="Confirmar contraseña"
-                name="confirmar-contrasena"
-                type="password"
-                autoComplete="new-password"
-                required
-                maxLength={PASSWORD_MAX_LENGTH}
-                value={confirmPassword}
-                error={confirmPasswordErrorMessage}
-                onChange={(event) => updateConfirmPassword(event.target.value)}
-              />
             </fieldset>
 
             <div className={styles.terms}>
@@ -318,6 +278,9 @@ export function SignUpWithEmailPage() {
               >
                 {register.isPending ? "Creando la cuenta" : "Crear la cuenta"}
               </Button>
+              <p className={styles.trialHint}>
+                Empieza con {TRIAL_DAYS} días de prueba, sin tarjeta de crédito.
+              </p>
               <CaptchaNotice status={captcha.status} onRetry={captcha.retry} />
             </div>
           </form>

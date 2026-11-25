@@ -116,6 +116,14 @@ describe("Crear cuenta con Google", () => {
     );
   });
 
+  it("invita a crear la cuenta cuando se intentó ingresar con un Google sin cuenta", async () => {
+    await renderRoute("/registro?google=sin-cuenta");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Ese correo de Google todavía no tiene cuenta en ALETHEIA.",
+    );
+  });
+
   it("mantiene deshabilitado Google cuando faltan sus credenciales", async () => {
     fetchMock.mockResolvedValue(jsonResponse({ enabled: false }));
     await renderRoute("/registro");

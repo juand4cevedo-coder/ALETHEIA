@@ -77,6 +77,10 @@ PORTAL_INVITE_ACCOUNT: Final = Limit("portal_invite_account", 20, _WINDOW)
 PORTAL_RENEW_ACCESS: Final = Limit("portal_renew_access", 3, _WINDOW)
 # Mensajes del cliente: tope por acceso, para que un enlace filtrado no llene el caso de texto.
 PORTAL_MESSAGE_ACCESS: Final = Limit("portal_message_access", 10, _WINDOW)
+# Cotizaciones del plan Corporativo desde el formulario público: además de la verificación de
+# persona, pocas por IP y por correo, para que nadie llene la bandeja de la plataforma.
+SALES_INQUIRY_IP: Final = Limit("sales_inquiry_ip", 5, _WINDOW)
+SALES_INQUIRY_EMAIL: Final = Limit("sales_inquiry_email", 3, _WINDOW)
 
 LIMITS: Final = (
     LOGIN_ACCOUNT,
@@ -102,6 +106,8 @@ LIMITS: Final = (
     PORTAL_INVITE_ACCOUNT,
     PORTAL_RENEW_ACCESS,
     PORTAL_MESSAGE_ACCESS,
+    SALES_INQUIRY_IP,
+    SALES_INQUIRY_EMAIL,
 )
 # Un intento más viejo que la ventana más larga ya no cuenta para ningún límite.
 RETENTION: Final = max(limit.window for limit in LIMITS)

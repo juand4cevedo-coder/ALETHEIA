@@ -25,7 +25,7 @@ from app.models import (
     Subscription,
     User,
 )
-from app.services import jobs
+from app.services import jobs, pricing
 from app.services.email_layout import email_layout
 from app.services.jobs import PermanentJobError
 from app.services.notifications import email_template
@@ -116,14 +116,22 @@ def _facts(
     return user, organization, plan, subscription, cycle, period_end
 
 
-def _receipt_number(session: Session, payload: dict[str, Any]) -> str | None:
+def _receipt(session: Session, payload: dict[str, Any]) -> PaymentReceipt | None:
     try:
         event_id = uuid.UUID(str(payload["event_id"]))
     except KeyError, ValueError:
         return None
-    return session.scalar(
-        select(PaymentReceipt.number).where(PaymentReceipt.payment_event_id == event_id)
-    )
+    return session.scalar(select(PaymentReceipt).where(PaymentReceipt.payment_event_id == event_id))
+
+
+def extra_users_line(extra_users: int, extra_users_cop: int, cycle: str) -> str | None:
+    """La línea de los usuarios adicionales, o None si el pago no los tuvo."""
+    if extra_users <= 0:
+        return None
+    people = "usuario adicional" if extra_users == 1 else "usuarios adicionales"
+    unit = extra_users_cop // extra_users
+    period = "al mes" if cycle == "monthly" else "al año"
+    return f"{extra_users} {people} a {_cop(unit)} {period} cada uno, {_cop(extra_users_cop)}"
 
 
 @email_template(APPROVED_TEMPLATE)
@@ -134,13 +142,23 @@ def receipt_email(
     if facts is None:
         return None
     user, organization, plan, _, cycle, period_end = facts
-    amount = plan.monthly_price_cop if cycle == "monthly" else plan.annual_price_cop
+    receipt = _receipt(session, payload)
+    number = receipt.number if receipt is not None else None
+    if receipt is not None:
+        amount: int | None = receipt.amount_cop
+        extra = extra_users_line(receipt.extra_users, receipt.extra_users_cop, cycle)
+        plan_amount = receipt.amount_cop - receipt.extra_users_cop
+    else:
+        amount = plan.monthly_price_cop if cycle == "monthly" else plan.annual_price_cop
+        extra = None
+        plan_amount = amount or 0
     price = _cop(amount) if amount else "sin costo"
-    number = _receipt_number(session, payload)
     where = f"{settings.public_url}/app/facturacion"
     until = colombian_datetime(period_end)
     name = user.full_name
     cycle_text = _CYCLES.get(cycle, cycle)
+    # Con usuarios adicionales, el detalle va aparte: el plan y las personas de más.
+    detail = f"Detalle: plan {plan.name}, {_cop(plan_amount)}, y {extra}." if extra else None
     return OutgoingEmail(
         to=user.email,
         subject=f"Recibimos el pago de {organization.name} en ALETHEIA",
@@ -148,7 +166,8 @@ def receipt_email(
             f"Hola, {name}:\n\n"
             f"Recibimos el pago del plan {plan.name} ({cycle_text}) de {organization.name}: "
             f"{price}.\n\n"
-            f"El plan queda activo hasta el {until} (hora de Colombia). Le avisaremos "
+            + (f"{detail}\n\n" if detail else "")
+            + f"El plan queda activo hasta el {until} (hora de Colombia). Le avisaremos "
             f"{REMINDER_DAYS} días antes para que lo renueve.\n\n"
             + (
                 f"Comprobante de pago N.º {number}. Descargue el PDF en {where}.\n\n"
@@ -164,6 +183,7 @@ def receipt_email(
                 f"Recibimos el pago del plan <strong>{html.escape(plan.name)}</strong> "
                 f"({html.escape(cycle_text)}) de {html.escape(organization.name)}: "
                 f"<strong>{html.escape(price)}</strong>.",
+                *([html.escape(detail)] if detail else []),
                 f"El plan queda activo hasta el {html.escape(until)} (hora de Colombia). Le "
                 f"avisaremos {REMINDER_DAYS} días antes para que lo renueve.",
             ],
@@ -201,7 +221,17 @@ def reminder_email(
     last4 = _linked_last4(session, organization.id)
     if last4 is not None:
         return _automatic_reminder(
-            organization, plan, subscription, user, until, last4, period_end, settings
+            organization,
+            plan,
+            subscription,
+            user,
+            until,
+            last4,
+            period_end,
+            settings,
+            users=pricing.users_counted(
+                session, organization.id, datetime.datetime.now(datetime.UTC)
+            ),
         )
     where = f"{settings.public_url}/app/facturacion"
     return OutgoingEmail(
@@ -248,12 +278,14 @@ def _automatic_reminder(
     last4: str,
     period_end: datetime.datetime,
     settings: Settings,
+    *,
+    users: int,
 ) -> OutgoingEmail:
     """El aviso previo de la renovación automática: cuándo se cobra, cuánto y cómo cancelar."""
-    amount = (
-        plan.monthly_price_cop if subscription.billing_cycle == "monthly" else plan.annual_price_cop
-    )
-    price = _cop(amount) if amount else "el valor del plan"
+    # Lo mismo que cobrará la renovación: el plan y las personas de hoy por encima de las incluidas.
+    cycle: pricing.Cycle = "annual" if subscription.billing_cycle == "annual" else "monthly"
+    quote = pricing.quote(plan, cycle, pricing.extra_users_for(plan, users) or 0)
+    price = _cop(quote.total_cop) if quote else "el valor del plan"
     charge_day = colombian_datetime(period_end - CHARGE_LEAD)
     where = f"{settings.public_url}/app/facturacion"
     name = user.full_name

@@ -8,16 +8,16 @@ import { photoProps } from "../../config/media.ts";
 
 const STEPS = [
   {
-    title: "Reúna a su equipo",
-    text: "Invite a las personas con las que trabaja y asigne un rol a cada una.",
+    title: "Abra el caso",
+    text: "Escriba el radicado, la especialidad y el despacho, para encontrarlo después sin buscar en carpetas.",
   },
   {
-    title: "Dé un lugar a cada caso",
-    text: "Guarde su radicado, especialidad y despacho. Retome el contexto sin empezar de nuevo.",
+    title: "Suba la evidencia",
+    text: "Cada archivo recibe su huella SHA-256 y su sello de tiempo. Usted declara de dónde viene y queda anotado quién lo subió.",
   },
   {
-    title: "Trabajen con claridad",
-    text: "Consulte los casos a los que pertenece y encuentre a las personas responsables.",
+    title: "Agregue a quien participa",
+    text: "Invite a su equipo y decida quién entra a cada caso. Las demás personas del despacho no lo ven.",
   },
 ] as const;
 
@@ -31,8 +31,8 @@ export function HowItWorks() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-como-funciona"
-          title="Un poco de orden. Mucho más espacio para pensar."
-          lead="Lo esencial, a mano. Sin tener que aprender una forma distinta de trabajar."
+          title="Su primer caso con evidencia sellada, en tres pasos"
+          lead="Abre el caso como abriría una carpeta. Desde ahí, ALETHEIA anota lo que pasa con cada archivo."
         />
         <div className={styles.layout}>
           <img
@@ -58,7 +58,7 @@ export function HowItWorks() {
         </div>
         <div className={styles.action}>
           <ButtonLink to={ROUTES.signUp} variant="secondary">
-            Organizar mi espacio
+            Abrir mi primer caso gratis
             <FlechaDerechaIcon size={18} aria-hidden="true" />
           </ButtonLink>
         </div>

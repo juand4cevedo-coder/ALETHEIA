@@ -12,6 +12,37 @@ beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock);
 });
 
+// El desglose antes de pagar (GET /billing/quote): Esencial, con el equipo dentro del plan.
+const QUOTE = {
+  users: 1,
+  options: [
+    {
+      plan_code: "essential",
+      plan_name: "Esencial",
+      billing_cycle: "monthly",
+      included_users: 1,
+      fits: true,
+      plan_cop: 29_900,
+      extra_users: 0,
+      extra_user_unit_cop: null,
+      extra_users_cop: 0,
+      total_cop: 29_900,
+    },
+    {
+      plan_code: "essential",
+      plan_name: "Esencial",
+      billing_cycle: "annual",
+      included_users: 1,
+      fits: true,
+      plan_cop: 299_000,
+      extra_users: 0,
+      extra_user_unit_cop: null,
+      extra_users_cop: 0,
+      total_cop: 299_000,
+    },
+  ],
+};
+
 function ownerEnPrueba() {
   return {
     id: "01890a5d-ac96-774b-bcce-b302099a8057",
@@ -57,6 +88,7 @@ it("permite a la propietaria en prueba pagar el plan con Nequi", async () => {
         ? ((input as Request).json() as Promise<unknown>)
         : JSON.parse(String(init?.body));
     if (path === "/api/v1/me") return jsonResponse(ownerEnPrueba());
+    if (path === "/api/v1/billing/quote") return jsonResponse(QUOTE);
     if (path === "/api/v1/plans")
       return jsonResponse([
         {
@@ -106,7 +138,9 @@ it("permite a la propietaria en prueba pagar el plan con Nequi", async () => {
       name: /tratamiento de mis datos personales/,
     }),
   );
-  await user.click(screen.getByRole("button", { name: "Pagar con Nequi" }));
+  await user.click(
+    screen.getByRole("button", { name: "Pagar $29.900 con Nequi" }),
+  );
 
   expect(
     await screen.findByText(/Enviamos el cobro a su Nequi/),
@@ -186,6 +220,7 @@ it("confirma el pago con Nequi cuando la suscripción queda activa", async () =>
             }
           : ownerEnPrueba(),
       );
+    if (path === "/api/v1/billing/quote") return jsonResponse(QUOTE);
     if (path === "/api/v1/plans")
       return jsonResponse([
         {
@@ -260,7 +295,9 @@ it("confirma el pago con Nequi cuando la suscripción queda activa", async () =>
       name: /tratamiento de mis datos personales/,
     }),
   );
-  await user.click(screen.getByRole("button", { name: "Pagar con Nequi" }));
+  await user.click(
+    screen.getByRole("button", { name: "Pagar $29.900 con Nequi" }),
+  );
 
   await screen.findByText(/Enviamos el cobro a su Nequi/);
 
@@ -323,6 +360,7 @@ it("activa la verificación en dos pasos y muestra los códigos de respaldo una 
         recovery_codes_remaining: enabled ? 2 : 0,
       });
     }
+    if (path === "/api/v1/billing/quote") return jsonResponse(QUOTE);
     if (path === "/api/v1/plans") return jsonResponse({ items: [] });
     throw new Error(`Ruta inesperada: ${path}`);
   });
@@ -385,6 +423,7 @@ function serveCheckoutWeb(handlers: {
       ? (input as Request).method
       : (init?.method ?? "GET");
     if (path === "/api/v1/me") return jsonResponse(ownerEnPrueba());
+    if (path === "/api/v1/billing/quote") return jsonResponse(QUOTE);
     if (path === "/api/v1/plans") return jsonResponse(PLANS);
     if (path === "/api/v1/auth/google/status")
       return jsonResponse({ configured: false });
@@ -479,6 +518,7 @@ it("con el plan activo la propietaria puede renovar o cambiar de plan, solo por 
           access_source: "payment",
         },
       });
+    if (path === "/api/v1/billing/quote") return jsonResponse(QUOTE);
     if (path === "/api/v1/plans") return jsonResponse(PLANS);
     if (path === "/api/v1/auth/google/status")
       return jsonResponse({ configured: false });
@@ -518,6 +558,7 @@ it("Plan y facturación lista los comprobantes de pago con su descarga en PDF", 
     const url = typeof input === "string" ? input : (input as Request).url;
     const path = new URL(url, "http://localhost").pathname;
     if (path === "/api/v1/me") return jsonResponse(ownerEnPrueba());
+    if (path === "/api/v1/billing/quote") return jsonResponse(QUOTE);
     if (path === "/api/v1/plans") return jsonResponse(PLANS);
     if (path === "/api/v1/auth/google/status")
       return jsonResponse({ configured: false });
@@ -571,6 +612,7 @@ function serveRenewal(state: {
       ? (input as Request).method
       : (init?.method ?? "GET");
     if (path === "/api/v1/me") return jsonResponse(ownerEnPrueba());
+    if (path === "/api/v1/billing/quote") return jsonResponse(QUOTE);
     if (path === "/api/v1/plans") return jsonResponse(PLANS);
     if (path === "/api/v1/billing/receipts") return jsonResponse([]);
     if (path === "/api/v1/auth/google/status")

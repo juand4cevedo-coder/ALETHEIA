@@ -107,6 +107,18 @@
 .resultTitle {
   font-weight: 700;
 }
+/* Paso siguiente después de una comprobación: conservar el archivo en un caso. */
+.next {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--paper-sunken);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
 .result[data-match="true"] .resultTitle {
   color: var(--ok);
 }

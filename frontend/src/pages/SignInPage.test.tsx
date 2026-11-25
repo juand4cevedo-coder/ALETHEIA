@@ -105,7 +105,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
     await renderRoute("/ingresar?google=sin-vinculo");
 
     expect(
-      await screen.findByText(/todavía no está vinculada/),
+      await screen.findByText(/no está vinculada a Google/),
     ).toBeInTheDocument();
   });
 

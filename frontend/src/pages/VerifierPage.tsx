@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 
 import { Button } from "../components/ui/Button.tsx";
+import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
-import { SITE_URL, pageTitle } from "../config/site.ts";
+import { SIGN_UP_LABEL, TRIAL_DAYS } from "../config/site.ts";
 import {
   parseManifest,
   type PreservationManifest,
 } from "../features/verifier/manifest.ts";
+import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
+import { PAGINAS } from "../seo/fichas.ts";
 import styles from "./VerifierPage.module.css";
 
 import { useFileHash } from "../features/verifier/useFileHash.ts";
@@ -74,12 +77,7 @@ export function VerifierPage() {
 
   return (
     <>
-      <title>{pageTitle("Verificador de archivos")}</title>
-      <meta
-        name="description"
-        content="Compare en su navegador un archivo con el manifiesto de preservación de Aletheia. El archivo no se envía al servidor."
-      />
-      <link rel="canonical" href={`${SITE_URL}${ROUTES.verifier}`} />
+      <CabeceraSeo meta={PAGINAS.verificador} />
       <section className={styles.page} aria-labelledby="verificador-titulo">
         <div className={styles.inner}>
           <header className={styles.intro}>
@@ -170,6 +168,17 @@ export function VerifierPage() {
                 <dt>Huella calculada</dt>
                 <dd>{hash.digest}</dd>
               </dl>
+              <div className={styles.next}>
+                <p>
+                  Para conservar sus propios archivos con su sello de tiempo y
+                  su cadena de custodia, y entregarlos en un paquete como este,
+                  abra un caso en ALETHEIA. La prueba dura {TRIAL_DAYS} días y
+                  no pide tarjeta.
+                </p>
+                <ButtonLink to={ROUTES.signUp} variant="secondary" size="sm">
+                  {SIGN_UP_LABEL}
+                </ButtonLink>
+              </div>
             </section>
           )}
           <p className={styles.scope}>

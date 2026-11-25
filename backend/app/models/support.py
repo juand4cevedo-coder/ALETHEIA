@@ -12,7 +12,7 @@ from app.models._columns import CreatedAt, UUIDv7Pk, text_values
 TICKET_STATUSES = ("open", "closed")
 
 # Tipos de solicitud. Cada uno tiene su plazo legal de respuesta (services/support.py).
-TICKET_CATEGORIES = ("support", "data_query", "data_claim", "consumer", "refund")
+TICKET_CATEGORIES = ("support", "data_query", "data_claim", "consumer", "refund", "sales")
 
 
 class SupportTicket(Base):
@@ -22,6 +22,16 @@ class SupportTicket(Base):
         CheckConstraint("char_length(message) BETWEEN 10 AND 3000", name="message_length"),
         CheckConstraint(text_values("status", TICKET_STATUSES), name="status"),
         CheckConstraint(text_values("category", TICKET_CATEGORIES), name="category"),
+        # Sin cuenta solo llega una solicitud comercial (cotización), con a quién responder.
+        CheckConstraint(
+            "user_id IS NOT NULL OR (category = 'sales' AND contact_name IS NOT NULL "
+            "AND contact_email IS NOT NULL)",
+            name="requester",
+        ),
+        CheckConstraint("char_length(contact_name) BETWEEN 2 AND 120", name="contact_name_length"),
+        CheckConstraint(
+            "char_length(contact_email) BETWEEN 3 AND 254", name="contact_email_length"
+        ),
         Index("ix_support_tickets_created_at", "created_at"),
         # Bandeja de la plataforma: lo abierto, primero lo que vence antes.
         Index("ix_support_tickets_status_due_on", "status", "due_on"),
@@ -30,7 +40,10 @@ class SupportTicket(Base):
     )
 
     id: Mapped[UUIDv7Pk]
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    # Nulo solo en una solicitud de cotización que llegó del formulario público.
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    contact_name: Mapped[str | None]
+    contact_email: Mapped[str | None]
     organization_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("organizations.id", ondelete="SET NULL")
     )

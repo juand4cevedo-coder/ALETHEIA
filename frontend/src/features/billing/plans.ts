@@ -1,5 +1,4 @@
 import type { PublicPlan } from "../../api/generated";
-import { CONTACT_EMAIL } from "../../config/site.ts";
 
 // Plan que se destaca en el inicio y en precios. Es una decisión comercial, no un precio
 // ni un límite, por eso vive aquí y no en el catálogo.
@@ -14,8 +13,9 @@ export const PLAN_TAGLINES: Readonly<Record<string, string>> = {
   firm: "Si trabaja en una firma pequeña o mediana.",
 };
 
-// El Corporativo no tiene precio publicado: se contrata por cotización (TT-005).
-export const CORPORATE_QUOTE_URL = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Cotización del plan Corporativo")}`;
+// El Corporativo no tiene precio publicado: se contrata por cotización (TT-005), con el
+// formulario de la página para empresas.
+export const CORPORATE_QUOTE_URL = "/empresa#cotizar";
 
 /** Días de la prueba gratuita según el catálogo, o null si el catálogo no trae una. */
 export function trialDays(plans: readonly PublicPlan[]): number | null {
