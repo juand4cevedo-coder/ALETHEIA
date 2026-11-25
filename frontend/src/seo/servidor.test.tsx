@@ -110,7 +110,10 @@ describe("generarSitio", () => {
 
       const portada = sitio.archivos.get("index.html")!;
       expect(portada).toContain('"@type":"FAQPage"');
-      expect(portada).toContain('rel="preload" as="image"');
+      // La portada ya no abre con una foto: el contenido más grande es el titular, que no espera
+      // ninguna imagen.
+      expect(portada).not.toContain('rel="preload" as="image"');
+      expect(portada).toContain("sello de tiempo");
       expect(precios).not.toContain('rel="preload" as="image"');
 
       const articulo = JOURNAL[0]!;

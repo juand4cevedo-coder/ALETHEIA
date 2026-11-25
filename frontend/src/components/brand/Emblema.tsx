@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import { arco, guilloche, marcas, ojo } from "../../brand/geometria.ts";
 import styles from "./Emblema.module.css";
+import { movimientoReducido } from "../../lib/preferencias.ts";
 
 const C = 120;
 const MARCAS = marcas(C, C, 95, 5, 10);
@@ -26,7 +27,7 @@ export function Emblema({
   // Espera a entrar en pantalla solo si hay con qué observarlo y el movimiento está permitido.
   const [dibujo, setDibujo] = useState<"listo" | "espera" | "dibuja">(() =>
     typeof IntersectionObserver !== "undefined" &&
-    !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    !movimientoReducido()
       ? "espera"
       : "listo",
   );

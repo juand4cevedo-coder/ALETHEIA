@@ -1,0 +1,265 @@
+/* Escena de la portada. Tres capas a distinta profundidad: el emblema al fondo, la ficha del
+   sello al frente y la cadena de custodia montada sobre su esquina. --px y --py van de -0,5 a
+   0,5 con el cursor; cada capa se mueve en proporción a su profundidad. */
+.scene {
+  --px: 0;
+  --py: 0;
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 560px;
+}
+
+.emblem,
+.stamp,
+.chain {
+  transition: translate 600ms var(--ease-out);
+}
+
+.emblem {
+  position: absolute;
+  inset: 60% auto auto 62%;
+  width: min(420px, 100%);
+  translate: calc(-50% + var(--px) * -10px) calc(-50% + var(--py) * -10px);
+  opacity: 0.9;
+}
+
+.emblem svg {
+  width: 100%;
+  height: auto;
+}
+
+/* Las piezas al frente: papel elevado, filete y una sombra corta. */
+.stamp,
+.chain {
+  margin: 0;
+  border: 1px solid var(--ink-hairline);
+  border-radius: var(--radius-md);
+  background: var(--paper-raised);
+  box-shadow: var(--shadow-float);
+  animation: lift-in 720ms var(--ease-out) both;
+}
+
+.stamp {
+  position: relative;
+  z-index: 2;
+  justify-self: start;
+  align-self: start;
+  margin-top: 40px;
+  width: min(372px, 92%);
+  padding: 22px 24px 20px;
+  translate: calc(var(--px) * 14px) calc(var(--py) * 14px);
+  animation-delay: 260ms;
+}
+
+.stampHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: var(--line-height-label);
+  text-transform: uppercase;
+}
+
+/* Estado del sello: gris mientras se calcula; al quedar listo, latón con un golpe de sello. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: var(--paper-sunken);
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.chip[data-listo] {
+  background: var(--seal-tint);
+  color: var(--seal);
+  animation: stamp 420ms var(--ease-out);
+}
+
+.data {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.data div {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+}
+
+.data dt {
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.data dd {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.hash {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+}
+
+.chain {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 24px;
+  width: 232px;
+  padding: 16px 18px;
+  translate: calc(var(--px) * 22px) calc(var(--py) * 22px);
+  animation-delay: 480ms;
+}
+
+.chain figcaption {
+  margin-bottom: 12px;
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Cada evento enlazado al anterior por una línea, como la cadena que guarda la huella del
+   evento previo. */
+.chain ol {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chain li {
+  position: relative;
+  display: grid;
+  padding-left: 20px;
+  font-size: var(--font-size-support);
+  line-height: 1.35;
+}
+
+.chain li::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--brand-text);
+  border-radius: 50%;
+  background: var(--paper-raised);
+}
+
+.chain li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: -14px;
+  left: 4.25px;
+  width: 1.5px;
+  background: var(--tint-3);
+}
+
+.chain strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.chain span {
+  color: var(--text-3);
+}
+
+@keyframes lift-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.98);
+  }
+}
+
+@keyframes stamp {
+  0% {
+    transform: scale(1.18);
+  }
+  60% {
+    transform: scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp,
+  .chain,
+  .chip[data-listo] {
+    animation: none;
+  }
+
+  .emblem,
+  .stamp,
+  .chain {
+    transition: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .scene {
+    min-height: 460px;
+  }
+
+  .chain {
+    right: 0;
+    bottom: -12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .scene {
+    min-height: 0;
+    padding-bottom: 150px;
+  }
+
+  .emblem {
+    width: 340px;
+    inset: 40% auto auto 50%;
+  }
+
+  .data div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+
+  .chain {
+    left: 24px;
+    right: auto;
+    bottom: 0;
+  }
+}

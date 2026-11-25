@@ -201,3 +201,19 @@ export function logotipoSvg(color: string, grosor = 3.1): string {
   const m = grosor;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-m} ${-m} ${ancho + 2 * m} ${20 + 2 * m}" data-brand="aletheia-logotipo"><path d="${d}" fill="none" stroke="${color}" stroke-width="${grosor}" stroke-linejoin="miter" stroke-miterlimit="4" stroke-linecap="square"/></svg>`;
 }
+
+/** El grabado de fondo: anillos de guilloché concéntricos, como el fondo de seguridad de un
+ * certificado. Se usa como máscara, así que toma el color del tema. */
+export function grabadoSvg(): string {
+  const c = 600;
+  const anillos: string[] = [];
+  for (let i = 0; i < 7; i += 1) {
+    const radio = 170 + i * 62;
+    for (let k = 0; k < 2; k += 1) {
+      anillos.push(
+        `<path d="${guilloche(c, c, radio, 10 + i, 36 + i * 6, k * Math.PI, 420).replace(/(\d+\.\d)\d/g, "$1")}" stroke-width="0.8"/>`,
+      );
+    }
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" fill="none" stroke="#000">${anillos.join("")}</svg>`;
+}

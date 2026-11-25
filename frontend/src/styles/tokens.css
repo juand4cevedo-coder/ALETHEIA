@@ -57,7 +57,7 @@
 
   /* Escala fluida: los títulos crecen con el ancho de la pantalla, sin saltos por punto de
      quiebre. El cuerpo sube a 17 px desde 900 px, en el bloque de más abajo. */
-  --font-size-display: clamp(2.75rem, 1.6rem + 4.4vw, 5.25rem);
+  --font-size-display: clamp(2.45rem, 1.4rem + 2.6vw, 3.65rem);
   --line-height-display: 1.02;
   --tracking-display: -0.022em;
   /* La portada usa la misma medida que el titular de display; no tiene escala propia. */

@@ -107,7 +107,7 @@ export const NAVIGATION: NavigationGroup[] = [
     },
   },
   {
-    title: "ALETHEIA",
+    title: "Nosotros",
     links: [
       {
         to: "/nosotros",

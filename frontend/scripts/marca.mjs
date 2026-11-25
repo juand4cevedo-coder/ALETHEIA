@@ -12,6 +12,7 @@ import { join, resolve } from "node:path";
 import {
   COLORES_MARCA as C,
   emblemaSvg,
+  grabadoSvg,
   logotipoSvg,
   simboloSvg,
 } from "../src/brand/geometria.ts";
@@ -31,6 +32,7 @@ const archivos = {
   "brand/emblema-oscuro.svg": emblemaSvg("#eeebf2", C.laton),
   "brand/logotipo.svg": logotipoSvg(C.tinta),
   "brand/logotipo-blanco.svg": logotipoSvg(C.papel),
+  "brand/grabado.svg": grabadoSvg(),
   "favicon.svg": simboloSvg(C.tinta, C.papel, C.laton, "small"),
 };
 for (const [ruta, contenido] of Object.entries(archivos)) {

@@ -1,15 +1,6 @@
 .shell {
-  /* Ritmo editorial del sitio público: titulares más grandes y apretados que en la
-     aplicación. Los colores son los de tokens.css, en los dos modos. */
-  --font-size-display: clamp(3rem, 7vw, 6.5rem);
-  --line-height-display: 0.98;
-  --tracking-display: -0.055em;
-  --font-size-section: clamp(2.4rem, 4.5vw, 4.5rem);
-  --line-height-section: 1.02;
-  --tracking-section: -0.045em;
-  --radius-sm: 999px;
-  --radius-md: 20px;
-  --radius-lg: 28px;
+  /* El sitio público usa la misma escala y los mismos radios de tokens.css: los títulos
+     editoriales ya van en Newsreader y no necesitan un tamaño propio. */
   --content-width: 1180px;
   display: flex;
   flex-direction: column;
@@ -48,6 +39,32 @@
       animation-timeline: scroll(root);
       animation-range: 0 96px;
     }
+  }
+}
+
+/* Línea de lectura: un filete de tinta bajo el encabezado que avanza con la página. Sin
+   JavaScript: lo mueve el propio desplazamiento. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .header::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      left: 0;
+      height: 2px;
+      background: var(--brand-text);
+      transform: scaleX(0);
+      transform-origin: left center;
+      animation: progreso linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+}
+
+@keyframes progreso {
+  to {
+    transform: scaleX(1);
   }
 }
 
