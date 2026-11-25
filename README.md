@@ -220,6 +220,12 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/auth/login `
 
 Las cookies son Secure, así que en desarrollo el navegador solo las guarda en `http://localhost:5173`, que trata como origen seguro; con `127.0.0.1` no las guarda.
 
+### Verificación de persona
+
+Ingresar, crear una cuenta, recuperar la contraseña y reenviar la verificación del correo exigen el encabezado `X-Aletheia-Captcha` con la solución de un reto de prueba de trabajo (`backend/app/services/captcha.py`). `GET /api/v1/auth/captcha` entrega el reto firmado con HMAC; el navegador busca el número que produce su SHA-256 en un hilo aparte (`frontend/src/features/captcha`) y lo envía. Cada solución sirve una vez y vence a los 10 minutos; las usadas se guardan en `captcha_solutions` hasta que vencen. No hay servicios de terceros ni cookies.
+
+`ALETHEIA_CAPTCHA_MAXNUMBER` ajusta la dificultad (60 000 por omisión, menos de un segundo en un equipo corriente). La suite del backend la apaga con `captcha_required` y la prueba aparte en `tests/test_captcha.py`; en producción la configuración rechaza apagarla. En el frontend, `src/test/setup.ts` reemplaza el cálculo por una solución fija y `features/captcha/captcha.test.tsx` prueba el real.
+
 ### Contrato de la API
 
 El backend guarda su contrato OpenAPI en `backend/openapi.json`, y el frontend genera desde ese archivo sus tipos y su cliente HTTP en `frontend/src/api/generated` (ADR-008 y ADR-020). Ninguno de los dos se edita a mano. Cada vez que cambie una ruta, un esquema o la versión de la API, se regeneran ambos y se guardan en el mismo commit que el cambio:

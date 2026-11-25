@@ -431,6 +431,13 @@ export const privacyPolicy: LegalDocument = {
             servidor.
           </p>
           <p>
+            Para frenar los envíos automáticos, los formularios de ingreso,
+            registro y recuperación de la contraseña piden a su navegador
+            resolver un cálculo corto antes de enviarse. Lo hace solo, sin
+            preguntarle nada, no usa ningún servicio externo, no guarda nada en
+            su navegador y no recoge datos sobre usted.
+          </p>
+          <p>
             Ninguna medida es infalible, así que no prometemos una seguridad
             absoluta. Lo que sí hacemos es avisar sin demora a quienes resulten
             afectados por un incidente e informarlo a la{" "}

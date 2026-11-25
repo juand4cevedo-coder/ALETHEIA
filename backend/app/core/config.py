@@ -150,6 +150,10 @@ class Settings(DatabaseSettings):
     # La renovación automática con una fuente de pago vinculada (ADR-058) nace apagada: se
     # enciende solo después de probarla contra el entorno de pruebas de Wompi.
     recurring_payments_enabled: bool = Field(default=False)
+    # Verificación de persona en los formularios de acceso (services/captcha.py). Solo las pruebas
+    # la apagan; en producción es obligatoria. La dificultad es el número más alto del reto.
+    captcha_required: bool = True
+    captcha_maxnumber: int = Field(default=60_000, ge=1_000, le=2_000_000)
     invoicing_threshold_uvt: int = Field(default=3_500, ge=1)
     uvt_value_cop: int = Field(default=52_374, ge=1)
     wompi_events_secret: Secret[str] | None = Field(
@@ -224,6 +228,14 @@ class Settings(DatabaseSettings):
         # El nivel DEBUG puede volcar datos internos: solo se permite en desarrollo.
         if self.log_level == "DEBUG" and self.environment != "development":
             msg = "log_level DEBUG solo se permite con environment development"
+            raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def _captcha_in_production(self) -> Self:
+        # La verificación de persona solo se apaga en las pruebas; producción siempre la exige.
+        if self.environment == "production" and not self.captcha_required:
+            msg = "la verificación de persona no se puede apagar con environment production"
             raise ValueError(msg)
         return self
 

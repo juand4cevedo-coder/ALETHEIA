@@ -1,3 +1,6 @@
+import { CAPTCHA_HEADER } from "../features/captcha/captcha.ts";
+import { CaptchaNotice } from "../features/captcha/CaptchaNotice.tsx";
+import { useCaptcha } from "../features/captcha/useCaptcha.ts";
 import { SecondFactorStep } from "../features/auth/SecondFactorStep.tsx";
 import { SocialAccess } from "../features/auth/SocialAccess.tsx";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -132,6 +135,7 @@ export function SignInPage() {
     await navigate(next, { replace: true });
   }
 
+  const captcha = useCaptcha();
   const signIn = useMutation({
     ...signInMutation(),
     onSuccess: async (data) => {
@@ -189,7 +193,16 @@ export function SignInPage() {
       focusFirstError(found);
       return;
     }
-    signIn.mutate({ body: toLoginRequest(values) });
+    // Cada envío gasta una verificación de persona; si aún no termina, se espera.
+    void captcha
+      .take()
+      .then((token) =>
+        signIn.mutate({
+          body: toLoginRequest(values),
+          headers: { [CAPTCHA_HEADER]: token },
+        }),
+      )
+      .catch(() => undefined);
   }
 
   if (challenge) {
@@ -297,9 +310,14 @@ export function SignInPage() {
           </fieldset>
 
           <div className={styles.submit}>
-            <Button type="submit" block busy={signIn.isPending || signedIn}>
+            <Button
+              type="submit"
+              block
+              busy={signIn.isPending || signedIn || captcha.waiting}
+            >
               {signIn.isPending || signedIn ? "Ingresando" : "Ingresar"}
             </Button>
+            <CaptchaNotice status={captcha.status} onRetry={captcha.retry} />
           </div>
         </form>
         <SocialAccess />

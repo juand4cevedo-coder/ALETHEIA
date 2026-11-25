@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.44.0"
+    "version": "0.45.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -64,6 +64,27 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/captcha": {
+      "get": {
+        "tags": [
+          "acceso"
+        ],
+        "summary": "Reto de la verificación de persona",
+        "operationId": "captcha_challenge",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptchaChallenge"
                 }
               }
             }
@@ -268,15 +289,35 @@
         ],
         "summary": "Crear una cuenta con su organización y la prueba gratis",
         "operationId": "register_account",
+        "parameters": [
+          {
+            "name": "X-Aletheia-Captcha",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Solución del reto de GET /auth/captcha, en JSON y Base64.",
+              "title": "X-Aletheia-Captcha"
+            },
+            "description": "Solución del reto de GET /auth/captcha, en JSON y Base64."
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RegisterRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "202": {
@@ -329,15 +370,35 @@
         ],
         "summary": "Reenviar el enlace para verificar el correo",
         "operationId": "resend_verification",
+        "parameters": [
+          {
+            "name": "X-Aletheia-Captcha",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Solución del reto de GET /auth/captcha, en JSON y Base64.",
+              "title": "X-Aletheia-Captcha"
+            },
+            "description": "Solución del reto de GET /auth/captcha, en JSON y Base64."
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ResendVerificationRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "202": {
@@ -434,15 +495,35 @@
         ],
         "summary": "Ingresar con correo y contraseña",
         "operationId": "sign_in",
+        "parameters": [
+          {
+            "name": "X-Aletheia-Captcha",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Solución del reto de GET /auth/captcha, en JSON y Base64.",
+              "title": "X-Aletheia-Captcha"
+            },
+            "description": "Solución del reto de GET /auth/captcha, en JSON y Base64."
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LoginRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "204": {
@@ -684,15 +765,35 @@
         ],
         "summary": "Pedir el enlace para restablecer la contraseña",
         "operationId": "forgot_password",
+        "parameters": [
+          {
+            "name": "X-Aletheia-Captcha",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Solución del reto de GET /auth/captcha, en JSON y Base64.",
+              "title": "X-Aletheia-Captcha"
+            },
+            "description": "Solución del reto de GET /auth/captcha, en JSON y Base64."
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ForgotPasswordRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "202": {
@@ -9117,6 +9218,44 @@
           "token"
         ],
         "title": "Body_download_shared_evidence"
+      },
+      "CaptchaChallenge": {
+        "properties": {
+          "algorithm": {
+            "type": "string",
+            "title": "Algorithm",
+            "description": "Siempre SHA-256."
+          },
+          "challenge": {
+            "type": "string",
+            "title": "Challenge",
+            "description": "SHA-256 en hexadecimal de la sal seguida del número."
+          },
+          "maxnumber": {
+            "type": "integer",
+            "title": "Maxnumber",
+            "description": "El número buscado está entre 0 y este valor."
+          },
+          "salt": {
+            "type": "string",
+            "title": "Salt",
+            "description": "Sal del reto; incluye su vencimiento."
+          },
+          "signature": {
+            "type": "string",
+            "title": "Signature",
+            "description": "Firma HMAC del reto; se devuelve tal cual."
+          }
+        },
+        "type": "object",
+        "required": [
+          "algorithm",
+          "challenge",
+          "maxnumber",
+          "salt",
+          "signature"
+        ],
+        "title": "CaptchaChallenge"
       },
       "CaseCandidate": {
         "properties": {

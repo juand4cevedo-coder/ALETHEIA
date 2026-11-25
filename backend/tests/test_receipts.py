@@ -1,8 +1,10 @@
 """Comprobantes de pago de ALETHEIA: se emiten una vez por pago aprobado y se descargan en PDF."""
 
 import datetime
+import io
 
 import pytest
+from pypdf import PdfReader
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -10,7 +12,7 @@ from app.adapters import wompi
 from app.core.config import Settings
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import Job, PaymentReceipt
-from app.services import checkout, payment_emails, payments, receipts
+from app.services import checkout, payment_emails, payments, receipt_pdf, receipts
 from tests.conftest import NuevoCliente
 from tests.organizations import Oficina, crear_oficina
 from tests.test_cases_list import _sesion
@@ -106,10 +108,25 @@ def test_el_pdf_trae_el_numero_el_valor_y_aclara_que_no_es_factura(
     _pagar(db, monkeypatch, office)
     (comprobante,) = _comprobantes(db, office)
 
-    pdf = receipts.render_pdf(comprobante)
+    pdf = receipt_pdf.render(comprobante)
 
     assert pdf.startswith(b"%PDF")
-    assert len(pdf) > 1000
+    (pagina,) = PdfReader(io.BytesIO(pdf)).pages
+    texto = pagina.extract_text()
+    for esperado in (
+        "Comprobante de pago",
+        comprobante.number,
+        "Aletheia",
+        "EMITIDO POR",
+        "RECIBIDO DE",
+        "NIT 1214744661-9",
+        "Total pagado",
+        "No aplica",
+        "No es una factura electrónica",
+        "PAGADO",
+    ):
+        assert esperado in texto, esperado
+    assert receipts.cop(comprobante.amount_cop) in texto
 
 
 def test_lo_cobrado_en_el_ano_suma_los_comprobantes(

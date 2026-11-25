@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from app.adapters.email import REPLY_TO
 from app.adapters.google_oidc import GoogleOidc, GoogleOidcError, pkce_challenge
+from app.api.captcha import require_captcha
 from app.api.cookies import (
     REFRESH_COOKIE,
     TWO_FACTOR_COOKIE,
@@ -294,6 +295,7 @@ _REGISTRATION_ACCEPTED = (
 
 @router.post(
     "/auth/register",
+    dependencies=[Depends(require_captcha)],
     status_code=status.HTTP_202_ACCEPTED,
     summary="Crear una cuenta con su organización y la prueba gratis",
     responses={
@@ -333,6 +335,7 @@ _VERIFICATION_REQUESTED = (
 
 @router.post(
     "/auth/verify-email/resend",
+    dependencies=[Depends(require_captcha)],
     status_code=status.HTTP_202_ACCEPTED,
     summary="Reenviar el enlace para verificar el correo",
     responses={
@@ -391,6 +394,7 @@ _ACCOUNT_BLOCKED = f"Esta cuenta está bloqueada. Escríbanos a {REPLY_TO} para 
 
 @router.post(
     "/auth/login",
+    dependencies=[Depends(require_captcha)],
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Ingresar con correo y contraseña",
     response_model=None,
@@ -614,6 +618,7 @@ _RESET_LINK_SENT = (
 
 @router.post(
     "/auth/password/forgot",
+    dependencies=[Depends(require_captcha)],
     status_code=status.HTTP_202_ACCEPTED,
     summary="Pedir el enlace para restablecer la contraseña",
     responses={

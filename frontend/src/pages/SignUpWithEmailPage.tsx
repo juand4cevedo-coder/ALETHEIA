@@ -1,3 +1,6 @@
+import { CAPTCHA_HEADER } from "../features/captcha/captcha.ts";
+import { CaptchaNotice } from "../features/captcha/CaptchaNotice.tsx";
+import { useCaptcha } from "../features/captcha/useCaptcha.ts";
 import { Link } from "react-router";
 import { useMutation } from "@tanstack/react-query";
 import { type FormEvent, useEffect, useRef, useState } from "react";
@@ -77,6 +80,7 @@ export function SignUpWithEmailPage() {
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
   const noticeRef = useRef<HTMLHeadingElement>(null);
 
+  const captcha = useCaptcha();
   const register = useMutation({
     ...registerAccountMutation(),
     onSuccess: () => {
@@ -153,7 +157,16 @@ export function SignUpWithEmailPage() {
       confirmPasswordRef.current?.focus();
       return;
     }
-    register.mutate({ body: toRegisterRequest(values) });
+    // Cada envío gasta una verificación de persona; si aún no termina, se espera.
+    void captcha
+      .take()
+      .then((token) =>
+        register.mutate({
+          body: toRegisterRequest(values),
+          headers: { [CAPTCHA_HEADER]: token },
+        }),
+      )
+      .catch(() => undefined);
   }
 
   const firm = values.accountType === "firm";
@@ -298,9 +311,14 @@ export function SignUpWithEmailPage() {
             </div>
 
             <div className={styles.submit}>
-              <Button type="submit" block busy={register.isPending}>
+              <Button
+                type="submit"
+                block
+                busy={register.isPending || captcha.waiting}
+              >
                 {register.isPending ? "Creando la cuenta" : "Crear la cuenta"}
               </Button>
+              <CaptchaNotice status={captcha.status} onRetry={captcha.retry} />
             </div>
           </form>
         )}

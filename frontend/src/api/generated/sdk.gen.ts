@@ -41,6 +41,8 @@ import type {
   CancelRecoveryData,
   CancelRecoveryErrors,
   CancelRecoveryResponses,
+  CaptchaChallengeData,
+  CaptchaChallengeResponses,
   ChangeMemberRoleData,
   ChangeMemberRoleErrors,
   ChangeMemberRoleResponses,
@@ -440,6 +442,18 @@ export const listPlans = <ThrowOnError extends boolean = false>(
     ListPlansErrors,
     ThrowOnError
   >({ url: "/api/v1/plans", ...options });
+
+/**
+ * Reto de la verificación de persona
+ */
+export const captchaChallenge = <ThrowOnError extends boolean = false>(
+  options?: Options<CaptchaChallengeData, ThrowOnError>,
+): RequestResult<CaptchaChallengeResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    CaptchaChallengeResponses,
+    unknown,
+    ThrowOnError
+  >({ url: "/api/v1/auth/captcha", ...options });
 
 /**
  * Saber si el acceso con Google está configurado

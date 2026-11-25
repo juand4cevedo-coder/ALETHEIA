@@ -1,3 +1,6 @@
+import { CAPTCHA_HEADER } from "../captcha/captcha.ts";
+import { CaptchaNotice } from "../captcha/CaptchaNotice.tsx";
+import { useCaptcha } from "../captcha/useCaptcha.ts";
 import { useMutation } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 
@@ -36,6 +39,7 @@ export function ResendVerification({
   const [error, setError] = useState<string>();
   const [problem, setProblem] = useState<ResendProblem | null>(null);
 
+  const captcha = useCaptcha();
   const resend = useMutation({
     ...resendVerificationMutation(),
     onError: (failure) => setProblem(problemFrom(failure)),
@@ -55,7 +59,16 @@ export function ResendVerification({
       return;
     }
     setError(undefined);
-    resend.mutate({ body: { email } });
+    // Cada envío gasta una verificación de persona; si aún no termina, se espera.
+    void captcha
+      .take()
+      .then((token) =>
+        resend.mutate({
+          body: { email },
+          headers: { [CAPTCHA_HEADER]: token },
+        }),
+      )
+      .catch(() => undefined);
   }
 
   if (resend.isSuccess) {
@@ -110,9 +123,10 @@ export function ResendVerification({
           Llegará a <strong translate="no">{sessionEmail}</strong>.
         </p>
       )}
-      <Button type="submit" block busy={resend.isPending}>
+      <Button type="submit" block busy={resend.isPending || captcha.waiting}>
         {resend.isPending ? "Enviando el enlace" : "Enviarme un enlace nuevo"}
       </Button>
+      <CaptchaNotice status={captcha.status} onRetry={captcha.retry} />
     </form>
   );
 }
