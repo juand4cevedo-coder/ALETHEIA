@@ -44,9 +44,11 @@ export function productShotProps(
 ): { src: string; srcSet: string; sizes: string } {
   const large = mediaUrl(path);
   const small = large.replace(/\.webp$/, "-640.webp");
+  // La de 2520 px es la misma captura a doble densidad, para pantallas retina.
+  const retina = large.replace(/\.webp$/, "-2520.webp");
   return {
     src: large,
-    srcSet: `${small} 640w, ${large} 1260w`,
+    srcSet: `${small} 640w, ${large} 1260w, ${retina} 2520w`,
     sizes,
   };
 }

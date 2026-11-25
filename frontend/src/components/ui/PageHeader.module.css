@@ -17,10 +17,10 @@
   font-family: var(--font-sans);
   margin: 0;
   color: var(--text);
-  font-size: clamp(36px, 4vw, 54px);
-  font-weight: 650;
-  letter-spacing: -0.018em;
-  line-height: 1;
+  font-size: clamp(30px, 2.6vw, 38px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
   /* Nombres de personas y títulos de casos los escribe el usuario: una palabra larga baja de
      línea en vez de desbordar. */
   overflow-wrap: anywhere;

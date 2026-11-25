@@ -19,7 +19,7 @@ it("sin red de distribución las imágenes salen del mismo origen", async () => 
     "/media/campaign/hero-real-1280.webp",
   );
   expect(productShotProps("/media/producto/tareas.webp", "50vw").srcSet).toBe(
-    "/media/producto/tareas-640.webp 640w, /media/producto/tareas.webp 1260w",
+    "/media/producto/tareas-640.webp 640w, /media/producto/tareas.webp 1260w, /media/producto/tareas-2520.webp 2520w",
   );
 });
 
@@ -40,7 +40,7 @@ it("con red de distribución las imágenes se piden al subdominio, con o sin bar
     {
       src: "https://cdn.aletheia.sbs/media/producto/tareas.webp",
       srcSet:
-        "https://cdn.aletheia.sbs/media/producto/tareas-640.webp 640w, https://cdn.aletheia.sbs/media/producto/tareas.webp 1260w",
+        "https://cdn.aletheia.sbs/media/producto/tareas-640.webp 640w, https://cdn.aletheia.sbs/media/producto/tareas.webp 1260w, https://cdn.aletheia.sbs/media/producto/tareas-2520.webp 2520w",
     },
   );
 });

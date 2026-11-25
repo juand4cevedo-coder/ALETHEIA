@@ -226,6 +226,7 @@ export function HighlightsCarousel() {
                   aria-current={active === index ? "true" : undefined}
                   onClick={() => setActive(index)}
                 >
+                  <span className={styles.dotLabel}>{item.eyebrow}</span>
                   <span
                     className={styles.progress}
                     data-running={

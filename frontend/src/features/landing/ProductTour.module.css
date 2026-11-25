@@ -1,49 +1,61 @@
+/* Recorrido: pestañas como capítulos sobre un filete, con la activa en tinta y una barra
+   debajo; la captura va en un marco con el grabado de la marca detrás. */
 .tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 4px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--ink-hairline);
   overflow-x: auto;
   scrollbar-width: none;
 }
 .tabs button {
   position: relative;
-  overflow: hidden;
   flex: 0 0 auto;
   min-height: 52px;
   padding: 0;
   border: 0;
-  border-radius: 999px;
-  color: var(--text);
-  background: var(--paper-sunken);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  color: var(--text-2);
+  background: transparent;
   cursor: pointer;
   font: 500 15px var(--font-sans);
   text-align: left;
+  transition:
+    color var(--motion-base) var(--ease-standard),
+    background-color var(--motion-base) var(--ease-standard);
+}
+.tabs button:hover {
+  color: var(--text);
+  background: var(--tint-1);
+}
+.tabs button::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  bottom: -1px;
+  left: 12px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--brand-text);
+  transform: scaleX(0);
+  transition: transform 260ms var(--ease-out);
 }
 .tabs button[aria-selected="true"] {
-  background: var(--ink-900);
-  color: var(--on-ink);
+  color: var(--brand-text);
+}
+.tabs button[aria-selected="true"]::after {
+  transform: scaleX(1);
 }
 .travelingBorder {
   display: none;
-}
-.tabs button[aria-selected="true"] .travelingBorder {
-  opacity: 1;
-}
-.tabs button[aria-selected="true"] .travelingBorder rect {
-  animation: tourBorder 3.8s linear infinite;
 }
 .tabInner {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   height: 52px;
-  border-radius: 999px;
-  background: transparent;
-  padding: 0 22px;
-}
-.tabs button[aria-selected="true"] .tabInner {
-  background: transparent;
+  padding: 0 16px;
 }
 .icon {
   display: grid;
@@ -51,32 +63,48 @@
   flex: none;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  border: 0;
-  background: color-mix(in srgb, var(--paper-raised) 72%, transparent);
-}
-.tabs button[aria-selected="true"] .icon {
+  border-radius: 8px;
+  background: var(--tint-2);
   color: var(--brand-text);
 }
 .panel {
-  border: 0;
-  border-radius: 28px;
+  position: relative;
+  padding: clamp(20px, 4vw, 56px) clamp(20px, 4vw, 56px) 0;
+  border: 1px solid var(--ink-hairline);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--ink-700);
+  background: var(--tint-2);
+  isolation: isolate;
+}
+.panel::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -40% -20% auto auto;
+  width: 90%;
+  aspect-ratio: 1;
+  background: var(--brand-text);
+  opacity: 0.08;
+  mask: url("/brand/grabado.svg") center / contain no-repeat;
 }
 .panel img {
   display: block;
-  animation: shot-in 420ms var(--ease-out) both;
+  animation: shot-in 520ms var(--ease-out) both;
   width: 100%;
   height: auto;
   aspect-ratio: 1260/720;
   object-fit: cover;
   object-position: top;
+  border: 1px solid var(--ink-hairline);
+  border-bottom: 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  box-shadow: var(--shadow-float);
 }
 .panel p {
-  padding: 24px;
+  margin: 0 calc(-1 * clamp(20px, 4vw, 56px));
+  padding: 20px clamp(20px, 4vw, 56px);
   border-top: 1px solid var(--ink-hairline);
-  background: var(--paper);
+  background: var(--paper-raised);
   color: var(--text-2);
   font-size: 14px;
   text-align: left;
@@ -108,7 +136,7 @@
   }
   .panel p {
     font-size: 13px;
-    padding: 16px;
+    padding: 16px 20px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
