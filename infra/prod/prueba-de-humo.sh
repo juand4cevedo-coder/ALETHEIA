@@ -204,7 +204,10 @@ done
 inventada="/no-existe-$RANDOM"
 read -r codigo _ <<<"$(respuesta "https://$DOMINIO$inventada")"
 if [[ $codigo == 404 ]]; then ok "$inventada responde 404"; else falla "$inventada respondió $codigo y no 404"; fi
-if pagina "https://$DOMINIO$inventada" | grep --quiet '<meta name="robots" content="noindex"'; then
+# La página se guarda antes de buscar: con pipefail, grep --quiet cierra el tubo al encontrar
+# la etiqueta, curl falla al escribir (código 23) y la comprobación daba falla sin haberla.
+html="$(pagina "https://$DOMINIO$inventada" || true)"
+if grep --quiet --fixed-strings '<meta name="robots" content="noindex"' <<<"$html"; then
     ok "la página 404 lleva noindex"
 else
     falla "la página 404 no lleva noindex"
