@@ -1,3 +1,4 @@
+import { LEGAL_EFFECTIVE_DATE } from "../config/legal.ts";
 import { SITE_NAME, SITE_URL } from "../config/site.ts";
 import {
   LARGO_MAXIMO_TITULO,
@@ -37,16 +38,26 @@ export function metaArticulo(articulo: {
   title: string;
   summary: string;
   date: string;
+  updated?: string;
   category: string;
+  /** Título para el buscador cuando el del artículo pasa de 60 caracteres. */
+  seoTitle?: string;
+  /** Descripción para el buscador cuando el resumen pasa de 155 caracteres. */
+  seoDescription?: string;
 }): MetaPagina {
   return {
     ...pagina("/blog/" + articulo.slug, {
-      titulo: tituloConMarca(articulo.title, `Blog de ${SITE_NAME}`),
-      descripcion: resumir(articulo.summary),
+      titulo: tituloConMarca(
+        articulo.seoTitle ?? articulo.title,
+        `Blog de ${SITE_NAME}`,
+      ),
+      descripcion: resumir(articulo.seoDescription ?? articulo.summary),
+      imagen: `/og/blog-${articulo.slug}.png`,
       migas: [MIGA_INICIO, MIGA_BLOG],
     }),
     tipo: "article",
     publicado: articulo.date,
+    actualizado: articulo.updated ?? articulo.date,
     seccion: articulo.category,
   };
 }
@@ -61,8 +72,13 @@ export function metaGuia(
     titulo: tituloConMarca(guia.title, `Documentación de ${SITE_NAME}`),
     descripcion: resumir(guia.description),
     canonica: SITE_URL + canonica,
+    imagen: "/og/docs.png",
     enMapa: ruta === canonica,
-    migas: [MIGA_INICIO, MIGA_DOCUMENTACION],
+    // La introducción es la portada de la documentación: su ruta no repite el paso.
+    migas:
+      canonica === MIGA_DOCUMENTACION.ruta
+        ? [MIGA_INICIO]
+        : [MIGA_INICIO, MIGA_DOCUMENTACION],
   });
 }
 
@@ -87,19 +103,33 @@ export function metaLegal(documento: {
   title: string;
   description: string;
 }): MetaPagina {
-  return pagina("/legal/" + documento.slug, {
-    titulo: tituloConMarca(documento.title),
-    descripcion: resumir(documento.description),
-  });
+  return {
+    ...pagina("/legal/" + documento.slug, {
+      titulo: tituloConMarca(documento.title),
+      descripcion: resumir(documento.description),
+    }),
+    actualizado: LEGAL_EFFECTIVE_DATE,
+  };
 }
 
 const LARGO_MAXIMO_DESCRIPCION = 155;
 
-/** Recorta un texto largo en la última palabra completa que cabe en una descripción. */
+/** La descripción de un contenido. Si el texto pasa de 155 caracteres, se queda con las frases
+ * completas que caben; nunca corta una frase por la mitad. Si ni la primera frase cabe, el
+ * contenido necesita una descripción propia y la construcción del sitio se detiene. */
 export function resumir(texto: string): string {
   if (texto.length <= LARGO_MAXIMO_DESCRIPCION) return texto;
-  const corte = texto.slice(0, LARGO_MAXIMO_DESCRIPCION - 1);
-  const frase = corte.lastIndexOf(". ");
-  if (frase >= 100) return corte.slice(0, frase + 1);
-  return corte.slice(0, corte.lastIndexOf(" ")).replace(/[,;:]$/, "") + ".";
+  const frases = texto.match(/[^.!?]+[.!?]+(?=\s|$)/g) ?? [];
+  let resumen = "";
+  for (const frase of frases) {
+    const siguiente = (resumen + frase).trim();
+    if (siguiente.length > LARGO_MAXIMO_DESCRIPCION) break;
+    resumen = siguiente;
+  }
+  if (resumen.length < 70) {
+    throw new Error(
+      `La descripción no cabe en ${LARGO_MAXIMO_DESCRIPCION} caracteres sin cortar una frase: «${texto.slice(0, 60)}»`,
+    );
+  }
+  return resumen;
 }

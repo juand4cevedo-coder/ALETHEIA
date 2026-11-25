@@ -12,5 +12,5 @@ export const GROUP_ICONS: Record<string, IconComponent> = {
   Producto: CarpetaAbiertaIcon,
   Equipos: UsuariosIcon,
   Recursos: LibroIcon,
-  Aletheia: OjoIcon,
+  ALETHEIA: OjoIcon,
 };

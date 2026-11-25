@@ -18,6 +18,8 @@ import {
   usePlanCatalog,
 } from "../features/billing/catalog.tsx";
 import { formatBytes, formatCop } from "../features/billing/format.ts";
+import { cheapestPlanFor } from "../features/billing/plans.ts";
+import { DATA_CONTROLLER } from "../config/legal.ts";
 import { CAPTCHA_HEADER } from "../features/captcha/captcha.ts";
 import { CaptchaNotice } from "../features/captcha/CaptchaNotice.tsx";
 import { useCaptcha } from "../features/captcha/useCaptcha.ts";
@@ -59,7 +61,7 @@ export function EnterprisePage() {
         <div className={editorial.brandTile}>
           <BrandMark size={84} />
         </div>
-        <h1>Un espacio para su equipo.</h1>
+        <h1>ALETHEIA para despachos con varias personas</h1>
         <p>
           Así trabaja un despacho de cinco personas en ALETHEIA: quién entra,
           qué ve cada uno, qué ve el cliente y cuánto se paga.
@@ -72,7 +74,7 @@ export function EnterprisePage() {
         </a>
       </header>
 
-      <PlanCatalogProvider>
+      <PlanCatalogProvider publicado>
         <div className={styles.body}>
           <section className={styles.block} aria-labelledby="escenario">
             <h2 id="escenario">Un despacho de ejemplo</h2>
@@ -135,44 +137,53 @@ function plan(plans: PublicPlan[] | undefined, code: string) {
   return plans?.find((item) => item.code === code);
 }
 
+// El despacho del ejemplo: la socia, la administradora, dos abogados y el asistente.
+const EXAMPLE_TEAM = 5;
+
+/** Desde cuántas personas el plan más barato pasa a ser `code`, o null si nunca. */
+function smallestTeamFor(plans: PublicPlan[], code: string): number | null {
+  for (let people = 1; people <= 100; people += 1) {
+    if (cheapestPlanFor(plans, people)?.plan.code === code) return people;
+  }
+  return null;
+}
+
 /** Lo que paga el despacho del ejemplo, con los precios del catálogo. */
 function Pricing() {
   const { plans, isError } = usePlanCatalog();
+  const example = plans ? cheapestPlanFor(plans, EXAMPLE_TEAM) : null;
   const firm = plan(plans, "firm");
-  const professional = plan(plans, "professional");
+  const firmFrom = plans ? smallestTeamFor(plans, "firm") : null;
 
   return (
     <section className={styles.block} aria-labelledby="precio">
-      <h2 id="precio">Cuánto paga un equipo</h2>
-      {firm && firm.extra_user_price_cop != null ? (
+      <h2 id="precio">Cuánto paga el despacho del ejemplo</h2>
+      {example ? (
         <>
           <p>
-            El plan Firma cuesta {formatCop(firm.monthly_price_cop)} al mes,
-            incluye {firm.included_users} usuarios y{" "}
-            {formatBytes(firm.storage_limit_bytes)} para evidencias. Cada
-            persona de más cuesta {formatCop(firm.extra_user_price_cop)} al mes.
-            Cuentan los miembros del despacho y las invitaciones que siguen
+            Para cinco personas, el plan que sale más barato es{" "}
+            {example.plan.name}: incluye {example.plan.included_users} usuarios
+            y {formatBytes(example.plan.storage_limit_bytes)} para evidencias
+            {example.plan.extra_user_price_cop != null &&
+              `, y cada persona de más cuesta ${formatCop(example.plan.extra_user_price_cop)} al mes`}
+            . Cuentan los miembros del despacho y las invitaciones que siguen
             abiertas.
           </p>
-          <TeamExample plan={firm} people={firm.included_users + 2} />
-          {professional && professional.extra_user_price_cop != null && (
+          <TeamExample plan={example.plan} people={EXAMPLE_TEAM} />
+          {firm && firmFrom !== null && firm.extra_user_price_cop != null && (
             <p>
-              Si el equipo es más pequeño, el plan Profesional incluye{" "}
-              {professional.included_users} usuarios por{" "}
-              {formatCop(professional.monthly_price_cop)} al mes, y cada persona
-              de más cuesta {formatCop(professional.extra_user_price_cop)}. Un
-              equipo de {professional.included_users + 1} paga{" "}
-              {formatCop(
-                professional.monthly_price_cop +
-                  professional.extra_user_price_cop,
-              )}{" "}
-              al mes.
+              Desde {firmFrom} personas conviene el plan Firma: cuesta{" "}
+              {formatCop(firm.monthly_price_cop)} al mes, incluye{" "}
+              {firm.included_users} usuarios y{" "}
+              {formatBytes(firm.storage_limit_bytes)}, y cada persona de más
+              cuesta {formatCop(firm.extra_user_price_cop)} al mes.
             </p>
           )}
           <p>
             En el pago anual, el plan y cada usuario adicional valen diez meses.
             Antes de pagar, Plan y facturación muestra el desglose con su equipo
-            de ese día. <Link to={ROUTES.pricing}>Ver todos los planes</Link>
+            de ese día.{" "}
+            <Link to={ROUTES.pricing}>Calcule el precio para su despacho</Link>
           </p>
         </>
       ) : (
@@ -193,7 +204,7 @@ function Pricing() {
 }
 
 function TeamExample({ plan, people }: { plan: PublicPlan; people: number }) {
-  const extra = people - plan.included_users;
+  const extra = Math.max(people - plan.included_users, 0);
   const unit = plan.extra_user_price_cop ?? 0;
   return (
     <dl
@@ -206,12 +217,16 @@ function TeamExample({ plan, people }: { plan: PublicPlan; people: number }) {
         </dt>
         <dd>{formatCop(plan.monthly_price_cop)}</dd>
       </div>
-      <div>
-        <dt>
-          {extra} usuarios adicionales a {formatCop(unit)}
-        </dt>
-        <dd>{formatCop(extra * unit)}</dd>
-      </div>
+      {extra > 0 && (
+        <div>
+          <dt>
+            {extra === 1
+              ? `1 usuario adicional a ${formatCop(unit)}`
+              : `${extra} usuarios adicionales a ${formatCop(unit)}`}
+          </dt>
+          <dd>{formatCop(extra * unit)}</dd>
+        </div>
+      )}
       <div className={styles.exampleTotal}>
         <dt>Un despacho de {people} personas, al mes</dt>
         <dd>{formatCop(plan.monthly_price_cop + extra * unit)}</dd>
@@ -360,7 +375,9 @@ function QuoteForm() {
         >
           <p className={styles.intro}>
             Cuéntenos cuántas personas son y cómo se reparten el trabajo. Le
-            respondemos por correo.
+            respondemos por correo con una propuesta o con preguntas. Si
+            prefiere hablar, llame al{" "}
+            <a href={DATA_CONTROLLER.phoneHref}>{DATA_CONTROLLER.phone}</a>.
           </p>
           {problem && (
             <div className={styles.alert} role="alert">

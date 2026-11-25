@@ -50,6 +50,8 @@ def test_pdf_explica_alcance_y_estado_real_sin_anclaje() -> None:
     assert "no autentica el archivo ni el manifiesto" in text
     assert "ni determina admisibilidad o valor probatorio" in text
     assert "Sin anclaje externo" in text
+    assert "https://aletheia.sbs/verificador" in text
+    assert "openssl ts -verify" in text
 
 
 def test_pdf_indica_anclaje_solo_cuando_el_manifiesto_lo_contiene() -> None:

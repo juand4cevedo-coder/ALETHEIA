@@ -23,17 +23,13 @@ vi.mock("react", async (importOriginal) => {
 import { JOURNAL } from "../content/journal.ts";
 import { FaqSection } from "../features/landing/FaqSection.tsx";
 import { MARCA_CABECERA, MARCA_CONTENIDO } from "./html.ts";
-import {
-  generarSitio,
-  paginasPublicas,
-  preguntasDeLaPortada,
-} from "./servidor.tsx";
+import { generarSitio, paginasPublicas, preguntasDe } from "./servidor.tsx";
 
 const PLANTILLA = `<!doctype html><html><head>${MARCA_CABECERA}</head><body><div id="root">${MARCA_CONTENIDO}</div></body></html>`;
 
 describe("preguntas de la portada", () => {
   it("salen de la sección «Antes de empezar» tal como se dibuja", () => {
-    const preguntas = preguntasDeLaPortada();
+    const preguntas = preguntasDe();
     const { container } = render(<FaqSection />);
     const dibujadas = container.querySelectorAll("details");
     expect(preguntas).toHaveLength(dibujadas.length);
@@ -56,6 +52,26 @@ describe("páginas públicas", () => {
     }
     expect(new Set(rutas).size).toBe(rutas.length);
   });
+
+  it("tienen un título que cabe en el buscador y una descripción de frases completas", () => {
+    for (const { meta } of paginasPublicas()) {
+      expect(meta.titulo.length, meta.ruta).toBeLessThanOrEqual(60);
+      expect(meta.titulo, meta.ruta).toMatch(/ALETHEIA$/);
+      expect(meta.descripcion.length, meta.ruta).toBeLessThanOrEqual(155);
+      expect(meta.descripcion.length, meta.ruta).toBeGreaterThanOrEqual(70);
+      expect(meta.descripcion, meta.ruta).toMatch(/[.?!]$/);
+    }
+  });
+
+  it("no repiten un paso en la ruta de navegación", () => {
+    for (const { meta } of paginasPublicas()) {
+      const rutas = (meta.migas ?? []).map((miga) => miga.ruta);
+      expect(rutas, meta.ruta).not.toContain(
+        meta.canonica.replace(/^https:\/\/[^/]+/, ""),
+      );
+      expect(new Set(rutas).size, meta.ruta).toBe(rutas.length);
+    }
+  });
 });
 
 describe("generarSitio", () => {
@@ -70,7 +86,27 @@ describe("generarSitio", () => {
         '<meta property="og:url" content="https://aletheia.sbs/precios" />',
       );
       expect(precios).toContain('"@type":"SoftwareApplication"');
+      expect(precios).toContain(
+        '<meta property="og:image" content="https://aletheia.sbs/og/precios.png" />',
+      );
+      expect(precios).toContain(
+        '<meta name="twitter:image" content="https://aletheia.sbs/og/precios.png" />',
+      );
       expect(precios).toMatch(/<div id="root"><.+<\/div><\/body>/s);
+      // Las tarjetas salen de la copia del catálogo: los buscadores leen los precios sin
+      // ejecutar JavaScript, y la respuesta sobre usuarios adicionales dice los reales.
+      expect(precios).toContain("29.900");
+      expect(precios).toContain("59.900");
+      expect(precios).not.toContain("Cargando los planes");
+      expect(precios).toContain('"@type":"FAQPage"');
+      expect(precios).toContain(
+        "Profesional incluye 4 y cada persona adicional vale $19.900 al mes",
+      );
+
+      const comprobador = sitio.archivos.get("verificador/index.html")!;
+      expect(comprobador).toContain('"@type":"WebApplication"');
+      expect(comprobador).toContain('"@type":"FAQPage"');
+      expect(comprobador).toContain("Get-FileHash archivo.pdf");
 
       const portada = sitio.archivos.get("index.html")!;
       expect(portada).toContain('"@type":"FAQPage"');

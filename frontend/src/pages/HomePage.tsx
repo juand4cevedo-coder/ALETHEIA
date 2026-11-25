@@ -1,6 +1,5 @@
 import { lazy, Suspense } from "react";
 
-import { PlanCatalogProvider } from "../features/billing/catalog.tsx";
 import { Hero } from "../features/landing/Hero.tsx";
 import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
 import { PAGINA_INICIO } from "../seo/paginas.ts";
@@ -14,11 +13,11 @@ const BelowFold = lazy(() =>
 );
 
 // Página de inicio (UI-001, HU-001). Cada sección responde una pregunta del abogado, en el
-// orden en que se la hace (especificación de identidad, sección 11). El titular, los planes y
-// el cierre leen el mismo catálogo, pedido una sola vez.
+// orden en que se la hace (especificación de identidad, sección 11). El primer pantallazo no
+// usa el catálogo de planes: lo piden las secciones de abajo, que llegan aparte.
 export function HomePage() {
   return (
-    <PlanCatalogProvider>
+    <>
       <CabeceraSeo meta={PAGINA_INICIO} />
 
       <Hero />
@@ -34,6 +33,6 @@ export function HomePage() {
       >
         <BelowFold />
       </Suspense>
-    </PlanCatalogProvider>
+    </>
   );
 }

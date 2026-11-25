@@ -5,6 +5,8 @@ import { BuscarIcon, FlechaDerechaIcon } from "../components/ui/icons.tsx";
 import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
 import { metaGuia } from "../seo/contenidos.ts";
 import { NotFoundPage } from "./NotFoundPage.tsx";
+import { LinkedParagraph } from "../components/content/LinkedParagraph.tsx";
+import { plainText } from "../components/content/plainText.ts";
 import styles from "./DocumentationPage.module.css";
 
 const normalize = (value: string) =>
@@ -90,7 +92,7 @@ export function DocumentationPage() {
               <a href={"#" + section.id}>{section.title}</a>
             </h2>
             {section.paragraphs.map((p) => (
-              <p key={p}>{p}</p>
+              <LinkedParagraph key={plainText(p)} text={p} />
             ))}
             {section.steps && (
               <ol className={styles.steps}>
@@ -99,6 +101,11 @@ export function DocumentationPage() {
                 ))}
               </ol>
             )}
+            {section.commands?.map((command) => (
+              <pre key={command} className={styles.command}>
+                <code>{command}</code>
+              </pre>
+            ))}
           </section>
         ))}
         {article.action && (

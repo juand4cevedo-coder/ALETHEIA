@@ -95,32 +95,16 @@ describe("Página de inicio (HU-001)", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("si el catálogo no responde, avisa y permite reintentar", async () => {
-    fetchMock
-      .mockResolvedValueOnce(
-        jsonResponse(
-          {
-            type: "about:blank",
-            title: "Service Unavailable",
-            status: 503,
-          },
-          503,
-        ),
-      )
-      .mockResolvedValueOnce(jsonResponse(CATALOG));
-    const user = userEvent.setup();
+  it("si el catálogo no responde, se queda con los precios publicados", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        { type: "about:blank", title: "Service Unavailable", status: 503 },
+        503,
+      ),
+    );
     await renderRoute("/");
 
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(
-      "No pudimos cargar los precios en este momento.",
-    );
-    await user.click(
-      within(alert).getByRole("button", {
-        name: "Cargar los precios de nuevo",
-      }),
-    );
-
+    // La copia del catálogo que viaja con el sitio basta para mostrar los precios.
     expect(await screen.findByText(/^\$59\.900/)).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
@@ -160,7 +144,7 @@ describe("Página de inicio (HU-001)", () => {
     expect(field).not.toBeVisible();
   });
 
-  it("los H2 presentan contexto, organización, integridad, alcance y condiciones", async () => {
+  it("los H2 presentan el problema, el producto, la integridad, el alcance y las condiciones", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     await renderRoute("/");
 
@@ -168,6 +152,7 @@ describe("Página de inicio (HU-001)", () => {
       level: 2,
     });
     expect(headings.map((heading) => heading.textContent)).toEqual([
+      "La prueba llega por WhatsApp y nadie anota qué pasa con ella",
       "Así se ve su espacio de trabajo",
       "Su primer caso con evidencia sellada, en tres pasos",
       "El caso completo cabe en un paquete que otra persona puede revisar sin su ayuda",

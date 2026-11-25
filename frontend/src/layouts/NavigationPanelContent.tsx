@@ -34,7 +34,7 @@ const LINK_ICONS: Record<string, IconComponent> = {
   "/seguridad": EscudoVistoIcon,
   "/docs/invitar-al-equipo": UsuarioAgregarIcon,
   "/soporte": CirculoAlertaIcon,
-  "/docs": LibroIcon,
+  "/docs/introduccion": LibroIcon,
   "/blog": DocumentoIcon,
   "/ayuda": InfoIcon,
   "/nosotros": OjoIcon,
@@ -45,7 +45,7 @@ const FEATURE_SHOTS: Record<string, string> = {
   Producto: "/media/producto/resumen.webp",
   Equipos: "/media/producto/actividad.webp",
   Recursos: "/media/producto/verificador.webp",
-  Aletheia: "/media/producto/paquete.webp",
+  ALETHEIA: "/media/producto/paquete.webp",
 };
 
 // Se carga aparte: los íconos y la estructura del panel no pesan en la primera visita; el navegador

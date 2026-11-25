@@ -14,7 +14,7 @@ from app.models import Job, Organization, Subscription, TrialEmail
 from app.services import notifications, trial_emails
 from app.worker.handlers import HANDLERS, WorkerContext
 from app.worker.runner import Worker
-from tests.organizations import Oficina, crear_oficina
+from tests.organizations import Oficina, crear_miembro, crear_oficina
 from tests.test_worker import FakeEmailSender
 
 BOGOTA = trial_emails.BOGOTA
@@ -171,7 +171,7 @@ def test_cada_correo_dice_lo_suyo_y_lleva_su_enlace(db: Session, settings: Setti
     esperado = {
         "day_0": ("abra su primer caso", "/app/casos/nuevo"),
         "day_3": ("sello de tiempo RFC 3161", "/app/casos"),
-        "day_7": ("Su prueba incluye 3 usuarios: usted y otras 2 personas", "/app/miembros"),
+        "day_7": ("Su prueba incluye 4 usuarios: usted y otras 3 personas", "/app/miembros"),
         "day_11": ("solo lectura durante 30 días", "/app/facturacion"),
     }
 
@@ -269,3 +269,65 @@ def test_si_falla_la_revision_el_mantenimiento_no_se_cae(
     worker.maintain_if_due()
 
     assert "No se pudieron revisar los correos de la prueba" in caplog.text
+
+
+# Cada correo mira lo que el despacho ya hizo.
+
+_FIN = datetime.datetime(2026, 12, 9, 15, tzinfo=datetime.UTC)
+
+
+def _contenido(stage: str, **hecho: int) -> object:
+    actividad = trial_emails.Activity(
+        cases=hecho.get("cases", 0),
+        evidences=hecho.get("evidences", 0),
+        people=hecho.get("people", 1),
+        exports=hecho.get("exports", 0),
+    )
+    return trial_emails._CONTENT[stage](_FIN, 4, actividad)
+
+
+def test_sin_casos_el_dia_3_pide_abrir_el_primero() -> None:
+    contenido = _contenido("day_3")
+
+    assert contenido.subject == "Abra su primer caso en ALETHEIA"  # type: ignore[attr-defined]
+    assert contenido.path == "/app/casos/nuevo"  # type: ignore[attr-defined]
+
+
+def test_con_evidencia_el_dia_3_propone_exportar_el_paquete() -> None:
+    contenido = _contenido("day_3", cases=1, evidences=3)
+
+    assert "paquete" in contenido.subject  # type: ignore[attr-defined]
+    assert "Ya guardó 3 evidencias" in contenido.paragraphs[0]  # type: ignore[attr-defined]
+
+
+def test_con_caso_y_sin_evidencia_el_dia_3_pide_subirla() -> None:
+    contenido = _contenido("day_3", cases=1)
+
+    assert contenido.subject.startswith("Suba una evidencia")  # type: ignore[attr-defined]
+
+
+def test_con_equipo_el_dia_7_muestra_el_portal_del_cliente() -> None:
+    contenido = _contenido("day_7", cases=2, people=3)
+
+    assert contenido.subject == "Comparta el estado del caso con su cliente"  # type: ignore[attr-defined]
+    assert "3 personas" in contenido.paragraphs[0]  # type: ignore[attr-defined]
+
+
+def test_el_aviso_del_dia_11_cuenta_lo_que_guardo() -> None:
+    con = _contenido("day_11", cases=1, evidences=1)
+    sin = _contenido("day_11")
+
+    assert "abrió 1 caso y guardó 1 evidencia" in " ".join(con.paragraphs)  # type: ignore[attr-defined]
+    assert "abrió" not in " ".join(sin.paragraphs)  # type: ignore[attr-defined]
+
+
+def test_la_actividad_cuenta_miembros_e_invitaciones_abiertas(db: Session) -> None:
+    office, _ = _en_prueba(db)
+    crear_miembro(db, office, f"ana-{uuid.uuid4().hex[:6]}@example.com", "assistant")
+    set_tenant(db, TenantContext(organization_id=office.organization_id))
+
+    hecho = trial_emails.activity(db, office.organization_id)
+
+    assert hecho.people == 2
+    assert hecho.cases == 0
+    assert hecho.evidences == 0

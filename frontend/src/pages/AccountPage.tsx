@@ -105,14 +105,14 @@ export function AccountPage() {
 
       <Panel
         title="Acceso con Google"
-        description="Vincule su identidad de forma explícita. Aletheia nunca une cuentas solo porque tengan el mismo correo."
+        description="Vincule su identidad de forma explícita. ALETHEIA nunca une cuentas solo porque tengan el mismo correo."
       >
         {googleResult === "vinculado" && (
           <Notice tone="success">Google quedó vinculado a su cuenta.</Notice>
         )}
         {googleResult === "ocupado" && (
           <Notice tone="error">
-            Esa identidad de Google ya pertenece a otra cuenta de Aletheia.
+            Esa identidad de Google ya pertenece a otra cuenta de ALETHEIA.
           </Notice>
         )}
         <SocialAccess mode="link" linked={me.google_linked} />

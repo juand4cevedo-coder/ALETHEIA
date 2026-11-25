@@ -61,7 +61,7 @@ def email_layout(
         f'<td style="padding:0 10px 0 0"><img src="{logo}" width="{_LOGO_SIZE}" '
         f'height="{_LOGO_SIZE}" alt="" style="display:block;border:0"></td>'
         f'<td style="color:{_TEXT};font-family:{_FONT};font-size:24px;'
-        'font-weight:700;line-height:32px">Aletheia</td>'
+        'font-weight:700;line-height:32px">ALETHEIA</td>'
         "</tr></table>"
         f'<p style="margin:0 0 16px;color:{_TEXT};font-size:16px;line-height:24px">'
         f"{greeting}</p>{body}{button}"

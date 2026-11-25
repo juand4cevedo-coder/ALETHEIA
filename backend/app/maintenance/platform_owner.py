@@ -1,4 +1,4 @@
-"""Asignar una única cuenta verificada como administradora propietaria de Aletheia.
+"""Asignar una única cuenta verificada como administradora propietaria de ALETHEIA.
 
 Uso desde el contenedor de migraciones, después de que la persona cree y verifique su cuenta:
 python -m app.maintenance.platform_owner --email correo@ejemplo.com
@@ -30,7 +30,7 @@ def grant_platform_owner(session: Session, email: str) -> uuid.UUID:
         return user.id
     current_owner = session.scalar(select(User.id).where(User.is_platform_admin).limit(1))
     if current_owner is not None:
-        raise ValueError("Ya existe una cuenta administradora propietaria de Aletheia.")
+        raise ValueError("Ya existe una cuenta administradora propietaria de ALETHEIA.")
     user.is_platform_admin = True
     session.add(
         AuditLog(
@@ -48,7 +48,7 @@ def grant_platform_owner(session: Session, email: str) -> uuid.UUID:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Asignar la cuenta propietaria de Aletheia")
+    parser = argparse.ArgumentParser(description="Asignar la cuenta propietaria de ALETHEIA")
     parser.add_argument("--email", required=True, help="Cuenta activa y con correo verificado")
     args = parser.parse_args()
     settings = with_database_password(MigrationSettings())
@@ -60,7 +60,7 @@ def main() -> None:
             grant_platform_owner(session, args.email)
     finally:
         engine.dispose()
-    print("Cuenta propietaria de Aletheia asignada o ya estaba asignada.")
+    print("Cuenta propietaria de ALETHEIA asignada o ya estaba asignada.")
 
 
 if __name__ == "__main__":

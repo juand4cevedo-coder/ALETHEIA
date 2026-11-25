@@ -73,18 +73,33 @@ export function paginasPublicas(): Pagina[] {
   ];
 }
 
-/** Las preguntas de «Antes de empezar», leídas de la sección tal como se dibuja. */
-export function preguntasDeLaPortada(
-  html = renderToString(<FaqSection />),
-): Pregunta[] {
+/** Las preguntas de una página, leídas de sus listas de preguntas (FaqList) tal como se
+ * dibujan. Por defecto, las de «Antes de empezar» de la portada. */
+export function preguntasDe(html = renderToString(<FaqSection />)): Pregunta[] {
   const plantilla = document.createElement("template");
   plantilla.innerHTML = html;
-  return [...plantilla.content.querySelectorAll("details")].map((detalle) => {
+  const detalles = plantilla.content.querySelectorAll(
+    "[data-preguntas] details",
+  );
+  return [...detalles].map((detalle) => {
     const resumen = detalle.querySelector("summary");
     const pregunta = resumen?.textContent?.trim() ?? "";
     resumen?.remove();
     return { pregunta, respuesta: detalle.textContent?.trim() ?? "" };
   });
+}
+
+/** Las preguntas de la página, con la garantía de que ninguna quedó vacía. La portada siempre
+ * las tiene: si no se leen, algo cambió en la sección y el sitio no se construye. */
+function preguntasLeidas(ruta: string, contenido: string): Pregunta[] {
+  const preguntas = preguntasDe(contenido);
+  if (preguntas.some((p) => !p.pregunta || !p.respuesta)) {
+    throw new Error(`${ruta}: hay una pregunta sin texto o sin respuesta`);
+  }
+  if (ruta === "/" && !preguntas.length) {
+    throw new Error("No se pudieron leer las preguntas de la portada");
+  }
+  return preguntas;
 }
 
 const handler = createStaticHandler(routes);
@@ -139,10 +154,7 @@ export async function generarSitio(
       analytics: false,
     }),
   );
-  const preguntas = preguntasDeLaPortada();
-  if (!preguntas.length || preguntas.some((p) => !p.pregunta || !p.respuesta)) {
-    throw new Error("No se pudieron leer las preguntas de la portada");
-  }
+
   const paginas = paginasPublicas();
   const archivos = new Map<string, string>();
 
@@ -163,7 +175,7 @@ export async function generarSitio(
         estructurados: datosEstructurados(meta, {
           nombre,
           planes: PLANES_PUBLICADOS,
-          preguntas,
+          preguntas: preguntasLeidas(meta.ruta, dibujo.contenido),
         }),
         precargas: meta.ruta === "/" ? [precargaDeLaPortada()] : [],
       }),

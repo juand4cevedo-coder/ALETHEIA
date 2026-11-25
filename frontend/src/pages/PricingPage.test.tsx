@@ -31,21 +31,19 @@ describe("Planes y precios (UI-002, HU-002)", () => {
     }
     expect(within(main).getByText("Recomendado")).toBeInTheDocument();
 
-    // El registro no elige plan: no hay un «Elegir» por tarjeta, sino la misma invitación a
-    // empezar la prueba, arriba y debajo de las tarjetas.
+    // El registro no cobra ni elige plan: cada tarjeta lleva a la misma prueba y solo le dice al
+    // registro qué plan miró la persona.
     const signUp = within(main)
       .getAllByRole("link")
       .filter((link) => link.getAttribute("href")?.startsWith("/registro"));
-    expect(signUp.map((link) => link.textContent)).toEqual([
-      "Probar 14 días gratis",
-      "Empezar la prueba gratuita",
-    ]);
+    expect(signUp[0]!.textContent).toBe("Probar 14 días gratis");
+    expect(signUp.at(-1)!.textContent).toBe("Probar 14 días gratis");
     for (const plan of CATALOG) {
-      expect(
-        within(
-          within(main).getByRole("article", { name: plan.name }),
-        ).queryByRole("link"),
-      ).not.toBeInTheDocument();
+      const tarjeta = within(main).getByRole("article", { name: plan.name });
+      expect(within(tarjeta).getByRole("link")).toHaveAttribute(
+        "href",
+        `/registro?plan=${plan.code}`,
+      );
     }
     expect(
       within(main).getByText("Sin tarjeta de crédito. Cancele cuando quiera."),
@@ -92,7 +90,9 @@ describe("Planes y precios (UI-002, HU-002)", () => {
     // Los usuarios adicionales salen del catálogo, no del texto.
     await user.click(within(faq).getByText("¿Puedo agregar más usuarios?"));
     expect(
-      within(faq).getByText(/en Firma, \$14\.900 al mes por persona/),
+      within(faq).getByText(
+        /Firma incluye \d+ y cada persona adicional vale \$14\.900 al mes/,
+      ),
     ).toBeVisible();
   });
 

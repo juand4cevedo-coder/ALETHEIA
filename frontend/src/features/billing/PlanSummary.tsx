@@ -1,6 +1,8 @@
 import { Link } from "react-router";
 
+import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 import { buttonClassName } from "../../components/ui/buttonStyles.ts";
+import { ROUTES } from "../../config/routes.ts";
 import { usePlanCatalog } from "./catalog.tsx";
 import type { BillingCycle } from "./format.ts";
 import { PlanCard } from "./PlanCard.tsx";
@@ -76,6 +78,23 @@ export function PlanSummary({
               recommended={plan.code === RECOMMENDED_PLAN}
               tagline={PLAN_TAGLINES[plan.code]}
               headingLevel={headingLevel}
+              action={
+                <ButtonLink
+                  to={`${ROUTES.signUp}?plan=${plan.code}`}
+                  variant={
+                    plan.code === RECOMMENDED_PLAN ? "primary" : "secondary"
+                  }
+                  aria-label={
+                    plan.monthly_price_cop === 0
+                      ? "Empezar la prueba gratis"
+                      : `Probar gratis antes de pagar ${plan.name}`
+                  }
+                >
+                  {plan.monthly_price_cop === 0
+                    ? "Empezar la prueba"
+                    : "Probar gratis"}
+                </ButtonLink>
+              }
             />
           ))}
         </div>

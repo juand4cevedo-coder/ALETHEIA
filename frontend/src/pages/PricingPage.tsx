@@ -16,6 +16,8 @@ import {
 } from "../features/billing/format.ts";
 import { PlanSummary } from "../features/billing/PlanSummary.tsx";
 import { trialDays } from "../features/billing/plans.ts";
+import { TeamSizeEstimate } from "../features/billing/TeamSizeEstimate.tsx";
+import { DATA_CONTROLLER } from "../config/legal.ts";
 import { type FaqItem, FaqList } from "../features/landing/FaqSection.tsx";
 import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
 import { PAGINAS } from "../seo/fichas.ts";
@@ -27,7 +29,7 @@ import styles from "./PricingPage.module.css";
 // se repite debajo de las tarjetas.
 export function PricingPage() {
   return (
-    <PlanCatalogProvider>
+    <PlanCatalogProvider publicado>
       <Pricing />
     </PlanCatalogProvider>
   );
@@ -93,9 +95,11 @@ function Pricing() {
 
           <PlanSummary cycle={cycle} headingLevel={2} />
 
+          {plans && <TeamSizeEstimate plans={plans} />}
+
           <div className={styles.again}>
             <ButtonLink to={ROUTES.signUp} variant="secondary">
-              Empezar la prueba gratuita
+              {SIGN_UP_LABEL}
             </ButtonLink>
             <p className={styles.trial}>
               {days === null
@@ -126,6 +130,15 @@ function Pricing() {
                 lo que guardó.
               </span>
             </li>
+            <li>
+              <strong>Hable con quien hace ALETHEIA</strong>
+              <span>
+                Llame al{" "}
+                <a href={DATA_CONTROLLER.phoneHref}>{DATA_CONTROLLER.phone}</a>{" "}
+                o escriba a{" "}
+                <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+              </span>
+            </li>
           </ul>
 
           {/* Precio total con impuestos (Ley 1480 de 2011, art. 50, literal c). */}
@@ -150,21 +163,20 @@ function Pricing() {
   );
 }
 
-/** Usuarios adicionales según el catálogo: «en Profesional, $19.900 al mes por persona». */
+/** Usuarios incluidos y adicionales de cada plan pago, según el catálogo: «Esencial incluye 2
+ * usuarios y no admite más; Profesional incluye 4 y cada persona adicional vale $19.900 al
+ * mes». */
 function extraUsersAnswer(plans: readonly PublicPlan[] | undefined): string {
-  const priced = (plans ?? []).filter(
-    (plan) => plan.extra_user_price_cop != null,
-  );
-  if (priced.length === 0) {
-    return "Cada plan trae un número de usuarios incluidos, que aparece en su tarjeta. Si necesita más, pase a un plan mayor o pida una cotización del plan Corporativo.";
+  const paid = (plans ?? []).filter((plan) => plan.monthly_price_cop > 0);
+  if (paid.length === 0) {
+    return "Cada plan trae un número de usuarios incluidos, que aparece en su tarjeta. Algunos admiten usuarios adicionales con un costo mensual por persona.";
   }
-  const prices = priced
-    .map(
-      (plan) =>
-        `en ${plan.name}, ${formatCop(plan.extra_user_price_cop!)} al mes por persona`,
-    )
-    .join("; ");
-  return `Sí, en los planes que lo permiten: ${prices}. Los usuarios incluidos de cada plan aparecen en su tarjeta.`;
+  const lines = paid.map((plan) =>
+    plan.extra_user_price_cop == null
+      ? `${plan.name} incluye ${plan.included_users} usuarios y no admite más`
+      : `${plan.name} incluye ${plan.included_users} y cada persona adicional vale ${formatCop(plan.extra_user_price_cop)} al mes`,
+  );
+  return `Sí. ${lines.join("; ")}. Las invitaciones abiertas también ocupan cupo, y antes de pagar ve el total con las personas de su equipo. Para más de 25 personas puede pedir una cotización del plan Corporativo.`;
 }
 
 // Cada respuesta dice lo que hace el código de cobro (services/payments.py: un plan distinto

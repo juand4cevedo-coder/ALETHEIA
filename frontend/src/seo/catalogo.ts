@@ -1,8 +1,9 @@
-// Precios públicos para los datos estructurados de la portada y de precios. Las páginas leen el
-// catálogo de la API al abrirse, pero el HTML que leen los buscadores se arma al construir,
-// sin la API: estos valores son la copia de ese catálogo (backend, tabla plans) y se
-// actualizan en el mismo cambio que mueva un precio. Prueba es gratis; Corporativo se cotiza y
-// no se publica.
+import { CATALOGO_PUBLICADO } from "../features/billing/published.ts";
+
+// Precios públicos para los datos estructurados de la portada y de precios. Salen de la misma
+// copia del catálogo con la que el sitio dibuja las tarjetas al construirse
+// (features/billing/catalogo-publicado.json), así que lo que dice el JSON-LD es lo mismo que se
+// ve en la página. Corporativo se cotiza y no se publica.
 export type PlanPublicado = {
   codigo: string;
   nombre: string;
@@ -12,35 +13,16 @@ export type PlanPublicado = {
   anual: number | null;
   /** Pesos colombianos por mes de cada usuario adicional, si el plan lo permite. */
   usuarioAdicional: number | null;
+  /** Días de prueba, solo en la prueba gratuita. */
+  diasDePrueba: number | null;
 };
 
-export const PLANES_PUBLICADOS: readonly PlanPublicado[] = [
-  {
-    codigo: "trial",
-    nombre: "Prueba",
-    mensual: 0,
-    anual: null,
-    usuarioAdicional: null,
-  },
-  {
-    codigo: "essential",
-    nombre: "Esencial",
-    mensual: 29_900,
-    anual: 299_000,
-    usuarioAdicional: null,
-  },
-  {
-    codigo: "professional",
-    nombre: "Profesional",
-    mensual: 59_900,
-    anual: 599_000,
-    usuarioAdicional: 19_900,
-  },
-  {
-    codigo: "firm",
-    nombre: "Firma",
-    mensual: 149_900,
-    anual: 1_499_000,
-    usuarioAdicional: 14_900,
-  },
-];
+export const PLANES_PUBLICADOS: readonly PlanPublicado[] =
+  CATALOGO_PUBLICADO.map((plan) => ({
+    codigo: plan.code,
+    nombre: plan.name,
+    mensual: plan.monthly_price_cop,
+    anual: plan.annual_price_cop ?? null,
+    usuarioAdicional: plan.extra_user_price_cop ?? null,
+    diasDePrueba: plan.trial_days ?? null,
+  }));

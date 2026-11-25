@@ -72,7 +72,7 @@ export function SocialAccess({ mode = "login", linked = false }: Props) {
           ? "Comprobando la disponibilidad de Google."
           : enabled
             ? mode === "link"
-              ? "Aletheia no vincula cuentas solo porque coincida el correo."
+              ? "ALETHEIA no vincula cuentas solo porque coincida el correo."
               : mode === "register"
                 ? "Google verificará su identidad antes de crear la cuenta."
                 : "Si ese correo todavía no tiene cuenta, lo llevamos a crearla con Google."

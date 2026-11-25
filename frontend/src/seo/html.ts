@@ -58,6 +58,15 @@ export function cabecera(
     meta("property", "og:url", pagina.canonica || SITE_URL + pagina.ruta),
     meta("property", "og:title", pagina.titulo),
     meta("name", "twitter:title", pagina.titulo),
+    meta("property", "og:image", SITE_URL + pagina.imagen),
+    meta("property", "og:image:width", "1200"),
+    meta("property", "og:image:height", "630"),
+    meta(
+      "property",
+      "og:image:alt",
+      `${pagina.titulo}. Imagen con el nombre de ALETHEIA.`,
+    ),
+    meta("name", "twitter:image", SITE_URL + pagina.imagen),
   );
   if (descripcion) {
     lineas.push(
@@ -127,7 +136,7 @@ export function mapaDelSitio(
     .filter((pagina) => pagina.enMapa && pagina.indexable)
     .map(
       (pagina) =>
-        `  <url>\n    <loc>${escaparHtml(pagina.canonica)}</loc>\n    <lastmod>${pagina.publicado ?? fecha}</lastmod>\n  </url>`,
+        `  <url>\n    <loc>${escaparHtml(pagina.canonica)}</loc>\n    <lastmod>${pagina.actualizado ?? pagina.publicado ?? fecha}</lastmod>\n  </url>`,
     );
   return (
     '<?xml version="1.0" encoding="UTF-8"?>\n' +

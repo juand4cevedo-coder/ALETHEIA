@@ -116,7 +116,7 @@ def test_el_pdf_trae_el_numero_el_valor_y_aclara_que_no_es_factura(
     for esperado in (
         "Comprobante de pago",
         comprobante.number,
-        "Aletheia",
+        "ALETHEIA",
         "EMITIDO POR",
         "RECIBIDO DE",
         "NIT 1214744661-9",

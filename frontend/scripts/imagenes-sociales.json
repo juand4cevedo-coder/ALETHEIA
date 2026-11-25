@@ -1,0 +1,77 @@
+[
+  {
+    "imagen": "/og-image.png",
+    "etiqueta": "Para abogados y despachos",
+    "titulo": "La evidencia digital de sus casos, con huella y sello de tiempo"
+  },
+  {
+    "imagen": "/og/precios.png",
+    "etiqueta": "Planes y precios",
+    "titulo": "Todos los planes traen sello de tiempo, custodia y paquete de preservación"
+  },
+  {
+    "imagen": "/og/empresa.png",
+    "etiqueta": "Para despachos",
+    "titulo": "Roles, permisos por caso y portal del cliente para su equipo"
+  },
+  {
+    "imagen": "/og/verificador.png",
+    "etiqueta": "Herramienta gratuita",
+    "titulo": "Comprobador de hash SHA-256, sin subir el archivo"
+  },
+  {
+    "imagen": "/og/nosotros.png",
+    "etiqueta": "Quién está detrás",
+    "titulo": "Juan Diego Acevedo Calderón, fundador de ALETHEIA"
+  },
+  {
+    "imagen": "/og/seguridad.png",
+    "etiqueta": "Seguridad",
+    "titulo": "Cifrado por caso, custodia que no se edita y verificación en dos pasos"
+  },
+  {
+    "imagen": "/og/blog.png",
+    "etiqueta": "Blog",
+    "titulo": "Evidencia digital, Ley 527 y práctica del despacho"
+  },
+  {
+    "imagen": "/og/docs.png",
+    "etiqueta": "Documentación",
+    "titulo": "Guías paso a paso, de la cuenta al paquete de preservación"
+  },
+  {
+    "imagen": "/og/blog-conservar-chat-correo-video-como-evidencia.png",
+    "etiqueta": "Práctica",
+    "titulo": "Cómo conservar un chat, un correo o un video como evidencia digital en Colombia"
+  },
+  {
+    "imagen": "/og/blog-carpeta-compartida-frente-a-un-caso-con-custodia.png",
+    "etiqueta": "Comparación",
+    "titulo": "Carpeta compartida, WhatsApp y correo frente a un caso con cadena de custodia"
+  },
+  {
+    "imagen": "/og/blog-vigilancia-de-procesos-y-evidencia-digital.png",
+    "etiqueta": "Comparación",
+    "titulo": "Vigilancia de procesos y preservación de evidencia: dos herramientas distintas"
+  },
+  {
+    "imagen": "/og/blog-aletheia-y-el-estampado-cronologico.png",
+    "etiqueta": "Comparación",
+    "titulo": "ALETHEIA y el estampado cronológico de una entidad de certificación"
+  },
+  {
+    "imagen": "/og/blog-que-dice-una-huella-sha256.png",
+    "etiqueta": "Integridad",
+    "titulo": "Qué dice una huella digital y qué no dice"
+  },
+  {
+    "imagen": "/og/blog-permisos-con-intencion.png",
+    "etiqueta": "Seguridad",
+    "titulo": "Dar acceso también es una decisión"
+  },
+  {
+    "imagen": "/og/blog-un-caso-con-contexto.png",
+    "etiqueta": "Práctica",
+    "titulo": "Un caso necesita algo más que un nombre"
+  }
+]

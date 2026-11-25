@@ -39,6 +39,8 @@ export function HowItWorks() {
             {...photoProps("producto-real", "(min-width: 900px) 50vw, 100vw")}
             alt="Personas trabajando en una oficina colorida"
             className={styles.photo}
+            width={1280}
+            height={720}
             loading="lazy"
             decoding="async"
           />

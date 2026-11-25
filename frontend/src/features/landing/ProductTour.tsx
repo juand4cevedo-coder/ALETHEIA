@@ -15,7 +15,7 @@ const VIEWS = [
     title: "Su trabajo a la vista",
     icon: InicioIcon,
     text: "Casos abiertos, cerrados y registros de actividad. Los datos de su espacio, sin reconstruirlos a mano.",
-    alt: "Panel real de Aletheia con tres casos abiertos y tres registros de custodia en una cuenta de ejemplo.",
+    alt: "Panel real de ALETHEIA con tres casos abiertos y tres registros de custodia en una cuenta de ejemplo.",
   },
   {
     id: "casos",

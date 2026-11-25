@@ -36,18 +36,18 @@ def test_editar_un_plan_cambia_solo_lo_enviado_y_deja_la_auditoria(
     mensual = antes.monthly_price_cop
 
     respuesta = dispositivo().patch(
-        "/api/v1/platform/plans/essential", json={"included_users": 2, "is_public": True}
+        "/api/v1/platform/plans/essential", json={"included_users": 3, "is_public": True}
     )
 
     assert respuesta.status_code == 200, respuesta.text
-    assert respuesta.json()["included_users"] == 2
+    assert respuesta.json()["included_users"] == 3
     assert respuesta.json()["monthly_price_cop"] == mensual
     assert respuesta.headers["cache-control"] == "no-store"
     evento = owner_db.scalars(select(AuditLog).where(AuditLog.action == "plan_updated")).one()
     assert evento.organization_id is None
     assert evento.details is not None
     assert evento.details["plan"] == "essential"
-    assert evento.details["included_users"] == "1 -> 2"
+    assert evento.details["included_users"] == "2 -> 3"
 
 
 def test_un_cambio_sin_efecto_no_deja_evento(

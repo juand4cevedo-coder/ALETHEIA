@@ -2,7 +2,7 @@
 export const SITE_NAME = "ALETHEIA";
 /** Nombre junto al logo, en la tipografía editorial de la marca. En los textos
  * corrientes la marca se escribe SITE_NAME. */
-export const WORDMARK = "Aletheia";
+export const WORDMARK = "ALETHEIA";
 export const SITE_URL = "https://aletheia.sbs";
 export const CONTACT_EMAIL = "contacto@aletheia.sbs";
 /** Días de la prueba gratuita que anuncian los botones y avisos fijos. Debe coincidir con el

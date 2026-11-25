@@ -62,6 +62,36 @@
   margin-top: var(--space-1);
 }
 
+.compare {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--ink-hairline);
+}
+
+.compare p {
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.compare ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.compare a {
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+  text-underline-offset: var(--underline-offset);
+}
+
 @media (max-width: 760px) {
   .columns {
     grid-template-columns: minmax(0, 1fr);

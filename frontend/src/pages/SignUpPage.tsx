@@ -9,6 +9,7 @@ import { AccountTypeChoice } from "../features/auth/AccountTypeChoice.tsx";
 import { LegalConsent } from "../features/auth/LegalConsent.tsx";
 import { SocialAccess } from "../features/auth/SocialAccess.tsx";
 import type { AccountType } from "../features/auth/signUp.ts";
+import { CATALOGO_PUBLICADO } from "../features/billing/published.ts";
 import styles from "../features/auth/AccessScreen.module.css";
 import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
 import { PAGINAS } from "../seo/fichas.ts";
@@ -37,8 +38,12 @@ export function SignUpPage() {
   const organizationRef = useRef<HTMLInputElement>(null);
   const legalRef = useRef<HTMLInputElement>(null);
   const firm = accountType === "firm";
-  const googleNotice =
-    GOOGLE_NOTICES[new URLSearchParams(location.search).get("google") ?? ""];
+  const params = new URLSearchParams(location.search);
+  const googleNotice = GOOGLE_NOTICES[params.get("google") ?? ""];
+  // El plan que la persona miró en precios. El registro no cobra ni lo elige: solo lo recuerda.
+  const chosenPlan = CATALOGO_PUBLICADO.find(
+    (plan) => plan.code === params.get("plan") && plan.monthly_price_cop > 0,
+  );
   const organizationError =
     submitted && firm && !organizationName.trim()
       ? "Escriba el nombre de su oficina o firma."
@@ -73,6 +78,13 @@ export function SignUpPage() {
           <p className={styles.lead}>
             ¿Ya tiene cuenta? <Link to={ROUTES.signIn}>Ingresar</Link>
           </p>
+          {chosenPlan && (
+            <p className={styles.lead}>
+              Empieza con {TRIAL_DAYS} días gratis, sin tarjeta. Si al terminar
+              quiere seguir con {chosenPlan.name}, lo paga desde Plan y
+              facturación; nada se cobra solo.
+            </p>
+          )}
         </header>
 
         {googleNotice && (
@@ -132,7 +144,7 @@ export function SignUpPage() {
             </p>
           </div>
           <p className={styles.help}>
-            Aletheia recibirá de Google su nombre, correo verificado e
+            ALETHEIA recibirá de Google su nombre, correo verificado e
             identificador estable. No recibirá su contraseña de Google.
           </p>
         </form>

@@ -61,10 +61,12 @@ export function FaqSection() {
 
 export type FaqItem = { question: string; answer: ReactNode };
 
-/** Lista de preguntas que se abren una a una. La usan el inicio y la página de precios. */
+/** Lista de preguntas que se abren una a una. Cada página que la usa declara sus preguntas en
+ * los datos estructurados (FAQPage). */
 export function FaqList({ items }: { items: readonly FaqItem[] }) {
   return (
-    <div className={styles.list}>
+    // data-preguntas: el prerender lee de aquí las preguntas de la página para su FAQPage.
+    <div className={styles.list} data-preguntas>
       {items.map((item) => (
         <details key={item.question} className={styles.item}>
           <summary className={styles.summary}>

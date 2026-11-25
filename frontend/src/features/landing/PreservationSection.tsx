@@ -34,7 +34,7 @@ const CONTENTS = [
 
 const STEPS = [
   "En el verificador público carga manifest.json y el archivo que quiere revisar. Su navegador recalcula la huella y le dice si coincide con la del manifiesto.",
-  "Los sellos son respuestas RFC 3161 estándar, así que se pueden revisar con herramientas comunes como OpenSSL, sin pasar por ALETHEIA.",
+  "Cada sello lo firma DigiCert, o Sectigo si la primera no responde, con el estándar RFC 3161. Se revisa con herramientas comunes como OpenSSL, sin pasar por ALETHEIA.",
   "Si alguien cambia un evento de custodia, la huella que lo sigue deja de coincidir y la cadena se rompe en ese punto.",
 ] as const;
 
@@ -78,7 +78,13 @@ export function PreservationSection() {
             <p className={styles.scope}>
               El paquete muestra que los archivos no cambiaron desde que
               llegaron a ALETHEIA. Si una prueba es admisible lo decide la
-              autoridad judicial.
+              autoridad judicial. ALETHEIA no es una entidad de certificación
+              acreditada: la diferencia con el estampado cronológico de una
+              entidad acreditada está en{" "}
+              <Link to="/blog/aletheia-y-el-estampado-cronologico">
+                este artículo
+              </Link>
+              .
             </p>
             <Link to={ROUTES.verifier} className={styles.link}>
               Abrir el verificador público

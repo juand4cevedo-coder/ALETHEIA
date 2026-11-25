@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 import styles from "./ScopeSection.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
@@ -22,6 +24,23 @@ const DOES_NOT = [
   "No certifica pruebas ni decide sobre su validez.",
   "No califica un archivo como auténtico, veraz o admisible.",
   "No extrae información de celulares ni entra a cuentas de terceros.",
+  "No consulta la Rama Judicial ni avisa de estados electrónicos: se usa junto a su herramienta de vigilancia de procesos.",
+] as const;
+
+// Comparaciones honestas con lo que el abogado ya usa o ya conoce.
+const COMPARISONS = [
+  {
+    to: "/blog/vigilancia-de-procesos-y-evidencia-digital",
+    label: "Frente a un software de vigilancia de procesos",
+  },
+  {
+    to: "/blog/aletheia-y-el-estampado-cronologico",
+    label: "Frente al estampado de una entidad acreditada",
+  },
+  {
+    to: "/blog/carpeta-compartida-frente-a-un-caso-con-custodia",
+    label: "Frente a una carpeta compartida y WhatsApp",
+  },
 ] as const;
 
 type Column = {
@@ -72,6 +91,17 @@ export function ScopeSection() {
           Si una prueba es auténtica, veraz o admisible, y qué valor tiene, lo
           decide siempre la autoridad judicial.
         </p>
+
+        <nav className={styles.compare} aria-label="Comparaciones">
+          <p>Cómo se compara ALETHEIA</p>
+          <ul>
+            {COMPARISONS.map((item) => (
+              <li key={item.to}>
+                <Link to={item.to}>{item.label}</Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </section>
   );

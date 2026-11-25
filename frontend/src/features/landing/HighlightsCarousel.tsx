@@ -72,7 +72,7 @@ const SLIDES: readonly Slide[] = [
       alt: "Equipo profesional colaborando en una oficina.",
     },
     to: "/empresa",
-    link: "Ver Aletheia para equipos",
+    link: "Ver ALETHEIA para equipos",
   },
   {
     eyebrow: "Integridad",
@@ -83,7 +83,7 @@ const SLIDES: readonly Slide[] = [
     visual: {
       kind: "product",
       image: "/media/producto/verificador.webp",
-      alt: "Comprobador de archivos de Aletheia, que compara un archivo con su manifiesto en el navegador.",
+      alt: "Comprobador de archivos de ALETHEIA, que compara un archivo con su manifiesto en el navegador.",
     },
     to: "/verificador",
     link: "Probar el comprobador",
@@ -151,7 +151,7 @@ export function HighlightsCarousel() {
           className={styles.carousel}
           role="region"
           aria-roledescription="carrusel"
-          aria-label="Capacidades de Aletheia"
+          aria-label="Capacidades de ALETHEIA"
           onKeyDown={onKeyDown}
           onMouseEnter={() => setInteracting(true)}
           onMouseLeave={() => setInteracting(false)}
@@ -197,6 +197,8 @@ export function HighlightsCarousel() {
                       "(min-width: 820px) 55vw, 100vw",
                     )}
                     alt={index === active ? item.visual.alt : ""}
+                    width={1280}
+                    height={853}
                     loading="lazy"
                     decoding="async"
                     draggable={false}

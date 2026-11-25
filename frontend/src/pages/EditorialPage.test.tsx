@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 import { jsonResponse, renderRoute } from "../test/render.tsx";
 import { seriousAxeViolations } from "../test/axe.ts";
+import { JOURNAL } from "../content/journal.ts";
 
 const fetchMock = vi.fn<typeof fetch>();
 beforeEach(() => {
@@ -15,7 +16,7 @@ it("filtra el blog por categoría y búsqueda sin depender de acentos", async ()
   const { container } = await renderRoute("/blog");
   expect(
     within(screen.getByRole("main")).getAllByRole("heading", { level: 2 }),
-  ).toHaveLength(5);
+  ).toHaveLength(JOURNAL.length);
   await user.type(
     screen.getByRole("searchbox", { name: "Buscar artículos" }),
     "huella",
@@ -32,7 +33,7 @@ it("filtra el blog por categoría y búsqueda sin depender de acentos", async ()
   );
   expect(
     within(screen.getByRole("main")).getAllByRole("heading", { level: 2 }),
-  ).toHaveLength(5);
+  ).toHaveLength(JOURNAL.length);
   expect(await seriousAxeViolations(container)).toEqual([]);
 });
 
@@ -154,7 +155,7 @@ it("un fallo de red no aparece como servicio operativo", async () => {
 it("las guías enlazan con las rutas reales", async () => {
   await renderRoute("/ayuda/crear-un-caso");
   expect(
-    screen.getByRole("link", { name: /Abrir en Aletheia/ }),
+    screen.getByRole("link", { name: /Abrir en ALETHEIA/ }),
   ).toHaveAttribute("href", "/app/casos");
   expect(fetchMock).not.toHaveBeenCalled();
 });

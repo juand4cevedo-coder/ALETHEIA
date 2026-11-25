@@ -1,6 +1,6 @@
 /* Tarjetas de plan (CMP-UI-012) y la rejilla que las contiene. Cada tarjeta es un panel en
-   --paper-raised y ocupa cuatro filas de la rejilla con subgrid: el nombre, el texto, el precio y
-   los límites quedan a la misma altura en todas, sin reservar altos a ojo. Sin luz ni elevación
+   --paper-raised y ocupa cinco filas de la rejilla con subgrid: el nombre, el texto, el precio y
+   los límites y el botón quedan a la misma altura en todas, sin reservar altos a ojo. Sin luz ni elevación
    al pasar el puntero; el recomendado se distingue por su borde y su etiqueta. */
 .grid {
   display: grid;
@@ -10,7 +10,7 @@
 
 .card {
   display: grid;
-  grid-row: span 4;
+  grid-row: span 5;
   grid-template-rows: subgrid;
   gap: var(--space-4);
   padding: var(--space-6);
@@ -123,4 +123,28 @@
   border: 1px solid var(--ink-hairline);
   border-radius: var(--radius-lg);
   background: var(--paper-raised);
+}
+
+/* El botón va al pie y ocupa el ancho de la tarjeta. Si la tarjeta no lleva botón, la fila
+   queda vacía y no empuja nada. */
+.action {
+  display: grid;
+  align-content: end;
+}
+
+.action:empty {
+  display: none;
+}
+
+/* En la tarjeta recomendada, el fondo ya es oscuro o violeta: el botón principal se invierte para
+   no perderse contra él. */
+.card[data-recommended] .action a {
+  border-color: var(--on-ink);
+  background: var(--on-ink);
+  color: var(--ink-900);
+}
+
+.card[data-recommended] .action a:hover {
+  border-color: var(--on-ink-2);
+  background: var(--on-ink-2);
 }

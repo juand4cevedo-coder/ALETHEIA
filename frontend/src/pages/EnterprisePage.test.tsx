@@ -3,18 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { PublicPlan } from "../api/generated";
+import { CATALOGO_PUBLICADO } from "../features/billing/published.ts";
 import { seriousAxeViolations } from "../test/axe.ts";
-import { CATALOG } from "../test/plans.ts";
 import { jsonResponse, renderRoute } from "../test/render.tsx";
 
 const fetchMock = vi.fn<typeof fetch>();
 
-// El catálogo de hoy: Profesional admite usuarios adicionales desde la migración 0062.
-const PLANS: PublicPlan[] = CATALOG.map((plan) =>
-  plan.code === "professional"
-    ? { ...plan, extra_user_price_cop: 19_900 }
-    : plan,
-);
+// El catálogo de hoy, el mismo que viaja con el sitio.
+const PLANS: PublicPlan[] = [...CATALOGO_PUBLICADO];
 
 type Sent = { body: Record<string, unknown>; captcha: string | null };
 
@@ -71,7 +67,7 @@ describe("Página para empresas (/empresa)", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Un espacio para su equipo.",
+        name: "ALETHEIA para despachos con varias personas",
       }),
     ).toBeInTheDocument();
     const cta = screen.getByRole("link", {
@@ -94,15 +90,16 @@ describe("Página para empresas (/empresa)", () => {
       }),
     ).toBeInTheDocument();
 
+    // Las cinco personas del ejemplo caben más baratas en Profesional, con un adicional.
     const example = await screen.findByLabelText(
-      "Un despacho de 10 personas en el plan Firma",
+      "Un despacho de 5 personas en el plan Profesional",
     );
     expect(
-      within(example).getByText("2 usuarios adicionales a $14.900"),
+      within(example).getByText("1 usuario adicional a $19.900"),
     ).toBeInTheDocument();
-    expect(within(example).getByText("$179.700")).toBeInTheDocument();
+    expect(within(example).getByText("$79.800")).toBeInTheDocument();
     expect(
-      screen.getByText(/Un equipo de 3 paga \$79\.800 al mes/),
+      screen.getByText(/Desde 9 personas conviene el plan Firma/),
     ).toBeInTheDocument();
 
     expect(container.querySelector("#cotizar")).not.toBeNull();

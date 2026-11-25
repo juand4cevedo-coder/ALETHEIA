@@ -89,7 +89,7 @@ function MetricCard({
   );
 }
 
-// Rendimiento real: qué tan rápido se siente Aletheia para las personas, medido en sus
+// Rendimiento real: qué tan rápido se siente ALETHEIA para las personas, medido en sus
 // navegadores. Primero la respuesta por tipo de pantalla con las tres métricas que Google usa
 // para valorar un sitio; después el detalle por versión, para quien quiera investigar.
 export function PlatformVitalsPage() {
@@ -123,7 +123,7 @@ export function PlatformVitalsPage() {
       <meta name="robots" content="noindex" />
       <PageHeader
         title="Rendimiento real"
-        description="Qué tan rápido se siente Aletheia en los navegadores de las personas que aceptaron la medición. Cada medida llega sin cuenta, IP ni navegador, y se borra a los 90 días."
+        description="Qué tan rápido se siente ALETHEIA en los navegadores de las personas que aceptaron la medición. Cada medida llega sin cuenta, IP ni navegador, y se borra a los 90 días."
       />
       {!me.platform_admin ? (
         <Restricted />

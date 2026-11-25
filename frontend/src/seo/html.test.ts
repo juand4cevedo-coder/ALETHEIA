@@ -31,6 +31,7 @@ const articulo: MetaPagina = {
   enMapa: true,
   publicado: "2026-10-05",
   seccion: "Práctica",
+  imagen: "/og/blog-prueba.png",
 };
 
 describe("cabecera", () => {

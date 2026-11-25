@@ -86,7 +86,7 @@ export function PlatformSupportPage() {
       <meta name="robots" content="noindex" />
       <PageHeader
         title="Solicitudes y PQR"
-        description="Lo que piden las cuentas de Aletheia, con su radicado y la fecha límite para responder. Los plazos se cuentan en días hábiles de Colombia."
+        description="Lo que piden las cuentas de ALETHEIA, con su radicado y la fecha límite para responder. Los plazos se cuentan en días hábiles de Colombia."
       />
       {!me.platform_admin ? (
         <Restricted />

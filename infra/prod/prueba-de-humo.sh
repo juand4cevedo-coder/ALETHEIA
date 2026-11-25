@@ -200,6 +200,26 @@ for ruta in /precios ${articulo:+"$articulo"}; do
     fi
 done
 
+# 10b. Precios trae sus tarjetas en el HTML y su imagen para compartir existe.
+html="$(pagina "https://$DOMINIO/precios" || true)"
+if grep --quiet --fixed-strings '29.900' <<<"$html"; then
+    ok "/precios: los precios están en el HTML"
+else
+    falla "/precios: el HTML no trae los precios"
+fi
+if grep --quiet --fixed-strings "<meta property=\"og:image\" content=\"$SITIO/og/precios.png\"" <<<"$html"; then
+    ok "/precios: imagen para compartir propia"
+else
+    falla "/precios: no declara su imagen para compartir"
+fi
+read -r codigo tipo <<<"$(curl --silent --show-error --max-time 10 --output /dev/null \
+    --write-out '%{http_code} %{content_type}' "$SITIO/og/precios.png" || true)"
+if [[ $codigo == 200 && $tipo == image/png* ]]; then
+    ok "la imagen para compartir de /precios responde"
+else
+    falla "la imagen para compartir de /precios respondió $codigo $tipo"
+fi
+
 # 11. Una dirección inventada responde 404 con noindex; las pantallas de la aplicación, 200.
 inventada="/no-existe-$RANDOM"
 read -r codigo _ <<<"$(respuesta "https://$DOMINIO$inventada")"

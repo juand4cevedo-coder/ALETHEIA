@@ -43,8 +43,8 @@ export function StandardsSection() {
         </ul>
         <div className={styles.details}>
           <p className={styles.detailIntro}>
-            Si quiere conocer los fundamentos de la evidencia digital, aquí
-            puede explorarlos a su ritmo.
+            Tres preguntas que suelen hacerse los abogados antes de confiarle su
+            evidencia a una herramienta.
           </p>
           <details id="huella-demo" className={styles.detail}>
             <summary>

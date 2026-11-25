@@ -23,17 +23,28 @@ export type MetaPagina = {
   enMapa: boolean;
   /** Fecha de publicación de un artículo, AAAA-MM-DD. */
   publicado?: string;
+  /** Último cambio real del contenido, AAAA-MM-DD: la fecha del mapa del sitio y de
+   * dateModified. Sin ella, el mapa usa la fecha de la versión del sitio. */
+  actualizado?: string;
   /** Categoría de un artículo. */
   seccion?: string;
   /** Ruta de navegación desde el inicio, sin la página misma. */
   migas?: Miga[];
+  /** Imagen para compartir (1200 x 630), desde la raíz del sitio. Las que no tienen una propia
+   * usan la general. Se generan con scripts/imagenes-sociales.mjs. */
+  imagen: string;
 };
 
 export const LARGO_MAXIMO_TITULO = 60;
 export const MARCA = ` | ${SITE_NAME}`;
 
 type Fija = Pick<MetaPagina, "titulo" | "descripcion"> &
-  Partial<Pick<MetaPagina, "canonica" | "indexable" | "enMapa" | "migas">>;
+  Partial<
+    Pick<MetaPagina, "canonica" | "indexable" | "enMapa" | "migas" | "imagen">
+  >;
+
+/** La imagen para compartir de las páginas que no tienen una propia. */
+export const IMAGEN_GENERAL = "/og-image.png";
 
 export function pagina(ruta: string, datos: Fija): MetaPagina {
   return {
@@ -42,6 +53,7 @@ export function pagina(ruta: string, datos: Fija): MetaPagina {
     tipo: "website",
     indexable: true,
     enMapa: true,
+    imagen: IMAGEN_GENERAL,
     ...datos,
   };
 }

@@ -108,7 +108,7 @@ export function PlatformAccountsPage() {
       <meta name="robots" content="noindex" />
       <PageHeader
         title="Cuentas"
-        description="Cada persona registrada en Aletheia. Bloquear una cuenta cierra sus sesiones en todos los dispositivos."
+        description="Cada persona registrada en ALETHEIA. Bloquear una cuenta cierra sus sesiones en todos los dispositivos."
       />
       {!me.platform_admin ? (
         <Notice tone="error">Esta cuenta no administra la plataforma.</Notice>
