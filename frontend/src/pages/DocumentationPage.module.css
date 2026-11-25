@@ -260,3 +260,17 @@
     grid-template-columns: 1fr;
   }
 }
+/* Un comando para copiar tal cual: monoespaciado, en una sola línea que se desplaza si no cabe. */
+.command {
+  margin: 16px 0 24px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  border: 1px solid var(--ink-hairline);
+  border-radius: 8px;
+  background: var(--paper-raised);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre;
+}

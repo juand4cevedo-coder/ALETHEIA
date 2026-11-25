@@ -18,7 +18,7 @@ const BelowFold = lazy(() =>
 // el cierre leen el mismo catálogo, pedido una sola vez.
 export function HomePage() {
   return (
-    <PlanCatalogProvider>
+    <PlanCatalogProvider publicado>
       <CabeceraSeo meta={PAGINA_INICIO} />
 
       <Hero />

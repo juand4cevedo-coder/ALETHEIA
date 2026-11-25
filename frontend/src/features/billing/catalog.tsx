@@ -11,6 +11,7 @@ import {
 
 import type { PublicPlan } from "../../api/generated";
 import { SAME_ORIGIN_HEADER } from "../../api/sameOrigin.ts";
+import { CATALOGO_PUBLICADO } from "./published.ts";
 
 // Catálogo público de planes (GET /api/v1/plans, RN-019) para el inicio y la página de precios.
 // Se pide con fetch y no con el cliente generado ni TanStack Query: así la landing no descarga
@@ -47,11 +48,22 @@ type State = {
 
 /** Pide el catálogo una sola vez para toda la página: el titular, las tarjetas y el cierre
  * leen la misma respuesta. Si falla, cada parte lo dice y el botón de reintento lo vuelve a
- * pedir. */
-export function PlanCatalogProvider({ children }: { children: ReactNode }) {
+ * pedir.
+ *
+ * Las páginas públicas pasan `publicado`: empiezan con la copia del catálogo que viaja con el
+ * sitio, así el HTML prerenderizado ya muestra los precios, y la API la reemplaza al llegar. Si
+ * la API falla, se queda la copia. Dentro de la aplicación, donde se paga, no se usa: ahí solo
+ * vale el catálogo de la API. */
+export function PlanCatalogProvider({
+  children,
+  publicado = false,
+}: {
+  children: ReactNode;
+  publicado?: boolean;
+}) {
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<State>({
-    plans: undefined,
+    plans: publicado ? [...CATALOGO_PUBLICADO] : undefined,
     failed: false,
     fetching: true,
   });

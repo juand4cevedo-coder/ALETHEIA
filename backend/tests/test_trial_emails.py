@@ -171,7 +171,7 @@ def test_cada_correo_dice_lo_suyo_y_lleva_su_enlace(db: Session, settings: Setti
     esperado = {
         "day_0": ("abra su primer caso", "/app/casos/nuevo"),
         "day_3": ("sello de tiempo RFC 3161", "/app/casos"),
-        "day_7": ("Su prueba incluye 3 usuarios: usted y otras 2 personas", "/app/miembros"),
+        "day_7": ("Su prueba incluye 4 usuarios: usted y otras 3 personas", "/app/miembros"),
         "day_11": ("solo lectura durante 30 días", "/app/facturacion"),
     }
 

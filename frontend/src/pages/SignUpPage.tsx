@@ -132,7 +132,7 @@ export function SignUpPage() {
             </p>
           </div>
           <p className={styles.help}>
-            Aletheia recibirá de Google su nombre, correo verificado e
+            ALETHEIA recibirá de Google su nombre, correo verificado e
             identificador estable. No recibirá su contraseña de Google.
           </p>
         </form>

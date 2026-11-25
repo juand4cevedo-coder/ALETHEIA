@@ -154,7 +154,7 @@ it("un fallo de red no aparece como servicio operativo", async () => {
 it("las guías enlazan con las rutas reales", async () => {
   await renderRoute("/ayuda/crear-un-caso");
   expect(
-    screen.getByRole("link", { name: /Abrir en Aletheia/ }),
+    screen.getByRole("link", { name: /Abrir en ALETHEIA/ }),
   ).toHaveAttribute("href", "/app/casos");
   expect(fetchMock).not.toHaveBeenCalled();
 });

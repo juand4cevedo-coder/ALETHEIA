@@ -57,7 +57,7 @@ def _day(value: datetime.datetime) -> str:
 
 
 def _symbol(pdf: canvas.Canvas, left: float, top: float, size: float) -> None:
-    """El símbolo de Aletheia: recuadro violeta y ojo blanco, en su cuadrícula de 64."""
+    """El símbolo de ALETHEIA: recuadro violeta y ojo blanco, en su cuadrícula de 64."""
     scale = size / 64
 
     def point(x: float, y: float) -> tuple[float, float]:
@@ -134,7 +134,7 @@ def render(receipt: PaymentReceipt) -> bytes:
     _symbol(pdf, MARGIN, top, 34)
     pdf.setFont(FONT_BOLD, 19)
     pdf.setFillColor(VIOLET)
-    pdf.drawString(MARGIN + 44, top - 24, "Aletheia")
+    pdf.drawString(MARGIN + 44, top - 24, "ALETHEIA")
     pdf.setFont(FONT, 8)
     pdf.setFillColor(MUTED)
     pdf.drawString(MARGIN + 44, top - 36, "Preservación de evidencia digital")

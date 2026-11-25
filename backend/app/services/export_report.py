@@ -43,8 +43,8 @@ def render_report(manifest: BuiltManifest) -> bytes:
 
     buffer = io.BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=A4, invariant=1, pageCompression=0)
-    pdf.setTitle("Informe de preservación Aletheia")
-    pdf.setAuthor("Aletheia")
+    pdf.setTitle("Informe de preservación ALETHEIA")
+    pdf.setAuthor("ALETHEIA")
     width, height = A4
     x = 48
     y = height - 56
@@ -76,7 +76,7 @@ def render_report(manifest: BuiltManifest) -> bytes:
     line("Declaración de alcance", font=FONT_BOLD, size=12, gap=22)
     line("Este paquete permite comparar el SHA-256 de cada archivo con el manifiesto.")
     line("Una coincidencia no autentica el archivo ni el manifiesto y no demuestra su procedencia.")
-    line("Aletheia no certifica el contenido ni determina admisibilidad o valor probatorio.")
+    line("ALETHEIA no certifica el contenido ni determina admisibilidad o valor probatorio.")
     if not anchor:
         line(
             "Sin anclaje externo, la cadena no protege frente a una reescritura completa "

@@ -127,7 +127,7 @@ export function AccountMenu({ me }: { me: Me }) {
                 <UsuarioIcon size={16} aria-hidden="true" />
                 <span className={styles.actionText}>
                   <span className={styles.actionLabel}>
-                    Administrar Aletheia
+                    Administrar ALETHEIA
                   </span>
                   <span className={styles.actionHint}>
                     Resumen, despachos y operación

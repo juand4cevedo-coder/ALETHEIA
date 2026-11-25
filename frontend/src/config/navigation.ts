@@ -40,7 +40,7 @@ export const NAVIGATION: NavigationGroup[] = [
     feature: {
       to: "/#recorrido",
       title: "Su espacio de trabajo",
-      text: "Conozca Aletheia por dentro.",
+      text: "Conozca ALETHEIA por dentro.",
     },
   },
   {
@@ -79,7 +79,7 @@ export const NAVIGATION: NavigationGroup[] = [
       {
         to: "/docs",
         label: "Documentación",
-        description: "Empiece a trabajar con Aletheia.",
+        description: "Empiece a trabajar con ALETHEIA.",
       },
       {
         to: "/blog",
@@ -104,11 +104,11 @@ export const NAVIGATION: NavigationGroup[] = [
     },
   },
   {
-    title: "Aletheia",
+    title: "ALETHEIA",
     links: [
       {
         to: "/nosotros",
-        label: "Sobre Aletheia",
+        label: "Sobre ALETHEIA",
         description: "Quiénes somos y qué hacemos.",
       },
       {
@@ -130,7 +130,7 @@ export const NAVIGATION: NavigationGroup[] = [
     feature: {
       to: "/nosotros",
       title: "La claridad empieza aquí",
-      text: "Conozca el propósito detrás de Aletheia.",
+      text: "Conozca el propósito detrás de ALETHEIA.",
     },
   },
 ];
@@ -149,7 +149,7 @@ export const FOOTER_NAVIGATION: { title: string; links: NavigationLink[] }[] = [
   {
     title: "Compañía",
     links: [
-      { to: "/nosotros", label: "Sobre Aletheia" },
+      { to: "/nosotros", label: "Sobre ALETHEIA" },
       { to: "/filosofia", label: "Filosofía" },
       { to: "/empresa", label: "Para equipos" },
     ],

@@ -25,11 +25,11 @@ const PAGES: Record<
 > = {
   filosofia: {
     title: "ALETHEIA dice exactamente lo que hace y lo que no",
-    lead: "Cada decisión de Aletheia parte de una pregunta: ¿esto ayuda a trabajar con más confianza?",
+    lead: "Cada decisión de ALETHEIA parte de una pregunta: ¿esto ayuda a trabajar con más confianza?",
     sections: [
       {
         title: "Hacer visible lo importante",
-        text: "Aletheia toma su nombre de la idea griega de verdad y desocultamiento. En el producto, esa intención se traduce en contexto: entender qué se está consultando, quién participa y qué permite concluir una comprobación.",
+        text: "ALETHEIA toma su nombre de la idea griega de verdad y desocultamiento. En el producto, esa intención se traduce en contexto: entender qué se está consultando, quién participa y qué permite concluir una comprobación.",
       },
       {
         title: "Dar espacio al trabajo",
@@ -211,7 +211,7 @@ export function InformationPage() {
       "Información legal",
       "Las condiciones del servicio y el cuidado de sus datos, en un mismo lugar.",
     ],
-    marca: ["La marca Aletheia", "Una identidad que parte de la claridad."],
+    marca: ["La marca ALETHEIA", "Una identidad que parte de la claridad."],
     estado: [
       "Estado del servicio",
       "Una consulta directa, con la hora de la comprobación.",
@@ -267,10 +267,10 @@ export function InformationPage() {
         <>
           <div className={styles.wordmarkSample}>
             <BrandMark size={80} />
-            <span>Aletheia</span>
+            <span>ALETHEIA</span>
           </div>
           <div className={styles.prose}>
-            <h2>El símbolo de Aletheia</h2>
+            <h2>El símbolo de ALETHEIA</h2>
             <p>
               El símbolo es un ojo dentro de un recuadro de esquinas
               redondeadas. El ojo expresa observación cuidadosa y búsqueda de
@@ -280,7 +280,7 @@ export function InformationPage() {
             </p>
             <h2>Uso del nombre</h2>
             <p>
-              Se escribe Aletheia. Mantenga el símbolo proporcionado, con un
+              Se escribe ALETHEIA. Mantenga el símbolo proporcionado, con un
               espacio libre mínimo equivalente al ancho del iris y contraste
               suficiente. No cambie sus proporciones ni añada sombras,
               inclinaciones o elementos alrededor del recuadro.
@@ -300,7 +300,7 @@ export function InformationPage() {
       {key === "soporte" && (
         <div className={styles.centerActions}>
           <ButtonLink to={"mailto:" + CONTACT_EMAIL}>
-            Escribir a Aletheia
+            Escribir a ALETHEIA
           </ButtonLink>
           <Link to="/ayuda">Consultar la base de conocimiento</Link>
         </div>
@@ -460,14 +460,14 @@ export function KnowledgePage() {
             <h1>{article.title}</h1>
             <p>{article.text}</p>
             <ButtonLink to={article.related}>
-              Abrir en Aletheia <FlechaDerechaIcon size={16} />
+              Abrir en ALETHEIA <FlechaDerechaIcon size={16} />
             </ButtonLink>
             <Link to="/soporte">Necesito ayuda con este tema</Link>
           </>
         ) : (
           <>
             <h1>Un buen lugar para empezar.</h1>
-            <p>Guías breves para encontrar su camino dentro de Aletheia.</p>
+            <p>Guías breves para encontrar su camino dentro de ALETHEIA.</p>
             <div className={styles.cards}>
               {HELP.map((item) => (
                 <Link key={item.slug} to={"/ayuda/" + item.slug}>

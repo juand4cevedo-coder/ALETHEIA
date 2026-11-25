@@ -144,9 +144,9 @@ describe("resumir", () => {
     expect(resumen).toMatch(/verá Nuevo caso\.$/);
   });
 
-  it("sin frase que sirva, corta en una palabra completa", () => {
-    const resumen = resumir("palabra ".repeat(40));
-    expect(resumen.length).toBeLessThanOrEqual(155);
-    expect(resumen).toMatch(/palabra\.$/);
+  it("sin una frase completa que quepa, pide una descripción propia en vez de cortar", () => {
+    expect(() => resumir("palabra ".repeat(40))).toThrow(
+      /sin cortar una frase/,
+    );
   });
 });

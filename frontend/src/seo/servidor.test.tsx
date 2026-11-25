@@ -56,6 +56,24 @@ describe("páginas públicas", () => {
     }
     expect(new Set(rutas).size).toBe(rutas.length);
   });
+
+  it("tienen un título que cabe en el buscador y una descripción de frases completas", () => {
+    for (const { meta } of paginasPublicas()) {
+      expect(meta.titulo.length, meta.ruta).toBeLessThanOrEqual(60);
+      expect(meta.titulo, meta.ruta).toMatch(/ALETHEIA$/);
+      expect(meta.descripcion.length, meta.ruta).toBeLessThanOrEqual(155);
+      expect(meta.descripcion.length, meta.ruta).toBeGreaterThanOrEqual(70);
+      expect(meta.descripcion, meta.ruta).toMatch(/[.?!]$/);
+    }
+  });
+
+  it("no repiten un paso en la ruta de navegación", () => {
+    for (const { meta } of paginasPublicas()) {
+      const rutas = (meta.migas ?? []).map((miga) => miga.ruta);
+      expect(rutas, meta.ruta).not.toContain(meta.canonica.replace(/^https:\/\/[^/]+/, ""));
+      expect(new Set(rutas).size, meta.ruta).toBe(rutas.length);
+    }
+  });
 });
 
 describe("generarSitio", () => {

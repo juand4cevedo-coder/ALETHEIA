@@ -130,16 +130,16 @@ def test_profesional_admite_adicionales_a_19900(db: Session) -> None:
     profesional = _plan(db, "professional")
 
     assert profesional.extra_user_price_cop == 19_900
-    assert profesional.included_users == 2
+    assert profesional.included_users == 4
 
 
 # El cobro: checkout web, Nequi y renovación.
 
 
-def test_firma_con_diez_personas_cobra_dos_adicionales(db: Session, settings: Settings) -> None:
+def test_firma_con_doce_personas_cobra_dos_adicionales(db: Session, settings: Settings) -> None:
     office = crear_oficina(db, "firm")
     _en_prueba(db, office)
-    _equipo(db, office, 10)
+    _equipo(db, office, 12)
     principal = _principal(office.organization_id, office.owner.id, "owner")
 
     url = checkout.iniciar_checkout_web(db, _con_wompi(settings), principal, "firm", "monthly")
@@ -154,7 +154,7 @@ def test_las_invitaciones_abiertas_cuentan_como_usuarios(db: Session, settings: 
     office = crear_oficina(db, "professional")
     _en_prueba(db, office)
     set_tenant(db, TenantContext(office.organization_id, office.owner.id))
-    for correo in ("a@example.com", "b@example.com"):
+    for correo in ("a@example.com", "b@example.com", "c@example.com", "d@example.com"):
         db.add(
             Invitation(
                 organization_id=office.organization_id,
@@ -172,7 +172,7 @@ def test_las_invitaciones_abiertas_cuentan_como_usuarios(db: Session, settings: 
         db, _con_wompi(settings), principal, "professional", "annual"
     )
 
-    # Propietario y dos invitaciones: tres personas, una más de las dos incluidas.
+    # Propietario y cuatro invitaciones: cinco personas, una más de las cuatro incluidas.
     assert _monto(url) == (599_000 + 199_000) * 100
 
 
@@ -181,7 +181,7 @@ def test_nequi_tambien_cobra_los_adicionales(
 ) -> None:
     office = crear_oficina(db, "professional")
     _en_prueba(db, office)
-    _equipo(db, office, 4)
+    _equipo(db, office, 6)
     principal = _principal(office.organization_id, office.owner.id, "owner")
     cobrado: dict[str, object] = {}
 
@@ -208,7 +208,7 @@ def test_un_equipo_que_no_cabe_en_el_plan_no_se_cobra(db: Session, settings: Set
         checkout.iniciar_checkout_web(db, _con_wompi(settings), principal, "essential", "monthly")
 
     assert error.value.users == 3
-    assert error.value.included == 1
+    assert error.value.included == 2
     subscription = db.scalars(
         select(Subscription).where(Subscription.organization_id == office.organization_id)
     ).one()
@@ -320,7 +320,7 @@ def test_la_renovacion_automatica_cobra_los_adicionales_del_dia(
     subscription, fin = _vence_en(db, office, 0.5)
     subscription.plan_id = _plan(db, "firm").id
     db.flush()
-    _equipo(db, office, 9)
+    _equipo(db, office, 11)
     llamadas = _cobro(monkeypatch, "APPROVED")
 
     resultado = renewals.attempt(db, _con_renovacion(settings), office.organization_id, fin, 1)
@@ -341,7 +341,7 @@ def test_el_aviso_de_renovacion_automatica_suma_los_adicionales(
     subscription, fin = _vence_en(db, office, 7)
     subscription.plan_id = _plan(db, "professional").id
     db.flush()
-    _equipo(db, office, 3)
+    _equipo(db, office, 5)
     payload = {
         "organization_id": str(office.organization_id),
         "user_id": str(office.owner.id),
@@ -364,7 +364,7 @@ def test_el_desglose_antes_de_pagar_muestra_cada_plan_para_el_equipo_de_hoy(
 ) -> None:
     office = crear_oficina(db, "trial")
     _en_prueba(db, office)
-    _equipo(db, office, 3)
+    _equipo(db, office, 5)
     cliente = _sesion(dispositivo, office.owner)
 
     respuesta = cliente.get("/api/v1/billing/quote")
@@ -372,7 +372,7 @@ def test_el_desglose_antes_de_pagar_muestra_cada_plan_para_el_equipo_de_hoy(
     assert respuesta.status_code == 200, respuesta.text
     assert respuesta.headers["cache-control"] == "no-store"
     cuerpo = respuesta.json()
-    assert cuerpo["users"] == 3
+    assert cuerpo["users"] == 5
     opciones = {(o["plan_code"], o["billing_cycle"]): o for o in cuerpo["options"]}
     assert opciones[("essential", "monthly")]["fits"] is False
     profesional = opciones[("professional", "monthly")]
@@ -402,7 +402,7 @@ def test_pagar_un_plan_donde_no_cabe_el_equipo_responde_409_con_la_explicacion(
 ) -> None:
     office = crear_oficina(db, "trial")
     _en_prueba(db, office)
-    _equipo(db, office, 2)
+    _equipo(db, office, 3)
     cliente = _sesion(dispositivo, office.owner)
     app.dependency_overrides[get_app_settings] = lambda: _con_wompi(settings)
 
@@ -411,4 +411,4 @@ def test_pagar_un_plan_donde_no_cabe_el_equipo_responde_409_con_la_explicacion(
     )
 
     assert respuesta.status_code == 409
-    assert respuesta.json()["detail"].startswith("Su equipo tiene 2 personas")
+    assert respuesta.json()["detail"].startswith("Su equipo tiene 3 personas")

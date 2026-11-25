@@ -87,7 +87,7 @@ export function VerifierPage() {
             <p>
               Seleccione el manifiesto del paquete de preservación y el archivo
               que desea comprobar. El cálculo ocurre en este navegador; ninguno
-              de los dos archivos se envía a Aletheia.
+              de los dos archivos se envía a ALETHEIA.
             </p>
           </header>
 

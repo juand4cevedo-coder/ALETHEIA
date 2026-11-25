@@ -127,7 +127,7 @@ export function mapaDelSitio(
     .filter((pagina) => pagina.enMapa && pagina.indexable)
     .map(
       (pagina) =>
-        `  <url>\n    <loc>${escaparHtml(pagina.canonica)}</loc>\n    <lastmod>${pagina.publicado ?? fecha}</lastmod>\n  </url>`,
+        `  <url>\n    <loc>${escaparHtml(pagina.canonica)}</loc>\n    <lastmod>${pagina.actualizado ?? pagina.publicado ?? fecha}</lastmod>\n  </url>`,
     );
   return (
     '<?xml version="1.0" encoding="UTF-8"?>\n' +

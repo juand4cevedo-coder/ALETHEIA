@@ -1,4 +1,4 @@
-"""Acceso OIDC de Google: PKCE, vinculación explícita y sesiones normales de Aletheia."""
+"""Acceso OIDC de Google: PKCE, vinculación explícita y sesiones normales de ALETHEIA."""
 
 import datetime
 import urllib.parse

@@ -15,7 +15,7 @@ export const privacyPolicy: LegalDocument = {
   slug: "privacidad",
   title: "Política de tratamiento de datos personales",
   description:
-    "Qué datos personales recoge ALETHEIA, para qué los usa, con quién los comparte, cómo los protege y cómo puede consultarlos, corregirlos o solicitar su supresión.",
+    "Qué datos personales recoge ALETHEIA, para qué los usa, con quién los comparte y cómo puede consultarlos, corregirlos o pedir que se supriman.",
   keyPoints: [
     {
       title: "Solo para prestarle el servicio",

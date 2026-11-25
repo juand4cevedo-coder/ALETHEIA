@@ -1,6 +1,8 @@
 """Pruebas del catálogo público de planes (API-002, HU-002)."""
 
+import json
 from collections.abc import Callable, Iterator
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -107,7 +109,16 @@ def test_sin_base_responde_503_en_problem_details(
     assert "sin-uso" not in response.text
 
 
-def test_la_prueba_gratuita_incluye_tres_personas_para_probar_el_equipo(db: Session) -> None:
+def test_la_prueba_gratuita_incluye_las_cuatro_personas_de_profesional(db: Session) -> None:
     prueba = db.scalars(select(Plan).where(Plan.code == "trial")).one()
 
-    assert prueba.included_users == 3
+    assert prueba.included_users == 4
+
+
+def test_la_copia_del_catalogo_en_el_sitio_coincide_con_la_api(client: TestClient) -> None:
+    # El sitio público dibuja las tarjetas de precios desde esta copia al construirse, para que
+    # los buscadores lean los precios sin ejecutar JavaScript. Si un precio o un límite cambia en
+    # la base, esta prueba obliga a actualizar la copia en el mismo cambio.
+    copia = Path(__file__).parents[2] / "frontend/src/features/billing/catalogo-publicado.json"
+
+    assert json.loads(copia.read_text(encoding="utf-8")) == client.get(_PATH).json()

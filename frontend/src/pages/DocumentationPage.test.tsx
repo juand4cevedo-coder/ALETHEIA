@@ -12,26 +12,26 @@ it("busca guías sin depender de acentos y abre sus pasos e índice", async () =
   ).toBeInTheDocument();
   await user.type(
     screen.getByRole("searchbox", { name: "Buscar documentación" }),
-    "verificar",
+    "comprobar",
   );
   const nav = screen.getByRole("navigation", { name: "Documentación" });
   expect(within(nav).getAllByRole("link")).toHaveLength(1);
   await user.click(
     within(nav).getByRole("link", {
-      name: "Verificar un archivo con su manifiesto",
+      name: "Comprobar un paquete de preservación",
     }),
   );
   expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-    "Verificar un archivo con su manifiesto",
+    "Comprobar un paquete de preservación",
   );
   expect(
     screen.getByRole("navigation", { name: "En esta página" }),
-  ).toHaveTextContent("Interprete el resultado");
+  ).toHaveTextContent("Lea el resultado");
   expect(
-    screen.getByText(/La comparación no verifica quién creó el archivo/),
+    screen.getByText(/La comparación no dice quién creó el archivo/),
   ).toBeInTheDocument();
   expect(
-    screen.getByRole("link", { name: "Abrir el verificador" }),
+    screen.getByRole("link", { name: "Abrir el comprobador" }),
   ).toHaveAttribute("href", "/verificador");
   expect(await seriousAxeViolations(container)).toEqual([]);
 });

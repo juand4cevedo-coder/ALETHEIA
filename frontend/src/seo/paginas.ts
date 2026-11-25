@@ -23,6 +23,9 @@ export type MetaPagina = {
   enMapa: boolean;
   /** Fecha de publicación de un artículo, AAAA-MM-DD. */
   publicado?: string;
+  /** Último cambio real del contenido, AAAA-MM-DD: la fecha del mapa del sitio y de
+   * dateModified. Sin ella, el mapa usa la fecha de la versión del sitio. */
+  actualizado?: string;
   /** Categoría de un artículo. */
   seccion?: string;
   /** Ruta de navegación desde el inicio, sin la página misma. */

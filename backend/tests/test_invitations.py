@@ -206,33 +206,37 @@ def test_una_organizacion_en_solo_lectura_no_invita(dispositivo: NuevoCliente, d
 # --- Cupo del plan (CA-HU-011-02, RN-012) ---------------------------------------------------
 
 
-def test_un_plan_de_una_sola_persona_no_tiene_cupo_para_invitar(
+def test_esencial_admite_al_abogado_y_un_asistente_y_nadie_mas(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
     oficina = crear_oficina(db, "essential")
+    cliente = _sesion(dispositivo, oficina.owner)
+    asistente = _invitar(cliente, "asistente@example.com")
+    assert asistente.status_code == 201
 
-    respuesta = _invitar(_sesion(dispositivo, oficina.owner), "carlos@example.com")
+    respuesta = _invitar(cliente, "carlos@example.com")
 
     assert respuesta.status_code == 409
     assert respuesta.json()["detail"] == (
-        "Su plan incluye 1 usuario y ya están ocupados o invitados. Para invitar a alguien "
+        "Su plan incluye 2 usuarios y ya están ocupados o invitados. Para invitar a alguien "
         "más, cambie de plan o revoque una invitación pendiente."
     )
-    assert _invitaciones(db, oficina) == []
+    assert len(_invitaciones(db, oficina)) == 1
 
 
 def test_las_invitaciones_abiertas_ocupan_cupo_hasta_revocarlas_o_vencer(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    # La prueba incluye 3 usuarios y no admite adicionales: el propietario y dos personas más.
+    # La prueba incluye 4 usuarios y no admite adicionales: el propietario y tres personas más.
     oficina = crear_oficina(db, "trial")
     cliente = _sesion(dispositivo, oficina.owner)
     assert _invitar(cliente, "ana@example.com").status_code == 201
+    assert _invitar(cliente, "pedro@example.com").status_code == 201
     primera = _invitar(cliente, "carlos@example.com").json()
 
     sin_cupo = _invitar(cliente, "laura@example.com")
     assert sin_cupo.status_code == 409
-    assert sin_cupo.json()["detail"].startswith("Su plan incluye 3 usuarios")
+    assert sin_cupo.json()["detail"].startswith("Su plan incluye 4 usuarios")
 
     assert cliente.delete(f"{_INVITACIONES}/{primera['id']}").status_code == 204
     segunda = _invitar(cliente, "laura@example.com")

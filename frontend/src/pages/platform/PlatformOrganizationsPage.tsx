@@ -42,7 +42,7 @@ function usage(org: PlatformOrganization): string {
     : used;
 }
 
-// Directorio de despachos: quién usa Aletheia, con qué plan, cuánto espacio ocupa y cuándo
+// Directorio de despachos: quién usa ALETHEIA, con qué plan, cuánto espacio ocupa y cuándo
 // vence su acceso. Solo datos comerciales; ningún caso ni evidencia.
 export function PlatformOrganizationsPage() {
   const me = useOutletContext<Me>();
@@ -106,7 +106,7 @@ export function PlatformOrganizationsPage() {
       <meta name="robots" content="noindex" />
       <PageHeader
         title="Despachos"
-        description="Cada oficina o abogado independiente que usa Aletheia, con su plan y su consumo."
+        description="Cada oficina o abogado independiente que usa ALETHEIA, con su plan y su consumo."
         actions={
           <Button
             variant="secondary"

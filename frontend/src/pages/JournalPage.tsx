@@ -1,11 +1,19 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router";
-import { JOURNAL, JOURNAL_AUTHOR } from "../content/journal.ts";
+import {
+  JOURNAL,
+  JOURNAL_AUTHOR,
+  JOURNAL_AUTHOR_NOTE,
+} from "../content/journal.ts";
 import { BuscarIcon, FlechaDerechaIcon } from "../components/ui/icons.tsx";
 import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
 import { PAGINAS } from "../seo/fichas.ts";
 import { metaArticulo } from "../seo/contenidos.ts";
 import { NotFoundPage } from "./NotFoundPage.tsx";
+import {
+  LinkedParagraph,
+  plainText,
+} from "../components/content/LinkedParagraph.tsx";
 import styles from "./EditorialPage.module.css";
 
 // Fecha de publicación, sin hora: se formatea en UTC para que "2026-10-05" lea 5 de octubre,
@@ -19,29 +27,6 @@ function formatPublishDate(iso: string): string {
   }).format(new Date(iso));
 }
 
-/** Un párrafo del artículo con sus enlaces internos, escritos [texto](/ruta). */
-function ArticleParagraph({ text }: { text: string }) {
-  const parts = text.split(/(\[[^\]]+\]\(\/[^)\s]*\))/);
-  return (
-    <p>
-      {parts.map((part, index) => {
-        const link = /^\[([^\]]+)\]\((\/[^)\s]*)\)$/.exec(part);
-        return link ? (
-          <Link key={index} to={link[2]!}>
-            {link[1]}
-          </Link>
-        ) : (
-          part
-        );
-      })}
-    </p>
-  );
-}
-
-/** El texto del párrafo sin la marca de los enlaces, para buscar y para las llaves. */
-function plain(text: string): string {
-  return text.replace(/\[([^\]]+)\]\(\/[^)\s]*\)/g, "$1");
-}
 
 // Del más reciente al más antiguo.
 const BY_DATE = [...JOURNAL].sort((a, b) => b.date.localeCompare(a.date));
@@ -69,7 +54,18 @@ export function JournalPage() {
             <time dateTime={article.date}>
               {formatPublishDate(article.date)}
             </time>
+            {article.updated && article.updated !== article.date && (
+              <span>
+                Actualizado el{" "}
+                <time dateTime={article.updated}>
+                  {formatPublishDate(article.updated)}
+                </time>
+              </span>
+            )}
             <span>{article.category}</span>
+          </p>
+          <p className={styles.authorNote}>
+            {JOURNAL_AUTHOR_NOTE} <Link to="/nosotros">Quién escribe</Link>
           </p>
         </header>
         <div
@@ -78,20 +74,16 @@ export function JournalPage() {
           aria-hidden="true"
         >
           <span>
-            {article.category === "Integridad"
-              ? "SHA-256"
-              : article.category === "Seguridad"
-                ? "Acceso"
-                : "Contexto"}
+            {article.visual}
           </span>
-          <small>Aletheia</small>
+          <small>ALETHEIA</small>
         </div>
         <div className={styles.prose}>
           {article.sections.map((section) => (
             <section key={section.title}>
               <h2>{section.title}</h2>
               {section.paragraphs.map((p) => (
-                <ArticleParagraph key={plain(p)} text={p} />
+                <LinkedParagraph key={plainText(p)} text={p} />
               ))}
             </section>
           ))}
@@ -167,11 +159,7 @@ export function JournalPage() {
               aria-hidden="true"
             >
               <span>
-                {item.category === "Integridad"
-                  ? "SHA-256"
-                  : item.category === "Seguridad"
-                    ? "Acceso"
-                    : "Contexto"}
+                {item.visual}
               </span>
               <small>{item.tagline}</small>
             </div>

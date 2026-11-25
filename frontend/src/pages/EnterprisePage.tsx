@@ -72,7 +72,7 @@ export function EnterprisePage() {
         </a>
       </header>
 
-      <PlanCatalogProvider>
+      <PlanCatalogProvider publicado>
         <div className={styles.body}>
           <section className={styles.block} aria-labelledby="escenario">
             <h2 id="escenario">Un despacho de ejemplo</h2>

@@ -88,7 +88,7 @@ class Principal:
 
     La organización y el rol faltan si la persona ya no pertenece a ninguna, por ejemplo
     después de que la retiren (HU-013). También faltan para la cuenta dueña de la
-    plataforma: administra Aletheia, no un despacho ni sus casos.
+    plataforma: administra ALETHEIA, no un despacho ni sus casos.
     """
 
     user_id: uuid.UUID

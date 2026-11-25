@@ -71,7 +71,7 @@ export function buildIcs(
     "PRODID:-//ALETHEIA//Plazos//ES",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    "X-WR-CALNAME:Plazos de Aletheia",
+    "X-WR-CALNAME:Plazos de ALETHEIA",
   ];
   for (const task of dated) {
     const start = new Date(task.due_at!);

@@ -563,6 +563,17 @@
   color: var(--text);
   font-weight: 600;
 }
+.articleHead > .authorNote {
+  max-width: 62ch;
+  margin-top: 8px;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.articleHead > .authorNote a {
+  color: var(--text);
+  text-underline-offset: 3px;
+}
 
 /* Persona fundadora: una ficha con la foto y, al lado, quién es y cómo contactarlo. */
 .founder {

@@ -63,7 +63,7 @@ def test_la_cuenta_de_plataforma_busca_y_filtra_cuentas_en_el_servidor(
     app: FastAPI, owner_db: Session, dispositivo: NuevoCliente
 ) -> None:
     admin = _user(owner_db, "admin@example.com", platform_admin=True)
-    admin.full_name = "Administradora Aletheia"
+    admin.full_name = "Administradora ALETHEIA"
     blocked = _user(owner_db, "blocked@example.com")
     blocked.full_name = "Carlos Gómez"
     blocked.status = "blocked"

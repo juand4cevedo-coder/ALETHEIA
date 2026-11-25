@@ -113,7 +113,7 @@ export function PlatformOverviewPage() {
       <meta name="robots" content="noindex" />
       <PageHeader
         title={hello}
-        description="Así va Aletheia hoy: lo que necesita su atención, el negocio y la actividad reciente."
+        description="Así va ALETHEIA hoy: lo que necesita su atención, el negocio y la actividad reciente."
       />
       {!me.platform_admin ? (
         <Restricted />

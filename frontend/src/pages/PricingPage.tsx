@@ -27,7 +27,7 @@ import styles from "./PricingPage.module.css";
 // se repite debajo de las tarjetas.
 export function PricingPage() {
   return (
-    <PlanCatalogProvider>
+    <PlanCatalogProvider publicado>
       <Pricing />
     </PlanCatalogProvider>
   );
