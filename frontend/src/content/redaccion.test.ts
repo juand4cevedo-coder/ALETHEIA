@@ -5,6 +5,8 @@ import { join, relative, sep } from "node:path";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
+import { PAGINAS } from "../seo/fichas.ts";
+
 // Regla 1 de redacción (especificación de identidad, sección 9): ningún texto que vea la
 // persona lleva los caracteres que delatan una plantilla. Se revisa el árbol sintáctico, no el
 // texto plano, para que los comentarios no cuenten y las expresiones regulares tampoco.
@@ -121,11 +123,16 @@ describe("redacción de la interfaz", () => {
     expect(problems).toEqual([]);
   });
 
-  it("el título y la descripción de index.html tampoco los llevan", () => {
+  it("los títulos y descripciones de las páginas tampoco los llevan", () => {
+    // index.html trae lo común a todas; el título y la descripción de cada página salen de
+    // las fichas de src/seo, que el prerender escribe en su HTML.
     const html = readFileSync(join(SRC, "..", "index.html"), "utf8");
     const head = new DOMParser().parseFromString(html, "text/html").head;
     const texts = [
-      head.querySelector("title")!.textContent,
+      ...Object.values(PAGINAS).flatMap((meta) => [
+        meta.titulo,
+        meta.descripcion,
+      ]),
       ...Array.from(head.querySelectorAll("meta[content]"), (meta) =>
         meta.getAttribute("content")!,
       ),

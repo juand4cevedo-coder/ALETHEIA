@@ -6,6 +6,8 @@ Los plazos son los que prometen la política de tratamiento de datos y los térm
 - Reclamo sobre datos personales: quince días hábiles desde el día siguiente al recibo (art. 15).
 - Petición, queja o reclamo de consumidor y solicitud de soporte: quince días hábiles.
 - Reembolso: la devolución se paga en un máximo de quince días calendario.
+- Solicitud comercial (cotización del plan Corporativo): no tiene plazo legal; se usa el mismo
+  de soporte para ordenar la bandeja.
 """
 
 import datetime
@@ -17,7 +19,9 @@ from sqlalchemy.orm import Session
 
 from app.core.business_days import add_business_days
 
-TicketCategory = Literal["support", "data_query", "data_claim", "consumer", "refund"]
+TicketCategory = Literal["support", "data_query", "data_claim", "consumer", "refund", "sales"]
+# Lo que puede pedir una persona con cuenta. La solicitud comercial llega del formulario público.
+CustomerCategory = Literal["support", "data_query", "data_claim", "consumer", "refund"]
 
 BOGOTA: Final = ZoneInfo("America/Bogota")
 _BUSINESS_DAYS: Final[dict[str, int]] = {
@@ -25,6 +29,7 @@ _BUSINESS_DAYS: Final[dict[str, int]] = {
     "data_query": 10,
     "data_claim": 15,
     "consumer": 15,
+    "sales": 15,
 }
 _REFUND_CALENDAR_DAYS: Final = 15
 
@@ -56,7 +61,7 @@ def deletable_on(
     if status != "closed" or closed_at is None:
         return None
     closed = closed_at.astimezone(BOGOTA).date()
-    if category == "support":
+    if category in ("support", "sales"):
         return closed
     try:
         return closed.replace(year=closed.year + RETENTION_YEARS) + datetime.timedelta(days=1)

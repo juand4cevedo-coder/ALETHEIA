@@ -125,6 +125,9 @@ function Receipts() {
                   {", plan "}
                   {receipt.plan_name},{" "}
                   {receipt.billing_cycle === "annual" ? "anual" : "mensual"}
+                  {receipt.extra_users > 0
+                    ? `, con ${receipt.extra_users} ${receipt.extra_users === 1 ? "usuario adicional" : "usuarios adicionales"}`
+                    : ""}
                   {receipt.payment_method
                     ? `, ${METHODS[receipt.payment_method.toUpperCase()] ?? receipt.payment_method}`
                     : ""}

@@ -11,9 +11,10 @@ import {
 // Lo que la cadena de custodia anota sale de su lista cerrada de acciones (custodyActions.ts):
 // cargas, descargas y paquetes. No hay un evento de apertura ni de consulta.
 const DOES = [
+  "Registra cada archivo con su huella SHA-256, su sello de tiempo y la persona que lo subió.",
+  "Exporta un paquete de preservación con los originales, sus huellas y la cadena de custodia.",
   "Organiza casos con su radicado, especialidad y despacho.",
   "Relaciona cada caso con los integrantes responsables de su organización.",
-  "Registra la apertura del caso con su fecha y responsable.",
   "Permite calcular y comparar huellas SHA-256 en el navegador.",
 ] as const;
 
@@ -42,8 +43,8 @@ export function ScopeSection() {
       <div className={section.inner}>
         <SectionHeading
           id="titulo-alcance"
-          title="Una herramienta precisa. Un alcance claro."
-          lead="Aletheia acompaña la organización de su trabajo y la comprensión técnica de la evidencia. La valoración de la prueba corresponde a la autoridad judicial."
+          title="Qué hace ALETHEIA con su evidencia y qué deja en manos del juez"
+          lead="ALETHEIA anota lo que pasa con cada archivo desde el momento en que lo recibe. Lo ocurrido antes de esa fecha no lo puede demostrar."
         />
 
         <div className={styles.columns}>

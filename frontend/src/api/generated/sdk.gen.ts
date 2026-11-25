@@ -35,6 +35,9 @@ import type {
   AvailableCaseMembersData,
   AvailableCaseMembersErrors,
   AvailableCaseMembersResponses,
+  BillingQuoteData,
+  BillingQuoteErrors,
+  BillingQuoteResponses,
   CancelPaymentSourceData,
   CancelPaymentSourceErrors,
   CancelPaymentSourceResponses,
@@ -94,6 +97,9 @@ import type {
   CreateInvitationData,
   CreateInvitationErrors,
   CreateInvitationResponses,
+  CreateSalesInquiryData,
+  CreateSalesInquiryErrors,
+  CreateSalesInquiryResponses,
   CreateShareLinkData,
   CreateShareLinkErrors,
   CreateShareLinkResponses,
@@ -3010,6 +3016,28 @@ export const deleteSupportTicket = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Lo que costaría cada plan para el equipo de hoy, antes de pagar
+ */
+export const billingQuote = <ThrowOnError extends boolean = false>(
+  options?: Options<BillingQuoteData, ThrowOnError>,
+): RequestResult<BillingQuoteResponses, BillingQuoteErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    BillingQuoteResponses,
+    BillingQuoteErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/billing/quote",
+    ...options,
+  });
+
+/**
  * Contratos de Wompi que hay que mostrar antes de cobrar
  */
 export const wompiTerms = <ThrowOnError extends boolean = false>(
@@ -3661,6 +3689,29 @@ export const submitWebVitals = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     url: "/api/v1/web-vitals",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Pedir una cotización del plan Corporativo
+ */
+export const createSalesInquiry = <ThrowOnError extends boolean = false>(
+  options: Options<CreateSalesInquiryData, ThrowOnError>,
+): RequestResult<
+  CreateSalesInquiryResponses,
+  CreateSalesInquiryErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    CreateSalesInquiryResponses,
+    CreateSalesInquiryErrors,
+    ThrowOnError
+  >({
+    url: "/api/v1/sales-inquiries",
     ...options,
     headers: {
       "Content-Type": "application/json",

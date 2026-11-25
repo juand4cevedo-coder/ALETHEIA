@@ -46,6 +46,10 @@ class GoogleRegistrationEmailInUseError(Exception):
     pass
 
 
+class GoogleAccountMissingError(Exception):
+    """La identidad de Google no está vinculada y su correo no tiene cuenta: toca registrarse."""
+
+
 def register(
     session: Session,
     settings: Settings,
@@ -143,11 +147,16 @@ def login(
     settings: Settings,
     subject: str,
     *,
+    email: str | None = None,
     client_ip: str,
     user_agent: str | None,
 ) -> IssuedSession:
     identity = accounts_repository.google_identity_by_subject(session, subject)
     if identity is None:
+        # Google ya comprobó que la persona controla ese correo, así que decirle si tiene cuenta
+        # no revela nada a un tercero. Nunca se vincula sola por coincidir el correo (RN-024).
+        if email is not None and accounts_repository.user_by_email(session, email) is None:
+            raise GoogleAccountMissingError
         raise GoogleIdentityNotLinkedError
     user = session.get(User, identity.user_id)
     if user is None:

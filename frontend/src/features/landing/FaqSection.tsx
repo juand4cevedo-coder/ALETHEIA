@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import styles from "./FaqSection.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
@@ -21,7 +23,7 @@ const QUESTIONS = [
   {
     question: "¿El comprobador envía mis archivos?",
     answer:
-      "No. El cálculo se hace en su navegador. Puede elegir un archivo de hasta 32 MB y compararlo con una huella de referencia, sin crear una cuenta.",
+      "No. La huella se calcula en su navegador, por partes, así que el archivo puede ser de cualquier tamaño. Para compararla con una huella de referencia no necesita crear una cuenta.",
   },
   {
     question: "¿Quién puede ver mis casos?",
@@ -51,22 +53,31 @@ export function FaqSection() {
           title="Antes de empezar"
           className={`${section.headingStacked} ${styles.heading}`}
         />
-        <div className={styles.list}>
-          {QUESTIONS.map((item) => (
-            <details key={item.question} className={styles.item}>
-              <summary className={styles.summary}>
-                <span>{item.question}</span>
-                <ChevronAbajoIcon
-                  size={16}
-                  className={styles.chevron}
-                  aria-hidden="true"
-                />
-              </summary>
-              <p className={styles.answer}>{item.answer}</p>
-            </details>
-          ))}
-        </div>
+        <FaqList items={QUESTIONS} />
       </div>
     </section>
+  );
+}
+
+export type FaqItem = { question: string; answer: ReactNode };
+
+/** Lista de preguntas que se abren una a una. La usan el inicio y la página de precios. */
+export function FaqList({ items }: { items: readonly FaqItem[] }) {
+  return (
+    <div className={styles.list}>
+      {items.map((item) => (
+        <details key={item.question} className={styles.item}>
+          <summary className={styles.summary}>
+            <span>{item.question}</span>
+            <ChevronAbajoIcon
+              size={16}
+              className={styles.chevron}
+              aria-hidden="true"
+            />
+          </summary>
+          <p className={styles.answer}>{item.answer}</p>
+        </details>
+      ))}
+    </div>
   );
 }

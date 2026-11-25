@@ -231,6 +231,7 @@ def google_callback(
                 session,
                 settings,
                 identity.subject,
+                email=identity.email,
                 client_ip=client_ip,
                 user_agent=user_agent,
             )
@@ -266,6 +267,8 @@ def google_callback(
     except sessions_service.SecondFactorRequiredError as required:
         set_two_factor_cookie(response, required.challenge)
         response.headers["location"] = "/ingresar?verificacion=2fa"
+    except google_auth_service.GoogleAccountMissingError:
+        response.headers["location"] = "/registro?google=sin-cuenta"
     except google_auth_service.GoogleIdentityNotLinkedError:
         response.headers["location"] = "/ingresar?google=sin-vinculo"
     except google_auth_service.GoogleAccountBlockedError:

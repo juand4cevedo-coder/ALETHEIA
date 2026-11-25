@@ -14,6 +14,8 @@ from app.api.deps import get_app_settings, get_client_ip, get_principal, get_ses
 from app.core.config import Settings
 from app.core.permissions import has_permission
 from app.schemas.billing import (
+    BillingQuoteOption,
+    BillingQuoteOut,
     CheckoutCreate,
     CheckoutOut,
     CheckoutWebCreate,
@@ -29,7 +31,7 @@ from app.schemas.billing import (
 from app.services import checkout as checkout_service
 from app.services import payment_sources as sources_service
 from app.services import payments as payments_service
-from app.services import receipt_pdf
+from app.services import pricing, receipt_pdf
 from app.services import receipts as receipts_service
 from app.services.sessions import Principal
 
@@ -38,6 +40,82 @@ logger = logging.getLogger(__name__)
 
 _NO_STORE = {"Cache-Control": "no-store"}
 _ESTADOS: Final = frozenset({"PENDING", "APPROVED", "DECLINED", "VOIDED", "ERROR"})
+
+
+def _team_too_big(exc: checkout_service.EquipoNoCabeError) -> HTTPException:
+    people = "persona" if exc.users == 1 else "personas"
+    included = "usuario" if exc.included == 1 else "usuarios"
+    return HTTPException(
+        status.HTTP_409_CONFLICT,
+        detail=(
+            f"Su equipo tiene {exc.users} {people}, contando las invitaciones abiertas, y ese "
+            f"plan incluye {exc.included} {included} sin adicionales. Elija un plan más amplio "
+            "o retire personas en Equipo."
+        ),
+        headers=_NO_STORE,
+    )
+
+
+_TEAM_TOO_BIG: Final[dict[int | str, dict[str, Any]]] = {
+    status.HTTP_409_CONFLICT: {"description": "El equipo tiene más personas de las que admite."}
+}
+
+
+@router.get(
+    "/billing/quote",
+    summary="Lo que costaría cada plan para el equipo de hoy, antes de pagar",
+    responses={status.HTTP_403_FORBIDDEN: {"description": "El rol no administra la facturación."}},
+)
+def billing_quote(
+    response: Response,
+    principal: Annotated[Principal, Depends(get_principal)],
+    session: Annotated[Session, Depends(get_session)],
+) -> BillingQuoteOut:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        users, options = checkout_service.opciones(session, principal)
+    except checkout_service.CheckoutNoPermitidoError:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="Solo la persona responsable del despacho consulta lo que vale cada plan.",
+            headers=_NO_STORE,
+        ) from None
+    out: list[BillingQuoteOption] = []
+    for option in options:
+        quote = option.cotizacion
+        plan = option.plan
+        if quote is None:
+            price = pricing.plan_price(plan, option.billing_cycle) or 0
+            out.append(
+                BillingQuoteOption(
+                    plan_code=plan.code,
+                    plan_name=plan.name,
+                    billing_cycle=option.billing_cycle,
+                    included_users=plan.included_users,
+                    fits=False,
+                    plan_cop=price,
+                    extra_users=0,
+                    extra_user_unit_cop=None,
+                    extra_users_cop=0,
+                    total_cop=price,
+                )
+            )
+            continue
+        out.append(
+            BillingQuoteOption(
+                plan_code=plan.code,
+                plan_name=plan.name,
+                billing_cycle=option.billing_cycle,
+                included_users=plan.included_users,
+                fits=True,
+                plan_cop=quote.plan_cop,
+                extra_users=quote.extra_users,
+                extra_user_unit_cop=pricing.extra_user_unit(plan, option.billing_cycle),
+                extra_users_cop=quote.extra_users_cop,
+                total_cop=quote.total_cop,
+            )
+        )
+    return BillingQuoteOut(users=users, options=out)
 
 
 @router.get(
@@ -74,6 +152,7 @@ def wompi_terms(
         status.HTTP_422_UNPROCESSABLE_CONTENT: {
             "description": "El plan, el ciclo o el teléfono no son válidos."
         },
+        **_TEAM_TOO_BIG,
         status.HTTP_503_SERVICE_UNAVAILABLE: {"description": "Wompi no respondió."},
     },
 )
@@ -97,6 +176,9 @@ def create_checkout(
             body.accept_personal_auth,
         )
         session.commit()
+    except checkout_service.EquipoNoCabeError as exc:
+        session.rollback()
+        raise _team_too_big(exc) from None
     except checkout_service.CheckoutNoPermitidoError:
         session.rollback()
         raise HTTPException(
@@ -144,6 +226,7 @@ def create_checkout(
         status.HTTP_422_UNPROCESSABLE_CONTENT: {
             "description": "El plan o el ciclo no son válidos."
         },
+        **_TEAM_TOO_BIG,
         status.HTTP_503_SERVICE_UNAVAILABLE: {"description": "La pasarela no está disponible."},
     },
 )
@@ -160,6 +243,9 @@ def create_checkout_web(
             session, settings, principal, body.plan_code, body.billing_cycle
         )
         session.commit()
+    except checkout_service.EquipoNoCabeError as exc:
+        session.rollback()
+        raise _team_too_big(exc) from None
     except checkout_service.CheckoutNoPermitidoError:
         session.rollback()
         raise HTTPException(
@@ -292,6 +378,8 @@ def list_receipts(
             plan_name=receipt.plan_name,
             billing_cycle=cast(Literal["monthly", "annual"], receipt.billing_cycle),
             amount_cop=receipt.amount_cop,
+            extra_users=receipt.extra_users,
+            extra_users_cop=receipt.extra_users_cop,
             payment_method=receipt.payment_method,
             period_start=receipt.period_start,
             period_end=receipt.period_end,

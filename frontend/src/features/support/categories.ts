@@ -1,6 +1,12 @@
-import type { SupportTicketOut } from "../../api/generated";
+import type {
+  SupportTicketCreate,
+  SupportTicketOut,
+} from "../../api/generated";
 
-export type TicketCategory = SupportTicketOut["category"];
+// Lo que una persona con cuenta puede pedir desde Soporte.
+export type TicketCategory = NonNullable<SupportTicketCreate["category"]>;
+// Todo lo que llega a la bandeja, incluidas las cotizaciones del formulario de /empresa.
+export type AnyTicketCategory = SupportTicketOut["category"];
 
 // Tipos de solicitud y el plazo que la ley da para responder cada uno (services/support.py en el
 // backend calcula la fecha exacta con los festivos de Colombia).
@@ -41,9 +47,12 @@ export const TICKET_CATEGORIES: readonly {
   },
 ];
 
-export const TICKET_CATEGORY_LABELS = Object.fromEntries(
-  TICKET_CATEGORIES.map((item) => [item.value, item.label]),
-) as Record<TicketCategory, string>;
+export const TICKET_CATEGORY_LABELS: Record<AnyTicketCategory, string> = {
+  ...(Object.fromEntries(
+    TICKET_CATEGORIES.map((item) => [item.value, item.label]),
+  ) as Record<TicketCategory, string>),
+  sales: "Cotización del plan Corporativo",
+};
 
 function todayInColombia(): string {
   return new Intl.DateTimeFormat("en-CA", {

@@ -18,6 +18,7 @@ import {
   archiveExport,
   archiveSummary,
   availableCaseMembers,
+  billingQuote,
   cancelPaymentSource,
   cancelRecovery,
   captchaChallenge,
@@ -38,6 +39,7 @@ import {
   createCheckout,
   createCheckoutWeb,
   createInvitation,
+  createSalesInquiry,
   createShareLink,
   createSupportTicket,
   createTaskTemplate,
@@ -169,6 +171,9 @@ import type {
   AvailableCaseMembersData,
   AvailableCaseMembersError,
   AvailableCaseMembersResponse,
+  BillingQuoteData,
+  BillingQuoteError,
+  BillingQuoteResponse,
   CancelPaymentSourceData,
   CancelPaymentSourceError,
   CancelPaymentSourceResponse,
@@ -228,6 +233,9 @@ import type {
   CreateInvitationData,
   CreateInvitationError,
   CreateInvitationResponse,
+  CreateSalesInquiryData,
+  CreateSalesInquiryError,
+  CreateSalesInquiryResponse,
   CreateShareLinkData,
   CreateShareLinkError,
   CreateShareLinkResponse,
@@ -4156,6 +4164,31 @@ export const deleteSupportTicketMutation = (
   return mutationOptions;
 };
 
+export const billingQuoteQueryKey = (options?: Options<BillingQuoteData>) =>
+  createQueryKey("billingQuote", options);
+
+/**
+ * Lo que costaría cada plan para el equipo de hoy, antes de pagar
+ */
+export const billingQuoteOptions = (options?: Options<BillingQuoteData>) =>
+  queryOptions<
+    BillingQuoteResponse,
+    BillingQuoteError,
+    BillingQuoteResponse,
+    ReturnType<typeof billingQuoteQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await billingQuote({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: billingQuoteQueryKey(options),
+  });
+
 export const wompiTermsQueryKey = (options?: Options<WompiTermsData>) =>
   createQueryKey("wompiTerms", options);
 
@@ -4854,6 +4887,33 @@ export const submitWebVitalsMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await submitWebVitals({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Pedir una cotización del plan Corporativo
+ */
+export const createSalesInquiryMutation = (
+  options?: Partial<Options<CreateSalesInquiryData>>,
+): UseMutationOptions<
+  CreateSalesInquiryResponse,
+  CreateSalesInquiryError,
+  Options<CreateSalesInquiryData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    CreateSalesInquiryResponse,
+    CreateSalesInquiryError,
+    Options<CreateSalesInquiryData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await createSalesInquiry({
         ...options,
         ...fnOptions,
         throwOnError: true,

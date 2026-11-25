@@ -5,6 +5,10 @@ import { LEGAL_VERSION } from "../../config/legal.ts";
 // LEGAL_VERSION necesita aquí su resumen; una prueba lo exige. Solo resume: lo que rige es el
 // texto completo de cada política.
 export const LEGAL_CHANGES: Readonly<Record<string, readonly string[]>> = {
+  "2026-11-26": [
+    "En los planes que admiten usuarios adicionales, cada periodo cuesta el plan más las personas por encima de las incluidas, contando los miembros del despacho y las invitaciones abiertas. En el pago anual, cada usuario adicional vale diez meses.",
+    "La renovación automática cobra el plan con los usuarios adicionales que tenga el despacho el día del cobro, y el comprobante los muestra en una línea aparte.",
+  ],
   "2026-11-25": [
     "Ahora puede radicar consultas, reclamos y reembolsos desde Pedir soporte: cada solicitud recibe al instante su radicado y la fecha límite de respuesta, contada en días hábiles de Colombia.",
     "Explicamos qué datos guardamos de los clientes del portal y de quienes descargan una evidencia compartida, y cómo pueden ejercer sus derechos.",

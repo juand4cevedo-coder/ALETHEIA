@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router";
-import { JOURNAL } from "../content/journal.ts";
-import { pageTitle, SITE_URL } from "../config/site.ts";
+import { JOURNAL, JOURNAL_AUTHOR } from "../content/journal.ts";
 import { BuscarIcon, FlechaDerechaIcon } from "../components/ui/icons.tsx";
+import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
+import { PAGINAS } from "../seo/fichas.ts";
+import { metaArticulo } from "../seo/contenidos.ts";
 import { NotFoundPage } from "./NotFoundPage.tsx";
 import styles from "./EditorialPage.module.css";
 
@@ -17,6 +19,33 @@ function formatPublishDate(iso: string): string {
   }).format(new Date(iso));
 }
 
+/** Un párrafo del artículo con sus enlaces internos, escritos [texto](/ruta). */
+function ArticleParagraph({ text }: { text: string }) {
+  const parts = text.split(/(\[[^\]]+\]\(\/[^)\s]*\))/);
+  return (
+    <p>
+      {parts.map((part, index) => {
+        const link = /^\[([^\]]+)\]\((\/[^)\s]*)\)$/.exec(part);
+        return link ? (
+          <Link key={index} to={link[2]!}>
+            {link[1]}
+          </Link>
+        ) : (
+          part
+        );
+      })}
+    </p>
+  );
+}
+
+/** El texto del párrafo sin la marca de los enlaces, para buscar y para las llaves. */
+function plain(text: string): string {
+  return text.replace(/\[([^\]]+)\]\(\/[^)\s]*\)/g, "$1");
+}
+
+// Del más reciente al más antiguo.
+const BY_DATE = [...JOURNAL].sort((a, b) => b.date.localeCompare(a.date));
+
 export function JournalPage() {
   const { slug } = useParams();
   const [query, setQuery] = useState("");
@@ -26,19 +55,22 @@ export function JournalPage() {
   if (article)
     return (
       <article className={styles.article}>
-        <title>{pageTitle(article.title)}</title>
-        <meta name="description" content={article.summary} />
-        <link rel="canonical" href={SITE_URL + "/blog/" + article.slug} />
+        <CabeceraSeo meta={metaArticulo(article)} />
         <Link className={styles.back} to="/blog">
           Volver al blog
         </Link>
         <header className={styles.articleHead}>
           <h1>{article.title}</h1>
           <p>{article.summary}</p>
-          <small>
-            {article.category}, Equipo Aletheia,{" "}
-            {formatPublishDate(article.date)}
-          </small>
+          <p className={styles.byline}>
+            <span>
+              Por <strong>{JOURNAL_AUTHOR}</strong>
+            </span>
+            <time dateTime={article.date}>
+              {formatPublishDate(article.date)}
+            </time>
+            <span>{article.category}</span>
+          </p>
         </header>
         <div
           className={`${styles.articleVisual} ${styles.articleHero}`}
@@ -59,14 +91,14 @@ export function JournalPage() {
             <section key={section.title}>
               <h2>{section.title}</h2>
               {section.paragraphs.map((p) => (
-                <p key={p}>{p}</p>
+                <ArticleParagraph key={plain(p)} text={p} />
               ))}
             </section>
           ))}
         </div>
         <aside className={styles.related}>
           <p>Siga explorando</p>
-          {JOURNAL.filter((item) => item.slug !== slug).map((item) => (
+          {BY_DATE.filter((item) => item.slug !== slug).map((item) => (
             <Link to={"/blog/" + item.slug} key={item.slug}>
               {item.title} <FlechaDerechaIcon size={16} />
             </Link>
@@ -78,7 +110,7 @@ export function JournalPage() {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
-  const results = JOURNAL.filter(
+  const results = BY_DATE.filter(
     (item) =>
       (category === "Todos" || item.category === category) &&
       (item.title + " " + item.summary)
@@ -89,12 +121,7 @@ export function JournalPage() {
   );
   return (
     <div className={styles.page}>
-      <title>{pageTitle("Blog")}</title>
-      <meta
-        name="description"
-        content="Notas de Aletheia sobre organización, permisos e integridad digital."
-      />
-      <link rel="canonical" href={SITE_URL + "/blog"} />
+      <CabeceraSeo meta={PAGINAS.blog} />
       <header className={styles.blogHead}>
         <div>
           <h1>Blog</h1>

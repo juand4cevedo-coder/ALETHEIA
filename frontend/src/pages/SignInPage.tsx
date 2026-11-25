@@ -68,7 +68,7 @@ const SESSION_NOTICES = {
 
 const GOOGLE_NOTICES: Record<string, string> = {
   "sin-vinculo":
-    "Esa identidad de Google todavía no está vinculada. Ingrese con su contraseña y vincúlela desde Mi cuenta.",
+    "Ya hay una cuenta con ese correo, pero no está vinculada a Google. Ingrese con su contraseña y vincule Google desde Mi cuenta.",
   bloqueada:
     "La cuenta vinculada está bloqueada. Comuníquese con soporte para revisar su acceso.",
   "sesion-vencida":

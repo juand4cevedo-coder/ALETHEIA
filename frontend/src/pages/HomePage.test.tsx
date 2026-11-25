@@ -38,19 +38,23 @@ describe("Página de inicio (HU-001)", () => {
     const main = screen.getByRole("main");
     expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(within(main).getByRole("heading", { level: 1 })).toHaveTextContent(
-      /Sus casos cambian\.\s*Su control también\./,
+      "La evidencia digital de sus casos, con huella y sello de tiempo desde el día en que la recibe.",
     );
     expect(
-      within(main).getByRole("heading", {
-        level: 2,
-        name: "Un poco de orden. Mucho más espacio para pensar.",
-      }),
+      within(main).getByText(
+        "Para abogados independientes y despachos en Colombia",
+      ),
     ).toBeInTheDocument();
     expect(
       within(main).getByRole("heading", {
         level: 2,
-        name: "Una herramienta precisa. Un alcance claro.",
+        name: "Qué hace ALETHEIA con su evidencia y qué deja en manos del juez",
       }),
+    ).toBeInTheDocument();
+    expect(
+      within(main).getByText(
+        "Exporta un paquete de preservación con los originales, sus huellas y la cadena de custodia.",
+      ),
     ).toBeInTheDocument();
     expect(
       within(main).getByText(
@@ -58,7 +62,15 @@ describe("Página de inicio (HU-001)", () => {
       ),
     ).toBeInTheDocument();
     expect(
-      within(main).getAllByRole("link", { name: "Crear una cuenta" })[0],
+      within(main).getAllByRole("link", { name: /Probar 14 días gratis/ })[0],
+    ).toHaveAttribute("href", "/registro");
+    expect(
+      within(main).getAllByText(
+        "Sin tarjeta de crédito. Cancele cuando quiera.",
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(
+      within(main).getByRole("link", { name: "Abrir mi primer caso gratis" }),
     ).toHaveAttribute("href", "/registro");
   });
 
@@ -70,7 +82,13 @@ describe("Página de inicio (HU-001)", () => {
     expect(screen.getByText("Recomendado")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /Pedir una cotización/ }),
-    ).toHaveAttribute("href", expect.stringContaining("mailto:"));
+    ).toHaveAttribute("href", "/empresa#cotizar");
+    expect(
+      screen.getByRole("link", { name: "Ver planes y precios" }),
+    ).toHaveAttribute("href", "/precios");
+    expect(
+      screen.getByText("Pagando el año, 2 meses le salen gratis."),
+    ).toBeInTheDocument();
     expect(
       screen.getByText(/La prueba dura 14 días y no pide tarjeta de crédito/),
     ).toBeInTheDocument();
@@ -150,13 +168,14 @@ describe("Página de inicio (HU-001)", () => {
       level: 2,
     });
     expect(headings.map((heading) => heading.textContent)).toEqual([
-      "Todo tiene su lugar.",
-      "Un poco de orden. Mucho más espacio para pensar.",
-      "Mucho más que ordenar expedientes.",
-      "Saber qué ocurre. Decidir quién participa.",
-      "Una herramienta precisa. Un alcance claro.",
-      "La confianza también se comprueba.",
-      "Un espacio a la medida de su práctica.",
+      "Así se ve su espacio de trabajo",
+      "Su primer caso con evidencia sellada, en tres pasos",
+      "El caso completo cabe en un paquete que otra persona puede revisar sin su ayuda",
+      "Lo que pasa en un caso queda guardado dentro de ese caso",
+      "Solo ven el caso las personas que usted agrega",
+      "Qué hace ALETHEIA con su evidencia y qué deja en manos del juez",
+      "Compruebe la huella de un archivo sin enviarlo a ninguna parte",
+      "Todos los planes traen las mismas funciones; cambian los usuarios y el almacenamiento",
       "Antes de empezar",
       "Pruebe ALETHEIA con uno de sus casos",
     ]);
@@ -183,9 +202,29 @@ describe("Página de inicio (HU-001)", () => {
     expect(actions[0]).toHaveAttribute("href", "/registro");
     expect(
       await within(closing).findByText(
-        "Cree su cuenta y abra su primer caso. La prueba dura 14 días y no pide tarjeta de crédito.",
+        /La prueba dura 14 días y no pide tarjeta de crédito\./,
       ),
     ).toBeInTheDocument();
+  });
+
+  it("el paquete de preservación tiene su propia sección, visible sin interacción", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
+    const { container } = await renderRoute("/");
+
+    const section = within(container.querySelector("#paquete") as HTMLElement);
+    for (const path of [
+      "files/",
+      "manifest.json",
+      "custody/events.json",
+      "timestamps/",
+      "report.pdf",
+    ]) {
+      expect(section.getByText(path)).toBeVisible();
+    }
+    expect(section.getByText(/declaración de alcance/)).toBeVisible();
+    expect(
+      section.getByRole("link", { name: "Abrir el verificador público" }),
+    ).toHaveAttribute("href", "/verificador");
   });
 
   it("cada enlace de la navegación lleva a una sección o página que existe", async () => {

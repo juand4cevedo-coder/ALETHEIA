@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from app.adapters.email import EmailDeliveryError
 from app.repositories import jobs as jobs_repository
 from app.repositories.jobs import ClaimedJob
-from app.services import audit, captcha, rate_limit, web_vitals
+from app.services import audit, captcha, rate_limit, trial_emails, web_vitals
 from app.services.jobs import (
     LEASE,
     MAX_ATTEMPTS,
@@ -130,6 +130,19 @@ class Worker:
             challenges,
             anonymized,
         )
+        self._send_trial_emails()
+
+    def _send_trial_emails(self) -> None:
+        """Encola los correos del ciclo de la prueba que ya tocan, en su propia transacción: si
+        falla, el resto del mantenimiento ya quedó hecho y la próxima vuelta lo reintenta."""
+        try:
+            with Session(self._engine) as session, session.begin():
+                queued = trial_emails.dispatch(session, datetime.datetime.now(datetime.UTC))
+        except SQLAlchemyError as exc:
+            logger.error("No se pudieron revisar los correos de la prueba: %s", type(exc).__name__)
+            return
+        if queued:
+            logger.info("Correos de la prueba encolados: %d", queued)
 
     def _execute(self, job: ClaimedJob) -> None:
         handler = self._handlers.get(job.kind)

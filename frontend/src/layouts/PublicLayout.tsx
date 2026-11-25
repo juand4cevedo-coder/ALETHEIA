@@ -230,7 +230,7 @@ export function PublicLayout() {
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
             <Brand />
-            <p>Su trabajo. Con claridad.</p>
+            <p>Casos y evidencia digital para abogados en Colombia.</p>
             <a href={"mailto:" + CONTACT_EMAIL}>{CONTACT_EMAIL}</a>
             <Link className={styles.statusLink} to="/estado">
               Consultar estado <FlechaDerechaIcon size={14} />

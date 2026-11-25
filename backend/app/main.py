@@ -27,6 +27,7 @@ from app.api import (
     plans,
     platform,
     platform_insights,
+    sales,
     support,
     task_templates,
     tasks,
@@ -45,7 +46,7 @@ from app.core.middleware import (
 from app.core.openapi import install_problem_details
 from app.db.session import create_db_engine
 
-API_VERSION: Final = "0.45.0"
+API_VERSION: Final = "0.46.0"
 
 
 def _operation_id(route: APIRoute) -> str:
@@ -108,6 +109,7 @@ def build_api(*, public_docs: bool) -> FastAPI:
     app.include_router(client_portal.router, prefix=API_PREFIX)
     app.include_router(client_portal.public_router, prefix=API_PREFIX)
     app.include_router(web_vitals.router, prefix=API_PREFIX)
+    app.include_router(sales.router, prefix=API_PREFIX)
     install_problem_details(app)
     return app
 

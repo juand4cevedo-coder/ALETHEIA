@@ -28,6 +28,8 @@ COPY frontend/ ./
 ARG VITE_CDN_URL=""
 ENV VITE_CDN_URL=$VITE_CDN_URL
 RUN pnpm build
+# El build deja la lista de rutas de la aplicación para el Caddyfile; no se publica en /srv.
+RUN mkdir /caddy && mv dist/rutas-aplicacion.caddy /caddy/
 
 # --- Etapa 2: Caddy ---------------------------------------------------------------------
 FROM caddy:2.11.8-alpine@sha256:f6228111e5fafa1a5238258d0858e103f10599b8d1659a146e7726681a002bb9
@@ -43,6 +45,7 @@ RUN addgroup -S -g 10002 caddy \
     && chown -R 10002:10002 /data /config
 
 COPY infra/Caddyfile /etc/caddy/Caddyfile
+COPY --from=interfaz /caddy/rutas-aplicacion.caddy /etc/caddy/rutas-aplicacion.caddy
 COPY --from=interfaz /web/dist /srv
 
 # Un Caddyfile inválido rompe la construcción, no el despliegue. caddy validate crea una

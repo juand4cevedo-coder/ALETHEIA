@@ -1,7 +1,7 @@
 import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 import { ROUTES } from "../../config/routes.ts";
-import { SIGN_UP_LABEL } from "../../config/site.ts";
+import { SIGN_UP_LABEL, SIGN_UP_NOTE } from "../../config/site.ts";
 import styles from "./Hero.module.css";
 import { photoProps } from "../../config/media.ts";
 
@@ -12,21 +12,25 @@ export function Hero() {
         {...photoProps("hero-real", "100vw")}
         alt="Profesionales colaborando en una oficina"
         className={styles.photo}
+        width={1280}
+        height={720}
         fetchPriority="high"
         decoding="async"
       />
       <div className={styles.scrim} aria-hidden="true" />
       <div className={styles.content}>
+        <p className={styles.eyebrow}>
+          Para abogados independientes y despachos en Colombia
+        </p>
         <h1 id="titulo-inicio" className={styles.title}>
-          Sus casos cambian.
-          <br />
-          Su control también.
+          La evidencia digital de sus casos, con huella y sello de tiempo desde
+          el día en que la recibe.
         </h1>
         <div className={styles.panel}>
-          <p className={styles.panelTitle}>Empiece con un caso real</p>
           <p className={styles.lead}>
-            Organice expedientes, reúna a su equipo y conserve el contexto de
-            cada decisión en un solo lugar.
+            Cada archivo queda con su huella SHA-256, su sello de tiempo y su
+            cadena de custodia. Cuando lo necesite, el caso se exporta en un
+            paquete que cualquier persona puede verificar por su cuenta.
           </p>
           <div className={styles.actions}>
             <ButtonLink to={ROUTES.signUp}>
@@ -34,9 +38,10 @@ export function Hero() {
               <FlechaDerechaIcon size={18} aria-hidden="true" />
             </ButtonLink>
             <ButtonLink to="/#como-funciona" variant="text">
-              Conocer el producto
+              Ver cómo funciona
             </ButtonLink>
           </div>
+          <p className={styles.note}>{SIGN_UP_NOTE}</p>
         </div>
       </div>
       <a className={styles.next} href="#como-funciona">

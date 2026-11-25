@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 import { buttonClassName } from "../../components/ui/buttonStyles.ts";
 import { usePlanCatalog } from "./catalog.tsx";
 import type { BillingCycle } from "./format.ts";
@@ -9,7 +11,10 @@ import {
   RECOMMENDED_PLAN,
 } from "./plans.ts";
 import styles from "./PlanSummary.module.css";
-import { ActualizarIcon, CorreoIcon } from "../../components/ui/icons.tsx";
+import {
+  ActualizarIcon,
+  FlechaDerechaIcon,
+} from "../../components/ui/icons.tsx";
 
 type PlanSummaryProps = {
   /** Forma de pago con la que se muestran los precios. */
@@ -86,13 +91,13 @@ export function PlanSummary({
             almacenamiento y soporte a la medida de su volumen, por cotización.
           </p>
         </div>
-        <a
+        <Link
           className={buttonClassName({ variant: "secondary" })}
-          href={CORPORATE_QUOTE_URL}
+          to={CORPORATE_QUOTE_URL}
         >
-          <CorreoIcon size={16} />
-          Pedir una cotización por correo
-        </a>
+          Pedir una cotización
+          <FlechaDerechaIcon size={16} aria-hidden="true" />
+        </Link>
       </section>
     </div>
   );

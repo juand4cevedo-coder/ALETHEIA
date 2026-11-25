@@ -41,3 +41,17 @@ export function annualMonthsSaved(plans: readonly PublicPlan[]): number | null {
   const [months] = charged;
   return months !== undefined && months < 12 ? 12 - months : null;
 }
+
+/** Lo que cuesta cada mes un plan pagado por año, redondeado al peso. */
+export function annualMonthlyEquivalent(plan: PublicPlan): number | null {
+  if (plan.annual_price_cop == null) return null;
+  return Math.round(plan.annual_price_cop / 12);
+}
+
+/** Pesos que se ahorran al pagar el año frente a doce meses, o null si no hay ahorro. */
+export function annualSavingsCop(plan: PublicPlan): number | null {
+  if (plan.annual_price_cop == null || plan.monthly_price_cop === 0)
+    return null;
+  const saving = plan.monthly_price_cop * 12 - plan.annual_price_cop;
+  return saving > 0 ? saving : null;
+}

@@ -61,23 +61,9 @@ const SLIDES: readonly Slide[] = [
     link: "Revisar cómo se protege",
   },
   {
-    eyebrow: "Paquete de preservación",
-    title: "Todo lo del caso, listo para entregar.",
-    text: "Reúna los originales, sus huellas, la cadena de custodia y un informe de alcance en un enlace que vence a las 24 horas.",
-    metric: "Un solo archivo",
-    detail: "con manifiesto verificable",
-    visual: {
-      kind: "product",
-      image: "/media/producto/paquete.webp",
-      alt: "Pestaña de paquete de preservación de un caso, con el botón para solicitarlo.",
-    },
-    to: "/docs/verificar-un-archivo",
-    link: "Ver cómo se verifica",
-  },
-  {
     eyebrow: "Equipo",
     title: "Cada persona entra con una responsabilidad clara.",
-    text: "Invite colaboradores, asigne roles y mantenga la conversación alrededor del caso, no alrededor de archivos sueltos.",
+    text: "Invite colaboradores y asigne un rol a cada uno. Las notas y las tareas quedan en el caso que les corresponde.",
     metric: "Roles claros",
     detail: "para trabajar en conjunto",
     visual: {
@@ -158,8 +144,8 @@ export function HighlightsCarousel() {
       <div className={section.inner}>
         <SectionHeading
           id={labelId}
-          title="Mucho más que ordenar expedientes."
-          lead="Un espacio completo para entender el trabajo, coordinar al equipo y conservar el contexto de cada caso."
+          title="Lo que pasa en un caso queda guardado dentro de ese caso"
+          lead="Plazos, archivos y responsables se consultan en el mismo lugar, sin buscar después en el correo o en una carpeta compartida."
         />
         <div
           className={styles.carousel}

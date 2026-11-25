@@ -6,18 +6,19 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.services.support import TicketCategory
+from app.services.support import CustomerCategory, TicketCategory
 
 
 class SupportTicketCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    category: TicketCategory = Field(
+    category: CustomerCategory = Field(
         default="support",
         description=(
             "support: ayuda con el servicio; data_query: consulta sobre datos personales; "
             "data_claim: corregir, actualizar o suprimir datos; consumer: petición, queja o "
-            "reclamo de consumidor; refund: devolución de un pago."
+            "reclamo de consumidor; refund: devolución de un pago. Las cotizaciones (sales) llegan "
+            "por POST /sales-inquiries."
         ),
     )
     subject: str = Field(min_length=5, max_length=120)
@@ -48,11 +49,15 @@ class SupportTicketOut(BaseModel):
     deletable_on: datetime.date | None = Field(
         default=None,
         description=(
-            "Desde qué día la plataforma puede eliminarla: al resolverse si es de soporte; tres "
-            "años después de cerrada si es de datos personales, consumidor o reembolso."
+            "Desde qué día la plataforma puede eliminarla: al resolverse si es de soporte o "
+            "comercial; tres años después de cerrada si es de datos personales, consumidor o "
+            "reembolso."
         ),
     )
     user_email: str | None = None
+    contact_name: str | None = Field(
+        default=None, description="Nombre de quien pidió la cotización, si no tiene cuenta."
+    )
 
 
 class SupportTicketPage(BaseModel):

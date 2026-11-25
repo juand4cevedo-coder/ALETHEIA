@@ -16,6 +16,13 @@ describe("Tipos de solicitud y plazos", () => {
     }
   });
 
+  it("nombra las cotizaciones del plan Corporativo, que no se piden desde Soporte", () => {
+    expect(TICKET_CATEGORY_LABELS.sales).toBe(
+      "Cotización del plan Corporativo",
+    );
+    expect(TICKET_CATEGORIES.map((item) => item.value)).not.toContain("sales");
+  });
+
   it("dice si el plazo venció, vence pronto o está holgado, en hora de Colombia", () => {
     vi.useFakeTimers();
     // 24 de noviembre a las 11:30 p. m. en Colombia: en UTC ya es 25.

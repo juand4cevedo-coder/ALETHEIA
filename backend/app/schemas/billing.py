@@ -92,7 +92,9 @@ class ReceiptOut(BaseModel):
     issued_at: datetime.datetime
     plan_name: str
     billing_cycle: Literal["monthly", "annual"]
-    amount_cop: int
+    amount_cop: int = Field(description="Total pagado: el plan más los usuarios adicionales.")
+    extra_users: int = Field(description="Usuarios adicionales cobrados en este pago.")
+    extra_users_cop: int = Field(description="Lo que sumaron los usuarios adicionales.")
     payment_method: str | None = Field(description="Medio con que se pagó, como lo informó Wompi.")
     period_start: datetime.datetime
     period_end: datetime.datetime
@@ -101,3 +103,29 @@ class ReceiptOut(BaseModel):
 
 class CheckoutWebResult(BaseModel):
     status: Literal["PENDING", "APPROVED", "DECLINED", "VOIDED", "ERROR"]
+
+
+class BillingQuoteOption(BaseModel):
+    """Lo que costaría un plan en un ciclo para el equipo de hoy."""
+
+    plan_code: str
+    plan_name: str
+    billing_cycle: Literal["monthly", "annual"]
+    included_users: int = Field(description="Usuarios que incluye el precio del plan.")
+    fits: bool = Field(
+        description="Si el equipo cabe en el plan. Si no cabe, no se puede pagar ese plan."
+    )
+    plan_cop: int = Field(description="Precio del plan en este ciclo.")
+    extra_users: int = Field(description="Personas por encima de las incluidas.")
+    extra_user_unit_cop: int | None = Field(
+        description="Lo que vale cada usuario adicional en este ciclo, o null si no se admiten."
+    )
+    extra_users_cop: int = Field(description="Lo que suman los usuarios adicionales.")
+    total_cop: int = Field(description="Lo que se cobraría: el plan más los adicionales.")
+
+
+class BillingQuoteOut(BaseModel):
+    """El desglose de cada plan antes de pagar, con las personas que cuentan hoy."""
+
+    users: int = Field(description="Miembros del despacho más invitaciones abiertas.")
+    options: list[BillingQuoteOption]

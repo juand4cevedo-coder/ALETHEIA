@@ -4,6 +4,7 @@ import { Link, useSearchParams } from "react-router";
 
 import type { Me, PublicPlan } from "../api/generated";
 import {
+  billingQuoteOptions,
   confirmCheckoutWebMutation,
   createCheckoutMutation,
   createCheckoutWebMutation,
@@ -22,6 +23,7 @@ import {
   usePlanCatalog,
 } from "../features/billing/catalog.tsx";
 import { type BillingCycle, formatCop } from "../features/billing/format.ts";
+import { QuoteBreakdown } from "../features/billing/QuoteBreakdown.tsx";
 import { legalRoute } from "../config/routes.ts";
 import { ChoiceCards } from "../components/ui/ChoiceCards.tsx";
 import { Select } from "../components/ui/Select.tsx";
@@ -222,6 +224,17 @@ export function CheckoutCard({ me }: { me: Me }) {
   );
 }
 
+// El equipo creció entre el desglose y el pago, y ya no cabe en el plan elegido.
+const TEAM_CHANGED =
+  "Su equipo ya no cabe en este plan. Recargue la página para ver el valor actualizado o elija un plan más amplio.";
+
+function webFailure(status: number | undefined): string {
+  if (status === 409) return TEAM_CHANGED;
+  if (status === 422)
+    return "No se pudo iniciar el pago. Si ya tiene uno en curso, espere a que termine o venza (una hora).";
+  return "No pudimos conectar con la pasarela de pagos. Inténtelo de nuevo en un momento.";
+}
+
 type Step = "elegir" | "confirmar";
 type Method = "web" | "nequi";
 
@@ -245,10 +258,26 @@ function Checkout({
   const confirmHeadingRef = useRef<HTMLHeadingElement>(null);
   const helpId = useId();
 
+  // Lo que vale cada plan con el equipo de hoy: el plan más los usuarios adicionales.
+  const quote = useQuery({ ...billingQuoteOptions() });
+  const optionFor = (code: string | undefined, forCycle: BillingCycle) =>
+    quote.data?.options.find(
+      (option) =>
+        option.plan_code === code && option.billing_cycle === forCycle,
+    );
+  const fitsTeam = (plan: PublicPlan) =>
+    optionFor(plan.code, "monthly")?.fits !== false;
+
   const payable: PublicPlan[] = (plans ?? []).filter(
     (plan) => plan.monthly_price_cop > 0,
   );
-  const selected = payable.find((plan) => plan.code === planCode) ?? payable[0];
+  // Sin elección todavía, el primer plan en el que cabe el equipo.
+  const selected =
+    payable.find((plan) => plan.code === planCode) ??
+    payable.find(fitsTeam) ??
+    payable[0];
+  const option = optionFor(selected?.code, cycle);
+  const ready = option?.fits === true;
 
   const terms = useQuery({
     ...wompiTermsOptions(),
@@ -271,6 +300,7 @@ function Checkout({
 
   function goToConfirm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!ready) return;
     if (method === "web" || renewing) {
       if (selected && !web.isPending)
         web.mutate({
@@ -299,7 +329,14 @@ function Checkout({
     });
   }
 
-  if (isPending) return null;
+  if (isPending || quote.isPending) return null;
+  if (quote.isError) {
+    return (
+      <Notice tone="error">
+        No pudimos calcular el valor con su equipo. Recargue la página.
+      </Notice>
+    );
+  }
   if (isError || payable.length === 0) {
     return (
       <Notice tone="error">
@@ -317,7 +354,9 @@ function Checkout({
           onChange={(event) => setPlanCode(event.target.value)}
           options={payable.map((plan) => ({
             value: plan.code,
-            label: plan.name,
+            label: fitsTeam(plan)
+              ? plan.name
+              : `${plan.name} (no alcanza para su equipo)`,
           }))}
         />
         <ChoiceCards
@@ -330,7 +369,7 @@ function Checkout({
               value: "monthly",
               label: "Mensual",
               description: selected
-                ? `${formatCop(selected.monthly_price_cop)} al mes`
+                ? `${formatCop(optionFor(selected.code, "monthly")?.total_cop ?? selected.monthly_price_cop)} al mes`
                 : undefined,
             },
             ...(selected?.annual_price_cop != null
@@ -338,12 +377,15 @@ function Checkout({
                   {
                     value: "annual" as const,
                     label: "Anual",
-                    description: `${formatCop(selected.annual_price_cop)} al año`,
+                    description: `${formatCop(optionFor(selected.code, "annual")?.total_cop ?? selected.annual_price_cop)} al año`,
                   },
                 ]
               : []),
           ]}
         />
+        {option && quote.data && (
+          <QuoteBreakdown option={option} users={quote.data.users} />
+        )}
         {!renewing && (
           <ChoiceCards
             legend="Medio de pago"
@@ -393,11 +435,7 @@ function Checkout({
         )}
         {web.isError && (
           <Notice tone="error">
-            <p role="alert">
-              {apiProblem(web.error).status === 422
-                ? "No se pudo iniciar el pago. Si ya tiene uno en curso, espere a que termine o venza (una hora)."
-                : "No pudimos conectar con la pasarela de pagos. Inténtelo de nuevo en un momento."}
-            </p>
+            <p role="alert">{webFailure(apiProblem(web.error).status)}</p>
           </Notice>
         )}
         <p className={styles.help}>
@@ -408,7 +446,7 @@ function Checkout({
           automática.
         </p>
         <div className={styles.actions}>
-          <Button type="submit" busy={web.isPending}>
+          <Button type="submit" busy={web.isPending} disabled={!ready}>
             {method === "web" || renewing ? "Ir a pagar" : "Continuar"}
           </Button>
         </div>
@@ -465,10 +503,15 @@ function Checkout({
           </Checkbox>
         </>
       )}
+      {option && quote.data && (
+        <QuoteBreakdown option={option} users={quote.data.users} />
+      )}
       {failure && (
         <Notice tone="error">
           {failure.status === 403 ? (
             <p>No tiene un cobro pendiente que iniciar, o no puede pagar.</p>
+          ) : failure.status === 409 ? (
+            <p>{TEAM_CHANGED}</p>
           ) : (
             <SystemError requestId={failure.requestId} />
           )}
@@ -489,7 +532,11 @@ function Checkout({
           aria-describedby={missingAcceptance ? helpId : undefined}
           onClick={confirm}
         >
-          {checkout.isPending ? "Enviando el cobro" : "Pagar con Nequi"}
+          {checkout.isPending
+            ? "Enviando el cobro"
+            : option
+              ? `Pagar ${formatCop(option.total_cop)} con Nequi`
+              : "Pagar con Nequi"}
         </Button>
       </div>
     </div>

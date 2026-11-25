@@ -37,6 +37,7 @@ from app.services import case_deletion_emails as _case_deletion_emails  # noqa: 
 from app.services import client_portal_emails as _client_portal_emails  # noqa: F401
 from app.services import organization_emails as _organization_emails  # noqa: F401
 from app.services import payment_emails as _payment_emails  # noqa: F401
+from app.services import trial_emails as _trial_emails  # noqa: F401
 from app.services import two_factor_recovery_emails as _two_factor_recovery_emails  # noqa: F401
 from app.services.jobs import PermanentJobError
 

@@ -1,10 +1,11 @@
 """Renovación automática: cobra el plan a la fuente de pago vinculada (ADR-058, etapa 2).
 
 Un día antes de que venza el periodo pagado, una tarea cobra la renovación a la fuente de pago
-que la persona vinculó. El resultado entra por el mismo camino que cualquier pago (el aviso de
-Wompi o su consulta firmada), así que la activación, la extensión del periodo y el comprobante no
-se duplican. Si el cobro no entra, se reintenta a los tres y seis días del primer intento; si el
-tercero tampoco entra, se avisa al responsable y el plan sigue su curso (vence a solo lectura).
+que la persona vinculó: el plan más los usuarios adicionales que tenga el equipo ese día. El
+resultado entra por el mismo camino que cualquier pago (el aviso de Wompi o su consulta firmada),
+así que la activación, la extensión del periodo y el comprobante no se duplican. Si el cobro no
+entra, se reintenta a los tres y seis días del primer intento; si el tercero tampoco entra, se
+avisa al responsable y el plan sigue su curso (vence a solo lectura).
 
 Todo está apagado mientras `recurring_payments_enabled` lo esté. Cada intento comprueba de nuevo
 que siga valiendo la pena cobrar: la fuente activa, el plan sin renovar, ningún cobro en curso.
@@ -23,7 +24,7 @@ from app.adapters import wompi
 from app.core.config import Settings
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import Membership, Organization, PaymentSource, Plan, Subscription, User
-from app.services import checkout, jobs, payment_emails, payments
+from app.services import checkout, jobs, payment_emails, payments, pricing
 
 CHARGE_JOB: Final = "renewal_charge"
 # Se cobra un día antes de vencer, para que un pago aprobado llegue antes del vencimiento.
@@ -164,20 +165,21 @@ def _prepare(
     plan = session.get(Plan, subscription.plan_id)
     if plan is None:
         return None
-    amount = (
-        plan.monthly_price_cop if subscription.billing_cycle == "monthly" else plan.annual_price_cop
-    )
-    if amount is None or amount <= 0:
+    cycle = cast(Literal["monthly", "annual"], subscription.billing_cycle)
+    # El plan más las personas de hoy por encima de las incluidas. Si el plan no admite
+    # adicionales, se renueva al precio del plan: la renovación no deja a nadie por fuera.
+    extra = pricing.extra_users_for(plan, pricing.users_counted(session, organization_id, now))
+    quote = pricing.quote(plan, cycle, extra or 0)
+    if quote is None:
         return None
     email = _owner_email(session, organization_id, source.created_by)
     if email is None:
         return None
-    cycle = cast(Literal["monthly", "annual"], subscription.billing_cycle)
-    reference = checkout.referencia_nueva(organization_id, plan.code, cycle)
+    reference = checkout.referencia_nueva(organization_id, plan.code, cycle, quote.extra_users)
     subscription.pending_checkout_reference = reference
     return _Charge(
         source_id=source.gateway_source_id,
-        amount_in_cents=amount * 100,
+        amount_in_cents=quote.total_cop * 100,
         customer_email=email,
         reference=reference,
         plan_code=plan.code,

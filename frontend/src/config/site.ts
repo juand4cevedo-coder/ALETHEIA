@@ -5,9 +5,13 @@ export const SITE_NAME = "ALETHEIA";
 export const WORDMARK = "Aletheia";
 export const SITE_URL = "https://aletheia.sbs";
 export const CONTACT_EMAIL = "contacto@aletheia.sbs";
-/** La acción principal del sitio público. Dice lo mismo que el enlace de la pantalla de
- * ingreso. */
-export const SIGN_UP_LABEL = "Crear una cuenta";
+/** Días de la prueba gratuita que anuncian los botones y avisos fijos. Debe coincidir con el
+ * plan de prueba del catálogo; donde el catálogo ya cargó, la cifra sale de él. */
+export const TRIAL_DAYS = 14;
+/** La acción principal del sitio público: el encabezado, la portada, el cierre y precios. */
+export const SIGN_UP_LABEL = `Probar ${TRIAL_DAYS} días gratis`;
+/** La línea que acompaña a esa acción. */
+export const SIGN_UP_NOTE = "Sin tarjeta de crédito. Cancele cuando quiera.";
 
 /** Título de la pestaña: la marca, una barra vertical y el nombre de la pantalla
  * («ALETHEIA | Casos»). Es la única convención; ningún título se arma a mano. */

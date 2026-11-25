@@ -268,6 +268,15 @@ export const termsOfService: LegalDocument = {
               días indicados en la página de precios y no pide tarjeta.
             </li>
             <li>
+              En los planes que admiten usuarios adicionales, el valor de cada
+              periodo es el precio del plan más cada persona por encima de las
+              incluidas, al precio publicado. Cuentan los miembros del despacho
+              y las invitaciones abiertas al momento de pagar. En el pago anual,
+              cada usuario adicional también vale diez meses. Las personas que
+              se agreguen durante el periodo se cobran desde la renovación
+              siguiente, y el resumen antes de pagar muestra el desglose.
+            </li>
+            <li>
               Si cambiamos un precio, se lo avisamos por correo con al menos 30
               días de anticipación, y el valor nuevo solo se aplica desde la
               renovación siguiente.
@@ -326,7 +335,8 @@ export const termsOfService: LegalDocument = {
             </li>
             <li>
               <strong>Cuándo y cuánto cobra.</strong> Un día antes de que venza
-              el periodo, por el valor y la periodicidad del plan vigentes. Si
+              el periodo, por el valor y la periodicidad del plan vigentes, con
+              los usuarios adicionales que tenga el despacho ese día. Si
               cambiamos un precio, se lo avisamos con al menos 30 días de
               anticipación y el valor nuevo solo se aplica desde la renovación
               siguiente.

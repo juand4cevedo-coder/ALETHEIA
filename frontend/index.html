@@ -6,30 +6,15 @@
     <meta name="theme-color" content="#ffffff" />
     <!-- Modo claro u oscuro antes del primer pintado: bloquea apenas unos bytes. -->
     <script src="/theme.js"></script>
-    <!-- Cada página cambia el título, la descripción y la URL canónica al cargar. Lo que
-         sigue lo leen las redes sociales y los buscadores que no ejecutan JavaScript (RF-005). -->
-    <title>ALETHEIA | Casos y evidencia de su despacho</title>
-    <meta
-      name="description"
-      content="Organice sus casos y su equipo jurídico. Compruebe huellas SHA-256 en su navegador y explore los fundamentos de la evidencia digital."
-    />
+    <!-- Al construir, scripts/prerender.mjs pone aquí el título, la descripción, la dirección
+         canónica, Open Graph y los datos estructurados de cada página, y en la portada la
+         precarga de su fotografía. Es lo que leen las redes sociales y los buscadores que no
+         ejecutan JavaScript (RF-005). -->
+    <!--cabecera-de-la-pagina-->
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=3" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=3" />
     <link rel="icon" href="/favicon.ico?v=3" sizes="16x16 32x32 48x48" />
-    <!-- La fotografía de la portada es lo más grande que se pinta al entrar: se pide desde el
-         HTML y no cuando React la dibuja, lo que adelanta el contenido más grande de la página. Los
-         anchos y el tamaño son los mismos de la imagen del Hero, para que el navegador reutilice
-         la descarga. -->
-    <link
-      rel="preload"
-      as="image"
-      type="image/webp"
-      href="/media/campaign/hero-real-1280.webp"
-      imagesrcset="/media/campaign/hero-real-640.webp 640w, /media/campaign/hero-real-1280.webp 1280w, /media/campaign/hero-real-1920.webp 1920w"
-      imagesizes="100vw"
-      fetchpriority="high"
-    />
     <!-- La fuente de interfaz se precarga desde el mismo origen. -->
     <link
       rel="preload"
@@ -44,18 +29,8 @@
       href="/apple-touch-icon.png?v=3"
     />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_CO" />
     <meta property="og:site_name" content="ALETHEIA" />
-    <meta property="og:url" content="https://aletheia.sbs/" />
-    <meta
-      property="og:title"
-      content="ALETHEIA | Casos y evidencia de su despacho"
-    />
-    <meta
-      property="og:description"
-      content="Organice sus casos y su equipo jurídico. Compruebe huellas SHA-256 en su navegador y explore los fundamentos de la evidencia digital."
-    />
     <meta property="og:image" content="https://aletheia.sbs/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -66,7 +41,8 @@
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
-    <div id="root"></div>
+    <!-- El prerender deja aquí el contenido de la página; React lo reemplaza al arrancar. -->
+    <div id="root"><!--contenido-de-la-pagina--></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

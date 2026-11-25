@@ -29,8 +29,9 @@ const choiceButton = buttonClassName({
 });
 
 // Panel de cookies (UI-004, HU-004). No es modal: se puede seguir leyendo la página con él
-// abierto. En la primera visita aparece sin quitarle el foco a nadie; abierto desde el pie, el
-// foco entra al panel. Cerrarlo sin elegir cuenta como rechazo (RF-004).
+// abierto. En la primera visita es una barra baja con el aviso y los dos botones, para no tapar
+// la página en un teléfono; abierto desde el pie, muestra las categorías y el foco entra al
+// panel. Cerrarlo sin elegir (Escape o la equis) cuenta como rechazo (RF-004).
 export function CookiePanel({
   choice,
   openedByVisitor,
@@ -98,38 +99,35 @@ export function CookiePanel({
     <section
       ref={panelRef}
       className={styles.panel}
+      data-view={view}
       aria-labelledby="cookies-titulo"
       onKeyDown={handleKeyDown}
     >
-      <div className={styles.head}>
-        <p
-          id="cookies-titulo"
-          ref={titleRef}
-          tabIndex={-1}
-          className={styles.title}
-        >
-          <GalletaIcon size={16} />
-          Cookies en ALETHEIA
-        </p>
-        <button
-          type="button"
-          className={styles.close}
-          aria-label="Cerrar"
-          onClick={dismiss}
-        >
-          <CerrarIcon size={16} />
-        </button>
-      </div>
-
       {view === "summary" ? (
         <>
-          <p className={styles.text}>
-            Usamos las cookies necesarias para mantener su sesión. Si usted lo
-            acepta, también medimos de forma anónima qué tan rápido carga el
-            sitio. No usamos publicidad. Lo opcional queda apagado hasta que
-            usted lo acepte.{" "}
-            <Link to={legalRoute("cookies")}>Política de cookies</Link>
-          </p>
+          <div className={styles.summary}>
+            <p
+              id="cookies-titulo"
+              ref={titleRef}
+              tabIndex={-1}
+              className="visually-hidden"
+            >
+              Cookies en ALETHEIA
+            </p>
+            <p className={styles.text}>
+              Usamos las cookies necesarias para su sesión. Medir de forma
+              anónima la velocidad del sitio es opcional.{" "}
+              <Link to={legalRoute("cookies")}>Política de cookies</Link>
+              {" o "}
+              <button
+                type="button"
+                className={styles.configure}
+                onClick={openSettings}
+              >
+                Elegir por categoría
+              </button>
+            </p>
+          </div>
           <div className={styles.actions}>
             <button
               type="button"
@@ -146,16 +144,28 @@ export function CookiePanel({
               Aceptar
             </button>
           </div>
-          <button
-            type="button"
-            className={styles.configure}
-            onClick={openSettings}
-          >
-            Elegir por categoría
-          </button>
         </>
       ) : (
         <>
+          <div className={styles.head}>
+            <p
+              id="cookies-titulo"
+              ref={titleRef}
+              tabIndex={-1}
+              className={styles.title}
+            >
+              <GalletaIcon size={16} />
+              Cookies en ALETHEIA
+            </p>
+            <button
+              type="button"
+              className={styles.close}
+              aria-label="Cerrar"
+              onClick={dismiss}
+            >
+              <CerrarIcon size={16} />
+            </button>
+          </div>
           <ul className={styles.categories}>
             <li className={styles.category}>
               <div>

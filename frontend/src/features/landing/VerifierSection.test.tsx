@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { VerifierSection } from "./VerifierSection.tsx";
 
@@ -31,6 +32,14 @@ class FakeWorker {
   terminate() {}
 }
 
+function renderSection() {
+  return render(
+    <MemoryRouter>
+      <VerifierSection />
+    </MemoryRouter>,
+  );
+}
+
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -42,7 +51,7 @@ describe("Comprobación local de archivos", () => {
   it("compara una referencia en mayúsculas y retira la coincidencia al editarla", async () => {
     vi.stubGlobal("Worker", FakeWorker);
     const user = userEvent.setup();
-    render(<VerifierSection />);
+    renderSection();
     fireEvent.change(screen.getByLabelText("Archivo que desea comprobar"), {
       target: { files: [testFile()] },
     });
@@ -59,10 +68,29 @@ describe("Comprobación local de archivos", () => {
     await user.type(reference, "0".repeat(64));
     expect(screen.getByText("Las huellas no coinciden")).toBeInTheDocument();
   });
+  it("después del resultado propone conservar el archivo en un caso", async () => {
+    vi.stubGlobal("Worker", FakeWorker);
+    const user = userEvent.setup();
+    renderSection();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Archivo que desea comprobar"), {
+      target: { files: [testFile()] },
+    });
+    await user.click(
+      screen.getByRole("button", { name: "Calcular y comprobar" }),
+    );
+    await screen.findByText("Huella calculada");
+    expect(
+      screen.getByText(/su sello de tiempo y su cadena de custodia/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Probar 14 días gratis" }),
+    ).toHaveAttribute("href", "/registro");
+  });
   it("limpia el resultado al elegir otro archivo", async () => {
     vi.stubGlobal("Worker", FakeWorker);
     const user = userEvent.setup();
-    render(<VerifierSection />);
+    renderSection();
     const fileInput = screen.getByLabelText("Archivo que desea comprobar");
     fireEvent.change(fileInput, { target: { files: [testFile()] } });
     await user.click(
@@ -76,7 +104,7 @@ describe("Comprobación local de archivos", () => {
     FakeWorker.fails = true;
     vi.stubGlobal("Worker", FakeWorker);
     const user = userEvent.setup();
-    render(<VerifierSection />);
+    renderSection();
     fireEvent.change(screen.getByLabelText("Archivo que desea comprobar"), {
       target: { files: [testFile()] },
     });
@@ -90,7 +118,7 @@ describe("Comprobación local de archivos", () => {
   });
   it("sin Web Worker no ofrece una comprobación ficticia", () => {
     vi.stubGlobal("Worker", undefined);
-    render(<VerifierSection />);
+    renderSection();
     expect(screen.getByRole("alert")).toHaveTextContent(
       "Su navegador no permite calcular",
     );
