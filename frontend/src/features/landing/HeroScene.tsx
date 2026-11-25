@@ -35,9 +35,7 @@ function useHuellaCalculada(): { texto: string; lista: boolean } {
     };
   }, []);
   const texto = [...HUELLA]
-    .map((c, i) =>
-      i < paso ? c : HEX[(i * 7 + paso * 13) % HEX.length]!,
-    )
+    .map((c, i) => (i < paso ? c : HEX[(i * 7 + paso * 13) % HEX.length]!))
     .join("");
   return { texto, lista: paso >= HUELLA.length };
 }
@@ -58,10 +56,7 @@ export function HeroScene() {
   useEffect(() => {
     const el = escena.current;
     if (!el) return;
-    if (
-      !coincide("(hover: hover) and (pointer: fine)") ||
-      movimientoReducido()
-    )
+    if (!coincide("(hover: hover) and (pointer: fine)") || movimientoReducido())
       return;
     let marco = 0;
     const mover = (evento: PointerEvent) => {

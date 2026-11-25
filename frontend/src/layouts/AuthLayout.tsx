@@ -18,8 +18,8 @@ import { VistoIcon } from "../components/ui/icons.tsx";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import styles from "./AuthLayout.module.css";
-import { photoProps } from "../config/media.ts";
 import { Logotipo } from "../components/brand/Logotipo.tsx";
+import { Emblema } from "../components/brand/Emblema.tsx";
 
 /** Cambio a la otra pantalla de acceso, declarado en la ruta: va debajo del formulario. */
 export type AuthSwitch = { question: string; label: string; to: string };
@@ -100,19 +100,13 @@ export function AuthLayout() {
       </header>
 
       {!signingUp && (
-        <section className={styles.visual} aria-label="Trabajo colaborativo">
-          <img
-            {...photoProps("equipo-real", "(min-width: 900px) 50vw, 100vw")}
-            alt="Equipo profesional colaborando en un espacio contemporáneo"
-            width={2000}
-            height={1333}
-            fetchPriority="high"
-            decoding="async"
-            className={styles.photo}
-          />
+        <section className={styles.visual} aria-label="ALETHEIA">
+          <div className={styles.emblem}>
+            <Emblema tamano={520} />
+          </div>
           <div className={styles.visualCopy}>
-            <p>Un acceso claro a todo lo que importa.</p>
-            <span>Casos, equipo y actividad en un mismo espacio.</span>
+            <p>Su evidencia, con huella, sello y custodia.</p>
+            <span>Sus casos, su equipo y cada movimiento de cada archivo.</span>
           </div>
         </section>
       )}

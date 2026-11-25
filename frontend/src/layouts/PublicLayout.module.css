@@ -429,18 +429,18 @@
 
 /* Fotografía de personas trabajando detrás del pie: queda tenue, se pierde hacia arriba y no
    compite con los enlaces. */
-.footerPhoto {
+/* El grabado de la marca asoma desde la esquina del pie, en el latón del sello. */
+.footerEngraving {
   position: absolute;
   z-index: -1;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  opacity: 0.34;
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 60%);
+  right: -10%;
+  bottom: -55%;
+  width: min(1100px, 110vw);
+  aspect-ratio: 1;
+  background: #d9b871;
+  opacity: 0.08;
+  mask: url("/brand/grabado.svg") center / contain no-repeat;
   pointer-events: none;
-  user-select: none;
 }
 
 /* Menú móvil: las filas entran una tras otra, la flecha avanza al tocar y la fila responde al

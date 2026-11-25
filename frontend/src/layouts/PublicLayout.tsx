@@ -1,5 +1,4 @@
 import { BrandMark } from "../components/ui/BrandMark.tsx";
-import { photoProps } from "../config/media.ts";
 import {
   type CSSProperties,
   lazy,
@@ -219,15 +218,7 @@ export function PublicLayout() {
         <Outlet />
       </main>
       <footer className={styles.footer}>
-        <img
-          className={styles.footerPhoto}
-          alt=""
-          width={1920}
-          height={1080}
-          loading="lazy"
-          decoding="async"
-          {...photoProps("pie", "100vw")}
-        />
+        <div className={styles.footerEngraving} aria-hidden="true" />
         <div className={styles.footerInner}>
           <div className={styles.footerBrand}>
             <Brand />

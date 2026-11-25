@@ -4,7 +4,7 @@ import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 import styles from "./HowItWorks.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
-import { photoProps } from "../../config/media.ts";
+import { Lamina } from "../../components/brand/Lamina.tsx";
 
 const STEPS = [
   {
@@ -35,15 +35,9 @@ export function HowItWorks() {
           lead="Abre el caso como abriría una carpeta. Desde ahí, ALETHEIA anota lo que pasa con cada archivo."
         />
         <div className={styles.layout}>
-          <img
-            {...photoProps("producto-real", "(min-width: 900px) 50vw, 100vw")}
-            alt="Personas trabajando en una oficina colorida"
-            className={styles.photo}
-            width={1280}
-            height={720}
-            loading="lazy"
-            decoding="async"
-          />
+          <figure className={styles.photo}>
+            <Lamina motivo="chat" />
+          </figure>
           <ol className={styles.steps}>
             {STEPS.map((step, index) => (
               <li key={step.title} className={styles.step}>
