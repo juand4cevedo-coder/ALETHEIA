@@ -12,6 +12,7 @@ type Objeto = Record<string, unknown>;
 export const AUTOR = "Juan Diego Acevedo Calderón";
 const ORGANIZACION = `${SITE_URL}/#organizacion`;
 const SITIO = `${SITE_URL}/#sitio`;
+const FUNDADOR = `${SITE_URL}/nosotros#fundador`;
 const IMAGEN = `${SITE_URL}/og-image.png`;
 
 function organizacion(): Objeto {
@@ -22,7 +23,7 @@ function organizacion(): Objeto {
     url: SITE_URL + "/",
     logo: `${SITE_URL}/icon-512.png`,
     email: CONTACT_EMAIL,
-    founder: { "@type": "Person", name: AUTOR },
+    founder: { "@id": FUNDADOR },
     address: {
       "@type": "PostalAddress",
       streetAddress: "Avenida 40 # 62-56",
@@ -30,6 +31,19 @@ function organizacion(): Objeto {
       addressRegion: "Antioquia",
       addressCountry: "CO",
     },
+  };
+}
+
+/** Quien funda y escribe: la misma persona en la organización y en los artículos. */
+function fundador(): Objeto {
+  return {
+    "@type": "Person",
+    "@id": FUNDADOR,
+    name: AUTOR,
+    url: `${SITE_URL}/nosotros`,
+    jobTitle: "Fundador de ALETHEIA",
+    image: `${SITE_URL}/media/team/fundador-800.webp`,
+    worksFor: { "@id": ORGANIZACION },
   };
 }
 
@@ -53,6 +67,45 @@ function precio(valor: number, duracion: "P1M" | "P1Y"): Objeto {
   };
 }
 
+function oferta(plan: PlanPublicado): Objeto {
+  if (plan.diasDePrueba !== null) {
+    // La prueba no se cobra ni se renueva: dura unos días y termina.
+    return {
+      "@type": "Offer",
+      name: plan.nombre,
+      price: 0,
+      priceCurrency: "COP",
+      url: `${SITE_URL}/registro`,
+      eligibleDuration: {
+        "@type": "QuantitativeValue",
+        value: plan.diasDePrueba,
+        unitCode: "DAY",
+      },
+    };
+  }
+  return {
+    "@type": "Offer",
+    name: plan.nombre,
+    price: plan.mensual,
+    priceCurrency: "COP",
+    url: `${SITE_URL}/precios`,
+    priceSpecification: [
+      precio(plan.mensual, "P1M"),
+      ...(plan.anual === null ? [] : [precio(plan.anual, "P1Y")]),
+    ],
+    ...(plan.usuarioAdicional === null
+      ? {}
+      : {
+          addOn: {
+            "@type": "Offer",
+            name: `Usuario adicional del plan ${plan.nombre}`,
+            priceCurrency: "COP",
+            priceSpecification: precio(plan.usuarioAdicional, "P1M"),
+          },
+        }),
+  };
+}
+
 function aplicacion(planes: readonly PlanPublicado[]): Objeto {
   return {
     "@type": "SoftwareApplication",
@@ -63,27 +116,24 @@ function aplicacion(planes: readonly PlanPublicado[]): Objeto {
     operatingSystem: "Web",
     inLanguage: "es-CO",
     publisher: { "@id": ORGANIZACION },
-    offers: planes.map((plan) => ({
-      "@type": "Offer",
-      name: plan.nombre,
-      price: plan.mensual,
-      priceCurrency: "COP",
-      url: `${SITE_URL}/precios`,
-      priceSpecification: [
-        precio(plan.mensual, "P1M"),
-        ...(plan.anual === null ? [] : [precio(plan.anual, "P1Y")]),
-      ],
-      ...(plan.usuarioAdicional === null
-        ? {}
-        : {
-            addOn: {
-              "@type": "Offer",
-              name: `Usuario adicional del plan ${plan.nombre}`,
-              priceCurrency: "COP",
-              priceSpecification: precio(plan.usuarioAdicional, "P1M"),
-            },
-          }),
-    })),
+    offers: planes.map(oferta),
+  };
+}
+
+/** El comprobador público: una herramienta gratuita que funciona en el navegador. */
+function comprobador(meta: MetaPagina): Objeto {
+  return {
+    "@type": "WebApplication",
+    name: "Comprobador de huellas SHA-256 de ALETHEIA",
+    url: meta.canonica,
+    description: meta.descripcion,
+    applicationCategory: "UtilitiesApplication",
+    operatingSystem: "Web",
+    browserRequirements: "Un navegador actual con JavaScript",
+    isAccessibleForFree: true,
+    inLanguage: "es-CO",
+    offers: { "@type": "Offer", price: 0, priceCurrency: "COP" },
+    publisher: { "@id": ORGANIZACION },
   };
 }
 
@@ -93,11 +143,24 @@ function articulo(meta: MetaPagina, titular: string): Objeto {
     headline: titular,
     description: meta.descripcion,
     datePublished: meta.publicado,
-    dateModified: meta.publicado,
+    dateModified: meta.actualizado ?? meta.publicado,
     articleSection: meta.seccion,
     inLanguage: "es-CO",
     image: IMAGEN,
-    author: { "@type": "Person", name: AUTOR },
+    author: { "@id": FUNDADOR },
+    publisher: { "@id": ORGANIZACION },
+    mainEntityOfPage: meta.canonica,
+  };
+}
+
+/** Guía de la documentación. */
+function guia(meta: MetaPagina, titular: string): Objeto {
+  return {
+    "@type": "TechArticle",
+    headline: titular,
+    description: meta.descripcion,
+    inLanguage: "es-CO",
+    author: { "@id": ORGANIZACION },
     publisher: { "@id": ORGANIZACION },
     mainEntityOfPage: meta.canonica,
   };
@@ -128,7 +191,8 @@ function preguntasFrecuentes(preguntas: readonly Pregunta[]): Objeto {
 }
 
 /** Lo que cada página declara. `nombre` es como se llama la página en la ruta de navegación
- * (el titular del artículo o de la guía, sin la marca). */
+ * (el titular del artículo o de la guía, sin la marca). `preguntas` son las de la página, tal
+ * como se dibujan; si no tiene, va vacío. */
 export function datosEstructurados(
   meta: MetaPagina,
   contexto: {
@@ -137,14 +201,18 @@ export function datosEstructurados(
     preguntas: readonly Pregunta[];
   },
 ): Objeto {
-  const grafo: Objeto[] = [organizacion(), sitio()];
+  const grafo: Objeto[] = [organizacion(), sitio(), fundador()];
   if (meta.ruta === "/" || meta.ruta === "/precios") {
     grafo.push(aplicacion(contexto.planes));
   }
-  if (meta.ruta === "/" && contexto.preguntas.length) {
+  if (meta.ruta === "/verificador") grafo.push(comprobador(meta));
+  if (contexto.preguntas.length) {
     grafo.push(preguntasFrecuentes(contexto.preguntas));
   }
   if (meta.tipo === "article") grafo.push(articulo(meta, contexto.nombre));
+  if (meta.ruta.startsWith("/docs/") && meta.enMapa) {
+    grafo.push(guia(meta, contexto.nombre));
+  }
   if (meta.migas?.length) grafo.push(migas(meta, contexto.nombre));
   return { "@context": "https://schema.org", "@graph": grafo };
 }

@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import type { PublicPlan } from "../../api/generated";
 import {
   annualMonthlyEquivalent,
@@ -21,19 +23,22 @@ type PlanCardProps = {
   tagline?: string;
   /** Nivel del nombre del plan: 3 bajo el título de una sección, 2 bajo el de la página. */
   headingLevel?: 2 | 3;
+  /** Botón al pie de la tarjeta. */
+  action?: ReactNode;
 };
 
 // Tarjeta de plan (CMP-UI-012). Todos los precios y límites vienen del catálogo (RN-019).
-// No lleva botón: toda cuenta nueva empieza con la prueba y el registro no elige plan, así que
-// un «Elegir» por tarjeta prometería algo que no pasa. La única acción es crear la cuenta, y la
-// pone la página. Sus cuatro filas (nombre, para quién, precio y límites) se alinean con las de
-// las demás tarjetas por subgrid, para que se comparen de un vistazo.
+// Toda cuenta nueva empieza con la prueba y el registro no cobra ni elige plan, así que el botón
+// de la tarjeta lleva a la prueba y no promete un pago: el registro solo recuerda qué plan miró
+// la persona. Sus cinco filas (nombre, para quién, precio, límites y botón) se alinean con las
+// de las demás tarjetas por subgrid, para que se comparen de un vistazo.
 export function PlanCard({
   plan,
   cycle,
   recommended = false,
   tagline,
   headingLevel = 3,
+  action,
 }: PlanCardProps) {
   const isFree = plan.monthly_price_cop === 0;
   const showsAnnual = cycle === "annual" && plan.annual_price_cop != null;
@@ -117,6 +122,7 @@ export function PlanCard({
           Archivos de hasta {formatBytes(plan.max_file_bytes)}
         </li>
       </ul>
+      <div className={styles.action}>{action}</div>
     </article>
   );
 }

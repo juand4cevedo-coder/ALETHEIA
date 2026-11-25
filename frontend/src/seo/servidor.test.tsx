@@ -26,14 +26,14 @@ import { MARCA_CABECERA, MARCA_CONTENIDO } from "./html.ts";
 import {
   generarSitio,
   paginasPublicas,
-  preguntasDeLaPortada,
+  preguntasDe,
 } from "./servidor.tsx";
 
 const PLANTILLA = `<!doctype html><html><head>${MARCA_CABECERA}</head><body><div id="root">${MARCA_CONTENIDO}</div></body></html>`;
 
 describe("preguntas de la portada", () => {
   it("salen de la sección «Antes de empezar» tal como se dibuja", () => {
-    const preguntas = preguntasDeLaPortada();
+    const preguntas = preguntasDe();
     const { container } = render(<FaqSection />);
     const dibujadas = container.querySelectorAll("details");
     expect(preguntas).toHaveLength(dibujadas.length);
@@ -89,6 +89,15 @@ describe("generarSitio", () => {
       );
       expect(precios).toContain('"@type":"SoftwareApplication"');
       expect(precios).toMatch(/<div id="root"><.+<\/div><\/body>/s);
+      // Las tarjetas salen de la copia del catálogo: los buscadores leen los precios sin
+      // ejecutar JavaScript, y la respuesta sobre usuarios adicionales dice los reales.
+      expect(precios).toContain("29.900");
+      expect(precios).toContain("59.900");
+      expect(precios).not.toContain("Cargando los planes");
+      expect(precios).toContain('"@type":"FAQPage"');
+      expect(precios).toContain(
+        "Profesional incluye 4 y cada persona adicional vale $19.900 al mes",
+      );
 
       const portada = sitio.archivos.get("index.html")!;
       expect(portada).toContain('"@type":"FAQPage"');

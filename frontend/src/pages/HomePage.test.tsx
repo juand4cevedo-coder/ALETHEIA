@@ -95,32 +95,16 @@ describe("Página de inicio (HU-001)", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("si el catálogo no responde, avisa y permite reintentar", async () => {
-    fetchMock
-      .mockResolvedValueOnce(
-        jsonResponse(
-          {
-            type: "about:blank",
-            title: "Service Unavailable",
-            status: 503,
-          },
-          503,
-        ),
-      )
-      .mockResolvedValueOnce(jsonResponse(CATALOG));
-    const user = userEvent.setup();
+  it("si el catálogo no responde, se queda con los precios publicados", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        { type: "about:blank", title: "Service Unavailable", status: 503 },
+        503,
+      ),
+    );
     await renderRoute("/");
 
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(
-      "No pudimos cargar los precios en este momento.",
-    );
-    await user.click(
-      within(alert).getByRole("button", {
-        name: "Cargar los precios de nuevo",
-      }),
-    );
-
+    // La copia del catálogo que viaja con el sitio basta para mostrar los precios.
     expect(await screen.findByText(/^\$59\.900/)).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
