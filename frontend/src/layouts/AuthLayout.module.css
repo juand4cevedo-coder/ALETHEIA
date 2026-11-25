@@ -61,7 +61,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--ink-900);
+  color: var(--brand-text);
   font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 750;
@@ -73,7 +73,7 @@
   height: 30px;
 }
 .brand:hover {
-  color: var(--ink-700);
+  color: var(--brand-text-strong);
 }
 .back {
   display: inline-flex;
@@ -85,7 +85,7 @@
   text-decoration: none;
 }
 .back:hover {
-  color: var(--ink-900);
+  color: var(--brand-text);
 }
 .main {
   width: 100%;

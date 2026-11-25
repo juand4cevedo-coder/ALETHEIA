@@ -54,7 +54,7 @@
     background 0.2s;
 }
 .cards > a:hover {
-  background: #eee7f4;
+  background: var(--tint-2);
   transform: translateY(-3px);
 }
 .cards h2 {
@@ -82,7 +82,7 @@
 }
 .principles section > span {
   font: 650 72px/1 var(--font-sans);
-  color: var(--ink-900);
+  color: var(--brand-text);
 }
 .principles h2 {
   font-size: 26px;
@@ -215,13 +215,13 @@
   z-index: 1;
   font: 400 clamp(40px, 4.5vw, 62px)/1 var(--font-editorial);
   letter-spacing: -0.03em;
-  color: #fff;
+  color: var(--on-ink);
 }
 .articleVisual small {
   position: relative;
   z-index: 1;
   font: 12px var(--font-mono);
-  color: rgb(255 255 255 / 78%);
+  color: var(--on-ink-2);
   margin-top: 24px;
 }
 .articleVisual[data-kind="Integridad"] {

@@ -210,14 +210,11 @@ class OrganizationHealth(BaseModel):
     security: SecurityIndicators
 
 
-class OrganizationPolicies(BaseModel):
-    """Políticas del despacho que afectan a todo el equipo."""
+class OrganizationPoliciesRequest(BaseModel):
+    """Políticas del despacho que el propietario puede cambiar."""
 
-    default_retention_years: int = Field(
-        ge=1,
-        le=30,
-        description="Años que se conserva un caso archivado; solo cuenta para los futuros.",
-    )
+    model_config = ConfigDict(extra="forbid")
+
     session_days: int = Field(
         ge=1,
         le=14,
@@ -230,5 +227,14 @@ class OrganizationPolicies(BaseModel):
     )
 
 
-class OrganizationPoliciesRequest(OrganizationPolicies):
-    model_config = ConfigDict(extra="forbid")
+class OrganizationPolicies(OrganizationPoliciesRequest):
+    """Políticas vigentes del despacho, con el plazo de conservación, que es fijo."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    default_retention_years: int = Field(
+        description=(
+            "Años que se conserva un caso archivado desde su cierre. Es el mismo para todos los "
+            "despachos y no se cambia desde la aplicación."
+        ),
+    )

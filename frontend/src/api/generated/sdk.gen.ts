@@ -104,6 +104,9 @@ import type {
   DeletePlatformUserData,
   DeletePlatformUserErrors,
   DeletePlatformUserResponses,
+  DeleteSupportTicketData,
+  DeleteSupportTicketErrors,
+  DeleteSupportTicketResponses,
   DeleteTaskTemplateData,
   DeleteTaskTemplateErrors,
   DeleteTaskTemplateResponses,
@@ -231,6 +234,13 @@ import type {
   PlatformAuditResponses,
   PlatformBillingData,
   PlatformBillingResponses,
+  PlatformOperationsData,
+  PlatformOperationsResponses,
+  PlatformOrganizationsData,
+  PlatformOrganizationsErrors,
+  PlatformOrganizationsResponses,
+  PlatformOverviewData,
+  PlatformOverviewResponses,
   PlatformSupportTicketsData,
   PlatformSupportTicketsErrors,
   PlatformSupportTicketsResponses,
@@ -300,6 +310,9 @@ import type {
   RetryEvidenceTimestampData,
   RetryEvidenceTimestampErrors,
   RetryEvidenceTimestampResponses,
+  RetryPlatformJobData,
+  RetryPlatformJobErrors,
+  RetryPlatformJobResponses,
   RevokeClientAccessData,
   RevokeClientAccessErrors,
   RevokeClientAccessResponses,
@@ -2747,6 +2760,104 @@ export const platformWebVitals = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Resumen de la plataforma
+ */
+export const platformOverview = <ThrowOnError extends boolean = false>(
+  options?: Options<PlatformOverviewData, ThrowOnError>,
+): RequestResult<PlatformOverviewResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    PlatformOverviewResponses,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/overview",
+    ...options,
+  });
+
+/**
+ * Directorio de despachos
+ */
+export const platformOrganizations = <ThrowOnError extends boolean = false>(
+  options?: Options<PlatformOrganizationsData, ThrowOnError>,
+): RequestResult<
+  PlatformOrganizationsResponses,
+  PlatformOrganizationsErrors,
+  ThrowOnError
+> =>
+  (options?.client ?? client).get<
+    PlatformOrganizationsResponses,
+    PlatformOrganizationsErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/organizations",
+    ...options,
+  });
+
+/**
+ * Cola de tareas y pagos por procesar
+ */
+export const platformOperations = <ThrowOnError extends boolean = false>(
+  options?: Options<PlatformOperationsData, ThrowOnError>,
+): RequestResult<PlatformOperationsResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    PlatformOperationsResponses,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/operations",
+    ...options,
+  });
+
+/**
+ * Devolver a la cola una tarea fallida
+ *
+ * La tarea vuelve con sus intentos en cero y corre en la próxima vuelta del trabajador.
+ */
+export const retryPlatformJob = <ThrowOnError extends boolean = false>(
+  options: Options<RetryPlatformJobData, ThrowOnError>,
+): RequestResult<
+  RetryPlatformJobResponses,
+  RetryPlatformJobErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    RetryPlatformJobResponses,
+    RetryPlatformJobErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/jobs/{job_id}/retry",
+    ...options,
+  });
+
+/**
  * Mis solicitudes de soporte
  */
 export const ownSupportTickets = <ThrowOnError extends boolean = false>(
@@ -2856,6 +2967,32 @@ export const changeSupportTicketStatus = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+/**
+ * Eliminar una solicitud resuelta
+ */
+export const deleteSupportTicket = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteSupportTicketData, ThrowOnError>,
+): RequestResult<
+  DeleteSupportTicketResponses,
+  DeleteSupportTicketErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).delete<
+    DeleteSupportTicketResponses,
+    DeleteSupportTicketErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/support/tickets/{ticket_id}",
+    ...options,
   });
 
 /**

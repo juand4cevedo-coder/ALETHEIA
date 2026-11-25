@@ -8,6 +8,7 @@ import styles from "./AccountMenu.module.css";
 import { initialsOf } from "./initials.ts";
 import { SignOutEverywhereDialog } from "./SignOutEverywhereDialog.tsx";
 import { useSignOut } from "./useSignOut.ts";
+import { ThemeChooser } from "../theme/ThemeChooser.tsx";
 import {
   ChevronAbajoIcon,
   DispositivosIcon,
@@ -63,11 +64,11 @@ export function AccountMenu({ me }: { me: Me }) {
         ref={triggerRef}
         type="button"
         className={styles.trigger}
-        aria-label={`Opciones de la cuenta de ${me.full_name}`}
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((current) => !current)}
       >
+        <span className="visually-hidden">Opciones de la cuenta de </span>
         <span className={styles.seal} aria-hidden="true">
           {initialsOf(me.full_name) || <UsuarioIcon size={16} />}
         </span>
@@ -95,6 +96,10 @@ export function AccountMenu({ me }: { me: Me }) {
           {me.platform_admin && (
             <p className={styles.panelRole}>Dueño de la plataforma</p>
           )}
+        </div>
+        <div className={styles.appearance}>
+          <p className={styles.appearanceLabel}>Apariencia</p>
+          <ThemeChooser />
         </div>
         <ul className={styles.actions}>
           <li>
@@ -125,12 +130,14 @@ export function AccountMenu({ me }: { me: Me }) {
                     Administrar Aletheia
                   </span>
                   <span className={styles.actionHint}>
-                    Cuentas de la plataforma
+                    Resumen, despachos y operación
                   </span>
                 </span>
               </Link>
             </li>
           )}
+        </ul>
+        <ul className={`${styles.actions} ${styles.sessionActions}`}>
           <li>
             <button
               type="button"

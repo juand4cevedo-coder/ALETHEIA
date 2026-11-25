@@ -43,24 +43,9 @@ export const loadWorkspacePage = () =>
   import("../pages/WorkspacePage.tsx").then((module) => module.WorkspacePage);
 export const loadAccountPage = () =>
   import("../pages/AccountPage.tsx").then((module) => module.AccountPage);
-export const loadPlatformPage = () =>
-  import("../pages/PlatformPage.tsx").then((module) => module.PlatformPage);
-export const loadPlatformBillingPage = () =>
-  import("../pages/PlatformModulesPage.tsx").then(
-    (module) => module.PlatformBillingPage,
-  );
-export const loadPlatformSupportPage = () =>
-  import("../pages/PlatformModulesPage.tsx").then(
-    (module) => module.PlatformSupportPage,
-  );
-export const loadPlatformAuditPage = () =>
-  import("../pages/PlatformModulesPage.tsx").then(
-    (module) => module.PlatformAuditPage,
-  );
-export const loadPlatformVitalsPage = () =>
-  import("../pages/PlatformVitalsPage.tsx").then(
-    (module) => module.PlatformVitalsPage,
-  );
+// Consola de la plataforma: un solo archivo de entrada que reparte sus pantallas.
+export const loadPlatformConsole = () =>
+  import("./PlatformConsole.tsx").then((module) => module.PlatformConsole);
 export const loadSupportPage = () =>
   import("../pages/SupportPage.tsx").then((module) => module.SupportPage);
 export const loadAcceptInvitationPage = () =>

@@ -220,7 +220,7 @@ _POLICIES = "/api/v1/organization/policies"
 def _require(client: TestClient, value: bool = True) -> Any:
     return client.put(
         _POLICIES,
-        json={"default_retention_years": 10, "session_days": 14, "require_two_factor": value},
+        json={"session_days": 14, "require_two_factor": value},
     )
 
 

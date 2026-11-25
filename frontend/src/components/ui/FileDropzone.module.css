@@ -67,7 +67,7 @@
   height: 52px;
   border-radius: 16px;
   background: color-mix(in srgb, var(--ink-900) 10%, var(--paper-raised));
-  color: var(--ink-900);
+  color: var(--brand-text);
 }
 
 .text {

@@ -7,7 +7,8 @@ perito no podría verificar el sello con `openssl ts -verify -data archivo`. El 
 tal como llega; antes de verificarlo con rfc3161-client contra las raíces fijadas en este
 paquete se reordenan en memoria sus certificados, porque DigiCert y Sectigo los envían fuera del
 orden que exige DER y ese campo no lo cubre la firma de la autoridad. La decisión completa y por
-qué FreeTSA se descartó están en ADR-015; la prueba técnica original vive en spikes/tt006.
+qué FreeTSA se descartó están en ADR-015; la prueba técnica original está en
+docs/arquitectura/prueba-tecnica-tt006.md.
 """
 
 import os

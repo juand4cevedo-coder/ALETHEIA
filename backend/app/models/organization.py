@@ -24,7 +24,8 @@ class Organization(Base):
         CheckConstraint("char_length(name) BETWEEN 1 AND 120", name="name_length"),
         CheckConstraint(text_values("status", ORGANIZATION_STATUSES), name="status"),
         CheckConstraint("storage_used_bytes >= 0", name="storage_used_bytes"),
-        CheckConstraint("default_retention_years BETWEEN 1 AND 30", name="default_retention_years"),
+        # Conservación fija para todos los despachos (migración 0060).
+        CheckConstraint("default_retention_years = 10", name="default_retention_years"),
         CheckConstraint("session_days BETWEEN 1 AND 14", name="session_days"),
     )
 

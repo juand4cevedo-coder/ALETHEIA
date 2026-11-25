@@ -23,6 +23,9 @@ dist/
 # Registros
 *.log
 
+# Evidencias y paquetes cifrados que el backend guarda en desarrollo: nunca se versionan.
+backend/.local/
+
 # Editores y sistema operativo
 .vscode/*
 !.vscode/settings.json
@@ -34,7 +37,7 @@ desktop.ini
 # Material de diseño de referencia; no forma parte del producto.
 docs/diseno/figma-2026-11-12/
 
-# Raíces públicas de las autoridades de sellado de TT-006 y de producción (ADR-015): son
+# Raíces públicas de las autoridades de sellado de la prueba TT-006 y de producción (ADR-015): son
 # certificados, no llaves.
-!backend/spikes/tt006/sellos/*-raiz.pem
+!backend/tests/fixtures/sellos/*-raiz.pem
 !backend/app/adapters/raices_sellado.pem

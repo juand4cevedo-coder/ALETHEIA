@@ -29,7 +29,8 @@ _KMS_ALGORITHM: Final = "RSAES_OAEP_SHA_256"
 _LOCAL_PREFIX: Final = "local:"
 # Primeros caracteres hexadecimales de la huella de la llave pública que se guardan como versión.
 _LOCAL_VERSION_LENGTH: Final = 16
-# Igual que spikes/tt006/cifrado_tink.py: OAEP con MGF1(SHA-256), SHA-256 y sin etiqueta.
+# Igual que en la prueba técnica TT-006 (docs/arquitectura/prueba-tecnica-tt006.md): OAEP
+# con MGF1(SHA-256), SHA-256 y sin etiqueta.
 _OAEP: Final = padding.OAEP(
     mgf=padding.MGF1(algorithm=hashes.SHA256()),
     algorithm=hashes.SHA256(),

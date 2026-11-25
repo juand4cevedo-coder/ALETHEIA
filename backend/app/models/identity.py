@@ -90,6 +90,8 @@ AUDIT_ACTIONS: Final = (
     "archive_exported",
     "payment_source_linked",
     "payment_source_canceled",
+    "support_ticket_deleted",
+    "platform_job_retried",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.
@@ -185,6 +187,12 @@ class AuditLog(Base):
     __table_args__ = (
         CheckConstraint(text_values("action", AUDIT_ACTIONS), name="action"),
         CheckConstraint("char_length(user_agent) <= 300", name="user_agent_length"),
+        # Anonimización a los 90 días: solo los eventos que aún guardan IP o navegador.
+        Index(
+            "ix_audit_log_created_at_with_network",
+            "created_at",
+            postgresql_where=text("ip IS NOT NULL OR user_agent IS NOT NULL"),
+        ),
         # Auditoría de una organización ordenada por fecha (IDX-011).
         Index("ix_audit_log_organization_id_created_at", "organization_id", "created_at"),
         Index(

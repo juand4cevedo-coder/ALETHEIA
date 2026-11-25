@@ -61,7 +61,7 @@ def test_solo_el_propietario_cambia_las_politicas_y_queda_en_la_auditoria(
     office = crear_oficina(db)
     admin = crear_miembro(db, office, "admin-politicas@example.com", "admin")
     lawyer = crear_miembro(db, office, "abogada-politicas@example.com", "lawyer")
-    body = {"default_retention_years": 5, "session_days": 7, "require_two_factor": False}
+    body = {"session_days": 7, "require_two_factor": False}
 
     assert _login(dispositivo, lawyer).get(PATH).status_code == 403
     admin_client = _login(dispositivo, admin)
@@ -72,8 +72,8 @@ def test_solo_el_propietario_cambia_las_politicas_y_queda_en_la_auditoria(
     owner_client = _login(dispositivo, office.owner)
     changed = owner_client.put(PATH, json=body)
     assert changed.status_code == 200, changed.text
-    assert changed.json() == body
-    assert owner_client.get(PATH).json() == body
+    assert changed.json() == {**body, "default_retention_years": 10}
+    assert owner_client.get(PATH).json() == {**body, "default_retention_years": 10}
     assert len(_events(db, office)) == 1
 
     # Repetir los mismos valores no deja otro evento.
@@ -88,24 +88,19 @@ def test_las_politicas_rechazan_valores_fuera_de_rango(
     client = _login(dispositivo, office.owner)
 
     for body in (
-        {"default_retention_years": 0, "session_days": 7},
-        {"default_retention_years": 31, "session_days": 7},
-        {"default_retention_years": 10, "session_days": 0},
-        {"default_retention_years": 10, "session_days": 15},
-        {"default_retention_years": 10},
-        {"default_retention_years": 10, "session_days": 7, "extra": 1},
+        # El plazo de conservación es fijo: ni siquiera se acepta en la petición.
+        {"default_retention_years": 3, "session_days": 7},
+        {"session_days": 0},
+        {"session_days": 15},
+        {},
+        {"session_days": 7, "extra": 1},
     ):
         assert client.put(PATH, json=body).status_code == 422, body
 
 
-def test_un_caso_archivado_conserva_los_anos_de_la_politica(
-    dispositivo: NuevoCliente, db: Session
-) -> None:
+def test_un_caso_archivado_se_conserva_diez_anos(dispositivo: NuevoCliente, db: Session) -> None:
     office = crear_oficina(db)
     client = _login(dispositivo, office.owner, db)
-    assert (
-        client.put(PATH, json={"default_retention_years": 3, "session_days": 14}).status_code == 200
-    )
     case_id = client.post("/api/v1/cases", json={"title": "Caso con política"}).json()["id"]
 
     assert client.post(f"/api/v1/cases/{case_id}/close").status_code == 200
@@ -115,19 +110,14 @@ def test_un_caso_archivado_conserva_los_anos_de_la_politica(
     assert case.closed_at is not None
     assert case.retention_until is not None
     years = (case.retention_until - case.closed_at).days / 365.25
-    assert 2.99 < years < 3.01
+    assert 9.99 < years < 10.01
 
 
 def test_una_sesion_nueva_dura_lo_que_dice_la_politica(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
     office = crear_oficina(db)
-    assert (
-        _login(dispositivo, office.owner)
-        .put(PATH, json={"default_retention_years": 10, "session_days": 2})
-        .status_code
-        == 200
-    )
+    assert _login(dispositivo, office.owner).put(PATH, json={"session_days": 2}).status_code == 200
 
     _login(dispositivo, office.owner)
 

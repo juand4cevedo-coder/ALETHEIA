@@ -1,6 +1,6 @@
 [project]
 name = "aletheia-backend"
-version = "0.43.0"
+version = "0.44.0"
 description = "API de ALETHEIA: preservación de evidencia digital con integridad y trazabilidad."
 requires-python = ">=3.14,<3.15"
 dependencies = [
@@ -45,11 +45,6 @@ dev = [
     "types-python-dateutil==2.9.0.20261116",
     "types-reportlab==5.1.0.20261104",
 ]
-spike = [
-    "psutil==7.2.2",
-    "python-multipart==0.0.34",
-    "types-psutil==7.2.2.20261111",
-]
 
 [tool.ruff]
 target-version = "py314"
@@ -60,7 +55,6 @@ select = ["E", "W", "F", "I", "UP", "B", "S", "SIM", "PT", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
-"spikes/**/test_*.py" = ["S101"]
 
 [tool.mypy]
 strict = true

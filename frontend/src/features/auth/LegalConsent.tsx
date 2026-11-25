@@ -29,7 +29,7 @@ export function LegalConsent({ checked, error, ref, onChange }: Props) {
       </NewTabLink>{" "}
       y autorizo el tratamiento de mis datos según la{" "}
       <NewTabLink to={legalRoute("privacidad")}>
-        política de privacidad
+        política de tratamiento de datos
       </NewTabLink>
       .
     </Checkbox>

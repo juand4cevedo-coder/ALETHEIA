@@ -1,11 +1,12 @@
-/* Marco del espacio de trabajo: encabezado de una línea, menú lateral sobre el papel hundido y
-   el contenido sobre el papel. Aquí la atención va al trabajo, no a la marca. La base es el
+/* Marco del espacio de trabajo: encabezado de una línea, menú lateral sobre un tinte propio y
+   el contenido sobre el lienzo. Aquí la atención va al trabajo, no a la marca. La base es el
    celular de 360 px y todo lo demás se agrega con min-width. */
 .shell {
-  --paper: #f7f7f7;
-  --paper-sunken: #eeeaf2;
+  --paper: var(--canvas-app);
+  --paper-sunken: var(--tint-2);
   --sidebar-width: 264px;
-  --content-width: 1320px;
+  --rail-width: 76px;
+  --content-width: 1240px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -14,15 +15,17 @@
 }
 
 .shell :where(a:not([class])) {
-  color: var(--ink-500);
+  color: var(--brand-text);
+  text-decoration-thickness: 1px;
+  text-underline-offset: var(--underline-offset);
 }
 
-/* Aparece sobre el encabezado claro, así que el anillo de foco de papel se ve sin .on-ink. */
+/* Aparece sobre el encabezado, así que el anillo de foco de papel se ve sin .on-ink. */
 .skipLink {
   position: absolute;
   top: var(--space-2);
   left: var(--space-2);
-  z-index: 30;
+  z-index: 40;
   display: inline-flex;
   align-items: center;
   min-height: var(--touch-target);
@@ -38,8 +41,6 @@
   transform: none;
 }
 
-/* El encabezado sube respecto al papel: tono más claro y un filete de tinta tenue debajo, en
-   lugar de un borde gris. */
 .header {
   position: sticky;
   top: 0;
@@ -49,40 +50,77 @@
   justify-content: space-between;
   gap: var(--space-4);
   min-height: var(--header-height);
-  padding: 0 var(--space-4);
-  background: var(--paper-raised);
-  box-shadow: 0 1px 0 rgb(17 17 17 / 8%);
-  backdrop-filter: blur(18px);
+  padding: 0 var(--space-3);
+  background: var(--chrome);
+  box-shadow: 0 1px 0 var(--ink-hairline);
+  backdrop-filter: blur(18px) saturate(1.4);
+  view-transition-name: workspace-header;
+}
+
+.lead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.menuButton {
+  display: grid;
+  place-items: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.menuButton:hover {
+  background: var(--tint-2);
+}
+
+.menuButton:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
 }
 
 .tools {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .searchButton {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 44px;
+  min-height: 40px;
   padding: 0 var(--space-3);
   border: 1px solid var(--ink-hairline);
   border-radius: var(--radius-pill);
-  background: var(--paper);
+  background: var(--paper-raised);
   color: var(--text-2);
   font: inherit;
   font-size: var(--font-size-ui);
   cursor: pointer;
   transition:
     border-color var(--motion-base) var(--ease-standard),
-    background-color var(--motion-base) var(--ease-standard);
+    box-shadow var(--motion-base) var(--ease-standard),
+    color var(--motion-base) var(--ease-standard);
 }
 
 .searchButton:hover {
-  border-color: var(--ink-900);
-  background: var(--paper-raised);
+  border-color: color-mix(in srgb, var(--ink-900) 45%, transparent);
+  box-shadow: 0 2px 10px rgb(35 0 48 / 6%);
   color: var(--text);
+}
+
+.searchButton:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
 }
 
 .searchLabel,
@@ -91,17 +129,113 @@
 }
 
 .searchKey {
-  padding: 2px 7px;
+  padding: 1px 7px;
   border: 1px solid var(--ink-hairline);
   border-radius: 7px;
   background: var(--paper-sunken);
+  color: var(--text-2);
   font: inherit;
   font-size: var(--font-size-label);
 }
 
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding-inline: var(--space-2);
+  color: var(--brand-text);
+  font-family: var(--font-sans);
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: var(--line-height-ui);
+  text-decoration: none;
+}
+
+.body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+/* En celular y tableta el menú vive en el cajón; la columna aparece desde 1024 px. */
+.sidebar {
+  display: none;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: calc(100dvh - var(--header-height));
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-4) var(--space-16);
+  view-transition-name: workspace-main;
+}
+
+.main:focus {
+  outline: none;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+  border-top: 1px solid var(--ink-hairline);
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.footer a {
+  color: var(--text-2);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
+}
+
+@media (min-width: 600px) {
+  .header {
+    padding: 0 var(--space-4);
+  }
+
+  .main {
+    padding: var(--space-8) var(--space-6) var(--space-16);
+  }
+
+  .footer {
+    padding-inline: var(--space-6);
+  }
+}
+
 @media (min-width: 900px) {
   .searchButton {
-    min-width: 220px;
+    min-width: 240px;
     padding: 0 var(--space-2) 0 var(--space-4);
   }
 
@@ -116,65 +250,112 @@
   }
 }
 
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--touch-target);
-  color: var(--ink-900);
-  font-family: var(--font-sans);
-  font-size: 23px;
-  font-weight: 750;
-  letter-spacing: -0.045em;
-  line-height: var(--line-height-ui);
-  text-decoration: none;
-}
-
-/* En celular el menú es una franja sobre el contenido (WorkspaceNav.module.css); desde 900 px
-   pasa a columna a la izquierda. */
-.body {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-content: start;
-}
-
-.main {
-  width: 100%;
-  min-width: 0;
-  max-width: var(--content-width);
-  margin: 0 auto;
-  padding: var(--space-8) var(--space-4) var(--space-16);
-}
-
-.main:focus {
-  outline: none;
-}
-
-@media (min-width: 600px) {
-  .header {
-    padding: 0 var(--space-6);
+@media (min-width: 1024px) {
+  .menuButton {
+    display: none;
   }
 
-  .main {
-    padding: var(--space-8) var(--space-6) var(--space-16);
-  }
-}
-
-@media (min-width: 900px) {
   .body {
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-    align-content: stretch;
+    transition: grid-template-columns 380ms var(--ease-out);
+  }
+
+  .shell[data-compact] .body {
+    grid-template-columns: var(--rail-width) minmax(0, 1fr);
   }
 
   /* Sin menú (mientras carga o si falla) el contenido ocupa todo el ancho. */
-  .body > .main:only-child {
+  .body > .column:only-child {
     grid-column: 1 / -1;
   }
 
-  .main {
-    padding: 56px var(--space-12) 96px;
+  .sidebar {
+    position: sticky;
+    top: var(--header-height);
+    display: block;
+    height: calc(100dvh - var(--header-height));
+    border-right: 1px solid var(--ink-hairline);
+    background: var(--tint-1);
+    view-transition-name: workspace-sidebar;
   }
+
+  .main {
+    padding: 48px var(--space-12) 96px;
+  }
+
+  .footer {
+    padding-inline: var(--space-12);
+  }
+}
+
+/* Cajón del celular: entra desde la izquierda sobre un velo, y sale más rápido de lo que
+   entra. Es un <dialog> modal: atrapa el foco y se cierra con Escape. */
+.drawer {
+  transition:
+    display 220ms allow-discrete,
+    overlay 220ms allow-discrete;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.drawer::backdrop {
+  background: var(--scrim);
+  opacity: 0;
+  transition:
+    opacity 260ms var(--ease-standard),
+    overlay 260ms allow-discrete,
+    display 260ms allow-discrete;
+}
+
+.drawer[open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  .drawer[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+.drawerPanel {
+  display: flex;
+  flex-direction: column;
+  width: min(320px, 86vw);
+  height: 100%;
+  background: var(--tint-1);
+  box-shadow: var(--shadow-float);
+  transform: translateX(-100%);
+  transition: transform 340ms var(--ease-out);
+}
+
+.drawer[open] .drawerPanel {
+  transform: none;
+}
+
+@starting-style {
+  .drawer[open] .drawerPanel {
+    transform: translateX(-100%);
+  }
+}
+
+.drawer:not([open]) .drawerPanel {
+  transition-duration: 200ms;
+}
+
+.drawerHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--header-height);
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--ink-hairline);
 }
 
 .status {
@@ -199,6 +380,12 @@
 @media (prefers-reduced-motion: reduce) {
   .spinner {
     animation: none;
+  }
+
+  .body,
+  .drawerPanel,
+  .drawer::backdrop {
+    transition: none;
   }
 }
 

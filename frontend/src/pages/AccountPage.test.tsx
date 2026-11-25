@@ -92,9 +92,7 @@ it("permite a la propietaria en prueba pagar el plan con Nequi", async () => {
   const user = userEvent.setup();
   await renderRoute("/app/facturacion");
 
-  await user.click(
-    await screen.findByRole("radio", { name: /Nequi, con una notificación/ }),
-  );
+  await user.click(await screen.findByRole("radio", { name: /^Nequi/ }));
   await user.type(await screen.findByLabelText("Celular Nequi"), "3001234567");
   await user.click(screen.getByRole("button", { name: "Continuar" }));
 
@@ -248,9 +246,7 @@ it("confirma el pago con Nequi cuando la suscripción queda activa", async () =>
   const user = userEvent.setup();
   await renderRoute("/app/facturacion");
 
-  await user.click(
-    await screen.findByRole("radio", { name: /Nequi, con una notificación/ }),
-  );
+  await user.click(await screen.findByRole("radio", { name: /^Nequi/ }));
   await user.type(await screen.findByLabelText("Celular Nequi"), "3001234567");
   await user.click(screen.getByRole("button", { name: "Continuar" }));
 
@@ -418,7 +414,7 @@ it("por omisión paga en la página de Wompi con tarjeta, PSE u otros medios", a
   await renderRoute("/app/facturacion");
 
   expect(
-    await screen.findByRole("radio", { name: /Tarjeta, PSE u otros medios/ }),
+    await screen.findByRole("radio", { name: /Tarjeta, PSE u otros/ }),
   ).toBeChecked();
   expect(screen.queryByLabelText("Celular Nequi")).not.toBeInTheDocument();
   expect(screen.getByText(/ALETHEIA nunca los ve/)).toBeInTheDocument();
@@ -495,7 +491,7 @@ it("con el plan activo la propietaria puede renovar o cambiar de plan, solo por 
     await screen.findByRole("button", { name: "Ir a pagar" }),
   ).toBeInTheDocument();
   expect(
-    screen.queryByRole("radio", { name: /Nequi, con una notificación/ }),
+    screen.queryByRole("radio", { name: /^Nequi/ }),
   ).not.toBeInTheDocument();
   expect(screen.getByText(/suma el nuevo periodo/)).toBeInTheDocument();
 });

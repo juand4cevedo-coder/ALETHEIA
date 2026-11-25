@@ -404,17 +404,18 @@ export const termsOfService: LegalDocument = {
           </p>
           <p>
             Cerrar un caso lo mueve al archivo histórico: no borra archivos,
-            llaves, eventos ni registros de custodia. ALETHEIA aplica como plazo
-            operativo inicial diez años desde el cierre, salvo una obligación,
-            orden o instrucción documentada que exija otro plazo. Las
-            solicitudes de supresión se evalúan antes de ejecutarse y no
-            proceden mientras exista un deber legal o contractual de conservar.
-            Eliminar un caso cerrado es una decisión distinta y definitiva: la
-            persona autorizada lo pide, ALETHEIA le explica lo que se perderá,
-            exige una confirmación expresa y, al ejecutarla, borra sus archivos,
-            sus llaves y su contenido. Una vez eliminado no se puede recuperar,
-            ni siquiera por soporte, y la obligación de conservar lo que la ley
-            o un cliente exijan es del despacho. Queda constancia de quién lo
+            llaves, eventos ni registros de custodia. ALETHEIA lo conserva diez
+            años desde el cierre, el mismo plazo para todos los despachos; si
+            una ley o una orden de autoridad exige otro para un caso, el
+            despacho nos escribe con el soporte y lo aplicamos. Las solicitudes
+            de supresión se evalúan antes de ejecutarse y no proceden mientras
+            exista un deber legal o contractual de conservar. Eliminar un caso
+            cerrado es una decisión distinta y definitiva: la persona autorizada
+            lo pide, ALETHEIA le explica lo que se perderá, exige una
+            confirmación expresa y, al ejecutarla, borra sus archivos, sus
+            llaves y su contenido. Una vez eliminado no se puede recuperar, ni
+            siquiera por soporte, y la obligación de conservar lo que la ley o
+            un cliente exijan es del despacho. Queda constancia de quién lo
             eliminó y cuándo.
           </p>
           <p>
@@ -423,6 +424,28 @@ export const termsOfService: LegalDocument = {
               política de reembolsos y cancelación
             </Link>
             .
+          </p>
+        </>
+      ),
+    },
+    {
+      id: "garantia",
+      title: "Garantía del servicio",
+      basis: ["Ley 1480 de 2011, arts. 7 y 11"],
+      body: (
+        <>
+          <p>
+            ALETHEIA le garantiza que el servicio hace lo que describen estos
+            términos y la página de precios. Si una función contratada no sirve
+            como se describe por una causa que nos corresponde, puede pedirnos
+            que la corrijamos o, si no es posible, que le devolvamos lo pagado
+            por el tiempo en que no funcionó.
+          </p>
+          <p>
+            Para reclamar la garantía escríbanos desde Pedir soporte, eligiendo
+            «Petición, queja o reclamo», o a {mail}. Le respondemos dentro de
+            los quince días hábiles siguientes. Esta garantía no se pierde por
+            cancelar el plan ni se renuncia por ninguna otra cláusula.
           </p>
         </>
       ),
@@ -519,6 +542,56 @@ export const termsOfService: LegalDocument = {
       ),
     },
     {
+      id: "comunicaciones",
+      title: "Cómo nos comunicamos",
+      basis: ["Ley 527 de 1999, arts. 14 y 20"],
+      body: (
+        <ul>
+          <li>
+            Le escribimos al correo de su cuenta. Los avisos del servicio, los
+            de cobro y los cambios en estos textos llegan por ese medio y tienen
+            la misma validez que una comunicación en papel.
+          </li>
+          <li>
+            Nunca lo llamamos ni le escribimos por otros canales para cobrarle,
+            y no le enviamos publicidad.
+          </li>
+          <li>
+            Mantenga su correo al día: si cambia, actualícelo en Mi cuenta. Lo
+            que enviemos al correo registrado se entiende recibido cuando entra
+            a su bandeja.
+          </li>
+        </ul>
+      ),
+    },
+    {
+      id: "fuerza-mayor",
+      title: "Fuerza mayor",
+      body: (
+        <p>
+          Ninguna de las partes responde por un incumplimiento causado por un
+          hecho imprevisible e irresistible fuera de su control, como un
+          desastre natural, una orden de autoridad o una falla general de
+          internet o de los proveedores de nube. Mientras dure, haremos lo
+          razonable para mantener disponibles sus evidencias y le informaremos
+          cómo avanza.
+        </p>
+      ),
+    },
+    {
+      id: "cesion",
+      title: "Cesión del contrato",
+      body: (
+        <p>
+          Si el servicio pasa a otra persona o empresa, se lo avisaremos por
+          correo con al menos 30 días de anticipación, junto con quién responde
+          por sus datos desde entonces. Si no está de acuerdo, puede cancelar y
+          exportar su información antes de que la cesión ocurra, sin costo.
+          Usted no puede ceder su cuenta sin nuestro acuerdo.
+        </p>
+      ),
+    },
+    {
       id: "propiedad-intelectual",
       title: "Propiedad intelectual",
       body: (
@@ -549,10 +622,12 @@ export const termsOfService: LegalDocument = {
       body: (
         <>
           <p>
-            Escríbanos a {mail}. Le confirmamos el recibo con un número de
-            radicado, la fecha y la hora, y con ese número puede preguntar por
-            el estado de su solicitud cuando quiera. Le respondemos dentro de
-            los quince días hábiles siguientes.
+            Desde su cuenta, entre a Pedir soporte y elija el tipo de solicitud.
+            Recibe al instante un número de radicado con la fecha en que llegó y
+            la fecha límite de respuesta, y puede seguirla en esa misma
+            pantalla. Si no tiene cuenta o no puede ingresar, escríbanos a{" "}
+            {mail} y le confirmamos el recibo con su radicado. Le respondemos
+            dentro de los quince días hábiles siguientes.
           </p>
           <p>
             Estos términos se rigen por las leyes de Colombia. Usted conserva

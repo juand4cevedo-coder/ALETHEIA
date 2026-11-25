@@ -1,4 +1,5 @@
-import { mediaUrl, photoProps } from "../config/media.ts";
+import { BrandMark } from "../components/ui/BrandMark.tsx";
+import { photoProps } from "../config/media.ts";
 import {
   type CSSProperties,
   lazy,
@@ -35,17 +36,24 @@ import styles from "./PublicLayout.module.css";
 // El detalle de un grupo del menú móvil se descarga al tocarlo o al abrir el menú, no con la entrada.
 const loadMobileGroupDetail = () => import("./MobileGroupDetail.tsx");
 const MobileGroupDetail = lazy(loadMobileGroupDetail);
+// El modo ya lo fija /theme.js antes de pintar: sus controles se descargan aparte para no
+// pesar en la carga de la portada. El del encabezado guarda su lugar mientras llega.
+const ThemeSwitch = lazy(() =>
+  import("../features/theme/ThemeToggle.tsx").then((module) => ({
+    default: module.ThemeSwitch,
+  })),
+);
+const ThemeChooser = lazy(() =>
+  import("../features/theme/ThemeChooser.tsx").then((module) => ({
+    default: module.ThemeChooser,
+  })),
+);
 
 const CURRENT_YEAR = new Date().getFullYear();
 function Brand() {
   return (
     <Link to={ROUTES.home} className={styles.brand} aria-label={WORDMARK}>
-      <img
-        src={mediaUrl("/brand/symbol-dark.svg")}
-        alt=""
-        width="32"
-        height="32"
-      />
+      <BrandMark size={32} />
       <span aria-hidden="true">{WORDMARK}</span>
     </Link>
   );
@@ -86,6 +94,13 @@ export function PublicLayout() {
           <Brand />
           <PublicNavigation key={location.pathname + location.hash} />
           <div className={styles.actions}>
+            <Suspense
+              fallback={
+                <span className={styles.themeSlot} aria-hidden="true" />
+              }
+            >
+              <ThemeSwitch className={styles.themeSwitch} />
+            </Suspense>
             <Link to={access.to} className={styles.signIn}>
               {access.label}
             </Link>
@@ -164,9 +179,6 @@ export function PublicLayout() {
           </Suspense>
         ) : (
           <nav className={styles.mobileMenu} aria-label="Navegación móvil">
-            <p id="menu-movil-titulo" className={styles.mobileEyebrow}>
-              Para su práctica
-            </p>
             {GROUPS.map((group, index) => (
               <button
                 key={group.title}
@@ -254,6 +266,9 @@ export function PublicLayout() {
           <p>
             © {CURRENT_YEAR} {SITE_NAME}
           </p>
+          <Suspense fallback={null}>
+            <ThemeChooser tone="inverse" className={styles.footerTheme} />
+          </Suspense>
           <Link to="/legal/terminos">
             Identificación y contacto del proveedor
           </Link>

@@ -103,7 +103,7 @@
 }
 
 .scope a {
-  color: var(--ink-900);
+  color: var(--brand-text);
 }
 
 @media (max-width: 640px) {

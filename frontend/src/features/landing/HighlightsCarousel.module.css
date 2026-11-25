@@ -1,6 +1,6 @@
 .section {
   overflow: hidden;
-  background: #f5eff9;
+  background: var(--tint-1);
 }
 
 .carousel {
@@ -9,8 +9,8 @@
   grid-template-rows: minmax(620px, auto) auto;
   border-radius: 32px;
   overflow: hidden;
-  background: #fff;
-  box-shadow: 0 30px 90px rgb(64 0 87 / 12%);
+  background: var(--paper-raised);
+  box-shadow: var(--shadow-float);
 }
 
 .stage {
@@ -18,7 +18,7 @@
   min-width: 0;
   min-height: 620px;
   overflow: hidden;
-  background: #e6d8f2;
+  background: var(--tint-3);
   touch-action: pan-y;
 }
 
@@ -29,7 +29,7 @@
   inset: 0;
   opacity: 0;
   visibility: hidden;
-  transform: scale(1.025);
+
   transition:
     opacity 700ms var(--ease-standard),
     transform 900ms var(--ease-out),
@@ -59,7 +59,7 @@
   width: 86%;
   height: auto;
   border-radius: 18px;
-  box-shadow: 0 24px 60px rgb(64 0 87 / 22%);
+  box-shadow: var(--shadow-float);
   transform: translateY(-50%);
 }
 
@@ -97,7 +97,7 @@
 
 .eyebrow {
   margin-bottom: 24px;
-  color: var(--ink-900);
+  color: var(--brand-text);
   font-size: 13px;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -129,7 +129,7 @@
 }
 
 .metric strong {
-  color: var(--ink-900);
+  color: var(--brand-text);
   font-size: 24px;
   letter-spacing: -0.035em;
 }
@@ -151,7 +151,7 @@
   padding: 0 22px;
   border-radius: 999px;
   background: var(--ink-900);
-  color: #fff;
+  color: var(--on-ink);
   font-weight: 650;
   text-decoration: none;
   transition:
@@ -190,7 +190,8 @@
   padding: 0;
   border: 0;
   overflow: hidden;
-  background: linear-gradient(#ddd6e1, #ddd6e1) center / 100% 4px no-repeat;
+  background: linear-gradient(var(--tint-3), var(--tint-3)) center / 100% 4px
+    no-repeat;
   cursor: pointer;
 }
 
@@ -225,7 +226,7 @@
   padding: 0;
   border: 1px solid var(--ink-hairline);
   border-radius: 999px;
-  background: #fff;
+  background: var(--paper-raised);
   color: var(--text);
   cursor: pointer;
   transition:
@@ -252,7 +253,7 @@
   padding: 0 18px;
   border: 1px solid var(--ink-hairline);
   border-radius: 999px;
-  background: #fff;
+  background: var(--paper-raised);
   color: var(--text);
   font: inherit;
   font-size: 13px;
@@ -269,7 +270,6 @@
 @keyframes image-in {
   from {
     opacity: 0;
-    transform: scale(1.035);
   }
 }
 

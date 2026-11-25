@@ -1,5 +1,7 @@
 import { Link } from "react-router";
 
+import { BROWSER_STORAGE } from "../../config/browserStorage.ts";
+import { BROWSER_STORAGE_NOTICE } from "./browserStorageNotice.ts";
 import { legalRoute } from "../../config/routes.ts";
 import type { LegalDocument } from "./types.ts";
 
@@ -93,12 +95,38 @@ export const cookiePolicy: LegalDocument = {
       id: "preferencias",
       title: "Lo que se guarda en su navegador",
       body: (
-        <p>
-          Su decisión sobre las cookies se guarda en el almacenamiento local de
-          su navegador con el nombre <code>aletheia:cookies</code>, junto con la
-          fecha en que la tomó, para no preguntársela en cada visita. Ese dato
-          no es una cookie y nunca se envía a nuestros servidores.
-        </p>
+        <>
+          <p>
+            Además de las cookies, el sitio guarda unas pocas preferencias en el
+            almacenamiento local de su navegador. No son cookies, no lo
+            identifican y nunca se envían a nuestros servidores. Son
+            indispensables o las pidió usted, así que no requieren
+            consentimiento.
+          </p>
+          <table>
+            <caption>Datos que se guardan en su navegador</caption>
+            <thead>
+              <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Para qué sirve</th>
+                <th scope="col">Duración</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(
+                Object.keys(BROWSER_STORAGE) as (keyof typeof BROWSER_STORAGE)[]
+              ).map((name) => (
+                <tr key={name}>
+                  <td>
+                    <code>{BROWSER_STORAGE[name].key}</code>
+                  </td>
+                  <td>{BROWSER_STORAGE_NOTICE[name].purpose}</td>
+                  <td>{BROWSER_STORAGE_NOTICE[name].duration}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       ),
     },
     {

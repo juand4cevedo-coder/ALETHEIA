@@ -1,10 +1,12 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Me } from "../../api/generated";
 import { createQueryClient } from "../../api/queryClient.ts";
+import { BROWSER_STORAGE } from "../../config/browserStorage.ts";
 import { ROUTES } from "../../config/routes.ts";
 import { WorkspaceNav } from "./WorkspaceNav.tsx";
 
@@ -22,23 +24,7 @@ const ME = {
   },
 } as unknown as Me;
 
-// jsdom no calcula diseño: se simula una franja de 375 px con 1 200 px de contenido, donde el
-// enlace activo (aria-current) queda al final, a 900 px del inicio y con 100 px de ancho.
-function simulateStrip() {
-  vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(1200);
-  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(375);
-  vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
-    function (this: Element) {
-      const active = this.getAttribute("aria-current") === "page";
-      return {
-        left: active ? 900 : 0,
-        width: active ? 100 : 375,
-      } as DOMRect;
-    },
-  );
-}
-
-afterEach(() => vi.restoreAllMocks());
+beforeEach(() => window.localStorage.clear());
 
 function renderNav(path: string) {
   return render(
@@ -52,28 +38,51 @@ function renderNav(path: string) {
   );
 }
 
-describe("Franja de navegación en celular", () => {
-  it("centra el enlace activo desplazando solo la franja", () => {
-    simulateStrip();
-    renderNav(ROUTES.platformAudit);
+describe("Menú lateral del espacio de trabajo", () => {
+  it("agrupa la consola de la plataforma en secciones con nombre", () => {
+    renderNav(ROUTES.platform);
     const nav = screen.getByRole("navigation", { name: "Espacio de trabajo" });
-    // 900 desde el inicio, menos (375 - 100) / 2 de margen a cada lado.
-    expect(nav.scrollLeft).toBe(900 - (375 - 100) / 2);
-    expect(window.scrollY).toBe(0);
+    for (const group of ["Plataforma", "Clientes", "Comercial", "Operación"])
+      expect(within(nav).getByRole("button", { name: group })).toHaveAttribute(
+        "aria-expanded",
+        "true",
+      );
+    expect(within(nav).getByRole("link", { name: "Resumen" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
   });
 
-  it("no hace nada si ninguna ruta coincide", () => {
-    simulateStrip();
-    renderNav("/app/ruta-que-no-existe");
-    const nav = screen.getByRole("navigation", { name: "Espacio de trabajo" });
-    expect(nav.scrollLeft).toBe(0);
+  it("pliega un grupo, lo recuerda y deja sus enlaces fuera del foco", async () => {
+    const user = userEvent.setup();
+    renderNav(ROUTES.platform);
+    await user.click(screen.getByRole("button", { name: "Comercial" }));
+
+    expect(screen.getByRole("button", { name: "Comercial" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    expect(
+      screen.getByRole("link", { name: "Ingresos" }).closest("[inert]"),
+    ).not.toBeNull();
+    expect(
+      JSON.parse(
+        window.localStorage.getItem(BROWSER_STORAGE.navigation.key) ?? "{}",
+      ),
+    ).toMatchObject({ folded: ["comercial"] });
   });
 
-  it("no desplaza nada cuando la franja cabe entera", () => {
-    simulateStrip();
-    vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(375);
+  it("el modo compacto conserva el nombre accesible de cada enlace", async () => {
+    const user = userEvent.setup();
     renderNav(ROUTES.platformAudit);
-    const nav = screen.getByRole("navigation", { name: "Espacio de trabajo" });
-    expect(nav.scrollLeft).toBe(0);
+    await user.click(screen.getByRole("button", { name: "Compactar el menú" }));
+
+    expect(
+      screen.getByRole("button", { name: "Expandir el menú" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Auditoría" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
   });
 });

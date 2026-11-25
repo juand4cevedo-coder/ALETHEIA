@@ -349,7 +349,7 @@
 }
 
 .prose a {
-  color: var(--ink-900);
+  color: var(--brand-text);
   text-underline-offset: var(--underline-offset);
 }
 
@@ -404,7 +404,7 @@
 }
 
 .contact a {
-  color: var(--ink-900);
+  color: var(--brand-text);
   text-underline-offset: var(--underline-offset);
 }
 
@@ -491,7 +491,7 @@
     padding: 0;
     border: 0;
     background: none;
-    color: var(--ink-900);
+    color: var(--brand-text);
     font: inherit;
     font-size: var(--font-size-ui);
     font-weight: 500;

@@ -24,13 +24,8 @@ import {
   loadOrganizationAuditPage,
   loadOrganizationPage,
   loadNewCasePage,
-  loadPlatformPage,
   loadClientPortalPage,
   loadRecoverTwoFactorPage,
-  loadPlatformVitalsPage,
-  loadPlatformBillingPage,
-  loadPlatformSupportPage,
-  loadPlatformAuditPage,
   loadSupportPage,
   loadPricingPage,
   loadQueryRoot,
@@ -40,6 +35,7 @@ import {
   loadSignUpWithEmailPage,
   loadVerifyEmailPage,
   loadWorkspacePage,
+  loadPlatformConsole,
 } from "./lazyRoutes.ts";
 
 // Mientras llega el archivo de una pantalla que se abre directamente, la página queda con su
@@ -260,24 +256,9 @@ export const routes: RouteObject[] = [
             lazy: { Component: loadAccountPage },
           },
           {
-            path: ROUTES.platform.slice(ROUTES.app.length + 1),
-            lazy: { Component: loadPlatformPage },
-          },
-          {
-            path: ROUTES.platformBilling.slice(ROUTES.app.length + 1),
-            lazy: { Component: loadPlatformBillingPage },
-          },
-          {
-            path: ROUTES.platformSupport.slice(ROUTES.app.length + 1),
-            lazy: { Component: loadPlatformSupportPage },
-          },
-          {
-            path: ROUTES.platformAudit.slice(ROUTES.app.length + 1),
-            lazy: { Component: loadPlatformAuditPage },
-          },
-          {
-            path: ROUTES.platformVitals.slice(ROUTES.app.length + 1),
-            lazy: { Component: loadPlatformVitalsPage },
+            // La consola de la plataforma resuelve sus pantallas por dentro (PlatformConsole).
+            path: `${ROUTES.platform.slice(ROUTES.app.length + 1)}/*`,
+            lazy: { Component: loadPlatformConsole },
           },
           {
             path: ROUTES.support.slice(ROUTES.app.length + 1),

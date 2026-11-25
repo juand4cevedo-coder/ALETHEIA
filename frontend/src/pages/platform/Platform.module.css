@@ -1,0 +1,762 @@
+/* Consola de la plataforma: pantallas operativas para la cuenta propietaria, no páginas de
+   venta. Ritmo de 32 px entre bloques y 16 px dentro de ellos. Las tablas pasan a tarjetas
+   apiladas cuando el contenedor no les da espacio: el corte se mide contra .screen y no contra
+   la ventana, porque el menú lateral se interpone. */
+.screen {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--space-8);
+  width: 100%;
+}
+
+/* Resumen: bloques con un título discreto, cifras en una fila y listas de filas limpias. */
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.003em;
+}
+
+.allClear {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--ok-tint);
+  color: var(--text);
+  font-size: var(--font-size-ui);
+}
+
+.allClear svg {
+  flex: none;
+  color: var(--ok);
+}
+
+.attention {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attentionItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--ink-hairline);
+  border-radius: var(--radius-md);
+  background: var(--paper-raised);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-out);
+}
+
+.attentionItem:hover {
+  border-color: color-mix(in srgb, var(--ink-900) 30%, var(--ink-hairline));
+  box-shadow: var(--shadow-card);
+  transform: translateY(-1px);
+}
+
+.attentionItem > svg:last-child {
+  color: var(--text-3);
+  transition: transform var(--motion-base) var(--ease-out);
+}
+
+.attentionItem:hover > svg:last-child {
+  transform: translateX(3px);
+}
+
+.attentionIcon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+
+.attentionItem[data-tone="error"] .attentionIcon {
+  background: var(--err-tint);
+  color: var(--err);
+}
+
+.attentionText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.attentionText strong {
+  font-size: var(--font-size-ui);
+  font-weight: 600;
+}
+
+.attentionText span {
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.kpi {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--ink-hairline);
+  border-radius: var(--radius-md);
+  background: var(--paper-raised);
+}
+
+.kpi dt {
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.kpi dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.kpi .kpiNote {
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  font-weight: 450;
+  letter-spacing: 0;
+  line-height: var(--line-height-support);
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-6);
+}
+
+.rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--ink-hairline);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.rowMain {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rowMain strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowMain span {
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  text-overflow: ellipsis;
+}
+
+.rowMeta {
+  flex: none;
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  font-variant-numeric: tabular-nums;
+}
+
+.quiet {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+}
+
+.panelLink {
+  display: inline-block;
+  margin-top: var(--space-4);
+  color: var(--brand-text);
+  font-size: var(--font-size-support);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.panelLink:hover {
+  text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
+}
+
+.facts {
+  display: grid;
+  margin: 0;
+}
+
+.facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--ink-hairline);
+}
+
+.facts > div:last-child {
+  border-bottom: 0;
+}
+
+.facts dt {
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+}
+
+.facts dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-4);
+}
+
+/* Directorios: barra de búsqueda en una sola fila, el conteo y la tabla. */
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.accountFilters {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(140px, 1fr));
+  gap: var(--space-4);
+  align-items: end;
+  padding: var(--space-5);
+  border-radius: 18px;
+  background: var(--tint-1);
+}
+
+.filterField {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.filterField :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-control);
+  border-radius: 12px;
+  background: var(--paper-raised);
+  color: var(--text);
+  font: inherit;
+  font-weight: 400;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-out);
+}
+
+.filterField :is(input, select):hover {
+  border-color: var(--text-2);
+}
+
+.filterField :is(input, select):focus-visible {
+  border-color: var(--ink-900);
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+.filterActions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: var(--space-2);
+}
+
+.resultCount {
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+}
+
+.tableScroll {
+  min-width: 0;
+  overflow-x: auto;
+  border: 1px solid var(--ink-hairline);
+  border-radius: 16px;
+  background: var(--paper-raised);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-ui);
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--ink-hairline);
+  vertical-align: middle;
+}
+
+.table thead th {
+  padding-block: var(--space-3);
+  background: var(--tint-1);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.table tbody th {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.table tbody td {
+  color: var(--text-2);
+}
+
+.table tbody tr {
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.table tbody tr:hover {
+  background: var(--tint-1);
+}
+
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.cellTitle {
+  display: block;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.cellSub {
+  display: block;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  font-weight: 400;
+}
+
+.cellTitle + span {
+  margin-top: var(--space-1);
+}
+
+.number {
+  font-variant-numeric: tabular-nums;
+}
+
+.rowAction {
+  text-align: right;
+}
+
+.identifier {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-support);
+  overflow-wrap: anywhere;
+}
+
+/* Solicitudes: una tarjeta por solicitud, con el radicado arriba y las acciones al pie. */
+.tickets {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ticket {
+  padding: var(--space-6);
+  border: 1px solid var(--ink-hairline);
+  border-radius: 20px;
+  background: var(--paper-raised);
+  transition:
+    box-shadow var(--motion-base) var(--ease-standard),
+    border-color var(--motion-base) var(--ease-standard);
+}
+
+.ticket:hover {
+  border-color: color-mix(in srgb, var(--ink-900) 25%, var(--ink-hairline));
+  box-shadow: var(--shadow-card);
+}
+
+.ticketHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3) var(--space-6);
+}
+
+.ticketHead h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-subtitle);
+  font-weight: 650;
+  letter-spacing: var(--tracking-subtitle);
+  line-height: 1.35;
+}
+
+.filing {
+  margin-bottom: var(--space-1);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.ticketBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.note {
+  margin: var(--space-2) 0 0;
+  overflow-wrap: anywhere;
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.message {
+  max-width: var(--measure);
+  margin: var(--space-3) 0 var(--space-5);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ticketActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--ink-hairline);
+}
+
+.ticketActions .note {
+  margin: 0;
+}
+
+.replyLink {
+  margin-right: auto;
+  color: var(--brand-text);
+  font-size: var(--font-size-ui);
+  font-weight: 550;
+  text-underline-offset: var(--underline-offset);
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  min-height: 140px;
+  margin: 0;
+  padding: var(--space-6);
+  border: 1px dashed var(--line-control);
+  border-radius: var(--radius-md);
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+  text-align: center;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+/* Asignación de planes: búsqueda arriba; la ficha del despacho y el formulario, lado a lado. */
+.courtesy {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.searchRow {
+  display: grid;
+  grid-template-columns: minmax(0, 420px) auto;
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.courtesyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: start;
+  gap: var(--space-8);
+}
+
+/* En contraste forzado de Windows las sombras se descartan: el borde transparente le
+   devuelve su límite a la ficha. */
+.targetCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  border: 1px solid transparent;
+  margin: 0;
+  padding: var(--space-5);
+  border-radius: 18px;
+  background: var(--tint-1);
+}
+
+.targetCard dt {
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.targetCard dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+  font-size: var(--font-size-ui);
+}
+
+.targetTitle dd {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-subtitle);
+  font-weight: 650;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+@container (max-width: 1040px) {
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .split,
+  .courtesyGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .accountFilters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Tabla a tarjetas. El encabezado de fila es el título de cada tarjeta y las demás celdas
+     llevan su rótulo desde data-label. */
+  .tableScroll {
+    border: 0;
+    overflow: visible;
+    background: transparent;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+  }
+
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--ink-hairline);
+    border-radius: 16px;
+    background: var(--paper-raised);
+  }
+
+  .table tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .table th,
+  .table td,
+  .table tbody tr:last-child th,
+  .table tbody tr:last-child td {
+    min-width: 0;
+    padding: 0;
+    border-bottom: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    color: var(--text-3);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .table td:empty {
+    display: none;
+  }
+
+  .rowAction {
+    text-align: left;
+  }
+}
+
+@container (max-width: 680px) {
+  .kpis,
+  .toolbar,
+  .searchRow,
+  .accountFilters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ticket {
+    padding: var(--space-4);
+  }
+
+  .attentionItem {
+    padding: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .table tbody tr,
+  .ticket,
+  .attentionItem,
+  .attentionItem > svg:last-child {
+    transition: none;
+  }
+}
+
+/* Rendimiento real: una tarjeta por métrica clave, con la respuesta arriba y el detalle abajo. */
+.vitalGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.vitalCard {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--ink-hairline);
+  border-radius: var(--radius-md);
+  background: var(--paper-raised);
+}
+
+.vitalHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.vitalHead h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.vitalValue {
+  color: var(--text);
+  font-size: 32px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.vitalCard .note {
+  margin: 0;
+}
+
+.vitalDetails summary {
+  width: fit-content;
+  margin-bottom: var(--space-3);
+  color: var(--brand-text);
+  font-size: var(--font-size-support);
+  font-weight: 600;
+  cursor: pointer;
+}

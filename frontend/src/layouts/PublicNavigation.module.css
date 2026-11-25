@@ -62,7 +62,7 @@
 }
 
 .list button[aria-expanded="true"] {
-  color: var(--ink-900);
+  color: var(--brand-text);
 }
 
 .list button svg {
@@ -80,7 +80,7 @@
   /* Debajo del encabezado (z-index 20) y encima del contenido de la página. */
   z-index: 19;
   inset: 0;
-  background: rgb(26 0 41 / 26%);
+  background: var(--scrim-soft);
   backdrop-filter: blur(3px);
   pointer-events: none;
   animation: scrim-in 240ms var(--ease-standard) both;
@@ -97,7 +97,7 @@
   border: 1px solid var(--ink-hairline);
   border-radius: 28px;
   background: var(--paper);
-  box-shadow: 0 32px 80px rgb(35 0 48 / 20%);
+  box-shadow: var(--shadow-float);
   transform: translateX(-50%);
   transform-origin: top center;
   animation: panel-in 260ms var(--ease-out) both;
@@ -153,7 +153,7 @@
   align-items: center;
   gap: var(--space-2);
   margin-top: var(--space-4);
-  color: var(--ink-900);
+  color: var(--brand-text);
   font-size: var(--font-size-ui);
   font-weight: 650;
 }
@@ -210,7 +210,7 @@
 
 .linkLabel svg {
   flex: none;
-  color: var(--ink-900);
+  color: var(--brand-text);
   transform: translateX(-6px);
   opacity: 0;
   transition:
@@ -277,12 +277,12 @@
   height: auto;
   margin-top: var(--space-4);
   border-radius: 14px;
-  box-shadow: 0 14px 36px rgb(64 0 87 / 18%);
+  box-shadow: var(--shadow-lift);
   transition: transform 420ms var(--ease-out);
 }
 
 .feature:hover .featureShot {
-  transform: translateY(-4px) scale(1.015);
+  transform: translateY(-4px);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -2324,15 +2324,9 @@ export type OrganizationOut = {
 /**
  * OrganizationPolicies
  *
- * Políticas del despacho que afectan a todo el equipo.
+ * Políticas vigentes del despacho, con el plazo de conservación, que es fijo.
  */
 export type OrganizationPolicies = {
-  /**
-   * Default Retention Years
-   *
-   * Años que se conserva un caso archivado; solo cuenta para los futuros.
-   */
-  default_retention_years: number;
   /**
    * Session Days
    *
@@ -2345,18 +2339,20 @@ export type OrganizationPolicies = {
    * Exige el segundo factor a todo el equipo. Quien no lo tenga solo puede activarlo.
    */
   require_two_factor?: boolean;
+  /**
+   * Default Retention Years
+   *
+   * Años que se conserva un caso archivado desde su cierre. Es el mismo para todos los despachos y no se cambia desde la aplicación.
+   */
+  default_retention_years: number;
 };
 
 /**
  * OrganizationPoliciesRequest
+ *
+ * Políticas del despacho que el propietario puede cambiar.
  */
 export type OrganizationPoliciesRequest = {
-  /**
-   * Default Retention Years
-   *
-   * Años que se conserva un caso archivado; solo cuenta para los futuros.
-   */
-  default_retention_years: number;
   /**
    * Session Days
    *
@@ -2651,6 +2647,284 @@ export type PlatformBilling = {
 };
 
 /**
+ * PlatformExpiring
+ */
+export type PlatformExpiring = {
+  /**
+   * Organization Id
+   */
+  organization_id: string;
+  /**
+   * Organization Name
+   */
+  organization_name: string;
+  /**
+   * Plan Name
+   */
+  plan_name: string;
+  /**
+   * Access Source
+   */
+  access_source: string;
+  /**
+   * Ends At
+   */
+  ends_at: string;
+};
+
+/**
+ * PlatformFailedJob
+ */
+export type PlatformFailedJob = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Kind
+   */
+  kind: string;
+  /**
+   * Attempts
+   */
+  attempts: number;
+  /**
+   * Failed At
+   */
+  failed_at: string;
+  /**
+   * Error
+   *
+   * Solo el tipo de error, nunca su mensaje.
+   */
+  error: string | null;
+};
+
+/**
+ * PlatformJobKind
+ */
+export type PlatformJobKind = {
+  /**
+   * Kind
+   */
+  kind: string;
+  /**
+   * Queued
+   */
+  queued: number;
+  /**
+   * Running
+   */
+  running: number;
+  /**
+   * Failed
+   */
+  failed: number;
+  /**
+   * Done 24 Hours
+   */
+  done_24_hours: number;
+  /**
+   * Oldest Waiting At
+   */
+  oldest_waiting_at: string | null;
+};
+
+/**
+ * PlatformOperations
+ */
+export type PlatformOperations = {
+  /**
+   * Kinds
+   */
+  kinds: Array<PlatformJobKind>;
+  /**
+   * Failed
+   */
+  failed: Array<PlatformFailedJob>;
+  /**
+   * Payment Events Pending
+   */
+  payment_events_pending: number;
+  /**
+   * Oldest Payment Event At
+   */
+  oldest_payment_event_at: string | null;
+};
+
+/**
+ * PlatformOrganization
+ */
+export type PlatformOrganization = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Status
+   */
+  status: string;
+  /**
+   * Owner Name
+   */
+  owner_name: string | null;
+  /**
+   * Owner Email
+   */
+  owner_email: string | null;
+  /**
+   * Members
+   */
+  members: number;
+  /**
+   * Plan Name
+   */
+  plan_name: string | null;
+  /**
+   * Subscription Status
+   */
+  subscription_status: string | null;
+  /**
+   * Access Source
+   */
+  access_source: string | null;
+  /**
+   * Billing Cycle
+   */
+  billing_cycle: string | null;
+  /**
+   * Ends At
+   */
+  ends_at: string | null;
+  /**
+   * Storage Used Bytes
+   */
+  storage_used_bytes: number;
+  /**
+   * Storage Limit Bytes
+   */
+  storage_limit_bytes: number | null;
+  /**
+   * Created At
+   */
+  created_at: string;
+};
+
+/**
+ * PlatformOrganizationPage
+ */
+export type PlatformOrganizationPage = {
+  /**
+   * Items
+   */
+  items: Array<PlatformOrganization>;
+  /**
+   * Total
+   */
+  total: number;
+  /**
+   * Next Cursor
+   */
+  next_cursor: string | null;
+};
+
+/**
+ * PlatformOverview
+ */
+export type PlatformOverview = {
+  /**
+   * Accounts Total
+   */
+  accounts_total: number;
+  /**
+   * Accounts New 7 Days
+   */
+  accounts_new_7_days: number;
+  /**
+   * Accounts New 30 Days
+   */
+  accounts_new_30_days: number;
+  /**
+   * Accounts Blocked
+   */
+  accounts_blocked: number;
+  /**
+   * Organizations Total
+   */
+  organizations_total: number;
+  /**
+   * Organizations Read Only
+   */
+  organizations_read_only: number;
+  /**
+   * Subscriptions
+   *
+   * Suscripciones por estado.
+   */
+  subscriptions: {
+    [key: string]: number;
+  };
+  /**
+   * Collected 30 Days Cop
+   */
+  collected_30_days_cop: number;
+  /**
+   * Receipts 30 Days
+   */
+  receipts_30_days: number;
+  /**
+   * Tickets Open
+   */
+  tickets_open: number;
+  /**
+   * Tickets Overdue
+   *
+   * Solicitudes abiertas con el plazo vencido.
+   */
+  tickets_overdue: number;
+  /**
+   * Tickets Due Soon
+   *
+   * Abiertas que vencen en los próximos 7 días.
+   */
+  tickets_due_soon: number;
+  /**
+   * Jobs Failed
+   */
+  jobs_failed: number;
+  /**
+   * Jobs Waiting
+   */
+  jobs_waiting: number;
+  /**
+   * Payment Events Pending
+   */
+  payment_events_pending: number;
+  /**
+   * Storage Used Bytes
+   */
+  storage_used_bytes: number;
+  /**
+   * Expiring
+   */
+  expiring: Array<PlatformExpiring>;
+  /**
+   * Recent Accounts
+   */
+  recent_accounts: Array<PlatformRecentAccount>;
+  /**
+   * Signups
+   *
+   * Cuentas nuevas en los últimos 30 días.
+   */
+  signups: Array<PlatformSignupDay>;
+};
+
+/**
  * PlatformPlan
  */
 export type PlatformPlan = {
@@ -2682,6 +2956,42 @@ export type PlatformPlan = {
    * Is Public
    */
   is_public: boolean;
+};
+
+/**
+ * PlatformRecentAccount
+ */
+export type PlatformRecentAccount = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Full Name
+   */
+  full_name: string;
+  /**
+   * Email
+   */
+  email: string;
+  /**
+   * Created At
+   */
+  created_at: string;
+};
+
+/**
+ * PlatformSignupDay
+ */
+export type PlatformSignupDay = {
+  /**
+   * Day
+   */
+  day: string;
+  /**
+   * Accounts
+   */
+  accounts: number;
 };
 
 /**
@@ -3621,6 +3931,12 @@ export type SharedEvidenceRequest = {
  */
 export type SupportTicketCreate = {
   /**
+   * Category
+   *
+   * support: ayuda con el servicio; data_query: consulta sobre datos personales; data_claim: corregir, actualizar o suprimir datos; consumer: petición, queja o reclamo de consumidor; refund: devolución de un pago.
+   */
+  category?: "support" | "data_query" | "data_claim" | "consumer" | "refund";
+  /**
    * Subject
    */
   subject: string;
@@ -3639,6 +3955,16 @@ export type SupportTicketOut = {
    */
   id: string;
   /**
+   * Filing Number
+   *
+   * Radicado con el que se consulta la solicitud.
+   */
+  filing_number: string;
+  /**
+   * Category
+   */
+  category: "support" | "data_query" | "data_claim" | "consumer" | "refund";
+  /**
    * Subject
    */
   subject: string;
@@ -3651,6 +3977,12 @@ export type SupportTicketOut = {
    */
   status: "open" | "closed";
   /**
+   * Due On
+   *
+   * Último día para responder, hora de Colombia.
+   */
+  due_on: string;
+  /**
    * Created At
    */
   created_at: string;
@@ -3662,6 +3994,12 @@ export type SupportTicketOut = {
    * Closed At
    */
   closed_at: string | null;
+  /**
+   * Deletable On
+   *
+   * Desde qué día la plataforma puede eliminarla: al resolverse si es de soporte; tres años después de cerrada si es de datos personales, consumidor o reembolso.
+   */
+  deletable_on?: string | null;
   /**
    * User Email
    */
@@ -7918,6 +8256,125 @@ export type PlatformWebVitalsResponses = {
 export type PlatformWebVitalsResponse =
   PlatformWebVitalsResponses[keyof PlatformWebVitalsResponses];
 
+export type PlatformOverviewData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/platform/overview";
+};
+
+export type PlatformOverviewResponses = {
+  /**
+   * Successful Response
+   */
+  200: PlatformOverview;
+};
+
+export type PlatformOverviewResponse =
+  PlatformOverviewResponses[keyof PlatformOverviewResponses];
+
+export type PlatformOrganizationsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Cursor
+     */
+    cursor?: string | null;
+    /**
+     * Search
+     *
+     * Nombre del despacho, o nombre o correo de su responsable.
+     */
+    search?: string | null;
+    /**
+     * Subscription Status
+     *
+     * Estado de la suscripción.
+     */
+    subscription_status?:
+      "trial" | "active" | "past_due" | "canceled" | "expired" | null;
+  };
+  url: "/api/v1/platform/organizations";
+};
+
+export type PlatformOrganizationsErrors = {
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type PlatformOrganizationsError =
+  PlatformOrganizationsErrors[keyof PlatformOrganizationsErrors];
+
+export type PlatformOrganizationsResponses = {
+  /**
+   * Successful Response
+   */
+  200: PlatformOrganizationPage;
+};
+
+export type PlatformOrganizationsResponse =
+  PlatformOrganizationsResponses[keyof PlatformOrganizationsResponses];
+
+export type PlatformOperationsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/platform/operations";
+};
+
+export type PlatformOperationsResponses = {
+  /**
+   * Successful Response
+   */
+  200: PlatformOperations;
+};
+
+export type PlatformOperationsResponse =
+  PlatformOperationsResponses[keyof PlatformOperationsResponses];
+
+export type RetryPlatformJobData = {
+  body?: never;
+  path: {
+    /**
+     * Job Id
+     */
+    job_id: string;
+  };
+  query?: never;
+  url: "/api/v1/platform/jobs/{job_id}/retry";
+};
+
+export type RetryPlatformJobErrors = {
+  /**
+   * La tarea no existe.
+   */
+  404: Problem;
+  /**
+   * La tarea no está fallida.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type RetryPlatformJobError =
+  RetryPlatformJobErrors[keyof RetryPlatformJobErrors];
+
+export type RetryPlatformJobResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type RetryPlatformJobResponse =
+  RetryPlatformJobResponses[keyof RetryPlatformJobResponses];
+
 export type OwnSupportTicketsData = {
   body?: never;
   path?: never;
@@ -7989,6 +8446,10 @@ export type PlatformSupportTicketsData = {
      * Cursor
      */
     cursor?: string | null;
+    /**
+     * Status
+     */
+    status?: "open" | "closed" | null;
   };
   url: "/api/v1/platform/support/tickets";
 };
@@ -8044,6 +8505,46 @@ export type ChangeSupportTicketStatusResponses = {
 
 export type ChangeSupportTicketStatusResponse =
   ChangeSupportTicketStatusResponses[keyof ChangeSupportTicketStatusResponses];
+
+export type DeleteSupportTicketData = {
+  body?: never;
+  path: {
+    /**
+     * Ticket Id
+     */
+    ticket_id: string;
+  };
+  query?: never;
+  url: "/api/v1/platform/support/tickets/{ticket_id}";
+};
+
+export type DeleteSupportTicketErrors = {
+  /**
+   * La solicitud no existe.
+   */
+  404: Problem;
+  /**
+   * Sigue abierta o todavía debe conservarse.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type DeleteSupportTicketError =
+  DeleteSupportTicketErrors[keyof DeleteSupportTicketErrors];
+
+export type DeleteSupportTicketResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type DeleteSupportTicketResponse =
+  DeleteSupportTicketResponses[keyof DeleteSupportTicketResponses];
 
 export type WompiTermsData = {
   body?: never;

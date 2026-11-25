@@ -116,7 +116,6 @@ export function ProductTour() {
         >
           <img
             key={active.id}
-            className="parallax"
             {...productShotProps(
               "/media/producto/" + active.id + ".webp",
               "(min-width: 900px) 60vw, 92vw",

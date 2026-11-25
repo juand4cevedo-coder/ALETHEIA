@@ -41,6 +41,7 @@ import {
   createSupportTicket,
   createTaskTemplate,
   deletePlatformUser,
+  deleteSupportTicket,
   deleteTaskTemplate,
   downloadEvidence,
   downloadEvidenceTimestamp,
@@ -86,6 +87,9 @@ import {
   ownSupportTickets,
   platformAudit,
   platformBilling,
+  platformOperations,
+  platformOrganizations,
+  platformOverview,
   platformSupportTickets,
   platformWebVitals,
   previewInvitation,
@@ -109,6 +113,7 @@ import {
   resendVerification,
   resetPassword,
   retryEvidenceTimestamp,
+  retryPlatformJob,
   revokeClientAccess,
   revokeCourtesy,
   revokeInvitation,
@@ -232,6 +237,9 @@ import type {
   DeletePlatformUserData,
   DeletePlatformUserError,
   DeletePlatformUserResponse,
+  DeleteSupportTicketData,
+  DeleteSupportTicketError,
+  DeleteSupportTicketResponse,
   DeleteTaskTemplateData,
   DeleteTaskTemplateError,
   DeleteTaskTemplateResponse,
@@ -354,6 +362,13 @@ import type {
   PlatformAuditResponse,
   PlatformBillingData,
   PlatformBillingResponse,
+  PlatformOperationsData,
+  PlatformOperationsResponse,
+  PlatformOrganizationsData,
+  PlatformOrganizationsError,
+  PlatformOrganizationsResponse,
+  PlatformOverviewData,
+  PlatformOverviewResponse,
   PlatformSupportTicketsData,
   PlatformSupportTicketsError,
   PlatformSupportTicketsResponse,
@@ -423,6 +438,9 @@ import type {
   RetryEvidenceTimestampData,
   RetryEvidenceTimestampError,
   RetryEvidenceTimestampResponse,
+  RetryPlatformJobData,
+  RetryPlatformJobError,
+  RetryPlatformJobResponse,
   RevokeClientAccessData,
   RevokeClientAccessError,
   RevokeClientAccessResponse,
@@ -3698,6 +3716,172 @@ export const platformWebVitalsOptions = (
     queryKey: platformWebVitalsQueryKey(options),
   });
 
+export const platformOverviewQueryKey = (
+  options?: Options<PlatformOverviewData>,
+) => createQueryKey("platformOverview", options);
+
+/**
+ * Resumen de la plataforma
+ */
+export const platformOverviewOptions = (
+  options?: Options<PlatformOverviewData>,
+) =>
+  queryOptions<
+    PlatformOverviewResponse,
+    DefaultError,
+    PlatformOverviewResponse,
+    ReturnType<typeof platformOverviewQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await platformOverview({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: platformOverviewQueryKey(options),
+  });
+
+export const platformOrganizationsQueryKey = (
+  options?: Options<PlatformOrganizationsData>,
+) => createQueryKey("platformOrganizations", options);
+
+/**
+ * Directorio de despachos
+ */
+export const platformOrganizationsOptions = (
+  options?: Options<PlatformOrganizationsData>,
+) =>
+  queryOptions<
+    PlatformOrganizationsResponse,
+    PlatformOrganizationsError,
+    PlatformOrganizationsResponse,
+    ReturnType<typeof platformOrganizationsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await platformOrganizations({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: platformOrganizationsQueryKey(options),
+  });
+
+export const platformOrganizationsInfiniteQueryKey = (
+  options?: Options<PlatformOrganizationsData>,
+): QueryKey<Options<PlatformOrganizationsData>> =>
+  createQueryKey("platformOrganizations", options, true);
+
+/**
+ * Directorio de despachos
+ */
+export const platformOrganizationsInfiniteOptions = (
+  options?: Options<PlatformOrganizationsData>,
+) => {
+  const opts = infiniteQueryOptions<
+    PlatformOrganizationsResponse,
+    PlatformOrganizationsError,
+    InfiniteData<PlatformOrganizationsResponse>,
+    QueryKey<Options<PlatformOrganizationsData>>,
+    | string
+    | null
+    | Pick<
+        QueryKey<Options<PlatformOrganizationsData>>[0],
+        "body" | "headers" | "path" | "query"
+      >
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<PlatformOrganizationsData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  cursor: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await platformOrganizations({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: platformOrganizationsInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+export const platformOperationsQueryKey = (
+  options?: Options<PlatformOperationsData>,
+) => createQueryKey("platformOperations", options);
+
+/**
+ * Cola de tareas y pagos por procesar
+ */
+export const platformOperationsOptions = (
+  options?: Options<PlatformOperationsData>,
+) =>
+  queryOptions<
+    PlatformOperationsResponse,
+    DefaultError,
+    PlatformOperationsResponse,
+    ReturnType<typeof platformOperationsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await platformOperations({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: platformOperationsQueryKey(options),
+  });
+
+/**
+ * Devolver a la cola una tarea fallida
+ *
+ * La tarea vuelve con sus intentos en cero y corre en la próxima vuelta del trabajador.
+ */
+export const retryPlatformJobMutation = (
+  options?: Partial<Options<RetryPlatformJobData>>,
+): UseMutationOptions<
+  RetryPlatformJobResponse,
+  RetryPlatformJobError,
+  Options<RetryPlatformJobData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    RetryPlatformJobResponse,
+    RetryPlatformJobError,
+    Options<RetryPlatformJobData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await retryPlatformJob({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
 export const ownSupportTicketsQueryKey = (
   options?: Options<OwnSupportTicketsData>,
 ) => createQueryKey("ownSupportTickets", options);
@@ -3904,6 +4088,33 @@ export const changeSupportTicketStatusMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await changeSupportTicketStatus({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Eliminar una solicitud resuelta
+ */
+export const deleteSupportTicketMutation = (
+  options?: Partial<Options<DeleteSupportTicketData>>,
+): UseMutationOptions<
+  DeleteSupportTicketResponse,
+  DeleteSupportTicketError,
+  Options<DeleteSupportTicketData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    DeleteSupportTicketResponse,
+    DeleteSupportTicketError,
+    Options<DeleteSupportTicketData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await deleteSupportTicket({
         ...options,
         ...fnOptions,
         throwOnError: true,

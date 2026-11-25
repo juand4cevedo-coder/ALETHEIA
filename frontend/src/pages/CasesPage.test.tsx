@@ -745,8 +745,8 @@ describe("Libro de casos (HU-017)", () => {
     expect(labels.slice(0, 6)).toEqual([
       "Inicio",
       "Casos",
-      "Banco de datos",
       "Calendario",
+      "Banco de datos",
       "Plantillas de tareas",
       "Equipo",
     ]);

@@ -1,0 +1,106 @@
+.group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.options {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.group[data-columns="2"] .options {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+}
+
+.choice {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+  min-height: var(--touch-target);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--ink-hairline);
+  border-radius: 14px;
+  background: var(--paper-raised);
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-out);
+}
+
+.choice:hover {
+  border-color: var(--line-control);
+}
+
+.choice:has(input:checked) {
+  border-color: var(--ink-900);
+  background: color-mix(in srgb, var(--ink-900) 5%, var(--paper-raised));
+  box-shadow: 0 0 0 1px var(--ink-900);
+}
+
+.choice:has(input:focus-visible) {
+  box-shadow: var(--ring-focus);
+}
+
+/* El círculo se dibuja con el borde: al elegirlo, el borde engrosa hacia adentro. */
+.choice input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  border: 1.5px solid var(--line-control);
+  border-radius: 50%;
+  background: var(--paper-raised);
+  appearance: none;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    border-width 160ms var(--ease-out);
+}
+
+.choice input:checked {
+  border-width: 5px;
+  border-color: var(--ink-900);
+}
+
+.choice input:focus-visible {
+  outline: none;
+}
+
+.text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.label {
+  color: var(--text);
+  font-size: var(--font-size-ui);
+  font-weight: 600;
+  line-height: var(--line-height-ui);
+}
+
+.description {
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choice,
+  .choice input {
+    transition: none;
+  }
+}

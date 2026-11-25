@@ -65,7 +65,7 @@
   height: var(--meter-height);
   overflow: hidden;
   border-radius: var(--radius-pill);
-  background: rgb(255 255 255 / 20%);
+  background: color-mix(in srgb, var(--on-ink) 20%, transparent);
 }
 
 .meter > span {
@@ -170,7 +170,7 @@
 
 .row:hover,
 .row:focus-within {
-  background: #faf4fe;
+  background: var(--tint-1);
 }
 
 .row:first-child {

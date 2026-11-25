@@ -104,7 +104,7 @@ Impacto y esfuerzo estimados sobre lo que ya existe.
 
 ## 7. Lo que no conviene copiar
 
-- **Redacción con inteligencia artificial** como la de Axon: Aletheia preserva, no interpreta. Una copia redactada se podría ofrecer, pero siempre como archivo aparte y marcado.
+- **Redacción automática de documentos** como la de Axon: Aletheia preserva, no interpreta. Una copia redactada se podría ofrecer, pero siempre como archivo aparte y marcado.
 - **Facturación y control de horas** de Clio: es otro producto. Aletheia puede mostrar el plan y los pagos, nada más.
 - **Prometer admisibilidad.** Ningún competidor serio la garantiza y la declaración de alcance de Aletheia ya lo dice. Se mantiene.
 

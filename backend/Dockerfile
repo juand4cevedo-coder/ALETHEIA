@@ -2,16 +2,16 @@
 # usa esta misma imagen con el comando alembic upgrade head. Se construye desde la raíz:
 #   docker build --platform linux/amd64 -t aletheia-api backend
 #
-# Python 3.14.9 fijado por digest: la misma versión de backend/.python-version, de desarrollo y
-# de la CI. La excepción a la regla de los 14 días está registrada en ADR-019.
+# Python 3.14.10 fijado por digest: la misma versión de backend/.python-version, de desarrollo y
+# de la CI. Cumple la espera de 14 días de ADR-019.
 
 # --- Etapa 1: dependencias --------------------------------------------------------------
-FROM python:3.14.9-slim-trixie@sha256:35caba83af2fe6da9a5d922f9b0156f21d1246a48278c58a08bd253303ba42e8 AS dependencias
+FROM python:3.14.10-slim-trixie@sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f AS dependencias
 
-# uv 0.13.5: el mismo archivo y la misma suma SHA-256 que verifica la CI. Si el archivo cambia,
+# uv 0.13.7: el mismo archivo y la misma suma SHA-256 que verifica la CI. Si el archivo cambia,
 # la construcción falla. Solo existe en esta etapa; la imagen final no lo lleva.
-ADD --checksum=sha256:f68d291c75783122dad58ab77def0e13f3233f358731db5d6d7e8715603b928f \
-    https://github.com/astral-sh/uv/releases/download/0.13.5/uv-x86_64-unknown-linux-gnu.tar.gz \
+ADD --checksum=sha256:c5221ff41b7892bfc223543883600125f6a47fe845093e0f5bdff4f359196d83 \
+    https://github.com/astral-sh/uv/releases/download/0.13.7/uv-x86_64-unknown-linux-gnu.tar.gz \
     /tmp/uv.tar.gz
 RUN tar --extract --gzip --file /tmp/uv.tar.gz --directory /usr/local/bin --strip-components 1 \
     && rm /tmp/uv.tar.gz
@@ -30,7 +30,7 @@ COPY pyproject.toml uv.lock .python-version ./
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --no-install-project
 
 # --- Etapa 2: imagen final --------------------------------------------------------------
-FROM python:3.14.9-slim-trixie@sha256:35caba83af2fe6da9a5d922f9b0156f21d1246a48278c58a08bd253303ba42e8
+FROM python:3.14.10-slim-trixie@sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f
 
 LABEL org.opencontainers.image.source="https://github.com/juand4cevedo-coder/ALETHEIA" \
       org.opencontainers.image.title="aletheia-api" \

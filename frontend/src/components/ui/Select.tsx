@@ -7,7 +7,7 @@ import {
 
 import fieldStyles from "./Field.module.css";
 import styles from "./Select.module.css";
-import { ChevronAbajoIcon } from "./icons.tsx";
+import { ChevronAbajoIcon, CirculoAlertaIcon } from "./icons.tsx";
 
 type SelectProps = Omit<
   SelectHTMLAttributes<HTMLSelectElement>,
@@ -77,7 +77,8 @@ export function Select({
       {children}
       {error ? (
         <p id={errorId} className={fieldStyles.error}>
-          {error}
+          <CirculoAlertaIcon size={14} aria-hidden="true" />
+          <span>{error}</span>
         </p>
       ) : (
         help && (

@@ -124,7 +124,7 @@ export const NAVIGATION: NavigationGroup[] = [
       {
         to: "/estado",
         label: "Estado del servicio",
-        description: "Disponibilidad en tiempo real.",
+        description: "Compruebe si el servicio responde ahora.",
       },
     ],
     feature: {

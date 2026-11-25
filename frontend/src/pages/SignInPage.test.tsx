@@ -172,7 +172,7 @@ describe("Ingresar (HU-007, CP-007)", () => {
     await fillAndSubmit(user);
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" }),
+      await screen.findByRole("heading", { level: 1, name: /, Ana$/ }),
     ).toBeInTheDocument();
     const [request] = loginRequests();
     expect(request!.method).toBe("POST");
@@ -328,7 +328,7 @@ describe("Acceso con una sesión abierta (Diseño UX/UI, 4.2)", () => {
     await user.click(screen.getByRole("button", { name: "Verificar" }));
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Ana Restrepo" }),
+      await screen.findByRole("heading", { level: 1, name: /, Ana$/ }),
     ).toBeInTheDocument();
   });
 

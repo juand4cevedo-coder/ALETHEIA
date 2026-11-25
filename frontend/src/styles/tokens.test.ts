@@ -195,3 +195,75 @@ describe("variables CSS", () => {
     expect(missing).toEqual([]);
   });
 });
+
+// El modo oscuro tiene su propia paleta: se comprueba igual que la clara, contra sus superficies.
+const darkBlock =
+  /:root\[data-theme="dark"\]\s*\{([^}]*)\}/.exec(tokensCss)?.[1] ?? "";
+
+function darkValue(name: string): string {
+  const found = new RegExp(String.raw`${name}:\s*(#[0-9a-fA-F]{6})`).exec(
+    darkBlock,
+  )?.[1];
+  return found ?? declaredValue(name)!;
+}
+
+function luminanceOf(color: string): number {
+  const channels = [1, 3, 5].map((offset) => {
+    const value = parseInt(color.slice(offset, offset + 2), 16) / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722;
+}
+
+function ratio(a: string, b: string): number {
+  const [high, low] = [luminanceOf(a), luminanceOf(b)].sort((x, y) => y - x);
+  return (high! + 0.05) / (low! + 0.05);
+}
+
+describe("legibilidad del modo oscuro", () => {
+  it("declara su propia paleta", () => {
+    expect(darkBlock).toMatch(/--paper:\s*#/);
+    expect(darkBlock).toMatch(/color-scheme:\s*dark/);
+  });
+
+  it.each(["--paper", "--paper-raised", "--paper-sunken"])(
+    "el texto, los enlaces y los estados alcanzan AA sobre %s",
+    (surface) => {
+      for (const foreground of [
+        "--text",
+        "--text-2",
+        "--text-3",
+        "--brand-text",
+        "--brand-text-strong",
+        "--brass-600",
+        "--ink-500",
+        "--ok",
+        "--warn",
+        "--err",
+      ]) {
+        expect(
+          ratio(darkValue(foreground), darkValue(surface)),
+          `${foreground} sobre ${surface}`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    },
+  );
+
+  it("el texto sobre el violeta de relleno alcanza AA en los dos modos", () => {
+    for (const ink of [declaredValue("--ink-900")!, darkValue("--ink-900")]) {
+      expect(ratio("#ffffff", ink)).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(darkValue("--on-ink-2"), ink)).toBeGreaterThanOrEqual(4.5);
+    }
+    for (const ink of [declaredValue("--ink-700")!, darkValue("--ink-700")])
+      expect(ratio("#ffffff", ink)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("los contornos de los controles alcanzan 3 a 1 sobre el papel oscuro", () => {
+    expect(
+      ratio(darkValue("--line-control"), darkValue("--paper-raised")),
+    ).toBeGreaterThanOrEqual(3);
+    expect(
+      ratio(darkValue("--ink-900"), darkValue("--paper")),
+    ).toBeGreaterThanOrEqual(3);
+  });
+});

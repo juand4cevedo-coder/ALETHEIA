@@ -66,8 +66,8 @@ export const privacyPolicy: LegalDocument = {
         <>
           <p>
             Se aplica a los datos de quienes visitan aletheia.sbs, crean una
-            cuenta, son invitados a una organización, contratan un plan o nos
-            escriben.
+            cuenta, son invitados a una organización o al portal de un caso,
+            contratan un plan o nos escriben.
           </p>
           <p>
             ALETHEIA cumple dos papeles. Sobre los datos de su cuenta es
@@ -103,7 +103,9 @@ export const privacyPolicy: LegalDocument = {
             <li>
               <strong>Datos de seguridad.</strong> Dirección IP, navegador y
               fecha de los ingresos y de las acciones importantes, para detectar
-              accesos indebidos.
+              accesos indebidos. Si activa el segundo factor, guardamos cifrada
+              la clave de su aplicación de autenticación y un resumen
+              irreversible de sus códigos de recuperación.
             </li>
             <li>
               <strong>Datos de suscripción.</strong> Plan, fechas y estado de
@@ -119,13 +121,20 @@ export const privacyPolicy: LegalDocument = {
               que usted aceptó y el momento en que lo hizo.
             </li>
             <li>
-              <strong>Mensajes.</strong> Lo que nos escribe y los datos que
-              incluya para que le respondamos.
+              <strong>Mensajes y solicitudes.</strong> Lo que nos escribe, el
+              tipo de solicitud, su número de radicado y los datos que incluya
+              para que le respondamos.
+            </li>
+            <li>
+              <strong>Medición de rendimiento, solo si la acepta.</strong>{" "}
+              Cuánto tarda en cargar y responder el sitio, sin su cuenta, su
+              dirección IP ni ningún identificador. Se explica en la{" "}
+              <Link to={legalRoute("cookies")}>política de cookies</Link>.
             </li>
           </ul>
           <p>
-            No recogemos su ubicación ni estadísticas de su navegación, y para
-            crear la cuenta no le pedimos ningún dato sensible.
+            No recogemos su ubicación ni seguimos su navegación, y para crear la
+            cuenta no le pedimos ningún dato sensible.
           </p>
         </>
       ),
@@ -170,16 +179,29 @@ export const privacyPolicy: LegalDocument = {
     {
       id: "autorizacion",
       title: "Su autorización",
-      basis: ["Ley 1581 de 2012, art. 9", "Ley 527 de 1999, art. 5"],
+      basis: [
+        "Ley 1581 de 2012, arts. 6 y 9",
+        "Decreto 1377 de 2013, art. 6",
+        "Ley 527 de 1999, art. 5",
+      ],
       body: (
-        <p>
-          Al crear la cuenta, usted marca la casilla en la que autoriza el
-          tratamiento descrito aquí. Esa aceptación es un mensaje de datos con
-          plena validez y queda registrada con la fecha de estos textos y el
-          momento exacto en que la dio, para que usted o la autoridad puedan
-          consultarla después. Si quiere una copia de esa prueba, pídala a{" "}
-          {mail}.
-        </p>
+        <>
+          <p>
+            Al crear la cuenta, usted marca la casilla en la que autoriza el
+            tratamiento descrito aquí. La casilla aparece sin marcar: nunca
+            damos su autorización por supuesta. Esa aceptación es un mensaje de
+            datos con plena validez y queda registrada con la fecha de estos
+            textos y el momento exacto en que la dio, para que usted o la
+            autoridad puedan consultarla después. Si quiere una copia de esa
+            prueba, pídala a {mail}.
+          </p>
+          <p>
+            Nunca le pediremos datos sensibles ni datos de niños, niñas o
+            adolescentes para usar su cuenta. Si alguna vez una pregunta los
+            tocara, responderla sería opcional y se lo diríamos de forma
+            expresa.
+          </p>
+        </>
       ),
     },
     {
@@ -228,6 +250,42 @@ export const privacyPolicy: LegalDocument = {
       ),
     },
     {
+      id: "personas-sin-cuenta",
+      title: "Clientes del despacho y personas sin cuenta",
+      basis: ["Ley 1581 de 2012, arts. 3 y 12"],
+      body: (
+        <>
+          <p>
+            Un despacho puede invitar a su cliente al portal de un caso o
+            enviarle a alguien un enlace para ver una evidencia. Esas personas
+            no crean una cuenta en ALETHEIA, y sobre sus datos el responsable es
+            el despacho que las invitó; ALETHEIA los trata como encargado.
+          </p>
+          <ul>
+            <li>
+              Del cliente del portal guardamos su nombre y su correo, tal como
+              los escribió el despacho, los mensajes y documentos que
+              intercambia con él, el momento en que aceptó el aviso de
+              tratamiento y la fecha de su última visita.
+            </li>
+            <li>
+              Del enlace para ver una evidencia guardamos la etiqueta que le
+              puso el despacho, cuándo se creó, cuándo vence y cuántas veces se
+              descargó. Cada descarga queda en la cadena de custodia del caso, y
+              en el registro de seguridad con la dirección IP y el navegador
+              desde los que se hizo; esos dos datos se borran a los 90 días.
+            </li>
+            <li>
+              El cliente puede pedir al despacho que corrija o suprima sus
+              datos. Si nos escribe a nosotros, trasladamos su solicitud al
+              despacho dentro de los dos días hábiles siguientes y se lo
+              informamos.
+            </li>
+          </ul>
+        </>
+      ),
+    },
+    {
       id: "derechos",
       title: "Sus derechos",
       basis: ["Ley 1581 de 2012, art. 8"],
@@ -248,8 +306,13 @@ export const privacyPolicy: LegalDocument = {
             </li>
             <li>Acceder gratuitamente a sus datos.</li>
             <li>
-              Presentar quejas ante la {CONSUMER_AUTHORITY.name} por
-              infracciones a la ley de protección de datos.
+              Presentar quejas ante la{" "}
+              <a href={CONSUMER_AUTHORITY.url} rel="noopener noreferrer">
+                {CONSUMER_AUTHORITY.name}
+              </a>{" "}
+              por infracciones a la ley de protección de datos, una vez haya
+              presentado su consulta o reclamo ante nosotros, como lo pide la
+              ley.
             </li>
           </ul>
         </>
@@ -258,15 +321,21 @@ export const privacyPolicy: LegalDocument = {
     {
       id: "como-ejercerlos",
       title: "Cómo ejercer sus derechos",
-      basis: ["Ley 1581 de 2012, arts. 14 y 15"],
+      basis: ["Ley 1581 de 2012, arts. 14, 15 y 16"],
       body: (
         <>
           <p>
-            Escriba a {mail} desde el correo de su cuenta o, si no tiene una,
-            indicando cómo podemos verificar su identidad. Diga qué necesita y
-            adjunte lo que sirva para atenderlo. Le respondemos con un número de
-            radicado, la fecha y la hora en que llegó su solicitud, y con ese
-            número puede preguntar por ella cuando quiera.
+            Si tiene cuenta, entre a Pedir soporte y elija «Consulta sobre mis
+            datos personales» o «Corregir, actualizar o suprimir mis datos». La
+            solicitud recibe al instante su número de radicado, la fecha en que
+            llegó y la fecha límite de respuesta, y puede seguirla desde esa
+            misma pantalla.
+          </p>
+          <p>
+            Si no tiene cuenta, escriba a {mail} indicando cómo podemos
+            verificar su identidad. Diga qué necesita y adjunte lo que sirva
+            para atenderlo. Le respondemos con el número de radicado, la fecha y
+            la hora en que llegó su solicitud.
           </p>
           <h3>Consultas</h3>
           <p>
@@ -290,13 +359,22 @@ export const privacyPolicy: LegalDocument = {
             cinco días siguientes. Si pasan dos meses sin que la envíe,
             entenderemos que desistió.
           </p>
+          <p>
+            Los plazos se cuentan en días hábiles de Colombia, sin sábados,
+            domingos ni festivos. Antes de acudir a la {CONSUMER_AUTHORITY.name}
+            , la ley le pide presentar primero su consulta o reclamo ante
+            nosotros.
+          </p>
         </>
       ),
     },
     {
       id: "proveedores",
       title: "Proveedores que tratan datos por nuestra cuenta",
-      basis: ["Decreto 1377 de 2013, arts. 24 y 25"],
+      basis: [
+        "Decreto 1377 de 2013, arts. 24 y 25",
+        "Ley 1581 de 2012, art. 26",
+      ],
       body: (
         <>
           <p>
@@ -313,7 +391,8 @@ export const privacyPolicy: LegalDocument = {
               servicio.
             </li>
             <li>
-              <strong>Pasarela de pagos.</strong> Procesa los pagos y recibe
+              <strong>Wompi.</strong> La pasarela de pagos, en Colombia. Procesa
+              los pagos y la renovación automática con Nequi, y recibe
               directamente los datos de su medio de pago.
             </li>
             <li>
@@ -329,8 +408,10 @@ export const privacyPolicy: LegalDocument = {
           <p>
             Como los servidores están en Estados Unidos, sus datos se envían a
             ese país para que estos proveedores los traten en nombre de
-            ALETHEIA. La ley llama a esto transmisión internacional, y se hace
-            con las mismas reglas y protecciones de esta política.
+            ALETHEIA. La ley llama a esto transmisión internacional. Estados
+            Unidos figura entre los países que la {CONSUMER_AUTHORITY.name}{" "}
+            reconoce con un nivel adecuado de protección, y la transmisión se
+            hace con las mismas reglas y protecciones de esta política.
           </p>
         </>
       ),
@@ -377,10 +458,10 @@ export const privacyPolicy: LegalDocument = {
           </li>
           <li>
             Los casos cerrados pasan a un archivo histórico sin perder sus
-            archivos, huellas ni eventos de custodia. El plazo operativo inicial
-            es de diez años contados desde el cierre, salvo que una obligación,
-            una orden de autoridad o una instrucción documentada del responsable
-            exija conservarlos por un plazo diferente.
+            archivos, huellas ni eventos de custodia. Se conservan diez años
+            contados desde el cierre, el mismo plazo para todos los despachos.
+            Si una ley o una orden de autoridad exige otro para un caso, el
+            despacho nos escribe con el soporte y lo aplicamos.
           </li>
           <li>
             Las copias de respaldo siguen el ciclo técnico documentado del
@@ -393,7 +474,10 @@ export const privacyPolicy: LegalDocument = {
             el cumplimiento y atender reclamaciones u órdenes de autoridad.
           </li>
           <li>
-            Los mensajes que nos envía, el tiempo necesario para atenderlos.
+            Las solicitudes de ayuda, el tiempo necesario para atenderlas. Las
+            consultas y reclamos sobre datos personales, las quejas de
+            consumidor y los reembolsos, tres años después de cerrados, como
+            prueba de lo que respondimos.
           </li>
         </ul>
       ),

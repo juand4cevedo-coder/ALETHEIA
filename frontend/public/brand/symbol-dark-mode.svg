@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" data-brand="aletheia-eye" data-variant="dark-mode">
+  <rect width="64" height="64" rx="18" fill="#9b3ee0"/>
+  <g transform="translate(0.000 0.000) scale(1)" fill="none" stroke-linejoin="round">
+  <path d="M9 32C17 21 25 16 32 16s15 5 23 16c-8 11-16 16-23 16S17 43 9 32Z" stroke="#ffffff" stroke-width="4"/>
+  <circle cx="32" cy="32" r="8.5" fill="#ffffff" stroke="none"/>
+  <circle cx="32" cy="32" r="3.5" fill="#9b3ee0" stroke="none"/>
+</g>
+</svg>

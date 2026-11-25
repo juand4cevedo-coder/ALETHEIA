@@ -106,7 +106,7 @@
   align-items: center;
   min-height: var(--control-height-sm);
   margin-top: calc(-1 * var(--space-2));
-  color: var(--ink-900);
+  color: var(--brand-text);
   font-size: var(--font-size-support);
   font-weight: 500;
   text-decoration: none;
@@ -156,7 +156,7 @@
 }
 
 .intro a {
-  color: var(--ink-900);
+  color: var(--brand-text);
   text-decoration: none;
   font-weight: 600;
 }
@@ -168,7 +168,7 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--ink-900);
+  color: var(--brand-text);
   font: inherit;
   font-weight: 600;
   text-decoration: underline;

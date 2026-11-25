@@ -211,7 +211,7 @@ export function ClientPortalPage() {
                 <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Más
                 detalles en la{" "}
                 <Link to={legalRoute("privacidad")}>
-                  política de privacidad
+                  política de tratamiento de datos
                 </Link>
                 .
               </p>

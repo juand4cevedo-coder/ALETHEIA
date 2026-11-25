@@ -3,6 +3,9 @@
 import ipaddress
 from typing import Final
 
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
 _USER_AGENT_MAX: Final = 300
 
 
@@ -17,3 +20,8 @@ def audit_ip(value: str) -> str | None:
 def audit_user_agent(value: str | None) -> str | None:
     """El agente de usuario recortado al tamaño de la columna."""
     return value[:_USER_AGENT_MAX] if value else None
+
+
+def anonymize_expired_network(session: Session) -> int:
+    """Borra la IP y el navegador de los eventos con más de 90 días y dice cuántos tocó."""
+    return int(session.execute(text("SELECT anonymize_expired_audit_network()")).scalar_one())

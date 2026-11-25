@@ -15,7 +15,7 @@ import {
 } from "../../components/ui/icons.tsx";
 import { ROUTES } from "../../config/routes.ts";
 import { formatBytes } from "../billing/format.ts";
-import { formatColombiaTime } from "../cases/dates.ts";
+import { formatColombiaDate } from "../cases/dates.ts";
 import styles from "./OrganizationHealthPanel.module.css";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -70,10 +70,18 @@ export function OrganizationHealthPanel() {
         <div>
           <h2 id="salud-despacho">Salud del despacho</h2>
           <p>
-            {data.plan_name ? `Plan ${data.plan_name}` : "Sin plan"}
-            {status ? `, ${status}` : ""}
+            {[
+              data.plan_name ? `Plan ${data.plan_name}` : "Sin plan",
+              status &&
+              status.toLowerCase() !==
+                `en ${data.plan_name ?? ""}`.toLowerCase()
+                ? status
+                : null,
+            ]
+              .filter(Boolean)
+              .join(", ")}
             {data.subscription_ends_at
-              ? `. Hasta el ${formatColombiaTime(data.subscription_ends_at)}`
+              ? `, hasta el ${formatColombiaDate(data.subscription_ends_at)}`
               : ""}
             .
           </p>

@@ -1,4 +1,4 @@
-"""Adaptador de sello de tiempo RFC 3161 (ADR-015), contra los sellos reales de spikes/tt006."""
+"""Adaptador de sello de tiempo RFC 3161 (ADR-015), contra los sellos reales de la prueba TT-006."""
 
 import hashlib
 import urllib.error
@@ -12,7 +12,7 @@ from asn1crypto import tsp
 
 from app.adapters import stamping
 
-SELLOS = Path(__file__).parent.parent / "spikes" / "tt006" / "sellos"
+SELLOS = Path(__file__).parent / "fixtures" / "sellos"
 HUELLA = hashlib.sha256((SELLOS / "muestra.txt").read_bytes()).digest()
 
 

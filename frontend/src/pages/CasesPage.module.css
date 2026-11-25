@@ -103,8 +103,8 @@
 .segment:has(.segmentInput:checked) {
   border-color: transparent;
   background: var(--paper-raised);
-  box-shadow: 0 3px 12px rgb(35 0 48 / 9%);
-  color: var(--ink-700);
+  box-shadow: var(--shadow-card);
+  color: var(--brand-text-strong);
 }
 
 .segment:has(.segmentInput:focus-visible) {
@@ -269,7 +269,7 @@
 .table thead th {
   padding: var(--space-4) var(--space-3);
   border-bottom: 1px solid var(--ink-hairline);
-  background: #f6f2f8;
+  background: var(--tint-1);
   color: var(--text-3);
   font-size: var(--font-size-label);
   font-weight: 500;
@@ -316,7 +316,7 @@
 
 .row:hover,
 .row:focus-within {
-  background: #faf4fe;
+  background: var(--tint-1);
 }
 
 .row > th,
@@ -529,13 +529,6 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-}
-
-.moreNote {
-  margin: 0;
-  color: var(--text-3);
-  font-size: var(--font-size-label);
-  line-height: var(--line-height-label);
 }
 
 /* ---------- Antes del primer caso ---------- */

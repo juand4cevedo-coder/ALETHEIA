@@ -91,31 +91,6 @@ a {
   outline-color: var(--brass-400);
 }
 
-/* Paralaje de imagen (7.4): ligado al desplazamiento, solo donde el navegador lo entiende.
-   Fuera del @supports la imagen queda en su posición natural, sin desplazamiento alguno. */
-@supports (animation-timeline: view()) {
-  .parallax {
-    animation: parallax-shift linear both;
-    animation-timeline: view();
-  }
-
-  /* Con movimiento reducido la imagen se queda quieta. */
-  @media (prefers-reduced-motion: reduce) {
-    .parallax {
-      animation: none;
-    }
-  }
-}
-
-@keyframes parallax-shift {
-  from {
-    transform: translateY(-6%);
-  }
-  to {
-    transform: translateY(6%);
-  }
-}
-
 /* Entrada de página: cada cambio de ruta monta un <main> nuevo que aparece con un fundido y un
    desplazamiento corto. Una sola vez por visita a la ruta; con movimiento reducido solo queda
    el cambio de opacidad (ver más abajo). */
@@ -197,6 +172,61 @@ html {
 
   [data-reveal]:hover {
     transform: translateY(-4px);
-    box-shadow: 0 22px 48px rgb(64 0 87 / 14%);
+    box-shadow: var(--shadow-lift);
   }
+}
+
+/* Cambio de modo de color: la vista nueva crece como un círculo desde el botón (theme.ts).
+   Mientras dura, ninguna otra transición de la página compite con él. */
+:root[data-theme-switch]::view-transition-old(root),
+:root[data-theme-switch]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+:root[data-theme-switch] *,
+:root[data-theme-switch] *::before,
+:root[data-theme-switch] *::after {
+  transition: none !important;
+}
+
+/* Navegación dentro del espacio de trabajo: el encabezado y el menú lateral no se mueven; solo
+   el contenido cambia. La pantalla anterior se retira rápido y la nueva entra con .page-enter,
+   así el cambio se siente inmediato y con dirección. */
+::view-transition-old(workspace-header),
+::view-transition-new(workspace-header),
+::view-transition-old(workspace-sidebar),
+::view-transition-new(workspace-sidebar) {
+  animation: none;
+}
+
+::view-transition-old(workspace-header),
+::view-transition-old(workspace-sidebar) {
+  display: none;
+}
+
+::view-transition-old(workspace-main) {
+  animation: workspace-out 140ms var(--ease-standard) both;
+}
+
+::view-transition-new(workspace-main) {
+  animation: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+}
+
+@keyframes workspace-out {
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* Durante el cambio de modo de color la página entera es una sola imagen, para que el círculo
+   la cubra completa. */
+:root[data-theme-switch] * {
+  view-transition-name: none !important;
 }

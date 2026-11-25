@@ -33,7 +33,7 @@
 }
 
 .dialog::backdrop {
-  background: rgb(26 0 41 / 0%);
+  background: transparent;
   backdrop-filter: blur(0);
   transition:
     background-color 300ms var(--ease-standard),
@@ -43,13 +43,13 @@
 }
 
 .dialog[open]::backdrop {
-  background: rgb(26 0 41 / 54%);
+  background: var(--scrim);
   backdrop-filter: blur(6px);
 }
 
 @starting-style {
   .dialog[open]::backdrop {
-    background: rgb(26 0 41 / 0%);
+    background: transparent;
     backdrop-filter: blur(0);
   }
 }
@@ -71,7 +71,7 @@
   margin-bottom: var(--space-1);
   border-radius: 16px;
   background: var(--ink-900);
-  color: white;
+  color: var(--on-ink);
 }
 
 .title {

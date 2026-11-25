@@ -11,8 +11,8 @@
 }
 .copy {
   --text: var(--on-ink);
-  --text-2: var(--paper-sunken);
-  --text-3: var(--paper-sunken);
+  --text-2: var(--on-ink-2);
+  --text-3: var(--on-ink-2);
   display: grid;
   gap: var(--space-6);
 }
@@ -27,7 +27,7 @@
 }
 .scope {
   max-width: var(--measure-narrow);
-  color: var(--paper-sunken);
+  color: var(--on-ink-2);
   font-size: var(--font-size-support);
   line-height: 1.7;
 }

@@ -574,7 +574,6 @@ def put_policies(
         organization = organization_service.update_policies(
             session,
             principal,
-            default_retention_years=request.default_retention_years,
             session_days=request.session_days,
             require_two_factor=request.require_two_factor,
             client_ip=client_ip,
