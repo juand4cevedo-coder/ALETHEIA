@@ -73,5 +73,8 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     restoreMocks: true,
     unstubGlobals: true,
+    // Con dos procesos, una prueba que recorre varias pantallas diferidas y revisa la
+    // accesibilidad con axe puede pasar de los 5 segundos por omisión sin estar colgada.
+    testTimeout: 15_000,
   },
 });

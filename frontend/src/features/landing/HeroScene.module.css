@@ -242,14 +242,21 @@
 }
 
 @media (max-width: 480px) {
+  /* En el teléfono, la cadena de custodia baja debajo de la ficha del sello. */
   .scene {
+    display: grid;
     min-height: 0;
-    padding-bottom: 150px;
+    padding-bottom: 0;
   }
 
   .emblem {
-    width: 340px;
-    inset: 40% auto auto 50%;
+    inset: 34% auto auto 50%;
+    width: 300px;
+  }
+
+  .stamp {
+    width: 100%;
+    margin-top: 0;
   }
 
   .data div {
@@ -258,8 +265,12 @@
   }
 
   .chain {
-    left: 24px;
+    position: relative;
     right: auto;
-    bottom: 0;
+    bottom: auto;
+    left: auto;
+    justify-self: end;
+    width: 82%;
+    margin-top: -20px;
   }
 }

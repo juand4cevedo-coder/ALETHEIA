@@ -2,7 +2,13 @@ import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
 import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
 import { ROUTES } from "../../config/routes.ts";
 import { SIGN_UP_LABEL } from "../../config/site.ts";
-import { HeroScene } from "./HeroScene.tsx";
+import { lazy, Suspense } from "react";
+
+// La escena es decorativa: llega en un archivo aparte para no pesar en la carga inicial. Su
+// lugar queda reservado con el mismo alto, así no mueve el diseño al aparecer.
+const HeroScene = lazy(() =>
+  import("./HeroScene.tsx").then((m) => ({ default: m.HeroScene })),
+);
 import styles from "./Hero.module.css";
 
 // Lo que se promete junto al botón: lo que de verdad pasa al empezar la prueba.
@@ -49,7 +55,11 @@ export function Hero() {
             ))}
           </ul>
         </div>
-        <HeroScene />
+        <Suspense
+          fallback={<div className={styles.sceneSlot} aria-hidden="true" />}
+        >
+          <HeroScene />
+        </Suspense>
       </div>
     </section>
   );

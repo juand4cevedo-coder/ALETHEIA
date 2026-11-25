@@ -179,9 +179,7 @@ export function AppShell() {
         )}
         {/* Mientras se confirma la sesión, el lugar del menú queda reservado: así el contenido
             no se corre de lado cuando el menú aparece (CLS). */}
-        {me.isPending && (
-          <div className={styles.sidebar} aria-hidden="true" />
-        )}
+        {me.isPending && <div className={styles.sidebar} aria-hidden="true" />}
         <div className={styles.column}>
           <main
             key={location.pathname}

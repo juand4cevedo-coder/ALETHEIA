@@ -184,3 +184,14 @@
     width: 100%;
   }
 }
+
+/* Lugar de la escena mientras llega: el mismo alto mínimo que la escena. */
+.sceneSlot {
+  min-height: 560px;
+}
+
+@media (max-width: 960px) {
+  .sceneSlot {
+    min-height: 460px;
+  }
+}

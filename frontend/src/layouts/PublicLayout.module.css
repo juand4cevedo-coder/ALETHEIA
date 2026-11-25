@@ -500,3 +500,11 @@
     align-items: center;
   }
 }
+
+/* En teléfonos angostos queda el símbolo solo: el logotipo no cabe junto al botón de la prueba
+   y el menú. */
+@media (max-width: 440px) {
+  .header .brand svg {
+    display: none;
+  }
+}
