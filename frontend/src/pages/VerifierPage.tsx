@@ -9,6 +9,8 @@ import {
   parseManifest,
   type PreservationManifest,
 } from "../features/verifier/manifest.ts";
+import { FaqList, type FaqItem } from "../features/landing/FaqSection.tsx";
+import { VerifierSection } from "../features/landing/VerifierSection.tsx";
 import { CabeceraSeo } from "../seo/CabeceraSeo.tsx";
 import { PAGINAS } from "../seo/fichas.ts";
 import styles from "./VerifierPage.module.css";
@@ -81,13 +83,29 @@ export function VerifierPage() {
       <section className={styles.page} aria-labelledby="verificador-titulo">
         <div className={styles.inner}>
           <header className={styles.intro}>
-            <h1 id="verificador-titulo">
-              Compare un archivo con su manifiesto.
-            </h1>
+            <h1 id="verificador-titulo">Comprobador de hash SHA-256</h1>
             <p>
-              Seleccione el manifiesto del paquete de preservación y el archivo
-              que desea comprobar. El cálculo ocurre en este navegador; ninguno
-              de los dos archivos se envía a ALETHEIA.
+              Calcule la huella SHA-256 de cualquier archivo o compárelo con el
+              manifiesto de un paquete de preservación. Todo pasa en este
+              navegador: el archivo no se envía a ALETHEIA ni a ninguna otra
+              parte, y no necesita una cuenta.
+            </p>
+          </header>
+        </div>
+      </section>
+
+      <VerifierSection />
+
+      <section className={styles.page} aria-labelledby="manifiesto-titulo">
+        <div className={styles.inner}>
+          <header className={styles.intro}>
+            <h2 id="manifiesto-titulo">
+              Compare un archivo con el manifiesto de su paquete
+            </h2>
+            <p>
+              Si recibió un paquete de preservación de ALETHEIA, elija su
+              manifest.json y el archivo que quiere revisar. El comprobador lee
+              la huella registrada y la compara con la del archivo.
             </p>
           </header>
 
@@ -192,6 +210,90 @@ export function VerifierPage() {
           </p>
         </div>
       </section>
+
+      <section className={styles.page} aria-labelledby="sin-comprobador">
+        <div className={styles.inner}>
+          <div className={styles.prose}>
+            <h2 id="sin-comprobador">Calcularla sin este comprobador</h2>
+            <p>
+              SHA-256 es un estándar, así que cualquier programa que lo use da
+              la misma huella para el mismo archivo. Su computador ya trae uno.
+              Abra la terminal en la carpeta del archivo y cambie{" "}
+              <code>archivo.pdf</code> por su nombre:
+            </p>
+            <dl className={styles.commands}>
+              {COMMANDS.map(([system, command]) => (
+                <div key={system}>
+                  <dt>{system}</dt>
+                  <dd>
+                    <pre>
+                      <code>{command}</code>
+                    </pre>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p>
+              Para revisar además el sello de tiempo de un archivo, siga la guía{" "}
+              <Link to="/docs/revisar-un-sello-de-tiempo">
+                Revisar un sello de tiempo con OpenSSL
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.page} aria-labelledby="preguntas-comprobador">
+        <div className={styles.inner}>
+          <h2 id="preguntas-comprobador" className={styles.faqTitle}>
+            Preguntas sobre el comprobador
+          </h2>
+          <FaqList items={QUESTIONS} />
+          <div className={styles.closing}>
+            <p>
+              Para que su propia evidencia quede con huella, sello de tiempo y
+              cadena de custodia desde el día en que la recibe, abra un caso en
+              ALETHEIA. La prueba dura {TRIAL_DAYS} días y no pide tarjeta.
+            </p>
+            <ButtonLink to={ROUTES.signUp}>{SIGN_UP_LABEL}</ButtonLink>
+          </div>
+        </div>
+      </section>
     </>
   );
 }
+
+const COMMANDS = [
+  ["Windows (PowerShell)", "Get-FileHash archivo.pdf -Algorithm SHA256"],
+  ["macOS", "shasum -a 256 archivo.pdf"],
+  ["Linux", "sha256sum archivo.pdf"],
+] as const;
+
+const QUESTIONS: FaqItem[] = [
+  {
+    question: "¿Qué es un hash SHA-256?",
+    answer:
+      "Es un código de 64 caracteres que se calcula a partir del contenido de un archivo. El mismo contenido siempre da el mismo código, y cambiar un solo byte da uno distinto. Por eso sirve para saber si dos archivos son iguales sin abrirlos.",
+  },
+  {
+    question: "¿El archivo se sube a algún servidor?",
+    answer:
+      "No. El cálculo lo hace su navegador, en su equipo. ALETHEIA no recibe el archivo, su nombre ni su huella.",
+  },
+  {
+    question: "¿Hay un límite de tamaño?",
+    answer:
+      "No. El comprobador lee el archivo por partes, en segundo plano, así que puede revisar videos o archivos grandes sin que la página se bloquee. Archivos muy grandes tardan más.",
+  },
+  {
+    question: "¿Qué prueba que dos huellas coincidan?",
+    answer:
+      "Que el contenido es el mismo, byte por byte. No dice quién creó el archivo, cuándo, ni si es auténtico o admisible como prueba. Esa valoración le corresponde al juez.",
+  },
+  {
+    question: "¿Cómo consigo un paquete con huella, sello y custodia?",
+    answer:
+      "Subiendo la evidencia a un caso en ALETHEIA. Cada archivo queda con su huella SHA-256, un sello de tiempo RFC 3161 y su cadena de custodia, y el caso se exporta en un paquete que se comprueba aquí.",
+  },
+];

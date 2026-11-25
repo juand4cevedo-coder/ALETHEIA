@@ -1,4 +1,4 @@
-import { act, screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
 
@@ -122,7 +122,10 @@ it("ignora el resultado de una lectura anterior tras cambiar el manifiesto", asy
   await user.upload(input, current);
   expect(await screen.findByText(/registrados en el manifiesto/)).toBeVisible();
   await act(async () => completePrevious("{"));
-  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  const manifiesto = screen.getByRole("region", {
+    name: "Compare un archivo con el manifiesto de su paquete",
+  });
+  expect(within(manifiesto).queryByRole("alert")).not.toBeInTheDocument();
 });
 
 it("permite reintentar si el navegador no inicia el cálculo", async () => {

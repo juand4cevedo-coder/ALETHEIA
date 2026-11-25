@@ -19,28 +19,28 @@ export const NAVIGATION: NavigationGroup[] = [
       {
         to: ROUTES.howItWorks,
         label: "Gestión de casos",
-        description: "Cada asunto, en su lugar.",
+        description: "Radicado, equipo, tareas y evidencia de cada asunto.",
       },
       {
         to: "/empresa",
         label: "Equipo y permisos",
-        description: "Acceso con responsabilidades claras.",
+        description: "Cada persona ve solo los casos donde la agregan.",
       },
       {
         to: ROUTES.verifier,
         label: "Comprobador de archivos",
-        description: "Compare un archivo con su manifiesto.",
+        description: "Compare un archivo con el manifiesto de su paquete.",
       },
       {
         to: "/seguridad",
         label: "Seguridad",
-        description: "Conozca cómo cuidamos el acceso.",
+        description: "Cifrado por caso, custodia y verificación en dos pasos.",
       },
     ],
     feature: {
       to: "/#recorrido",
       title: "Su espacio de trabajo",
-      text: "Conozca ALETHEIA por dentro.",
+      text: "Capturas reales del panel, los casos y la custodia.",
     },
   },
   {
@@ -49,42 +49,45 @@ export const NAVIGATION: NavigationGroup[] = [
       {
         to: "/empresa",
         label: "Para firmas jurídicas",
-        description: "Despachos con varias personas y casos.",
+        description:
+          "Roles, cupos y precio para un despacho de varias personas.",
       },
       {
         to: "/docs/invitar-al-equipo",
         label: "Colaboración y roles",
-        description: "Quién ve y hace qué en cada caso.",
+        description:
+          "Qué puede hacer un abogado, un asistente o un administrador.",
       },
       {
         to: "/seguridad",
         label: "Controles de acceso",
-        description: "Sesiones, permisos y auditoría.",
+        description: "Sesiones, permisos por caso y auditoría del despacho.",
       },
       {
         to: "/soporte",
         label: "Hablemos de su equipo",
-        description: "Resolvemos sus dudas de implementación.",
+        description: "Teléfono, correo y plazos de respuesta.",
       },
     ],
     feature: {
       to: "/empresa",
-      title: "Un mismo contexto",
-      text: "Personas, casos y responsabilidades.",
+      title: "Un despacho, varios casos",
+      text: "Así trabaja un equipo de cinco personas en ALETHEIA.",
     },
   },
   {
     title: "Recursos",
     links: [
       {
-        to: "/docs",
+        to: "/docs/introduccion",
         label: "Documentación",
-        description: "Empiece a trabajar con ALETHEIA.",
+        description:
+          "Guías paso a paso, de la cuenta al paquete de preservación.",
       },
       {
         to: "/blog",
-        label: "Artículos y novedades",
-        description: "Ideas para trabajar con evidencia digital.",
+        label: "Artículos",
+        description: "Evidencia digital, Ley 527 y práctica del despacho.",
       },
       {
         to: ROUTES.verifierSection,
@@ -94,13 +97,13 @@ export const NAVIGATION: NavigationGroup[] = [
       {
         to: "/ayuda",
         label: "Base de conocimiento",
-        description: "Respuestas a las preguntas frecuentes.",
+        description: "Respuestas cortas a las dudas más comunes.",
       },
     ],
     feature: {
-      to: "/docs",
-      title: "Del primer paso al caso",
-      text: "Guías, respuestas y recursos en español.",
+      to: "/docs/introduccion",
+      title: "Su primer caso en diez minutos",
+      text: "De crear la cuenta a subir el primer archivo sellado.",
     },
   },
   {
@@ -109,12 +112,12 @@ export const NAVIGATION: NavigationGroup[] = [
       {
         to: "/nosotros",
         label: "Sobre ALETHEIA",
-        description: "Quiénes somos y qué hacemos.",
+        description: "Quién lo construye y quién responde por sus datos.",
       },
       {
         to: "/filosofia",
         label: "Nuestra filosofía",
-        description: "Preservar y documentar, nada más.",
+        description: "Lo que hace, lo que no hace y por qué.",
       },
       {
         to: "/seguridad",
@@ -129,8 +132,8 @@ export const NAVIGATION: NavigationGroup[] = [
     ],
     feature: {
       to: "/nosotros",
-      title: "La claridad empieza aquí",
-      text: "Conozca el propósito detrás de ALETHEIA.",
+      title: "Quién está detrás",
+      text: "El fundador, desde Bello, Antioquia, con nombre y contacto.",
     },
   },
 ];
@@ -140,7 +143,7 @@ export const FOOTER_NAVIGATION: { title: string; links: NavigationLink[] }[] = [
   {
     title: "Recursos",
     links: [
-      { to: "/docs", label: "Documentación" },
+      { to: "/docs/introduccion", label: "Documentación" },
       { to: "/blog", label: "Blog" },
       { to: ROUTES.pricing, label: "Precios" },
       { to: "/marca", label: "Marca" },

@@ -144,7 +144,7 @@ describe("Página de inicio (HU-001)", () => {
     expect(field).not.toBeVisible();
   });
 
-  it("los H2 presentan contexto, organización, integridad, alcance y condiciones", async () => {
+  it("los H2 presentan el problema, el producto, la integridad, el alcance y las condiciones", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     await renderRoute("/");
 
@@ -152,6 +152,7 @@ describe("Página de inicio (HU-001)", () => {
       level: 2,
     });
     expect(headings.map((heading) => heading.textContent)).toEqual([
+      "La prueba llega por WhatsApp y nadie anota qué pasa con ella",
       "Así se ve su espacio de trabajo",
       "Su primer caso con evidencia sellada, en tres pasos",
       "El caso completo cabe en un paquete que otra persona puede revisar sin su ayuda",

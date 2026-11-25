@@ -28,7 +28,7 @@ it("ofrece cinco opciones y cambia el panel con el puntero", async () => {
   expect(screen.queryByText("Gestión de casos")).not.toBeInTheDocument();
   expect(
     await screen.findByRole("link", { name: /Documentación/ }),
-  ).toHaveAttribute("href", "/docs");
+  ).toHaveAttribute("href", "/docs/introduccion");
   fireEvent.pointerDown(document.body);
   expect(screen.getByRole("button", { name: "Recursos" })).toHaveAttribute(
     "aria-expanded",

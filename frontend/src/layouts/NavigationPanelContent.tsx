@@ -34,7 +34,7 @@ const LINK_ICONS: Record<string, IconComponent> = {
   "/seguridad": EscudoVistoIcon,
   "/docs/invitar-al-equipo": UsuarioAgregarIcon,
   "/soporte": CirculoAlertaIcon,
-  "/docs": LibroIcon,
+  "/docs/introduccion": LibroIcon,
   "/blog": DocumentoIcon,
   "/ayuda": InfoIcon,
   "/nosotros": OjoIcon,

@@ -99,6 +99,11 @@ describe("generarSitio", () => {
         "Profesional incluye 4 y cada persona adicional vale $19.900 al mes",
       );
 
+      const comprobador = sitio.archivos.get("verificador/index.html")!;
+      expect(comprobador).toContain('"@type":"WebApplication"');
+      expect(comprobador).toContain('"@type":"FAQPage"');
+      expect(comprobador).toContain("Get-FileHash archivo.pdf");
+
       const portada = sitio.archivos.get("index.html")!;
       expect(portada).toContain('"@type":"FAQPage"');
       expect(portada).toContain('rel="preload" as="image"');

@@ -8,6 +8,7 @@ import { HowItWorks } from "./HowItWorks.tsx";
 import { HighlightsCarousel } from "./HighlightsCarousel.tsx";
 import { PlansSection } from "./PlansSection.tsx";
 import { PreservationSection } from "./PreservationSection.tsx";
+import { ProblemSection } from "./ProblemSection.tsx";
 import { ScopeSection } from "./ScopeSection.tsx";
 import { StandardsSection } from "./StandardsSection.tsx";
 import { VerifierSection } from "./VerifierSection.tsx";
@@ -33,6 +34,9 @@ export function BelowFold() {
 
   return (
     <>
+      <Reveal>
+        <ProblemSection />
+      </Reveal>
       <Reveal>
         <ProductTour />
       </Reveal>
