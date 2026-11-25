@@ -13,7 +13,6 @@ export const AUTOR = "Juan Diego Acevedo Calderón";
 const ORGANIZACION = `${SITE_URL}/#organizacion`;
 const SITIO = `${SITE_URL}/#sitio`;
 const FUNDADOR = `${SITE_URL}/nosotros#fundador`;
-const IMAGEN = `${SITE_URL}/og-image.png`;
 
 function organizacion(): Objeto {
   return {
@@ -146,7 +145,7 @@ function articulo(meta: MetaPagina, titular: string): Objeto {
     dateModified: meta.actualizado ?? meta.publicado,
     articleSection: meta.seccion,
     inLanguage: "es-CO",
-    image: IMAGEN,
+    image: SITE_URL + meta.imagen,
     author: { "@id": FUNDADOR },
     publisher: { "@id": ORGANIZACION },
     mainEntityOfPage: meta.canonica,

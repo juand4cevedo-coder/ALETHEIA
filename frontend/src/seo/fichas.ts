@@ -14,6 +14,7 @@ import { MIGA_INICIO } from "./contenidos.ts";
 export const PAGINAS = {
   inicio: PAGINA_INICIO,
   precios: pagina("/precios", {
+    imagen: "/og/precios.png",
     titulo: "Precios del software para abogados" + MARCA,
     descripcion:
       "Planes de ALETHEIA en pesos colombianos, con pago mensual o anual. Compare usuarios incluidos, almacenamiento y tamaño máximo por archivo de cada plan.",
@@ -24,11 +25,13 @@ export const PAGINAS = {
       "Cree la cuenta de su despacho con Google o con su correo y empiece la prueba gratuita de ALETHEIA. No necesita tarjeta de crédito para registrarse.",
   }),
   verificador: pagina("/verificador", {
+    imagen: "/og/verificador.png",
     titulo: "Verificar el hash SHA-256 de un archivo" + MARCA,
     descripcion:
       "Compare en su navegador un archivo con el manifiesto de un paquete de preservación de ALETHEIA mediante su hash SHA-256. El archivo no sale de su equipo.",
   }),
   blog: pagina("/blog", {
+    imagen: "/og/blog.png",
     titulo: "Blog sobre evidencia digital y práctica jurídica" + MARCA,
     descripcion:
       "Artículos para abogados sobre evidencia digital y el trabajo con casos, por ejemplo qué permite concluir una huella SHA-256 y qué no permite concluir.",
@@ -45,11 +48,13 @@ export const PAGINAS = {
       "Los principios con que se diseña ALETHEIA: mostrar el contexto de cada caso, explicar qué permite concluir una huella y no prometer más de lo que hace.",
   }),
   nosotros: pagina("/nosotros", {
+    imagen: "/og/nosotros.png",
     titulo: "Quién está detrás del software para abogados" + MARCA,
     descripcion:
       "Quién construye y opera ALETHEIA, quién responde por el servicio y por sus datos, y cómo escribirle con preguntas o problemas sobre el producto.",
   }),
   seguridad: pagina("/seguridad", {
+    imagen: "/og/seguridad.png",
     titulo: "Seguridad de los casos y la evidencia" + MARCA,
     descripcion:
       "Cómo protege ALETHEIA el acceso: un caso solo lo abren sus miembros, usted cierra sus sesiones desde la cuenta y la huella se calcula en su navegador.",
@@ -60,6 +65,7 @@ export const PAGINAS = {
       "Resuelva sus dudas sobre ALETHEIA con la base de conocimiento o escríbanos indicando la pantalla, la acción que intentó y el mensaje que apareció.",
   }),
   empresa: pagina("/empresa", {
+    imagen: "/og/empresa.png",
     titulo: "Software jurídico para firmas y equipos" + MARCA,
     descripcion:
       "Para firmas con varios abogados: cada persona entra con su propia invitación y su rol, y en ALETHEIA solo los miembros de un caso pueden abrirlo.",

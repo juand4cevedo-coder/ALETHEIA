@@ -58,6 +58,15 @@ export function cabecera(
     meta("property", "og:url", pagina.canonica || SITE_URL + pagina.ruta),
     meta("property", "og:title", pagina.titulo),
     meta("name", "twitter:title", pagina.titulo),
+    meta("property", "og:image", SITE_URL + pagina.imagen),
+    meta("property", "og:image:width", "1200"),
+    meta("property", "og:image:height", "630"),
+    meta(
+      "property",
+      "og:image:alt",
+      `${pagina.titulo}. Imagen con el nombre de ALETHEIA.`,
+    ),
+    meta("name", "twitter:image", SITE_URL + pagina.imagen),
   );
   if (descripcion) {
     lineas.push(

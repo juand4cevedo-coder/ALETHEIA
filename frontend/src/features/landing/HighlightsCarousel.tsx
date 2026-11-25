@@ -197,6 +197,8 @@ export function HighlightsCarousel() {
                       "(min-width: 820px) 55vw, 100vw",
                     )}
                     alt={index === active ? item.visual.alt : ""}
+                    width={1280}
+                    height={853}
                     loading="lazy"
                     decoding="async"
                     draggable={false}

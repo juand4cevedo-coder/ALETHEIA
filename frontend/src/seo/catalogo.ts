@@ -17,13 +17,12 @@ export type PlanPublicado = {
   diasDePrueba: number | null;
 };
 
-export const PLANES_PUBLICADOS: readonly PlanPublicado[] = CATALOGO_PUBLICADO.map(
-  (plan) => ({
+export const PLANES_PUBLICADOS: readonly PlanPublicado[] =
+  CATALOGO_PUBLICADO.map((plan) => ({
     codigo: plan.code,
     nombre: plan.name,
     mensual: plan.monthly_price_cop,
     anual: plan.annual_price_cop ?? null,
     usuarioAdicional: plan.extra_user_price_cop ?? null,
     diasDePrueba: plan.trial_days ?? null,
-  }),
-);
+  }));

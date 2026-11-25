@@ -88,6 +88,12 @@ describe("generarSitio", () => {
         '<meta property="og:url" content="https://aletheia.sbs/precios" />',
       );
       expect(precios).toContain('"@type":"SoftwareApplication"');
+      expect(precios).toContain(
+        '<meta property="og:image" content="https://aletheia.sbs/og/precios.png" />',
+      );
+      expect(precios).toContain(
+        '<meta name="twitter:image" content="https://aletheia.sbs/og/precios.png" />',
+      );
       expect(precios).toMatch(/<div id="root"><.+<\/div><\/body>/s);
       // Las tarjetas salen de la copia del catálogo: los buscadores leen los precios sin
       // ejecutar JavaScript, y la respuesta sobre usuarios adicionales dice los reales.

@@ -52,6 +52,7 @@ export function metaArticulo(articulo: {
         `Blog de ${SITE_NAME}`,
       ),
       descripcion: resumir(articulo.seoDescription ?? articulo.summary),
+      imagen: `/og/blog-${articulo.slug}.png`,
       migas: [MIGA_INICIO, MIGA_BLOG],
     }),
     tipo: "article",
@@ -71,6 +72,7 @@ export function metaGuia(
     titulo: tituloConMarca(guia.title, `Documentación de ${SITE_NAME}`),
     descripcion: resumir(guia.description),
     canonica: SITE_URL + canonica,
+    imagen: "/og/docs.png",
     enMapa: ruta === canonica,
     // La introducción es la portada de la documentación: su ruta no repite el paso.
     migas:
