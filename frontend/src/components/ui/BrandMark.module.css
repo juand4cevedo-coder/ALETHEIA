@@ -4,5 +4,5 @@
 
 /* La versión para fondos oscuros reemplaza la imagen cuando el modo oscuro está activo. */
 :global(:root[data-theme="dark"]) .mark {
-  content: url("/brand/symbol-dark-mode.svg");
+  content: url("/brand/symbol-dark-mode.svg?v=5");
 }

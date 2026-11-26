@@ -7,7 +7,7 @@ export function BrandMark({ size = 28 }: { size?: number }) {
   return (
     <img
       className={styles.mark}
-      src="/brand/symbol-dark.svg"
+      src="/brand/symbol-dark.svg?v=5"
       alt=""
       width={size}
       height={size}

@@ -71,6 +71,8 @@ BRASS_LIGHT: Final = HexColor("#d9b871")
 OK: Final = HexColor("#1f6b4a")
 OK_TINT: Final = HexColor("#e8f3ed")
 ON_INK_2: Final = HexColor("#e6dcf3")
+EMBLEM_BG: Final = HexColor("#21123a")
+LAVENDER: Final = HexColor("#d9c9f0")
 
 PAGE_W, PAGE_H = A4
 MARGIN: Final = 52
@@ -134,19 +136,36 @@ def _eye(pdf: canvas.Canvas, cx: float, cy: float, width: float, height: float) 
 
 
 def _symbol(pdf: canvas.Canvas, left: float, top: float, size: float) -> None:
-    """El símbolo: recuadro de tinta, ojo blanco, iris y pupila de latón, en su cuadrícula de 64."""
+    """El emblema reducido de la marca (geometria.ts, simboloSvg): círculo de tinta profunda,
+    anillo y 32 marcas de lavanda, banda de guilloché en latón, ojo y pupila de latón."""
     s = size / 64
     cx, cy = left + 32 * s, top - 32 * s
-    pdf.setFillColor(INK)
-    pdf.roundRect(left, top - size, size, size, 15 * s, stroke=0, fill=1)
-    pdf.setStrokeColor(white)
+    pdf.saveState()
+    pdf.setFillColor(EMBLEM_BG)
+    pdf.circle(cx, cy, 31.5 * s, stroke=0, fill=1)
+    pdf.setStrokeColor(LAVENDER)
+    pdf.setLineWidth(1.3 * s)
+    pdf.circle(cx, cy, 29.6 * s, stroke=1, fill=0)
+    pdf.setLineCap(1)
+    pdf.setLineWidth(1.1 * s)
+    for i in range(32):
+        angle = i / 32 * math.tau + math.pi / 2
+        inner = 22.5 if i % 4 == 0 else 24.3
+        c, n = math.cos(angle), math.sin(angle)
+        pdf.line(cx + inner * s * c, cy + inner * s * n, cx + 26.5 * s * c, cy + 26.5 * s * n)
+    pdf.setStrokeColor(BRASS_LIGHT)
+    pdf.setLineWidth(0.7 * s)
+    for phase in (0.0, math.pi):
+        _guilloche(pdf, cx, cy, 17.2 * s, 1.6 * s, 18, phase, 240)
+    pdf.setStrokeColor(LAVENDER)
     pdf.setLineJoin(1)
-    pdf.setLineWidth(4 * s)
-    _eye(pdf, cx, cy, 48 * s, 22 * s)
-    pdf.setLineWidth(3.4 * s)
-    pdf.circle(cx, cy, 9.4 * s, stroke=1, fill=0)
+    pdf.setLineWidth(2.6 * s)
+    _eye(pdf, cx, cy, 27 * s, 11 * s)
+    pdf.setLineWidth(2.2 * s)
+    pdf.circle(cx, cy, 5.6 * s, stroke=1, fill=0)
     pdf.setFillColor(BRASS_LIGHT)
-    pdf.circle(cx, cy, 4.3 * s, stroke=0, fill=1)
+    pdf.circle(cx, cy, 2.8 * s, stroke=0, fill=1)
+    pdf.restoreState()
 
 
 def _logotype(pdf: canvas.Canvas, left: float, baseline: float, height: float) -> float:
@@ -345,7 +364,7 @@ def render(receipt: PaymentReceipt) -> bytes:
 
     # Encabezado: la marca a la izquierda, el documento a la derecha.
     top = PAGE_H - 50
-    _symbol(pdf, MARGIN, top, 30)
+    _symbol(pdf, MARGIN, top + 2, 34)
     _logotype(pdf, MARGIN + 42, top - 19.5, 11)
     pdf.setFont(SANS, 7.5)
     pdf.setFillColor(MUTED)

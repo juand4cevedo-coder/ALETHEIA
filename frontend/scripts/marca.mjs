@@ -22,18 +22,18 @@ const publico = join(raiz, "public");
 mkdirSync(join(publico, "brand"), { recursive: true });
 
 const archivos = {
-  // Modo claro: recuadro de tinta.
-  "brand/symbol-dark.svg": simboloSvg(C.tinta, C.papel, C.laton),
-  // Modo oscuro: el recuadro sube de tono para no perderse en el fondo casi negro.
-  "brand/symbol-dark-mode.svg": simboloSvg(C.tintaClara, C.papel, C.laton),
-  // Sobre fondos de color o fotos: recuadro blanco y ojo de tinta.
+  // El emblema reducido: tinta profunda con líneas de lavanda y latón, como el emblema completo.
+  "brand/symbol-dark.svg": simboloSvg(C.tintaProfunda, C.lavanda, C.laton),
+  // Modo oscuro: el círculo sube un tono para no perderse en el fondo casi negro.
+  "brand/symbol-dark-mode.svg": simboloSvg("#2e1a4f", C.lavanda, C.laton),
+  // Sobre fondos de color o fotos: círculo blanco con líneas de tinta.
   "brand/symbol-white.svg": simboloSvg(C.papel, C.tinta, C.latonOscuro),
   "brand/emblema.svg": emblemaSvg(C.tinta, C.latonOscuro),
   "brand/emblema-oscuro.svg": emblemaSvg("#eeebf2", C.laton),
   "brand/logotipo.svg": logotipoSvg(C.tinta),
   "brand/logotipo-blanco.svg": logotipoSvg(C.papel),
   "brand/grabado.svg": grabadoSvg(),
-  "favicon.svg": simboloSvg(C.tinta, C.papel, C.laton, "small"),
+  "favicon.svg": simboloSvg(C.tintaProfunda, C.papel, C.laton, "small"),
 };
 for (const [ruta, contenido] of Object.entries(archivos)) {
   writeFileSync(join(publico, ruta), contenido + "\n");
@@ -63,12 +63,24 @@ async function png(svg, tam, ruta, margen = 0) {
   });
 }
 
+// La pestaña usa la variante mínima; los íconos instalables, el emblema reducido.
 const simbolo = archivos["favicon.svg"];
+const emblema = archivos["brand/symbol-dark.svg"];
 await png(simbolo, 32, "favicon.png");
-await png(simbolo, 192, "icon-192.png");
-await png(simbolo, 512, "icon-512.png");
-// El ícono de iOS no admite transparencia: se dibuja a sangre, iOS redondea las esquinas.
-await png(simbolo.replace('rx="15"', 'rx="0"'), 180, "apple-touch-icon.png");
+await png(emblema, 192, "icon-192.png");
+await png(emblema, 512, "icon-512.png");
+// El ícono de iOS no admite transparencia: el emblema va sobre un cuadrado de tinta profunda, iOS
+// redondea las esquinas.
+await png(
+  emblema.replace(
+    '<circle cx="32" cy="32" r="31.5"',
+    '<rect width="64" height="64" fill="' +
+      C.tintaProfunda +
+      '"/><circle cx="32" cy="32" r="29"',
+  ),
+  180,
+  "apple-touch-icon.png",
+);
 
 // favicon.ico con tres tamaños en PNG, el formato que aceptan todos los navegadores actuales.
 const tamanos = [16, 32, 48];
@@ -95,7 +107,7 @@ writeFileSync(
 );
 
 // Símbolo para los correos, cuadrado de 128 px: el texto del correo ya lleva el nombre.
-await png(simbolo, 128, "email/logo-claro.png");
+await png(emblema, 128, "email/logo-claro.png");
 
 await navegador.close();
 console.log("Marca generada:", Object.keys(archivos).length, "SVG y los PNG");
