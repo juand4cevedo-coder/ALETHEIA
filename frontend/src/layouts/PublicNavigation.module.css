@@ -325,6 +325,13 @@
   transition: transform 420ms var(--ease-out);
 }
 
+/* La foto llena su marco con el mismo alto que una captura. */
+.featurePhoto {
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
 .feature:hover .featureShot {
   transform: translateY(-4px);
 }
