@@ -102,7 +102,9 @@ def register(
         accounts_repository.add_account(
             session,
             user=user,
-            organization=Organization(id=organization_id, name=organization_display_name),
+            organization=Organization(
+                id=organization_id, name=organization_display_name, kind=account_type
+            ),
             subscription=Subscription(
                 organization_id=organization_id,
                 plan_id=trial_plan_id,

@@ -109,6 +109,9 @@ import type {
   CreateTaskTemplateData,
   CreateTaskTemplateErrors,
   CreateTaskTemplateResponses,
+  DeletePlatformOrganizationData,
+  DeletePlatformOrganizationErrors,
+  DeletePlatformOrganizationResponses,
   DeletePlatformUserData,
   DeletePlatformUserErrors,
   DeletePlatformUserResponses,
@@ -2676,6 +2679,41 @@ export const deletePlatformUser = <ThrowOnError extends boolean = false>(
       },
     ],
     url: "/api/v1/platform/users/{user_id}/deletion",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Eliminar un despacho completo
+ *
+ * Cierra y anonimiza las cuentas de todas sus personas, cancela la suscripción y revoca
+ * invitaciones y portales. Los casos se conservan en solo lectura hasta cumplir su plazo.
+ */
+export const deletePlatformOrganization = <
+  ThrowOnError extends boolean = false,
+>(
+  options: Options<DeletePlatformOrganizationData, ThrowOnError>,
+): RequestResult<
+  DeletePlatformOrganizationResponses,
+  DeletePlatformOrganizationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    DeletePlatformOrganizationResponses,
+    DeletePlatformOrganizationErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/platform/organizations/{organization_id}/deletion",
     ...options,
     headers: {
       "Content-Type": "application/json",

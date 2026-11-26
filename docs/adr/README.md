@@ -52,7 +52,7 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-046](adr-046.md) | Estructura del ZIP de preservación y custodia verificable | Aceptado | 17/11/2026 |
 | [ADR-047](adr-047.md) | Informe PDF generado a partir del manifiesto exacto | Aceptado | 17/11/2026 |
 | [ADR-048](adr-048.md) | Enlace de exportación válido 24 horas con firma de la aplicación | Aceptado | 17/11/2026 |
-| [ADR-049](adr-049.md) | Identidad violeta, un solo conjunto de tokens y símbolo del ojo | Aceptado | 22/11/2026 |
+| [ADR-049](adr-049.md) | Identidad violeta, un solo conjunto de tokens y símbolo del ojo | Reemplazado por ADR-060 | 22/11/2026 |
 | [ADR-050](adr-050.md) | Segundo factor con aplicación de autenticación y códigos de respaldo | Aceptado | 23/11/2026 |
 | [ADR-051](adr-051.md) | Archivos estáticos por una red de distribución | Aceptado | 23/11/2026 |
 | [ADR-052](adr-052.md) | Medición de rendimiento real con consentimiento y sin identificadores | Aceptado | 23/11/2026 |
@@ -61,3 +61,7 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-055](adr-055.md) | Eliminación definitiva de un caso cerrado con la llave destruida primero | Aceptado | 25/11/2026 |
 | [ADR-056](adr-056.md) | El administrador no abre casos y la plataforma puede eliminar cuentas de prueba | Aceptado | 25/11/2026 |
 | [ADR-057](adr-057.md) | Cobro con tarjeta y PSE por el Checkout Web de Wompi | Aceptado | 25/11/2026 |
+| [ADR-058](adr-058.md) | Renovación automática con una fuente de pago vinculada | Aceptado | 24/11/2026 |
+| [ADR-059](adr-059.md) | Autoridades públicas de sellado de tiempo en producción | Aceptado | 25/11/2026 |
+| [ADR-060](adr-060.md) | Identidad Tinta violeta, tipografía editorial y emblema del sello | Aceptado | 25/11/2026 |
+| [ADR-061](adr-061.md) | La plataforma cierra despachos completos y conserva sus casos | Aceptado | 26/11/2026 |

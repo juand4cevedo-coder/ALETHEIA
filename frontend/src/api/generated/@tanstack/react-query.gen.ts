@@ -43,6 +43,7 @@ import {
   createShareLink,
   createSupportTicket,
   createTaskTemplate,
+  deletePlatformOrganization,
   deletePlatformUser,
   deleteSupportTicket,
   deleteTaskTemplate,
@@ -245,6 +246,9 @@ import type {
   CreateTaskTemplateData,
   CreateTaskTemplateError,
   CreateTaskTemplateResponse,
+  DeletePlatformOrganizationData,
+  DeletePlatformOrganizationError,
+  DeletePlatformOrganizationResponse,
   DeletePlatformUserData,
   DeletePlatformUserError,
   DeletePlatformUserResponse,
@@ -3584,6 +3588,36 @@ export const deletePlatformUserMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await deletePlatformUser({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Eliminar un despacho completo
+ *
+ * Cierra y anonimiza las cuentas de todas sus personas, cancela la suscripción y revoca
+ * invitaciones y portales. Los casos se conservan en solo lectura hasta cumplir su plazo.
+ */
+export const deletePlatformOrganizationMutation = (
+  options?: Partial<Options<DeletePlatformOrganizationData>>,
+): UseMutationOptions<
+  DeletePlatformOrganizationResponse,
+  DeletePlatformOrganizationError,
+  Options<DeletePlatformOrganizationData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    DeletePlatformOrganizationResponse,
+    DeletePlatformOrganizationError,
+    Options<DeletePlatformOrganizationData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await deletePlatformOrganization({
         ...options,
         ...fnOptions,
         throwOnError: true,

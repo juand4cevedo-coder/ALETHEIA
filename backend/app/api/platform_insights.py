@@ -63,11 +63,19 @@ def platform_organizations(
         Literal["trial", "active", "past_due", "canceled", "expired"] | None,
         Query(description="Estado de la suscripción."),
     ] = None,
+    kind: Annotated[
+        Literal["individual", "firm"] | None,
+        Query(description="Cuenta independiente o firma."),
+    ] = None,
 ) -> PlatformOrganizationPage:
     del principal
     response.headers["Cache-Control"] = "no-store"
     page = insights.organizations(
-        session, search=search, subscription_status=subscription_status, cursor=cursor
+        session,
+        search=search,
+        subscription_status=subscription_status,
+        cursor=cursor,
+        kind=kind,
     )
     return PlatformOrganizationPage.model_validate(page)
 

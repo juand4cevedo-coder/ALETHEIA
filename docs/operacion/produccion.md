@@ -304,8 +304,9 @@ Para quien opera el servicio. El diseño y sus razones están en ADR-054 y ADR-0
 
 ## Rendimiento
 
-- Las fotografías de campaña se publican en tres anchos WebP (640, 1280 y 1920 px) y el navegador elige el más cercano con `srcset`. Un original JPG de unos 350 KB pasó a 17 a 70 KB. Para sumar una fotografía se genera con los mismos tres anchos y se declara en `frontend/src/config/media.ts`.
-- El producto usa un solo tipo de letra de interfaz (Inter) y una de código (Geist Mono); no se descarga ninguna fuente con serif.
+- Las fotografías se publican en cuatro anchos WebP (640, 1280, 1920 y 2560 px) en `frontend/public/media/fotos/` y el navegador elige el más cercano con `srcset` (`frontend/src/config/fotos.ts`). Para sumar una, se publica en los mismos cuatro anchos y se registra su autor en `docs/diseno/imagenes.md`.
+- `/media` y `/brand` se guardan una semana en el navegador. Al rehacer un archivo con el mismo nombre se sube su versión: `?v=` en `fotos.ts`, en `media.ts` (capturas) y en los enlaces de `index.html` y `site.webmanifest` (íconos y marca).
+- El producto usa Geist para la interfaz, Newsreader para los títulos y Geist Mono para el código, en archivos variables de subconjunto latino.
 - El pool de conexiones de la API es de 10 más 10 de rebose, con espera máxima de 10 s (`backend/app/db/session.py`). Sumado al trabajador queda por debajo de las 100 conexiones de PostgreSQL.
 - Quien ya tiene sesión precarga en reposo las piezas del espacio de trabajo desde las páginas públicas (`prefetchWorkspace`).
 - **Rendimiento real (ADR-052).** Quien acepta la categoría «Analítica» del panel de cookies entrega, al salir de la página, LCP, INP, CLS, FCP y TTFB a `POST /api/v1/web-vitals`, sin cuenta, IP ni navegador, con 90 días de vida (la tabla `web_vitals`). Las cuentas de plataforma ven el percentil 75 por versión, pantalla y métrica en Plataforma > Rendimiento real (`/app/plataforma/rendimiento`). Es la medida que decide si algo como la red de distribución conviene: compare la versión nueva con la anterior en esa pantalla antes de decidir. Las medidas son de una muestra que se inclina hacia quien acepta la analítica; sirven para comparar versiones, no como cifra absoluta.
