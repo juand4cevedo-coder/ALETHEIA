@@ -43,15 +43,18 @@
   outline: 2px solid var(--brass-600);
   outline-offset: 3px;
 }
+/* Deshabilitado: borde punteado y texto gris que se sigue leyendo (5,6:1). La guía de Google
+   lo pide al 38 %, pero así el botón no dice nada a quien lo mira. */
 .provider:disabled {
   cursor: not-allowed;
-  border-color: rgb(31 31 31 / 12%);
-  background: rgb(255 255 255 / 61%);
-  color: rgb(31 31 31 / 38%);
+  border-style: dashed;
+  border-color: var(--line-control);
+  background: transparent;
+  color: var(--text-3);
   box-shadow: none;
 }
 .provider:disabled svg {
-  opacity: 0.38;
+  opacity: 0.6;
 }
 :root[data-theme="dark"] .provider {
   border-color: #8e918f;
@@ -66,9 +69,9 @@
   background: #262628;
 }
 :root[data-theme="dark"] .provider:disabled {
-  border-color: rgb(142 145 143 / 30%);
-  background: rgb(19 19 20 / 60%);
-  color: rgb(227 227 227 / 38%);
+  border-color: var(--line-control);
+  background: transparent;
+  color: var(--text-3);
 }
 @media (prefers-reduced-motion: reduce) {
   .provider {

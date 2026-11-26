@@ -93,3 +93,8 @@
   margin: 0;
   color: var(--text-2);
 }
+
+/* Alto aproximado de la cadena con su resumen, reservado mientras carga. */
+.reserva {
+  min-height: 440px;
+}

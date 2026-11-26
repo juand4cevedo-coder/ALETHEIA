@@ -329,7 +329,10 @@ function Checkout({
     });
   }
 
-  if (isPending || quote.isPending) return null;
+  // Mientras llegan el catálogo y el desglose, el formulario tiene su lugar reservado: así el
+  // panel de abajo no salta cuando aparece (CLS).
+  if (isPending || quote.isPending)
+    return <div className={styles.reserva} aria-busy="true" />;
   if (quote.isError) {
     return (
       <Notice tone="error">

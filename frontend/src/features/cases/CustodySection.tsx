@@ -91,7 +91,12 @@ export function CustodySection({
 
   return (
     <div className={styles.stack}>
-      {listing.isPending && <p role="status">Cargando cadena de custodia</p>}
+      {listing.isPending && (
+        // Lugar reservado para la cadena: los datos procesales de abajo no saltan al llegar.
+        <p role="status" className={styles.reserva}>
+          Cargando cadena de custodia
+        </p>
+      )}
       {listing.isError && (
         <Notice tone="error">
           <p>No pudimos consultar la cadena de custodia.</p>
