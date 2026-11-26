@@ -1,7 +1,9 @@
 import { type FormEvent, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
+import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { Field } from "../components/ui/Field.tsx";
+import { CorreoIcon } from "../components/ui/icons.tsx";
 import { LEGAL_VERSION } from "../config/legal.ts";
 import { ROUTES } from "../config/routes.ts";
 import { TRIAL_DAYS } from "../config/site.ts";
@@ -148,12 +150,20 @@ export function SignUpPage() {
             identificador estable. No recibirá su contraseña de Google.
           </p>
         </form>
-        <p className={styles.lead}>
-          ¿Prefiere no usar Google?{" "}
-          <Link to={ROUTES.signUpEmail}>
+        {/* El correo es un camino tan válido como Google: va con el mismo peso, no como un
+            enlace al pie. Conserva el plan elegido en la dirección. */}
+        <div className={styles.or} aria-hidden="true">
+          <span>o</span>
+        </div>
+        <div className={styles.wide}>
+          <ButtonLink
+            to={ROUTES.signUpEmail + location.search}
+            variant="secondary"
+          >
+            <CorreoIcon size={18} aria-hidden="true" />
             Crear la cuenta con correo y contraseña
-          </Link>
-        </p>
+          </ButtonLink>
+        </div>
       </div>
     </>
   );
