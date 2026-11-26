@@ -271,6 +271,8 @@
 .footer {
   isolation: isolate;
   position: relative;
+  /* El grabado de fondo es más ancho que la pantalla: se recorta aquí, no en el body. */
+  overflow: hidden;
   padding: 120px 24px 32px;
   border-top: 0;
   background: var(--surface-inverse);
