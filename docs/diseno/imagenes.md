@@ -16,22 +16,16 @@ Todas vienen de Unsplash con su licencia gratuita, que permite el uso comercial 
 | ----------------- | ------------------ | -------------------------------------------------------------------------- |
 | `equipo-portada`  | Vitaly Gariev      | [unsplash.com/photos/gItonyvrdUA](https://unsplash.com/photos/gItonyvrdUA) |
 | `abogado-llamada` | Vitaly Gariev      | [unsplash.com/photos/NWT8Hya-_WQ](https://unsplash.com/photos/NWT8Hya-_WQ) |
-| `abogada`         | Vitaly Gariev      | [unsplash.com/photos/jI4HREHtae4](https://unsplash.com/photos/jI4HREHtae4) |
-| `abogada-2`       | Vitaly Gariev      | [unsplash.com/photos/ft1ET-Sizow](https://unsplash.com/photos/ft1ET-Sizow) |
-| `abogado`         | Vitaly Gariev      | [unsplash.com/photos/G8skYtGFlbI](https://unsplash.com/photos/G8skYtGFlbI) |
 | `cliente`         | Vitaly Gariev      | [unsplash.com/photos/Hl1HIQ0fmQk](https://unsplash.com/photos/Hl1HIQ0fmQk) |
 | `equipo`          | Vitaly Gariev      | [unsplash.com/photos/8k5j5z6ZYT4](https://unsplash.com/photos/8k5j5z6ZYT4) |
 | `acuerdo`         | Md Ishak Rahman    | [unsplash.com/photos/MkNnPlMThgk](https://unsplash.com/photos/MkNnPlMThgk) |
 | `socio`           | Vitaly Gariev      | [unsplash.com/photos/VpCJ42lG7sk](https://unsplash.com/photos/VpCJ42lG7sk) |
 | `despacho`        | Vitaly Gariev      | [unsplash.com/photos/yI6b7L1PDxs](https://unsplash.com/photos/yI6b7L1PDxs) |
-| `medellin`        | Lawrson Pinson     | [unsplash.com/photos/v78Q07VnJBA](https://unsplash.com/photos/v78Q07VnJBA) |
 | `firma`           | Vitaly Gariev      | [unsplash.com/photos/iPheGw7_UaI](https://unsplash.com/photos/iPheGw7_UaI) |
 | `reunion`         | Vitaly Gariev      | [unsplash.com/photos/r-W9R70iY5c](https://unsplash.com/photos/r-W9R70iY5c) |
 | `revision`        | Olena Kholina      | [unsplash.com/photos/MhqUBTxQ3Hw](https://unsplash.com/photos/MhqUBTxQ3Hw) |
-| `directora`       | Vitaly Gariev      | [unsplash.com/photos/J_9U-jTWGIw](https://unsplash.com/photos/J_9U-jTWGIw) |
 | `expediente`      | TRAN NHU TUAN      | [unsplash.com/photos/Ydnhp9z0FOU](https://unsplash.com/photos/Ydnhp9z0FOU) |
 | `ciudad`          | Jack’s Flight Club | [unsplash.com/photos/psQjHZRR46o](https://unsplash.com/photos/psQjHZRR46o) |
-| `socios`          | Vitaly Gariev      | [unsplash.com/photos/c9rttLPYNWA](https://unsplash.com/photos/c9rttLPYNWA) |
 
 Se publican en `frontend/public/media/fotos/` como WebP a 640, 1280 y 1920 px. Las que van a pantalla completa suman 2560 px para pantallas retina grandes. `fotoProps` en `frontend/src/config/media.ts` arma el `srcset`. Se descargaron ya redimensionadas desde el servicio de imágenes de Unsplash; las dos de ciudad llevan menos calidad porque siempre van bajo una capa de tinta. Ninguna se pide a Unsplash desde el sitio: se alojan con el producto.
 

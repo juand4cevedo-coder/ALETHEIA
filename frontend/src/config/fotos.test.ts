@@ -14,8 +14,8 @@ it("las fotografías traen su versión de 2560 px para pantallas retina", async 
   vi.stubEnv("VITE_CDN_URL", "");
   const { fotoProps } = await cargar();
 
-  expect(fotoProps("abogada", "50vw").srcSet).toContain(
-    "/media/fotos/abogada-2560.webp 2560w",
+  expect(fotoProps("cliente", "50vw").srcSet).toContain(
+    "/media/fotos/cliente-2560.webp 2560w",
   );
 });
 

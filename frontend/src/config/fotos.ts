@@ -7,22 +7,16 @@ const CDN = String(import.meta.env.VITE_CDN_URL ?? "").replace(/\/+$/, "");
 export type Foto =
   | "equipo-portada"
   | "abogado-llamada"
-  | "abogada"
-  | "abogada-2"
-  | "abogado"
   | "cliente"
   | "equipo"
   | "acuerdo"
   | "socio"
   | "despacho"
-  | "medellin"
   | "firma"
   | "reunion"
   | "revision"
-  | "directora"
   | "expediente"
-  | "ciudad"
-  | "socios";
+  | "ciudad";
 
 function fotoUrl(foto: Foto, ancho: number): string {
   return `${CDN}/media/fotos/${foto}-${ancho}.webp`;
