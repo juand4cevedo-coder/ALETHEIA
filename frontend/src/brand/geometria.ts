@@ -141,23 +141,59 @@ export const COLORES_MARCA = {
   latonOscuro: "#7a5a22",
   papel: "#ffffff",
   noche: "#121016",
+  /** Fondo del emblema: el violeta casi negro del panel de ingreso. */
+  tintaProfunda: "#21123a",
+  /** Líneas del emblema sobre la tinta profunda. */
+  lavanda: "#d9c9f0",
 } as const;
 
-/** El símbolo de 64 unidades: recuadro de tinta, ojo blanco, iris y pupila de latón. Es la
- * versión que se lee a 16 px; el emblema es la versión completa. */
+/** El símbolo de 64 unidades es el emblema aprobado, reducido (ADR-060). En la variante
+ * `default`, para el menú, el ícono de la aplicación y los correos, conserva el anillo, 32 de las
+ * 64 marcas de la huella, la banda de guilloché en latón, el ojo y la pupila. En la variante
+ * `small`, para la pestaña del navegador a 16 px, quedan solo el círculo, el aro de latón y el
+ * ojo: es lo único que se distingue a ese tamaño. `fondo` es el círculo, `trazo` las líneas y
+ * `pupila` el latón. */
 export function simboloSvg(
   fondo: string,
   trazo: string,
   pupila: string,
   variante = "default",
 ): string {
+  const abre = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" data-brand="aletheia-eye" data-variant="${variante}">`;
+  if (variante === "small") {
+    return [
+      abre,
+      `<circle cx="32" cy="32" r="31.5" fill="${fondo}"/>`,
+      `<circle cx="32" cy="32" r="28" fill="none" stroke="${pupila}" stroke-width="2.4"/>`,
+      `<path d="${ojo(32, 32, 40, 17)}" fill="none" stroke="${trazo}" stroke-width="4.2" stroke-linejoin="round"/>`,
+      `<circle cx="32" cy="32" r="8" fill="none" stroke="${trazo}" stroke-width="3.4"/>`,
+      `<circle cx="32" cy="32" r="4" fill="${pupila}"/>`,
+      "</svg>",
+    ].join("");
+  }
+  // 32 marcas: una larga cada cuatro, como las de ocho en ocho del emblema completo.
+  const marcasReducidas = Array.from({ length: 32 }, (_, i) => {
+    const angulo = (i / 32) * Math.PI * 2 - Math.PI / 2;
+    const interior = i % 4 === 0 ? 22.5 : 24.3;
+    const [c, n] = [Math.cos(angulo), Math.sin(angulo)];
+    return `M${redondear(32 + interior * c)} ${redondear(32 + interior * n)}L${redondear(32 + 26.5 * c)} ${redondear(32 + 26.5 * n)}`;
+  }).join("");
+  const banda = [0, Math.PI]
+    .map(
+      (fase) =>
+        `<path d="${guilloche(32, 32, 17.2, 1.6, 18, fase, 240)}" fill="none" stroke="${pupila}" stroke-width="0.7"/>`,
+    )
+    .join("");
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" data-brand="aletheia-eye" data-variant="${variante}">`,
-    `<rect width="64" height="64" rx="15" fill="${fondo}"/>`,
-    `<path d="${ojo(32, 32, 48, 22)}" fill="none" stroke="${trazo}" stroke-width="4" stroke-linejoin="round"/>`,
-    `<circle cx="32" cy="32" r="9.4" fill="none" stroke="${trazo}" stroke-width="3.4"/>`,
-    `<circle cx="32" cy="32" r="4.3" fill="${pupila}"/>`,
-    `</svg>`,
+    abre,
+    `<circle cx="32" cy="32" r="31.5" fill="${fondo}"/>`,
+    `<circle cx="32" cy="32" r="29.6" fill="none" stroke="${trazo}" stroke-width="1.3"/>`,
+    `<path d="${marcasReducidas}" stroke="${trazo}" stroke-width="1.1" stroke-linecap="round"/>`,
+    banda,
+    `<path d="${ojo(32, 32, 27, 11)}" fill="none" stroke="${trazo}" stroke-width="2.6" stroke-linejoin="round"/>`,
+    `<circle cx="32" cy="32" r="5.6" fill="none" stroke="${trazo}" stroke-width="2.2"/>`,
+    `<circle cx="32" cy="32" r="2.8" fill="${pupila}"/>`,
+    "</svg>",
   ].join("");
 }
 

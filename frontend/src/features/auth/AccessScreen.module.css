@@ -183,3 +183,26 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* Separador entre Google y el correo: dos caminos con el mismo peso. */
+.or {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-6) 0 var(--space-4);
+  color: var(--text-3);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.or::before,
+.or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--ink-hairline);
+}
+
+.wide > a {
+  width: 100%;
+}

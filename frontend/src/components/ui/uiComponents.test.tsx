@@ -82,6 +82,6 @@ describe("Símbolo de la marca", () => {
     const image = container.querySelector("img")!;
     expect(image).toHaveAttribute("alt", "");
     expect(image).toHaveAttribute("width", "32");
-    expect(image).toHaveAttribute("src", "/brand/symbol-dark.svg");
+    expect(image).toHaveAttribute("src", "/brand/symbol-dark.svg?v=5");
   });
 });

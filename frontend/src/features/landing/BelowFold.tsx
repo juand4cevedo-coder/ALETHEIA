@@ -3,17 +3,13 @@ import { useEffect } from "react";
 import { useLocation } from "react-router";
 
 import { PlanCatalogProvider } from "../billing/catalog.tsx";
+import { BenefitsSection } from "./BenefitsSection.tsx";
 import { ClosingSection } from "./ClosingSection.tsx";
 import { FaqSection } from "./FaqSection.tsx";
-import { HowItWorks } from "./HowItWorks.tsx";
-import { HighlightsCarousel } from "./HighlightsCarousel.tsx";
 import { PlansSection } from "./PlansSection.tsx";
-import { PreservationSection } from "./PreservationSection.tsx";
-import { ProblemSection } from "./ProblemSection.tsx";
-import { ScopeSection } from "./ScopeSection.tsx";
-import { StandardsSection } from "./StandardsSection.tsx";
-import { VerifierSection } from "./VerifierSection.tsx";
 import { ProductTour } from "./ProductTour.tsx";
+import { StatsSection } from "./StatsSection.tsx";
+import { TeamSection } from "./TeamSection.tsx";
 
 // Secciones de la landing que quedan debajo del primer pantallazo. Llegan en un archivo aparte
 // que se pide mientras se pinta el inicio: el JavaScript que bloquea el primer pintado se queda
@@ -38,28 +34,16 @@ export function BelowFold() {
   return (
     <PlanCatalogProvider publicado>
       <Reveal>
-        <ProblemSection />
+        <BenefitsSection />
+      </Reveal>
+      <Reveal>
+        <StatsSection />
       </Reveal>
       <Reveal>
         <ProductTour />
       </Reveal>
       <Reveal>
-        <HowItWorks />
-      </Reveal>
-      <Reveal>
-        <PreservationSection />
-      </Reveal>
-      <Reveal>
-        <HighlightsCarousel />
-      </Reveal>
-      <Reveal>
-        <StandardsSection />
-      </Reveal>
-      <Reveal>
-        <ScopeSection />
-      </Reveal>
-      <Reveal>
-        <VerifierSection />
+        <TeamSection />
       </Reveal>
       <Reveal>
         <PlansSection />

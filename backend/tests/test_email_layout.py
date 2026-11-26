@@ -14,7 +14,7 @@ def _correo(**cambios: str) -> str:
 
 
 def test_el_logo_sale_de_una_ruta_publica_del_sitio() -> None:
-    assert 'src="https://aletheia.sbs/email/logo-claro.png"' in _correo()
+    assert 'src="https://aletheia.sbs/email/logo-claro.png?v=5"' in _correo()
 
 
 def test_el_boton_escapa_la_etiqueta_y_el_enlace() -> None:

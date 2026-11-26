@@ -10,9 +10,12 @@
     "Newsreader Variable", "Iowan Old Style", Georgia, "Times New Roman", serif;
 
   /* Papel: la escala que sube y baja. La profundidad se lee por el tono, no por el borde. */
-  --paper: #ffffff;
+  /* El modo claro no es blanco plano: el fondo es una lavanda muy suave y las tarjetas blancas
+     se levantan sobre él. --paper-warm es la crema de las bandas que alternan con la lavanda. */
+  --paper: #f6f1fb;
   --paper-raised: #ffffff;
-  --paper-sunken: #f4f3f7;
+  --paper-sunken: #efe7f8;
+  --paper-warm: #fbf5ea;
 
   /* Marca: botón principal, enlaces y superficies de marca a sangre completa. */
   --ink-900: #55278a;
@@ -124,8 +127,11 @@
   /* Sombras de dos capas con tinte violeta: una de contacto, corta y definida, y otra de
      ambiente, larga y suave. El negro puro ensucia las superficies claras. */
   /* Sombras cortas y neutras: la profundidad la da el tono de la superficie, no un halo. */
-  --shadow-card: 0 1px 0 rgb(22 19 28 / 4%), 0 1px 3px rgb(22 19 28 / 6%);
-  --shadow-float: 0 2px 6px rgb(22 19 28 / 8%), 0 18px 40px rgb(22 19 28 / 12%);
+  --shadow-card:
+    0 1px 2px rgb(22 18 29 / 4%), 0 8px 24px -10px rgb(63 28 105 / 14%);
+  --shadow-float:
+    0 1px 2px rgb(22 18 29 / 5%), 0 10px 28px -8px rgb(22 18 29 / 12%),
+    0 36px 70px -28px rgb(85 39 138 / 24%);
   /* Filete metálico de un píxel en el borde superior de las tarjetas elevadas. */
   --brass-hairline: inset 0 0 0 1px rgb(22 19 28 / 6%);
 
@@ -218,6 +224,7 @@
   --paper: #121016;
   --paper-raised: #1a1720;
   --paper-sunken: #0d0b10;
+  --paper-warm: #16121c;
 
   --ink-900: #7a52b8;
   --ink-700: #6a44a6;

@@ -38,10 +38,10 @@
 .value {
   display: block;
   margin-top: var(--space-4);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: clamp(1rem, 12cqi, 2.4rem);
-  font-weight: 600;
+  color: var(--brand-text);
+  font-family: var(--font-editorial);
+  font-size: clamp(1.1rem, 14cqi, 2.8rem);
+  font-weight: 450;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.018em;
   line-height: 1.2;

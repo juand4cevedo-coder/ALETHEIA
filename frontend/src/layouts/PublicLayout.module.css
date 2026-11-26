@@ -23,18 +23,19 @@
 .skipLink:focus {
   transform: none;
 }
+/* Menú flotante: una píldora de vidrio separada del borde de la pantalla. El encabezado solo
+   reserva el espacio; la píldora es la barra. */
 .header {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: var(--chrome);
-  backdrop-filter: blur(20px) saturate(1.4);
-  border-bottom: 0;
+  padding: 10px clamp(8px, 1.6vw, 20px) 0;
+  pointer-events: none;
 }
 /* El encabezado gana una línea y una sombra suave en cuanto la página empieza a moverse. */
 @supports (animation-timeline: scroll()) {
   @media (prefers-reduced-motion: no-preference) {
-    .header {
+    .bar {
       animation: header-settle linear both;
       animation-timeline: scroll(root);
       animation-range: 0 96px;
@@ -46,13 +47,14 @@
    JavaScript: lo mueve el propio desplazamiento. */
 @supports (animation-timeline: scroll()) {
   @media (prefers-reduced-motion: no-preference) {
-    .header::after {
+    .bar::after {
       content: "";
       position: absolute;
-      right: 0;
-      bottom: -1px;
-      left: 0;
+      right: 28px;
+      bottom: 0;
+      left: 28px;
       height: 2px;
+      border-radius: 2px;
       background: var(--brand-text);
       transform: scaleX(0);
       transform-origin: left center;
@@ -70,21 +72,29 @@
 
 @keyframes header-settle {
   to {
+    background: color-mix(in srgb, var(--paper-raised) 92%, transparent);
     box-shadow:
-      0 1px 0 var(--ink-hairline),
-      0 12px 32px rgb(22 19 28 / 6%);
+      0 1px 2px rgb(22 18 29 / 6%),
+      0 14px 36px -12px rgb(63 28 105 / 26%);
   }
 }
 
 .bar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  max-width: 1440px;
-  min-height: var(--header-height);
+  max-width: 1240px;
+  min-height: calc(var(--header-height) - 10px);
   margin: auto;
-  padding: 0 24px;
+  padding: 0 8px 0 20px;
+  border: 1px solid color-mix(in srgb, var(--ink-900) 9%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper-raised) 88%, transparent);
+  backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: 0 1px 2px rgb(22 18 29 / 4%);
+  pointer-events: auto;
 }
 /* Símbolo y logotipo: el logotipo es un dibujo de trazos, así que no depende de la fuente. El
    espacio entre los dos es la mitad del alto del símbolo. */
@@ -438,6 +448,37 @@
 /* Fotografía de personas trabajando detrás del pie: queda tenue, se pierde hacia arriba y no
    compite con los enlaces. */
 /* El grabado de la marca asoma desde la esquina del pie, en el latón del sello. */
+/* La ciudad al fondo del pie, fundida con la tinta. Va en CSS y no en el HTML: es decoración y
+   así no suma JavaScript a la portada. El navegador elige el ancho por el tamaño de pantalla. */
+.footer::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  inset: 0 0 auto;
+  height: min(460px, 70%);
+  background: url("/media/fotos/ciudad-640.webp") 50% 60% / cover no-repeat;
+  opacity: 0.38;
+  mask: linear-gradient(
+    180deg,
+    #000 0%,
+    rgb(0 0 0 / 60%) 45%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+@media (min-width: 700px) {
+  .footer::before {
+    background-image: url("/media/fotos/ciudad-1280.webp");
+  }
+}
+
+@media (min-width: 1300px), (min-width: 700px) and (min-resolution: 2dppx) {
+  .footer::before {
+    background-image: url("/media/fotos/ciudad-2560.webp");
+  }
+}
+
 .footerEngraving {
   position: absolute;
   z-index: -1;

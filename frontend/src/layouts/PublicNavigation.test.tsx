@@ -23,7 +23,7 @@ it("ofrece cinco opciones y cambia el panel con el puntero", async () => {
     await screen.findByRole("link", {
       name: /Gestión de casos/,
     }),
-  ).toHaveAttribute("href", "/#como-funciona");
+  ).toHaveAttribute("href", "/#como-le-ayuda");
   await user.hover(screen.getByRole("button", { name: "Recursos" }));
   expect(screen.queryByText("Gestión de casos")).not.toBeInTheDocument();
   expect(

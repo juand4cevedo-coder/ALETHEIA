@@ -1,3 +1,4 @@
+import { fotoProps, type Foto } from "../config/fotos.ts";
 import { productShotProps } from "../config/media.ts";
 import type { CSSProperties } from "react";
 import { Link } from "react-router";
@@ -10,7 +11,6 @@ import {
   DocumentoIcon,
   EscudoVistoIcon,
   FlechaDerechaIcon,
-  HuellaIcon,
   InfoIcon,
   LibroIcon,
   OjoIcon,
@@ -31,7 +31,6 @@ import { SIGN_UP_LABEL, TRIAL_DAYS } from "../config/site.ts";
 const LINK_ICONS: Record<string, IconComponent> = {
   [ROUTES.howItWorks]: CarpetaAbiertaIcon,
   [ROUTES.verifier]: ArchivoBusquedaIcon,
-  [ROUTES.verifierSection]: HuellaIcon,
   "/empresa": UsuariosIcon,
   "/seguridad": EscudoVistoIcon,
   "/docs/invitar-al-equipo": UsuarioAgregarIcon,
@@ -43,11 +42,14 @@ const LINK_ICONS: Record<string, IconComponent> = {
   "/filosofia": BalanzaIcon,
   "/estado": CirculoVistoIcon,
 };
+// Producto y Recursos muestran la aplicación; Equipos y Nosotros, a las personas que la usan.
 const FEATURE_SHOTS: Record<string, string> = {
   Producto: "/media/producto/resumen.webp",
-  Equipos: "/media/producto/actividad.webp",
   Recursos: "/media/producto/verificador.webp",
-  Nosotros: "/media/producto/paquete.webp",
+};
+const FEATURE_PHOTOS: Record<string, Foto> = {
+  Equipos: "equipo",
+  Nosotros: "reunion",
 };
 
 // Se carga aparte: los íconos y la estructura del panel no pesan en la primera visita; el navegador
@@ -71,6 +73,17 @@ export default function NavigationPanelContent({
             {...productShotProps(FEATURE_SHOTS[group.title]!, "320px")}
             alt=""
             width={1260}
+            height={720}
+            loading="lazy"
+            decoding="async"
+          />
+        )}
+        {FEATURE_PHOTOS[group.title] && (
+          <img
+            className={`${styles.featureShot} ${styles.featurePhoto}`}
+            {...fotoProps(FEATURE_PHOTOS[group.title]!, "320px")}
+            alt=""
+            width={1280}
             height={720}
             loading="lazy"
             decoding="async"

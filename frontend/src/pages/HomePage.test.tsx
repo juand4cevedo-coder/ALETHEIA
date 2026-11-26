@@ -11,19 +11,9 @@ import { jsonResponse, renderRoute } from "../test/render.tsx";
 
 const fetchMock = vi.fn<typeof fetch>();
 
-// jsdom no implementa Worker: sin esto, el comprobador de la sección de verificación se cree sin
-// soporte y muestra su aviso de "navegador no compatible" en cada prueba de esta página.
-class FakeWorker {
-  onmessage: ((event: MessageEvent) => void) | null = null;
-  onerror: (() => void) | null = null;
-  postMessage(_value: unknown) {}
-  terminate() {}
-}
-
 beforeEach(() => {
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
-  vi.stubGlobal("Worker", FakeWorker);
 });
 
 afterEach(() => {
@@ -38,27 +28,14 @@ describe("Página de inicio (HU-001)", () => {
     const main = screen.getByRole("main");
     expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(within(main).getByRole("heading", { level: 1 })).toHaveTextContent(
-      "La evidencia digital de sus casos, con huella y sello de tiempo desde el día en que la recibe.",
+      "Sus pruebas digitales, listas para el juzgado.",
     );
     expect(
-      within(main).getByText(
-        "Para abogados independientes y despachos en Colombia",
-      ),
+      within(main).getByText("Para abogados y despachos en Colombia"),
     ).toBeInTheDocument();
     expect(
-      within(main).getByRole("heading", {
-        level: 2,
-        name: "Qué hace ALETHEIA con su evidencia y qué deja en manos del juez",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      within(main).getByText(
-        "Exporta un paquete de preservación con los originales, sus huellas y la cadena de custodia.",
-      ),
-    ).toBeInTheDocument();
-    expect(
-      within(main).getByText(
-        "No certifica pruebas ni decide sobre su validez.",
+      await within(main).findByText(
+        /No certifica pruebas ni decide sobre su validez/,
       ),
     ).toBeInTheDocument();
     expect(
@@ -69,9 +46,6 @@ describe("Página de inicio (HU-001)", () => {
         "Sin tarjeta de crédito. Cancele cuando quiera.",
       ).length,
     ).toBeGreaterThan(0);
-    expect(
-      within(main).getByRole("link", { name: "Abrir mi primer caso gratis" }),
-    ).toHaveAttribute("href", "/registro");
   });
 
   it("muestra los planes y los días de prueba desde el catálogo", async () => {
@@ -129,54 +103,27 @@ describe("Página de inicio (HU-001)", () => {
     expect(await seriousAxeViolations(container)).toEqual([]);
   });
 
-  it("muestra la demostración técnica solo al solicitarla", async () => {
-    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
-    const user = userEvent.setup();
-    await renderRoute("/");
-    const question = await screen.findByText(
-      "¿Cómo se detecta un cambio en un archivo?",
-    );
-    const field = screen.getByLabelText("Texto de ejemplo");
-    expect(field).not.toBeVisible();
-    await user.click(question);
-    expect(field).toBeVisible();
-    await user.click(question);
-    expect(field).not.toBeVisible();
-  });
-
-  it("los H2 presentan el problema, el producto, la integridad, el alcance y las condiciones", async () => {
+  it("los H2 siguen las preguntas del abogado, del beneficio al cierre", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     await renderRoute("/");
+    await screen.findByText(/^\$59\.900/);
 
     const headings = within(screen.getByRole("main")).getAllByRole("heading", {
       level: 2,
     });
     expect(headings.map((heading) => heading.textContent)).toEqual([
-      "La prueba llega por WhatsApp y nadie anota qué pasa con ella",
+      "Menos tiempo defendiendo la prueba. Más tiempo defendiendo a su cliente.",
       "Así se ve su espacio de trabajo",
-      "Su primer caso con evidencia sellada, en tres pasos",
-      "El caso completo cabe en un paquete que otra persona puede revisar sin su ayuda",
-      "Lo que pasa en un caso queda guardado dentro de ese caso",
-      "Solo ven el caso las personas que usted agrega",
-      "Qué hace ALETHEIA con su evidencia y qué deja en manos del juez",
-      "Compruebe la huella de un archivo sin enviarlo a ninguna parte",
+      "Su equipo, sus reglas.",
       "Todos los planes traen las mismas funciones; cambian los usuarios y el almacenamiento",
       "Antes de empezar",
-      "Pruebe ALETHEIA con uno de sus casos",
+      "La próxima prueba que reciba, guárdela bien desde el principio.",
     ]);
   });
 
-  it("el comprobador funciona en la portada y el cierre tiene una sola acción", async () => {
+  it("el cierre tiene una sola acción", async () => {
     fetchMock.mockResolvedValue(jsonResponse(CATALOG));
     const { container } = await renderRoute("/");
-
-    // El menú lleva al verificador de manifiestos; la portada conserva su demostración local.
-    expect(container.querySelector("a[href='/verificador']")).not.toBeNull();
-    const verifier = container.querySelector("#verificador")!;
-    expect(within(verifier as HTMLElement).queryAllByRole("link")).toEqual([]);
-    expect(verifier).toHaveTextContent(
-      "El archivo permanece en su dispositivo.",
-    );
 
     const closing = container.querySelector(
       "[aria-labelledby='titulo-cierre']",
@@ -190,26 +137,6 @@ describe("Página de inicio (HU-001)", () => {
         /La prueba dura 14 días y no pide tarjeta de crédito\./,
       ),
     ).toBeInTheDocument();
-  });
-
-  it("el paquete de preservación tiene su propia sección, visible sin interacción", async () => {
-    fetchMock.mockResolvedValue(jsonResponse(CATALOG));
-    const { container } = await renderRoute("/");
-
-    const section = within(container.querySelector("#paquete") as HTMLElement);
-    for (const path of [
-      "files/",
-      "manifest.json",
-      "custody/events.json",
-      "timestamps/",
-      "report.pdf",
-    ]) {
-      expect(section.getByText(path)).toBeVisible();
-    }
-    expect(section.getByText(/declaración de alcance/)).toBeVisible();
-    expect(
-      section.getByRole("link", { name: "Abrir el verificador público" }),
-    ).toHaveAttribute("href", "/verificador");
   });
 
   it("cada enlace de la navegación lleva a una sección o página que existe", async () => {

@@ -24,7 +24,7 @@ _FONT: Final = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
 
 # El logo se sirve desde una ruta pública estable del sitio: un PNG de 128 px que se muestra a
 # 32 px, porque muchos clientes de correo no dibujan SVG.
-LOGO_PATH: Final = "/email/logo-claro.png"
+LOGO_PATH: Final = "/email/logo-claro.png?v=5"
 _LOGO_SIZE: Final = 32
 
 

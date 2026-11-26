@@ -23,7 +23,7 @@ describe("Enlaces a secciones que se descargan aparte", () => {
       );
       expect(
         screen.getByRole("heading", {
-          name: "Compruebe la huella de un archivo sin enviarlo a ninguna parte",
+          name: "Su equipo, sus reglas.",
         }),
       ).toBeInTheDocument();
     },

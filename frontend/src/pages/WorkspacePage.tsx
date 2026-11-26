@@ -4,7 +4,7 @@ import { listCasesOptions } from "../api/generated/@tanstack/react-query.gen.ts"
 
 import type { CaseSummaryOut, Me } from "../api/generated";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
-import { PageHeader } from "../components/ui/PageHeader.tsx";
+import { fotoProps } from "../config/fotos.ts";
 import { greeting } from "../features/session/greeting.ts";
 import { Panel } from "../components/ui/Panel.tsx";
 import { StatTile } from "../components/ui/StatTile.tsx";
@@ -86,26 +86,34 @@ export function WorkspacePage() {
       <title>{pageTitle("Espacio de trabajo")}</title>
       <meta name="robots" content="noindex" />
 
-      <PageHeader
-        title={hello}
-        description={
-          me.organization
-            ? `${me.organization.name}, ${ROLE_LABELS[me.organization.role]}`
-            : undefined
-        }
-        actions={
-          me.organization && (
-            <ButtonLink
-              to={ROUTES.cases}
-              size="sm"
-              variant={me.email_verified ? "primary" : "secondary"}
-            >
-              <CarpetaAbiertaIcon size={16} aria-hidden="true" />
-              {canCreate ? "Ver mis casos" : "Ver mis casos asignados"}
-            </ButtonLink>
-          )
-        }
-      />
+      {/* Bienvenida: el saludo sobre la foto de un despacho, bajo la tinta de la marca. */}
+      <header className={`${styles.welcome} on-ink`}>
+        <img
+          className={styles.welcomePhoto}
+          {...fotoProps("despacho", "(min-width: 1100px) 900px, 100vw")}
+          alt=""
+          width={1920}
+          height={1080}
+        />
+        <div className={styles.welcomeCopy}>
+          <h1 className={styles.welcomeTitle}>{hello}</h1>
+          {me.organization && (
+            <p className={styles.welcomeText}>
+              {me.organization.name}, {ROLE_LABELS[me.organization.role]}
+            </p>
+          )}
+        </div>
+        {me.organization && (
+          <ButtonLink
+            to={ROUTES.cases}
+            size="sm"
+            variant={me.email_verified ? "primary" : "secondary"}
+          >
+            <CarpetaAbiertaIcon size={16} aria-hidden="true" />
+            {canCreate ? "Ver mis casos" : "Ver mis casos asignados"}
+          </ButtonLink>
+        )}
+      </header>
 
       {me.organization && (
         <>
@@ -134,20 +142,20 @@ export function WorkspacePage() {
             />
             <StatTile
               icon={RelojIcon}
-              label="Sellos de tiempo pendientes"
+              label="Pruebas por sellar"
               value={
                 caseTotals?.pending_stamps ??
                 (totals.isPending ? "Cargando" : "No disponible")
               }
               note={
                 caseTotals && caseTotals.pending_stamps > 0
-                  ? "Evidencias esperando su sello."
+                  ? "Pruebas que esperan su sello de tiempo."
                   : undefined
               }
             />
             <StatTile
               icon={HuellaIcon}
-              label="Eventos de custodia"
+              label="Movimientos registrados"
               value={
                 caseTotals?.custody_events ??
                 (totals.isPending ? "Cargando" : "No disponible")

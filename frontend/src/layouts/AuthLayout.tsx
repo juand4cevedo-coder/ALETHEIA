@@ -18,6 +18,7 @@ import { VistoIcon } from "../components/ui/icons.tsx";
 import { useCookiePanel } from "../features/consent/useCookiePanel.tsx";
 import { hasSessionHint } from "../features/session/sessionHint.ts";
 import styles from "./AuthLayout.module.css";
+import { fotoProps } from "../config/fotos.ts";
 import { Logotipo } from "../components/brand/Logotipo.tsx";
 import { Emblema } from "../components/brand/Emblema.tsx";
 
@@ -101,12 +102,23 @@ export function AuthLayout() {
 
       {!signingUp && (
         <section className={styles.visual} aria-label="ALETHEIA">
+          <img
+            className={styles.backdrop}
+            {...fotoProps("abogado-llamada", "(min-width: 900px) 52vw, 100vw")}
+            alt=""
+            width={1920}
+            height={1080}
+            fetchPriority="high"
+          />
           <div className={styles.emblem}>
-            <Emblema tamano={520} />
+            <Emblema tamano={160} />
           </div>
           <div className={styles.visualCopy}>
-            <p>Su evidencia, con huella, sello y custodia.</p>
-            <span>Sus casos, su equipo y cada movimiento de cada archivo.</span>
+            <p>Sus pruebas, listas para el juzgado.</p>
+            <span>
+              Los casos, el equipo y los documentos de su despacho, en un solo
+              lugar.
+            </span>
           </div>
         </section>
       )}
@@ -157,15 +169,22 @@ export function AuthLayout() {
 }
 
 const TRIAL_INCLUDES = [
-  "Cada archivo que suba queda con su huella SHA-256 y su sello de tiempo.",
-  "La cadena de custodia anota quién subió, descargó o exportó cada evidencia.",
-  "El caso se exporta en un paquete que cualquier persona puede verificar.",
+  "Cada prueba queda guardada tal como llegó, con fecha y hora.",
+  "Usted sabe siempre quién vio, descargó o compartió cada documento.",
+  "El expediente se descarga con un informe que el juez puede comprobar.",
   "Usted invita a su equipo y decide quién entra a cada caso.",
 ] as const;
 
 function TrialReminder() {
   return (
     <aside className={styles.trial} aria-labelledby="titulo-prueba">
+      <img
+        className={styles.backdrop}
+        {...fotoProps("reunion", "(min-width: 900px) 52vw, 100vw")}
+        alt=""
+        width={1920}
+        height={1080}
+      />
       <div className={styles.trialInner}>
         <p className={styles.trialKicker}>
           {TRIAL_DAYS} días gratis, sin tarjeta de crédito

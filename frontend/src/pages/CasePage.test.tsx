@@ -349,7 +349,7 @@ describe("Página del caso (HU-015)", () => {
       return original(input, init);
     });
     await openCase();
-    await userEvent.click(screen.getByRole("tab", { name: "Paquete" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Expediente" }));
     expect(
       await screen.findByText(/Todavía no se ha solicitado ningún paquete/),
     ).toBeInTheDocument();
@@ -386,10 +386,10 @@ describe("Página del caso (HU-015)", () => {
     serve(() => jsonResponse(DETAIL));
     await openCase();
 
-    const tab = screen.getByRole("tab", { name: /Cadena de custodia/ });
+    const tab = screen.getByRole("tab", { name: /Historial/ });
     expect(tab).toHaveAttribute("aria-selected", "true");
     expect(tab).toHaveTextContent("1");
-    const panel = screen.getByRole("tabpanel", { name: /Cadena de custodia/ });
+    const panel = screen.getByRole("tabpanel", { name: /Historial/ });
     // La navegación por encabezados encuentra la cadena aunque su título no se vea.
     expect(
       within(panel).getByRole("heading", {
@@ -540,7 +540,7 @@ describe("Página del caso (HU-015)", () => {
 
     const teamTab = screen.getByRole("tab", { name: /Equipo/ });
     expect(teamTab).toHaveTextContent("1");
-    await user.click(screen.getByRole("tab", { name: /Cadena de custodia/ }));
+    await user.click(screen.getByRole("tab", { name: /Historial/ }));
     await user.keyboard("{ArrowRight}");
     expect(teamTab).toHaveAttribute("aria-selected", "true");
     expect(teamTab).toHaveFocus();
@@ -849,7 +849,7 @@ describe("Página del caso (HU-015)", () => {
     }
     expect(screen.queryByText(/Cadena íntegra/)).toBeNull();
     expect(await screen.findByText("Sin verificar")).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Evidencias" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Pruebas" })).toBeInTheDocument();
   });
 
   it("muestra el origen como declaración y el tipo detectado del contenido", async () => {
@@ -874,11 +874,9 @@ describe("Página del caso (HU-015)", () => {
         }),
     );
     await openCase();
-    await userEvent
-      .setup()
-      .click(screen.getByRole("tab", { name: "Evidencias" }));
+    await userEvent.setup().click(screen.getByRole("tab", { name: "Pruebas" }));
 
-    const panel = screen.getByRole("tabpanel", { name: "Evidencias" });
+    const panel = screen.getByRole("tabpanel", { name: "Pruebas" });
     expect(
       await within(panel).findByText("Entregado por la cliente"),
     ).toBeInTheDocument();
@@ -919,7 +917,7 @@ describe("Página del caso (HU-015)", () => {
     );
     await openCase();
     const user = userEvent.setup();
-    await user.click(screen.getByRole("tab", { name: "Evidencias" }));
+    await user.click(screen.getByRole("tab", { name: "Pruebas" }));
     expect(await screen.findByText("primero.txt")).toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: "Ver más evidencias" }),

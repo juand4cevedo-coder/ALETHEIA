@@ -52,9 +52,10 @@ function Pricing() {
               Planes y precios
             </h1>
             <p className={styles.lead}>
-              Todos los planes traen las mismas funciones: sello de tiempo,
-              cadena de custodia, paquete de preservación, permisos por caso y
-              portal del cliente. Solo cambian los usuarios y el almacenamiento.
+              Todos los planes traen todo: sus pruebas guardadas tal como
+              llegaron, el historial de cada documento, el expediente listo para
+              el juez, permisos por caso y portal del cliente. Solo cambian los
+              usuarios y el almacenamiento.
             </p>
             <div className={styles.start}>
               <ButtonLink to={ROUTES.signUp}>{SIGN_UP_LABEL}</ButtonLink>

@@ -2,16 +2,15 @@
 // Los enlaces las toman de aquí para que un cambio de ruta se haga en un solo lugar.
 export const ROUTES = {
   home: "/",
-  howItWorks: "/#como-funciona",
+  howItWorks: "/#como-le-ayuda",
   // Las garantías técnicas y su demostración, en el inicio.
-  security: "/#seguridad",
+  security: "/seguridad",
   pricing: "/precios",
   verifier: "/verificador",
   exportDownload: "/descargar-paquete",
   sharedEvidence: "/compartido",
   // La comprobación de una huella vive en la portada. La verificación de paquetes tiene
   // su propio alcance funcional (HU-026).
-  verifierSection: "/#verificador",
   signIn: "/ingresar",
   signUp: "/registro",
   signUpEmail: "/registro/correo",

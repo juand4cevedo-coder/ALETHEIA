@@ -13,10 +13,37 @@ import { NotFoundPage } from "./NotFoundPage.tsx";
 import { LinkedParagraph } from "../components/content/LinkedParagraph.tsx";
 import { plainText } from "../components/content/plainText.ts";
 import styles from "./EditorialPage.module.css";
-import { Lamina } from "../components/brand/Lamina.tsx";
+import type { Motivo } from "../content/journal.ts";
+import { fotoProps, type Foto } from "../config/fotos.ts";
 
 // Fecha de publicación, sin hora: se formatea en UTC para que "2026-10-05" lea 5 de octubre,
 // no el 4 por la noche al convertir a la hora de Colombia.
+// Cada tema del blog lleva una fotografía del trabajo del abogado, la misma familia de fotos del
+// resto del sitio.
+const FOTO_DEL_TEMA: Record<Motivo, Foto> = {
+  chat: "cliente",
+  cadena: "revision",
+  procesos: "equipo",
+  sellos: "firma",
+  huella: "expediente",
+  acceso: "socio",
+  expediente: "reunion",
+};
+
+function Portada({ motivo, sizes }: { motivo: Motivo; sizes: string }) {
+  return (
+    <img
+      className={styles.coverPhoto}
+      {...fotoProps(FOTO_DEL_TEMA[motivo], sizes)}
+      alt=""
+      width={1280}
+      height={720}
+      loading="lazy"
+      decoding="async"
+    />
+  );
+}
+
 function formatPublishDate(iso: string): string {
   return new Intl.DateTimeFormat("es-CO", {
     timeZone: "UTC",
@@ -67,7 +94,10 @@ export function JournalPage() {
           </p>
         </header>
         <figure className={styles.articleCover}>
-          <Lamina motivo={article.motivo} />
+          <Portada
+            motivo={article.motivo}
+            sizes="(max-width: 1020px) 100vw, 980px"
+          />
         </figure>
         <div className={styles.prose}>
           {article.sections.map((section) => (
@@ -144,7 +174,10 @@ export function JournalPage() {
       {destacado && (
         <Link className={styles.featured} to={"/blog/" + destacado.slug}>
           <figure className={styles.cardCover}>
-            <Lamina motivo={destacado.motivo} />
+            <Portada
+              motivo={destacado.motivo}
+              sizes="(max-width: 900px) 100vw, 640px"
+            />
           </figure>
           <div className={styles.featuredText}>
             <p className={styles.kicker}>
@@ -166,7 +199,10 @@ export function JournalPage() {
             key={item.slug}
           >
             <figure className={styles.cardCover}>
-              <Lamina motivo={item.motivo} />
+              <Portada
+                motivo={item.motivo}
+                sizes="(max-width: 700px) 100vw, 400px"
+              />
             </figure>
             <p className={styles.kicker}>
               {item.category}, {formatPublishDate(item.date)}

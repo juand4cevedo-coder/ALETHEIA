@@ -228,13 +228,17 @@
   margin-bottom: 20px;
 }
 
-.cardCover svg {
-  transition: transform 700ms var(--ease-out);
+.coverPhoto {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 900ms var(--ease-out);
 }
 
-.blogCard:hover .cardCover svg,
-.featured:hover .cardCover svg {
-  transform: scale(1.04);
+.blogCard:hover .coverPhoto,
+.featured:hover .coverPhoto {
+  transform: scale(1.05);
 }
 
 .articleCover {
@@ -278,7 +282,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cardCover svg {
+  .coverPhoto {
     transition: none;
   }
 }

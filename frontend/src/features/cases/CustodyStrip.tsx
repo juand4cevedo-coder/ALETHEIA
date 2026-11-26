@@ -27,14 +27,14 @@ export function CustodyStrip({ totals }: { totals: CaseTotalsOut }) {
           <dd className={styles.value}>{NUMBER.format(totals.evidences)}</dd>
         </div>
         <div className={styles.figure}>
-          <dt>Sellos de tiempo pendientes</dt>
+          <dt>Pruebas por sellar</dt>
           {/* Un sello en curso es un estado de la evidencia: el ámbar lo dice. */}
           <dd className={styles.value} data-pending={pending || undefined}>
             {NUMBER.format(totals.pending_stamps)}
           </dd>
         </div>
         <div className={styles.figure}>
-          <dt>Eventos de custodia</dt>
+          <dt>Movimientos registrados</dt>
           <dd className={styles.value}>
             {NUMBER.format(totals.custody_events)}
           </dd>
