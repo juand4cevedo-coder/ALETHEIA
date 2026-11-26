@@ -25,7 +25,7 @@ export function formatBytes(bytes: number): string {
 }
 
 /** Cuántos meses de precio mensual cobra el pago anual, si es un número exacto. */
-export function annualMonthsCharged(plan: PublicPlan): number | null {
+function annualMonthsCharged(plan: PublicPlan): number | null {
   if (plan.annual_price_cop == null || plan.monthly_price_cop === 0)
     return null;
   const months = plan.annual_price_cop / plan.monthly_price_cop;

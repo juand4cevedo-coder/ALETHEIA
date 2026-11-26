@@ -45,7 +45,7 @@ const platform = (me: Me) => me.platform_admin;
 // Secciones del espacio de trabajo en el orden del menú lateral. Cada grupo responde a una
 // pregunta distinta: qué trabajo tengo, cómo está mi despacho, cómo va la plataforma y quién
 // soy. El menú nunca anuncia lo que todavía no funciona ni lo que el rol no puede hacer.
-export const GROUPS: readonly SectionGroup[] = [
+const GROUPS: readonly SectionGroup[] = [
   {
     id: "trabajo",
     label: "Trabajo",

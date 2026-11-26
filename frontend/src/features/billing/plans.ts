@@ -29,7 +29,7 @@ export function trialDays(plans: readonly PublicPlan[]): number | null {
 /** Lo que paga al mes un equipo de `people` personas en un plan, o null si el plan no admite
  * tantas. Sigue la regla del cobro (services/pricing.py): el plan más cada persona por encima
  * de las incluidas, si el plan admite adicionales. */
-export function monthlyCostFor(
+function monthlyCostFor(
   plan: PublicPlan,
   people: number,
 ): number | null {

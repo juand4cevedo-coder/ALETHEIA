@@ -29,7 +29,7 @@ import editorial from "./EditorialPage.module.css";
 import styles from "./EnterprisePage.module.css";
 
 /** Ancla del formulario de cotización: la página de precios enlaza a /empresa#cotizar. */
-export const QUOTE_ANCHOR = "cotizar";
+const QUOTE_ANCHOR = "cotizar";
 
 // Lo que puede hacer cada rol, tal como lo define backend/app/core/permissions.py.
 const ROLES: readonly { name: string; text: string }[] = [

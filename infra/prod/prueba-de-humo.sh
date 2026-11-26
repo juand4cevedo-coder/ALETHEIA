@@ -158,9 +158,9 @@ fi
 read -r codigo _ <<<"$(respuesta "https://$DOMINIO/.well-known/security.txt")"
 if [[ $codigo == 200 ]]; then ok "security.txt publicado"; else falla "security.txt respondió $codigo"; fi
 
-# 8. Las fotografías llevan caché de una semana; la aplicación no se guarda sin revalidar.
-medios="$(cabeceras "https://$DOMINIO/media/campaign/hero-real-1280.webp")"
-exigir "$medios" cache-control "max-age=604800" "fotografía"
+# 8. Las imágenes llevan caché de una semana; la aplicación no se guarda sin revalidar.
+medios="$(cabeceras "https://$DOMINIO/media/producto/tareas.webp")"
+exigir "$medios" cache-control "max-age=604800" "captura del producto"
 exigir "$portada" cache-control "no-cache" "página principal"
 
 # 9. Un cuerpo de 2 MiB hacia una ruta de la API que no recibe archivos se corta en Caddy, sin

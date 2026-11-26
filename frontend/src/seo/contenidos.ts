@@ -12,8 +12,8 @@ import {
 // página les pasa el suyo. Aparte de paginas.ts para no sumarlas a la descarga inicial.
 
 export const MIGA_INICIO: Miga = { nombre: "Inicio", ruta: "/" };
-export const MIGA_BLOG: Miga = { nombre: "Blog", ruta: "/blog" };
-export const MIGA_DOCUMENTACION: Miga = {
+const MIGA_BLOG: Miga = { nombre: "Blog", ruta: "/blog" };
+const MIGA_DOCUMENTACION: Miga = {
   nombre: "Documentación",
   ruta: "/docs/introduccion",
 };

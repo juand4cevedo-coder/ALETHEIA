@@ -11,7 +11,7 @@ export const MARCA_CABECERA = "<!--cabecera-de-la-pagina-->";
 export const MARCA_CONTENIDO = "<!--contenido-de-la-pagina-->";
 
 /** Atributo de lo que main.tsx retira al arrancar, porque React lo vuelve a poner. */
-export const ATRIBUTO_ESTATICO = "data-estatica";
+const ATRIBUTO_ESTATICO = "data-estatica";
 
 export function escaparHtml(texto: string): string {
   return texto
