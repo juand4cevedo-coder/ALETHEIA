@@ -58,7 +58,7 @@ describe("recursos de la marca", () => {
     ) as {
       icons: { sizes: string; purpose?: string }[];
     };
-    expect(html).toContain('href="/favicon.ico?v=3"');
+    expect(html).toContain('href="/favicon.ico?v=4"');
     expect(html).toContain('sizes="180x180"');
     expect(manifest.icons).toEqual(
       expect.arrayContaining([

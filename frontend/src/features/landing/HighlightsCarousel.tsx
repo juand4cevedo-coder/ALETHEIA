@@ -9,16 +9,17 @@ import {
 import { Link } from "react-router";
 
 import { FlechaDerechaIcon } from "../../components/ui/icons.tsx";
-import { photoProps, productShotProps } from "../../config/media.ts";
+import { Lamina, type Motivo } from "../../components/brand/Lamina.tsx";
+import { productShotProps } from "../../config/media.ts";
 import styles from "./HighlightsCarousel.module.css";
 import section from "./Section.module.css";
 import { SectionHeading } from "./SectionHeading.tsx";
 
 // Cada diapositiva usa una imagen distinta de las demás y de las del resto de la página. Las
-// capturas son del producto real; la fotografía de equipo aparece una sola vez en la landing.
+// capturas son del producto real; la de equipo es una lámina de la marca, no una foto de banco.
 type Visual =
   | { kind: "product"; image: string; alt: string }
-  | { kind: "photo"; image: "equipo-real"; alt: string };
+  | { kind: "lamina"; motivo: Motivo };
 
 type Slide = {
   eyebrow: string;
@@ -66,11 +67,7 @@ const SLIDES: readonly Slide[] = [
     text: "Invite colaboradores y asigne un rol a cada uno. Las notas y las tareas quedan en el caso que les corresponde.",
     metric: "Roles claros",
     detail: "para trabajar en conjunto",
-    visual: {
-      kind: "photo",
-      image: "equipo-real",
-      alt: "Equipo profesional colaborando en una oficina.",
-    },
+    visual: { kind: "lamina", motivo: "acceso" },
     to: "/empresa",
     link: "Ver ALETHEIA para equipos",
   },
@@ -191,18 +188,7 @@ export function HighlightsCarousel() {
                     draggable={false}
                   />
                 ) : (
-                  <img
-                    {...photoProps(
-                      item.visual.image,
-                      "(min-width: 820px) 55vw, 100vw",
-                    )}
-                    alt={index === active ? item.visual.alt : ""}
-                    width={1280}
-                    height={853}
-                    loading="lazy"
-                    decoding="async"
-                    draggable={false}
-                  />
+                  <Lamina motivo={item.visual.motivo} />
                 )}
               </div>
             ))}
@@ -240,6 +226,7 @@ export function HighlightsCarousel() {
                   aria-current={active === index ? "true" : undefined}
                   onClick={() => setActive(index)}
                 >
+                  <span className={styles.dotLabel}>{item.eyebrow}</span>
                   <span
                     className={styles.progress}
                     data-running={

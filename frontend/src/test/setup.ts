@@ -1,9 +1,13 @@
 import "@testing-library/jest-dom/vitest";
 
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 
 import { client } from "../api/generated/client.gen.ts";
+
+// Las pantallas llegan en archivos aparte (React.lazy): la primera vez que una prueba abre una,
+// transformarla puede tomar más del segundo que espera findBy por omisión.
+configure({ asyncUtilTimeout: 3000 });
 
 // En el navegador las rutas relativas como /api/v1/plans se resuelven contra el sitio; en
 // Node, Request exige una URL completa. Se usa el origen de jsdom.

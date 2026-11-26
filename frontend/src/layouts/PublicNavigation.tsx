@@ -19,9 +19,11 @@ const NavigationPanelContent = lazy(loadPanel);
 /** Un solo panel evita saltos al recorrer las categorías con el puntero. */
 export function PublicNavigation() {
   const [active, setActive] = useState<number | null>(null);
+  // Opción bajo el puntero: el indicador la sigue aunque ningún panel esté abierto.
+  const [hovered, setHovered] = useState<number | null>(null);
   const pinned = useRef<number | null>(null);
   const root = useRef<HTMLElement>(null);
-  const triggers = useRef<(HTMLButtonElement | null)[]>([]);
+  const triggers = useRef<(HTMLElement | null)[]>([]);
   const [indicator, setIndicator] = useState<{
     left: number;
     width: number;
@@ -39,13 +41,14 @@ export function PublicNavigation() {
     setActive(null);
   }
 
-  // El indicador se desliza hasta la opción abierta; al cerrar se queda donde estaba y se
-  // desvanece, para que el siguiente movimiento parta de ahí y no desde el borde.
+  // El indicador se desliza hasta la opción abierta o la que está bajo el puntero; al salir se
+  // queda donde estaba y se desvanece, para que el siguiente movimiento parta de ahí.
+  const target = active ?? hovered;
   useLayoutEffect(() => {
-    const trigger = active === null ? null : triggers.current[active];
+    const trigger = target === null ? null : triggers.current[target];
     if (trigger)
       setIndicator({ left: trigger.offsetLeft, width: trigger.offsetWidth });
-  }, [active]);
+  }, [target]);
 
   useEffect(() => {
     function outside(event: PointerEvent) {
@@ -98,7 +101,7 @@ export function PublicNavigation() {
       <span
         className={styles.indicator}
         aria-hidden="true"
-        data-visible={active !== null}
+        data-visible={target !== null}
         style={
           indicator
             ? {
@@ -108,7 +111,7 @@ export function PublicNavigation() {
             : undefined
         }
       />
-      <ul className={styles.list}>
+      <ul className={styles.list} onPointerLeave={() => setHovered(null)}>
         {NAVIGATION.map((item, index) => (
           <li key={item.title}>
             <button
@@ -120,6 +123,7 @@ export function PublicNavigation() {
               aria-expanded={active === index}
               aria-controls={active === index ? "navigation-panel" : undefined}
               onPointerEnter={(event) => {
+                setHovered(index);
                 if (event.pointerType === "mouse") {
                   cancelClose();
                   if (active !== index) pinned.current = null;
@@ -168,7 +172,16 @@ export function PublicNavigation() {
           </li>
         ))}
         <li>
-          <NavLink to={ROUTES.pricing} onPointerEnter={close}>
+          <NavLink
+            to={ROUTES.pricing}
+            ref={(node) => {
+              triggers.current[NAVIGATION.length] = node;
+            }}
+            onPointerEnter={() => {
+              close();
+              setHovered(NAVIGATION.length);
+            }}
+          >
             Precios
           </NavLink>
         </li>

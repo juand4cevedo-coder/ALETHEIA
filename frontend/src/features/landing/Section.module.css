@@ -28,7 +28,9 @@
 .title {
   font-family: var(--font-editorial);
   font-size: var(--font-size-section);
-  font-weight: 550;
+  font-weight: 450;
+  font-variation-settings: "opsz" 60;
+  text-wrap: balance;
   line-height: var(--line-height-section);
   letter-spacing: var(--tracking-section);
   color: var(--text);

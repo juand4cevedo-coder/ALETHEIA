@@ -1,15 +1,6 @@
 .shell {
-  /* Ritmo editorial del sitio público: titulares más grandes y apretados que en la
-     aplicación. Los colores son los de tokens.css, en los dos modos. */
-  --font-size-display: clamp(3rem, 7vw, 6.5rem);
-  --line-height-display: 0.98;
-  --tracking-display: -0.055em;
-  --font-size-section: clamp(2.4rem, 4.5vw, 4.5rem);
-  --line-height-section: 1.02;
-  --tracking-section: -0.045em;
-  --radius-sm: 999px;
-  --radius-md: 20px;
-  --radius-lg: 28px;
+  /* El sitio público usa la misma escala y los mismos radios de tokens.css: los títulos
+     editoriales ya van en Newsreader y no necesitan un tamaño propio. */
   --content-width: 1180px;
   display: flex;
   flex-direction: column;
@@ -51,11 +42,37 @@
   }
 }
 
+/* Línea de lectura: un filete de tinta bajo el encabezado que avanza con la página. Sin
+   JavaScript: lo mueve el propio desplazamiento. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .header::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      left: 0;
+      height: 2px;
+      background: var(--brand-text);
+      transform: scaleX(0);
+      transform-origin: left center;
+      animation: progreso linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+}
+
+@keyframes progreso {
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @keyframes header-settle {
   to {
     box-shadow:
       0 1px 0 var(--ink-hairline),
-      0 12px 32px rgb(35 0 48 / 6%);
+      0 12px 32px rgb(22 19 28 / 6%);
   }
 }
 
@@ -69,15 +86,13 @@
   margin: auto;
   padding: 0 24px;
 }
+/* Símbolo y logotipo: el logotipo es un dibujo de trazos, así que no depende de la fuente. El
+   espacio entre los dos es la mitad del alto del símbolo. */
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 12px;
   color: var(--text);
-  font-family: var(--font-sans);
-  font-size: 22px;
-  font-weight: 750;
-  letter-spacing: -0.045em;
   text-decoration: none;
   line-height: 1;
 }
@@ -112,6 +127,9 @@
   border-radius: 999px;
 }
 .signIn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
   color: var(--text-2);
   text-decoration: none;
   font-size: 14px;
@@ -256,6 +274,8 @@
 .footer {
   isolation: isolate;
   position: relative;
+  /* El grabado de fondo es más ancho que la pantalla: se recorta aquí, no en el body. */
+  overflow: hidden;
   padding: 120px 24px 32px;
   border-top: 0;
   background: var(--surface-inverse);
@@ -318,9 +338,12 @@
   margin: 0;
   padding: 0;
 }
+/* 24 px de alto como mínimo (WCAG 2.5.8), también con puntero fino. */
 .footerNav a,
 .footerNav button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   color: var(--on-inverse-2);
   text-decoration: none;
   line-height: 1.6;
@@ -414,18 +437,18 @@
 
 /* Fotografía de personas trabajando detrás del pie: queda tenue, se pierde hacia arriba y no
    compite con los enlaces. */
-.footerPhoto {
+/* El grabado de la marca asoma desde la esquina del pie, en el latón del sello. */
+.footerEngraving {
   position: absolute;
   z-index: -1;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  opacity: 0.34;
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 60%);
+  right: -10%;
+  bottom: -55%;
+  width: min(1100px, 110vw);
+  aspect-ratio: 1;
+  background: #d9b871;
+  opacity: 0.08;
+  mask: url("/brand/grabado.svg") center / contain no-repeat;
   pointer-events: none;
-  user-select: none;
 }
 
 /* Menú móvil: las filas entran una tras otra, la flecha avanza al tocar y la fila responde al
@@ -483,5 +506,13 @@
     min-height: 44px;
     display: inline-flex;
     align-items: center;
+  }
+}
+
+/* En teléfonos angostos queda el símbolo solo: el logotipo no cabe junto al botón de la prueba
+   y el menú. */
+@media (max-width: 440px) {
+  .header .brand svg {
+    display: none;
   }
 }

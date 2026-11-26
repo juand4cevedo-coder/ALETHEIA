@@ -33,3 +33,8 @@
     width: 100%;
   }
 }
+
+/* Alto aproximado del formulario de pago, reservado mientras carga. */
+.reserva {
+  min-height: 420px;
+}

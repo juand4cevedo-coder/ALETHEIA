@@ -29,6 +29,7 @@ import {
   SalirIcon,
   type IconComponent,
 } from "../../components/ui/icons.tsx";
+import { Logotipo } from "../../components/brand/Logotipo.tsx";
 
 const TITLE_ID = "titulo-textos-nuevos";
 const CHANGES_ID = "titulo-cambios";
@@ -116,7 +117,8 @@ export function LegalRenewal({ me }: { me: Me }) {
       <header className={styles.header}>
         <p className={styles.brand}>
           <BrandMark size={24} />
-          {WORDMARK}
+          <Logotipo />
+          <span className="visually-hidden">{WORDMARK}</span>
         </p>
       </header>
 

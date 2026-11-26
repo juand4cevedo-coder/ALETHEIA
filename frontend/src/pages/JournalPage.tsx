@@ -13,6 +13,7 @@ import { NotFoundPage } from "./NotFoundPage.tsx";
 import { LinkedParagraph } from "../components/content/LinkedParagraph.tsx";
 import { plainText } from "../components/content/plainText.ts";
 import styles from "./EditorialPage.module.css";
+import { Lamina } from "../components/brand/Lamina.tsx";
 
 // Fecha de publicación, sin hora: se formatea en UTC para que "2026-10-05" lea 5 de octubre,
 // no el 4 por la noche al convertir a la hora de Colombia.
@@ -65,14 +66,9 @@ export function JournalPage() {
             {JOURNAL_AUTHOR_NOTE} <Link to="/nosotros">Quién escribe</Link>
           </p>
         </header>
-        <div
-          className={`${styles.articleVisual} ${styles.articleHero}`}
-          data-kind={article.category}
-          aria-hidden="true"
-        >
-          <span>{article.visual}</span>
-          <small>ALETHEIA</small>
-        </div>
+        <figure className={styles.articleCover}>
+          <Lamina motivo={article.motivo} />
+        </figure>
         <div className={styles.prose}>
           {article.sections.map((section) => (
             <section key={section.title}>
@@ -106,6 +102,10 @@ export function JournalPage() {
         .toLowerCase()
         .includes(normalized),
   );
+  // Sin filtros, el más reciente va destacado a todo el ancho y el resto en la retícula.
+  const destacado =
+    category === "Todos" && !query.trim() ? results[0] : undefined;
+  const resto = destacado ? results.slice(1) : results;
   return (
     <div className={styles.page}>
       <CabeceraSeo meta={PAGINAS.blog} />
@@ -141,21 +141,33 @@ export function JournalPage() {
       <p className="visually-hidden" role="status">
         {results.length} artículos
       </p>
+      {destacado && (
+        <Link className={styles.featured} to={"/blog/" + destacado.slug}>
+          <figure className={styles.cardCover}>
+            <Lamina motivo={destacado.motivo} />
+          </figure>
+          <div className={styles.featuredText}>
+            <p className={styles.kicker}>
+              {destacado.category}, {formatPublishDate(destacado.date)}
+            </p>
+            <h2>{destacado.title}</h2>
+            <p>{destacado.summary}</p>
+            <span className={styles.read}>
+              Leer artículo <FlechaDerechaIcon size={16} aria-hidden="true" />
+            </span>
+          </div>
+        </Link>
+      )}
       <div className={styles.blogGrid}>
-        {results.map((item) => (
+        {resto.map((item) => (
           <Link
             className={styles.blogCard}
             to={"/blog/" + item.slug}
             key={item.slug}
           >
-            <div
-              className={styles.articleVisual}
-              data-kind={item.category}
-              aria-hidden="true"
-            >
-              <span>{item.visual}</span>
-              <small>{item.tagline}</small>
-            </div>
+            <figure className={styles.cardCover}>
+              <Lamina motivo={item.motivo} />
+            </figure>
             <p className={styles.kicker}>
               {item.category}, {formatPublishDate(item.date)}
             </p>

@@ -18,10 +18,10 @@
   position: absolute;
   top: 50%;
   left: 0;
-  height: 40px;
-  margin-top: -20px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--ink-900) 8%, var(--paper));
+  height: 38px;
+  margin-top: -19px;
+  border-radius: var(--radius-sm);
+  background: var(--tint-2);
   opacity: 0;
   pointer-events: none;
   transition:
@@ -44,21 +44,39 @@
   min-height: var(--touch-target);
   padding: 0 14px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--text);
+  color: var(--text-2);
   font: inherit;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
   transition: color var(--motion-base) var(--ease-standard);
 }
 
-.list > li > a:hover,
+.list button:hover,
+.list > li > a:hover {
+  color: var(--text);
+}
+
+/* La página actual: el texto en tinta y un punto de latón debajo, como un sello pequeño. */
 .list > li > a[aria-current] {
-  background: color-mix(in srgb, var(--ink-900) 8%, var(--paper));
+  color: var(--brand-text);
+}
+
+.list > li > a[aria-current]::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--seal);
 }
 
 .list button[aria-expanded="true"] {
@@ -95,10 +113,11 @@
   width: min(1040px, calc(100% - 48px));
   padding: var(--space-6);
   border: 1px solid var(--ink-hairline);
-  border-radius: 28px;
-  background: var(--paper);
+  border-radius: var(--radius-lg);
+  background: var(--paper-raised);
   box-shadow: var(--shadow-float);
   transform: translateX(-50%);
+  overflow: hidden;
   transform-origin: top center;
   animation: panel-in 260ms var(--ease-out) both;
 }
@@ -121,22 +140,46 @@
   display: grid;
   align-content: start;
   gap: var(--space-2);
+  position: relative;
+  overflow: hidden;
   padding: var(--space-6);
-  border-radius: 22px;
-  background: color-mix(in srgb, var(--ink-900) 7%, var(--paper));
+  border-radius: var(--radius-md);
+  background: var(--tint-1);
+  isolation: isolate;
   color: var(--text);
   text-decoration: none;
   transition: background-color var(--motion-base) var(--ease-standard);
 }
 
+/* El grabado de guilloché de la marca, muy tenue, en la esquina de la tarjeta destacada. */
+.feature::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -40%;
+  right: -45%;
+  width: 120%;
+  aspect-ratio: 1;
+  background: var(--brand-text);
+  opacity: 0.08;
+  mask: url("/brand/grabado.svg") center / contain no-repeat;
+  transition: transform 900ms var(--ease-out);
+}
+
 .feature:hover {
-  background: color-mix(in srgb, var(--ink-900) 11%, var(--paper));
+  background: var(--tint-2);
+}
+
+.feature:hover::after {
+  transform: rotate(12deg);
 }
 
 .featureTitle {
   margin-top: var(--space-4);
-  font-size: var(--font-size-title);
-  font-weight: 650;
+  font-family: var(--font-editorial);
+  font-size: 26px;
+  font-weight: 450;
+  font-variation-settings: "opsz" 36;
   letter-spacing: var(--tracking-title);
   line-height: var(--line-height-title);
 }
@@ -177,9 +220,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  min-height: 84px;
+  min-height: 76px;
   padding: var(--space-3) var(--space-4);
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   color: var(--text);
   text-decoration: none;
   transition: background-color var(--motion-base) var(--ease-standard);
@@ -189,7 +232,7 @@
 
 .links a:hover,
 .links a:focus-visible {
-  background: color-mix(in srgb, var(--ink-900) 7%, var(--paper));
+  background: var(--tint-1);
 }
 
 .linkText {
@@ -203,9 +246,9 @@
   display: flex;
   justify-content: space-between;
   gap: var(--space-3);
-  font-size: var(--font-size-body);
-  font-weight: 650;
-  line-height: var(--line-height-body);
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .linkLabel svg {
@@ -276,7 +319,8 @@
   width: 100%;
   height: auto;
   margin-top: var(--space-4);
-  border-radius: 14px;
+  border: 1px solid var(--ink-hairline);
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lift);
   transition: transform 420ms var(--ease-out);
 }
@@ -289,4 +333,25 @@
   .featureShot {
     transition: none;
   }
+}
+
+/* Franja al pie del panel: la invitación a la prueba, siempre en el mismo lugar. */
+.panelFoot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin: var(--space-6) calc(-1 * var(--space-6)) calc(-1 * var(--space-6));
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--ink-hairline);
+  background: var(--paper-sunken);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.panelFoot strong {
+  color: var(--text);
+  font-weight: 600;
 }

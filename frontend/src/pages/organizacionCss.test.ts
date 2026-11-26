@@ -170,7 +170,6 @@ describe("pantallas de organización y cuenta", () => {
     ["components/ui/Panel.module.css", ".panel"],
     ["components/ui/Dialog.module.css", ".dialog"],
     ["components/ui/EmptyState.module.css", ".aside"],
-    ["components/ui/StatTile.module.css", ".tile"],
     ["pages/MembersPage.module.css", ".seats"],
     ["pages/WorkspacePage.module.css", ".verify"],
     ["pages/ExportDownloadPage.module.css", ".card"],
@@ -190,5 +189,13 @@ describe("pantallas de organización y cuenta", () => {
     const panel = rule(read("components/ui/Panel.module.css"), ".panel");
     expect(panel).toMatch(/background:\s*var\(--paper-raised\)/);
     expect(panel).toMatch(/box-shadow:[^;]*var\(--shadow-card\)/);
+  });
+});
+
+describe("indicadores del resumen", () => {
+  it("se separan del fondo con un filete visible, que también se ve en alto contraste", () => {
+    const tile = rule(read("components/ui/StatTile.module.css"), ".tile");
+    expect(tile).toMatch(/border:\s*1px solid var\(--ink-hairline\)/);
+    expect(tile).not.toMatch(/box-shadow/);
   });
 });

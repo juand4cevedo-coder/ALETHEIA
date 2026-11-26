@@ -1,40 +1,49 @@
-/* Identidad vigente: violeta Aletheia sobre blanco, con texto casi negro. Es la única paleta del
+/* Identidad vigente (ADR-060): Tinta violeta. Un violeta profundo de tinta de firma como marca,
+   latón para todo lo que es sello y custodia, y neutros con un matiz violeta muy bajo. Es la única paleta del
    producto: el sitio público, el acceso y el espacio de trabajo la heredan de aquí y solo
    ajustan fondos y radios. Los nombres vienen de la identidad anterior y se conservan para no
    tocar cientos de reglas: ink es la marca (violeta), brass es su acento y paper son las
    superficies. Un cambio de valor es un cambio de identidad: se documenta en el ADR-049. */
 :root {
-  /* Un solo tipo de letra en todo el producto: la dirección visual vigente no usa serif. */
-  --font-editorial: var(--font-sans);
+  /* Títulos editoriales en serif con tamaño óptico; la interfaz y el texto, en Geist. */
+  --font-editorial:
+    "Newsreader Variable", "Iowan Old Style", Georgia, "Times New Roman", serif;
 
   /* Papel: la escala que sube y baja. La profundidad se lee por el tono, no por el borde. */
   --paper: #ffffff;
   --paper-raised: #ffffff;
-  --paper-sunken: #f4f4f4;
+  --paper-sunken: #f4f3f7;
 
   /* Marca: botón principal, enlaces y superficies de marca a sangre completa. */
-  --ink-900: #820ad1;
-  --ink-700: #5f007d;
-  --ink-500: #7209b7;
+  --ink-900: #55278a;
+  --ink-700: #3f1c69;
+  --ink-500: #6c3fa8;
 
   /* Violeta como texto: enlaces, íconos activos y etiquetas de marca. Es el mismo de la marca
      en el modo claro y uno más luminoso en el oscuro, donde el de relleno no alcanza 4,5 a 1. */
-  --brand-text: #820ad1;
-  --brand-text-strong: #5f007d;
+  --brand-text: #55278a;
+  --brand-text-strong: #3f1c69;
   /* Violeta oscuro sobre superficies que siguen blancas en los dos modos: el botón principal
      invertido sobre una superficie de tinta. */
-  --brand-on-light: #5f007d;
+  --brand-on-light: #3f1c69;
 
   /* Acento: filetes, subrayados, anillo de foco y estado activo. */
-  --brass-600: #820ad1;
-  --brass-400: #d9a6f7;
+  --brass-600: #55278a;
+  --brass-400: #c9b3e8;
 
-  --text: #111111;
-  --text-2: #4b4b4b;
-  --text-3: #676767;
+  /* Latón: el sello y la custodia. Solo donde hay un sello de tiempo, una cadena verificada o
+     una marca de integridad; nunca como adorno. */
+  --seal: #7a5a22;
+  --seal-strong: #5e4518;
+  --seal-tint: #f6f0e3;
+  --seal-line: #d9c69c;
+
+  --text: #16131c;
+  --text-2: #4a4553;
+  --text-3: #6b6575;
 
   --on-ink: #ffffff;
-  --on-ink-2: #f1dcff;
+  --on-ink-2: #e4d9f3;
 
   /* Los estados siempre van acompañados de texto: el color no es su único portador. */
   --ok: #1f6b4a;
@@ -42,25 +51,25 @@
   --err: #9b2226;
 
   --font-sans:
-    "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    "Geist Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono:
     "Geist Mono Variable", ui-monospace, "Cascadia Mono", Consolas, monospace;
 
   /* Escala fluida: los títulos crecen con el ancho de la pantalla, sin saltos por punto de
      quiebre. El cuerpo sube a 17 px desde 900 px, en el bloque de más abajo. */
-  --font-size-display: clamp(2.75rem, 1.5rem + 6vw, 7rem);
-  --line-height-display: 0.95;
-  --tracking-display: -0.02em;
+  --font-size-display: clamp(2.45rem, 1.4rem + 2.6vw, 3.65rem);
+  --line-height-display: 1.02;
+  --tracking-display: -0.022em;
   /* La portada usa la misma medida que el titular de display; no tiene escala propia. */
   --font-size-hero: var(--font-size-display);
   --line-height-hero: var(--line-height-display);
   --font-size-display-sm: 38px;
   --line-height-display-sm: 42px;
-  --font-size-section: clamp(2rem, 1.2rem + 3.2vw, 3.5rem);
-  --line-height-section: 1.05;
+  --font-size-section: clamp(2.1rem, 1.3rem + 2.6vw, 3.4rem);
+  --line-height-section: 1.08;
   --font-size-section-sm: 36px;
   --line-height-section-sm: 40px;
-  --tracking-section: -0.025em;
+  --tracking-section: -0.018em;
   --font-size-title: 28px;
   --line-height-title: 34px;
   --tracking-title: -0.02em;
@@ -74,6 +83,7 @@
 
   --font-size-control-touch: 16px;
   --font-size-support: 13px;
+  /* 13 px es el menor tamaño de lectura; 12 px solo en etiquetas en mayúsculas. */
   --line-height-support: 18px;
   --font-size-label: 12px;
   --line-height-label: 16px;
@@ -93,19 +103,19 @@
   --space-24: 96px;
 
   /* Radios del espacio de trabajo; el sitio público y el acceso los redondean más. */
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
   --radius-pill: 999px;
 
-  --control-height: 52px;
+  --control-height: 48px;
   --control-height-sm: 44px;
   --control-height-circular: 56px;
 
   --dot-size: 6px;
 
   /* Contorno de todo lo que se puede tocar: 3 a 1 como mínimo contra las tres superficies de papel. */
-  --line-control: #747474;
+  --line-control: #7c7787;
 
   --ring-focus:
     0 0 0 1px var(--brass-600),
@@ -113,14 +123,15 @@
 
   /* Sombras de dos capas con tinte violeta: una de contacto, corta y definida, y otra de
      ambiente, larga y suave. El negro puro ensucia las superficies claras. */
-  --shadow-card: 0 1px 2px rgb(35 0 48 / 5%), 0 14px 36px rgb(35 0 48 / 8%);
-  --shadow-float: 0 4px 12px rgb(35 0 48 / 10%), 0 28px 70px rgb(35 0 48 / 16%);
+  /* Sombras cortas y neutras: la profundidad la da el tono de la superficie, no un halo. */
+  --shadow-card: 0 1px 0 rgb(22 19 28 / 4%), 0 1px 3px rgb(22 19 28 / 6%);
+  --shadow-float: 0 2px 6px rgb(22 19 28 / 8%), 0 18px 40px rgb(22 19 28 / 12%);
   /* Filete metálico de un píxel en el borde superior de las tarjetas elevadas. */
-  --brass-hairline: inset 0 0 0 1px rgb(130 10 209 / 7%);
+  --brass-hairline: inset 0 0 0 1px rgb(22 19 28 / 6%);
 
   /* Filete de tinta: el separador decorativo entre filas y secciones, hermano del filete
      metálico. Nunca como contorno de algo que se toca; para eso está --line-control. */
-  --ink-hairline: rgb(17 17 17 / 12%);
+  --ink-hairline: #e6e3ec;
 
   --motion-fast: 120ms;
   /* Estados de control: color y borde. */
@@ -128,7 +139,7 @@
   /* Cambio de página: fundido de opacidad. */
   --motion-page: 240ms;
   /* Revelado al entrar; se escalona de a 60 ms y ocurre una sola vez. */
-  --motion-enter: 700ms;
+  --motion-enter: 560ms;
   --motion-stagger: 60ms;
   /* Apertura del hero: escala de 1,06 a 1 sobre la imagen. */
   --motion-hero: 1200ms;
@@ -174,20 +185,20 @@
   /* Superficies con nombre propio. Cada una tiene su valor en el modo oscuro, más abajo, así
      que ningún componente escribe un color a mano. */
   /* Lienzo del espacio de trabajo: un gris apenas más bajo que el papel de las tarjetas. */
-  --canvas-app: #f7f7f7;
+  --canvas-app: #f6f5f8;
   /* Tintes violeta para filas resaltadas, menús y bloques secundarios, de más suave a más
      marcado. */
-  --tint-1: #faf5fd;
-  --tint-2: #f1e9f7;
-  --tint-3: #e6d8f2;
+  --tint-1: #f7f4fb;
+  --tint-2: #efe9f6;
+  --tint-3: #e2d8ef;
   /* Encabezados fijos: el papel casi opaco para que el contenido que pasa por debajo se lea
      como movimiento y no como texto. */
   --chrome: rgb(255 255 255 / 94%);
   /* Velo de los diálogos y paneles. */
-  --scrim: rgb(26 0 41 / 52%);
-  --scrim-soft: rgb(26 0 41 / 22%);
+  --scrim: rgb(18 12 28 / 52%);
+  --scrim-soft: rgb(18 12 28 / 22%);
   /* Pie del sitio público: la única superficie siempre oscura. */
-  --surface-inverse: #111111;
+  --surface-inverse: #121016;
   --on-inverse: #ffffff;
   --on-inverse-2: #c9c9c9;
   /* Acciones destructivas: el rojo de error a baja intensidad como fondo. */
@@ -195,7 +206,7 @@
   --ok-tint: rgb(31 107 74 / 10%);
   --warn-tint: rgb(138 90 24 / 10%);
   /* Profundidad de la tarjeta al apuntarla. */
-  --shadow-lift: 0 2px 6px rgb(35 0 48 / 6%), 0 22px 48px rgb(35 0 48 / 12%);
+  --shadow-lift: 0 2px 6px rgb(22 19 28 / 6%), 0 14px 32px rgb(22 19 28 / 10%);
 
   color-scheme: light;
 }
@@ -204,44 +215,49 @@
    preferencia guardada o la del sistema. No invierte la marca: el violeta se aclara para
    leerse sobre fondo oscuro y las superficies suben de tono en lugar de llevar sombra. */
 :root[data-theme="dark"] {
-  --paper: #131017;
-  --paper-raised: #1b1720;
-  --paper-sunken: #0e0c11;
+  --paper: #121016;
+  --paper-raised: #1a1720;
+  --paper-sunken: #0d0b10;
 
-  --ink-900: #8f2fd9;
-  --ink-700: #7d22c4;
-  --ink-500: #c08af2;
+  --ink-900: #7a52b8;
+  --ink-700: #6a44a6;
+  --ink-500: #c4a9ee;
 
-  --brand-text: #cda3f6;
-  --brand-text-strong: #e2c6fb;
+  --brand-text: #c4a9ee;
+  --brand-text-strong: #ddcbf7;
 
-  --brass-600: #c99cf5;
-  --brass-400: #e2c2fa;
+  --brass-600: #c4a9ee;
+  --brass-400: #ddcbf7;
 
-  --text: #f3eff7;
-  --text-2: #c6bfd0;
-  --text-3: #a59eb0;
+  --seal: #d4b06a;
+  --seal-strong: #e6c88b;
+  --seal-tint: #2a2416;
+  --seal-line: #5c4a27;
+
+  --text: #eeebf2;
+  --text-2: #bdb7c6;
+  --text-3: #9d96a8;
 
   --on-ink: #ffffff;
-  --on-ink-2: #f1dcff;
+  --on-ink-2: #f3eefa;
 
   --ok: #74d3a3;
   --warn: #e8bb6f;
   --err: #ff9499;
 
-  --line-control: #7a7285;
-  --ink-hairline: rgb(255 255 255 / 10%);
+  --line-control: #7d7788;
+  --ink-hairline: #2b2732;
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 40%), 0 14px 36px rgb(0 0 0 / 28%);
   --shadow-float: 0 4px 12px rgb(0 0 0 / 45%), 0 28px 70px rgb(0 0 0 / 50%);
   --shadow-lift: 0 2px 6px rgb(0 0 0 / 40%), 0 22px 48px rgb(0 0 0 / 40%);
   --brass-hairline: inset 0 0 0 1px rgb(255 255 255 / 6%);
 
-  --canvas-app: #0f0d12;
-  --tint-1: #1e1825;
-  --tint-2: #261e2f;
-  --tint-3: #33283f;
-  --chrome: rgb(19 16 23 / 88%);
+  --canvas-app: #0d0b10;
+  --tint-1: #1d1824;
+  --tint-2: #241d30;
+  --tint-3: #30273f;
+  --chrome: rgb(18 16 22 / 88%);
   --scrim: rgb(5 3 8 / 68%);
   --scrim-soft: rgb(5 3 8 / 45%);
   --surface-inverse: #09080b;

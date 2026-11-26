@@ -23,6 +23,8 @@ import type { NavigationGroup } from "../config/navigation.ts";
 import { GROUP_ICONS } from "../config/navigationIcons.ts";
 import { ROUTES } from "../config/routes.ts";
 import styles from "./PublicNavigation.module.css";
+import { ButtonLink } from "../components/ui/ButtonLink.tsx";
+import { SIGN_UP_LABEL, TRIAL_DAYS } from "../config/site.ts";
 
 // Cada vínculo lleva su ícono y cada categoría una captura distinta del producto, para que el
 // panel enseñe algo y no solo liste enlaces.
@@ -45,7 +47,7 @@ const FEATURE_SHOTS: Record<string, string> = {
   Producto: "/media/producto/resumen.webp",
   Equipos: "/media/producto/actividad.webp",
   Recursos: "/media/producto/verificador.webp",
-  ALETHEIA: "/media/producto/paquete.webp",
+  Nosotros: "/media/producto/paquete.webp",
 };
 
 // Se carga aparte: los íconos y la estructura del panel no pesan en la primera visita; el navegador
@@ -98,6 +100,15 @@ export default function NavigationPanelContent({
           </Link>
         ))}
       </div>
+      <p className={styles.panelFoot}>
+        <span>
+          <strong>¿Primera vez en ALETHEIA?</strong> La prueba dura {TRIAL_DAYS}{" "}
+          días y no pide tarjeta.
+        </span>
+        <ButtonLink to={ROUTES.signUp} size="sm" onClick={close}>
+          {SIGN_UP_LABEL}
+        </ButtonLink>
+      </p>
     </div>
   );
 }

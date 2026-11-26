@@ -44,7 +44,7 @@ type Fija = Pick<MetaPagina, "titulo" | "descripcion"> &
   >;
 
 /** La imagen para compartir de las páginas que no tienen una propia. */
-export const IMAGEN_GENERAL = "/og-image.png";
+const IMAGEN_GENERAL = "/og-image.png";
 
 export function pagina(ruta: string, datos: Fija): MetaPagina {
   return {

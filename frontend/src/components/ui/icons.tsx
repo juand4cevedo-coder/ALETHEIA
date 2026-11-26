@@ -56,11 +56,8 @@ export { HuellaIcon } from "./icons/Huella.ts";
 export { LibroIcon } from "./icons/Libro.ts";
 export { CalendarioIcon } from "./icons/Calendario.ts";
 export { TareasIcon } from "./icons/Tareas.ts";
-export { CampanaIcon } from "./icons/Campana.ts";
 export { CandadoIcon } from "./icons/Candado.ts";
 export { GraficaIcon } from "./icons/Grafica.ts";
-export { ChatIcon } from "./icons/Chat.ts";
-export { RayoIcon } from "./icons/Rayo.ts";
 export { DocumentoIcon } from "./icons/Documento.ts";
 
 export { SolIcon } from "./icons/Sol.tsx";

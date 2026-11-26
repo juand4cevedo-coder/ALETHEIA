@@ -43,16 +43,7 @@
   border: 1px solid var(--ink-hairline);
   border-bottom: 0;
   border-radius: 24px;
-  background:
-    radial-gradient(
-      41% 12% at 50% 0%,
-      color-mix(in srgb, var(--ink-900) 10%, transparent),
-      transparent
-    ),
-    linear-gradient(
-      var(--paper-raised),
-      color-mix(in srgb, var(--paper) 80%, transparent)
-    );
+  background: var(--paper-raised);
 }
 .guarantees li::before {
   content: "";

@@ -174,7 +174,7 @@ describe("Plan y facturación con usuarios adicionales", () => {
     ).toBeInTheDocument();
     expect(within(rows).getByText("$219.100")).toBeInTheDocument();
     expect(
-      screen.getByText(/Cuentan las 10 personas de su equipo/),
+      screen.getByText(/incluye a todo su equipo \(10 personas\)/),
     ).toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText("Plan"), "firm");

@@ -72,6 +72,14 @@ a {
   color: var(--brass-600);
 }
 
+/* Capa suave de los íconos duotone de Phosphor (la que trae opacity 0.2). Toma su color de
+   --icon-duo y su opacidad de --icon-duo-opacity; sin ellas queda como en Phosphor. Un selector
+   de atributo gana a los atributos de presentación del SVG. */
+svg [opacity="0.2"] {
+  fill: var(--icon-duo, currentColor);
+  opacity: var(--icon-duo-opacity, 0.2);
+}
+
 :focus-visible {
   outline: 2px solid var(--brass-600);
   outline-offset: 2px;

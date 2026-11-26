@@ -8,7 +8,6 @@ import {
 } from "react-router";
 
 import { LEGAL_PAGES } from "../config/routes.ts";
-import { photoProps } from "../config/media.ts";
 import { DOCUMENTATION } from "../content/documentation.ts";
 import { HELP, JOURNAL } from "../content/journal.ts";
 import {
@@ -125,14 +124,6 @@ async function dibujar(ruta: string): Promise<string> {
   return renderToString(app);
 }
 
-function precargaDeLaPortada(): string {
-  const foto = photoProps("hero-real", "100vw");
-  return (
-    `<link rel="preload" as="image" type="image/webp" href="${escaparHtml(foto.src)}" ` +
-    `imagesrcset="${escaparHtml(foto.srcSet)}" imagesizes="${foto.sizes}" fetchpriority="high" />`
-  );
-}
-
 export type Sitio = {
   /** Archivos por ruta relativa a dist («precios/index.html»). */
   archivos: Map<string, string>;
@@ -177,7 +168,6 @@ export async function generarSitio(
           planes: PLANES_PUBLICADOS,
           preguntas: preguntasLeidas(meta.ruta, dibujo.contenido),
         }),
-        precargas: meta.ruta === "/" ? [precargaDeLaPortada()] : [],
       }),
       dibujo.contenido,
     );

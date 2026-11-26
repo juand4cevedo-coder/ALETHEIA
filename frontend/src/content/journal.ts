@@ -1,3 +1,5 @@
+import type { Motivo } from "../components/brand/Lamina.tsx";
+
 export type JournalArticle = {
   slug: string;
   title: string;
@@ -8,6 +10,8 @@ export type JournalArticle = {
   updated?: string;
   /** Palabra grande de la imagen de la tarjeta: el tema del artículo en una o dos palabras. */
   visual: string;
+  /** Lámina ilustrada del artículo (components/brand/Lamina.tsx). */
+  motivo: Motivo;
   /** Línea corta para la tarjeta de la portada de blog: dice de qué trata, sin eslogan. */
   tagline: string;
   summary: string;
@@ -29,6 +33,7 @@ export const JOURNAL_AUTHOR_NOTE =
 export const JOURNAL: JournalArticle[] = [
   {
     slug: "conservar-chat-correo-video-como-evidencia",
+    motivo: "chat",
     category: "Práctica",
     date: "2026-11-24",
     visual: "Original",
@@ -87,6 +92,7 @@ export const JOURNAL: JournalArticle[] = [
   },
   {
     slug: "carpeta-compartida-frente-a-un-caso-con-custodia",
+    motivo: "cadena",
     category: "Comparación",
     date: "2026-11-25",
     visual: "Custodia",
@@ -141,6 +147,7 @@ export const JOURNAL: JournalArticle[] = [
   },
   {
     slug: "vigilancia-de-procesos-y-evidencia-digital",
+    motivo: "procesos",
     category: "Comparación",
     date: "2026-11-25",
     visual: "Procesos",
@@ -186,6 +193,7 @@ export const JOURNAL: JournalArticle[] = [
   },
   {
     slug: "aletheia-y-el-estampado-cronologico",
+    motivo: "sellos",
     category: "Comparación",
     date: "2026-11-24",
     visual: "RFC 3161",
@@ -247,6 +255,7 @@ export const JOURNAL: JournalArticle[] = [
   },
   {
     slug: "que-dice-una-huella-sha256",
+    motivo: "huella",
     category: "Integridad",
     date: "2026-10-22",
     updated: "2026-11-25",
@@ -289,6 +298,7 @@ export const JOURNAL: JournalArticle[] = [
   },
   {
     slug: "permisos-con-intencion",
+    motivo: "acceso",
     category: "Seguridad",
     date: "2026-11-10",
     updated: "2026-11-25",
@@ -338,6 +348,7 @@ export const JOURNAL: JournalArticle[] = [
   },
   {
     slug: "un-caso-con-contexto",
+    motivo: "expediente",
     category: "Práctica",
     date: "2026-10-05",
     updated: "2026-11-25",

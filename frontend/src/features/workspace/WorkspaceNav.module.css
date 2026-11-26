@@ -39,7 +39,7 @@
   border-radius: 12px;
   background: var(--paper-raised);
   box-shadow:
-    0 1px 2px rgb(35 0 48 / 8%),
+    0 1px 2px rgb(22 19 28 / 8%),
     var(--brass-hairline);
   opacity: 0;
   pointer-events: none;
@@ -200,7 +200,11 @@
   font-weight: 600;
 }
 
+/* El ícono activo va en tinta con su capa suave en latón, como la pupila del símbolo. */
 .link[aria-current="page"] .icon {
+  --icon-duo: var(--seal);
+  --icon-duo-opacity: 0.5;
+
   color: var(--brand-text);
 }
 
