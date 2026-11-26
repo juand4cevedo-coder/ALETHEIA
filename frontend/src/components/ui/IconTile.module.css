@@ -25,7 +25,11 @@
   color: var(--brand-text);
 }
 
+/* Sobre tinta, la capa suave del ícono pasa al latón: la misma pareja del símbolo. */
 .tile[data-tone="solid"] {
+  --icon-duo: var(--seal-line);
+  --icon-duo-opacity: 0.6;
+
   background: var(--ink-900);
   color: var(--on-ink);
 }

@@ -200,7 +200,11 @@
   font-weight: 600;
 }
 
+/* El ícono activo va en tinta con su capa suave en latón, como la pupila del símbolo. */
 .link[aria-current="page"] .icon {
+  --icon-duo: var(--seal);
+  --icon-duo-opacity: 0.5;
+
   color: var(--brand-text);
 }
 

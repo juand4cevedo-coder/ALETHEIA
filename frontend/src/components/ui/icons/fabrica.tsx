@@ -30,6 +30,20 @@ export type Elemento = readonly [
 
 const TAMANO_PREDETERMINADO = 16;
 
+/** La capa suave de los duotone toma su color de --icon-duo y su opacidad de
+ * --icon-duo-opacity. Sin ellas es el color del texto al 20 %, como en Phosphor; un contenedor
+ * puede cambiarla, por ejemplo al latón de la marca en el enlace activo del menú. */
+const CAPA_SUAVE = {
+  fill: "var(--icon-duo, currentColor)",
+  opacity: "var(--icon-duo-opacity, 0.2)",
+} as const;
+
+function conCapa(atributos: Readonly<Record<string, string>>) {
+  if (atributos.opacity !== "0.2") return atributos;
+  const { opacity: _opacidad, ...resto } = atributos;
+  return { ...resto, style: CAPA_SUAVE };
+}
+
 /** Atributos de accesibilidad: decorativo salvo que se pase un título o una etiqueta. */
 function accesibilidad(
   title: string | undefined,
@@ -47,6 +61,9 @@ export function crearIcono(
   clave: string,
   elementos: readonly Elemento[],
 ): IconComponent {
+  const dibujo = elementos.map(
+    ([etiqueta, atributos]) => [etiqueta, conCapa(atributos)] as const,
+  );
   const Icono = forwardRef<SVGSVGElement, IconProps>(
     (
       { size = TAMANO_PREDETERMINADO, title, ...resto },
@@ -63,7 +80,7 @@ export function crearIcono(
         {...accesibilidad(title, resto)}
       >
         {title ? <title>{title}</title> : null}
-        {elementos.map(([Etiqueta, atributos], i) => (
+        {dibujo.map(([Etiqueta, atributos], i) => (
           <Etiqueta key={i} {...atributos} />
         ))}
       </svg>
