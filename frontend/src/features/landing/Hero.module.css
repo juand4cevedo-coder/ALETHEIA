@@ -175,7 +175,8 @@
   background: rgb(255 255 255 / 86%);
   backdrop-filter: blur(16px) saturate(1.5);
   box-shadow: 0 24px 48px -20px rgb(20 10 40 / 55%);
-  color: var(--text);
+  /* La ficha siempre es clara: su texto no sigue al tema. */
+  color: #17131f;
   font-size: 14px;
   line-height: 19px;
   animation:
@@ -190,7 +191,7 @@
 
 .card small {
   display: block;
-  color: var(--text-3);
+  color: #5d566a;
   font-size: 12.5px;
 }
 
