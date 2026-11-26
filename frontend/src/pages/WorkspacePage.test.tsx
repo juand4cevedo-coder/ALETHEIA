@@ -167,7 +167,7 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     expect(await within(overview).findByText("3")).toBeInTheDocument();
     expect(within(overview).getByText("2")).toBeInTheDocument();
     expect(
-      screen.getByText("Evidencias esperando su sello."),
+      screen.getByText("Pruebas que esperan su sello de tiempo."),
     ).toBeInTheDocument();
 
     expect(

@@ -302,8 +302,8 @@ describe("Libro de casos (HU-017)", () => {
     });
     expect(within(strip).getByText("Sin verificar")).toBeInTheDocument();
     expect(strip).toHaveTextContent(/Evidencias preservadas\s*16/);
-    expect(strip).toHaveTextContent(/Sellos de tiempo pendientes\s*1/);
-    expect(strip).toHaveTextContent(/Eventos de custodia\s*186/);
+    expect(strip).toHaveTextContent(/Pruebas por sellar\s*1/);
+    expect(strip).toHaveTextContent(/Movimientos registrados\s*186/);
     // Nada afirma una integridad que el verificador independiente no ha comprobado (HU-024).
     expect(container).not.toHaveTextContent(/íntegra/i);
     expect(container.querySelector("[data-tone='ok']")).toBeNull();

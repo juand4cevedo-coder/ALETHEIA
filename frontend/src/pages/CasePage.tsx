@@ -239,7 +239,7 @@ function CaseView({
     [
       {
         key: "chain",
-        label: "Cadena de custodia",
+        label: "Historial",
         count: eventCount,
         unit: eventCount === 1 ? "evento" : "eventos",
       },
@@ -251,11 +251,11 @@ function CaseView({
       },
       { key: "tasks", label: "Tareas y plazos" },
       { key: "notes", label: "Notas" },
-      { key: "evidence", label: "Evidencias" },
+      { key: "evidence", label: "Pruebas" },
       ...(canPortal
         ? [{ key: "portal" as const, label: "Portal del cliente" }]
         : []),
-      ...(canExport ? [{ key: "export" as const, label: "Paquete" }] : []),
+      ...(canExport ? [{ key: "export" as const, label: "Expediente" }] : []),
     ];
 
   const opened = `Abierto el ${formatColombiaTime(detail.created_at)} por ${detail.created_by_name}`;
