@@ -61,9 +61,9 @@ export function QuoteBreakdown({
         </div>
       </dl>
       <p className={styles.note}>
-        Cuentan las {team} de su equipo, con las invitaciones abiertas. Si
-        agrega personas durante el periodo, se cobran desde la renovación
-        siguiente.
+        El cálculo incluye a todo su equipo ({team}), con las invitaciones
+        abiertas. Si agrega personas durante el periodo, se cobran desde la
+        renovación siguiente.
       </p>
     </div>
   );

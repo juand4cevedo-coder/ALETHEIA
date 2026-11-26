@@ -333,9 +333,12 @@
   margin: 0;
   padding: 0;
 }
+/* 24 px de alto como mínimo (WCAG 2.5.8), también con puntero fino. */
 .footerNav a,
 .footerNav button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   color: var(--on-inverse-2);
   text-decoration: none;
   line-height: 1.6;

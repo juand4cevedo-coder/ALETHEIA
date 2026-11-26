@@ -8,20 +8,36 @@
   }
 }
 
+/* Cada tono define tres valores: el color del icono y del filete, el tinte del fondo y el borde.
+   El filete a la izquierda dice el tono antes de leer; el texto siempre va en el color de lectura,
+   así el contraste no depende del tono. */
 .notice {
-  --tone: var(--text-2);
+  --tone: var(--ink-500);
+  --tone-tint: color-mix(in srgb, var(--ink-500) 6%, var(--paper-raised));
+  --tone-line: color-mix(in srgb, var(--ink-500) 22%, var(--paper-raised));
 
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--ink-hairline);
-  border-radius: 16px;
-  background: var(--paper-sunken);
+  padding: var(--space-3) var(--space-4) var(--space-3)
+    calc(var(--space-4) + 2px);
+  border: 1px solid var(--tone-line);
+  border-radius: 12px;
+  background: var(--tone-tint);
   color: var(--text);
   font-size: var(--font-size-ui);
   line-height: var(--line-height-ui);
+  overflow: hidden;
   animation: notice-enter var(--motion-enter) var(--ease-out);
+}
+
+.notice::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--tone);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -35,20 +51,23 @@
 }
 
 /* Una acción que salió bien (caso abierto, invitación enviada) no es una verificación: el
-   verde queda solo para lo que el sistema comprobó, así que el visto va en el color del texto. */
+   verde queda solo para lo que el sistema comprobó, así que el éxito usa la tinta de la marca. */
 .notice[data-tone="success"] {
-  --tone: var(--text);
+  --tone: var(--ink-900);
 }
 
 .notice[data-tone="warning"] {
   --tone: var(--warn);
+  --tone-tint: color-mix(in srgb, var(--warn) 7%, var(--paper-raised));
+  --tone-line: color-mix(in srgb, var(--warn) 26%, var(--paper-raised));
 }
 
-/* El error se distingue también por el borde: es lo que la persona debe atender primero. */
+/* El error se distingue también por un borde más marcado: es lo que la persona debe atender
+   primero. */
 .notice[data-tone="error"] {
   --tone: var(--err);
-
-  border-color: color-mix(in srgb, var(--err) 55%, var(--paper-raised));
+  --tone-tint: color-mix(in srgb, var(--err) 6%, var(--paper-raised));
+  --tone-line: color-mix(in srgb, var(--err) 40%, var(--paper-raised));
 }
 
 .notice > svg {
@@ -65,6 +84,13 @@
   overflow-wrap: anywhere;
 }
 
+.content :where(strong:first-child) {
+  font-weight: 600;
+  color: var(--text);
+}
+
 .content :where(a) {
   color: var(--ink-500);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
