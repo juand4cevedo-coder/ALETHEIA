@@ -83,12 +83,11 @@ export function VerifierPage() {
       <section className={styles.page} aria-labelledby="verificador-titulo">
         <div className={styles.inner}>
           <header className={styles.intro}>
-            <h1 id="verificador-titulo">Comprobador de hash SHA-256</h1>
+            <h1 id="verificador-titulo">Compruebe que un archivo no cambió</h1>
             <p>
-              Calcule la huella SHA-256 de cualquier archivo o compárelo con el
-              manifiesto de un paquete de preservación. Todo pasa en este
-              navegador: el archivo no se envía a ALETHEIA ni a ninguna otra
-              parte, y no necesita una cuenta.
+              Elija un archivo y compárelo con el que se guardó en ALETHEIA o
+              con el informe de un expediente. Todo pasa en este navegador: el
+              archivo no se envía a ninguna parte y no necesita una cuenta.
             </p>
           </header>
         </div>

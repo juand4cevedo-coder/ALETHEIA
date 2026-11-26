@@ -20,50 +20,6 @@
   box-shadow: var(--shadow-float);
 }
 
-/* Ficha sobre la foto, del mismo vidrio que las del héroe. */
-.caption {
-  position: absolute;
-  right: -20px;
-  bottom: 32px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 18px 12px 12px;
-  border: 1px solid color-mix(in srgb, var(--paper-raised) 70%, transparent);
-  border-radius: 20px;
-  background: color-mix(in srgb, var(--paper-raised) 90%, transparent);
-  backdrop-filter: blur(14px) saturate(1.4);
-  box-shadow: var(--shadow-float);
-  font-size: 14px;
-  line-height: 19px;
-  animation: flotar 7s ease-in-out infinite;
-}
-
-@keyframes flotar {
-  50% {
-    translate: 0 -8px;
-  }
-}
-
-.caption img {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  object-fit: cover;
-}
-
-.caption strong {
-  display: block;
-  color: var(--text);
-  font-weight: 600;
-}
-
-.caption small {
-  display: block;
-  color: var(--text-3);
-  font-size: 12.5px;
-}
-
 .kicker {
   margin-bottom: var(--space-3);
   color: var(--brand-text);
@@ -146,18 +102,9 @@
   .photo {
     aspect-ratio: 4 / 3;
   }
-
-  .caption {
-    right: 16px;
-    bottom: 16px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .caption {
-    animation: none;
-  }
-
   .list li {
     transition: none;
   }

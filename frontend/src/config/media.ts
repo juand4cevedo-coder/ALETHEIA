@@ -10,6 +10,10 @@ export function mediaUrl(path: string): string {
 /** Capturas del producto: cada una se publica en 640, 1260 y 2520 px de ancho. Un teléfono, que las
  * dibuja a unos 340 px, descarga la de 640 (un 70 % más liviana). `path` es la ruta de la captura
  * grande, por ejemplo «/media/producto/tareas.webp». */
+/** Versión de las capturas: /media se guarda una semana en el navegador, así que al rehacer las
+ * capturas se sube este número para que se pidan de nuevo. */
+const VERSION_CAPTURAS = "?v=6";
+
 export function productShotProps(
   path: string,
   sizes: string,
@@ -18,9 +22,10 @@ export function productShotProps(
   const small = large.replace(/\.webp$/, "-640.webp");
   // La de 2520 px es la misma captura a doble densidad, para pantallas retina.
   const retina = large.replace(/\.webp$/, "-2520.webp");
+  const v = VERSION_CAPTURAS;
   return {
-    src: large,
-    srcSet: `${small} 640w, ${large} 1260w, ${retina} 2520w`,
+    src: large + v,
+    srcSet: `${small}${v} 640w, ${large}${v} 1260w, ${retina}${v} 2520w`,
     sizes,
   };
 }

@@ -185,6 +185,20 @@ export function PublicNavigation() {
             Precios
           </NavLink>
         </li>
+        <li>
+          <NavLink
+            to={ROUTES.verifier}
+            ref={(node) => {
+              triggers.current[NAVIGATION.length + 1] = node;
+            }}
+            onPointerEnter={() => {
+              close();
+              setHovered(NAVIGATION.length + 1);
+            }}
+          >
+            Comprobar un archivo
+          </NavLink>
+        </li>
       </ul>
       {group &&
         // Fuera del encabezado: su filtro de desenfoque haría de contenedor del velo y lo dejaría

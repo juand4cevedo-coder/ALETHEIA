@@ -200,6 +200,13 @@ export function PublicLayout() {
               </span>
               <FlechaDerechaIcon size={18} aria-hidden="true" />
             </Link>
+            <Link to={ROUTES.verifier} onClick={closeMenu}>
+              <span>
+                <strong>Comprobar un archivo</strong>
+                <small>Vea si un archivo es el mismo que se guardó.</small>
+              </span>
+              <FlechaDerechaIcon size={18} aria-hidden="true" />
+            </Link>
             <Link to={access.to} onClick={closeMenu}>
               <span>
                 <strong>{access.label}</strong>

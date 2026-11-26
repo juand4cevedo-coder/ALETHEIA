@@ -12,24 +12,24 @@ import styles from "./ProductTour.module.css";
 const VIEWS = [
   {
     id: "resumen",
-    title: "Su trabajo a la vista",
+    title: "Su despacho de un vistazo",
     icon: InicioIcon,
-    text: "Casos abiertos, cerrados y registros de actividad. Los datos de su espacio, sin reconstruirlos a mano.",
-    alt: "Panel real de ALETHEIA con tres casos abiertos y tres registros de custodia en una cuenta de ejemplo.",
+    text: "Su día empieza con lo que importa: los casos abiertos, las pruebas por sellar y los plazos de la semana.",
+    alt: "Inicio de ALETHEIA con la bienvenida del despacho y los indicadores de casos y pruebas, en una cuenta de ejemplo.",
   },
   {
-    id: "casos",
-    title: "Cada caso en su lugar",
+    id: "evidencias",
+    title: "Cada prueba en su caso",
     icon: CarpetaAbiertaIcon,
-    text: "Filtre por título, radicado o despacho y retome el asunto que necesita.",
-    alt: "Listado real de tres casos de ejemplo con sus especialidades y estado de verificación.",
+    text: "Reciba chats, audios y documentos de su cliente y guárdelos tal como llegaron, con su fecha y su hora.",
+    alt: "Pestaña Pruebas de un caso laboral de ejemplo, con el formulario para agregar una prueba.",
   },
   {
-    id: "actividad",
-    title: "El contexto de cada paso",
+    id: "tareas",
+    title: "Plazos que no se escapan",
     icon: RelojIcon,
-    text: "Consulte quién abrió el caso, cuándo lo hizo y el registro asociado a esa acción.",
-    alt: "Detalle real del caso Correspondencia de ejemplo y su evento de apertura, identificado como sin verificar.",
+    text: "Asigne tareas a su equipo con fecha límite y reciba un aviso antes de cada vencimiento.",
+    alt: "Pestaña Tareas y plazos de un caso de ejemplo, con tres tareas asignadas y sus fechas límite.",
   },
 ];
 export function ProductTour() {
@@ -46,7 +46,7 @@ export function ProductTour() {
         <SectionHeading
           id="titulo-producto"
           title="Así se ve su espacio de trabajo"
-          lead="Capturas del producto real con una cuenta de ejemplo: el resumen, el libro de casos y el historial de un caso."
+          lead="Pantallas reales de ALETHEIA con una cuenta de ejemplo."
         />
         <div
           className={styles.tabs}
@@ -114,6 +114,12 @@ export function ProductTour() {
           tabIndex={0}
           className={styles.panel}
         >
+          <div className={styles.browser} aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span className={styles.address}>aletheia.sbs/app</span>
+          </div>
           <img
             key={active.id}
             {...productShotProps(
@@ -126,7 +132,7 @@ export function ProductTour() {
             decoding="async"
             alt={active.alt}
           />
-          <p>{active.text}</p>
+          <p key={"texto-" + active.id}>{active.text}</p>
         </div>
       </div>
     </section>

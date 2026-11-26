@@ -147,6 +147,16 @@
   border-bottom: 1px solid var(--ink-hairline);
   overflow-x: auto;
   scrollbar-width: none;
+  /* En pantallas angostas las pestañas se desplazan de lado: el borde derecho se desvanece para
+     que se note que hay más y ninguna quede cortada en seco. */
+  mask: linear-gradient(90deg, #000 calc(100% - 40px), transparent);
+  scroll-padding-inline: var(--space-4);
+}
+
+@media (min-width: 900px) {
+  .tabs {
+    mask: none;
+  }
 }
 
 .tab {
