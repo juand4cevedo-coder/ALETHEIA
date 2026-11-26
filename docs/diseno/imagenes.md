@@ -6,21 +6,34 @@
 | Alcance           | Ilustraciones, capturas del producto, derivados de la marca y tipografías de los PDF |
 | Sistema de diseño | [Identidad y sistema de diseño](identidad-y-sistema-de-diseno.md), ADR-060           |
 
-## 1. Sin fotografías de banco
+## 1. Fotografías
 
-Desde la versión 0.48.0 el sitio no usa fotografías de banco. Las fotos de oficinas y personas
-posando decían poco del producto y se parecían a las de cualquier otro software. Cada imagen
-del sitio sale ahora de una de tres fuentes:
+Desde la versión 0.49.0 el sitio usa fotografía editorial de abogados latinos en su trabajo: reuniones con clientes, equipos revisando documentos, acuerdos y la ciudad. Le dan vida a cada sección y muestran a quién sirve el producto. Ninguna muestra martillos de juez ni balanzas: esa iconografía delata una plantilla comprada.
 
-- **El producto mismo.** Capturas reales de la aplicación con la cuenta de prueba local y un caso
-  de ejemplo.
-- **La geometría de la marca.** El emblema, el grabado de guilloché y las láminas ilustradas se
-  dibujan en SVG a partir de `frontend/src/brand/geometria.ts`.
-- **Las láminas del blog y del paso a paso.** Ilustraciones en SVG del componente `Lamina`, con
-  un motivo por tema: chat, cadena, procesos, sellos, huella, acceso y expediente.
+Todas vienen de Unsplash con su licencia gratuita, que permite el uso comercial sin pagar ni pedir permiso. Ninguna es de Unsplash+, el servicio de pago. La licencia no exige atribución; esta tabla la registra de todos modos. Casi todas son de la misma sesión de Vitaly Gariev, por eso comparten luz, color y vestuario.
 
-Ninguna imagen muestra abogados posando, martillos de juez ni balanzas. Esa iconografía delata
-una plantilla comprada.
+| Archivo      | Autor              | Fuente                                                                     |
+| ------------ | ------------------ | -------------------------------------------------------------------------- |
+| `abogada`    | Vitaly Gariev      | [unsplash.com/photos/jI4HREHtae4](https://unsplash.com/photos/jI4HREHtae4) |
+| `abogada-2`  | Vitaly Gariev      | [unsplash.com/photos/ft1ET-Sizow](https://unsplash.com/photos/ft1ET-Sizow) |
+| `abogado`    | Vitaly Gariev      | [unsplash.com/photos/G8skYtGFlbI](https://unsplash.com/photos/G8skYtGFlbI) |
+| `cliente`    | Vitaly Gariev      | [unsplash.com/photos/Hl1HIQ0fmQk](https://unsplash.com/photos/Hl1HIQ0fmQk) |
+| `equipo`     | Vitaly Gariev      | [unsplash.com/photos/8k5j5z6ZYT4](https://unsplash.com/photos/8k5j5z6ZYT4) |
+| `acuerdo`    | Md Ishak Rahman    | [unsplash.com/photos/MkNnPlMThgk](https://unsplash.com/photos/MkNnPlMThgk) |
+| `socio`      | Vitaly Gariev      | [unsplash.com/photos/VpCJ42lG7sk](https://unsplash.com/photos/VpCJ42lG7sk) |
+| `despacho`   | Vitaly Gariev      | [unsplash.com/photos/yI6b7L1PDxs](https://unsplash.com/photos/yI6b7L1PDxs) |
+| `medellin`   | Lawrson Pinson     | [unsplash.com/photos/v78Q07VnJBA](https://unsplash.com/photos/v78Q07VnJBA) |
+| `firma`      | Vitaly Gariev      | [unsplash.com/photos/iPheGw7_UaI](https://unsplash.com/photos/iPheGw7_UaI) |
+| `reunion`    | Vitaly Gariev      | [unsplash.com/photos/r-W9R70iY5c](https://unsplash.com/photos/r-W9R70iY5c) |
+| `revision`   | Olena Kholina      | [unsplash.com/photos/MhqUBTxQ3Hw](https://unsplash.com/photos/MhqUBTxQ3Hw) |
+| `directora`  | Vitaly Gariev      | [unsplash.com/photos/J_9U-jTWGIw](https://unsplash.com/photos/J_9U-jTWGIw) |
+| `expediente` | TRAN NHU TUAN      | [unsplash.com/photos/Ydnhp9z0FOU](https://unsplash.com/photos/Ydnhp9z0FOU) |
+| `ciudad`     | Jack’s Flight Club | [unsplash.com/photos/psQjHZRR46o](https://unsplash.com/photos/psQjHZRR46o) |
+| `socios`     | Vitaly Gariev      | [unsplash.com/photos/c9rttLPYNWA](https://unsplash.com/photos/c9rttLPYNWA) |
+
+Se publican en `frontend/public/media/fotos/` como WebP a 640, 1280 y 1920 px. Las que van a pantalla completa suman 2560 px para pantallas retina grandes. `fotoProps` en `frontend/src/config/media.ts` arma el `srcset`. Se descargaron ya redimensionadas desde el servicio de imágenes de Unsplash; las dos de ciudad llevan menos calidad porque siempre van bajo una capa de tinta. Ninguna se pide a Unsplash desde el sitio: se alojan con el producto.
+
+Las capturas de la aplicación, el emblema, el grabado y las láminas del blog siguen como antes.
 
 ## 2. Capturas del producto
 

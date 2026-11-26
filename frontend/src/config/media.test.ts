@@ -35,3 +35,14 @@ it("con red de distribución las imágenes se piden al subdominio, con o sin bar
     },
   );
 });
+
+it("las fotografías de pantalla completa traen su versión de 2560 px", async () => {
+  vi.stubEnv("VITE_CDN_URL", "");
+  const { fotoProps, fotoMiniatura } = await cargar();
+
+  expect(fotoProps("abogada", "50vw").srcSet).toContain(
+    "/media/fotos/abogada-2560.webp 2560w",
+  );
+  expect(fotoProps("socios", "50vw").srcSet).not.toContain("2560w");
+  expect(fotoMiniatura("abogado")).toBe("/media/fotos/abogado-640.webp");
+});
