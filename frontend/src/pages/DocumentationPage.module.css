@@ -33,6 +33,7 @@
 .search input {
   border: 0;
   width: 100%;
+  min-height: 24px;
   min-width: 0;
   background: transparent;
   color: var(--text);
@@ -195,13 +196,17 @@
 }
 .contents nav {
   display: grid;
-  gap: 16px;
+  gap: 8px;
   margin-top: 22px;
 }
+/* 24 px de alto como mínimo (WCAG 2.5.8); el espacio entre enlaces baja para compensar. */
 .contents a {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
   color: var(--text-3);
   text-decoration: none;
-  line-height: 1.6;
+  line-height: 1.4;
 }
 .contents a:hover {
   color: var(--text);
