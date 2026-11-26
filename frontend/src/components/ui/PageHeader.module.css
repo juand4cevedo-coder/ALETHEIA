@@ -13,12 +13,14 @@
   min-width: 0;
 }
 
+/* El título de cada pantalla va en la serif editorial, la misma voz de la portada y del
+   comprobante: el espacio de trabajo y el sitio se leen como una sola marca. */
 .title {
-  font-family: var(--font-sans);
+  font-family: var(--font-editorial);
   margin: 0;
   color: var(--text);
-  font-size: clamp(30px, 2.6vw, 38px);
-  font-weight: 600;
+  font-size: clamp(32px, 2.8vw, 42px);
+  font-weight: 440;
   letter-spacing: -0.02em;
   line-height: 1.12;
   /* Nombres de personas y títulos de casos los escribe el usuario: una palabra larga baja de
