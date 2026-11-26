@@ -10,9 +10,9 @@ const tokensCss = readFileSync(join(import.meta.dirname, "tokens.css"), "utf8");
 // Colores semánticos de la identidad vigente (ADR-049). Un cambio de valor aquí es un cambio de
 // identidad y debe pasar antes por ese registro.
 const SEMANTIC_COLORS: Record<string, string> = {
-  "--paper": "#FFFFFF",
+  "--paper": "#F6F1FB",
   "--paper-raised": "#FFFFFF",
-  "--paper-sunken": "#F4F3F7",
+  "--paper-sunken": "#EFE7F8",
   "--ink-900": "#55278A",
   "--ink-700": "#3F1C69",
   "--ink-500": "#6C3FA8",

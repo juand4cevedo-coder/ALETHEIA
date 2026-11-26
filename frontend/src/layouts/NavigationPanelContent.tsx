@@ -10,7 +10,6 @@ import {
   DocumentoIcon,
   EscudoVistoIcon,
   FlechaDerechaIcon,
-  HuellaIcon,
   InfoIcon,
   LibroIcon,
   OjoIcon,
@@ -31,7 +30,6 @@ import { SIGN_UP_LABEL, TRIAL_DAYS } from "../config/site.ts";
 const LINK_ICONS: Record<string, IconComponent> = {
   [ROUTES.howItWorks]: CarpetaAbiertaIcon,
   [ROUTES.verifier]: ArchivoBusquedaIcon,
-  [ROUTES.verifierSection]: HuellaIcon,
   "/empresa": UsuariosIcon,
   "/seguridad": EscudoVistoIcon,
   "/docs/invitar-al-equipo": UsuarioAgregarIcon,

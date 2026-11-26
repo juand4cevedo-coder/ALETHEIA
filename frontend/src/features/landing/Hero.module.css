@@ -1,197 +1,311 @@
-/* Portada (UI-001). Dos columnas en escritorio: el texto y la escena del producto. El fondo es el
-   papel del tema con un grabado de guilloché como máscara: textura de certificado, sin luz ni
-   degradado. En el celular, la escena va debajo del texto. */
+/* Portada. El fondo es un degradado de lavanda a crema que nace del violeta de la marca y
+   termina en el tono del latón: los dos colores de la identidad, en su versión más clara, sin
+   un corte entre uno y otro. Todo el movimiento es CSS y se apaga con movimiento reducido. */
 .hero {
   position: relative;
+  isolation: isolate;
   margin-top: calc(-1 * var(--header-height));
   padding-top: var(--header-height);
   overflow: hidden;
-  background: var(--paper);
-  border-bottom: 1px solid var(--ink-hairline);
-  isolation: isolate;
-}
-
-.engraving {
-  position: absolute;
-  z-index: -1;
-  top: 50%;
-  right: -22%;
-  width: min(1400px, 120vw);
-  aspect-ratio: 1;
-  translate: 0 -50%;
-  background: var(--brand-text);
-  opacity: 0.07;
-  mask: url("/brand/grabado.svg") center / contain no-repeat;
-  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent 70%, var(--paper) 100%),
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, var(--ink-900) 11%, var(--paper)) 0%,
+      color-mix(in srgb, #c25e8a 7%, var(--paper)) 48%,
+      color-mix(in srgb, var(--seal-line) 30%, var(--paper)) 100%
+    );
 }
 
 .inner {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   align-items: center;
-  gap: clamp(32px, 5vw, 80px);
+  gap: clamp(40px, 5vw, 88px);
   width: min(100%, 1280px);
-  min-height: min(820px, calc(100dvh - var(--header-height)));
   margin: 0 auto;
-  padding: clamp(56px, 8vh, 112px) clamp(24px, 5vw, 64px) clamp(56px, 8vh, 96px);
+  padding: clamp(48px, 8vh, 104px) clamp(24px, 5vw, 64px)
+    clamp(64px, 10vh, 120px);
 }
 
-.copy {
-  display: grid;
-  justify-items: start;
+/* Entrada escalonada: cada línea sube y aparece un poco después de la anterior. */
+@keyframes subir {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
 }
 
-/* Cada pieza del texto entra subiendo 14 px, en cascada, una sola vez. */
 .copy > * {
-  animation: rise-in var(--motion-enter) var(--ease-out) both;
+  animation: subir 900ms var(--ease-out) both;
 }
 .copy > :nth-child(2) {
-  animation-delay: 70ms;
+  animation-delay: 80ms;
 }
 .copy > :nth-child(3) {
-  animation-delay: 150ms;
+  animation-delay: 160ms;
 }
 .copy > :nth-child(4) {
-  animation-delay: 220ms;
+  animation-delay: 240ms;
 }
 .copy > :nth-child(5) {
-  animation-delay: 290ms;
+  animation-delay: 320ms;
 }
 
 .eyebrow {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  margin: 0 0 24px;
-  color: var(--seal);
-  font-size: var(--font-size-label);
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  line-height: var(--line-height-label);
-  text-transform: uppercase;
-}
-
-/* Un sello pequeño: anillo de latón con su punto. */
-.seal {
-  width: 14px;
-  height: 14px;
-  border: 1.5px solid currentColor;
-  border-radius: 50%;
-  background: radial-gradient(circle, currentColor 0 2.5px, transparent 3px);
+  padding: 7px 16px;
+  border: 1px solid color-mix(in srgb, var(--ink-900) 12%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper-raised) 80%, transparent);
+  box-shadow: var(--shadow-card);
+  color: var(--text-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 20px;
 }
 
 .title {
-  max-width: 13em;
-  margin: 0;
+  margin: 28px 0 22px;
   color: var(--text);
   font-family: var(--font-editorial);
-  font-size: var(--font-size-display);
-  font-weight: 430;
-  font-variation-settings: "opsz" 72;
-  line-height: var(--line-height-display);
-  letter-spacing: var(--tracking-display);
+  font-size: clamp(2.75rem, 1.6rem + 3.6vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.026em;
+  line-height: 1.02;
   text-wrap: balance;
 }
 
 .title em {
   color: var(--brand-text);
   font-style: italic;
-  font-weight: 400;
 }
 
 .lead {
   max-width: 34em;
-  margin: 28px 0 36px;
   color: var(--text-2);
-  font-size: clamp(17px, 1.2vw, 19px);
-  line-height: 1.62;
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.2rem);
+  line-height: 1.6;
   text-wrap: pretty;
+}
+
+/* La flecha del botón principal va en CSS y se adelanta al pasar el puntero. */
+.actions > a:first-child::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M5 12h14M13 6l6 6-6 6%27/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  transition: transform var(--motion-base) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .actions > a:first-child:hover::after {
+    transform: translateX(3px);
+  }
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+  margin-top: 34px;
 }
 
-.promises {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 22px;
-  margin: 28px 0 0;
-  padding: 0;
-  list-style: none;
-  color: var(--text-3);
-  font-size: var(--font-size-support);
-  line-height: var(--line-height-support);
-}
-
-.promises li {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Una marca de verificación de dos trazos, en latón. */
-.promises li::before {
+/* La marca de visto de la ficha va en CSS: es decoración y no suma JavaScript a la portada. */
+.iconOk::before {
   content: "";
-  width: 9px;
-  height: 5px;
-  border-bottom: 1.5px solid var(--seal);
-  border-left: 1.5px solid var(--seal);
-  translate: 0 -2px;
-  rotate: -45deg;
+  width: 20px;
+  height: 20px;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.4%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M5 12.5l4.5 4.5L19 7.5%27/%3E%3C/svg%3E")
+    center / contain no-repeat;
 }
 
-@keyframes rise-in {
+/* Escena: la foto en un marco redondeado y tres fichas que flotan a su alrededor. */
+.scene {
+  position: relative;
+  aspect-ratio: 4 / 4.4;
+  animation: subir 1100ms 120ms var(--ease-out) both;
+}
+
+/* La foto es el marco: esquinas redondeadas, sombra y un acercamiento lento al cargar. */
+@keyframes acercar {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: scale(1.04);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .copy > * {
-    animation: none;
+.photo {
+  position: absolute;
+  inset: 0 0 0 9%;
+  width: 91%;
+  height: 100%;
+  border-radius: 32px;
+  background: var(--paper-sunken);
+  box-shadow: var(--shadow-float);
+  object-fit: cover;
+  object-position: 50% 30%;
+  animation: acercar 1400ms var(--ease-out) both;
+}
+
+@keyframes flotar {
+  50% {
+    translate: 0 -8px;
   }
+}
+
+@keyframes entrar-ficha {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+}
+
+.card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 290px;
+  padding: 13px 16px 13px 13px;
+  border: 1px solid color-mix(in srgb, var(--paper-raised) 70%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--paper-raised) 90%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: var(--shadow-float);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 19px;
+  animation:
+    entrar-ficha 800ms var(--ease-out) both,
+    flotar 6s 1s ease-in-out infinite;
+}
+
+.card strong {
+  display: block;
+  font-weight: 600;
+}
+
+.card small {
+  display: block;
+  color: var(--text-3);
+  font-size: 12.5px;
+}
+
+.cardSaved {
+  top: 11%;
+  left: -3%;
+  animation-delay: 500ms, 1.2s;
+}
+
+.cardReady {
+  top: 46%;
+  right: -5%;
+  animation-delay: 700ms, 3.2s;
+}
+
+.cardTeam {
+  bottom: 7%;
+  left: 2%;
+  animation-delay: 900ms, 5.2s;
+}
+
+.cardIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-family: var(--font-editorial);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.iconOk {
+  background: color-mix(in srgb, var(--ok) 12%, var(--paper-raised));
+  color: var(--ok);
+}
+
+.iconInk {
+  background: color-mix(in srgb, var(--ink-900) 12%, var(--paper-raised));
+  color: var(--brand-text);
+}
+
+.avatars {
+  display: flex;
+  flex: none;
+}
+
+.avatars img {
+  width: 32px;
+  height: 32px;
+  margin-left: -9px;
+  border: 2px solid var(--paper-raised);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatars img:first-child {
+  margin-left: 0;
 }
 
 @media (max-width: 960px) {
   .inner {
     grid-template-columns: minmax(0, 1fr);
-    min-height: 0;
-    gap: 56px;
   }
 
-  .engraving {
-    top: 30%;
-    right: -60%;
-    width: 160vw;
+  .scene {
+    width: min(100%, 560px);
+    justify-self: center;
   }
 
-  .title {
-    max-width: 20ch;
-  }
-}
-
-@media (max-width: 480px) {
-  .lead {
-    margin: 22px 0 28px;
-  }
-
-  .actions {
-    display: grid;
+  .photo {
+    inset: 0;
     width: 100%;
   }
+
+  .cardSaved {
+    left: -2%;
+  }
+
+  .cardReady {
+    right: -2%;
+  }
 }
 
-/* Lugar de la escena mientras llega: el mismo alto mínimo que la escena. */
-.sceneSlot {
-  min-height: 560px;
+@media (max-width: 520px) {
+  .scene {
+    aspect-ratio: 4 / 4.8;
+  }
+
+  .card {
+    max-width: 240px;
+    padding: 10px 12px 10px 10px;
+    font-size: 13px;
+  }
+
+  .cardIcon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .cardReady {
+    top: 42%;
+  }
 }
 
-@media (max-width: 960px) {
-  .sceneSlot {
-    min-height: 460px;
+@media (prefers-reduced-motion: reduce) {
+  .copy > *,
+  .scene,
+  .photo,
+  .card {
+    animation: none;
   }
 }

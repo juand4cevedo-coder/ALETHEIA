@@ -90,11 +90,6 @@ export const NAVIGATION: NavigationGroup[] = [
         description: "Evidencia digital, Ley 527 y práctica del despacho.",
       },
       {
-        to: ROUTES.verifierSection,
-        label: "Probar el comprobador",
-        description: "Calcule una huella sin subir el archivo.",
-      },
-      {
         to: "/ayuda",
         label: "Base de conocimiento",
         description: "Respuestas cortas a las dudas más comunes.",
