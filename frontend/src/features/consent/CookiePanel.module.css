@@ -1,18 +1,33 @@
+/* Tarjeta flotante en la esquina, no una franja de borde a borde: avisa sin tapar la página.
+   Entra subiendo un poco y se apaga con movimiento reducido. */
+@keyframes entrar-aviso {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
 .panel {
   position: fixed;
-  inset: auto 0 0;
+  inset: auto auto calc(16px + env(safe-area-inset-bottom)) 16px;
   z-index: 25;
   display: grid;
   gap: var(--space-4);
-  padding: var(--space-4)
-    max(var(--space-4), calc((100% - var(--content-width)) / 2))
-    calc(var(--space-4) + env(safe-area-inset-bottom));
-  border: 1px solid var(--ink-hairline);
-  max-height: 55dvh;
+  width: min(440px, calc(100% - 32px));
+  padding: 20px 22px;
+  border: 1px solid color-mix(in srgb, var(--ink-900) 10%, transparent);
+  border-radius: 22px;
+  max-height: min(70dvh, 640px);
   overflow-y: auto;
-  background: var(--paper-raised);
+  background: color-mix(in srgb, var(--paper-raised) 94%, transparent);
+  backdrop-filter: blur(16px) saturate(1.4);
   box-shadow: var(--shadow-float);
   color: var(--text);
+  animation: entrar-aviso 600ms 400ms var(--ease-out) both;
+}
+
+.panel:not([data-view="summary"]) {
+  width: min(520px, calc(100% - 32px));
 }
 
 .panel a {
@@ -89,17 +104,13 @@
   gap: var(--space-2);
 }
 
-/* Primera visita: una barra baja, el aviso a la izquierda y las dos decisiones a la derecha. */
+/* Primera visita: el aviso arriba y las dos decisiones debajo, con el mismo peso. */
 .panel[data-view="summary"] {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-3) var(--space-6);
-  padding-block: var(--space-3)
-    calc(var(--space-3) + env(safe-area-inset-bottom));
+  gap: var(--space-4);
 }
 
 .panel[data-view="summary"] .actions {
-  grid-template-columns: repeat(2, minmax(7.5rem, auto));
+  grid-template-columns: 1fr 1fr;
 }
 
 /* Enlace dentro de la frase del aviso, con el mismo aspecto que el de la política. */
@@ -212,6 +223,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .panel,
   .close,
   .switch,
   .switch::before {
@@ -225,25 +237,14 @@
   }
 }
 
-/* En teléfono la barra apila el aviso sobre los dos botones, que quedan lado a lado y con el
-   mismo peso: así no tapa más de una franja baja de la pantalla. */
-@media (max-width: 720px) {
-  .panel[data-view="summary"] {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-2);
-  }
-
-  .panel[data-view="summary"] .actions {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
+/* En teléfono la tarjeta toma el ancho de la pantalla, con un margen. */
 @media (max-width: 560px) {
   .panel {
+    inset: auto 12px calc(12px + env(safe-area-inset-bottom));
+    width: auto;
     gap: var(--space-3);
-    padding-block: var(--space-3)
-      calc(var(--space-3) + env(safe-area-inset-bottom));
-    max-height: 48dvh;
+    padding: 16px 18px;
+    max-height: 60dvh;
   }
 
   .text {
