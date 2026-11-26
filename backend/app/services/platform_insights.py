@@ -193,6 +193,7 @@ def _expiring(session: Session, now: datetime.datetime) -> list[Expiring]:
 class OrganizationRow:
     id: uuid.UUID
     name: str
+    kind: str
     status: str
     owner_name: str | None
     owner_email: str | None
@@ -223,6 +224,7 @@ def organizations(
     search: str | None,
     subscription_status: str | None,
     cursor: uuid.UUID | None,
+    kind: str | None = None,
 ) -> OrganizationPage:
     owner = (
         select(Membership.organization_id, User.full_name, User.email)
@@ -247,6 +249,8 @@ def organizations(
         )
     if subscription_status:
         filters.append(Subscription.status == subscription_status)
+    if kind:
+        filters.append(Organization.kind == kind)
     base = (
         select(
             Organization,
@@ -277,6 +281,7 @@ def organizations(
             OrganizationRow(
                 id=row[0].id,
                 name=row[0].name,
+                kind=row[0].kind,
                 status=row[0].status,
                 owner_name=row[1],
                 owner_email=row[2],

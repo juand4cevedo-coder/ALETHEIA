@@ -2335,6 +2335,20 @@ export type OrganizationAuditPage = {
 };
 
 /**
+ * OrganizationDeletionRequest
+ *
+ * Confirmación del cierre de un despacho: su nombre exacto.
+ */
+export type OrganizationDeletionRequest = {
+  /**
+   * Confirmation
+   *
+   * El nombre del despacho, escrito tal cual, para confirmar.
+   */
+  confirmation: string;
+};
+
+/**
  * OrganizationHealth
  *
  * Salud del despacho para quien lo gestiona (HU de métricas).
@@ -2880,6 +2894,10 @@ export type PlatformOrganization = {
    * Name
    */
   name: string;
+  /**
+   * Kind
+   */
+  kind: "individual" | "firm";
   /**
    * Status
    */
@@ -8356,6 +8374,46 @@ export type DeletePlatformUserResponses = {
 export type DeletePlatformUserResponse =
   DeletePlatformUserResponses[keyof DeletePlatformUserResponses];
 
+export type DeletePlatformOrganizationData = {
+  body: OrganizationDeletionRequest;
+  path: {
+    /**
+     * Organization Id
+     */
+    organization_id: string;
+  };
+  query?: never;
+  url: "/api/v1/platform/organizations/{organization_id}/deletion";
+};
+
+export type DeletePlatformOrganizationErrors = {
+  /**
+   * El despacho no existe o ya está cerrado.
+   */
+  404: Problem;
+  /**
+   * El despacho incluye una cuenta de plataforma.
+   */
+  409: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type DeletePlatformOrganizationError =
+  DeletePlatformOrganizationErrors[keyof DeletePlatformOrganizationErrors];
+
+export type DeletePlatformOrganizationResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type DeletePlatformOrganizationResponse =
+  DeletePlatformOrganizationResponses[keyof DeletePlatformOrganizationResponses];
+
 export type UpdatePlanData = {
   body: PlanUpdate;
   path: {
@@ -8532,6 +8590,12 @@ export type PlatformOrganizationsData = {
      */
     subscription_status?:
       "trial" | "active" | "past_due" | "canceled" | "expired" | null;
+    /**
+     * Kind
+     *
+     * Cuenta independiente o firma.
+     */
+    kind?: "individual" | "firm" | null;
   };
   url: "/api/v1/platform/organizations";
 };

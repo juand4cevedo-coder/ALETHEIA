@@ -92,6 +92,7 @@ AUDIT_ACTIONS: Final = (
     "payment_source_canceled",
     "support_ticket_deleted",
     "platform_job_retried",
+    "organization_deleted_by_platform",
 )
 
 # Momento en que se aceptaron los textos legales: al crear la cuenta o al aceptar unos nuevos.

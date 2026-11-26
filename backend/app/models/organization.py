@@ -27,10 +27,14 @@ class Organization(Base):
         # Conservación fija para todos los despachos (migración 0060).
         CheckConstraint("default_retention_years = 10", name="default_retention_years"),
         CheckConstraint("session_days BETWEEN 1 AND 14", name="session_days"),
+        CheckConstraint("kind IN ('individual', 'firm')", name="kind"),
     )
 
     id: Mapped[UUIDv7Pk]
     name: Mapped[str]
+    # Cuenta independiente (una persona, con su propio nombre) o firma con equipo. Lo elige quien
+    # se registra y la plataforma lo usa para ordenar sus listas (migración 0067).
+    kind: Mapped[str] = mapped_column(server_default="firm")
     status: Mapped[str] = mapped_column(server_default="active")
     # Se actualiza en la misma transacción de cada subida.
     storage_used_bytes: Mapped[int] = mapped_column(BigInteger, server_default="0")

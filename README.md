@@ -30,7 +30,7 @@ En producción, en desarrollo activo. `develop` reúne el trabajo integrado y ca
 | Abogado | Abre casos, asigna a su equipo y trabaja en los que le asignen. |
 | Asistente | Trabaja en los casos que le asignen. |
 | Cliente del despacho | Entra sin cuenta, con un enlace personal, al portal de su caso: avisos, mensajes y documentos que el despacho decide compartir. |
-| Dueño de la plataforma | Una sola cuenta, sin acceso a expedientes. Su consola tiene: Resumen (lo que exige acción hoy, cifras del negocio, crecimiento, vencimientos), Solicitudes y PQR (con radicado y fecha límite legal), Despachos (directorio con plan, consumo y vencimiento, exportable a CSV), Cuentas (bloquear, desbloquear, eliminar cuentas de prueba), Planes y cortesías, Ingresos (frente al tope de facturación electrónica), Tareas y pagos (cola del trabajador, con reintento de tareas fallidas), Rendimiento real y Auditoría. |
+| Dueño de la plataforma | Una sola cuenta, sin acceso a expedientes. Su consola tiene: Resumen (lo que exige acción hoy, cifras del negocio, crecimiento, vencimientos), Solicitudes y PQR (con radicado y fecha límite legal), Despachos (directorio con plan, consumo y vencimiento, separado entre cuentas independientes y firmas, exportable a CSV, y cierre de un despacho completo con sus cuentas; los casos se conservan hasta cumplir su plazo, ADR-061), Cuentas (bloquear, desbloquear, eliminar cuentas de prueba), Planes y cortesías, Ingresos (frente al tope de facturación electrónica), Tareas y pagos (cola del trabajador, con reintento de tareas fallidas), Rendimiento real y Auditoría. |
 
 El menú lateral (`frontend/src/features/workspace/sections.ts`) agrupa las secciones en Trabajo, Despacho, Plataforma, Clientes, Comercial, Operación y Cuenta. Cada persona ve solo los grupos de su rol, y la API vuelve a exigir el permiso en cada petición.
 
@@ -53,7 +53,8 @@ Los textos legales viven en `frontend/src/features/legal` y su fecha de vigencia
 
 - Un solo sistema de tokens en `frontend/src/styles/tokens.css`, con su paleta clara y su paleta oscura. Ningún componente escribe un color a mano.
 - El modo se elige con el interruptor del encabezado o con el selector de tres posiciones (claro, oscuro, sistema) del menú de la cuenta y del pie. `frontend/public/theme.js` lo fija antes de pintar, sin destello; el cambio se anima como un círculo que crece desde el botón.
-- El símbolo tiene una versión para cada modo (`public/brand/symbol-dark.svg` y `symbol-dark-mode.svg`).
+- El logo es el emblema aprobado (ADR-060), con una versión reducida para el menú y los íconos y una mínima para la pestaña del navegador. Todo sale de `src/brand/geometria.ts` y lo genera `scripts/marca.mjs`. El detalle está en [Identidad y sistema de diseño](docs/diseno/identidad-y-sistema-de-diseno.md).
+- El modo claro usa una lavanda suave de fondo con bandas en crema; las tarjetas blancas se levantan sobre ella. Las imágenes son fotos editoriales de abogados y capturas reales del producto ([Imágenes del producto](docs/diseno/imagenes.md)).
 - Contraste AA en los dos modos: `src/styles/tokens.test.ts` lo comprueba para cada par de texto y superficie. Las pantallas pasan axe-core (WCAG 2.2 AA) en claro y oscuro, en celular y escritorio.
 - Responsive desde 360 px. En celular el menú del espacio de trabajo es un cajón lateral; en escritorio, una columna que se puede compactar a íconos y cuyos grupos se pliegan.
 - Movimiento con propósito: transiciones entre pantallas con View Transitions, indicador del menú que se desliza, diálogos y menús que crecen desde su origen. Todo respeta `prefers-reduced-motion`.
@@ -271,13 +272,13 @@ El código del frontend se organiza así (ADR-021):
 
 El acceso y el espacio de trabajo piden los datos de la API con TanStack Query y las opciones que genera Hey API, por ejemplo `useQuery(readMeOptions())`. El proveedor lo monta `src/routes/QueryRoot.tsx`, que se descarga con esas pantallas. El sitio público no usa TanStack Query: el inicio y la página de precios leen el catálogo de planes con `usePlanCatalog()` (`src/features/billing/catalog.tsx`), un `fetch` pequeño que la landing carga sin el resto del cliente.
 
-Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css` (ADR-049). Una prueba falla si algún archivo usa los nombres del sistema anterior, como `--color-ink-900`. Al imprimir, `tokens.css` cambia los tonos de texto, enlaces y estados a tinta oscura sobre blanco.
+Los estilos de cada componente van en su archivo `.module.css` y usan solo las variables de `src/styles/tokens.css` (ADR-060). Una prueba falla si algún archivo usa los nombres del sistema anterior, como `--color-ink-900`. Al imprimir, `tokens.css` cambia los tonos de texto, enlaces y estados a tinta oscura sobre blanco.
 
 Los íconos se importan solo de `src/components/ui/icons.tsx`: Phosphor en peso regular, copiado en `src/components/ui/icons/` con un archivo por ícono, más los propios dibujados con `crearPropio` (sello, cadena, paquete, sol, luna, pantalla, panel lateral, pulso y etiqueta). Para agregar uno, se copia su trazado regular de Phosphor en un archivo nuevo de esa carpeta, igual a los demás, y se exporta desde `icons.tsx`. Como cada ícono vive en su archivo, cada pantalla descarga solo los que dibuja.
 
-Las fuentes son Inter y Geist Mono, alojadas en el propio sitio con subconjunto latino (`src/styles/fonts.css`). Mientras cargan se ve la fuente del sistema, e Inter se precarga en `index.html`.
+Las fuentes son Geist para la interfaz, Newsreader para los títulos y Geist Mono para el código, alojadas en el propio sitio con subconjunto latino (`src/styles/fonts.css`). Mientras cargan se ve la fuente del sistema, y Geist se precarga en `index.html`. El comprobante en PDF usa las mismas fuentes en TTF estático, generadas con `backend/scripts/fuentes_pdf.py`.
 
-La landing tiene un presupuesto de carga (especificación de identidad, sección 8): menos de 120 KB de JavaScript inicial comprimido y menos de 36 KB de CSS. El script `frontend/scripts/check-bundle-budget.mjs` mide la entrada y sus dependencias estáticas al ejecutar `pnpm build`; las secciones debajo del primer pantallazo llegan aparte (`src/features/landing/BelowFold.tsx`). La escena criptográfica del inicio usa SVG y CSS, sin WebGL.
+La landing tiene un presupuesto de carga (especificación de identidad, sección 8): menos de 120 KB de JavaScript inicial comprimido y menos de 36 KB de CSS. El script `frontend/scripts/check-bundle-budget.mjs` mide la entrada y sus dependencias estáticas al ejecutar `pnpm build`; las secciones debajo del primer pantallazo llegan aparte (`src/features/landing/BelowFold.tsx`). Todo el movimiento de la portada es CSS, sin JavaScript adicional.
 
 Las políticas legales comparten una sola versión y fecha de vigencia, definidas en `src/config/legal.ts`. Si un cambio de texto altera derechos u obligaciones, se sube la versión ahí y en ningún otro lugar: el registro guarda qué versión aceptó cada persona.
 

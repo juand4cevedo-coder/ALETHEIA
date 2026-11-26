@@ -70,6 +70,7 @@ def test_crea_la_cuenta_la_organizacion_y_la_prueba(client: TestClient, db: Sess
     assert membership.role == "owner"
     organization = db.get_one(Organization, membership.organization_id)
     assert organization.name == "Restrepo Abogados"
+    assert organization.kind == "firm"
 
     subscription = db.scalars(select(Subscription)).one()
     trial = db.scalars(select(Plan).where(Plan.code == "trial")).one()
@@ -105,7 +106,8 @@ def test_quien_trabaja_por_su_cuenta_tiene_una_organizacion_con_su_nombre(
     membership = db.scalars(select(Membership).where(Membership.user_id == user.id)).one()
     set_tenant(db, TenantContext(organization_id=membership.organization_id, user_id=user.id))
     assert membership.role == "owner"
-    assert db.get_one(Organization, membership.organization_id).name == "Ana Restrepo"
+    organization = db.get_one(Organization, membership.organization_id)
+    assert (organization.name, organization.kind) == ("Ana Restrepo", "individual")
     assert db.scalars(select(Subscription)).one().status == "trial"
 
 

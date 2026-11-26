@@ -2,6 +2,7 @@
 
 import datetime
 import uuid
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -55,6 +56,7 @@ class PlatformOverview(_FromService):
 class PlatformOrganization(_FromService):
     id: uuid.UUID
     name: str
+    kind: Literal["individual", "firm"]
     status: str
     owner_name: str | None
     owner_email: str | None

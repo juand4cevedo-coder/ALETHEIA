@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.50.0"
+    "version": "0.51.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -6712,6 +6712,78 @@
         }
       }
     },
+    "/api/v1/platform/organizations/{organization_id}/deletion": {
+      "post": {
+        "tags": [
+          "plataforma"
+        ],
+        "summary": "Eliminar un despacho completo",
+        "description": "Cierra y anonimiza las cuentas de todas sus personas, cancela la suscripción y revoca\ninvitaciones y portales. Los casos se conservan en solo lectura hasta cumplir su plazo.",
+        "operationId": "delete_platform_organization",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Organization Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationDeletionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "El despacho no existe o ya está cerrado.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El despacho incluye una cuenta de plataforma.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/platform/plans/{code}": {
       "patch": {
         "tags": [
@@ -7091,6 +7163,28 @@
               "title": "Subscription Status"
             },
             "description": "Estado de la suscripción."
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "individual",
+                    "firm"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Cuenta independiente o firma.",
+              "title": "Kind"
+            },
+            "description": "Cuenta independiente o firma."
           }
         ],
         "responses": {
@@ -12516,6 +12610,24 @@
         ],
         "title": "OrganizationAuditPage"
       },
+      "OrganizationDeletionRequest": {
+        "properties": {
+          "confirmation": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Confirmation",
+            "description": "El nombre del despacho, escrito tal cual, para confirmar."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "confirmation"
+        ],
+        "title": "OrganizationDeletionRequest",
+        "description": "Confirmación del cierre de un despacho: su nombre exacto."
+      },
       "OrganizationHealth": {
         "properties": {
           "storage_used_bytes": {
@@ -13367,6 +13479,14 @@
             "type": "string",
             "title": "Name"
           },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "firm"
+            ],
+            "title": "Kind"
+          },
           "status": {
             "type": "string",
             "title": "Status"
@@ -13478,6 +13598,7 @@
         "required": [
           "id",
           "name",
+          "kind",
           "status",
           "owner_name",
           "owner_email",

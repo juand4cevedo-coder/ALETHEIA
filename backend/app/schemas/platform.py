@@ -119,6 +119,18 @@ class PlatformAuditPage(BaseModel):
     total: int = Field(description="Eventos que coinciden con los filtros, sin limitar por página.")
 
 
+class OrganizationDeletionRequest(BaseModel):
+    """Confirmación del cierre de un despacho: su nombre exacto."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    confirmation: str = Field(
+        min_length=1,
+        max_length=120,
+        description="El nombre del despacho, escrito tal cual, para confirmar.",
+    )
+
+
 class AccountDeletionRequest(BaseModel):
     """Confirmación de una eliminación definitiva: el correo exacto de la cuenta."""
 

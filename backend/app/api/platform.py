@@ -20,6 +20,7 @@ from app.schemas.platform import (
     CourtesyGrant,
     CourtesyRevoke,
     CourtesyTarget,
+    OrganizationDeletionRequest,
     PlanUpdate,
     PlatformAuditEvent,
     PlatformAuditPage,
@@ -32,6 +33,7 @@ from app.schemas.platform import (
 from app.schemas.web_vitals import VitalsSummary, VitalSummaryRow
 from app.services import courtesy, plan_admin
 from app.services import platform_accounts as accounts_service
+from app.services import platform_organizations as organizations_service
 from app.services import receipts as receipts_service
 from app.services import web_vitals as vitals_service
 from app.services.audit import audit_ip
@@ -304,6 +306,51 @@ def delete_platform_user(
             detail=(
                 "Es la responsable de un despacho con más personas. Retire primero a las demás."
             ),
+        ) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT, headers={"Cache-Control": "no-store"})
+
+
+@router.post(
+    "/organizations/{organization_id}/deletion",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Eliminar un despacho completo",
+    responses={
+        404: {"description": "El despacho no existe o ya está cerrado."},
+        409: {"description": "El despacho incluye una cuenta de plataforma."},
+        422: {"description": "El nombre escrito no coincide con el del despacho."},
+    },
+)
+def delete_platform_organization(
+    organization_id: uuid.UUID,
+    data: OrganizationDeletionRequest,
+    principal: Annotated[Principal, Depends(get_platform_admin)],
+    session: Annotated[Session, Depends(get_session)],
+    client_ip: Annotated[str, Depends(get_client_ip)],
+) -> Response:
+    """Cierra y anonimiza las cuentas de todas sus personas, cancela la suscripción y revoca
+    invitaciones y portales. Los casos se conservan en solo lectura hasta cumplir su plazo."""
+    try:
+        organizations_service.delete_organization(
+            session,
+            principal,
+            organization_id,
+            data.confirmation,
+            client_ip=client_ip,
+            user_agent=None,
+        )
+    except organizations_service.OrganizationNotFoundError:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="El despacho no existe o ya está cerrado."
+        ) from None
+    except organizations_service.ProtectedOrganizationError:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="El despacho incluye una cuenta de plataforma y no se cierra desde aquí.",
+        ) from None
+    except organizations_service.ConfirmationMismatchError:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="El nombre escrito no coincide con el del despacho.",
         ) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT, headers={"Cache-Control": "no-store"})
 
