@@ -54,7 +54,7 @@ def test_cierra_el_despacho_y_las_cuentas_de_todo_su_equipo(
         select(AuditLog).where(AuditLog.action == "organization_deleted_by_platform")
     ).all()
     assert [row.target_id for row in audit] == [oficina.organization_id]
-    assert audit[0].details["accounts_closed"] == 2
+    assert audit[0].details == {"accounts_closed": "2", "case_records": "preserved"}
     # Ya cerrado, no se puede cerrar de nuevo.
     assert _delete(client, oficina.organization_id, "Cierre Abogados").status_code == 404
 

@@ -72,7 +72,7 @@ def delete_organization(
             action="organization_deleted_by_platform",
             target_id=organization_id,
             details={
-                "accounts_closed": int(people or 0),
+                "accounts_closed": str(int(people or 0)),
                 "case_records": "preserved",
             },
             ip=audit_ip(client_ip),
