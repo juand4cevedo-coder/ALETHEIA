@@ -50,7 +50,7 @@
 
 .inner {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: end;
   gap: clamp(32px, 5vw, 80px);
   width: min(100%, 1280px);
@@ -142,100 +142,6 @@
   margin-top: 34px;
 }
 
-/* Fichas de vidrio que flotan sobre la foto, abajo a la derecha, lejos de las caras. */
-.scene {
-  display: grid;
-  justify-items: end;
-  gap: 14px;
-  padding-bottom: 8px;
-}
-
-@keyframes flotar {
-  50% {
-    translate: 0 -8px;
-  }
-}
-
-@keyframes entrar-ficha {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.96);
-  }
-}
-
-.card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: max-content;
-  max-width: 300px;
-  padding: 13px 18px 13px 13px;
-  border: 1px solid rgb(255 255 255 / 60%);
-  border-radius: 18px;
-  background: rgb(255 255 255 / 86%);
-  backdrop-filter: blur(16px) saturate(1.5);
-  box-shadow: 0 24px 48px -20px rgb(20 10 40 / 55%);
-  /* La ficha siempre es clara: su texto no sigue al tema. */
-  color: #17131f;
-  font-size: 14px;
-  line-height: 19px;
-  animation:
-    entrar-ficha 800ms var(--ease-out) both,
-    flotar 6s 1s ease-in-out infinite;
-}
-
-.card strong {
-  display: block;
-  font-weight: 600;
-}
-
-.card small {
-  display: block;
-  color: #5d566a;
-  font-size: 12.5px;
-}
-
-.cardSaved {
-  margin-right: 56px;
-  animation-delay: 600ms, 1.4s;
-}
-
-.cardReady {
-  animation-delay: 800ms, 3.4s;
-}
-
-.cardIcon {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  font-family: var(--font-editorial);
-  font-size: 18px;
-  font-weight: 500;
-}
-
-.iconOk {
-  background: #e3f2ea;
-  color: #1f6b4a;
-}
-
-.iconInk {
-  background: #ece4f7;
-  color: #55278a;
-}
-
-/* La marca de visto de la ficha va en CSS: es decoración y no suma JavaScript a la portada. */
-.iconOk::before {
-  content: "";
-  width: 20px;
-  height: 20px;
-  background: currentColor;
-  mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.4%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M5 12.5l4.5 4.5L19 7.5%27/%3E%3C/svg%3E")
-    center / contain no-repeat;
-}
-
 /* En tablet y celular la foto queda arriba, a la vista, y el degradado sube desde abajo para
    el texto. */
 @media (max-width: 960px) {
@@ -264,16 +170,11 @@
     padding-top: 38vh;
     padding-bottom: 72px;
   }
-
-  .scene {
-    display: none;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .copy > *,
-  .photo,
-  .card {
+  .photo {
     animation: none;
   }
 }

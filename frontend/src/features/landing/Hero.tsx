@@ -5,8 +5,7 @@ import { SIGN_UP_LABEL } from "../../config/site.ts";
 import styles from "./Hero.module.css";
 
 // Portada (UI-001): un equipo joven de abogados a pantalla completa, con lo que ALETHEIA hace
-// por ellos sobre un degradado de tinta y dos fichas de lo que pasa en la aplicación. El
-// movimiento es CSS.
+// por ellos sobre un degradado de tinta. El movimiento es CSS.
 export function Hero() {
   return (
     <section
@@ -39,23 +38,6 @@ export function Hero() {
             <ButtonLink to="/#como-le-ayuda" variant="secondary">
               Cómo le ayuda
             </ButtonLink>
-          </div>
-        </div>
-
-        <div className={styles.scene} aria-hidden="true">
-          <div className={`${styles.card} ${styles.cardSaved}`}>
-            <span className={`${styles.cardIcon} ${styles.iconOk}`} />
-            <span>
-              <strong>Chat de WhatsApp guardado</strong>
-              <small>Caso Restrepo, hoy 9:14 a. m.</small>
-            </span>
-          </div>
-          <div className={`${styles.card} ${styles.cardReady}`}>
-            <span className={`${styles.cardIcon} ${styles.iconInk}`}>12</span>
-            <span>
-              <strong>Listo para el juez</strong>
-              <small>Expediente con 12 pruebas</small>
-            </span>
           </div>
         </div>
       </div>

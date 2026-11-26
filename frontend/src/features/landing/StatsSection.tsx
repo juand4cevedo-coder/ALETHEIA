@@ -11,7 +11,6 @@ const AREAS = [
   "Responsabilidad médica",
   "Seguros",
   "Administrativo",
-  "Consumidor",
 ] as const;
 
 // Cifras que se cumplen siempre: salen de las condiciones de la prueba y de la política de

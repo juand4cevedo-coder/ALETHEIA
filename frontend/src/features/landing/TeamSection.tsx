@@ -54,19 +54,6 @@ export function TeamSection() {
             loading="lazy"
             decoding="async"
           />
-          <figcaption className={styles.caption}>
-            <img
-              {...fotoProps("abogado-llamada", "56px")}
-              alt=""
-              width={56}
-              height={56}
-              loading="lazy"
-            />
-            <span>
-              <strong>Cada abogado ve sus casos</strong>
-              <small>Y usted sabe quién hizo qué</small>
-            </span>
-          </figcaption>
         </figure>
         <div>
           <p className={styles.kicker}>Para despachos</p>

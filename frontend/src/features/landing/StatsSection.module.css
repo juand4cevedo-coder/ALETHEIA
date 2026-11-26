@@ -37,6 +37,12 @@
   background: var(--seal-line);
 }
 
+/* WCAG 2.2.2: lo que se mueve solo más de cinco segundos se puede detener. La cinta se pausa
+   al pasar el puntero. */
+.ribbon:hover .track {
+  animation-play-state: paused;
+}
+
 @keyframes desplazar {
   to {
     transform: translateX(-50%);
@@ -104,8 +110,34 @@
   }
 }
 
+/* Con el movimiento reducido la cinta no se desplaza: las áreas se acomodan completas y
+   centradas, sin la copia que sirve para el bucle, en lugar de quedar cortadas en el borde. */
 @media (prefers-reduced-motion: reduce) {
-  .track,
+  .ribbon {
+    mask: none;
+  }
+
+  .track {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 40px;
+    width: auto;
+    padding: 0 24px;
+    animation: none;
+  }
+
+  .track span {
+    gap: 40px;
+  }
+
+  .track span:nth-child(n + 8) {
+    display: none;
+  }
+
+  .track span:nth-child(7)::after {
+    display: none;
+  }
+
   :global([data-visible="true"]) .number {
     animation: none;
   }
