@@ -1,4 +1,12 @@
-import type { Motivo } from "../components/brand/Lamina.tsx";
+/** Tema del artículo: decide su fotografía de portada (JournalPage.tsx). */
+export type Motivo =
+  | "chat"
+  | "cadena"
+  | "procesos"
+  | "sellos"
+  | "huella"
+  | "acceso"
+  | "expediente";
 
 export type JournalArticle = {
   slug: string;
@@ -10,7 +18,7 @@ export type JournalArticle = {
   updated?: string;
   /** Palabra grande de la imagen de la tarjeta: el tema del artículo en una o dos palabras. */
   visual: string;
-  /** Lámina ilustrada del artículo (components/brand/Lamina.tsx). */
+  /** Tema del artículo, que elige su foto de portada. */
   motivo: Motivo;
   /** Línea corta para la tarjeta de la portada de blog: dice de qué trata, sin eslogan. */
   tagline: string;
