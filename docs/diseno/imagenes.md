@@ -14,7 +14,7 @@ Todas vienen de Unsplash con su licencia gratuita, que permite el uso comercial 
 
 | Archivo           | Autor              | Fuente                                                                     |
 | ----------------- | ------------------ | -------------------------------------------------------------------------- |
-| `abogado-portada` | Vitaly Gariev      | [unsplash.com/photos/fZAMxM4HE2k](https://unsplash.com/photos/fZAMxM4HE2k) |
+| `equipo-portada`  | Vitaly Gariev      | [unsplash.com/photos/gItonyvrdUA](https://unsplash.com/photos/gItonyvrdUA) |
 | `abogado-llamada` | Vitaly Gariev      | [unsplash.com/photos/NWT8Hya-_WQ](https://unsplash.com/photos/NWT8Hya-_WQ) |
 | `abogada`         | Vitaly Gariev      | [unsplash.com/photos/jI4HREHtae4](https://unsplash.com/photos/jI4HREHtae4) |
 | `abogada-2`       | Vitaly Gariev      | [unsplash.com/photos/ft1ET-Sizow](https://unsplash.com/photos/ft1ET-Sizow) |

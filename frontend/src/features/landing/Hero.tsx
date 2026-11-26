@@ -4,12 +4,23 @@ import { ROUTES } from "../../config/routes.ts";
 import { SIGN_UP_LABEL } from "../../config/site.ts";
 import styles from "./Hero.module.css";
 
-// Portada (UI-001): a la izquierda, lo que ALETHEIA hace por el abogado y la acción; a la
-// derecha, un abogado en su despacho con dos fichas de lo que pasa en la aplicación. El
+// Portada (UI-001): un equipo joven de abogados a pantalla completa, con lo que ALETHEIA hace
+// por ellos sobre un degradado de tinta y dos fichas de lo que pasa en la aplicación. El
 // movimiento es CSS.
 export function Hero() {
   return (
-    <section className={styles.hero} aria-labelledby="titulo-inicio">
+    <section
+      className={`${styles.hero} on-ink`}
+      aria-labelledby="titulo-inicio"
+    >
+      <img
+        className={styles.photo}
+        {...fotoProps("equipo-portada", "100vw")}
+        alt="Equipo de abogados jóvenes en su oficina"
+        width={1920}
+        height={1080}
+        fetchPriority="high"
+      />
       <div className={styles.inner}>
         <div className={styles.copy}>
           <p className={styles.eyebrow}>
@@ -31,29 +42,15 @@ export function Hero() {
           </div>
         </div>
 
-        <div className={styles.scene}>
-          <img
-            className={styles.photo}
-            {...fotoProps("abogado-portada", "(max-width: 960px) 100vw, 44vw")}
-            alt="Abogado en su despacho"
-            width={1280}
-            height={720}
-            fetchPriority="high"
-          />
-          <div
-            className={`${styles.card} ${styles.cardSaved}`}
-            aria-hidden="true"
-          >
+        <div className={styles.scene} aria-hidden="true">
+          <div className={`${styles.card} ${styles.cardSaved}`}>
             <span className={`${styles.cardIcon} ${styles.iconOk}`} />
             <span>
               <strong>Chat de WhatsApp guardado</strong>
               <small>Caso Restrepo, hoy 9:14 a. m.</small>
             </span>
           </div>
-          <div
-            className={`${styles.card} ${styles.cardReady}`}
-            aria-hidden="true"
-          >
+          <div className={`${styles.card} ${styles.cardReady}`}>
             <span className={`${styles.cardIcon} ${styles.iconInk}`}>12</span>
             <span>
               <strong>Listo para el juez</strong>

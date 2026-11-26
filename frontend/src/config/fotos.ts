@@ -5,7 +5,7 @@ const CDN = String(import.meta.env.VITE_CDN_URL ?? "").replace(/\/+$/, "");
 /** Fotografías editoriales de Unsplash (licencia gratuita, créditos en docs/diseno/imagenes.md),
  * en WebP a 640, 1280, 1920 y 2560 px, este último para pantallas retina grandes. El navegador elige el ancho con srcset y sizes. */
 export type Foto =
-  | "abogado-portada"
+  | "equipo-portada"
   | "abogado-llamada"
   | "abogada"
   | "abogada-2"
