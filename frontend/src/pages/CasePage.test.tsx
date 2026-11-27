@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -1052,5 +1052,22 @@ describe("Página del caso (HU-015)", () => {
     expect(await seriousAxeViolations(container)).toEqual([]);
     await user.click(screen.getByRole("tab", { name: /Equipo/ }));
     expect(await seriousAxeViolations(container)).toEqual([]);
+  });
+});
+
+describe("Pestañas del caso por ancla", () => {
+  it("cambia de pestaña cuando un aviso lleva a otra ancla del mismo caso", async () => {
+    serve(() => jsonResponse(DETAIL));
+    const { router } = await openCase();
+    expect(screen.getByRole("tab", { name: /Historial/ })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+
+    await act(() => router.navigate(`/app/casos/${CASE_ID}#notas`));
+
+    expect(
+      await screen.findByRole("tab", { name: /Notas/, selected: true }),
+    ).toBeInTheDocument();
   });
 });

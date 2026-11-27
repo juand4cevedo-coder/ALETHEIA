@@ -189,6 +189,12 @@ function CaseView({
 }) {
   const location = useLocation();
   const [tab, setTab] = useState<TabKey>(TAB_BY_HASH[location.hash] ?? "chain");
+  // Un aviso o un enlace con ancla puede llevar a otra pestaña del mismo caso sin recargar la
+  // página: la pestaña sigue al ancla cada vez que cambia.
+  useEffect(() => {
+    const fromHash = TAB_BY_HASH[location.hash];
+    if (fromHash) setTab(fromHash);
+  }, [location.hash]);
   const canExport = ["owner", "admin", "lawyer"].includes(
     me.organization?.role ?? "",
   );

@@ -126,8 +126,8 @@ function filingHelp(digits: string): string {
 }
 
 // Abrir un caso (HU-015, maqueta 02): el formulario a la izquierda y, a la derecha, la vista
-// previa del registro de apertura que inicia la cadena de custodia. Lo abren el propietario,
-// el administrador y el abogado (RN-008); la API también lo exige.
+// previa del registro de apertura que inicia la cadena de custodia. Lo abren el abogado y, en una
+// cuenta independiente, su responsable (RN-008, ADR-062); la API también lo exige.
 export function NewCasePage() {
   const me = useOutletContext<Me>();
 
@@ -140,14 +140,35 @@ export function NewCasePage() {
       ) : (
         <div className={styles.denied}>
           <PageHeader title="Abrir un caso" />
-          <Notice tone="error">
-            <p>{NOT_ALLOWED}</p>
-          </Notice>
-          <div>
-            <ButtonLink to={ROUTES.app} variant="secondary" size="sm">
-              Volver al inicio
-            </ButtonLink>
-          </div>
+          {me.organization?.role === "owner" &&
+          me.organization.kind === "firm" ? (
+            <>
+              {/* Quien dirige la firma no abre casos (ADR-062): se le dice por qué y cómo
+                  seguir, en vez del aviso genérico de permisos. */}
+              <Notice tone="info">
+                <p>
+                  En una firma, los casos los abren sus abogados. Invítelos
+                  desde Equipo y podrá seguir su trabajo desde el inicio.
+                </p>
+              </Notice>
+              <div>
+                <ButtonLink to={ROUTES.members} size="sm">
+                  Invitar a su equipo
+                </ButtonLink>
+              </div>
+            </>
+          ) : (
+            <>
+              <Notice tone="error">
+                <p>{NOT_ALLOWED}</p>
+              </Notice>
+              <div>
+                <ButtonLink to={ROUTES.app} variant="secondary" size="sm">
+                  Volver al inicio
+                </ButtonLink>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

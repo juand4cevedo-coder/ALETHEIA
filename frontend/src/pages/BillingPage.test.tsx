@@ -53,6 +53,7 @@ function option(
     plan_name,
     billing_cycle,
     included_users: 1,
+    max_users: 1,
     fits: true,
     plan_cop: 0,
     extra_users: 0,

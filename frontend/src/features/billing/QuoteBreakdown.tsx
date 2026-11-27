@@ -24,8 +24,11 @@ export function QuoteBreakdown({
     return (
       <p className={styles.misfit} role="status">
         Su equipo tiene {team}, contando las invitaciones abiertas, y el plan{" "}
-        {option.plan_name} incluye {included} sin adicionales. Elija un plan más
-        amplio o retire personas en Equipo.
+        {option.plan_name}{" "}
+        {option.max_users != null && option.max_users > option.included_users
+          ? `admite hasta ${option.max_users} personas contando los adicionales`
+          : `incluye ${included} sin adicionales`}
+        . Elija un plan más amplio o retire personas en Equipo.
       </p>
     );
   }
@@ -61,9 +64,11 @@ export function QuoteBreakdown({
         </div>
       </dl>
       <p className={styles.note}>
-        El cálculo incluye a todo su equipo ({team}), con las invitaciones
-        abiertas. Si agrega personas durante el periodo, se cobran desde la
-        renovación siguiente.
+        {users === 0
+          ? "Todavía no hay nadie más en su equipo. "
+          : `El cálculo incluye a todo su equipo (${team}), con las invitaciones abiertas. `}
+        Si agrega personas durante el periodo, se cobran desde la renovación
+        siguiente.
       </p>
     </div>
   );

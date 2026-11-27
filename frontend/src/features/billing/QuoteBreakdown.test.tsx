@@ -9,6 +9,7 @@ const FIRMA: BillingQuoteOption = {
   plan_name: "Firma",
   billing_cycle: "monthly",
   included_users: 8,
+  max_users: 16,
   fits: true,
   plan_cop: 149_900,
   extra_users: 0,
@@ -52,6 +53,7 @@ describe("Desglose del valor antes de pagar", () => {
           ...FIRMA,
           plan_name: "Esencial",
           included_users: 1,
+          max_users: 1,
           fits: false,
         }}
         users={1}
@@ -64,5 +66,27 @@ describe("Desglose del valor antes de pagar", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/Total/)).not.toBeInTheDocument();
+  });
+});
+
+describe("Desglose cuando el equipo no cabe", () => {
+  it("con adicionales habla del tope del plan, no de que no los admite", () => {
+    render(
+      <QuoteBreakdown
+        option={{ ...FIRMA, fits: false, included_users: 10, max_users: 20 }}
+        users={23}
+      />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Su equipo tiene 23 personas, contando las invitaciones abiertas, y el plan Firma admite hasta 20 personas contando los adicionales. Elija un plan más amplio o retire personas en Equipo.",
+    );
+  });
+
+  it("sin nadie más en el equipo no dice «0 personas»", () => {
+    render(<QuoteBreakdown option={FIRMA} users={0} />);
+    expect(
+      screen.getByText(/Todavía no hay nadie más en su equipo/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/0 personas/)).not.toBeInTheDocument();
   });
 });

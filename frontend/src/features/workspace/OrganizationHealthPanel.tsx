@@ -37,10 +37,16 @@ export function OrganizationHealthPanel() {
   const health = useQuery(organizationHealthOptions());
 
   if (health.isPending) {
+    // Reserva el alto del panel: si no, al llegar los datos empuja todo lo de abajo.
     return (
-      <p role="status" className={styles.status}>
-        Cargando la salud del despacho
-      </p>
+      <section
+        className={`${styles.panel} ${styles.placeholder}`}
+        aria-busy="true"
+      >
+        <p role="status" className={styles.status}>
+          Cargando la salud del despacho
+        </p>
+      </section>
     );
   }
   // Una respuesta con otra forma no debe tumbar el inicio: se trata como «sin datos».

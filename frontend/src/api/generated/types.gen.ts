@@ -239,6 +239,12 @@ export type BillingQuoteOption = {
    */
   included_users: number;
   /**
+   * Max Users
+   *
+   * Cuántas personas admite el plan como máximo, con sus adicionales; null si no tiene límite.
+   */
+  max_users: number | null;
+  /**
    * Fits
    *
    * Si el equipo cabe en el plan. Si no cabe, no se puede pagar ese plan.

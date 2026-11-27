@@ -189,6 +189,7 @@ export function AppShell() {
             key={location.pathname}
             id="contenido"
             className={`${styles.main} page-enter`}
+            data-workspace=""
             tabIndex={-1}
             aria-busy={me.isPending}
           >
