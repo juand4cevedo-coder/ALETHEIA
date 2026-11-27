@@ -27,6 +27,7 @@ from app.models.evidence import (
 )
 from app.models.evidence_share_links import EvidenceShareLink
 from app.models.identity import AuditLog, LegalAcceptance, OAuthIdentity, RefreshToken, User
+from app.models.inbox import Notification
 from app.models.jobs import Job
 from app.models.limits import CaptchaSolution, RateLimitEvent
 from app.models.notes import CaseNote
@@ -59,6 +60,7 @@ __all__ = [
     "Job",
     "LegalAcceptance",
     "Membership",
+    "Notification",
     "OAuthIdentity",
     "Organization",
     "PaymentEvent",

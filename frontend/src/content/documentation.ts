@@ -280,7 +280,7 @@ export const DOCUMENTATION: DocArticle[] = [
         id: "cupos",
         title: "Cupos del plan",
         paragraphs: [
-          "Cada plan incluye un número de usuarios, y las invitaciones abiertas también ocupan cupo. Esencial incluye dos; Profesional y Firma admiten usuarios adicionales con un costo mensual por persona, que se ve antes de pagar.",
+          "Cada plan incluye un número de usuarios, y las invitaciones abiertas también ocupan cupo. En una firma, la persona responsable dirige el despacho y no ocupa cupo. Esencial, Profesional y Firma admiten usuarios adicionales a 19.900 pesos al mes, hasta tantos como los que incluye cada plan; el costo se ve antes de pagar. Corporativo no tiene límite de personas.",
         ],
       },
       {

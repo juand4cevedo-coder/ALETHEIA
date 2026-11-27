@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from app.adapters.email import EmailDeliveryError
 from app.repositories import jobs as jobs_repository
 from app.repositories.jobs import ClaimedJob
-from app.services import audit, captcha, rate_limit, trial_emails, web_vitals
+from app.services import audit, captcha, inbox, rate_limit, trial_emails, web_vitals
 from app.services.jobs import (
     LEASE,
     MAX_ATTEMPTS,
@@ -118,16 +118,18 @@ class Worker:
                 vitals = web_vitals.purge_expired(session)
                 anonymized = audit.anonymize_expired_network(session)
                 challenges = captcha.purge_expired(session)
+                notices = inbox.purge_old(session)
         except SQLAlchemyError as exc:
             logger.error("No se pudo hacer el mantenimiento: %s", type(exc).__name__)
             return
         logger.info(
-            "Mantenimiento: %d intentos, %d tareas, %d medidas y %d retos borrados; "
+            "Mantenimiento: %d intentos, %d tareas, %d medidas, %d retos y %d avisos borrados; "
             "%d eventos anonimizados",
             limits,
             jobs,
             vitals,
             challenges,
+            notices,
             anonymized,
         )
         self._send_trial_emails()

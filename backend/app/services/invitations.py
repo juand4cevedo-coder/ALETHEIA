@@ -16,6 +16,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Final, Literal
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -27,13 +28,19 @@ from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, Invitation, Membership, Organization, User
 from app.repositories import accounts as accounts_repository
 from app.repositories import organization as organization_repository
-from app.services import rate_limit
+from app.services import inbox, rate_limit
 from app.services.audit import audit_ip, audit_user_agent
 from app.services.legal import LegalVersionMismatchError, record_registration
 from app.services.sessions import IssuedSession, start_session
 
 # Un token legítimo mide 43 caracteres: lo demás se rechaza sin calcular hashes.
 MAX_TOKEN_LENGTH: Final = 64
+# Cómo se nombra cada rol en el aviso a quien dirige el despacho.
+_ROLE_NAMES: Final = {
+    "admin": "administrador",
+    "lawyer": "abogado",
+    "assistant": "asistente",
+}
 
 type AccountState = Literal["new", "existing", "member_elsewhere"]
 
@@ -168,6 +175,22 @@ def accept(
         client_ip,
         user_agent,
         now,
+    )
+    managers = session.scalars(
+        select(Membership.user_id).where(
+            Membership.organization_id == organization.id,
+            Membership.role.in_(("owner", "admin")),
+        )
+    ).all()
+    inbox.notify(
+        session,
+        organization_id=organization.id,
+        recipients=managers,
+        kind="member_joined",
+        title=f"{user.full_name} entró al despacho",
+        body=f"Aceptó la invitación como {_ROLE_NAMES.get(invitation.role, 'miembro')}.",
+        link="/app/miembros",
+        actor_id=user.id,
     )
     issued = start_session(
         session,

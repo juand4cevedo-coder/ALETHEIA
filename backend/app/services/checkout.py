@@ -51,10 +51,12 @@ class CheckoutNoPermitidoError(Exception):
 class EquipoNoCabeError(CheckoutNoPermitidoError):
     """El equipo tiene más personas de las que admite el plan, y el plan no tiene adicionales."""
 
-    def __init__(self, users: int, included: int) -> None:
+    def __init__(self, users: int, included: int, limit: int | None = None) -> None:
         super().__init__("El equipo no cabe en el plan.")
         self.users = users
         self.included = included
+        # Cuántas personas admite el plan con sus adicionales; None si no admite adicionales.
+        self.limit = limit
 
 
 class TransaccionAjenaError(Exception):
@@ -129,7 +131,12 @@ def cotizar(
     users = pricing.users_counted(session, organization_id, now)
     extra = pricing.extra_users_for(plan, users)
     if extra is None:
-        raise EquipoNoCabeError(users, plan.included_users)
+        limit = (
+            plan.included_users + plan.max_extra_users
+            if plan.extra_user_price_cop is not None and plan.max_extra_users is not None
+            else None
+        )
+        raise EquipoNoCabeError(users, plan.included_users, limit)
     cotizacion = pricing.quote(plan, billing_cycle, extra)
     if cotizacion is None:
         raise CheckoutNoPermitidoError

@@ -5,6 +5,10 @@ import { LEGAL_VERSION } from "../../config/legal.ts";
 // LEGAL_VERSION necesita aquí su resumen; una prueba lo exige. Solo resume: lo que rige es el
 // texto completo de cada política.
 export const LEGAL_CHANGES: Readonly<Record<string, readonly string[]>> = {
+  "2026-11-27": [
+    "En una firma, la persona responsable dirige el despacho y no abre casos: arma el equipo, paga el plan y fija las políticas. Por eso no ocupa cupo del plan. En una cuenta independiente, quien la crea es el abogado y sí lo ocupa.",
+    "Esencial, Profesional y Firma admiten usuarios adicionales a 19.900 pesos al mes cada uno, hasta tantos como los que incluye cada plan. Corporativo no tiene límite de personas y se cotiza aparte.",
+  ],
   "2026-11-26": [
     "En los planes que admiten usuarios adicionales, cada periodo cuesta el plan más las personas por encima de las incluidas, contando los miembros del despacho y las invitaciones abiertas. En el pago anual, cada usuario adicional vale diez meses.",
     "La renovación automática cobra el plan con los usuarios adicionales que tenga el despacho el día del cobro, y el comprobante los muestra en una línea aparte.",

@@ -18,6 +18,12 @@ class PublicPlan(BaseModel):
     extra_user_price_cop: int | None = Field(
         description="Precio mensual de cada usuario adicional; nulo si el plan no los admite."
     )
+    max_extra_users: int | None = Field(
+        description=(
+            "Cuántos usuarios adicionales admite sobre los incluidos; nulo si no tiene tope o "
+            "si el plan no admite adicionales."
+        )
+    )
     storage_limit_bytes: int = Field(description="Almacenamiento total del plan, en bytes.")
     max_file_bytes: int = Field(description="Tamaño máximo de un archivo, en bytes.")
     trial_days: int | None = Field(

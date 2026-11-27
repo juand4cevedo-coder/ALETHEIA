@@ -94,7 +94,7 @@ def test_la_lista_de_despachos_dice_si_es_independiente_o_firma(
     app: FastAPI, owner_db: Session, dispositivo: NuevoCliente
 ) -> None:
     admin = _user(owner_db, "plataforma@example.com", platform_admin=True)
-    firma = crear_oficina(owner_db, nombre="Firma")
+    firma = crear_oficina(owner_db, nombre="Firma", kind="firm")
     independiente = crear_oficina(owner_db, nombre="Sola")
     owner_db.get_one(Organization, independiente.organization_id).kind = "individual"
     _as_platform(app, owner_db, admin)

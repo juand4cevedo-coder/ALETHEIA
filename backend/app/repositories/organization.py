@@ -69,6 +69,25 @@ def member_count(session: Session, organization_id: uuid.UUID) -> int:
     return session.scalar(statement) or 0
 
 
+def seat_member_count(session: Session, organization_id: uuid.UUID) -> int:
+    """Cuántos miembros ocupan cupo del plan.
+
+    En una firma el responsable dirige el despacho y no abre casos, así que no ocupa cupo: el
+    plan Esencial de una firma alcanza para dos abogados, o un abogado y su asistente. En una
+    cuenta independiente el responsable es el abogado y sí cuenta (ADR-062).
+    """
+    statement = (
+        select(func.count())
+        .select_from(Membership)
+        .join(Organization, Organization.id == Membership.organization_id)
+        .where(
+            Membership.organization_id == organization_id,
+            ~((Organization.kind == "firm") & (Membership.role == "owner")),
+        )
+    )
+    return session.scalar(statement) or 0
+
+
 def open_invitation_count(
     session: Session, organization_id: uuid.UUID, now: datetime.datetime
 ) -> int:

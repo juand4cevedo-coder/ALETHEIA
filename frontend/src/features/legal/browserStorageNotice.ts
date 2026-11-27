@@ -25,4 +25,9 @@ export const BROWSER_STORAGE_NOTICE: Readonly<
       "Si prefiere el menú lateral del espacio de trabajo abierto o compacto, y qué grupos dejó plegados.",
     duration: "Hasta que lo cambie o borre los datos del sitio.",
   },
+  dismissedNotices: {
+    purpose:
+      "Qué avisos informativos cerró en el espacio de trabajo, para no volver a mostrárselos. Solo guarda el nombre de cada aviso.",
+    duration: "Hasta que borre los datos del sitio.",
+  },
 };

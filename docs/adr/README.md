@@ -65,3 +65,5 @@ Cada decisión de arquitectura de ALETHEIA queda en un archivo de esta carpeta c
 | [ADR-059](adr-059.md) | Autoridades públicas de sellado de tiempo en producción | Aceptado | 25/11/2026 |
 | [ADR-060](adr-060.md) | Identidad Tinta violeta, tipografía editorial y emblema del sello | Aceptado | 25/11/2026 |
 | [ADR-061](adr-061.md) | La plataforma cierra despachos completos y conserva sus casos | Aceptado | 26/11/2026 |
+| [ADR-062](adr-062.md) | En una firma el responsable dirige el despacho y los planes tienen tope de adicionales | Aceptado | 27/11/2026 |
+| [ADR-063](adr-063.md) | Avisos dentro de la aplicación con campana y panel | Aceptado | 27/11/2026 |

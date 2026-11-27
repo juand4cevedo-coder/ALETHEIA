@@ -48,15 +48,24 @@ class Seats:
     # Precio mensual de cada usuario adicional, o None si el plan no los admite.
     extra_user_price_cop: int | None
     owner_exempt: bool = False
+    # Adicionales que admite el plan sobre los incluidos; None con precio de adicional es sin
+    # tope (Corporativo).
+    max_extra_users: int | None = None
+
+    @property
+    def limit(self) -> int | None:
+        """Cuántas personas caben como máximo en el plan, o None si no hay límite."""
+        if self.extra_user_price_cop is None:
+            return self.included
+        if self.max_extra_users is None:
+            return None
+        return self.included + self.max_extra_users
 
     @property
     def full(self) -> bool:
         """Si ya no cabe nadie más sin cambiar de plan."""
-        return (
-            not self.owner_exempt
-            and self.extra_user_price_cop is None
-            and self.used >= self.included
-        )
+        limit = self.limit
+        return not self.owner_exempt and limit is not None and self.used >= limit
 
 
 class NotAManagerError(Exception):
@@ -115,7 +124,7 @@ def seats(
 ) -> Seats:
     """Cupos usados e incluidos en el plan de la organización."""
     plan: Plan | None = organization_repository.plan_of(session, organization_id)
-    used = organization_repository.member_count(
+    used = organization_repository.seat_member_count(
         session, organization_id
     ) + organization_repository.open_invitation_count(session, organization_id, now)
     owner_exempt = bool(session.scalar(select(User.is_platform_admin).where(User.id == actor_id)))
@@ -131,6 +140,7 @@ def seats(
         included=plan.included_users,
         extra_user_price_cop=plan.extra_user_price_cop,
         owner_exempt=owner_exempt,
+        max_extra_users=plan.max_extra_users,
     )
 
 

@@ -23,6 +23,7 @@ const ME = {
     id: "01890a5d-ac96-774b-bcce-b302099a8058",
     name: "Ruiz & Asociados",
     role: "lawyer",
+    kind: "individual",
   },
   legal: {
     accepted_version: LEGAL_VERSION,
@@ -202,7 +203,11 @@ describe("Página del caso (HU-015)", () => {
     serve(() => jsonResponse(DETAIL));
     const assistant = {
       ...ME,
-      organization: { ...ME.organization, role: "assistant" },
+      organization: {
+        ...ME.organization,
+        role: "assistant",
+        kind: "individual",
+      },
     };
     const original = fetchMock.getMockImplementation()!;
     fetchMock.mockImplementation(async (input, init) => {
@@ -231,7 +236,7 @@ describe("Página del caso (HU-015)", () => {
     const original = fetchMock.getMockImplementation()!;
     const owner = {
       ...ME,
-      organization: { ...ME.organization, role: "owner" },
+      organization: { ...ME.organization, role: "owner", kind: "individual" },
     };
     let sentBody: unknown;
     fetchMock.mockImplementation(async (input, init) => {
@@ -670,7 +675,11 @@ describe("Página del caso (HU-015)", () => {
     let sentBody: unknown;
     const assistant = {
       ...ME,
-      organization: { ...ME.organization, role: "assistant" },
+      organization: {
+        ...ME.organization,
+        role: "assistant",
+        kind: "individual",
+      },
     };
     serve(() => jsonResponse(DETAIL));
     const original = fetchMock.getMockImplementation()!;

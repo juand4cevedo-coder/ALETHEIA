@@ -56,6 +56,7 @@ function ownerEnPrueba() {
       id: "01890a5d-ac96-774b-bcce-b302099a8059",
       name: "Restrepo Abogados",
       role: "owner",
+      kind: "individual",
     },
     subscription: {
       plan_name: "Esencial",
@@ -326,6 +327,7 @@ it("no muestra el pago con Nequi a quien no administra la facturación", async (
           id: "01890a5d-ac96-774b-bcce-b302099a8059",
           name: "Restrepo Abogados",
           role: "lawyer",
+          kind: "individual",
         },
       });
     throw new Error(`Ruta inesperada: ${request.method} ${path}`);

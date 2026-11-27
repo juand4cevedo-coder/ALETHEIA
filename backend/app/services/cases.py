@@ -36,11 +36,12 @@ from sqlalchemy.orm import Session
 
 from app.adapters.keys import KeyWrapper
 from app.core.case_keys import new_wrapped_case_key
-from app.core.permissions import Permission, has_permission
+from app.core.permissions import Permission, can_create_cases, has_permission
 from app.db.tenancy import TenantContext, set_tenant
 from app.models import AuditLog, Case, CaseMember, CustodyEvent, Membership, Organization, User
 from app.repositories import cases as cases_repository
 from app.repositories.cases import CaseCandidateView, CaseMemberView, CustodyEventView
+from app.services import inbox
 from app.services.audit import audit_ip, audit_user_agent
 from app.services.custody_chain import GENESIS_HASH
 from app.services.members import OrganizationNotActiveError
@@ -222,6 +223,8 @@ def create_case(
         session.rollback()
         raise
     session.commit()
+    if not can_create_cases(principal.role, state.organization_kind):
+        raise NotAllowedToCreateCasesError
     if not state.email_verified:
         raise EmailNotVerifiedError
     if state.organization_status != "active":
@@ -255,10 +258,10 @@ def create_case(
             )
             # El rol y el estado pudieron cambiar mientras KMS envolvía la llave: se leen otra
             # vez, bloqueados hasta el commit, para que un cambio no se cruce con la escritura.
-            role, organization_status = cases_repository.creator_role_for_share(
+            role, organization_status, organization_kind = cases_repository.creator_role_for_share(
                 session, principal.user_id, organization_id
             )
-            if not has_permission(role, "cases.create"):
+            if not can_create_cases(role, organization_kind):
                 raise NotAllowedToCreateCasesError
             if organization_status != "active":
                 raise OrganizationNotActiveError
@@ -634,6 +637,15 @@ def add_case_member(
         )
         session.flush()
         _record_member_change(session, case, principal, user_id, "member_added")
+        inbox.notify(
+            session,
+            organization_id=case.organization_id,
+            recipients=[user_id],
+            kind="case_member_added",
+            title=f"Lo agregaron al caso {case.title}",
+            link=f"/app/casos/{case.id}",
+            actor_id=principal.user_id,
+        )
 
 
 def remove_case_member(

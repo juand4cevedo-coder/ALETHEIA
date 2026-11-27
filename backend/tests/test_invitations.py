@@ -206,22 +206,55 @@ def test_una_organizacion_en_solo_lectura_no_invita(dispositivo: NuevoCliente, d
 # --- Cupo del plan (CA-HU-011-02, RN-012) ---------------------------------------------------
 
 
-def test_esencial_admite_al_abogado_y_un_asistente_y_nadie_mas(
+def test_esencial_admite_dos_adicionales_y_nadie_mas(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
+    # Esencial incluye 2 personas y, desde la migración 0068, admite tantas adicionales como
+    # incluye: el abogado independiente y hasta tres personas más.
     oficina = crear_oficina(db, "essential")
     cliente = _sesion(dispositivo, oficina.owner)
-    asistente = _invitar(cliente, "asistente@example.com")
-    assert asistente.status_code == 201
+    for correo in ("asistente@example.com", "pedro@example.com", "laura@example.com"):
+        assert _invitar(cliente, correo).status_code == 201
+    cupo = cliente.get(_MIEMBROS).json()["seats"]
+    assert (cupo["used"], cupo["included"], cupo["limit"], cupo["full"]) == (4, 2, 4, True)
 
     respuesta = _invitar(cliente, "carlos@example.com")
 
     assert respuesta.status_code == 409
     assert respuesta.json()["detail"] == (
-        "Su plan incluye 2 usuarios y ya están ocupados o invitados. Para invitar a alguien "
-        "más, cambie de plan o revoque una invitación pendiente."
+        "Su plan admite hasta 4 personas contando los adicionales, y ya están ocupadas o "
+        "invitadas. Para invitar a alguien más, cambie de plan o revoque una invitación "
+        "pendiente."
     )
-    assert len(_invitaciones(db, oficina)) == 1
+    assert len(_invitaciones(db, oficina)) == 3
+
+
+def test_en_una_firma_el_responsable_no_ocupa_cupo(dispositivo: NuevoCliente, db: Session) -> None:
+    # La firma en Esencial alcanza para dos abogados, o un abogado y su asistente, sin contar
+    # a quien dirige el despacho (ADR-062).
+    oficina = crear_oficina(db, "essential", kind="firm")
+    cliente = _sesion(dispositivo, oficina.owner)
+
+    assert _invitar(cliente, "abogada@example.com").status_code == 201
+    assert _invitar(cliente, "asistente@example.com", "assistant").status_code == 201
+
+    cupo = cliente.get(_MIEMBROS).json()["seats"]
+    assert (cupo["used"], cupo["included"]) == (2, 2)
+
+
+def test_corporativo_no_tiene_tope_de_personas(dispositivo: NuevoCliente, db: Session) -> None:
+    oficina = crear_oficina(db, "corporate", kind="firm")
+    _contexto(db, oficina)
+    incluidos = db.scalar(select(Plan.included_users).where(Plan.code == "corporate"))
+    assert incluidos is not None
+    for numero in range(incluidos + 5):
+        crear_miembro(db, oficina, f"persona{numero}@example.com", "lawyer")
+    cliente = _sesion(dispositivo, oficina.owner)
+
+    assert _invitar(cliente, "otra@example.com").status_code == 201
+    cupo = cliente.get(_MIEMBROS).json()["seats"]
+    assert cupo["limit"] is None
+    assert cupo["full"] is False
 
 
 def test_las_invitaciones_abiertas_ocupan_cupo_hasta_revocarlas_o_vencer(
@@ -246,12 +279,13 @@ def test_las_invitaciones_abiertas_ocupan_cupo_hasta_revocarlas_o_vencer(
     assert _invitar(cliente, "marta@example.com").status_code == 201
 
 
-@pytest.mark.parametrize(("plan", "precio"), [("firm", 14_900), ("professional", 19_900)])
+@pytest.mark.parametrize("plan", ["firm", "professional"])
 def test_el_plan_firma_admite_usuarios_adicionales(
-    dispositivo: NuevoCliente, db: Session, plan: str, precio: int
+    dispositivo: NuevoCliente, db: Session, plan: str
 ) -> None:
-    # Firma y, desde la migración 0062, Profesional cobran cada persona por encima de las
-    # incluidas en vez de frenar la invitación.
+    # Firma y Profesional cobran cada persona por encima de las incluidas en vez de frenar la
+    # invitación; desde la migración 0068, ambos a 19.900.
+    precio = 19_900
     oficina = crear_oficina(db, plan)
     _contexto(db, oficina)
     incluidos = db.scalar(select(Plan.included_users).where(Plan.code == plan))
@@ -287,7 +321,7 @@ def test_dueno_de_plataforma_no_administra_miembros_de_un_despacho(
 def test_el_tope_de_invitaciones_frena_los_envios_en_masa(
     dispositivo: NuevoCliente, db: Session
 ) -> None:
-    oficina = crear_oficina(db, "firm")
+    oficina = crear_oficina(db, "corporate")
     cliente = _sesion(dispositivo, oficina.owner)
     for numero in range(20):
         assert _invitar(cliente, f"persona{numero}@example.com").status_code == 201

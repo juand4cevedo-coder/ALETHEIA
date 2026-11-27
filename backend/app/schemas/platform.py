@@ -38,6 +38,7 @@ class PlatformPlan(BaseModel):
     annual_price_cop: int | None
     included_users: int
     extra_user_price_cop: int | None
+    max_extra_users: int | None
     is_public: bool
 
 
@@ -51,8 +52,12 @@ class PlanUpdate(BaseModel):
     included_users: int | None = Field(default=None, ge=1, le=10_000)
     extra_user_price_cop: int | None = Field(default=None, ge=0, le=100_000_000)
     is_public: bool | None = None
+    max_extra_users: int | None = Field(default=None, ge=0, le=10_000)
     clear_extra_user_price: bool = Field(
         default=False, description="Quita el usuario adicional: el plan ya no lo admite."
+    )
+    clear_max_extra_users: bool = Field(
+        default=False, description="Quita el tope de adicionales: el plan admite los que pidan."
     )
 
 

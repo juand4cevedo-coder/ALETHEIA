@@ -25,6 +25,7 @@ function me(acceptanceRequired: boolean) {
       id: "01890a5d-ac96-774b-bcce-b302099a8058",
       name: "Restrepo Abogados",
       role: "owner",
+      kind: "individual",
     },
     legal: {
       accepted_version: acceptanceRequired ? "2026-11-02" : LEGAL_VERSION,

@@ -27,6 +27,7 @@ const ME = {
     id: "01890a5d-ac96-774b-bcce-b302099a8059",
     name: "Restrepo Abogados",
     role: "owner",
+    kind: "individual",
   },
   subscription: {
     plan_name: "Prueba",

@@ -24,11 +24,19 @@ class Oficina:
     owner: User
 
 
-def crear_oficina(db: Session, plan: str = "professional", *, nombre: str = "Restrepo") -> Oficina:
+def crear_oficina(
+    db: Session,
+    plan: str = "professional",
+    *,
+    nombre: str = "Restrepo",
+    kind: str = "individual",
+) -> Oficina:
+    """Un despacho con su responsable. Independiente por omisión: el responsable abre casos y
+    ocupa cupo; con kind="firm" solo dirige el despacho (ADR-062)."""
     owner = crear_persona(db, f"propietario-{uuid.uuid4().hex[:8]}@example.com", f"Ana {nombre}")
     organization_id = uuid.uuid7()
     set_tenant(db, TenantContext(organization_id=organization_id, user_id=owner.id))
-    db.add(Organization(id=organization_id, name=f"{nombre} Abogados"))
+    db.add(Organization(id=organization_id, name=f"{nombre} Abogados", kind=kind))
     db.flush()
     plan_id = db.scalar(select(Plan.id).where(Plan.code == plan))
     assert plan_id is not None

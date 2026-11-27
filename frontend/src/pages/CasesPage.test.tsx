@@ -40,6 +40,7 @@ function me(role: Role, emailVerified = true) {
       id: "01890a5d-ac96-774b-bcce-b302099a8058",
       name: "Ruiz & Asociados",
       role,
+      kind: "individual",
     },
     legal: {
       accepted_version: LEGAL_VERSION,

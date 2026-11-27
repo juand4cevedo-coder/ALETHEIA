@@ -282,7 +282,7 @@ export function ClientPortalSection({
           )}
         </form>
       ) : (
-        <Notice tone="info">
+        <Notice tone="info" dismissId="caso-archivado-portal">
           <p>
             El caso está archivado: lo ya compartido se conserva, pero no admite
             invitaciones ni avisos nuevos.

@@ -104,7 +104,7 @@ export function NotesSection({
           </Button>
         </form>
       ) : (
-        <Notice tone="info">
+        <Notice tone="info" dismissId="caso-archivado-notas">
           <p>El caso está archivado: sus notas se conservan en consulta.</p>
         </Notice>
       )}

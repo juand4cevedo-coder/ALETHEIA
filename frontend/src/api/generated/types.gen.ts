@@ -1810,6 +1810,24 @@ export type HealthStatus = {
 };
 
 /**
+ * InboxOut
+ *
+ * Los avisos más recientes de la persona y cuántos tiene sin leer.
+ */
+export type InboxOut = {
+  /**
+   * Items
+   */
+  items: Array<NotificationOut>;
+  /**
+   * Unread
+   *
+   * Avisos sin leer, para el número de la campana.
+   */
+  unread: number;
+};
+
+/**
  * InvitationAccepted
  *
  * A dónde entró la persona al aceptar.
@@ -2242,6 +2260,53 @@ export type MySubscription = {
 };
 
 /**
+ * NotificationOut
+ *
+ * Un aviso de la campana.
+ */
+export type NotificationOut = {
+  /**
+   * Id
+   */
+  id: string;
+  /**
+   * Kind
+   *
+   * Qué lo originó.
+   */
+  kind:
+    "task_assigned" | "case_member_added" | "client_message" | "member_joined";
+  /**
+   * Title
+   *
+   * Qué pasó, en una línea.
+   */
+  title: string;
+  /**
+   * Body
+   *
+   * Un detalle corto, o null.
+   */
+  body: string | null;
+  /**
+   * Link
+   *
+   * Ruta del espacio de trabajo donde se atiende el aviso.
+   */
+  link: string;
+  /**
+   * Read
+   *
+   * Si la persona ya lo vio.
+   */
+  read: boolean;
+  /**
+   * Created At
+   */
+  created_at: string;
+};
+
+/**
  * OrganizationAuditAction
  *
  * Acciones de seguridad que un gestor puede consultar explícitamente.
@@ -2423,6 +2488,12 @@ export type OrganizationMembership = {
    * Rol de la persona en la organización.
    */
   role: "owner" | "admin" | "lawyer" | "assistant";
+  /**
+   * Kind
+   *
+   * Cuenta independiente o firma. En una firma el responsable dirige el despacho y no abre casos (ADR-062).
+   */
+  kind: "individual" | "firm";
 };
 
 /**
@@ -2659,11 +2730,21 @@ export type PlanUpdate = {
    */
   is_public?: boolean | null;
   /**
+   * Max Extra Users
+   */
+  max_extra_users?: number | null;
+  /**
    * Clear Extra User Price
    *
    * Quita el usuario adicional: el plan ya no lo admite.
    */
   clear_extra_user_price?: boolean;
+  /**
+   * Clear Max Extra Users
+   *
+   * Quita el tope de adicionales: el plan admite los que pidan.
+   */
+  clear_max_extra_users?: boolean;
 };
 
 /**
@@ -3086,6 +3167,10 @@ export type PlatformPlan = {
    * Extra User Price Cop
    */
   extra_user_price_cop: number | null;
+  /**
+   * Max Extra Users
+   */
+  max_extra_users: number | null;
   /**
    * Is Public
    */
@@ -3597,6 +3682,12 @@ export type PublicPlan = {
    */
   extra_user_price_cop: number | null;
   /**
+   * Max Extra Users
+   *
+   * Cuántos usuarios adicionales admite sobre los incluidos; nulo si no tiene tope o si el plan no admite adicionales.
+   */
+  max_extra_users: number | null;
+  /**
    * Storage Limit Bytes
    *
    * Almacenamiento total del plan, en bytes.
@@ -3952,7 +4043,7 @@ export type SeatsOut = {
   /**
    * Used
    *
-   * Miembros más invitaciones abiertas.
+   * Miembros que ocupan cupo más invitaciones abiertas. En una firma el responsable no ocupa cupo.
    */
   used: number;
   /**
@@ -3967,6 +4058,12 @@ export type SeatsOut = {
    * Precio mensual de cada usuario adicional, o null si el plan no los admite.
    */
   extra_user_price_cop: number | null;
+  /**
+   * Limit
+   *
+   * Cuántas personas caben como máximo, con los adicionales que admite el plan; null si no hay límite.
+   */
+  limit: number | null;
   /**
    * Full
    *
@@ -9785,3 +9882,73 @@ export type CreateSalesInquiryResponses = {
 
 export type CreateSalesInquiryResponse =
   CreateSalesInquiryResponses[keyof CreateSalesInquiryResponses];
+
+export type ListNotificationsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/notifications";
+};
+
+export type ListNotificationsResponses = {
+  /**
+   * Successful Response
+   */
+  200: InboxOut;
+};
+
+export type ListNotificationsResponse =
+  ListNotificationsResponses[keyof ListNotificationsResponses];
+
+export type ReadNotificationData = {
+  body?: never;
+  path: {
+    /**
+     * Notification Id
+     */
+    notification_id: string;
+  };
+  query?: never;
+  url: "/api/v1/notifications/{notification_id}/read";
+};
+
+export type ReadNotificationErrors = {
+  /**
+   * Ese aviso no existe o ya no está disponible.
+   */
+  404: Problem;
+  /**
+   * La solicitud tiene datos inválidos.
+   */
+  422: ValidationProblem;
+};
+
+export type ReadNotificationError =
+  ReadNotificationErrors[keyof ReadNotificationErrors];
+
+export type ReadNotificationResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type ReadNotificationResponse =
+  ReadNotificationResponses[keyof ReadNotificationResponses];
+
+export type ReadAllNotificationsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/notifications/read-all";
+};
+
+export type ReadAllNotificationsResponses = {
+  /**
+   * Successful Response
+   */
+  204: void;
+};
+
+export type ReadAllNotificationsResponse =
+  ReadAllNotificationsResponses[keyof ReadAllNotificationsResponses];

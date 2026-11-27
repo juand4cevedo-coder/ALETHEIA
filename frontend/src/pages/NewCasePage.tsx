@@ -135,7 +135,7 @@ export function NewCasePage() {
     <div className={styles.screen}>
       <title>{pageTitle("Abrir un caso")}</title>
       <meta name="robots" content="noindex" />
-      {canOpenCases(me.organization?.role) ? (
+      {canOpenCases(me.organization) ? (
         <NewCaseForm me={me} />
       ) : (
         <div className={styles.denied}>

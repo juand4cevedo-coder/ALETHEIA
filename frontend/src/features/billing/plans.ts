@@ -33,6 +33,7 @@ function monthlyCostFor(plan: PublicPlan, people: number): number | null {
   const extra = Math.max(people - plan.included_users, 0);
   if (extra === 0) return plan.monthly_price_cop;
   if (plan.extra_user_price_cop == null) return null;
+  if (plan.max_extra_users != null && extra > plan.max_extra_users) return null;
   return plan.monthly_price_cop + extra * plan.extra_user_price_cop;
 }
 

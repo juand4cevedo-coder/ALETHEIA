@@ -1,6 +1,6 @@
 """Cuánto vale un periodo del plan: el precio del plan más los usuarios adicionales.
 
-Cuenta como usuario cada miembro del despacho (el responsable incluido) y cada invitación
+Cuenta como usuario cada miembro del despacho que ocupa cupo y cada invitación
 abierta, igual que el cupo del equipo (services/members.py, Seats.used): una invitación
 reserva un puesto hasta que se acepta, se revoca o vence. Los planes que admiten usuarios
 adicionales cobran cada persona por encima de las incluidas a su precio mensual; en el pago
@@ -59,6 +59,8 @@ def extra_users_for(plan: Plan, users: int) -> int | None:
     extra = max(users - plan.included_users, 0)
     if extra > 0 and plan.extra_user_price_cop is None:
         return None
+    if plan.max_extra_users is not None and extra > plan.max_extra_users:
+        return None
     return extra
 
 
@@ -72,6 +74,8 @@ def quote(plan: Plan, cycle: Cycle, extra_users: int) -> Quote | None:
         if extra_users > 0:
             return None
         unit = 0
+    if plan.max_extra_users is not None and extra_users > plan.max_extra_users:
+        return None
     return Quote(
         plan_cop=price,
         included_users=plan.included_users,
@@ -83,6 +87,6 @@ def quote(plan: Plan, cycle: Cycle, extra_users: int) -> Quote | None:
 
 def users_counted(session: Session, organization_id: uuid.UUID, now: datetime.datetime) -> int:
     """Miembros más invitaciones abiertas: las personas por las que se cobra."""
-    return organization_repository.member_count(
+    return organization_repository.seat_member_count(
         session, organization_id
     ) + organization_repository.open_invitation_count(session, organization_id, now)

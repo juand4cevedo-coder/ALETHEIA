@@ -94,3 +94,31 @@
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
+
+/* Cerrar un aviso informativo: discreto hasta que se apunta, con un área táctil de 32 px. */
+.dismiss {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) 0 auto;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
+}
+
+.dismiss:hover {
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+  color: var(--text);
+}
+
+.dismiss:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}

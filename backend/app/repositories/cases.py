@@ -36,6 +36,8 @@ class CreatorState:
 
     email_verified: bool
     organization_status: str | None
+    # Independiente o firma: en una firma el responsable no abre casos (ADR-062).
+    organization_kind: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,14 +73,19 @@ class CustodyEventView:
 def creator_state(session: Session, user_id: uuid.UUID, organization_id: uuid.UUID) -> CreatorState:
     """Si la persona verificó su correo y en qué estado está su organización."""
     verified_at = session.scalar(select(User.email_verified_at).where(User.id == user_id))
-    status = session.scalar(select(Organization.status).where(Organization.id == organization_id))
-    return CreatorState(email_verified=verified_at is not None, organization_status=status)
+    row = session.execute(
+        select(Organization.status, Organization.kind).where(Organization.id == organization_id)
+    ).one_or_none()
+    status, kind = row if row is not None else (None, None)
+    return CreatorState(
+        email_verified=verified_at is not None, organization_status=status, organization_kind=kind
+    )
 
 
 def creator_role_for_share(
     session: Session, user_id: uuid.UUID, organization_id: uuid.UUID
-) -> tuple[str | None, str | None]:
-    """El rol de la persona y el estado de la organización, bloqueados en modo compartido.
+) -> tuple[str | None, str | None, str | None]:
+    """El rol de la persona, el estado y el tipo de la organización, bloqueados en modo compartido.
 
     Se leen dentro de la transacción que abre el caso: quitar a un miembro o cambiar su rol
     toma FOR UPDATE sobre la membresía, así que espera a que el caso quede abierto o lo ve
@@ -89,12 +96,13 @@ def creator_role_for_share(
         .where(Membership.organization_id == organization_id, Membership.user_id == user_id)
         .with_for_update(read=True)
     )
-    status = session.scalar(
-        select(Organization.status)
+    row = session.execute(
+        select(Organization.status, Organization.kind)
         .where(Organization.id == organization_id)
         .with_for_update(read=True)
-    )
-    return role, status
+    ).one_or_none()
+    status, kind = row if row is not None else (None, None)
+    return role, status, kind
 
 
 def add_case(

@@ -9,6 +9,7 @@ export const BROWSER_STORAGE = {
   sessionHint: { key: "aletheia:sesion" },
   theme: { key: "aletheia:tema" },
   navigation: { key: "aletheia:menu" },
+  dismissedNotices: { key: "aletheia:avisos" },
 } as const;
 
 export type BrowserStorageName = keyof typeof BROWSER_STORAGE;

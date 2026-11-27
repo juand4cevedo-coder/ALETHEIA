@@ -251,7 +251,7 @@ export function CasesPage() {
     placeholderData: keepPreviousData,
   });
 
-  const mayOpen = canOpenCases(me.organization?.role);
+  const mayOpen = canOpenCases(me.organization);
   const openCase = (label: string) =>
     me.email_verified ? (
       <ButtonLink to={ROUTES.newCase} size="sm">

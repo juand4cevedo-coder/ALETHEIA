@@ -59,7 +59,7 @@ function toneForAction(action: string): "ok" | "pending" | "error" | "muted" {
 // casos.
 export function WorkspacePage() {
   const me = useOutletContext<Me>();
-  const canCreate = canOpenCases(me.organization?.role);
+  const canCreate = canOpenCases(me.organization);
   const canManageTeam = managesTeam(me.organization?.role);
   const canPay = me.permissions?.includes("billing.manage") ?? false;
 

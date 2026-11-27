@@ -24,6 +24,7 @@ function me(role: Role, overrides: Record<string, unknown> = {}) {
       id: "01890a5d-ac96-774b-bcce-b302099a8058",
       name: "Ruiz & Asociados",
       role,
+      kind: "individual",
     },
     subscription: {
       plan_name: "Esencial",

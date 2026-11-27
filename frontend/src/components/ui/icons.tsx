@@ -51,6 +51,7 @@ export { UsuarioQuitarIcon } from "./icons/UsuarioQuitar.ts";
 export { UsuarioAgregarIcon } from "./icons/UsuarioAgregar.ts";
 export { UsuarioIcon } from "./icons/Usuario.ts";
 export { UsuariosIcon } from "./icons/Usuarios.ts";
+export { CampanaIcon } from "./icons/Campana.ts";
 export { CerrarIcon } from "./icons/Cerrar.ts";
 export { HuellaIcon } from "./icons/Huella.ts";
 export { LibroIcon } from "./icons/Libro.ts";

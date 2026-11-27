@@ -144,7 +144,7 @@ def test_firma_con_doce_personas_cobra_dos_adicionales(db: Session, settings: Se
 
     url = checkout.iniciar_checkout_web(db, _con_wompi(settings), principal, "firm", "monthly")
 
-    assert _monto(url) == (149_900 + 2 * 14_900) * 100
+    assert _monto(url) == (149_900 + 2 * 19_900) * 100
     referencia = checkout.leer_referencia(_referencia(url))
     assert referencia is not None
     assert referencia.extra_users == 2
@@ -201,14 +201,15 @@ def test_nequi_tambien_cobra_los_adicionales(
 def test_un_equipo_que_no_cabe_en_el_plan_no_se_cobra(db: Session, settings: Settings) -> None:
     office = crear_oficina(db, "trial")
     _en_prueba(db, office)
-    _equipo(db, office, 3)
+    _equipo(db, office, 5)
     principal = _principal(office.organization_id, office.owner.id, "owner")
 
     with pytest.raises(checkout.EquipoNoCabeError) as error:
         checkout.iniciar_checkout_web(db, _con_wompi(settings), principal, "essential", "monthly")
 
-    assert error.value.users == 3
+    assert error.value.users == 5
     assert error.value.included == 2
+    assert error.value.limit == 4
     subscription = db.scalars(
         select(Subscription).where(Subscription.organization_id == office.organization_id)
     ).one()
@@ -241,17 +242,17 @@ def test_el_pago_con_adicionales_activa_y_los_anota_en_el_comprobante(
     _en_prueba(db, office)
     reference = checkout.referencia_nueva(office.organization_id, "firm", "annual", 3)
 
-    _aprobar(db, monkeypatch, reference, (1_499_000 + 3 * 149_000) * 100, "tx-a")
+    _aprobar(db, monkeypatch, reference, (1_499_000 + 3 * 199_000) * 100, "tx-a")
 
     comprobante = _comprobante(db, office)
     assert comprobante is not None
-    assert comprobante.amount_cop == 1_499_000 + 3 * 149_000
+    assert comprobante.amount_cop == 1_499_000 + 3 * 199_000
     assert comprobante.extra_users == 3
-    assert comprobante.extra_users_cop == 3 * 149_000
+    assert comprobante.extra_users_cop == 3 * 199_000
 
     texto = PdfReader(io.BytesIO(receipt_pdf.render(comprobante))).pages[0].extract_text()
     assert "3 usuarios adicionales" in texto
-    assert "$447.000 COP" in texto
+    assert "$597.000 COP" in texto
     assert "$1.499.000 COP" in texto
 
     job = db.scalars(
@@ -263,8 +264,8 @@ def test_el_pago_con_adicionales_activa_y_los_anota_en_el_comprobante(
     assert job is not None
     correo = payment_emails.receipt_email(db, job.payload, settings)
     assert correo is not None
-    assert "3 usuarios adicionales a $149.000 COP al año cada uno, $447.000 COP" in correo.text
-    assert "$1.946.000 COP" in correo.text
+    assert "3 usuarios adicionales a $199.000 COP al año cada uno, $597.000 COP" in correo.text
+    assert "$2.096.000 COP" in correo.text
 
 
 def test_el_comprobante_sin_adicionales_no_muestra_esa_linea(
@@ -326,7 +327,7 @@ def test_la_renovacion_automatica_cobra_los_adicionales_del_dia(
     resultado = renewals.attempt(db, _con_renovacion(settings), office.organization_id, fin, 1)
 
     assert resultado == "approved"
-    assert llamadas[0]["amount_in_cents"] == (149_900 + 14_900) * 100
+    assert llamadas[0]["amount_in_cents"] == (149_900 + 19_900) * 100
     comprobante = _comprobante(db, office)
     assert comprobante is not None
     assert comprobante.extra_users == 1
@@ -402,7 +403,7 @@ def test_pagar_un_plan_donde_no_cabe_el_equipo_responde_409_con_la_explicacion(
 ) -> None:
     office = crear_oficina(db, "trial")
     _en_prueba(db, office)
-    _equipo(db, office, 3)
+    _equipo(db, office, 5)
     cliente = _sesion(dispositivo, office.owner)
     app.dependency_overrides[get_app_settings] = lambda: _con_wompi(settings)
 
@@ -411,4 +412,4 @@ def test_pagar_un_plan_donde_no_cabe_el_equipo_responde_409_con_la_explicacion(
     )
 
     assert respuesta.status_code == 409
-    assert respuesta.json()["detail"].startswith("Su equipo tiene 3 personas")
+    assert respuesta.json()["detail"].startswith("Su equipo tiene 5 personas")

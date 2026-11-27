@@ -34,7 +34,7 @@ from app.models import (
     Organization,
     User,
 )
-from app.services import jobs, rate_limit
+from app.services import inbox, jobs, rate_limit
 from app.services.audit import audit_ip, audit_user_agent
 from app.services.sessions import Principal
 from app.services.tasks import (
@@ -614,6 +614,15 @@ def send_message(
             },
             f"{MESSAGE_TEMPLATE}:{access.id}:{user_id}:{bucket}",
         )
+    # Como el correo, el aviso no copia el mensaje: solo dice que llegó y dónde leerlo.
+    inbox.notify(
+        session,
+        organization_id=access.organization_id,
+        recipients=recipients,
+        kind="client_message",
+        title=f"Su cliente escribió en {case.title}",
+        link=f"/app/casos/{case.id}#portal",
+    )
     result = PublicMessage(message.id, message.body, message.created_at)
     session.commit()
     return result

@@ -19,6 +19,7 @@ function me(role: "owner" | "admin" | "lawyer" | "assistant") {
       id: ORGANIZATION_ID,
       name: "Restrepo Abogados",
       role,
+      kind: "individual",
     },
     legal: {
       accepted_version: LEGAL_VERSION,

@@ -29,8 +29,9 @@ export function TeamSizeEstimate({ plans }: { plans: readonly PublicPlan[] }) {
           ¿Cuánto pagaría su despacho?
         </h2>
         <p>
-          Escriba cuántas personas van a usar ALETHEIA, contando a quien lleva
-          la cuenta. Le mostramos el plan que le sale más barato.
+          Escriba cuántas personas van a trabajar los casos. En una cuenta
+          independiente cuéntese usted; en una firma, quien la dirige no ocupa
+          cupo. Le mostramos el plan que le sale más barato.
         </p>
       </div>
       <div className={styles.form}>
@@ -49,7 +50,13 @@ export function TeamSizeEstimate({ plans }: { plans: readonly PublicPlan[] }) {
         />
         <p className={styles.result} aria-live="polite">
           {best === null ? (
-            "Para ese tamaño, pida una cotización del plan Corporativo."
+            <>
+              <strong>Corporativo, sin límite de personas</strong>
+              <span>
+                Para ese tamaño,{" "}
+                <Link to={CORPORATE_QUOTE_URL}>pida una cotización</Link>.
+              </span>
+            </>
           ) : (
             <>
               <strong>

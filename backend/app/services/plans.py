@@ -24,6 +24,7 @@ def _to_public_plan(plan: Plan) -> PublicPlan:
         annual_price_cop=plan.annual_price_cop,
         included_users=plan.included_users,
         extra_user_price_cop=plan.extra_user_price_cop,
+        max_extra_users=plan.max_extra_users,
         storage_limit_bytes=plan.storage_limit_bytes,
         max_file_bytes=plan.max_file_bytes,
         trial_days=TRIAL_DAYS if plan.code == TRIAL_PLAN_CODE else None,

@@ -136,7 +136,7 @@ function AccountClosureCard({ me }: { me: Me }) {
       description="Revoca su acceso y elimina su identidad directa sin destruir la trazabilidad que deba conservarse."
     >
       {me.platform_admin ? (
-        <Notice tone="info">
+        <Notice tone="info" dismissId="cuenta-plataforma-sin-cierre">
           La cuenta dueña de la plataforma no puede cerrarse desde aquí. Antes
           debe transferirse esa responsabilidad para evitar dejar la operación
           sin administración.
