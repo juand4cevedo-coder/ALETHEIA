@@ -12,6 +12,7 @@ descarga con sesión: un enlace nunca entrega un archivo alterado.
 import datetime
 import uuid
 from dataclasses import dataclass
+from typing import Literal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -53,7 +54,7 @@ class LinkView:
     created_by_name: str
 
     @property
-    def status(self) -> str:
+    def status(self) -> Literal["active", "expired", "revoked"]:
         if self.link.revoked_at is not None:
             return "revoked"
         if self.link.expires_at <= datetime.datetime.now(datetime.UTC):

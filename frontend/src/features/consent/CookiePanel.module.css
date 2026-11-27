@@ -115,7 +115,8 @@
 
 /* Enlace dentro de la frase del aviso, con el mismo aspecto que el de la política. */
 .configure {
-  display: inline;
+  display: inline-block;
+  min-block-size: 24px;
   padding: 0;
   border: 0;
   border-radius: var(--radius-sm);

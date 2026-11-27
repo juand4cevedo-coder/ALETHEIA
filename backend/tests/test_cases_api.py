@@ -284,6 +284,24 @@ def test_el_asistente_recibe_403(dispositivo: NuevoCliente, db: Session) -> None
     assert respuesta.json()["detail"] == NOT_ALLOWED
 
 
+def test_el_responsable_de_una_firma_no_abre_casos_y_sus_abogados_si(
+    dispositivo: NuevoCliente, db: Session
+) -> None:
+    # En una firma, quien dirige el despacho arma el equipo y no abre casos (ADR-062).
+    oficina = crear_oficina(db, kind="firm")
+    abogada = crear_miembro(db, oficina, "abogada.firma@example.com", "lawyer")
+
+    del_responsable = _sesion(dispositivo, db, oficina.owner)
+    respuesta = del_responsable.post(_CASOS, json=_datos())
+    permisos = del_responsable.get("/api/v1/me").json()
+
+    assert respuesta.status_code == 403
+    assert respuesta.json()["detail"] == NOT_ALLOWED
+    assert "cases.create" not in permisos["permissions"]
+    assert permisos["organization"]["kind"] == "firm"
+    assert _sesion(dispositivo, db, abogada).post(_CASOS, json=_datos()).status_code == 201
+
+
 def test_correo_sin_verificar_recibe_403(dispositivo: NuevoCliente, db: Session) -> None:
     oficina = crear_oficina(db)
     cliente = _sesion(dispositivo, db, oficina.owner, verificado=False)

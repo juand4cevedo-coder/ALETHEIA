@@ -53,6 +53,15 @@ import {
 
 type TabKey =
   "chain" | "team" | "tasks" | "notes" | "evidence" | "portal" | "export";
+// Los avisos y los correos enlazan a una pestaña con su ancla, por ejemplo #tareas.
+const TAB_BY_HASH: Readonly<Record<string, TabKey>> = {
+  "#evidencias": "evidence",
+  "#tareas": "tasks",
+  "#equipo": "team",
+  "#notas": "notes",
+  "#portal": "portal",
+  "#expediente": "export",
+};
 const TAB_ORDER: readonly TabKey[] = [
   "chain",
   "team",
@@ -179,13 +188,7 @@ function CaseView({
   me: Me;
 }) {
   const location = useLocation();
-  const [tab, setTab] = useState<TabKey>(
-    location.hash === "#evidencias"
-      ? "evidence"
-      : location.hash === "#tareas"
-        ? "tasks"
-        : "chain",
-  );
+  const [tab, setTab] = useState<TabKey>(TAB_BY_HASH[location.hash] ?? "chain");
   const canExport = ["owner", "admin", "lawyer"].includes(
     me.organization?.role ?? "",
   );

@@ -145,10 +145,21 @@ class MemberOut(BaseModel):
 class SeatsOut(BaseModel):
     """Cupo de usuarios del plan (RN-012)."""
 
-    used: int = Field(description="Miembros más invitaciones abiertas.")
+    used: int = Field(
+        description=(
+            "Miembros que ocupan cupo más invitaciones abiertas. En una firma el responsable no "
+            "ocupa cupo."
+        )
+    )
     included: int = Field(description="Usuarios que incluye el plan.")
     extra_user_price_cop: int | None = Field(
         description="Precio mensual de cada usuario adicional, o null si el plan no los admite."
+    )
+    limit: int | None = Field(
+        description=(
+            "Cuántas personas caben como máximo, con los adicionales que admite el plan; null "
+            "si no hay límite."
+        )
     )
     full: bool = Field(description="Si ya no cabe nadie más sin cambiar de plan.")
     owner_exempt: bool = Field(

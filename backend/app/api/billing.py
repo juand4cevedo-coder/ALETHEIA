@@ -45,12 +45,16 @@ _ESTADOS: Final = frozenset({"PENDING", "APPROVED", "DECLINED", "VOIDED", "ERROR
 def _team_too_big(exc: checkout_service.EquipoNoCabeError) -> HTTPException:
     people = "persona" if exc.users == 1 else "personas"
     included = "usuario" if exc.included == 1 else "usuarios"
+    capacity = (
+        f"ese plan admite hasta {exc.limit} personas contando los adicionales"
+        if exc.limit is not None
+        else f"ese plan incluye {exc.included} {included} sin adicionales"
+    )
     return HTTPException(
         status.HTTP_409_CONFLICT,
         detail=(
-            f"Su equipo tiene {exc.users} {people}, contando las invitaciones abiertas, y ese "
-            f"plan incluye {exc.included} {included} sin adicionales. Elija un plan más amplio "
-            "o retire personas en Equipo."
+            f"Su equipo tiene {exc.users} {people}, contando las invitaciones abiertas, y "
+            f"{capacity}. Elija un plan más amplio o retire personas en Equipo."
         ),
         headers=_NO_STORE,
     )

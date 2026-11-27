@@ -27,6 +27,7 @@ function profile() {
       id: "01890a5d-ac96-774b-bcce-b302099a8058",
       name: "Gómez Abogados",
       role: "lawyer",
+      kind: "individual",
     },
     legal: {
       accepted_version: LEGAL_VERSION,

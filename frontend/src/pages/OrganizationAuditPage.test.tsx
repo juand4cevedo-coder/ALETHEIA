@@ -24,6 +24,7 @@ function profile(role: "owner" | "lawyer") {
       id: "01890a5d-ac96-774b-bcce-b302099a8058",
       name: "Restrepo Abogados",
       role,
+      kind: "individual",
     },
     legal: {
       accepted_version: LEGAL_VERSION,

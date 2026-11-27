@@ -196,6 +196,8 @@ import type {
   ListMembersData,
   ListMembersErrors,
   ListMembersResponses,
+  ListNotificationsData,
+  ListNotificationsResponses,
   ListPlansData,
   ListPlansErrors,
   ListPlansResponses,
@@ -267,6 +269,8 @@ import type {
   PutPoliciesData,
   PutPoliciesErrors,
   PutPoliciesResponses,
+  ReadAllNotificationsData,
+  ReadAllNotificationsResponses,
   ReadCaseData,
   ReadCaseErrors,
   ReadCaseExportData,
@@ -279,6 +283,9 @@ import type {
   ReadMeData,
   ReadMeErrors,
   ReadMeResponses,
+  ReadNotificationData,
+  ReadNotificationErrors,
+  ReadNotificationResponses,
   ReadPaymentSourceData,
   ReadPaymentSourceErrors,
   ReadPaymentSourceResponses,
@@ -3755,4 +3762,74 @@ export const createSalesInquiry = <ThrowOnError extends boolean = false>(
       "Content-Type": "application/json",
       ...options.headers,
     },
+  });
+
+/**
+ * Avisos recientes y cuántos faltan por leer
+ */
+export const listNotifications = <ThrowOnError extends boolean = false>(
+  options?: Options<ListNotificationsData, ThrowOnError>,
+): RequestResult<ListNotificationsResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).get<
+    ListNotificationsResponses,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/notifications",
+    ...options,
+  });
+
+/**
+ * Marcar un aviso como leído
+ */
+export const readNotification = <ThrowOnError extends boolean = false>(
+  options: Options<ReadNotificationData, ThrowOnError>,
+): RequestResult<
+  ReadNotificationResponses,
+  ReadNotificationErrors,
+  ThrowOnError
+> =>
+  (options.client ?? client).post<
+    ReadNotificationResponses,
+    ReadNotificationErrors,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/notifications/{notification_id}/read",
+    ...options,
+  });
+
+/**
+ * Marcar todos los avisos como leídos
+ */
+export const readAllNotifications = <ThrowOnError extends boolean = false>(
+  options?: Options<ReadAllNotificationsData, ThrowOnError>,
+): RequestResult<ReadAllNotificationsResponses, unknown, ThrowOnError> =>
+  (options?.client ?? client).post<
+    ReadAllNotificationsResponses,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        in: "cookie",
+        name: "__Host-aletheia_access",
+        type: "apiKey",
+      },
+    ],
+    url: "/api/v1/notifications/read-all",
+    ...options,
   });

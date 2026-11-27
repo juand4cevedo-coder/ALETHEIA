@@ -18,6 +18,12 @@ class OrganizationMembership(BaseModel):
     id: uuid.UUID = Field(description="Identificador de la organización.")
     name: str = Field(description="Nombre de la oficina, la firma o la persona independiente.")
     role: MemberRole = Field(description="Rol de la persona en la organización.")
+    kind: Literal["individual", "firm"] = Field(
+        description=(
+            "Cuenta independiente o firma. En una firma el responsable dirige el despacho y no "
+            "abre casos (ADR-062)."
+        )
+    )
 
 
 class LegalStatus(BaseModel):

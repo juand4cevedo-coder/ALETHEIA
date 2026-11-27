@@ -13,7 +13,7 @@ cliente queda en la auditoría del despacho.
 import datetime
 import uuid
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, Literal
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -34,7 +34,7 @@ from app.models import (
     Organization,
     User,
 )
-from app.services import jobs, rate_limit
+from app.services import inbox, jobs, rate_limit
 from app.services.audit import audit_ip, audit_user_agent
 from app.services.sessions import Principal
 from app.services.tasks import (
@@ -80,7 +80,7 @@ class AccessView:
     created_by_name: str
 
     @property
-    def status(self) -> str:
+    def status(self) -> Literal["active", "expired", "revoked"]:
         if self.access.revoked_at is not None:
             return "revoked"
         if self.access.expires_at <= _now():
@@ -129,7 +129,7 @@ class PublicView:
     client_name: str
     notice_accepted: bool
     case_title: str | None
-    case_status: str | None
+    case_status: Literal["open", "closed"] | None
     updates: list[PublicUpdate]
     messages: list[PublicMessage]
     documents: list[PublicDocument]
@@ -459,7 +459,8 @@ def view(session: Session, settings: Settings, token: str) -> PublicView:
         client_name=access.client_name,
         notice_accepted=accepted,
         case_title=case.title if accepted else None,
-        case_status=case.status if accepted else None,
+        # _live_access ya descartó los casos en eliminación: solo queda abierto o cerrado.
+        case_status=("closed" if case.status == "closed" else "open") if accepted else None,
         updates=updates,
         messages=messages,
         documents=documents,
@@ -614,6 +615,15 @@ def send_message(
             },
             f"{MESSAGE_TEMPLATE}:{access.id}:{user_id}:{bucket}",
         )
+    # Como el correo, el aviso no copia el mensaje: solo dice que llegó y dónde leerlo.
+    inbox.notify(
+        session,
+        organization_id=access.organization_id,
+        recipients=recipients,
+        kind="client_message",
+        title=f"Su cliente escribió en {case.title}",
+        link=f"/app/casos/{case.id}#portal",
+    )
     result = PublicMessage(message.id, message.body, message.created_at)
     session.commit()
     return result

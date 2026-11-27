@@ -34,3 +34,23 @@
   src: url("@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2")
     format("woff2-variations");
 }
+
+/* Respaldos con las métricas de cada fuente, calculadas de los archivos reales (ancho medio del
+   alfabeto latino, ascendente y descendente). Mientras llega la fuente, el texto ocupa casi lo
+   mismo y la página no salta al cambiarla. */
+@font-face {
+  font-family: "Geist Fallback";
+  src: local("Arial");
+  size-adjust: 101.81%;
+  ascent-override: 98.71%;
+  descent-override: 28.98%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Newsreader Fallback";
+  src: local("Georgia");
+  size-adjust: 95.49%;
+  ascent-override: 76.97%;
+  descent-override: 27.75%;
+  line-gap-override: 0%;
+}

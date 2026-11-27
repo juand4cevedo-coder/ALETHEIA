@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.51.0"
+    "version": "0.52.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -9112,6 +9112,102 @@
           }
         }
       }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "tags": [
+          "avisos"
+        ],
+        "summary": "Avisos recientes y cuántos faltan por leer",
+        "operationId": "list_notifications",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications/{notification_id}/read": {
+      "post": {
+        "tags": [
+          "avisos"
+        ],
+        "summary": "Marcar un aviso como leído",
+        "operationId": "read_notification",
+        "security": [
+          {
+            "sesion": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "notification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Notification Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Ese aviso no existe o ya no está disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "La solicitud tiene datos inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/read-all": {
+      "post": {
+        "tags": [
+          "avisos"
+        ],
+        "summary": "Marcar todos los avisos como leídos",
+        "operationId": "read_all_notifications",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "sesion": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -11898,6 +11994,29 @@
         "title": "HealthStatus",
         "description": "Estado del servicio y de la base de datos cuando ambos responden."
       },
+      "InboxOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "unread": {
+            "type": "integer",
+            "title": "Unread",
+            "description": "Avisos sin leer, para el número de la campana."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "unread"
+        ],
+        "title": "InboxOut",
+        "description": "Los avisos más recientes de la persona y cuántos tiene sin leer."
+      },
       "InvitationAccepted": {
         "properties": {
           "organization_name": {
@@ -12462,6 +12581,70 @@
         ],
         "title": "MySubscription"
       },
+      "NotificationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "task_assigned",
+              "case_member_added",
+              "client_message",
+              "member_joined"
+            ],
+            "title": "Kind",
+            "description": "Qué lo originó."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Qué pasó, en una línea."
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body",
+            "description": "Un detalle corto, o null."
+          },
+          "link": {
+            "type": "string",
+            "title": "Link",
+            "description": "Ruta del espacio de trabajo donde se atiende el aviso."
+          },
+          "read": {
+            "type": "boolean",
+            "title": "Read",
+            "description": "Si la persona ya lo vio."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "body",
+          "link",
+          "read",
+          "created_at"
+        ],
+        "title": "NotificationOut",
+        "description": "Un aviso de la campana."
+      },
       "OrganizationAuditAction": {
         "type": "string",
         "enum": [
@@ -12741,13 +12924,23 @@
             ],
             "title": "Role",
             "description": "Rol de la persona en la organización."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "firm"
+            ],
+            "title": "Kind",
+            "description": "Cuenta independiente o firma. En una firma el responsable dirige el despacho y no abre casos (ADR-062)."
           }
         },
         "type": "object",
         "required": [
           "id",
           "name",
-          "role"
+          "role",
+          "kind"
         ],
         "title": "OrganizationMembership",
         "description": "La organización de la persona y su rol en ella."
@@ -13101,10 +13294,29 @@
             ],
             "title": "Is Public"
           },
+          "max_extra_users": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Extra Users"
+          },
           "clear_extra_user_price": {
             "type": "boolean",
             "title": "Clear Extra User Price",
             "description": "Quita el usuario adicional: el plan ya no lo admite.",
+            "default": false
+          },
+          "clear_max_extra_users": {
+            "type": "boolean",
+            "title": "Clear Max Extra Users",
+            "description": "Quita el tope de adicionales: el plan admite los que pidan.",
             "default": false
           }
         },
@@ -13814,6 +14026,17 @@
             ],
             "title": "Extra User Price Cop"
           },
+          "max_extra_users": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Extra Users"
+          },
           "is_public": {
             "type": "boolean",
             "title": "Is Public"
@@ -13827,6 +14050,7 @@
           "annual_price_cop",
           "included_users",
           "extra_user_price_cop",
+          "max_extra_users",
           "is_public"
         ],
         "title": "PlatformPlan"
@@ -14552,6 +14776,18 @@
             "title": "Extra User Price Cop",
             "description": "Precio mensual de cada usuario adicional; nulo si el plan no los admite."
           },
+          "max_extra_users": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Extra Users",
+            "description": "Cuántos usuarios adicionales admite sobre los incluidos; nulo si no tiene tope o si el plan no admite adicionales."
+          },
           "storage_limit_bytes": {
             "type": "integer",
             "title": "Storage Limit Bytes",
@@ -14583,6 +14819,7 @@
           "annual_price_cop",
           "included_users",
           "extra_user_price_cop",
+          "max_extra_users",
           "storage_limit_bytes",
           "max_file_bytes",
           "trial_days"
@@ -15028,7 +15265,7 @@
           "used": {
             "type": "integer",
             "title": "Used",
-            "description": "Miembros más invitaciones abiertas."
+            "description": "Miembros que ocupan cupo más invitaciones abiertas. En una firma el responsable no ocupa cupo."
           },
           "included": {
             "type": "integer",
@@ -15047,6 +15284,18 @@
             "title": "Extra User Price Cop",
             "description": "Precio mensual de cada usuario adicional, o null si el plan no los admite."
           },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit",
+            "description": "Cuántas personas caben como máximo, con los adicionales que admite el plan; null si no hay límite."
+          },
           "full": {
             "type": "boolean",
             "title": "Full",
@@ -15063,6 +15312,7 @@
           "used",
           "included",
           "extra_user_price_cop",
+          "limit",
           "full",
           "owner_exempt"
         ],

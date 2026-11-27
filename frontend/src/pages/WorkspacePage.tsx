@@ -36,6 +36,7 @@ import {
   ReciboIcon,
   RelojIcon,
   SelloIcon,
+  UsuarioAgregarIcon,
   UsuariosIcon,
 } from "../components/ui/icons.tsx";
 
@@ -59,7 +60,10 @@ function toneForAction(action: string): "ok" | "pending" | "error" | "muted" {
 // casos.
 export function WorkspacePage() {
   const me = useOutletContext<Me>();
-  const canCreate = canOpenCases(me.organization?.role);
+  const canCreate = canOpenCases(me.organization);
+  // En una firma, quien la dirige arma el equipo; los casos los abren sus abogados (ADR-062).
+  const leadsFirm =
+    me.organization?.role === "owner" && me.organization.kind === "firm";
   const canManageTeam = managesTeam(me.organization?.role);
   const canPay = me.permissions?.includes("billing.manage") ?? false;
 
@@ -187,18 +191,29 @@ export function WorkspacePage() {
             {recentItems && recentItems.length === 0 && (
               <EmptyState
                 title={
-                  canCreate ? "Todavía no hay casos" : "Nada asignado por ahora"
+                  canCreate
+                    ? "Todavía no hay casos"
+                    : leadsFirm
+                      ? "Arme su equipo"
+                      : "Nada asignado por ahora"
                 }
                 description={
                   canCreate
                     ? "Abra el primero y empiece a reunir el contexto de su equipo."
-                    : "Cuando le asignen un caso, su actividad aparecerá aquí."
+                    : leadsFirm
+                      ? "En una firma, los casos los abren sus abogados. Invítelos y aquí verá lo que van haciendo."
+                      : "Cuando le asignen un caso, su actividad aparecerá aquí."
                 }
                 actions={
                   canCreate && me.email_verified ? (
                     <ButtonLink to={ROUTES.newCase} size="sm">
                       <MasIcon size={16} aria-hidden="true" />
                       Abrir un caso
+                    </ButtonLink>
+                  ) : leadsFirm ? (
+                    <ButtonLink to={ROUTES.members} size="sm">
+                      <UsuarioAgregarIcon size={16} aria-hidden="true" />
+                      Invitar a su equipo
                     </ButtonLink>
                   ) : undefined
                 }

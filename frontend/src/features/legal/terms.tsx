@@ -271,7 +271,12 @@ export const termsOfService: LegalDocument = {
               En los planes que admiten usuarios adicionales, el valor de cada
               periodo es el precio del plan más cada persona por encima de las
               incluidas, al precio publicado. Cuentan los miembros del despacho
-              y las invitaciones abiertas al momento de pagar. En el pago anual,
+              y las invitaciones abiertas al momento de pagar. En una firma, la
+              persona responsable dirige el despacho y no abre casos, así que no
+              ocupa cupo; en una cuenta independiente, sí. Cada plan admite como
+              máximo tantos adicionales como usuarios incluye; para un equipo
+              más grande hay que pasar a un plan mayor o a Corporativo, que no
+              tiene límite de personas y se cotiza aparte. En el pago anual,
               cada usuario adicional también vale diez meses. Las personas que
               se agreguen durante el periodo se cobran desde la renovación
               siguiente, y el resumen antes de pagar muestra el desglose.

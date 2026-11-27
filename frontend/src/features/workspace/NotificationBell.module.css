@@ -1,0 +1,272 @@
+/* Campana de avisos en el encabezado del espacio de trabajo (ADR-063). Mismo lenguaje que el
+   menú de la cuenta: botón redondo discreto y panel flotante con sombra de dos capas. */
+.root {
+  position: relative;
+}
+
+.trigger {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: var(--touch-target);
+  block-size: var(--touch-target);
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition:
+    border-color var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.trigger:hover,
+.trigger[aria-expanded="true"] {
+  border-color: var(--ink-hairline);
+  background: var(--paper-sunken);
+  color: var(--text);
+}
+
+.trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+/* El número de avisos: tinta sobre el papel, con aro del color del fondo para separarlo del
+   ícono. Entra con un leve rebote cuando llega uno nuevo. */
+.badge {
+  position: absolute;
+  inset-block-start: 4px;
+  inset-inline-end: 2px;
+  display: grid;
+  place-items: center;
+  min-inline-size: 18px;
+  block-size: 18px;
+  padding-inline: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--ink-900);
+  box-shadow: 0 0 0 2px var(--paper);
+  color: var(--on-ink);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1;
+  animation: badge-in 320ms var(--ease-out);
+}
+
+@keyframes badge-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 20;
+  display: grid;
+  width: min(380px, calc(100vw - 2 * var(--space-4)));
+  max-height: min(520px, calc(100dvh - 120px));
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow-float);
+  transform-origin: top right;
+  animation: unfold 220ms var(--ease-out);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+@keyframes unfold {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge,
+  .panel {
+    animation: none;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--ink-hairline);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-editorial);
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.readAll {
+  min-height: 32px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-500);
+  font: inherit;
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.readAll:hover:not(:disabled) {
+  background: var(--paper-sunken);
+}
+
+.readAll:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+.list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: var(--space-2);
+  overflow-y: auto;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: 14px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+
+.item:hover {
+  background: var(--paper-sunken);
+}
+
+.item:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+/* Sin leer: un punto de latón a la derecha y el título en peso medio. */
+.item[data-unread]::after {
+  content: "";
+  position: absolute;
+  inset-block-start: calc(var(--space-3) + 6px);
+  inset-inline-end: var(--space-3);
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--brass-600);
+}
+
+.kind {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ink-500) 9%, var(--paper-raised));
+  color: var(--ink-500);
+}
+
+.text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding-inline-end: var(--space-4);
+}
+
+.itemTitle {
+  font-size: var(--font-size-ui);
+  line-height: var(--line-height-ui);
+  overflow-wrap: anywhere;
+}
+
+.item[data-unread] .itemTitle {
+  font-weight: 600;
+}
+
+.itemBody {
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.when {
+  color: var(--text-3);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-label);
+}
+
+.emptyState {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
+}
+
+.emptyMark {
+  display: grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 48px;
+  border: 1px solid var(--brass-400);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ink-500) 7%, var(--paper-raised));
+  color: var(--ink-500);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-family: var(--font-editorial);
+  font-size: 1.0625rem;
+  font-weight: 500;
+}
+
+.empty {
+  margin: 0;
+  padding: 0 var(--space-4) var(--space-4);
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}
+
+.emptyState .empty {
+  padding: 0;
+  max-width: 30ch;
+}
+
+/* En celular la campana no está en el borde: el panel se fija al ancho de la pantalla. */
+@media (max-width: 640px) {
+  .panel {
+    position: fixed;
+    top: calc(var(--header-height) + var(--space-2));
+    left: var(--space-3);
+    right: var(--space-3);
+    width: auto;
+    max-height: calc(100dvh - var(--header-height) - var(--space-6));
+  }
+}

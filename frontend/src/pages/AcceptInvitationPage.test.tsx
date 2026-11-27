@@ -30,6 +30,7 @@ const ME = {
     id: "01890a5d-ac96-774b-bcce-b302099a8058",
     name: "Restrepo Abogados",
     role: "lawyer",
+    kind: "individual",
   },
   legal: {
     accepted_version: LEGAL_VERSION,

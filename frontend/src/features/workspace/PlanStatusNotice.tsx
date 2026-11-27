@@ -2,10 +2,15 @@ import { useState } from "react";
 
 import type { MySubscription } from "../../api/generated";
 import { ButtonLink } from "../../components/ui/ButtonLink.tsx";
-import { AdvertenciaIcon, RelojIcon } from "../../components/ui/icons.tsx";
+import {
+  AdvertenciaIcon,
+  CerrarIcon,
+  RelojIcon,
+} from "../../components/ui/icons.tsx";
 import { ROUTES } from "../../config/routes.ts";
 import { formatColombiaDate } from "../cases/dates.ts";
 import styles from "./PlanStatusNotice.module.css";
+import { useDismissible } from "./dismissedNotices.ts";
 import { TRIAL_URGENT_DAYS, trialDaysLeft } from "./trial.ts";
 
 function countdown(days: number): string {
@@ -32,11 +37,23 @@ export function PlanStatusNotice({
 }: PlanStatusNoticeProps) {
   // La hora se toma una vez al montar: la cuenta no cambia mientras se mira la pantalla.
   const [today] = useState(() => now ?? new Date());
+  // La cuenta regresiva se puede cerrar. Mientras falta tiempo, una vez para toda la prueba; los
+  // últimos días vuelve a aparecer cada día. El plan vencido no se cierra: pide actuar.
+  const trialEnds =
+    subscription?.status === "trial" ? subscription.ends_at : null;
+  const days = trialEnds ? trialDaysLeft(trialEnds, today) : null;
+  const urgent = days !== null && days <= TRIAL_URGENT_DAYS;
+  const { visible, dismiss } = useDismissible(
+    trialEnds
+      ? urgent
+        ? `prueba-urgente:${today.toISOString().slice(0, 10)}`
+        : `prueba:${trialEnds}`
+      : undefined,
+  );
   if (!subscription) return null;
 
-  if (subscription.status === "trial" && subscription.ends_at) {
-    const days = trialDaysLeft(subscription.ends_at, today);
-    const urgent = days <= TRIAL_URGENT_DAYS;
+  if (trialEnds && days !== null) {
+    if (!visible) return null;
     return (
       <section
         className={styles.notice}
@@ -52,7 +69,7 @@ export function PlanStatusNotice({
           <strong>{countdown(days)}.</strong>{" "}
           {days === 0
             ? "Al terminar, el despacho queda en solo lectura hasta que elija un plan."
-            : `Termina el ${formatColombiaDate(subscription.ends_at)}. Nada se cobra solo.`}
+            : `Termina el ${formatColombiaDate(trialEnds)}. Nada se cobra solo.`}
         </p>
         {canPay ? (
           <ButtonLink
@@ -67,6 +84,15 @@ export function PlanStatusNotice({
             Avise a la persona responsable del despacho para que elija un plan.
           </p>
         )}
+        <button
+          type="button"
+          className={styles.dismiss}
+          aria-label="Ocultar el aviso de la prueba"
+          title="Ocultar el aviso de la prueba"
+          onClick={dismiss}
+        >
+          <CerrarIcon size={16} aria-hidden="true" />
+        </button>
       </section>
     );
   }

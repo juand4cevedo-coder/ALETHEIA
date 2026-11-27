@@ -71,7 +71,7 @@ export function BillingPage() {
           {mayPay ? (
             <CheckoutCard me={me} />
           ) : (
-            <Notice tone="info">
+            <Notice tone="info" dismissId="facturacion-solo-responsable">
               Solo la persona responsable del despacho puede pagar o cambiar el
               plan.
             </Notice>

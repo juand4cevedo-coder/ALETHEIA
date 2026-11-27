@@ -6,6 +6,7 @@
     "annual_price_cop": null,
     "included_users": 4,
     "extra_user_price_cop": null,
+    "max_extra_users": null,
     "storage_limit_bytes": 1073741824,
     "max_file_bytes": 104857600,
     "trial_days": 14
@@ -16,7 +17,8 @@
     "monthly_price_cop": 29900,
     "annual_price_cop": 299000,
     "included_users": 2,
-    "extra_user_price_cop": null,
+    "extra_user_price_cop": 19900,
+    "max_extra_users": 2,
     "storage_limit_bytes": 10737418240,
     "max_file_bytes": 262144000,
     "trial_days": null
@@ -28,6 +30,7 @@
     "annual_price_cop": 599000,
     "included_users": 4,
     "extra_user_price_cop": 19900,
+    "max_extra_users": 4,
     "storage_limit_bytes": 53687091200,
     "max_file_bytes": 1073741824,
     "trial_days": null
@@ -38,7 +41,8 @@
     "monthly_price_cop": 149900,
     "annual_price_cop": 1499000,
     "included_users": 10,
-    "extra_user_price_cop": 14900,
+    "extra_user_price_cop": 19900,
+    "max_extra_users": 10,
     "storage_limit_bytes": 214748364800,
     "max_file_bytes": 2147483648,
     "trial_days": null

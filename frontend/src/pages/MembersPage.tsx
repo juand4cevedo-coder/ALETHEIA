@@ -59,6 +59,7 @@ export function MembersPage() {
         <Team
           currentUserId={me.id}
           isOwner={me.organization?.role === "owner"}
+          firm={me.organization?.kind === "firm"}
         />
       ) : (
         <>
@@ -85,9 +86,11 @@ function Header({ action }: { action?: ReactNode }) {
 function Team({
   currentUserId,
   isOwner,
+  firm,
 }: {
   currentUserId: string;
   isOwner: boolean;
+  firm: boolean;
 }) {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -221,7 +224,12 @@ function Team({
         </Notice>
       )}
 
-      <SeatsBar seats={seats} loading={members.isPending} isOwner={isOwner} />
+      <SeatsBar
+        seats={seats}
+        loading={members.isPending}
+        isOwner={isOwner}
+        firm={firm}
+      />
 
       <div className={styles.filters}>
         <label className={styles.searchField}>
@@ -494,17 +502,19 @@ function SeatsBar({
   seats,
   loading,
   isOwner,
+  firm,
 }: {
   seats: SeatsOut | undefined;
   loading: boolean;
   isOwner: boolean;
+  firm: boolean;
 }) {
   const meterId = useId();
   if (loading || !seats) {
     // Reserva el alto del cupo para que la página no salte cuando llega.
     return <div className={styles.seats} aria-hidden="true" />;
   }
-  const unlimited = seats.extra_user_price_cop !== null;
+  const extras = seats.extra_user_price_cop !== null;
   if (seats.owner_exempt) {
     return (
       <div className={styles.seats}>
@@ -531,9 +541,12 @@ function SeatsBar({
           {/* En los dos tipos de plan una invitación pendiente ocupa un cupo; con usuarios
               adicionales, ese cupo puede cobrarse. */}
           <p className={styles.seatsHint}>
-            Cuentan los miembros y las invitaciones que siguen abiertas.
-            {unlimited &&
-              " Por encima del cupo, cada usuario adicional tiene cobro mensual."}
+            Cuentan los miembros y las invitaciones que siguen abiertas
+            {firm ? ", sin contar a quien dirige la firma." : "."}
+            {extras &&
+              (seats.limit === null
+                ? " Su plan no tiene límite de personas."
+                : ` Por encima del cupo, cada usuario adicional tiene cobro mensual, hasta ${seats.limit} personas en total.`)}
           </p>
         </div>
         <span
@@ -551,8 +564,10 @@ function SeatsBar({
       {seats.full && (
         <Notice tone="warning">
           <p>
-            Su plan incluye {seats.included} {users} y todas están en uso. Para
-            sumar abogados o asistentes,{" "}
+            {seats.limit !== null && seats.limit > seats.included
+              ? `Su plan admite hasta ${seats.limit} personas contando los adicionales, y todas están en uso.`
+              : `Su plan incluye ${seats.included} ${users} y todas están en uso.`}{" "}
+            Para sumar abogados o asistentes,{" "}
             {isOwner ? (
               <>
                 <Link to={ROUTES.billing}>

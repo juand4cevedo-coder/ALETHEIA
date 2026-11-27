@@ -60,7 +60,7 @@ def _out(view: share_service.LinkView) -> ShareLinkOut:
         created_at=link.created_at,
         expires_at=link.expires_at,
         revoked_at=link.revoked_at,
-        status=view.status,  # type: ignore[arg-type]
+        status=view.status,
         download_count=link.download_count,
         last_downloaded_at=link.last_downloaded_at,
     )

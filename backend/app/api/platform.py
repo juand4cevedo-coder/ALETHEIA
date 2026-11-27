@@ -398,6 +398,7 @@ def _platform_plan(plan: Plan) -> PlatformPlan:
         annual_price_cop=plan.annual_price_cop,
         included_users=plan.included_users,
         extra_user_price_cop=plan.extra_user_price_cop,
+        max_extra_users=plan.max_extra_users,
         is_public=plan.is_public,
     )
 

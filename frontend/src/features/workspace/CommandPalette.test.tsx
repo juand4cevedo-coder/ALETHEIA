@@ -15,7 +15,12 @@ const LAWYER = {
   email: "laura@example.com",
   email_verified: true,
   platform_admin: false,
-  organization: { id: "x", name: "Despacho", role: "lawyer" },
+  organization: {
+    id: "x",
+    name: "Despacho",
+    role: "lawyer",
+    kind: "individual",
+  },
   legal: {
     accepted_version: "x",
     current_version: "x",

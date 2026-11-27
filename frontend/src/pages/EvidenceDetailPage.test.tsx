@@ -20,6 +20,7 @@ const me = {
     id: "01890a5d-ac96-774b-bcce-b302099a8058",
     name: "Ruiz & Asociados",
     role: "lawyer",
+    kind: "individual",
   },
   legal: {
     accepted_version: LEGAL_VERSION,
@@ -99,7 +100,11 @@ it("no ofrece descargar el original a un asistente", async () => {
     if (url.pathname === "/api/v1/me")
       return jsonResponse({
         ...me,
-        organization: { ...me.organization, role: "assistant" },
+        organization: {
+          ...me.organization,
+          role: "assistant",
+          kind: "individual",
+        },
       });
     if (url.pathname === api)
       return jsonResponse({
@@ -294,7 +299,11 @@ it("un asistente no ve el panel para compartir", async () => {
     if (url.pathname === "/api/v1/me")
       return jsonResponse({
         ...me,
-        organization: { ...me.organization, role: "assistant" },
+        organization: {
+          ...me.organization,
+          role: "assistant",
+          kind: "individual",
+        },
       });
     if (url.pathname === api)
       return jsonResponse({

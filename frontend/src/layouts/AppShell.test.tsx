@@ -18,6 +18,7 @@ const ME = {
     id: "01890a5d-ac96-774b-bcce-b302099a8058",
     name: "Restrepo Abogados",
     role: "lawyer",
+    kind: "individual",
   },
   legal: {
     accepted_version: LEGAL_VERSION,
@@ -74,7 +75,11 @@ describe("Espacio de trabajo protegido (API-014)", () => {
           ...ME,
           email_verified: true,
           platform_admin: true,
-          organization: { ...ME.organization, role: "owner" },
+          organization: {
+            ...ME.organization,
+            role: "owner",
+            kind: "individual",
+          },
         });
       if (path === "/api/v1/platform/users")
         return jsonResponse({ items: [], next_cursor: null });

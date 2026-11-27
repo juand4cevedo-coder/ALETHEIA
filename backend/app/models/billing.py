@@ -29,6 +29,7 @@ class Plan(Base):
         CheckConstraint("annual_price_cop >= 0", name="annual_price_cop"),
         CheckConstraint("included_users > 0", name="included_users"),
         CheckConstraint("extra_user_price_cop >= 0", name="extra_user_price_cop"),
+        CheckConstraint("max_extra_users >= 0", name="max_extra_users"),
         CheckConstraint("storage_limit_bytes > 0", name="storage_limit_bytes"),
         CheckConstraint("max_file_bytes > 0", name="max_file_bytes"),
     )
@@ -41,6 +42,9 @@ class Plan(Base):
     annual_price_cop: Mapped[int | None]
     included_users: Mapped[int]
     extra_user_price_cop: Mapped[int | None]
+    # Cuántos adicionales admite sobre los incluidos. Nulo con precio de adicional: sin tope
+    # (Corporativo). Sin precio de adicional, el plan no admite ninguno (ADR-062).
+    max_extra_users: Mapped[int | None]
     storage_limit_bytes: Mapped[int] = mapped_column(BigInteger)
     max_file_bytes: Mapped[int] = mapped_column(BigInteger)
     # Visible en la página de precios; Corporativo se vende por cotización.

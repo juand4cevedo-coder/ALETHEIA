@@ -110,7 +110,9 @@ export function PlanCard({
         {plan.extra_user_price_cop != null && (
           <li>
             <UsuarioAgregarIcon size={16} />
-            Usuario adicional: {formatCop(plan.extra_user_price_cop)} al mes
+            {plan.max_extra_users != null
+              ? `Hasta ${plan.max_extra_users} adicionales a ${formatCop(plan.extra_user_price_cop)} al mes`
+              : `Usuario adicional: ${formatCop(plan.extra_user_price_cop)} al mes`}
           </li>
         )}
         <li>

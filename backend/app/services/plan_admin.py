@@ -19,6 +19,7 @@ _FIELDS = (
     "annual_price_cop",
     "included_users",
     "extra_user_price_cop",
+    "max_extra_users",
     "is_public",
 )
 
@@ -44,6 +45,8 @@ def update(
             setattr(plan, field, value)
     if change.clear_extra_user_price:
         plan.extra_user_price_cop = None
+    if change.clear_max_extra_users:
+        plan.max_extra_users = None
     # Un plan de pago no puede quedar con el mensual en cero, y el anual no puede salir más caro
     # que doce meses: el catálogo público lo mostraría como un descuento al revés.
     if plan.code != "trial" and not (plan.monthly_price_cop or 0) > 0 and plan.is_public:

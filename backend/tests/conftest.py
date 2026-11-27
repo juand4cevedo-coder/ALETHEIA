@@ -239,7 +239,8 @@ def create_tenant(session: Session, name: str, *, key: WrappedKey | None = None)
     )
     session.flush()
     set_tenant(session, tenant.context)
-    session.add(Organization(id=tenant.organization_id, name=name))
+    # Independiente: su responsable trabaja los casos (ADR-062).
+    session.add(Organization(id=tenant.organization_id, name=name, kind="individual"))
     session.flush()
     session.add(
         Membership(organization_id=tenant.organization_id, user_id=tenant.user_id, role="owner")

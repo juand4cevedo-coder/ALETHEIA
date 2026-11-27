@@ -73,6 +73,7 @@ import {
   listEvidences,
   listInvitations,
   listMembers,
+  listNotifications,
   listPlans,
   listPlatformUsers,
   listPortalAccesses,
@@ -99,10 +100,12 @@ import {
   previewInvitation,
   publishPortalUpdate,
   putPolicies,
+  readAllNotifications,
   readCase,
   readCaseExport,
   readEvidence,
   readMe,
+  readNotification,
   readPaymentSource,
   refreshSession,
   registerAccount,
@@ -328,6 +331,8 @@ import type {
   ListMembersData,
   ListMembersError,
   ListMembersResponse,
+  ListNotificationsData,
+  ListNotificationsResponse,
   ListPlansData,
   ListPlansError,
   ListPlansResponse,
@@ -399,6 +404,8 @@ import type {
   PutPoliciesData,
   PutPoliciesError,
   PutPoliciesResponse,
+  ReadAllNotificationsData,
+  ReadAllNotificationsResponse,
   ReadCaseData,
   ReadCaseError,
   ReadCaseExportData,
@@ -411,6 +418,9 @@ import type {
   ReadMeData,
   ReadMeError,
   ReadMeResponse,
+  ReadNotificationData,
+  ReadNotificationError,
+  ReadNotificationResponse,
   ReadPaymentSourceData,
   ReadPaymentSourceError,
   ReadPaymentSourceResponse,
@@ -4948,6 +4958,88 @@ export const createSalesInquiryMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await createSalesInquiry({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const listNotificationsQueryKey = (
+  options?: Options<ListNotificationsData>,
+) => createQueryKey("listNotifications", options);
+
+/**
+ * Avisos recientes y cuántos faltan por leer
+ */
+export const listNotificationsOptions = (
+  options?: Options<ListNotificationsData>,
+) =>
+  queryOptions<
+    ListNotificationsResponse,
+    DefaultError,
+    ListNotificationsResponse,
+    ReturnType<typeof listNotificationsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await listNotifications({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: listNotificationsQueryKey(options),
+  });
+
+/**
+ * Marcar un aviso como leído
+ */
+export const readNotificationMutation = (
+  options?: Partial<Options<ReadNotificationData>>,
+): UseMutationOptions<
+  ReadNotificationResponse,
+  ReadNotificationError,
+  Options<ReadNotificationData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ReadNotificationResponse,
+    ReadNotificationError,
+    Options<ReadNotificationData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await readNotification({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Marcar todos los avisos como leídos
+ */
+export const readAllNotificationsMutation = (
+  options?: Partial<Options<ReadAllNotificationsData>>,
+): UseMutationOptions<
+  ReadAllNotificationsResponse,
+  DefaultError,
+  Options<ReadAllNotificationsData>
+> => {
+  const mutationOptions: UseMutationOptions<
+    ReadAllNotificationsResponse,
+    DefaultError,
+    Options<ReadAllNotificationsData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await readAllNotifications({
         ...options,
         ...fnOptions,
         throwOnError: true,

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.permissions import has_permission
 from app.models import AuditLog, Case, CaseMember, CaseTask, Membership, Organization, User
 from app.schemas.tasks import CaseTaskCreate, TaskStatus
+from app.services import inbox
 from app.services.audit import audit_ip, audit_user_agent
 from app.services.members import OrganizationNotActiveError
 from app.services.sessions import Principal
@@ -326,6 +327,16 @@ def create_task(
             )
         )
         session.flush()
+        inbox.notify(
+            session,
+            organization_id=case.organization_id,
+            recipients=[data.assigned_to],
+            kind="task_assigned",
+            title=f"Nueva tarea en {case.title}",
+            body=data.title,
+            link=f"/app/casos/{case.id}#tareas",
+            actor_id=principal.user_id,
+        )
     return TaskView(task, assignee.full_name)
 
 

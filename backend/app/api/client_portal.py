@@ -80,7 +80,7 @@ def _access(view: portal.AccessView) -> PortalAccessOut:
         id=access.id,
         client_name=access.client_name,
         client_email=access.client_email,
-        status=view.status,  # type: ignore[arg-type]
+        status=view.status,
         created_by_name=view.created_by_name,
         created_at=access.created_at,
         expires_at=access.expires_at,
@@ -258,7 +258,7 @@ def view_portal(
         client_name=data.client_name,
         notice_accepted=data.notice_accepted,
         case_title=data.case_title,
-        case_status=data.case_status,  # type: ignore[arg-type]
+        case_status=data.case_status,
         updates=[
             PortalUpdateOut(
                 id=item.id,

@@ -57,7 +57,12 @@ def read_me(
     profile = accounts_service.profile(session, principal)
     organization = (
         OrganizationMembership.model_validate(
-            {"id": profile.organization.id, "name": profile.organization.name, "role": profile.role}
+            {
+                "id": profile.organization.id,
+                "name": profile.organization.name,
+                "role": profile.role,
+                "kind": profile.organization.kind,
+            }
         )
         if profile.organization is not None
         else None
@@ -92,7 +97,13 @@ def read_me(
         google_linked=accounts_repository.has_google_identity(session, profile.user.id),
         platform_admin=profile.user.is_platform_admin,
         permissions=sorted(
-            permissions_for(principal.role, platform_admin=profile.user.is_platform_admin)
+            permissions_for(
+                principal.role,
+                platform_admin=profile.user.is_platform_admin,
+                organization_kind=(
+                    profile.organization.kind if profile.organization is not None else None
+                ),
+            )
         ),
         organization=organization,
         subscription=subscription,

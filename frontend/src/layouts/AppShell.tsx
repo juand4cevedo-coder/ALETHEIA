@@ -30,6 +30,7 @@ import {
 } from "../features/session/sessionHint.ts";
 import { ThemeSwitch } from "../features/theme/ThemeToggle.tsx";
 import { CommandPalette } from "../features/workspace/CommandPalette.tsx";
+import { NotificationBell } from "../features/workspace/NotificationBell.tsx";
 import { useNavPreferences } from "../features/workspace/navPreferences.ts";
 import { WorkspaceNav } from "../features/workspace/WorkspaceNav.tsx";
 import styles from "./AppShell.module.css";
@@ -166,6 +167,9 @@ export function AppShell() {
               </span>
             </button>
             <ThemeSwitch />
+            {me.data.organization && !me.data.platform_admin && (
+              <NotificationBell />
+            )}
             <AccountMenu me={me.data} />
           </div>
         )}

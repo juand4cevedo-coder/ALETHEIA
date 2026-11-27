@@ -101,3 +101,41 @@ describe("PlanStatusNotice", () => {
     expect(container).toBeEmptyDOMElement();
   });
 });
+
+describe("PlanStatusNotice se puede ocultar", () => {
+  it("la cuenta regresiva se oculta y no vuelve mientras falta tiempo", async () => {
+    const { default: userEvent } = await import("@testing-library/user-event");
+    const user = userEvent.setup();
+    const first = show(trial("2026-12-08T15:00:00Z"));
+
+    await user.click(
+      screen.getByRole("button", { name: "Ocultar el aviso de la prueba" }),
+    );
+
+    expect(
+      screen.queryByRole("region", { name: "Su prueba gratuita" }),
+    ).not.toBeInTheDocument();
+    first.unmount();
+    show(trial("2026-12-08T15:00:00Z"));
+    expect(
+      screen.queryByRole("region", { name: "Su prueba gratuita" }),
+    ).not.toBeInTheDocument();
+    // Los últimos días vuelve a aparecer, aunque se haya ocultado antes.
+    show(trial("2026-11-25T15:00:00Z"));
+    expect(
+      screen.getByRole("region", { name: "Su prueba gratuita" }),
+    ).toHaveAttribute("data-urgent");
+  });
+
+  it("el plan vencido no se puede ocultar", () => {
+    show({
+      plan_name: "Prueba",
+      status: "expired",
+      access_source: "trial",
+      ends_at: "2026-11-20T15:00:00Z",
+    });
+    expect(
+      screen.queryByRole("button", { name: /Ocultar/ }),
+    ).not.toBeInTheDocument();
+  });
+});

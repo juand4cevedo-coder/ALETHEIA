@@ -74,6 +74,12 @@ _UNAUTHORIZED: Final[_Responses] = {
 
 def seat_limit_message(seats: members_service.Seats) -> str:
     """Explica el tope y cómo seguir: cambiar de plan o liberar una invitación (RN-012)."""
+    if seats.limit is not None and seats.limit > seats.included:
+        return (
+            f"Su plan admite hasta {seats.limit} personas contando los adicionales, y ya están "
+            "ocupadas o invitadas. Para invitar a alguien más, cambie de plan o revoque una "
+            "invitación pendiente."
+        )
     users = "usuario" if seats.included == 1 else "usuarios"
     return (
         f"Su plan incluye {seats.included} {users} y ya están ocupados o invitados. Para "
@@ -86,6 +92,7 @@ def _seats_out(seats: members_service.Seats) -> SeatsOut:
         used=seats.used,
         included=seats.included,
         extra_user_price_cop=seats.extra_user_price_cop,
+        limit=seats.limit,
         full=seats.full,
         owner_exempt=seats.owner_exempt,
     )

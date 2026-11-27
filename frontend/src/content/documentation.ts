@@ -260,7 +260,7 @@ export const DOCUMENTATION: DocArticle[] = [
         title: "Rol en el despacho y miembros del caso",
         paragraphs: [
           "Son dos permisos distintos. El rol dice qué puede hacer la persona en el despacho. Ser miembro de un caso dice qué casos puede ver. Un administrador gestiona el equipo, pero no ve un caso si no es miembro de él.",
-          "Abogado abre casos, asigna a su equipo y trabaja en los que le asignen. Asistente trabaja en los casos donde lo agreguen. Administrador invita y gestiona al equipo, pero no abre casos.",
+          "Abogado abre casos, asigna a su equipo y trabaja en los que le asignen. Asistente trabaja en los casos donde lo agreguen. Administrador invita y gestiona al equipo, pero no abre casos. En una firma, la persona responsable dirige el despacho y tampoco abre casos; en una cuenta independiente es el abogado y sí los abre.",
         ],
       },
       {
@@ -280,7 +280,7 @@ export const DOCUMENTATION: DocArticle[] = [
         id: "cupos",
         title: "Cupos del plan",
         paragraphs: [
-          "Cada plan incluye un número de usuarios, y las invitaciones abiertas también ocupan cupo. Esencial incluye dos; Profesional y Firma admiten usuarios adicionales con un costo mensual por persona, que se ve antes de pagar.",
+          "Cada plan incluye un número de usuarios, y las invitaciones abiertas también ocupan cupo. En una firma, la persona responsable dirige el despacho y no ocupa cupo. Esencial, Profesional y Firma admiten usuarios adicionales a 19.900 pesos al mes, hasta tantos como los que incluye cada plan; el costo se ve antes de pagar. Corporativo no tiene límite de personas.",
         ],
       },
       {

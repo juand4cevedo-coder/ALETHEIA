@@ -35,7 +35,7 @@ const QUOTE_ANCHOR = "cotizar";
 const ROLES: readonly { name: string; text: string }[] = [
   {
     name: "Responsable",
-    text: "Abre la cuenta y paga el plan. Invita y retira personas, crea casos, asigna quién los trabaja e invita al cliente al portal.",
+    text: "Abre la cuenta, paga el plan y fija las políticas. Invita y retira personas. En una firma dirige el despacho y no ocupa cupo: los casos los abren sus abogados. En una cuenta independiente es el abogado y trabaja sus casos.",
   },
   {
     name: "Administrador",
