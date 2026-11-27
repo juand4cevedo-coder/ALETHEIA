@@ -7,6 +7,7 @@
 - **Avisos (ADR-063).** La campana del encabezado muestra cuántos avisos faltan por leer y abre un panel con los más recientes: tareas asignadas, casos a los que lo agregan, mensajes de clientes en el portal (sin copiar el texto) y personas que entran al equipo. Cada aviso lleva a la pestaña del caso donde se atiende. Solo la persona destinataria lo ve. Los leídos se borran a los 90 días y todos al año.
 - **Avisos que se cierran.** La cuenta regresiva de la prueba y los avisos informativos fijos tienen un botón para cerrarlos. La cuenta regresiva vuelve los últimos tres días, una vez por día. El plan vencido y la verificación del correo no se cierran.
 - **Textos legales del 27 de noviembre de 2026.** Los términos explican el cupo de la firma, el tope de adicionales y Corporativo. Quien entre verá el resumen de cambios y aceptará la versión nueva.
+- **Revisión visual y técnica.** Se midieron 25 pantallas en escritorio, tablet y celular, en claro y oscuro: sin fallas de contraste, sin desbordes y sin controles sin nombre. Las fuentes tienen respaldos con sus mismas métricas, así que la página ya no salta al cargarlas (el registro pasó de 0,118 a 0,009 de desplazamiento). Casillas, títulos de casos y el enlace de cookies llegan a 24 px. En la base, los avisos se ordenan por fecha con su índice y el portal tipa su estado sin excepciones de mypy.
 
 ## Al desplegar
 
