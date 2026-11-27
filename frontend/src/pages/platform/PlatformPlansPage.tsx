@@ -22,6 +22,19 @@ import { PlatformPlanDialog } from "./PlatformPlanDialog.tsx";
 import { ACCESS_LABELS, money, SUBSCRIPTION_LABELS } from "./labels.ts";
 import { DateText, Restricted } from "./shared.tsx";
 
+/** Cómo admite el plan personas de más: precio y tope, o que no admite. */
+function extraLabel(plan: {
+  extra_user_price_cop: number | null;
+  max_extra_users: number | null;
+}): string {
+  if (plan.extra_user_price_cop === null) return "No admite";
+  if (plan.extra_user_price_cop === 0) return "Sin límite de personas";
+  const price = money(plan.extra_user_price_cop);
+  return plan.max_extra_users === null
+    ? `${price} por persona, sin tope`
+    : `${price} por persona, hasta ${plan.max_extra_users}`;
+}
+
 // Planes y cortesías: el catálogo que ven los clientes y la asignación manual de un plan a un
 // despacho. Ninguna de las dos cosas cobra ni emite facturas; cada cambio queda en la auditoría.
 export function PlatformPlansPage() {
@@ -71,6 +84,9 @@ export function PlatformPlansPage() {
                           Usuarios incluidos
                         </th>
                         <th scope="col" role="columnheader">
+                          Adicionales
+                        </th>
+                        <th scope="col" role="columnheader">
                           En precios
                         </th>
                         <th scope="col" role="columnheader">
@@ -104,6 +120,9 @@ export function PlatformPlansPage() {
                             className={styles.number}
                           >
                             {plan.included_users}
+                          </td>
+                          <td role="cell" data-label="Adicionales">
+                            {extraLabel(plan)}
                           </td>
                           <td role="cell" data-label="En precios">
                             <StatusBadge tone={plan.is_public ? "ok" : "muted"}>

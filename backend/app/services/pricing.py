@@ -53,13 +53,16 @@ def extra_user_unit(plan: Plan, cycle: Cycle) -> int | None:
     return monthly if cycle == "monthly" else monthly * ANNUAL_MONTHS
 
 
-def extra_users_for(plan: Plan, users: int) -> int | None:
-    """Cuántos usuarios pasan de los incluidos. None si sobran y el plan no admite adicionales:
-    ese equipo no cabe en el plan."""
+def extra_users_for(plan: Plan, users: int, *, enforce_cap: bool = True) -> int | None:
+    """Cuántos usuarios pasan de los incluidos. None si el equipo no cabe en el plan: sobran
+    personas y el plan no admite adicionales, o pasan del tope de adicionales.
+
+    El tope frena crecer (invitar o comprar el plan), no cobrar a un equipo que ya existe: la
+    renovación pasa enforce_cap=False y cobra a todas las personas de hoy (ADR-062)."""
     extra = max(users - plan.included_users, 0)
     if extra > 0 and plan.extra_user_price_cop is None:
         return None
-    if plan.max_extra_users is not None and extra > plan.max_extra_users:
+    if enforce_cap and plan.max_extra_users is not None and extra > plan.max_extra_users:
         return None
     return extra
 
@@ -74,8 +77,6 @@ def quote(plan: Plan, cycle: Cycle, extra_users: int) -> Quote | None:
         if extra_users > 0:
             return None
         unit = 0
-    if plan.max_extra_users is not None and extra_users > plan.max_extra_users:
-        return None
     return Quote(
         plan_cop=price,
         included_users=plan.included_users,

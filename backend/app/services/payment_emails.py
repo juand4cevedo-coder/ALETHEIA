@@ -284,7 +284,7 @@ def _automatic_reminder(
     """El aviso previo de la renovación automática: cuándo se cobra, cuánto y cómo cancelar."""
     # Lo mismo que cobrará la renovación: el plan y las personas de hoy por encima de las incluidas.
     cycle: pricing.Cycle = "annual" if subscription.billing_cycle == "annual" else "monthly"
-    quote = pricing.quote(plan, cycle, pricing.extra_users_for(plan, users) or 0)
+    quote = pricing.quote(plan, cycle, pricing.extra_users_for(plan, users, enforce_cap=False) or 0)
     price = _cop(quote.total_cop) if quote else "el valor del plan"
     charge_day = colombian_datetime(period_end - CHARGE_LEAD)
     where = f"{settings.public_url}/app/facturacion"
