@@ -260,7 +260,7 @@ export const DOCUMENTATION: DocArticle[] = [
         title: "Rol en el despacho y miembros del caso",
         paragraphs: [
           "Son dos permisos distintos. El rol dice qué puede hacer la persona en el despacho. Ser miembro de un caso dice qué casos puede ver. Un administrador gestiona el equipo, pero no ve un caso si no es miembro de él.",
-          "Abogado abre casos, asigna a su equipo y trabaja en los que le asignen. Asistente trabaja en los casos donde lo agreguen. Administrador invita y gestiona al equipo, pero no abre casos.",
+          "Abogado abre casos, asigna a su equipo y trabaja en los que le asignen. Asistente trabaja en los casos donde lo agreguen. Administrador invita y gestiona al equipo, pero no abre casos. En una firma, la persona responsable dirige el despacho y tampoco abre casos; en una cuenta independiente es el abogado y sí los abre.",
         ],
       },
       {

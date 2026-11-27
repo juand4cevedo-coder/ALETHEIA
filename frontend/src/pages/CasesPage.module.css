@@ -387,7 +387,10 @@
 }
 
 .title {
+  /* 24 px de alto como mínimo: el título es el enlace al caso (WCAG 2.5.8). */
+  display: inline-block;
   min-width: 0;
+  padding-block: 1px;
   color: var(--text);
   font-size: var(--font-size-ui);
   font-weight: 500;

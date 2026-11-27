@@ -326,6 +326,40 @@ describe("Tablero del espacio de trabajo (HU-031)", () => {
     ).toHaveAttribute("href", "/app/casos/nuevo");
   });
 
+  it("al dueño de una firma sin casos lo invita a armar su equipo", async () => {
+    const firm = me("owner");
+    firm.organization = { ...firm.organization, kind: "firm" };
+    fetchMock.mockImplementation(async (input) => {
+      const url = new URL((input as Request).url);
+      if (url.pathname === "/api/v1/me") return jsonResponse(firm);
+      if (url.pathname === "/api/v1/cases") {
+        return jsonResponse({
+          items: [],
+          next_cursor: null,
+          totals: { ...TOTALS, open: 0, closed: 0, pending_stamps: 0 },
+        });
+      }
+      if (url.pathname === "/api/v1/tasks") {
+        return jsonResponse({ ...TASK_INBOX, items: [] });
+      }
+      if (url.pathname === "/api/v1/notifications") {
+        return jsonResponse({ items: [], unread: 0 });
+      }
+      throw new Error("ruta inesperada");
+    });
+    await renderRoute("/app");
+
+    const empty = (await screen.findByText("Arme su equipo")).closest(
+      "section",
+    )!;
+    expect(
+      within(empty).getByRole("link", { name: /Invitar a su equipo/ }),
+    ).toHaveAttribute("href", "/app/miembros");
+    expect(
+      screen.queryByRole("link", { name: /Abrir un caso/ }),
+    ).not.toBeInTheDocument();
+  });
+
   it("no se cae si el resumen de casos llega con otra forma", async () => {
     fetchMock.mockImplementation(async (input) => {
       const url = new URL((input as Request).url);

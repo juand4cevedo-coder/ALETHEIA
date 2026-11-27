@@ -1,5 +1,5 @@
 .check {
-  --check-size: 22px;
+  --check-size: 24px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-3);

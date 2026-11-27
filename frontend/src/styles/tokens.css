@@ -7,7 +7,8 @@
 :root {
   /* Títulos editoriales en serif con tamaño óptico; la interfaz y el texto, en Geist. */
   --font-editorial:
-    "Newsreader Variable", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    "Newsreader Variable", "Newsreader Fallback", "Iowan Old Style", Georgia,
+    "Times New Roman", serif;
 
   /* Papel: la escala que sube y baja. La profundidad se lee por el tono, no por el borde. */
   /* El modo claro no es blanco plano: el fondo es una lavanda muy suave y las tarjetas blancas
@@ -54,7 +55,8 @@
   --err: #9b2226;
 
   --font-sans:
-    "Geist Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    "Geist Variable", "Geist Fallback", system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
   --font-mono:
     "Geist Mono Variable", ui-monospace, "Cascadia Mono", Consolas, monospace;
 

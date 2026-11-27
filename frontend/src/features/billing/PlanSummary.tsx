@@ -106,8 +106,9 @@ export function PlanSummary({
             Corporativo
           </Heading>
           <p>
-            Para firmas grandes y departamentos jurídicos: usuarios,
-            almacenamiento y soporte a la medida de su volumen, por cotización.
+            Para firmas grandes y departamentos jurídicos: sin límite de
+            personas, con almacenamiento y soporte a la medida de su volumen,
+            por cotización.
           </p>
         </div>
         <Link
