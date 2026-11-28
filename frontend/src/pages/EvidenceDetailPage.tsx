@@ -17,6 +17,10 @@ import { MESSAGES } from "../content/messages.ts";
 import { apiProblem } from "../features/auth/apiProblem.ts";
 import { custodyActionLabel } from "../features/cases/custodyActions.ts";
 import { formatColombiaTime } from "../features/cases/dates.ts";
+import {
+  detectedTypeLabel,
+  TYPE_LABELS,
+} from "../features/cases/evidenceLabels.ts";
 import { ShareEvidencePanel } from "../features/cases/ShareEvidencePanel.tsx";
 import { TimestampPanel } from "../features/cases/TimestampPanel.tsx";
 import styles from "./EvidenceDetailPage.module.css";
@@ -113,7 +117,7 @@ export function EvidenceDetailPage() {
       <meta name="robots" content="noindex" />
       <PageHeader
         title={evidence.original_filename}
-        description="Metadatos de la evidencia conservada"
+        description="Lo que se sabe de esta prueba: quién la subió, de dónde viene y su huella."
         actions={
           <div className={styles.actions}>
             {me.organization?.role !== "assistant" && me.organization && (
@@ -144,11 +148,11 @@ export function EvidenceDetailPage() {
           </div>
           <div>
             <dt>Tipo declarado</dt>
-            <dd>{evidence.declared_type}</dd>
+            <dd>{TYPE_LABELS[evidence.declared_type]}</dd>
           </div>
           <div>
             <dt>Tipo detectado por el sistema</dt>
-            <dd>{evidence.detected_type}</dd>
+            <dd>{detectedTypeLabel(evidence.detected_type)}</dd>
           </div>
           <div>
             <dt>Tamaño exacto</dt>

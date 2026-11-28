@@ -4,6 +4,10 @@
   max-width: 560px;
 }
 
+.form > button {
+  justify-self: start;
+}
+
 .hint {
   margin-top: calc(var(--space-3) * -1);
   color: var(--text-2);

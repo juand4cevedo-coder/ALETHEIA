@@ -113,12 +113,13 @@ svg [opacity="0.2"] {
   }
 }
 
-/* Entrada al desplazarse: los títulos y los bloques de cada sección suben y se aclaran al entrar
-   en la ventana. Es solo CSS (sin JavaScript) y solo donde el navegador lo admite; sin soporte o
-   con movimiento reducido, todo se ve desde el principio. */
+/* Entrada al desplazarse en el sitio público: los títulos y los bloques de cada sección suben y
+   se aclaran al entrar en la ventana. Es solo CSS (sin JavaScript) y solo donde el navegador lo
+   admite; sin soporte, con movimiento reducido o al imprimir, todo se ve desde el principio. El
+   espacio de trabajo no lo usa: sus paneles entran enteros, con el título dentro. */
 @supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    main section :is(h2, h2 + p, figure, [data-reveal]) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    main:not([data-workspace]) section :is(h2, h2 + p, figure, [data-reveal]) {
       animation: reveal-in linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 55%;

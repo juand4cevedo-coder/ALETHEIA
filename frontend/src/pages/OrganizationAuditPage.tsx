@@ -9,12 +9,16 @@ import {
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { sessionFetch } from "../api/sessionFetch.ts";
 import { Button } from "../components/ui/Button.tsx";
+import { Field } from "../components/ui/Field.tsx";
 import { DescargarIcon } from "../components/ui/icons.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
+import { Select } from "../components/ui/Select.tsx";
 import { Skeleton } from "../components/ui/Skeleton.tsx";
 import { pageTitle } from "../config/site.ts";
+import { formatColombiaTime } from "../features/cases/dates.ts";
+import { deviceName } from "../features/workspace/deviceName.ts";
 import { managesTeam } from "../features/workspace/roles.ts";
 import styles from "./OrganizationAuditPage.module.css";
 
@@ -190,52 +194,44 @@ export function OrganizationAuditPage() {
       ) : (
         <Panel title="Eventos de seguridad">
           <div className={styles.filters} aria-label="Filtros de auditoría">
-            <label>
-              <span>Acción</span>
-              <select
-                value={action ?? ""}
-                onChange={(event) => setFilter("accion", event.target.value)}
-              >
-                <option value="">Todas las acciones</option>
-                {ACTIONS.map((value) => (
-                  <option key={value} value={value}>
-                    {ACTION_LABELS[value]}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Persona</span>
-              <select
-                value={actor ?? ""}
-                onChange={(event) => setFilter("persona", event.target.value)}
-              >
-                <option value="">Todas las personas</option>
-                {(members.data?.items ?? []).map((member) => (
-                  <option key={member.user_id} value={member.user_id}>
-                    {member.full_name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Desde</span>
-              <input
-                type="date"
-                value={from}
-                max={to || undefined}
-                onChange={(event) => setFilter("desde", event.target.value)}
-              />
-            </label>
-            <label>
-              <span>Hasta</span>
-              <input
-                type="date"
-                value={to}
-                min={from || undefined}
-                onChange={(event) => setFilter("hasta", event.target.value)}
-              />
-            </label>
+            <Select
+              label="Acción"
+              value={action ?? ""}
+              onChange={(event) => setFilter("accion", event.target.value)}
+              options={[
+                { value: "", label: "Todas las acciones" },
+                ...ACTIONS.map((value) => ({
+                  value,
+                  label: ACTION_LABELS[value],
+                })),
+              ]}
+            />
+            <Select
+              label="Persona"
+              value={actor ?? ""}
+              onChange={(event) => setFilter("persona", event.target.value)}
+              options={[
+                { value: "", label: "Todas las personas" },
+                ...(members.data?.items ?? []).map((member) => ({
+                  value: member.user_id,
+                  label: member.full_name,
+                })),
+              ]}
+            />
+            <Field
+              label="Desde"
+              type="date"
+              value={from}
+              max={to || undefined}
+              onChange={(event) => setFilter("desde", event.target.value)}
+            />
+            <Field
+              label="Hasta"
+              type="date"
+              value={to}
+              min={from || undefined}
+              onChange={(event) => setFilter("hasta", event.target.value)}
+            />
             <Button
               size="sm"
               variant="secondary"
@@ -298,9 +294,9 @@ export function OrganizationAuditPage() {
                     <th scope="col">Fecha</th>
                     <th scope="col">Acción</th>
                     <th scope="col">Persona</th>
-                    <th scope="col">Objeto</th>
+                    <th scope="col">Sobre</th>
                     <th scope="col">Dirección IP</th>
-                    <th scope="col">Navegador</th>
+                    <th scope="col">Equipo</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -308,7 +304,7 @@ export function OrganizationAuditPage() {
                     <tr key={event.id}>
                       <td data-label="Fecha">
                         <time dateTime={event.created_at}>
-                          {new Date(event.created_at).toLocaleString("es-CO")}
+                          {formatColombiaTime(event.created_at)}
                         </time>
                       </td>
                       <th scope="row" data-label="Acción">
@@ -322,18 +318,23 @@ export function OrganizationAuditPage() {
                           fallback="Sistema"
                         />
                       </td>
-                      <td data-label="Objeto">
+                      <td data-label="Sobre">
                         <Person
                           id={event.target_id}
                           names={memberNames}
-                          fallback="Sin objeto"
+                          fallback="No aplica"
                         />
                       </td>
                       <td data-label="Dirección IP">
                         {event.ip ?? "No registrada"}
                       </td>
-                      <td data-label="Navegador">
-                        {event.user_agent ?? "No registrado"}
+                      {/* El navegador dicho en palabras; la cadena completa queda en el título y en la
+                          exportación CSV, para quien necesite el detalle técnico. */}
+                      <td
+                        data-label="Equipo"
+                        title={event.user_agent ?? undefined}
+                      >
+                        {deviceName(event.user_agent) ?? "No registrado"}
                       </td>
                     </tr>
                   ))}

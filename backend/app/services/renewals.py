@@ -168,7 +168,9 @@ def _prepare(
     cycle = cast(Literal["monthly", "annual"], subscription.billing_cycle)
     # El plan más las personas de hoy por encima de las incluidas. Si el plan no admite
     # adicionales, se renueva al precio del plan: la renovación no deja a nadie por fuera.
-    extra = pricing.extra_users_for(plan, pricing.users_counted(session, organization_id, now))
+    extra = pricing.extra_users_for(
+        plan, pricing.users_counted(session, organization_id, now), enforce_cap=False
+    )
     quote = pricing.quote(plan, cycle, extra or 0)
     if quote is None:
         return None

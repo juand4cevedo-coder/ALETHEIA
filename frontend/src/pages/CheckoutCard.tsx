@@ -352,7 +352,7 @@ function Checkout({
     return (
       <form className={styles.form} noValidate onSubmit={goToConfirm}>
         <Select
-          label="Plan"
+          label="Plan que quiere pagar"
           value={selected?.code ?? ""}
           onChange={(event) => setPlanCode(event.target.value)}
           options={payable.map((plan) => ({

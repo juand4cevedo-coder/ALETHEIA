@@ -19,6 +19,8 @@ import {
 import type { PortalAccessOut } from "../../api/generated/index.ts";
 import { Button } from "../../components/ui/Button.tsx";
 import { Field } from "../../components/ui/Field.tsx";
+import { FileDropzone } from "../../components/ui/FileDropzone.tsx";
+import fieldStyles from "../../components/ui/Field.module.css";
 import { Notice } from "../../components/ui/Notice.tsx";
 import { sessionUpload } from "../../api/sessionFetch.ts";
 import { apiProblem } from "../auth/apiProblem.ts";
@@ -78,6 +80,7 @@ export function ClientPortalSection({
       }),
   });
   const fileForm = useRef<HTMLFormElement>(null);
+  const documentFileId = useId();
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [uploadFailure, setUploadFailure] = useState("");
@@ -379,10 +382,18 @@ export function ClientPortalSection({
             className={styles.form}
             onSubmit={(event) => void submitDocument(event)}
           >
-            <label className={styles.fileLabel}>
-              Archivo
-              <input type="file" name="archivo" disabled={uploading} required />
-            </label>
+            <div className={fieldStyles.field}>
+              <label htmlFor={documentFileId} className={fieldStyles.label}>
+                Archivo para el cliente
+              </label>
+              <FileDropzone
+                id={documentFileId}
+                name="archivo"
+                required
+                disabled={uploading}
+                progress={uploading ? progress : null}
+              />
+            </div>
             <Button type="submit" busy={uploading}>
               {uploading
                 ? progress === null

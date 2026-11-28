@@ -17,6 +17,7 @@ import { EmptyState } from "../components/ui/EmptyState.tsx";
 import { FilingNumber } from "../components/ui/FilingNumber.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
+import { Select } from "../components/ui/Select.tsx";
 import { StatusBadge } from "../components/ui/StatusBadge.tsx";
 import { SystemError } from "../components/ui/SystemError.tsx";
 import { BuscarIcon } from "../components/ui/icons.tsx";
@@ -215,62 +216,54 @@ export function ArchivePage() {
             onChange={(event) => setParam("q", event.target.value || undefined)}
           />
         </div>
-        <label className={styles.select}>
-          <span>Año de cierre</span>
-          <select
-            value={year ?? ""}
-            onChange={(event) => setParam("anio", event.target.value)}
-          >
-            <option value="">Todos</option>
-            {(everything.data?.by_year ?? []).map((entry) => (
-              <option key={entry.year} value={String(entry.year)}>
-                {entry.year} ({entry.cases})
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className={styles.select}>
-          <span>Especialidad</span>
-          <select
-            value={area ?? ""}
-            onChange={(event) => setParam("area", event.target.value)}
-          >
-            <option value="">Todas</option>
-            {AREAS.map((option) => (
-              <option key={option} value={option}>
-                {PRACTICE_AREA_LABELS[option]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className={styles.select}>
-          <span>Base de conservación</span>
-          <select
-            value={basis ?? ""}
-            onChange={(event) => setParam("base", event.target.value)}
-          >
-            <option value="">Todas</option>
-            {BASES.map((option) => (
-              <option key={option} value={option}>
-                {BASIS_LABELS[option]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className={styles.select}>
-          <span>Plazo de conservación</span>
-          <select
-            value={review ?? ""}
-            onChange={(event) => setParam("plazo", event.target.value)}
-          >
-            <option value="">Todos</option>
-            {(Object.keys(REVIEW_LABELS) as Review[]).map((option) => (
-              <option key={option} value={option}>
-                {REVIEW_LABELS[option]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select
+          label="Año de cierre"
+          value={year ?? ""}
+          onChange={(event) => setParam("anio", event.target.value)}
+          options={[
+            { value: "", label: "Todos" },
+            ...(everything.data?.by_year ?? []).map((entry) => ({
+              value: String(entry.year),
+              label: `${entry.year} (${entry.cases})`,
+            })),
+          ]}
+        />
+        <Select
+          label="Especialidad"
+          value={area ?? ""}
+          onChange={(event) => setParam("area", event.target.value)}
+          options={[
+            { value: "", label: "Todas" },
+            ...AREAS.map((option) => ({
+              value: option,
+              label: PRACTICE_AREA_LABELS[option],
+            })),
+          ]}
+        />
+        <Select
+          label="Base de conservación"
+          value={basis ?? ""}
+          onChange={(event) => setParam("base", event.target.value)}
+          options={[
+            { value: "", label: "Todas" },
+            ...BASES.map((option) => ({
+              value: option,
+              label: BASIS_LABELS[option],
+            })),
+          ]}
+        />
+        <Select
+          label="Plazo de conservación"
+          value={review ?? ""}
+          onChange={(event) => setParam("plazo", event.target.value)}
+          options={[
+            { value: "", label: "Todos" },
+            ...(Object.keys(REVIEW_LABELS) as Review[]).map((option) => ({
+              value: option,
+              label: REVIEW_LABELS[option],
+            })),
+          ]}
+        />
         {filtering && (
           <Button
             variant="secondary"

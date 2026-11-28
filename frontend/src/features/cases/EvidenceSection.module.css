@@ -4,6 +4,21 @@
   max-width: 48rem;
 }
 
+/* Con ancho de sobra, el formulario para agregar pruebas queda fijo a la izquierda y la lista a
+   la derecha: se sube un archivo sin perder de vista lo que ya está conservado. */
+@container (min-width: 960px) {
+  .layout:has(> :nth-child(2)) {
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+    align-items: start;
+    max-width: none;
+  }
+
+  .layout:has(> :nth-child(2)) > :first-child {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-6));
+  }
+}
+
 .listSection h2 {
   margin: 0 0 var(--space-2);
   color: var(--text);

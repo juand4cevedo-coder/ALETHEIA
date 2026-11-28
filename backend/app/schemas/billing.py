@@ -112,6 +112,12 @@ class BillingQuoteOption(BaseModel):
     plan_name: str
     billing_cycle: Literal["monthly", "annual"]
     included_users: int = Field(description="Usuarios que incluye el precio del plan.")
+    max_users: int | None = Field(
+        description=(
+            "Cuántas personas admite el plan como máximo, con sus adicionales; null si no tiene "
+            "límite."
+        )
+    )
     fits: bool = Field(
         description="Si el equipo cabe en el plan. Si no cabe, no se puede pagar ese plan."
     )

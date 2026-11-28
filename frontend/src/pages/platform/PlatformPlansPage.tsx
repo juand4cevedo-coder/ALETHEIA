@@ -10,6 +10,7 @@ import {
   revokeCourtesyMutation,
 } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../../components/ui/Button.tsx";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog.tsx";
 import { Field } from "../../components/ui/Field.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
 import { PageHeader } from "../../components/ui/PageHeader.tsx";
@@ -19,8 +20,22 @@ import { StatusBadge } from "../../components/ui/StatusBadge.tsx";
 import { pageTitle } from "../../config/site.ts";
 import styles from "./Platform.module.css";
 import { PlatformPlanDialog } from "./PlatformPlanDialog.tsx";
+import { formatColombiaTime } from "../../features/cases/dates.ts";
 import { ACCESS_LABELS, money, SUBSCRIPTION_LABELS } from "./labels.ts";
 import { DateText, Restricted } from "./shared.tsx";
+
+/** Cómo admite el plan personas de más: precio y tope, o que no admite. */
+function extraLabel(plan: {
+  extra_user_price_cop: number | null;
+  max_extra_users: number | null;
+}): string {
+  if (plan.extra_user_price_cop === null) return "No admite";
+  if (plan.extra_user_price_cop === 0) return "Sin límite de personas";
+  const price = money(plan.extra_user_price_cop);
+  return plan.max_extra_users === null
+    ? `${price} por persona, sin tope`
+    : `${price} por persona, hasta ${plan.max_extra_users}`;
+}
 
 // Planes y cortesías: el catálogo que ven los clientes y la asignación manual de un plan a un
 // despacho. Ninguna de las dos cosas cobra ni emite facturas; cada cambio queda en la auditoría.
@@ -71,6 +86,9 @@ export function PlatformPlansPage() {
                           Usuarios incluidos
                         </th>
                         <th scope="col" role="columnheader">
+                          Adicionales
+                        </th>
+                        <th scope="col" role="columnheader">
                           En precios
                         </th>
                         <th scope="col" role="columnheader">
@@ -104,6 +122,9 @@ export function PlatformPlansPage() {
                             className={styles.number}
                           >
                             {plan.included_users}
+                          </td>
+                          <td role="cell" data-label="Adicionales">
+                            {extraLabel(plan)}
                           </td>
                           <td role="cell" data-label="En precios">
                             <StatusBadge tone={plan.is_public ? "ok" : "muted"}>
@@ -151,6 +172,13 @@ function PlanAccessManager({
   const [reason, setReason] = useState("");
   const [end, setEnd] = useState("");
   const [message, setMessage] = useState("");
+  const [confirming, setConfirming] = useState<{
+    title: string;
+    text: string;
+    label: string;
+    destructive: boolean;
+    run: () => void;
+  } | null>(null);
   const queryClient = useQueryClient();
   const target = useQuery({
     ...lookupCourtesyOptions({ query: { account_email: searched } }),
@@ -192,22 +220,23 @@ function PlanAccessManager({
       return;
     }
     const deadline = endsAt
-      ? endsAt.toLocaleString("es-CO")
+      ? `hasta el ${formatColombiaTime(endsAt.toISOString())}`
       : "sin vencimiento";
-    if (
-      !window.confirm(
-        `¿Confirma ${selectedPlan.name} para ${target.data.organization_name} (${target.data.account_email}), ${deadline}?`,
-      )
-    )
-      return;
-    setMessage("");
-    grant.mutate({
-      body: {
-        organization_id: target.data.organization_id,
-        account_email: target.data.account_email,
-        plan_code: selectedPlan.code,
-        reason: reason.trim(),
-        ends_at: endsAt?.toISOString() ?? null,
+    const body = {
+      organization_id: target.data.organization_id,
+      account_email: target.data.account_email,
+      plan_code: selectedPlan.code,
+      reason: reason.trim(),
+      ends_at: endsAt?.toISOString() ?? null,
+    };
+    setConfirming({
+      title: `¿Dar ${selectedPlan.name} a ${target.data.organization_name}?`,
+      text: `Cuenta ${target.data.account_email}, ${deadline}.`,
+      label: "Dar el plan",
+      destructive: false,
+      run: () => {
+        setMessage("");
+        grant.mutate({ body });
       },
     });
   }
@@ -217,18 +246,19 @@ function PlanAccessManager({
       setMessage("Escriba un motivo de al menos 10 caracteres.");
       return;
     }
-    if (
-      !window.confirm(
-        `¿Revocar el acceso de ${target.data.organization_name}? El despacho pasará a solo lectura.`,
-      )
-    )
-      return;
-    setMessage("");
-    revoke.mutate({
-      body: {
-        organization_id: target.data.organization_id,
-        account_email: target.data.account_email,
-        reason: reason.trim(),
+    const body = {
+      organization_id: target.data.organization_id,
+      account_email: target.data.account_email,
+      reason: reason.trim(),
+    };
+    setConfirming({
+      title: `¿Revocar el acceso de ${target.data.organization_name}?`,
+      text: "El despacho pasará a solo lectura.",
+      label: "Revocar el acceso",
+      destructive: true,
+      run: () => {
+        setMessage("");
+        revoke.mutate({ body });
       },
     });
   }
@@ -369,6 +399,19 @@ function PlanAccessManager({
           </p>
         )}
       </div>
+      <ConfirmDialog
+        open={confirming !== null}
+        title={confirming?.title ?? ""}
+        confirmLabel={confirming?.label ?? "Confirmar"}
+        destructive={confirming?.destructive}
+        onCancel={() => setConfirming(null)}
+        onConfirm={() => {
+          confirming?.run();
+          setConfirming(null);
+        }}
+      >
+        <p>{confirming?.text}</p>
+      </ConfirmDialog>
     </Panel>
   );
 }

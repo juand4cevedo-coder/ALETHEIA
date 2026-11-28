@@ -413,3 +413,39 @@ def test_pagar_un_plan_donde_no_cabe_el_equipo_responde_409_con_la_explicacion(
 
     assert respuesta.status_code == 409
     assert respuesta.json()["detail"].startswith("Su equipo tiene 5 personas")
+
+
+def test_la_renovacion_cobra_a_todo_el_equipo_aunque_pase_del_tope(
+    db: Session, settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # El tope de adicionales frena crecer, no cobrar a un equipo que ya existe: una firma con
+    # 23 personas (3 por encima del tope de 20) renueva cobrando sus 13 adicionales y el pago
+    # se activa con esa referencia (ADR-062).
+    from tests.test_renewals import _vence_en
+
+    office = crear_oficina(db, "firm")
+    subscription, fin = _vence_en(db, office, 0.5)
+    subscription.plan_id = _plan(db, "firm").id
+    db.flush()
+    _equipo(db, office, 23)
+    llamadas = _cobro(monkeypatch, "APPROVED")
+
+    resultado = renewals.attempt(db, _con_renovacion(settings), office.organization_id, fin, 1)
+
+    assert resultado == "approved"
+    assert llamadas[0]["amount_in_cents"] == (149_900 + 13 * 19_900) * 100
+    comprobante = _comprobante(db, office)
+    assert comprobante is not None
+    assert comprobante.extra_users == 13
+
+
+def test_comprar_un_plan_por_encima_del_tope_no_se_cobra(db: Session, settings: Settings) -> None:
+    office = crear_oficina(db, "trial")
+    _en_prueba(db, office)
+    _equipo(db, office, 21)
+    principal = _principal(office.organization_id, office.owner.id, "owner")
+
+    with pytest.raises(checkout.EquipoNoCabeError) as error:
+        checkout.iniciar_checkout_web(db, _con_wompi(settings), principal, "firm", "monthly")
+
+    assert (error.value.users, error.value.limit) == (21, 20)

@@ -90,16 +90,17 @@ describe("Página para empresas (/empresa)", () => {
       }),
     ).toBeInTheDocument();
 
-    // Las cinco personas del ejemplo caben más baratas en Profesional, con un adicional.
+    // Son cinco personas, pero la socia dirige la firma y no ocupa cupo: las cuatro que cuentan
+    // caben en Profesional sin adicionales (ADR-062).
     const example = await screen.findByLabelText(
       "Un despacho de 5 personas en el plan Profesional",
     );
+    expect(within(example).queryByText(/adicional/)).not.toBeInTheDocument();
+    expect(within(example).getAllByText("$59.900")).toHaveLength(2);
     expect(
-      within(example).getByText("1 usuario adicional a $19.900"),
-    ).toBeInTheDocument();
-    expect(within(example).getByText("$79.800")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Desde 9 personas conviene el plan Firma/),
+      screen.getByText(
+        /Desde 9 personas que ocupan cupo conviene el plan Firma/,
+      ),
     ).toBeInTheDocument();
 
     expect(container.querySelector("#cotizar")).not.toBeNull();

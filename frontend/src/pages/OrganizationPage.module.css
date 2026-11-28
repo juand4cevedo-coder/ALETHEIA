@@ -1,5 +1,10 @@
 /* Organización (API-022): un único formulario por ahora, el mismo patrón de los demás paneles
    de la cuenta. */
+.page {
+  display: grid;
+  gap: var(--space-6);
+}
+
 .form {
   display: grid;
   gap: var(--space-6);

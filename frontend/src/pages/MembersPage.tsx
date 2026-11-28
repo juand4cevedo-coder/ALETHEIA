@@ -17,6 +17,7 @@ import {
   revokeInvitationMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
+import { Select } from "../components/ui/Select.tsx";
 import { Notice } from "../components/ui/Notice.tsx";
 import { Panel } from "../components/ui/Panel.tsx";
 import { PageHeader } from "../components/ui/PageHeader.tsx";
@@ -246,19 +247,20 @@ function Team({
             onChange={(event) => setFilter("buscar", event.target.value)}
           />
         </label>
-        <label className={styles.roleFilter}>
-          <span>Filtrar por rol</span>
-          <select
+        <div className={styles.roleFilter}>
+          <Select
+            label="Filtrar por rol"
             value={role}
             onChange={(event) => setFilter("rol", event.target.value)}
-          >
-            <option value="todos">Todos los roles</option>
-            <option value="owner">Responsable del despacho</option>
-            <option value="admin">Administrador</option>
-            <option value="lawyer">Abogado</option>
-            <option value="assistant">Asistente</option>
-          </select>
-        </label>
+            options={[
+              { value: "todos", label: "Todos los roles" },
+              { value: "owner", label: "Responsable del despacho" },
+              { value: "admin", label: "Administrador" },
+              { value: "lawyer", label: "Abogado" },
+              { value: "assistant", label: "Asistente" },
+            ]}
+          />
+        </div>
         {filtering && (
           <Button
             variant="text"

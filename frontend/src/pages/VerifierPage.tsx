@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 
 import { Button } from "../components/ui/Button.tsx";
+import { Select } from "../components/ui/Select.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ROUTES } from "../config/routes.ts";
 import { SIGN_UP_LABEL, TRIAL_DAYS } from "../config/site.ts";
@@ -119,28 +120,27 @@ export function VerifierPage() {
             </label>
             {manifest && (
               <p className={styles.note} role="status">
-                {manifest.evidences.length} archivo(s) registrados en el
-                manifiesto.
+                {manifest.evidences.length === 1
+                  ? "1 archivo registrado en el manifiesto."
+                  : `${manifest.evidences.length} archivos registrados en el manifiesto.`}
               </p>
             )}
             {manifest && manifest.evidences.length > 1 && (
-              <label>
-                <span>2. Registro que desea comprobar</span>
-                <select
-                  value={selectedId}
-                  onChange={(event) => {
-                    clearRun();
-                    setSelectedId(event.target.value);
-                  }}
-                >
-                  <option value="">Seleccione un registro</option>
-                  {manifest.evidences.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.original_filename} ({item.id})
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Select
+                label="2. Registro que desea comprobar"
+                value={selectedId}
+                onChange={(event) => {
+                  clearRun();
+                  setSelectedId(event.target.value);
+                }}
+                options={[
+                  { value: "", label: "Seleccione un registro" },
+                  ...manifest.evidences.map((item) => ({
+                    value: item.id,
+                    label: item.original_filename,
+                  })),
+                ]}
+              />
             )}
             <label>
               <span>

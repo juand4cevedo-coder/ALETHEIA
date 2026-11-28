@@ -10,6 +10,7 @@ import {
   listPlatformUsersOptions,
 } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../../components/ui/Button.tsx";
+import { Select } from "../../components/ui/Select.tsx";
 import { Dialog } from "../../components/ui/Dialog.tsx";
 import { Field } from "../../components/ui/Field.tsx";
 import { apiProblem } from "../../features/auth/apiProblem.ts";
@@ -137,9 +138,9 @@ export function PlatformAccountsPage() {
                   }
                 />
               </label>
-              <label className={styles.filterField}>
-                <span>Estado</span>
-                <select
+              <div className={styles.filterField}>
+                <Select
+                  label="Estado"
                   value={filters.status}
                   onChange={(event) =>
                     setFilters((current) => ({
@@ -147,15 +148,16 @@ export function PlatformAccountsPage() {
                       status: event.target.value as AccountFilters["status"],
                     }))
                   }
-                >
-                  <option value="">Todos</option>
-                  <option value="active">Activas</option>
-                  <option value="blocked">Bloqueadas</option>
-                </select>
-              </label>
-              <label className={styles.filterField}>
-                <span>Verificación</span>
-                <select
+                  options={[
+                    { value: "", label: "Todos" },
+                    { value: "active", label: "Activas" },
+                    { value: "blocked", label: "Bloqueadas" },
+                  ]}
+                />
+              </div>
+              <div className={styles.filterField}>
+                <Select
+                  label="Verificación"
                   value={filters.verification}
                   onChange={(event) =>
                     setFilters((current) => ({
@@ -164,15 +166,16 @@ export function PlatformAccountsPage() {
                         .value as AccountFilters["verification"],
                     }))
                   }
-                >
-                  <option value="">Todas</option>
-                  <option value="verified">Verificadas</option>
-                  <option value="pending">Pendientes</option>
-                </select>
-              </label>
-              <label className={styles.filterField}>
-                <span>Ámbito</span>
-                <select
+                  options={[
+                    { value: "", label: "Todas" },
+                    { value: "verified", label: "Verificadas" },
+                    { value: "pending", label: "Pendientes" },
+                  ]}
+                />
+              </div>
+              <div className={styles.filterField}>
+                <Select
+                  label="Ámbito"
                   value={filters.accountType}
                   onChange={(event) =>
                     setFilters((current) => ({
@@ -181,12 +184,13 @@ export function PlatformAccountsPage() {
                         .value as AccountFilters["accountType"],
                     }))
                   }
-                >
-                  <option value="">Todos</option>
-                  <option value="workspace">Despachos</option>
-                  <option value="platform">Plataforma</option>
-                </select>
-              </label>
+                  options={[
+                    { value: "", label: "Todos" },
+                    { value: "workspace", label: "Despachos" },
+                    { value: "platform", label: "Plataforma" },
+                  ]}
+                />
+              </div>
               <div className={styles.filterActions}>
                 <Button size="sm" type="submit">
                   Aplicar filtros

@@ -16,12 +16,23 @@ type AccountTypeChoiceProps = {
 };
 
 const OPTIONS = [
-  { value: "individual", title: "Independiente", Icon: UsuarioIcon },
-  { value: "firm", title: "Oficina o firma", Icon: EdificioIcon },
+  {
+    value: "individual",
+    title: "Independiente",
+    Icon: UsuarioIcon,
+    hint: "Usted es el abogado: abre y trabaja sus casos, y puede sumar a su asistente.",
+  },
+  {
+    value: "firm",
+    title: "Oficina o firma",
+    Icon: EdificioIcon,
+    hint: "Usted dirige la firma: invita a sus abogados, que abren los casos. Quien dirige no ocupa cupo del plan.",
+  },
 ] as const satisfies ReadonlyArray<{
   value: AccountType;
   title: string;
   Icon: IconComponent;
+  hint: string;
 }>;
 
 // Para quién es la cuenta, como un selector segmentado. Son botones de opción nativos con otro
@@ -33,9 +44,15 @@ export function AccountTypeChoice({
   onChange,
 }: AccountTypeChoiceProps) {
   const generatedName = useId();
+  const hintId = useId();
+  const hint = OPTIONS.find((option) => option.value === value)?.hint;
 
   return (
-    <fieldset className={styles.choice} disabled={disabled}>
+    <fieldset
+      className={styles.choice}
+      disabled={disabled}
+      aria-describedby={hintId}
+    >
       <legend className={styles.legend}>¿Para quién es la cuenta?</legend>
       <div className={styles.options}>
         {OPTIONS.map(({ value: option, title, Icon }) => (
@@ -56,6 +73,9 @@ export function AccountTypeChoice({
           </label>
         ))}
       </div>
+      <p id={hintId} className={styles.hint} aria-live="polite">
+        {hint}
+      </p>
     </fieldset>
   );
 }

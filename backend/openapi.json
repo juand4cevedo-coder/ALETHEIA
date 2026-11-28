@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "ALETHEIA API",
-    "version": "0.52.0"
+    "version": "0.53.0"
   },
   "paths": {
     "/api/v1/health": {
@@ -9518,6 +9518,18 @@
             "title": "Included Users",
             "description": "Usuarios que incluye el precio del plan."
           },
+          "max_users": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Users",
+            "description": "Cuántas personas admite el plan como máximo, con sus adicionales; null si no tiene límite."
+          },
           "fits": {
             "type": "boolean",
             "title": "Fits",
@@ -9562,6 +9574,7 @@
           "plan_name",
           "billing_cycle",
           "included_users",
+          "max_users",
           "fits",
           "plan_cop",
           "extra_users",

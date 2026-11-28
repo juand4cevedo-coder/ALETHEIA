@@ -55,24 +55,32 @@
   box-shadow: var(--ring-focus);
 }
 
-/* El círculo se dibuja con el borde: al elegirlo, el borde engrosa hacia adentro. */
+/* El control mide 24 px (WCAG 2.5.8) y dibuja dentro un círculo de 18 px con el borde: al
+   elegirlo, el borde engrosa hacia adentro. */
 .choice input {
-  width: 18px;
-  height: 18px;
-  margin: 2px 0 0;
-  border: 1.5px solid var(--line-control);
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: -1px -3px 0;
+  border: 0;
   border-radius: 50%;
-  background: var(--paper-raised);
+  background: radial-gradient(
+    circle,
+    var(--paper-raised) 0 7.5px,
+    var(--line-control) 7.75px 9px,
+    transparent 9.25px
+  );
   appearance: none;
   cursor: pointer;
-  transition:
-    border-color var(--motion-fast) var(--ease-standard),
-    border-width 160ms var(--ease-out);
 }
 
 .choice input:checked {
-  border-width: 5px;
-  border-color: var(--ink-900);
+  background: radial-gradient(
+    circle,
+    var(--paper-raised) 0 3.75px,
+    var(--ink-900) 4px 9px,
+    transparent 9.25px
+  );
 }
 
 .choice input:focus-visible {

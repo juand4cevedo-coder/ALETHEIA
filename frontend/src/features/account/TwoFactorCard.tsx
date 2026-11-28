@@ -206,9 +206,11 @@ export function TwoFactorCard({
               </div>
             </>
           ) : (
-            <Button busy={start.isPending} onClick={() => start.mutate({})}>
-              Activar la verificación en dos pasos
-            </Button>
+            <div className={styles.startAction}>
+              <Button busy={start.isPending} onClick={() => start.mutate({})}>
+                Activar la verificación en dos pasos
+              </Button>
+            </div>
           )}
           {error && (
             <Notice tone="error">

@@ -19,7 +19,8 @@ function toNumber(value: string): number | null | "invalid" {
   return /^\d{1,12}$/.test(clean) ? Number(clean) : "invalid";
 }
 
-// Editar un plan del catálogo: precios, usuarios incluidos y si aparece en la página de precios.
+// Editar un plan del catálogo: precios, usuarios incluidos, adicionales y su tope, y si aparece
+// en la página de precios.
 // Lo que se guarda rige para los pagos nuevos y para el cupo de los despachos desde la siguiente
 // petición; lo ya cobrado no cambia. Cada cambio queda en la auditoría de la plataforma.
 export function PlatformPlanDialog({ plan, onClose }: Props) {
@@ -28,6 +29,7 @@ export function PlatformPlanDialog({ plan, onClose }: Props) {
   const [annual, setAnnual] = useState(String(plan?.annual_price_cop ?? ""));
   const [users, setUsers] = useState(String(plan?.included_users ?? ""));
   const [extra, setExtra] = useState(String(plan?.extra_user_price_cop ?? ""));
+  const [maxExtra, setMaxExtra] = useState(String(plan?.max_extra_users ?? ""));
   const [isPublic, setIsPublic] = useState(plan?.is_public ?? false);
   const [error, setError] = useState<string>();
 
@@ -46,11 +48,13 @@ export function PlatformPlanDialog({ plan, onClose }: Props) {
     const a = toNumber(annual);
     const u = toNumber(users);
     const x = toNumber(extra);
+    const t = toNumber(maxExtra);
     if (
       m === "invalid" ||
       a === "invalid" ||
       u === "invalid" ||
-      x === "invalid"
+      x === "invalid" ||
+      t === "invalid"
     ) {
       setError("Escriba solo números, sin letras ni símbolos.");
       return;
@@ -69,6 +73,8 @@ export function PlatformPlanDialog({ plan, onClose }: Props) {
         extra_user_price_cop: x,
         clear_extra_user_price:
           x === null && plan.extra_user_price_cop !== null,
+        max_extra_users: t,
+        clear_max_extra_users: t === null && plan.max_extra_users !== null,
         is_public: isPublic,
       },
     });
@@ -138,6 +144,14 @@ export function PlatformPlanDialog({ plan, onClose }: Props) {
           help="Vacío si el plan no admite usuarios adicionales."
           value={extra}
           onChange={(event) => setExtra(event.target.value)}
+        />
+        <Field
+          label="Máximo de usuarios adicionales"
+          name="tope-adicionales"
+          inputMode="numeric"
+          help="Vacío para no poner tope. Solo aplica si el plan admite adicionales."
+          value={maxExtra}
+          onChange={(event) => setMaxExtra(event.target.value)}
         />
         <Checkbox
           checked={isPublic}

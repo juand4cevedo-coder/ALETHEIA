@@ -75,7 +75,7 @@ function NameCard({
   }
 
   return (
-    <div>
+    <div className={styles.page}>
       <title>{pageTitle("Organización")}</title>
       <meta name="robots" content="noindex" />
       <PageHeader

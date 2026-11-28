@@ -104,10 +104,41 @@
   text-transform: uppercase;
 }
 
+/* Cinco cifras de seguridad sin tarjetas huérfanas: cinco en una fila cuando caben, tres y dos
+   en un panel mediano, y de dos en dos en el celular con la última a lo ancho. */
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--space-3);
+}
+
+@media (max-width: 1279px) {
+  .stats {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .stats > * {
+    grid-column: span 2;
+  }
+
+  .stats > :nth-last-child(-n + 2) {
+    grid-column: span 3;
+  }
+}
+
+@media (max-width: 560px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stats > *,
+  .stats > :nth-last-child(-n + 2) {
+    grid-column: span 1;
+  }
+
+  .stats > :last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .status {
@@ -121,5 +152,22 @@
 
   .panel {
     padding: var(--space-5);
+  }
+}
+
+/* Mientras carga, el panel ya ocupa su alto final aproximado en cada ancho: el inicio no salta. */
+.placeholder {
+  min-block-size: 600px;
+}
+
+@media (min-width: 1280px) {
+  .placeholder {
+    min-block-size: 440px;
+  }
+}
+
+@media (max-width: 480px) {
+  .placeholder {
+    min-block-size: 676px;
   }
 }

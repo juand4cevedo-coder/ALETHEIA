@@ -409,7 +409,7 @@ export const HELP = [
   {
     slug: "crear-un-caso",
     title: "Crear y encontrar un caso",
-    text: "Abra Casos y pulse Nuevo caso. Escriba el nombre y, si los tiene, el radicado, la especialidad y el despacho judicial. Para crear casos, su rol debe ser abogado o responsable del despacho y su correo tiene que estar verificado.",
+    text: "Abra Casos y pulse Nuevo caso. Escriba el nombre y, si los tiene, el radicado, la especialidad y el despacho judicial. Para crear casos, su rol debe ser abogado, o responsable de una cuenta independiente, y su correo tiene que estar verificado. En una firma, los casos los abren sus abogados.",
     related: "/app/casos",
   },
   {

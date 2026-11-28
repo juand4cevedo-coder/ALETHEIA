@@ -85,3 +85,12 @@
     transition: none;
   }
 }
+
+/* Qué significa la opción elegida: una línea que cambia con ella, sin mover el formulario. */
+.hint {
+  min-block-size: calc(2 * var(--line-height-support));
+  margin: var(--space-2) 0 0;
+  color: var(--text-2);
+  font-size: var(--font-size-support);
+  line-height: var(--line-height-support);
+}

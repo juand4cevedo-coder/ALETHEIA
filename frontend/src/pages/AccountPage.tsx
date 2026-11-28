@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { type FormEvent, useRef, useState } from "react";
 import { Link, useLocation, useOutletContext } from "react-router";
+import { formatColombiaDate } from "../features/cases/dates.ts";
 
 import type { Me } from "../api/generated";
 import { changePasswordMutation } from "../api/generated/@tanstack/react-query.gen.ts";
@@ -84,15 +85,19 @@ export function AccountPage() {
                 {me.subscription.status === "active"
                   ? "Activo"
                   : me.subscription.status === "trial"
-                    ? "Prueba"
-                    : "Solo lectura"}
+                    ? "En prueba gratuita"
+                    : "Vencido, en solo lectura"}
               </dd>
             </div>
             <div className={styles.row}>
-              <dt>Vencimiento</dt>
+              <dt>
+                {me.subscription.status === "trial"
+                  ? "La prueba termina"
+                  : "Pagado hasta"}
+              </dt>
               <dd>
                 {me.subscription.ends_at
-                  ? new Date(me.subscription.ends_at).toLocaleString("es-CO")
+                  ? formatColombiaDate(me.subscription.ends_at)
                   : "Sin fecha definida"}
               </dd>
             </div>
@@ -148,9 +153,11 @@ function AccountClosureCard({ me }: { me: Me }) {
             conservación legal o contractual permanecen seudonimizados y
             protegidos.
           </p>
-          <Button variant="secondary" onClick={() => setConfirming(true)}>
-            Cerrar mi cuenta
-          </Button>
+          <div className={styles.actions}>
+            <Button variant="secondary" onClick={() => setConfirming(true)}>
+              Cerrar mi cuenta
+            </Button>
+          </div>
           <CloseAccountDialog
             open={confirming}
             onClose={() => setConfirming(false)}

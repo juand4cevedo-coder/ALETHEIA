@@ -9,6 +9,7 @@ import {
   platformSupportTicketsOptions,
 } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../../components/ui/Button.tsx";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
 import { PageHeader } from "../../components/ui/PageHeader.tsx";
 import { SegmentedControl } from "../../components/ui/SegmentedControl.tsx";
@@ -64,13 +65,9 @@ export function PlatformSupportPage() {
       new Date(),
     ),
   );
+  const [erasing, setErasing] = useState<SupportTicketOut | null>(null);
   function erase(ticket: SupportTicketOut) {
-    if (
-      window.confirm(
-        `¿Eliminar la solicitud ${ticket.filing_number}? No se puede recuperar; la auditoría conserva solo su radicado.`,
-      )
-    )
-      remove.mutate({ path: { ticket_id: ticket.id } });
+    setErasing(ticket);
   }
   const update = (ticket: SupportTicketOut) =>
     change.mutate({
@@ -206,6 +203,23 @@ export function PlatformSupportPage() {
           <Pager pager={pager} next={tickets.data?.next_cursor} />
         </>
       )}
+      <ConfirmDialog
+        open={erasing !== null}
+        title={`¿Eliminar la solicitud ${erasing?.filing_number ?? ""}?`}
+        confirmLabel="Eliminar la solicitud"
+        destructive
+        busy={remove.isPending}
+        onCancel={() => setErasing(null)}
+        onConfirm={() =>
+          erasing &&
+          remove.mutate(
+            { path: { ticket_id: erasing.id } },
+            { onSettled: () => setErasing(null) },
+          )
+        }
+      >
+        <p>No se puede recuperar; la auditoría conserva solo su radicado.</p>
+      </ConfirmDialog>
     </div>
   );
 }

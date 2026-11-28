@@ -70,7 +70,7 @@ export const DOCUMENTATION: DocArticle[] = [
         id: "antes",
         title: "Antes de empezar",
         paragraphs: [
-          "Pueden crear casos el responsable del despacho y quienes tengan el rol de abogado. Además, su correo tiene que estar verificado. Si no ve el botón Nuevo caso, pídale a quien administra el despacho que revise su rol.",
+          "Pueden crear casos quienes tengan el rol de abogado y, en una cuenta independiente, su responsable, que es el abogado. En una firma, quien la dirige no abre casos: los abren sus abogados. Además, el correo tiene que estar verificado. Si no ve el botón Nuevo caso, pídale a quien administra el despacho que revise su rol.",
         ],
       },
       {
