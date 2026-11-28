@@ -405,7 +405,7 @@ function CreateTask({
             type="datetime-local"
             value={dueAt}
             onChange={(event) => setDueAt(event.target.value)}
-            help="Opcional. Se guardará con zona horaria."
+            help="Opcional. Se guarda en hora de Colombia."
           />
           {mutation.error && (
             <Notice tone="error">

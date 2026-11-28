@@ -156,7 +156,7 @@
 /* En celular el logotipo no cabe junto a la búsqueda, el tema y la cuenta: queda el emblema
    solo, que se reconoce igual. */
 @media (max-width: 560px) {
-  .brand > :nth-child(2) {
+  .header .brand > :nth-child(2) {
     display: none;
   }
 }

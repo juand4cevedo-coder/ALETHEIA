@@ -12,28 +12,8 @@ import { ROUTES } from "../../config/routes.ts";
 import { Notice } from "../../components/ui/Notice.tsx";
 import { EvidenceUploadForm } from "./EvidenceUploadForm.tsx";
 import { formatColombiaTime } from "./dates.ts";
+import { detectedTypeLabel, TYPE_LABELS } from "./evidenceLabels.ts";
 import styles from "./EvidenceSection.module.css";
-
-const TYPE_LABELS: Record<EvidenceSummaryOut["declared_type"], string> = {
-  chat: "Conversación",
-  email: "Correo",
-  audio: "Audio",
-  image: "Imagen",
-  document: "Documento",
-  other: "Otro",
-};
-
-const DETECTED_LABELS: Record<string, string> = {
-  "application/pdf": "PDF",
-  "image/png": "Imagen PNG",
-  "image/jpeg": "Imagen JPEG",
-  "image/gif": "Imagen GIF",
-  "application/zip": "Archivo ZIP",
-  "audio/wav": "Audio WAV",
-  "audio/mpeg": "Audio MP3",
-  "text/plain": "Texto plano",
-  "application/octet-stream": "Formato no identificado",
-};
 
 const SEAL = {
   pending: { tone: "pending", label: "Sello pendiente" },
@@ -227,10 +207,7 @@ export function EvidenceSection({
                   </div>
                   <div>
                     <dt>Tipo detectado por el sistema</dt>
-                    <dd>
-                      {DETECTED_LABELS[item.detected_type] ??
-                        item.detected_type}
-                    </dd>
+                    <dd>{detectedTypeLabel(item.detected_type)}</dd>
                   </div>
                   <div>
                     <dt>Tamaño</dt>

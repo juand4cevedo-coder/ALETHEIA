@@ -260,7 +260,6 @@ it("crea un enlace para compartir, lo muestra una sola vez y permite revocarlo",
     }
     throw new Error(`Ruta inesperada: ${url.pathname}`);
   });
-  vi.spyOn(window, "confirm").mockReturnValue(true);
   const user = userEvent.setup();
   await renderRoute(route);
 
@@ -290,6 +289,9 @@ it("crea un enlace para compartir, lo muestra una sola vez y permite revocarlo",
   });
   expect(within(list).getByText("Para el perito")).toBeInTheDocument();
   await user.click(within(list).getByRole("button", { name: "Revocar" }));
+  await user.click(
+    await screen.findByRole("button", { name: "Revocar el enlace" }),
+  );
   expect(await screen.findByText("Revocado")).toBeInTheDocument();
 });
 
