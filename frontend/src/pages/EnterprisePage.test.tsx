@@ -98,7 +98,9 @@ describe("Página para empresas (/empresa)", () => {
     expect(within(example).queryByText(/adicional/)).not.toBeInTheDocument();
     expect(within(example).getAllByText("$59.900")).toHaveLength(2);
     expect(
-      screen.getByText(/Desde 9 personas que ocupan cupo conviene el plan Firma/),
+      screen.getByText(
+        /Desde 9 personas que ocupan cupo conviene el plan Firma/,
+      ),
     ).toBeInTheDocument();
 
     expect(container.querySelector("#cotizar")).not.toBeNull();
