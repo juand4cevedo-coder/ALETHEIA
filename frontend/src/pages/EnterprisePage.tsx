@@ -106,8 +106,9 @@ export function EnterprisePage() {
               Quien crea un caso queda asignado a él y agrega a las personas que
               lo van a llevar. Los demás miembros del despacho no lo ven en su
               lista ni pueden abrirlo. Si el asistente apoya solo dos de los
-              casos de la socia, solo ve esos dos, y en ellos puede subir la
-              evidencia que llegó por correo sin poder descargar los originales.
+              casos de uno de los abogados, solo ve esos dos, y en ellos puede
+              subir la evidencia que llegó por correo sin poder descargar los
+              originales.
             </p>
           </section>
 
@@ -137,8 +138,10 @@ function plan(plans: PublicPlan[] | undefined, code: string) {
   return plans?.find((item) => item.code === code);
 }
 
-// El despacho del ejemplo: la socia, la administradora, dos abogados y el asistente.
+// El despacho del ejemplo: la socia, la administradora, dos abogados y el asistente. La socia
+// dirige la firma y no ocupa cupo (ADR-062): cuentan cuatro personas.
 const EXAMPLE_TEAM = 5;
+const EXAMPLE_SEATS = 4;
 
 /** Desde cuántas personas el plan más barato pasa a ser `code`, o null si nunca. */
 function smallestTeamFor(plans: PublicPlan[], code: string): number | null {
@@ -151,7 +154,7 @@ function smallestTeamFor(plans: PublicPlan[], code: string): number | null {
 /** Lo que paga el despacho del ejemplo, con los precios del catálogo. */
 function Pricing() {
   const { plans, isError } = usePlanCatalog();
-  const example = plans ? cheapestPlanFor(plans, EXAMPLE_TEAM) : null;
+  const example = plans ? cheapestPlanFor(plans, EXAMPLE_SEATS) : null;
   const firm = plan(plans, "firm");
   const firmFrom = plans ? smallestTeamFor(plans, "firm") : null;
 
@@ -161,22 +164,30 @@ function Pricing() {
       {example ? (
         <>
           <p>
-            Para cinco personas, el plan que sale más barato es{" "}
-            {example.plan.name}: incluye {example.plan.included_users} usuarios
-            y {formatBytes(example.plan.storage_limit_bytes)} para evidencias
+            Son cinco personas, pero la socia dirige la firma y no ocupa cupo:
+            cuentan cuatro. El plan que sale más barato es {example.plan.name}:
+            incluye {example.plan.included_users} usuarios y{" "}
+            {formatBytes(example.plan.storage_limit_bytes)} para evidencias
             {example.plan.extra_user_price_cop != null &&
               `, y cada persona de más cuesta ${formatCop(example.plan.extra_user_price_cop)} al mes`}
-            . Cuentan los miembros del despacho y las invitaciones que siguen
+            . Cuentan los miembros que ocupan cupo y las invitaciones que siguen
             abiertas.
           </p>
-          <TeamExample plan={example.plan} people={EXAMPLE_TEAM} />
+          <TeamExample
+            plan={example.plan}
+            people={EXAMPLE_TEAM}
+            seats={EXAMPLE_SEATS}
+          />
           {firm && firmFrom !== null && firm.extra_user_price_cop != null && (
             <p>
-              Desde {firmFrom} personas conviene el plan Firma: cuesta{" "}
-              {formatCop(firm.monthly_price_cop)} al mes, incluye{" "}
+              Desde {firmFrom} personas que ocupan cupo conviene el plan Firma:
+              cuesta {formatCop(firm.monthly_price_cop)} al mes, incluye{" "}
               {firm.included_users} usuarios y{" "}
               {formatBytes(firm.storage_limit_bytes)}, y cada persona de más
-              cuesta {formatCop(firm.extra_user_price_cop)} al mes.
+              cuesta {formatCop(firm.extra_user_price_cop)} al mes
+              {firm.max_extra_users != null &&
+                `, hasta ${firm.included_users + firm.max_extra_users} personas en total`}
+              .
             </p>
           )}
           <p>
@@ -203,8 +214,17 @@ function Pricing() {
   );
 }
 
-function TeamExample({ plan, people }: { plan: PublicPlan; people: number }) {
-  const extra = Math.max(people - plan.included_users, 0);
+function TeamExample({
+  plan,
+  people,
+  seats,
+}: {
+  plan: PublicPlan;
+  people: number;
+  /** Cuántas de esas personas ocupan cupo: en una firma, quien la dirige no lo ocupa. */
+  seats: number;
+}) {
+  const extra = Math.max(seats - plan.included_users, 0);
   const unit = plan.extra_user_price_cop ?? 0;
   return (
     <dl
