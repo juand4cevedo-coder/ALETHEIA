@@ -1,4 +1,5 @@
 import { BrandMark } from "../components/ui/BrandMark.tsx";
+import { formatColombiaTime } from "../features/cases/dates.ts";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
@@ -181,8 +182,7 @@ function ServiceStatus() {
       {result && (
         <p className={styles.kicker}>
           Comprobación:{" "}
-          {result.at.toLocaleString("es-CO", { timeZone: "America/Bogota" })}{" "}
-          (Colombia)
+          {formatColombiaTime(result.at.toISOString(), { seconds: true })}
         </p>
       )}
       <button

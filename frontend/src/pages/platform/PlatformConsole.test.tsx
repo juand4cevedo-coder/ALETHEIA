@@ -256,7 +256,6 @@ describe("Solicitudes y PQR", () => {
           return new Response(null, { status: 204 });
         },
     });
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     const user = userEvent.setup();
     await renderRoute("/app/plataforma/soporte");
     await user.click(await screen.findByRole("radio", { name: "Resueltas" }));
@@ -271,6 +270,9 @@ describe("Solicitudes y PQR", () => {
     expect(within(retained).getByText(/Se conserva hasta el/)).toBeVisible();
     await user.click(
       within(removable).getByRole("button", { name: "Eliminar" }),
+    );
+    await user.click(
+      await screen.findByRole("button", { name: "Eliminar la solicitud" }),
     );
     await waitFor(() => expect(deleted).toMatch(/a8010$/));
   });

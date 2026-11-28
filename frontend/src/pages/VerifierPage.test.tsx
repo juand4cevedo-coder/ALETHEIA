@@ -120,7 +120,7 @@ it("ignora el resultado de una lectura anterior tras cambiar el manifiesto", asy
 
   await user.upload(input, previous);
   await user.upload(input, current);
-  expect(await screen.findByText(/registrados en el manifiesto/)).toBeVisible();
+  expect(await screen.findByText(/registrados? en el manifiesto/)).toBeVisible();
   await act(async () => completePrevious("{"));
   const manifiesto = screen.getByRole("region", {
     name: "Compare un archivo con el manifiesto de su paquete",

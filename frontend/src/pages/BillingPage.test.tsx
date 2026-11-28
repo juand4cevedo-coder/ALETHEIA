@@ -179,7 +179,10 @@ describe("Plan y facturación con usuarios adicionales", () => {
       screen.getByText(/incluye a todo su equipo \(10 personas\)/),
     ).toBeInTheDocument();
 
-    await user.selectOptions(screen.getByLabelText("Plan"), "firm");
+    await user.selectOptions(
+      screen.getByLabelText("Plan que quiere pagar"),
+      "firm",
+    );
     await user.click(screen.getByRole("radio", { name: /^Anual/ }));
     const annual = screen.getByLabelText("Valor a pagar");
     expect(
@@ -197,7 +200,7 @@ describe("Plan y facturación con usuarios adicionales", () => {
     const user = userEvent.setup();
     await renderRoute("/app/facturacion");
 
-    const plan = await screen.findByLabelText("Plan");
+    const plan = await screen.findByLabelText("Plan que quiere pagar");
     expect(
       within(plan).getByRole("option", {
         name: "Esencial (no alcanza para su equipo)",

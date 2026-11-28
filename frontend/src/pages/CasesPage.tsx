@@ -18,6 +18,8 @@ import type {
 import { listCasesQueryKey } from "../api/generated/@tanstack/react-query.gen.ts";
 import { listCases } from "../api/generated/sdk.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
+import { Select } from "../components/ui/Select.tsx";
+import { Field } from "../components/ui/Field.tsx";
 import { ButtonLink } from "../components/ui/ButtonLink.tsx";
 import { ChainStrip } from "../components/ui/ChainStrip.tsx";
 import { EmptyState } from "../components/ui/EmptyState.tsx";
@@ -497,70 +499,62 @@ export function CasesPage() {
       {status === "closed" && (
         <fieldset className={styles.archiveFilters}>
           <legend>Filtrar archivo histórico</legend>
-          <label>
-            <span>Cierre desde</span>
-            <input
-              type="date"
-              value={closedFrom}
-              max={closedTo || undefined}
-              onChange={(event) =>
-                setArchiveFilter(CLOSED_FROM_PARAM, event.target.value)
-              }
-            />
-          </label>
-          <label>
-            <span>Cierre hasta</span>
-            <input
-              type="date"
-              value={closedTo}
-              min={closedFrom || undefined}
-              onChange={(event) =>
-                setArchiveFilter(CLOSED_TO_PARAM, event.target.value)
-              }
-            />
-          </label>
-          <label>
-            <span>Fundamento</span>
-            <select
-              value={retentionBasis ?? ""}
-              onChange={(event) =>
-                setArchiveFilter(RETENTION_BASIS_PARAM, event.target.value)
-              }
-            >
-              <option value="">Todos</option>
-              {RETENTION_BASES.map((basis) => (
-                <option key={basis} value={basis}>
-                  {RETENTION_BASIS_LABELS[basis]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>Bloqueo jurídico</span>
-            <select
-              value={legalHoldValue ?? ""}
-              onChange={(event) =>
-                setArchiveFilter(LEGAL_HOLD_PARAM, event.target.value)
-              }
-            >
-              <option value="">Todos</option>
-              <option value="si">Con bloqueo</option>
-              <option value="no">Sin bloqueo</option>
-            </select>
-          </label>
-          <label>
-            <span>Revisión de conservación</span>
-            <select
-              value={retentionReview ?? ""}
-              onChange={(event) =>
-                setArchiveFilter(RETENTION_REVIEW_PARAM, event.target.value)
-              }
-            >
-              <option value="">Todas</option>
-              <option value="upcoming">Conservación vigente</option>
-              <option value="due">Requiere revisión</option>
-            </select>
-          </label>
+          <Field
+            label="Cierre desde"
+            type="date"
+            value={closedFrom}
+            max={closedTo || undefined}
+            onChange={(event) =>
+              setArchiveFilter(CLOSED_FROM_PARAM, event.target.value)
+            }
+          />
+          <Field
+            label="Cierre hasta"
+            type="date"
+            value={closedTo}
+            min={closedFrom || undefined}
+            onChange={(event) =>
+              setArchiveFilter(CLOSED_TO_PARAM, event.target.value)
+            }
+          />
+          <Select
+            label="Fundamento"
+            value={retentionBasis ?? ""}
+            onChange={(event) =>
+              setArchiveFilter(RETENTION_BASIS_PARAM, event.target.value)
+            }
+            options={[
+              { value: "", label: "Todos" },
+              ...RETENTION_BASES.map((basis) => ({
+                value: basis,
+                label: RETENTION_BASIS_LABELS[basis],
+              })),
+            ]}
+          />
+          <Select
+            label="Bloqueo jurídico"
+            value={legalHoldValue ?? ""}
+            onChange={(event) =>
+              setArchiveFilter(LEGAL_HOLD_PARAM, event.target.value)
+            }
+            options={[
+              { value: "", label: "Todos" },
+              { value: "si", label: "Con bloqueo" },
+              { value: "no", label: "Sin bloqueo" },
+            ]}
+          />
+          <Select
+            label="Revisión de conservación"
+            value={retentionReview ?? ""}
+            onChange={(event) =>
+              setArchiveFilter(RETENTION_REVIEW_PARAM, event.target.value)
+            }
+            options={[
+              { value: "", label: "Todas" },
+              { value: "upcoming", label: "Conservación vigente" },
+              { value: "due", label: "Requiere revisión" },
+            ]}
+          />
           <Button
             variant="secondary"
             size="sm"

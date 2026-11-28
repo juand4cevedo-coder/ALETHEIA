@@ -11,6 +11,7 @@ import {
   updateTaskTemplateMutation,
 } from "../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../components/ui/Button.tsx";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog.tsx";
 import { EmptyState } from "../components/ui/EmptyState.tsx";
 import { Field } from "../components/ui/Field.tsx";
 import { MasIcon } from "../components/ui/icons.tsx";
@@ -111,6 +112,7 @@ export function TaskTemplatesPage() {
 function TemplateCard({ template }: { template: TaskTemplateOut }) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const remove = useMutation({
     ...deleteTaskTemplateMutation(),
     onSuccess: () =>
@@ -139,18 +141,26 @@ function TemplateCard({ template }: { template: TaskTemplateOut }) {
             variant="secondary"
             size="sm"
             busy={remove.isPending}
-            onClick={() => {
-              if (
-                window.confirm(
-                  `¿Borrar la plantilla «${template.name}»? Las tareas ya creadas con ella no se tocan.`,
-                )
-              ) {
-                remove.mutate({ path: { template_id: template.id } });
-              }
-            }}
+            onClick={() => setDeleting(true)}
           >
             Borrar
           </Button>
+          <ConfirmDialog
+            open={deleting}
+            title={`¿Borrar la plantilla «${template.name}»?`}
+            confirmLabel="Borrar la plantilla"
+            destructive
+            busy={remove.isPending}
+            onCancel={() => setDeleting(false)}
+            onConfirm={() =>
+              remove.mutate(
+                { path: { template_id: template.id } },
+                { onSettled: () => setDeleting(false) },
+              )
+            }
+          >
+            <p>Las tareas ya creadas con ella no se tocan.</p>
+          </ConfirmDialog>
         </div>
       </header>
       <ol>

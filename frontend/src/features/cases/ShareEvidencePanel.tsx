@@ -9,6 +9,7 @@ import {
   revokeShareLinkMutation,
 } from "../../api/generated/@tanstack/react-query.gen.ts";
 import { Button } from "../../components/ui/Button.tsx";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog.tsx";
 import { Dialog } from "../../components/ui/Dialog.tsx";
 import { Field } from "../../components/ui/Field.tsx";
 import { Notice } from "../../components/ui/Notice.tsx";
@@ -71,7 +72,9 @@ export function ShareEvidencePanel({
   const revoke = useMutation({
     ...revokeShareLinkMutation(),
     onSuccess: refresh,
+    onSettled: () => setRevoking(null),
   });
+  const [revoking, setRevoking] = useState<string | null>(null);
 
   function close() {
     setOpen(false);
@@ -139,17 +142,7 @@ export function ShareEvidencePanel({
                       variant="secondary"
                       size="sm"
                       busy={revoke.isPending}
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "¿Revocar este enlace? Quien lo tenga ya no podrá descargar el archivo.",
-                          )
-                        ) {
-                          revoke.mutate({
-                            path: { ...path, link_id: link.id },
-                          });
-                        }
-                      }}
+                      onClick={() => setRevoking(link.id)}
                     >
                       Revocar
                     </Button>
@@ -245,6 +238,19 @@ export function ShareEvidencePanel({
           </div>
         )}
       </Dialog>
+      <ConfirmDialog
+        open={revoking !== null}
+        title="¿Revocar este enlace?"
+        confirmLabel="Revocar el enlace"
+        destructive
+        busy={revoke.isPending}
+        onCancel={() => setRevoking(null)}
+        onConfirm={() =>
+          revoking && revoke.mutate({ path: { ...path, link_id: revoking } })
+        }
+      >
+        <p>Quien lo tenga ya no podrá descargar el archivo.</p>
+      </ConfirmDialog>
     </Panel>
   );
 }
